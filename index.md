@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Hello World!
-tagline: Supporting tagline
+title: Jarad Niemi
+tagline: stats for geeks, stuff that's significant
 ---
 {% include JB/setup %}
 
@@ -13,13 +13,13 @@ Complete usage and documentation available at: [Jekyll Bootstrap](http://jekyllb
 
 In `_config.yml` remember to specify your own data:
     
-    title : My Blog =)
+    title : Jarad Niemi's Github userpage
     
     author :
-      name : Name Lastname
-      email : blah@email.test
-      github : username
-      twitter : username
+      name : Jarad Niemi
+      email : niemi@iastate.edu
+      github : jarad
+      twitter : NiemiSTAT
 
 The theme should reference these variables whenever needed.
     
