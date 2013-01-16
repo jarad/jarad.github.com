@@ -5,7 +5,7 @@ tagline: Assistant Professor, Statistics Department, Iowa State University
 ---
 {% include JB/setup %}
 
-# About
+## About
 
 I am an assistant professor in the [Department of Statistics](http://www.stat.iastate.edu/ "ISU Statistics Department") at [Iowa State University](http://www.iastate.edu/ "Iowa State University"). 
 My research focuses on [Bayesian inference](http://en.wikipedia.org/wiki/Bayesian_inference "Bayesian inference") typically accomplished through computational methods such as [Markov chain Monte Carlo](http://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo "MCMC") and [sequential Monte Carlo](http://en.wikipedia.org/wiki/Particle_filter "SMC") (SMC). 
@@ -14,7 +14,7 @@ I worked in a [Drosophila genetics lab](http://www.cbs.umn.edu/gcd/faculty/micha
 Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minnesota") and attended [Marshall School](http://www.marshallschool.org/). I now live in [Ames, Iowa](http://www.cityofames.org/ "Ames, Iowa"). Go [Clones](http://www.cyclones.com/ "ISU Cyclones")!
 
 
-# Contact
+## Contact
 
 - Mailing: Department of Statistics, Iowa State University, Ames, IA 50011-1210
 - Office: [Snedecor 2208](http://www.fpm.iastate.edu/maps/default.asp?zoom=2&xcenter=1471&ycenter=1869&background=map&layer=buildingnames&xshow=1470&yshow=1868 "Map to Snedecor Hall")
