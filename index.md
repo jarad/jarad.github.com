@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Jarad Niemi
-tagline: stats for geeks, stuff that's significant
+tagline: Assistant Professor, Iowa State University
 ---
 {% include JB/setup %}
 
