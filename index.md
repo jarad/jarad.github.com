@@ -13,6 +13,8 @@ I received a PhD in [Statistical Science](http://stat.duke.edu/ "Stats @ Duke") 
 I worked in a [Drosophila genetics lab](http://www.cbs.umn.edu/gcd/faculty/michaelsimmons "Michael Simmons") from 2001-2003 and before that at [Proctor & Gamble](http://www.pg.com/ "P&G") in [Cincinnati, Ohio](http://www.cincinnati-oh.gov/cityofcincinnati/ "Cincinnati, Ohio") as a Research Engineer from 1999-2001. 
 Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minnesota") and attended [Marshall School](http://www.marshallschool.org/). I now live in [Ames, Iowa](http://www.cityofames.org/ "Ames, Iowa"). Go [Clones](http://www.cyclones.com/ "ISU Cyclones")!
 
+## Courses
+-[ STAT 544 Spring 2013](http://jarad.github.com/stat544/)
 
 ## Contact
 
