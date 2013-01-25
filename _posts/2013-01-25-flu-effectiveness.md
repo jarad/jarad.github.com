@@ -1,6 +1,6 @@
 ---
 status: publish
-published: false
+published: true
 layout: post
 title: "Flu effectiveness"
 description: ""
