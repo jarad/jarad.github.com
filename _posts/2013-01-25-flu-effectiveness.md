@@ -1,5 +1,4 @@
 ---
-status: publish
 published: true
 layout: post
 title: "Flu vaccine effectiveness"
