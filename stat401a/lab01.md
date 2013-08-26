@@ -33,9 +33,11 @@ R instructions
 2. File > New Script.
 3. Paste the following into the editor window.
 > case0101 = read.csv("U:401A/sleuth3csv/case0101.csv")
+>
 > names(case0101) = tolower(names(case0101))
+>
 > by(case0101$score, case0101$treatment, summary)
-3. 
+4. Edit > Run all.  
 
 
 
