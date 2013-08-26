@@ -5,5 +5,5 @@ tagline:
 ---
 {% include JB/setup %}
 
-Labs for STAT 401A 
+- [Lab 1](/stat401a/lab01)
 
