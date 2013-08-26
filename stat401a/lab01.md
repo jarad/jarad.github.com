@@ -16,7 +16,6 @@ SAS instructions
 ---
 1. Start SAS 9.3.
 2. Paste the following into the editor window.
-
 > DATA case0101;
 >   INFILE 'U:/401A/sleuth3csv/case0101.csv' DSD FIRSTOBS=2;
 >   INPUT score treatment $;
@@ -25,11 +24,18 @@ SAS instructions
 >   VAR score;
 >   BY treatment;
 >   RUN;
-
 3. Click on the Run button (looks like a person running).
 
-R script
+R instructions
 ---
+
+1. Start R.
+2. File > New Script.
+3. Paste the following into the editor window.
+> case0101 = read.csv("U:401A/sleuth3csv/case0101.csv")
+> names(case0101) = tolower(names(case0101))
+> by(case0101$score, case0101$treatment, summary)
+3. 
 
 
 
