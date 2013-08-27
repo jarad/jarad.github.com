@@ -5,5 +5,5 @@ tagline:
 ---
 {% include JB/setup %}
 
-- [Lab 1](/stat401a/lab01)
+Please go to [this page](/stat401A/lab).
 
