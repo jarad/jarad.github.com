@@ -14,7 +14,8 @@ Overall, I like the article because it is talking about how statistics (or analy
 Now, with a more critical eye, here are some thoughts on the article:
 
 > I think it was the encounter with Paul Riley’s SPAM model that happened first. Somewhere along the way, I ran into Sander Ijtsma’s work in a similar vein. Then Colin Trainor and Constantinos Chappas started writing about ExpG, and my brain permanently switched.
-
+>
+>
 > All of these models evaluate shots taken by teams, but not by the player taking them or whether they are on target, provoke a save, or whatever. They simply evaluate them by looking at where the shots are taken from.
 
 It should not be a virtue that the models ignore the player taking the shots, or whether they are on target, etc. An improved model would certainly take this information into account.
