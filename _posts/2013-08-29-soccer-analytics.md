@@ -7,7 +7,7 @@ tags: [soccer]
 ---
 {% include JB/setup %}
 
-A friend sent me a link to <http://www.statsbomb.com/> with a particular link to [an article about football analytics](http://www.statsbomb.com/2013/08/shooooot-a-paradigm-shift-in-how-we-watch-football/). Rather than responding to him over email, I thought I would just post about the blog post:
+A friend sent me a link to <http://www.statsbomb.com/> with a particular link to [an article about football (soccer) analytics](http://www.statsbomb.com/2013/08/shooooot-a-paradigm-shift-in-how-we-watch-football/). Rather than responding to him over email, I thought I would just post about the blog post:
 
 Overall, I like the article because it is talking about how statistics (or analytics) will go mainstream and how it will change the way people watch soccer. If this happens, great! It will encourage [numeracy](http://en.wikipedia.org/wiki/Numeracy) via a medium, soccer or sports in general, that is interesting to many people. 
 
