@@ -22,8 +22,9 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
 </ul>
 
 ## Courses
-- [STAT 544 Spring 2013](http://jarad.github.com/stat544/)
 - [STAT 401A Fall 2013](http://jarad.github.com/stat401A/)
+- [STAT 615 Fall 2013](http://jarad.github.com/stat615/)
+- [STAT 544 Spring 2013](http://jarad.github.com/stat544/)
 
 ## Contact
 
