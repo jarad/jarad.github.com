@@ -2,7 +2,7 @@
 layout: post
 title: "AAAS CEO points out correlation does not imply causation"
 description: ""
-categories: [science, 401A]
+categories: [401A]
 tags: [correlation, causation]
 ---
 {% include JB/setup %}
