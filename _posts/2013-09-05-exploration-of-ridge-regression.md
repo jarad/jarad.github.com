@@ -103,7 +103,7 @@ select(lm.ridge(y ~ x1 + x2 + x3, df(0.9), lambda = seq(0, 10, 1e-04)))
 {% endhighlight %}
 
 
-These results are certainly not consistent across the different methods of selecting the penalty. The generalized cross validation approach (GCV) always chooses the right endpoint even up 1000 for a=0.5. 
+These results are certainly not consistent across the different methods of selecting the penalty. The generalized cross validation approach (GCV) always chooses the right endpoint even up to 1000 for a=0.5. 
 
 For another example of the ridge traces, we look at the example from the `lm.ridge` function. 
 
