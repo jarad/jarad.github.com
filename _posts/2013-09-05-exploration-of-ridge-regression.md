@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Exploration of ridge regression"
-category: stat615
+category: 615
 tags: [ridge regression, R]
 ---
 {% include JB/setup %}
