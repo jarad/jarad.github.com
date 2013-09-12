@@ -1,10 +1,7 @@
 ---
-published: false
 layout: post
-title: "Flu vaccine effectiveness"
-tagline: "and your probability of contracting the flu"
-description: "flu vaccine effectiveness in R"
-category: [R]
+title: "Flu effectiveness"
+category: R
 tags: [R, flu]
 ---
 {% include JB/setup %}
