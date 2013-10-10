@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Interweaving Gibbs samplers"
+title: "Interweaving"
 description: ""
 category: 615
 tags: [R, interweaving]
