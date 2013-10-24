@@ -37,7 +37,8 @@ In this first example, the target distribution is Exp(1). The set A is just the 
 ```{r}
 # Exponential example
 set.seed(6)
-res = slice(10, 0.1, dexp, function(u,x=NA) c(0,-log(u)))
+A = function(u,x=NA) c(0,-log(u))
+res = slice(10, 0.1, dexp, A)
 x = res$x
 u = res$u
 ```
@@ -73,8 +74,7 @@ points(x[i+1],u[i+1],pch=19, cex=0.5)
 And this is comparing the marginal draws for x to the truth. 
 
 ```{r}
-hist(slice(1e4, 0.1, dexp, function(u) c(0,-log(u)))$x, 
-     freq=F, 100)
+hist(slice(1e4, 0.1, dexp, A)$x, freq=F, 100)
 curve(dexp, add=TRUE)
 ```
 
@@ -106,7 +106,7 @@ points(x[i],u[i],pch=19)
 segments(x[i], 0, x[i], dnorm(x[i]), col="gray")
 arrows(x[i], u[i], x[i], u[i+1], length=0.1)
 points(x[i],u[i+1])
-segments(A(u[i+1])[1],u[i+1],A(u[i+1])[2],u[i+1],col="gray")
+segments(A(u[i+1],x[i])[1],u[i+1],A(u[i+1],x[i])[2],u[i+1],col="gray")
 arrows(x[i], u[i+1], x[i+1], u[i+1], length=0.1)
 points(x[i+1],u[i+1],pch=19)
 ```
@@ -129,6 +129,8 @@ hist(slice(1e4, 0.1, dnorm, A)$x, freq=F, 100)
 curve(dnorm, add=TRUE)
 ```
 
+## Using an unnormalized density
+
 Slice sampling can also be performed on the unnormalized density. 
 
 ```{r}
@@ -136,7 +138,7 @@ Slice sampling can also be performed on the unnormalized density.
 # Standard normal with unnormalized density
 set.seed(6)
 target = function(x) exp(-x^2/2) # The normalizing factor is 1/sqrt(2pi)
-A = function(u) {
+A = function(u,x) {
   x = sqrt(-2*log(u))
   return(c(-x,x))
 }
@@ -144,6 +146,8 @@ A = function(u) {
 hist(slice(1e4, 0.1, target, A)$x, freq=F, 100)
 curve(dnorm, add=TRUE)
 ```
+
+## Learning the truncation points
 
 Here is an alternative version of the slice sampler that samples from a distribution other than uniform. The main purpose of introducing this is in Bayesian inference where the target distribution is the posterior, p(x|y) \propto p(y|x) p(x), and the augmentation is p(u,x)\propto p(x) I(0<u<p(y|x)). So the conditional for x|u is a truncated version of the prior. 
 

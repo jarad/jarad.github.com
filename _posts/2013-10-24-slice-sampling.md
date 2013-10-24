@@ -40,7 +40,8 @@ In this first example, the target distribution is Exp(1). The set A is just the 
 {% highlight r %}
 # Exponential example
 set.seed(6)
-res = slice(10, 0.1, dexp, function(u, x = NA) c(0, -log(u)))
+A = function(u, x = NA) c(0, -log(u))
+res = slice(10, 0.1, dexp, A)
 x = res$x
 u = res$u
 {% endhighlight %}
@@ -57,17 +58,6 @@ segments(x[i], 0, x[i], dexp(x[i]), col = "gray")
 arrows(x[i], u[i], x[i], u[i + 1], length = 0.1)
 points(x[i], u[i + 1])
 segments(A(u[i + 1])[1], u[i + 1], A(u[i + 1])[2], u[i + 1], col = "gray")
-{% endhighlight %}
-
-
-
-{% highlight text %}
-## Error: could not find function "A"
-{% endhighlight %}
-
-
-
-{% highlight r %}
 arrows(x[i], u[i + 1], x[i + 1], u[i + 1], length = 0.1)
 points(x[i + 1], u[i + 1], pch = 19)
 {% endhighlight %}
@@ -100,26 +90,11 @@ And this is comparing the marginal draws for x to the truth.
 
 
 {% highlight r %}
-hist(slice(10000, 0.1, dexp, function(u) c(0, -log(u)))$x, freq = F, 100)
-{% endhighlight %}
-
-
-
-{% highlight text %}
-## Error: unused argument (x[i - 1])
-{% endhighlight %}
-
-
-
-{% highlight r %}
+hist(slice(10000, 0.1, dexp, A)$x, freq = F, 100)
 curve(dexp, add = TRUE)
 {% endhighlight %}
 
-
-
-{% highlight text %}
-## Error: plot.new has not been called yet
-{% endhighlight %}
+![center](/../figs/2013-10-24-slice-sampling/unnamed-chunk-5.png) 
 
 
 Now I turn to a standard normal distribution where we pretend we cannot invert the density and therefore need another approach. The approach is going to be to use numerical methods to find the interval A (so, again assuming a unimodal target). The magic happens below where the `uniroot` function is used to find the endpoints of the interval.
@@ -155,18 +130,7 @@ points(x[i], u[i], pch = 19)
 segments(x[i], 0, x[i], dnorm(x[i]), col = "gray")
 arrows(x[i], u[i], x[i], u[i + 1], length = 0.1)
 points(x[i], u[i + 1])
-segments(A(u[i + 1])[1], u[i + 1], A(u[i + 1])[2], u[i + 1], col = "gray")
-{% endhighlight %}
-
-
-
-{% highlight text %}
-## Error: 'xx' is missing
-{% endhighlight %}
-
-
-
-{% highlight r %}
+segments(A(u[i + 1], x[i])[1], u[i + 1], A(u[i + 1], x[i])[2], u[i + 1], col = "gray")
 arrows(x[i], u[i + 1], x[i + 1], u[i + 1], length = 0.1)
 points(x[i + 1], u[i + 1], pch = 19)
 {% endhighlight %}
@@ -200,6 +164,8 @@ curve(dnorm, add = TRUE)
 ![center](/../figs/2013-10-24-slice-sampling/unnamed-chunk-10.png) 
 
 
+## Using an unnormalized density
+
 Slice sampling can also be performed on the unnormalized density. 
 
 
@@ -207,32 +173,19 @@ Slice sampling can also be performed on the unnormalized density.
 #### Standard normal with unnormalized density
 set.seed(6)
 target = function(x) exp(-x^2/2)  # The normalizing factor is 1/sqrt(2pi)
-A = function(u) {
+A = function(u, x) {
     x = sqrt(-2 * log(u))
     return(c(-x, x))
 }
 
 hist(slice(10000, 0.1, target, A)$x, freq = F, 100)
-{% endhighlight %}
-
-
-
-{% highlight text %}
-## Error: unused argument (x[i - 1])
-{% endhighlight %}
-
-
-
-{% highlight r %}
 curve(dnorm, add = TRUE)
 {% endhighlight %}
 
+![center](/../figs/2013-10-24-slice-sampling/unnamed-chunk-11.png) 
 
 
-{% highlight text %}
-## Error: plot.new has not been called yet
-{% endhighlight %}
-
+## Learning the truncation points
 
 Here is an alternative version of the slice sampler that samples from a distribution other than uniform. The main purpose of introducing this is in Bayesian inference where the target distribution is the posterior, p(x|y) \propto p(y|x) p(x), and the augmentation is p(u,x)\propto p(x) I(0<u<p(y|x)). So the conditional for x|u is a truncated version of the prior. 
 
