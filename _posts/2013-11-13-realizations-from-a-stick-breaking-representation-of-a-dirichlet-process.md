@@ -30,7 +30,7 @@ calc_pi = function(v) {
 {% endhighlight %}
 
 
-A visualization of the stick-breaking process is given here for the first five probabilities.
+A visualization of the stick-breaking process is given here for the first five probabilities. (Anybody know how to make this figure not have so much white space? I tried par(fin=c(5,1)) but that didn't work.)
 
 
 {% highlight r %}
