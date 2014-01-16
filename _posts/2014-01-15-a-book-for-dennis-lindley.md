@@ -26,11 +26,11 @@ on credible intervals also being confidence intervals
 
 From Wesley Johnson on what it means to be Bayesian
 
-> During Dennis's vist, he provided his defition of "Bayesian" at that time. As I recall it, it was : 1) Model all uncertainty with probaiblity, and 2) Always obey the laws of probability. I still violate the first rule occasionally, by using improper priors.
+> During Dennis's vist, he provided his defition of "Bayesian" at that time. As I recall it, it was : 1) Model all uncertainty with probability, and 2) Always obey the laws of probability. I still violate the first rule occasionally, by using improper priors.
 
 From Tony O'Hagan on how some scientist interpret non-Bayesian analyses as Bayesian analyses
 
-> They [the scientists] automatically thought of a confidence interval as if it were a Bayesian credible interval, and they automatically factored in their prior knowledge. For instance, if I gave an estimate that was higher than they expected, on the basis of experience with their own experiments or the results of others, they would presume that hte parameter was more likely to be below my estimate, rather than above. 
+> They [the scientists] automatically thought of a confidence interval as if it were a Bayesian credible interval, and they automatically factored in their prior knowledge. For instance, if I gave an estimate that was higher than they expected, on the basis of experience with their own experiments or the results of others, they would presume that the parameter was more likely to be below my estimate, rather than above. 
 
 From Christian Robert [with regard to the Lindley's Paradox often called the Jeffrey-Lindley Paradox]
 
