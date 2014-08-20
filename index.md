@@ -5,7 +5,7 @@ tagline: Assistant Professor, Statistics Department, Iowa State University
 ---
 {% include JB/setup %}
 
-## About
+## About ([CV](https://github.com/jarad/cv/blob/master/JaradNiemi-CV.pdf?raw=true))
 
 I am an assistant professor in the [Department of Statistics](http://www.stat.iastate.edu/ "ISU Statistics Department") at [Iowa State University](http://www.iastate.edu/ "Iowa State University"). 
 My research focuses on [Bayesian inference](http://en.wikipedia.org/wiki/Bayesian_inference "Bayesian inference") typically accomplished through computational methods such as [Markov chain Monte Carlo](http://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo "MCMC") and [sequential Monte Carlo](http://en.wikipedia.org/wiki/Particle_filter "SMC") (SMC). 
