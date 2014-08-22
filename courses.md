@@ -6,7 +6,6 @@ group: navigation
 ---
 {% include JB/setup %}
 
-## Courses
 - Fall 2014
   - STAT 401A
   - STAT 330

@@ -2,6 +2,7 @@
 layout: page
 title: "Calendar"
 description: ""
+group: navigation
 ---
 {% include JB/setup %}
 
