@@ -21,17 +21,9 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
   {% endfor %}
 </ul>
 
-## Courses
-- Fall 2014
-  - STAT 401A
-  - STAT 330
-- Spring 2014
-  - STAT 544
-- Fall 2013
-  - [STAT 401A](http://jarad.github.com/stat401A/)
-  - [STAT 615](http://jarad.github.com/stat615/)
-- Spring 2013
-  - [STAT 544](http://jarad.github.com/stat544/)
+## Current Courses ([previous courses](courses.html))
+- STAT 401A
+- STAT 330
 
 ## Contact
 
@@ -39,12 +31,10 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
 - Office: [Snedecor 2208](http://www.fpm.iastate.edu/maps/default.asp?zoom=2&xcenter=1471&ycenter=1869&background=map&layer=buildingnames&xshow=1470&yshow=1868 "Map to Snedecor Hall")
 - Email: <niemi@iastate.edu>
 - Social: 
-  - [Blog](http://niemiconsulting.com/blog/blog/ "Jarad Niemi's blog")
   - [Skype](skype:jaradniemi?add "Jarad Niemi's Skype account")
   - [Twitter](https://twitter.com/#NiemiSTAT "Jarad Niemi's twitter account")
   - [LinkedIn](http://www.linkedin.com/in/jaradniemi "Jarad Niemi's LinkedIn account")
 - Phone
   - (515) 294-8679
   - (515) 294-4040 (fax)
-
 
