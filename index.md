@@ -22,7 +22,7 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
 </ul>
 
 ## Fall 2014 Courses ([all courses](courses.html))
-- STAT 401A
+- [STAT 401A](courses/stat401A)
 - STAT 330
 
 ## Contact

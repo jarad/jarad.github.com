@@ -7,15 +7,15 @@ group: navigation
 {% include JB/setup %}
 
 - Fall 2014
-  - STAT 401A
+  - [STAT 401A](courses/stat401A)
   - STAT 330
 - Spring 2014
   - STAT 544
 - Fall 2013
-  - [STAT 401A](http://jarad.github.com/stat401A/)
-  - [STAT 615](http://jarad.github.com/stat615/)
+  - [STAT 401A](courses/stat401A)
+  - STAT 615
 - Spring 2013
-  - [STAT 544](http://jarad.github.com/stat544/)
+  - STAT 544
 
 
 
