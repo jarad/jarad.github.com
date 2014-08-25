@@ -35,7 +35,7 @@ R instructions
 1. Edit > Run all.
 
 {% highlight bash %}
-case0101 = read.csv("U:401A/sleuth3csv/case0101.csv")
+case0101 = read.csv("U:/401A/sleuth3csv/case0101.csv")
 names(case0101) = tolower(names(case0101))
 by(case0101$score, case0101$treatment, summary)
 {% endhighlight %}
