@@ -5,8 +5,7 @@ description: ""
 ---
 {% include JB/setup %}
 
-The homework problems below are from the 3rd edition of <a href="http://www.amazon.com/gp/product/1133490670/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=1133490670&linkCode=as2&tag=jarnieassprod-20&linkId=I3SZN5NVAJCORUOZ">The Statistical Sleuth: A Course in Methods of Data Analysis</a><img src="http://ir-na.amazon-adsystem.com/e/ir?t=jarnieassprod-20&l=as2&o=1&a=1133490670" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
-. 
+The homework problems below are from the 3rd edition of <a href="http://www.amazon.com/gp/product/1133490670/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=1133490670&linkCode=as2&tag=jarnieassprod-20&linkId=I3SZN5NVAJCORUOZ">The Statistical Sleuth: A Course in Methods of Data Analysis</a><img src="http://ir-na.amazon-adsystem.com/e/ir?t=jarnieassprod-20&l=as2&o=1&a=1133490670" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />. 
 The homework problems in this textbook are split into three sections: Conceptual Exercises, Computational Exercises, and Data Problems. As the name suggests, the Conceptual Exercises are available to test your understanding of the concepts introduced in the chapter.
 The answers to these problems can be found immediately following the Data Problems. The Computational Exercises are typically short answer problems aimed at testing your ability to calculate quantities introduced in the chapter, e.g. point estimates, pvalues, and confidence intervals. 
 The Data Problems focus on understanding what these quantities mean in the context of a specific problem. 

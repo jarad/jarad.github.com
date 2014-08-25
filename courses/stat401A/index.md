@@ -8,8 +8,8 @@ tagline: Statistical Methods for Research Workers
 <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Bayes_icon.svg/200px-Bayes_icon.svg.png" align="right" />
 This website is designed to host course material for [STAT 401A - Statistical Methods for Research Workers](http://catalog.iastate.edu/showcourse/?code=STAT-401&edition=2013-14) at [Iowa State University](http://www.iastate.edu).
 
-- Instructor: [Jarad Niemi](http://jarad.me)
-- TA: [Nehemias Ulloa](https://twitter.com/mayatecs)
+- Instructor: [Jarad Niemi](http://jarad.me) (niemi@iastate.edu)
+- TA: [Nehemias Ulloa](https://twitter.com/mayatecs) (nulloa1@iastate.edu)
 
 This course meets
 
@@ -40,9 +40,9 @@ Methods of analyzing and interpreting experimental and survey data. Statistical 
 
 ## Prerequisite
 
-The prerequisite for the course is STAT [101](http://catalog.iastate.edu/showcourse/?code=STAT-101&edition=2013-14), [104](http://catalog.iastate.edu/showcourse/?code=STAT-104&edition=2013-14), [105](http://catalog.iastate.edu/showcourse/?code=STAT-105&edition=2013-14), [201](http://catalog.iastate.edu/showcourse/?code=STAT-201&edition=2013-14), or [226](http://catalog.iastate.edu/showcourse/?code=STAT-226&edition=2013-14). 
+The prerequisite for the course is [STAT 101, 104, 105, 201, or 226](http://catalog.iastate.edu/azcourses/stat/) or equivalent.
 
 ## Q&A
 
-Please use the Blackboard discussion forum. 
+Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum. 
 
