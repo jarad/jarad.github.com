@@ -1,7 +1,7 @@
 #################################
 # Example
 #################################
-bigbang = read.csv("case0701.csv",sep="")
+bigbang = read.csv("case0701.csv")
 names(bigbang) = tolower(names(bigbang))
 summary(bigbang)
 pairs(bigbang)
