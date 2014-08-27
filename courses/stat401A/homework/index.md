@@ -54,6 +54,7 @@ For those using the 2nd ed. of the book, scans of the 3rd ed. problems can be fo
 [22](ch22.pdf).
 
 
+- HW1 (due 3 Sep): 1.17, 1.18, 1.19, 1.20
 
 <!---
 ## Previous semesters
