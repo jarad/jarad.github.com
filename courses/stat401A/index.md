@@ -18,8 +18,8 @@ This course meets
 
 Office hours are
 
-- Instructor: TBD @ Snedecor 2208
-- TA: TBD @ TBD
+- Instructor: M 9-11 @ Snedecor 2208
+- TA: T 1-3 @ Snedecor TBD
 
 The textbook for the course is [The Statistical Sleuth (3rd ed)](http://www.amazon.com/gp/product/1133490670/ref=as_li_ss_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=1133490670&linkCode=as2&tag=jarnieassprod-20) by Ramsey and Shafer.
 
