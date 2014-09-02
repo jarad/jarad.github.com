@@ -8,3 +8,5 @@ tagline: Statistical Methods for Research Workers
 ## Slide sets
 
 - [Chapter 1](Ch01.pdf)
+- [Chapter 2](Ch02.pdf)
+

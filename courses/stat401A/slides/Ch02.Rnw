@@ -1,0 +1,540 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,xmpmulti,multicol,multirow}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{Inference Using $t$-Distributions}
+\title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+\institute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, echo=FALSE>>=
+opts_chunk$set(comment=NA, fig.width=6, fig.height=6, size='tiny', out.width='0.6\\textwidth')
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Background}
+\subsection{Random variables}
+\begin{frame}
+\frametitle{Random variables}
+
+{\tiny From: \url{http://www.stats.gla.ac.uk/steps/glossary/probability_distributions.html}}
+
+\begin{definition}
+A \alert{random variable} is a function that associates a unique numerical value with every outcome of an experiment. 
+\end{definition} 
+
+\pause 
+
+\begin{definition}
+A \alert{discrete random variable} is one which may take on only a countable number of distinct values such as 0, 1, 2, 3, 4,...  Discrete random variables are usually (but not necessarily) counts. 
+\end{definition}
+
+\pause 
+
+\begin{definition}
+A \alert{continuous random variable} is one which takes an infinite number of possible values. Continuous random variables are usually measurements.
+\end{definition}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Random variables}
+
+Examples:
+\begin{itemize}[<+->]
+\item Discrete random variables
+  \begin{itemize}
+  \item Coin toss: Heads (1) or Tails (0)
+  \item Die roll: 1, 2, 3, 4, 5, or 6
+  \item Number of Ovenbirds at a 10-minute point count
+  \item RNAseq feature count
+  \end{itemize}
+\item Continuous random variables
+  \begin{itemize}
+  \item Pig average daily (weight) gain 
+  \item Corn yield per acre
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Statistical notation}
+
+Let $Y$ be 1 if the coin toss is heads and 0 if tails, then 
+\[ Y \sim Bin(n,p) \]
+which means ``$Y$ is a binomial random variable with $n$ trials and probability of success $p$'', \pause e.g. if $Y$ is the number of heads observed when tossing a fair coin ten times, then $Y\sim Bin(10,0.5)$. 
+
+\vspace{0.2in} \pause
+
+Later we will be constructing $100(1-\alpha)\%$ confidence intervals, these intervals are constructed such that if $n$ of them are constructed then $Y\sim Bin(n, 1-\alpha)$ will cover the true value.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Statistical notation}
+
+
+Let $Y_i$ be the average daily (weight) gain in pounds for the $i$th pig, then 
+\[ Y_i \stackrel{iid}{\sim} N(\mu,\sigma^2) \]
+which means ``$Y_i$ are independent and identically distributed normal (Gaussian) random variables with expected value $E[Y_i]=\mu$ and variance $V[Y_i]=\sigma^2$ (standard deviation $\sigma$)'', \pause e.g. if a litter of pigs is expected to gain 2 lbs/day with a standard deviation of 0.5 lbs/day and the knowledge of how much one pig gained does not affect how much the others gain, then $Y_i \stackrel{iid}{\sim} N(2,0.5^2)$.
+
+\end{frame}
+
+
+\subsection{Normal distribution}
+\begin{frame}[fragile]
+\frametitle{Normal (Gaussian) distribution}
+
+A random variable $Y$ has a normal distribution, i.e. $Y\sim N(\mu,\sigma^2)$, with mean $\mu$ and variance $\sigma^2$ if draws from this distribution follow a bell curve centered at $\mu$ with spread determined by $\sigma^2$:
+
+<<normal_distribution, fig.height=5, fig.align='center', echo=FALSE>>=
+curve(dnorm, -3.1, 3.1, main='Probability density function', xlab='y', ylab='f(y)', lwd=2, axes=F, frame=TRUE)
+abline(v=-3:3, lty=2, col='gray')
+axis(1,-3:3,expression(mu-3*sigma, mu-2*sigma, mu-sigma, mu,mu+sigma,mu+2*sigma,mu+3*sigma))
+arrows(-1:-3, dnorm(1:3), 1:3, dnorm(1:3), code=3)
+text(0, dnorm(1:3), c("68%","95%","99.7%"), pos=3)
+@
+\end{frame}
+
+
+\subsection{$t$-distribution}
+\begin{frame}[fragile]
+\frametitle{$t$-distribution}
+
+A random variable $Y$ has a $t$-distribution, i.e. $Y\sim t_v$, with degrees of freedom $v$ if draws from this distribution follow a similar bell shaped pattern:
+
+<<t_distribution, fig.height=5, fig.align='center', echo=FALSE>>=
+curve(dnorm, -3.1, 3.1, main='Probability density function', xlab='y', ylab='f(y)', lwd=2, axes=F, frame=TRUE, col="gray")
+curve(dt(x,3), -3.1, 3.1, add=TRUE, lwd=2)
+abline(v=-3:3, lty=2, col='gray')
+axis(1,-3:3)
+legend("topright",expression(N(0,1),t[3]), lwd=2, col=c("gray","black"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{$t$-distribution}
+
+As $v\to \infty$, then $t_v \stackrel{d}{\to} N(0,1)$, i.e. as the degrees of freedom increase, a $t$ distribution gets closer and closer to a standard normal distribution, i.e. $N(0,1)$. \pause If $v>30$, the differences is negligible. \pause 
+
+<<t30_distribution, fig.height=5, fig.align='center', echo=FALSE>>=
+curve(dnorm, -3.1, 3.1, main='Probability density function', xlab='y', ylab='f(y)', lwd=2, axes=F, frame=TRUE, col="gray")
+curve(dt(x,30), -3.1, 3.1, add=TRUE, lwd=2)
+abline(v=-3:3, lty=2, col='gray')
+axis(1,-3:3)
+legend("topright",expression(N(0,1),t[30]), lwd=2, col=c("gray","black"))
+@
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{$t$ critical value}
+
+\begin{definition}
+If $T\sim t_v$, a \alert{$t_v(1-\alpha/2)$ critical value} is the value such that $P(T<t_v(1-\alpha/2))=1-\alpha/2$ (or $P(T>t_v(1-\alpha))=\alpha/2$). 
+\end{definition}
+
+<<t_critical_value, fig.height=5, fig.align='center', echo=FALSE>>=
+curve(dt(x,5), -3.1, 3.1, main=expression(paste('Probability density function ', t[5])), xlab='t', ylab='f(t)', lwd=2, axes=F, frame=T)
+t_crit = qt(.9, 5)
+axis(1,t_crit)
+abline(v=t_crit, col="gray", lty=2)
+text(-.5, .1, 0.9, cex=2)
+text(2.5, .1, .1, cex=2)
+arrows(2.4, .08, 2, 0.03)
+@
+
+
+
+\end{frame}
+
+
+\section{Paired t-test}
+\frame{\frametitle{Cedar-apple rust}
+{\small
+  Cedar-apple rust is a (non-fatal) disease that affects apple trees. Its most obvious symptom is rust-colored spots on apple leaves. Red cedar trees are the immediate source of the fungus that infects the apple trees. If you could remove all red cedar trees within a few miles of the orchard, you should eliminate the problem. In the first year of this experiment the number of affected leaves on 8 trees was counted; the following winter all red cedar trees within 100 yards of the orchard were removed and the following year the same trees were examined for affected leaves. 
+	}
+	
+	\vspace{0.2in} \pause
+	
+	\begin{itemize}
+	\item	Statistical hypothesis:
+		\begin{itemize}
+		\item[$H_0$:] Removing red cedar trees increases or maintains the same mean number of rusty leaves.
+		\item[$H_1$:] Removing red cedar trees decreases the mean number of rusty leaves.
+		\end{itemize}
+	
+	\vspace{0.2in} \pause
+		
+	\item Statistical question:
+		\begin{itemize}
+		\item[] What is the reduction of rusty leaves \alert{in our sample} between year 1 and year 2 (perhaps due to removal of red cedar trees?
+		\end{itemize}
+	\end{itemize}
+}
+
+\begin{frame}[fragile]
+\frametitle{Data}
+	Here are the data
+<<paired_data>>=
+y1 = c(38,10,84,36,50,35,73,48)
+y2 = c(32,16,57,28,55,12,61,29)
+leaves  = data.frame(year1=y1, year2=y2, diff=y1-y2)
+leaves
+mean(leaves$diff)
+@
+
+\pause
+
+Is this a statistically significant difference?
+\end{frame}
+
+
+\frame{\frametitle{Assumptions}
+	Let 
+	\begin{itemize}
+	\item $Y_{1j}$ be the number of rusty leaves on tree $j$ in year 1
+	\item $Y_{2j}$ be the number of rusty leaves on tree $j$ in year 2
+	\end{itemize}
+	\pause Assume 
+	\[ D_j=Y_{1j} - Y_{2j} \stackrel{iid}{\sim} N(\mu,\sigma^2) \]
+	
+	\vspace{0.2in} \pause
+	
+	Then 
+	\begin{itemize}
+	\item[$H_0$:] $\mu= 0$  ($\mu\le 0$)
+	\item[$H_1$:] $\mu> 0$
+	\end{itemize}
+}
+
+\frame{\frametitle{Pvalue}
+	Test statistic
+	\[ t = \frac{\overline{D_j} - \mu}{SE(\overline{D_j})} \]
+	\pause where $SE(\overline{D_j}) = s/\sqrt{n}$ with 
+	\begin{itemize}
+	\item $n$ being the number of observations (differences) and 
+	\item $s$ being the sample standard deviation of the differences.
+	\end{itemize}
+	\pause If $H_0$ is true, then $\mu=0$ and $t\sim t_{n-1}$. \pause The pvalue is $P(t_{n-1}>t)$ since this is a one-sided test.
+	
+	\vspace{0.2in} \pause 
+	
+	For these data, 
+	\begin{itemize}
+	\item $\overline{D_j}=10.5$
+	\item $SE(\overline{D_j})=4.31$
+	\item $t=2.43$
+	\item $p=0.02$
+	\end{itemize}
+}
+
+\frame{\frametitle{Confidence interval}
+	The 100(1-$\alpha$)\% confidence interval has lower endpoint 
+	\[ \overline{D_j} - t_{n-1}(1-\alpha) SE(\overline{D_j}) \]
+	and upper endpoint at infinity
+	
+	\pause \vspace{0.2in} 
+	
+	For these data at 95\% confidence, the lower endpoint is
+	\[ 10.5 - 1.89 \cdot 4.31 = 2.33 \]
+	\pause So we are 95\% confident that the true difference in the number of rusty leaves is greater than 2.33. 
+}
+
+\subsection{SAS}
+\frame[containsverbatim]{\frametitle{SAS code for paired t-test}
+{\small
+\begin{verbatim}
+DATA leaves;
+  INPUT tree year1 year2;
+  DATALINES;
+1 38 32
+2 10 16
+3 84 57
+4 36 28
+5 50 55
+6 35 12
+7 73 61
+8 48 29
+;
+
+PROC TTEST DATA=leaves SIDES=U;
+    PAIRED year1*year2;
+    RUN;
+\end{verbatim}
+}
+}
+
+
+
+\frame[containsverbatim]{\frametitle{SAS output for paired t-test}
+{\tiny 
+\begin{verbatim}
+                                       The TTEST Procedure
+
+                                   Difference:  year1 - year2
+
+                  N        Mean     Std Dev     Std Err     Minimum     Maximum
+
+                  8     10.5000     12.2007      4.3136     -6.0000     27.0000
+
+                     Mean       95% CL Mean        Std Dev      95% CL Std Dev
+
+                  10.5000      2.3275  Infty       12.2007      8.0668  24.8317
+
+                                       DF    t Value    Pr > t
+
+                                        7       2.43    0.0226
+\end{verbatim}
+}
+}
+
+
+\begin{frame}[fragile]
+\frametitle{R output for paired t-test}
+<<paired_t_test>>=
+t.test(leaves$year1, leaves$year2, paired=TRUE, alternative="greater")
+@
+
+\end{frame}
+
+\frame{\frametitle{Statistical Conclusion}
+	Removal of red cedar trees within 100 yards is associated with a significant reduction in rusty apple leaves (paired t-test t=2.43, p=0.023). \pause The mean reduction in rust color leaves is 10.5 [95\% CI (2.33,$\infty$)]. 
+}
+
+
+
+
+\section{Two-sample t-test}
+\frame{\frametitle{Do Japanese cars get better mileage than American cars?}
+  \pause
+	\begin{itemize}
+	\item Statistical hypothesis:
+		\begin{itemize}
+		\item[$H_0$:] Mean mpg of Japanese cars is the same as mean mpg of American cars.
+		\item[$H_1$:] Mean mpg of Japanese cars is different than mean mpg of American cars. 
+		\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	\item Statistical question:
+	
+	\begin{itemize}
+	\item[] What is the difference in mean mpg between Japanese and American cars?
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	\item Data collection:
+		\begin{itemize}
+		\item Collect a random sample of Japan/American cars
+		\end{itemize}
+	\end{itemize}
+}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<mpg_data, message=FALSE>>=
+mpg = read.csv("mpg.csv")
+library(ggplot2)
+ggplot(mpg, aes(x=mpg))+
+  geom_histogram(data=subset(mpg,country=="Japan"), fill="red", alpha=0.5)+
+  geom_histogram(data=subset(mpg,country=="US"), fill="blue", alpha=0.5)
+@
+\end{frame}
+
+
+
+
+\frame{\frametitle{Assumptions}
+	Let 
+	\begin{itemize}
+	\item $Y_{1j}$ represent the $j$th Japanese car
+	\item $Y_{2j}$ represent the $j$th American car \pause
+	\end{itemize}
+	Assume 
+	\[ Y_{1j}\stackrel{iid}{\sim} N(\mu_1, \sigma^2) \qquad Y_{2j}\stackrel{iid}{\sim} N(\mu_2, \sigma^2) \]
+	
+	\vspace{0.2in}  \pause
+	
+	Restate the hypotheses using this notation
+	\begin{itemize}
+	\item[$H_0$:] $\mu_1=\mu_2$ 
+	\item[$H_1$:] $\mu_1\ne\mu_2$ \pause
+	\end{itemize}
+	Alternatively
+	\begin{itemize}
+	\item[$H_0$:] $\mu_1-\mu_2=0$ 
+	\item[$H_1$:] $\mu_1-\mu_2\ne 0$
+	\end{itemize}
+}
+
+\subsection{Test statistic}
+\frame{\frametitle{Test statistic}
+	The test statistic we use here is 
+	\[ \frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{SE(\overline{Y}_1-\overline{Y}_2)} \]
+	\pause where 
+	\begin{itemize} 
+	\item $\overline{Y}_1$ is the sample average mpg of the Japanese cars
+	\item $\overline{Y}_2$ is the sample average mpg of the American cars
+	\end{itemize}
+	\pause and
+	\[ SE(\overline{Y}_1-\overline{Y}_2) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}} \pause \qquad s_p = \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{(n_1+n_2-2)}} \]
+	\pause where 
+	\begin{itemize} 
+	\item $s_1$ is the sample standard deviation of the mpg of the Japanese cars
+	\item $s_2$ is the sample standard deviation of the mpg of the American cars
+	\end{itemize}
+}
+
+\subsection{Pvalue}
+\frame{\frametitle{Pvalue}
+	If $H_0$ is true, then $\mu_1=\mu_2$ and the test statistic 
+	\[ t=\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{SE(\overline{Y}_1-\overline{Y}_2)} \sim t_{n_1+n_2-2} \]
+	where 
+	$t_{df}$ is a t-distribution with $df$ degrees of freedom. 
+	
+	\vspace{0.2in} \pause
+	
+	Pvalue is $P(\left|t_{n_1+n_2-2}\right|>|t|) \pause = P(t_{n_1+n_2-2}>\left|t\right|)+P(t_{n_1+n_2-2}<-\left|t\right|)$ \pause or as a picture
+  
+<<pvalue_figure, echo=FALSE, fig.height=3, fig.align='center'>>=
+dt326 = function(x) dt(x,df=30)
+xx = seq(-3,-1.5,0.1)
+yy =dt326(xx)
+
+par(mar=c(2,4,0,0)+.2)
+curve(dt326, -3, 3, ylab="Probability density function")
+polygon(c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
+polygon(-c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
+@
+}
+
+\frame{\frametitle{Hand calculation}
+	To calculate the quantity by hand, we need 6 numbers:
+	\begin{center}
+	\begin{tabular}{cccc}
+	Car & N & Mean & SD \\
+	\hline
+	Japanese & 79 & 30.5 & 6.11 \\
+	American & 249 & 20.1 & 6.41 \\
+	\hline
+	\end{tabular}
+	\end{center}
+	
+	Calculate 
+	\[ \begin{array}{rll}
+	s_p &= \sqrt{\frac{(79-1)\cdot 6.11^2+(249-1)\cdot 6.41^2}{79+249-2}} &= 6.34 \pause \\
+	SE(\overline{Y}_1-\overline{Y}_2) &= 6.34 \sqrt{\frac{1}{279}+\frac{1}{249}} &= 0.82 \pause \\
+	t &= \frac{30.5-20.1}{0.82} &= 12.6 
+	\end{array} \]
+	\pause Finally, we are interested in finding $P(|t_{326}|>|12.6|)\pause <0.0001$ which is found using a table or software.
+}
+
+\subsection{Confidence interval}
+\frame{\frametitle{Confidence interval}
+	Alternatively, we can construct a 100(1-$\alpha$)\% confidence interval. \pause The formula is 
+	\[ \overline{Y}_1-\overline{Y}_2 \pm t_{n_1+n_2-2}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
+	where 
+	\pause $\pm$ indicates plus and minus \pause and $t_{df}(1-\alpha/2)$ is the value such that $P(t_{df} < t_{df}(1-\alpha/2))=1-\alpha/2$. \pause If $\alpha=0.05$ and $df=326$, then $t_{df}(1-\alpha/2)= 1.97$. \pause
+	
+	\vspace{0.2in} 
+	
+	The 95\% confidence interval is 
+	\[ 30.5-20.1\pm 1.97\cdot 0.82 = (8.73, 11.9) \]
+	\pause We are 95\% confident that, on average, Japanese cars get between 8.73 and 11.9 more mpg than American cars.
+}
+
+\subsection{Using SAS}
+\frame[containsverbatim]{\frametitle{SAS code for two-sample t-test}
+\begin{verbatim}
+DATA mpg;
+    INFILE 'mpg.csv' DELIMITER=',' FIRSTOBS=2;
+    INPUT mpg country $;
+
+PROC TTEST DATA=mpg;
+    CLASS country;
+    VAR mpg;
+    RUN;
+\end{verbatim}
+}
+
+
+
+\frame[containsverbatim]{\frametitle{}
+{\tiny
+\begin{verbatim}
+                                       The TTEST Procedure
+
+                                         Variable:  mpg
+
+         country          N        Mean     Std Dev     Std Err     Minimum     Maximum
+
+         Japan           79     30.4810      6.1077      0.6872     18.0000     47.0000
+         US             249     20.1446      6.4147      0.4065      9.0000     39.0000
+         Diff (1-2)             10.3364      6.3426      0.8190
+
+  country       Method               Mean       95% CL Mean        Std Dev      95% CL Std Dev
+
+  Japan                           30.4810     29.1130  31.8491      6.1077      5.2814   7.2429
+  US                              20.1446     19.3439  20.9452      6.4147      5.8964   7.0336
+  Diff (1-2)    Pooled            10.3364      8.7252  11.9477      6.3426      5.8909   6.8699
+  Diff (1-2)    Satterthwaite     10.3364      8.7576  11.9152
+
+                   Method           Variances        DF    t Value    Pr > |t|
+
+                   Pooled           Equal           326      12.62      <.0001
+                   Satterthwaite    Unequal      136.87      12.95      <.0001
+
+                                      Equality of Variances
+
+                        Method      Num DF    Den DF    F Value    Pr > F
+
+                        Folded F       248        78       1.10    0.6194
+\end{verbatim}
+}
+}
+
+
+\begin{frame}[fragile]
+\frametitle{R code/output for two-sample t-test}
+
+<<two_sample_t_test>>=
+t.test(mpg~country, data=mpg, var.equal=TRUE)
+@
+
+\end{frame}
+
+\frame{\frametitle{Conclusion}
+	Mean miles per gallon of Japanese cars is significantly different than mean miles per gallon of American cars (two-sample t-test t=12.62, $p<0.0001$). \pause Japanese cars get an average of 10.3 [95\% CI (8.7,11.9)] more miles per gallon than American cars.
+}
+
+
+\end{document}
