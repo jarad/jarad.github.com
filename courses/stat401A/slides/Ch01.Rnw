@@ -1,0 +1,469 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,xmpmulti,color,multicol,multirow}
+
+\usepackage{listings}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{Statistical Inference}
+\title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+\institute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, echo=FALSE>>=
+opts_chunk$set(comment=NA, fig.width=6, fig.height=6, size='tiny', out.width='0.6\\textwidth')
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Statistical inference}
+
+\subsection{Population vs sample}
+\begin{frame}
+\frametitle{Population vs sample}
+
+\begin{definition}
+A \alert{population} is any entire collection of people, animals, plants or things from which we may collect data. \pause It is the entire group we are interested in, which we wish to describe or draw conclusions about.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+\begin{definition}
+A \alert{sample} is a group of units selected from the population.
+\end{definition}
+
+\vspace{0.2in} \pause 
+
+{\tiny \url{http://www.stats.gla.ac.uk/steps/glossary/basic_definitions.html}}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Examples of populations}
+
+{\tiny Taken from \url{http://www.epa.gov/agriculture/ag101/demographics.html}}
+
+\vspace{0.2in} \pause
+
+\begin{itemize}
+\item ``people living in the United States''
+\item individuals that ``claim farming as an occupation''
+\item ``farms''
+\item individuals who ``actually live on farms''
+\item ``small family farms''
+\item $\vdots$
+\end{itemize}
+
+\vspace{0.2in} \pause 
+
+\alert{What are some examples of populations from your research?}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Inference to this population}
+
+\begin{definition}
+An \alert{inference} is a conclusion that patterns in the data are present in some broader context.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+\begin{remark}
+An \alert{inference to a population} can be drawn from a random sample from that population, but not otherwise.
+\end{remark}
+
+\vspace{0.2in} \pause
+
+\begin{definition}
+A \alert{simple random sample} of size $n$ from a population is a subset of the population consisting of n members selected in such a way that every subset of size $n$ is afforded the same chance of being selected.
+\end{definition}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Using software to obtain a simple random sample}
+
+SAS
+\begin{verbatim}
+PROC SURVEYSELECT DATA=mydata
+   METHOD=srs N=100 OUT=mydataSRS;
+RUN;
+\end{verbatim}
+
+\vspace{0.3in} \pause
+
+R
+\begin{verbatim}
+n = nrow(d)
+mydataSRS = mydata[sample(n,100),]
+\end{verbatim}
+
+\vspace{0.3in} \pause
+
+Excel
+\begin{verbatim}
+RAND()
+sort
+\end{verbatim}
+
+\end{frame}
+
+
+
+
+
+\subsection{Randomized experiments vs observational studies}
+
+\begin{frame}
+\frametitle{Randomized experiments vs observational studies}
+
+\begin{definition}
+An \alert{experimental unit} is a person, animal, plant or thing which is actually studied by a researcher; the basic objects upon which the study or experiment is carried out.
+\end{definition}
+
+\pause
+
+\begin{definition}
+An \alert{experiment} is any process or study which results in the collection of data, the outcome of which is unknown. \pause A \alert{randomized experiment} is an experiment where the investigator controls the assignment of experimental units to groups and uses a {\bf chance mechanism} to make the assignment. 
+\end{definition}
+
+\pause
+
+\begin{remark}
+In an \alert{observational study}, the group status of the subjects is not controlled by the investigator.
+\end{remark}
+
+\pause 
+
+\begin{remark}
+Statistical inference of cause-and-effect relationships can be drawn from randomized experiments, but not from observational studies.
+\end{remark}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+
+\frametitle{Chance mechanism}
+
+\alert{How do you assign experimental units to groups?}
+
+\vspace{0.2in} \pause
+
+\begin{remark}
+Use a computer, e.g. SURVEYSELECT in SAS or {\tt sample} in R, to assign experimental units to groups! 
+\end{remark}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Graphical representation}
+<<experiments, echo=FALSE, warning=FALSE, out.width='0.6\\textwidth', fig.align='center'>>=
+library(plotrix)
+
+set.seed(1)
+n = 20
+x = runif(n,0,1)
+y = runif(n,0,1)
+
+ox = c(0,0,1,1)
+oy = c(0,1,0,1)
+
+par(mar=rep(0,4))
+plot(0,0,type="n",axes=F,xlim=c(0,2), ylim=c(0,2), xlab="", ylab="")
+
+points(x+rep(ox,each=n),y+rep(oy,each=n), pch=19)
+
+xr = .08
+yr = .08
+of = .8
+rect(xr+ox,yr+oy,xr+ox+of,yr+oy+of)
+
+points(x,y+1, pch=19, col=c(rep(2,5), rep(4,5)))
+text(0.5,yr+of+1.05,"Observational Study",pos=3)
+text(0.04,1.8,"Non-random selection",pos=2,srt=90)
+draw.ellipse(.60,1.7,a=.05,b=.25,angle=-55)
+
+
+points(x,y, pch=19, col=c(rep(2,5), rep(4,5)))
+text(0.04,0.7,"Random selection",pos=2,srt=90)
+id = c(2,3,8,9)
+points(x[id], y[id], cex=2)
+
+
+points(x[c(3,15,16,17)]+1,y[c(3,15,16,17)]+1, 
+       pch=19,, col=c(2,4))
+text(1.5,yr+of+1.05,"Randomized Experiment",pos=3)
+draw.ellipse(1.6,1.7,a=.05,b=.25,angle=-55)
+
+wh = which(x>xr & x<xr+of & y>yr & y<yr+of)
+id = sample(wh,4)
+points(x[id]+1,y[id], pch=19, col=c(2,2,4,4))
+points(x[id]+1, y[id], cex=2)
+
+
+
+# ## ggplot2 attempt below
+# library(ggplot2)
+# library(plyr)
+# 
+# set.seed(1)
+# n = 30
+# x = runif(n,0,1)
+# y = runif(n,0,1)
+# trt = c("A","B")
+# 
+# d = ddply(expand.grid(type = factor(c("Observational Study","Randomized Experiment"),ordered=T),
+#                 sam = factor(c("Non-random Sample","Random Sample"),ordered=T)), 
+#           .(type,sam), 
+#           data.frame,x=x,y=y,Treatment=trt)
+# d$Treatment[d$sam=="Random Sample"     & d$type=="Randomized Experiment"][sample(n,20)] = NA
+# d$Treatment[d$sam=="Non-random Sample" & d$type=="Randomized Experiment" & (d$x<.5 | d$y<.5)] = NA
+# 
+# p = ggplot(d, aes(x=x,y=y,color=Treatment))+facet_grid(type~sam)+geom_point()+geom_rect(data=data.frame(variable=1:3), aes(xmin=.5,xmax=1,ymin=.5,ymax=1), fill=NA)
+#            
+# print(p)
+@
+\end{frame}
+
+
+
+
+\frame{\frametitle{Statistical inference}
+  \begin{center}
+	\begin{tabular}{|l||l|l|}
+	\hline
+	& Observational & Randomized \\
+	& Study & Experiment \\
+	\hline 
+	\hline
+	Non-random  & & Causal Inference \\
+	Selection & & \\
+	\hline
+	Random & Inference & Causal Inference  \\
+	Selection & to Population & to Population \\
+	\hline
+	\end{tabular}
+	\end{center}
+  
+  \vspace{0.2in} \pause 
+  
+  \begin{itemize}
+  \item Random sampling $\to$ inference to population
+	\item Random treatment assignment $\to$ causal inference
+	\end{itemize}
+}
+
+
+
+\begin{frame}
+\frametitle{ZMapp therapy for Ebola}
+
+{\tiny Current Ebola status: \url{http://www.cdc.gov/vhf/ebola/outbreaks/guinea/}
+
+\vspace{0.1in}
+
+from: \url{http://en.wikipedia.org/wiki/ZMapp}
+
+\begin{quotation}
+In 2014, Samaritan's Purse worked with the FDA and Mapp Biopharmaceutical to make the drug available to two of its health workers, who were infected by Ebola during their work in Liberia, under the Expanded access program. At the time, there were only a few doses of ZMapp in existence. According to news reports, Kent Brantly received the first dose of ZMapp nine days after falling ill. According to Samaritan's Purse, Brantly received a blood transfusion from a 14-year old boy who survived an Ebola virus infection before being treated with the ZMapp serum. Nancy Writebol, working alongside Brantly, was also treated with Zmapp. The condition of both health workers improved, especially in Brantly's case, before being transported back to the United States, to Emory University Hospital, specialized for Ebola treatment. Writebol and Brantly were released from hospital on August 21, 2014. \\ 
+
+A Roman Catholic priest, 75-year-old Miguel Pajares, was flown back to Spain from Monrovia on 7 August after being infected with Ebola. With the permission of Spain’s drug safety agency, he was given ZMapp. He died on August 12, two days after receiving the drug. \\
+
+The west African nation of Liberia, which has been affected by the 2014 outbreak, has secured enough ZMapp to treat three individual Liberians with the disease. One of the three to receive the drug, Dr. Abraham Borbor, a Liberian doctor and deputy chief physician at Liberia's largest hospital, died August 25th, 2014. \\ 
+
+William Pooley, a British male nurse who contracted Ebola while working in Sierra Leone, was also treated with ZMapp in August 2014.
+\end{quotation}
+
+\vspace{0.1in} \pause
+
+Question: Is ZMapp an effective therapeutic for the treatment of Ebola and prevention of death?}
+
+\end{frame}
+
+
+
+\subsection{Pvalues}
+\begin{frame}
+\frametitle{Scientific hypotheses}
+
+{\tiny \url{http://en.wikipedia.org/wiki/Null_hypothesis}}
+
+\pause
+
+\begin{definition}
+The \alert{null hypothesis} is a general statement or default position that there is no relationship between two measured phenomena.
+\end{definition}
+
+\pause 
+
+\begin{definition}
+The \alert{alternative hypothesis} is a general statement or default position that there IS a relationship between two measured phenomena.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+Examples of null hypotheses \pause
+\begin{itemize}[<+->]
+\item Hog feed makes no difference on average daily gain
+\item Fertilizer level has no effect on corn yield
+\item Prairie strips do not decrease nitrogen leaching
+\item Logging has no effect on bird populations
+\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Pvalues}
+
+\begin{definition}
+A \alert{statistic} is a numerical quantity calculated from the data. \pause A \alert{test statistic} is a statistic used to measure the plausibility of an alternative hypothesis to a null hypothesis.
+\end{definition}
+
+\pause
+
+\begin{definition}
+\pause A \alert{pvalue} is the probability of observing a test statistic as (extreme as) or more extreme than that observed if the null hypothesis is true.
+\end{definition}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Randomization pvalues}
+
+\begin{remark} 
+In a randomized experiment if a treatment has no effect, we should see (on average) no difference in means (or other test statistics) between two groups with different treatments. 
+\end{remark}
+
+% \pause 
+% 
+% \begin{definition}
+% A \alert{randomization pvalue} is the probability that randomization alone leads to a test statistics as extreme as or more extreme than the one observed.
+% \end{defintion}
+
+Consider the following experiment:
+  \begin{itemize}[<+->]
+  \item Two fertilizers (A and B) are randomly assigned: \\ A to 3 plots and B to 2 plots.
+  \item The observed corn yield (bushels per acre) are \\ A: 136, 146, 140 and B: 145, 139. 
+  \item The difference in means (A-B) is -1.33.
+  \item Is this difference significant?
+  \end{itemize}
+
+\pause
+
+\begin{remark}
+Calculate a \alert{randomization pvalue} by calculating the difference in means for every possible treatment assignment and calculate the proportion of times the difference in these means is as or more extreme (farther away from zero) than observed (-1.33). 
+\end{remark}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+
+<<randomization, message=FALSE>>=
+library(combinat)
+fertilizer = c("A","A","A","B","B")
+yield = c(136,146,140,145,139)
+rands = as.data.frame(matrix(unlist(unique(permn(fertilizer))),ncol=5,byrow=TRUE))
+names(rands) = yield
+rands$meanA = apply(rands, 1, function(x) mean(yield[x=='A']))
+rands$meanB = apply(rands, 1, function(x) mean(yield[x=='B']))
+rands$diffs = with(rands, meanA-meanB)
+rands
+@
+
+{\small Calculate the proportion of diffs that have absolute value greater than $|-1.33|$. }
+
+\pause
+
+<<randomization_pvalue>>=
+truediff = mean(yield[fertilizer=="A"])-mean(yield[fertilizer=="B"])
+mean(rands$diffs <= -abs(truediff) | rands$diffs >= abs(truediff))
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Permutation pvalues}
+
+\begin{remark} 
+In an observational study, if the group has no effect, we should see (on average) no difference in means (or other test statistics) between two groups. 
+\end{remark}
+
+\pause
+
+Consider the following observational study:
+  \begin{itemize}[<+->]
+  \item Five plots were sampled\\ 3 on the West side of a river and 2 on the East side of a river
+  \item The observed corn yield (bushels per acre) are \\ W: 136, 146, 140 and E: 145, 139. 
+  \item The difference in means (W-E) is -1.33.
+  \item Is this difference significant?
+  \end{itemize}
+
+\pause
+
+\begin{remark}
+Calculate a \alert{permutation pvalue} by calculating the difference in means for every possible permutation of observations and calculate the proportion of times the difference in these means is as or more extreme (farther away from zero) than observed (-1.33). 
+\end{remark}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<permutation_pvalue>>=
+side = c("W","W","W","E","E")
+perms = as.data.frame(matrix(unlist(permn(yield)), ncol=5))
+names(perms) = side
+perms$meanW = rowSums(perms[,1:3])/3
+perms$meanE = rowSums(perms[,4:5])/2
+perms$diffs = with(perms, meanW-meanE)
+head(perms,10)
+pvalue = mean(perms$diffs<=-1.33 | perms$diffs>=1.33)
+pvalue
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<permutation_distribution, fig.align='center'>>=
+hist(perms$diffs,20, main="Permutation distribution", xlab="Theoretical differences (W-E)")
+abline(v=c(-1.33,1.33), col="red", lwd=2)
+@
+\end{frame}
+
+
+
+\end{document}
