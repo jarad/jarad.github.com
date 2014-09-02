@@ -29,6 +29,7 @@ The textbook for the course is [The Statistical Sleuth (3rd ed)](http://www.amaz
 - [Links](links.html)
 - [Homework](homework)
 - [Videos](videos.html)
+- [Slides](slides)
 
 ## Course Description
 
