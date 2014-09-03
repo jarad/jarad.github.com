@@ -21,7 +21,7 @@
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
 <<options, echo=FALSE>>=
-opts_chunk$set(comment=NA, fig.width=6, fig.height=6, size='tiny', out.width='0.6\\textwidth')
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center')
 @
 
 
@@ -158,9 +158,9 @@ abline(v=-3:3, lty=2, col='gray')
 axis(1,-3:3)
 legend("topright",expression(N(0,1),t[30]), lwd=2, col=c("gray","black"))
 @
-
-
 \end{frame}
+
+
 
 
 \begin{frame}[fragile]
@@ -179,10 +179,198 @@ text(-.5, .1, 0.9, cex=2)
 text(2.5, .1, .1, cex=2)
 arrows(2.4, .08, 2, 0.03)
 @
+\end{frame}
 
 
+
+\subsection{Hypothesis testing}
+\frame{\frametitle{Hypotheses}
+	Three key features:
+	\begin{itemize}[<+->]
+	\item a test statistic calculated from data
+	\item a sampling distribution for the test statistic under the null hypothesis
+	\item a region that is as or more extreme (one-sided vs two-sided hypotheses)
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+  
+	Calculate probability of being in the region:
+  \begin{definition}
+	A \alert{pvalue} is the probability of observing a test statistic as or more extreme than that observed, if the null hypothesis is true. 
+	\end{definition}
+  
+  \vspace{0.2in} \pause
+  \begin{itemize}
+  \item If pvalue is less than or equal to $\alpha$, we reject the null hypothesis.
+  \item If pvalue is greater than $\alpha$, we fail to reject the null hypothesis.
+  \end{itemize}
+}
+
+
+
+\frame{\frametitle{Z-statistics}
+	Let's assume, we have 
+	\begin{itemize}
+	\item calculated a test statistic $z$ that
+	\item has a $Z\sim N(0,1)$ sampling distribution if the null hypothesis is true. 
+	\end{itemize}
+	
+	{\tiny We could easily replace $z$ with $t$ and have a sampling distribution that is $t_{v}$ for some $v$.}
+	
+	\vspace{0.2in} \pause
+	
+	Now, we can have one of three types of hypotheses:
+	\begin{itemize}[<+->]
+	\item Two-sided: $P(|Z|>|z|)$ \uncover<6->{$=P(Z>|z|)+P(Z<-|z|)$} 
+	
+	\uncover<7->{\hspace{1.6in}$=2P(Z<-|z|)$}
+	\item One-sided:
+		\begin{itemize}
+		\item $P(Z>z)$ \uncover<8->{$=P(Z<-z)$}
+		\item $P(Z<z)$ 
+		\end{itemize}
+	\end{itemize}
+	
+	\vspace{0.2in} 
+	
+	\uncover<9->{$F(c)=P(Z<c)$ is the \alert{cumulative distribution function} for the standard normal.}
+}
+
+\begin{frame}[fragile]
+\frametitle{Symmetric distributions}
+	The standard normal and $t$ distributions are both symmetric around zero.  \pause
+<<z, echo=FALSE>>=
+xx = seq(-3,-1.5,by=0.1)
+yy = dnorm(xx)
+par(mar=c(4,4,0,0)+.1)
+curve(dnorm, -3, 3, ylab="Probability density function", 
+      axes=F, frame=T, cex.main=1.5)
+polygon(c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
+polygon(-c(xx,-1.5,-3), c(yy,0,0), col="blue", border=NA)
+axis(1, c(-1,0,1)*1.5, labels=c("-c","0","c"))
+@
+	\pause
+	
+	\[ P(Z>c) = P(Z<-c) \quad \mbox{blue area is equal to red area}  \]
+\end{frame}
+
+
+\subsection{Example}
+\frame{\frametitle{Paired t-test example}
+	In the minilecture on the paired t-test, \pause we had
+	\begin{itemize}[<+->]
+	\item a one-sided hypothesis, namely the difference is greater than zero
+	\item a test statistic $t=2.43$
+	\item which has a $t$ distribution with 7 degrees of freedom
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	So we need to calculate 
+	\[ P(t_{7}>2.43)\pause =1-P(t_7<2.43) \] \pause
+	where $t_{7}$ represents a t-distribution with 7 degrees of freedom. 
+}
+
+\frame[containsverbatim]{\frametitle{Using SAS or R}
+In SAS,
+\begin{verbatim}
+PROC IML;
+  p = 1-CDF('T', 2.43, 7);
+  PRINT p;
+  QUIT;
+\end{verbatim}
+
+\vspace{0.2in}
+
+In R,
+\begin{verbatim}
+p = 1-pt(2.43,7)
+\end{verbatim}
+
+\vspace{0.2in}
+
+Both obtain p=0.0227. 
+}
+
+
+\subsection{Confidence intervals}
+\begin{frame}
+\frametitle{Confidence interval construction}
+
+Key steps in confidence interval construction:
+\begin{enumerate}
+\item Calculate statistic
+\item Calculate standard error of the statistic
+\item Find the appropriate critical value
+\item Construct the interval
+  \begin{itemize}
+  \item Two-sided interval:
+  \[ \mbox{statistic} \pm \mbox{critical value}\times\mbox{standard error} \]
+  \item One-sided interval:
+  \[ \mbox{statistic} - \mbox{critical value}\times\mbox{standard error} \]
+  or
+  \[ \mbox{statistic} + \mbox{critical value}\times\mbox{standard error} \]
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Critical values}
+	A related quantity are critical values for confidence interval construction, \pause e.g. 
+	\[ (\overline{Y}_2-\overline{Y}_1) \pm \alert{t_{v}(1-\alpha/2)} SE(\overline{Y}_2-\overline{Y}_1). \]
+	
+	\pause
+	
+<<z2, echo=FALSE>>=
+par(mar=c(4,4,0,0)+.1)
+curve(dnorm, -3, 3, ylab="Probability density function", 
+      axes=F, frame=T, cex.main=1.5)
+polygon(-c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
+axis(1, c(-1,0,1)*1.5, labels=expression(c("","0",expression("t[df](1-alpha/2)"))))
+@
+	The red area is $\alpha/2$. \pause Let $c=t_{v}(1-\alpha/2)$, \pause then we need $P(t_{v} < c) = 1-\alpha/2$.
+\end{frame}
+
+\frame[containsverbatim]{\frametitle{Using SAS or R}
+If $\alpha=0.05$, then $1-\alpha/2=0.975$.
+
+\vspace{0.2in}
+
+In SAS,
+\begin{verbatim}
+PROC IML;
+  q = QUANTILE('T', 0.975, 7);
+  PRINT q;
+  QUIT;
+\end{verbatim}
+
+\vspace{0.2in}
+
+In R,
+\begin{verbatim}
+q = qt(0.975,7)
+\end{verbatim}
+
+\vspace{0.2in}
+
+Both obtain q=2.364. 
+}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+Two main approaches to statistical inference:
+\begin{itemize}
+\item Statistical hypothesis (hypothesis test)
+\item Statistical question (confidence interval)
+\end{itemize}
 
 \end{frame}
+
 
 
 \section{Paired data}
@@ -430,7 +618,7 @@ ggplot(mpg, aes(x=mpg))+
 	If $H_0$ is true, then $\mu_1=\mu_2$ and the test statistic 
 	\[ t=\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{SE(\overline{Y}_1-\overline{Y}_2)} \sim t_{n_1+n_2-2} \]
 	where 
-	$t_{df}$ is a t-distribution with $df$ degrees of freedom. 
+	$t_{v}$ is a t-distribution with $df$ degrees of freedom. 
 	
 	\vspace{0.2in} \pause
 	
@@ -474,7 +662,7 @@ polygon(-c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
 	Alternatively, we can construct a 100(1-$\alpha$)\% confidence interval. \pause The formula is 
 	\[ \overline{Y}_1-\overline{Y}_2 \pm t_{n_1+n_2-2}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
 	where 
-	\pause $\pm$ indicates plus and minus \pause and $t_{df}(1-\alpha/2)$ is the value such that $P(t_{df} < t_{df}(1-\alpha/2))=1-\alpha/2$. \pause If $\alpha=0.05$ and $df=326$, then $t_{df}(1-\alpha/2)= 1.97$. \pause
+	\pause $\pm$ indicates plus and minus \pause and $t_{v}(1-\alpha/2)$ is the value such that $P(t_{v} < t_{v}(1-\alpha/2))=1-\alpha/2$. \pause If $\alpha=0.05$ and $df=326$, then $t_{v}(1-\alpha/2)= 1.97$. \pause
 	
 	\vspace{0.2in} 
 	
