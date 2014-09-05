@@ -215,7 +215,7 @@ arrows(2.4, .08, 2, 0.03)
 	\item has a $Z\sim N(0,1)$ sampling distribution if the null hypothesis is true. 
 	\end{itemize}
 	
-	{\tiny We could easily replace $z$ with $t$ and have a sampling distribution that is $t_{v}$ for some $v$.}
+	{\tiny We could easily replace $z$ with $t$ and have a sampling distribution that is $t_{\nu}$ for some $\nu$.}
 	
 	\vspace{0.2in} \pause
 	
@@ -275,7 +275,7 @@ axis(1, c(-1,0,1)*1.5, labels=c("-c","0","c"))
 In SAS,
 \begin{verbatim}
 PROC IML;
-  p = 1-CDF('T', 2.43, 7);
+  p = 1-Cdf('T', 2.43, 7);
   PRINT p;
   QUIT;
 \end{verbatim}
@@ -338,7 +338,7 @@ Key steps in confidence interval construction:
 \begin{frame}[fragile]
 \frametitle{Critical values}
 	A related quantity are critical values for confidence interval construction, \pause e.g. 
-	\[ (\overline{Y}_2-\overline{Y}_1) \pm \alert{t_{v}(1-\alpha/2)} SE(\overline{Y}_2-\overline{Y}_1). \]
+	\[ (\overline{Y}_2-\overline{Y}_1) \pm \alert{t_{\nu}(1-\alpha/2)} SE(\overline{Y}_2-\overline{Y}_1). \]
 	
 	\pause
 	
@@ -349,7 +349,7 @@ curve(dnorm, -3, 3, ylab="Probability density function",
 polygon(-c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
 axis(1, c(-1,0,1)*1.5, labels=expression(c("","0",expression("t[df](1-alpha/2)"))))
 @
-	The red area is $\alpha/2$. \pause Let $c=t_{v}(1-\alpha/2)$, \pause then we need $P(t_{v} < c) = 1-\alpha/2$.
+	The red area is $\alpha/2$. \pause Let $c=t_{\nu}(1-\alpha/2)$, \pause then we need $P(t_{\nu} < c) = 1-\alpha/2$.
 \end{frame}
 
 \frame[containsverbatim]{\frametitle{Using SAS or R}
@@ -459,33 +459,29 @@ Is this a statistically significant difference?
 
 \frame{\frametitle{Paired t-test pvalue}
 	Test statistic
-	\[ t = \frac{\overline{D_j} - \mu}{SE(\overline{D_j})} \]
-	\pause where $SE(\overline{D_j}) = s/\sqrt{n}$ with 
+	\[ t = \frac{\overline{D} - \mu}{SE(\overline{D})} \]
+	\pause where $SE(\overline{D}) = s/\sqrt{n}$ with 
 	\begin{itemize}
-	\item $n$ being the number of observations (differences) and 
-	\item $s$ being the sample standard deviation of the differences.
+	\item $n$ being the number of observations (differences),
+	\item $s$ being the sample standard deviation of the differences, and
+  \item $\overline{D}$ being the average difference.
 	\end{itemize}
 	\pause If $H_0$ is true, then $\mu=0$ and $t\sim t_{n-1}$. \pause The pvalue is $P(t_{n-1}>t)$ since this is a one-sided test. \pause By symmetry, $P(t_{n-1}>t) = P(t_{n-1}<-t)$. 
 	
 	\vspace{0.2in} \pause 
 	
 	For these data, 
-	\begin{itemize}
-	\item $\overline{D_j}=10.5$
-	\item $SE(\overline{D_j})=4.31$
-	\item $t=2.43$
-	\item $p=0.02$
-	\end{itemize}
+	\[ \overline{D}=10.5, \mbox{SE}(\overline{D})=4.31, t_{7}=2.43, \pause and \mbox{p}=0.02 \]
 }
 
 \frame{\frametitle{Confidence interval for $\mu$}
 	The 100(1-$\alpha$)\% confidence interval has lower endpoint 
-	\[ \overline{D_j} - t_{n-1}(1-\alpha) SE(\overline{D_j}) \]
+	\[ \overline{D} - t_{n-1}(1-\alpha) SE(\overline{D}) \]
 	and upper endpoint at infinity
 	
 	\pause \vspace{0.2in} 
 	
-	For these data at 95\% confidence, the lower endpoint is
+	For these data at 95\% confidence, $t_7(0.9)=1.89$ and thus the lower endpoint is
 	\[ 10.5 - 1.89 \cdot 4.31 = 2.33 \]
 	\pause So we are 95\% confident that the true difference in the number of rusty leaves is greater than 2.33. 
 }
@@ -531,7 +527,7 @@ PROC TTEST DATA=leaves SIDES=U;
 
                   10.5000      2.3275  Infty       12.2007      8.0668  24.8317
 
-                                       DF    t Value    Pr > t
+                                       df    t Value    Pr > t
 
                                         7       2.43    0.0226
 \end{verbatim}
@@ -548,7 +544,7 @@ t.test(leaves$year1, leaves$year2, paired=TRUE, alternative="greater")
 \end{frame}
 
 \frame{\frametitle{Statistical Conclusion}
-	Removal of red cedar trees within 100 yards is associated with a significant reduction in rusty apple leaves (paired t-test t=2.43, p=0.023). \pause The mean reduction in rust color leaves is 10.5 [95\% CI (2.33,$\infty$)]. 
+	Removal of red cedar trees within 100 yards is associated with a significant reduction in rusty apple leaves (paired t-test $t_7$=2.43, p=0.023). \pause The mean reduction in rust color leaves is 10.5 [95\% CI (2.33,$\infty$)]. 
 }
 
 
@@ -642,7 +638,7 @@ ggplot(mpg, aes(x=mpg))+
 	If $H_0$ is true, then $\mu_1=\mu_2$ and the test statistic 
 	\[ t=\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{SE(\overline{Y}_1-\overline{Y}_2)} \sim t_{n_1+n_2-2} \]
 	where 
-	$t_{v}$ is a t-distribution with $df$ degrees of freedom. 
+	$t_{\nu}$ is a t-distribution with $\nu$ degrees of freedom. 
 	
 	\vspace{0.2in} \pause
 	
@@ -651,7 +647,7 @@ ggplot(mpg, aes(x=mpg))+
 <<pvalue_figure, echo=FALSE, fig.height=3, fig.align='center'>>=
 dt326 = function(x) dt(x,df=30)
 xx = seq(-3,-1.5,0.1)
-yy =dt326(xx)
+yy = dt326(xx)
 
 par(mar=c(2,4,0,0)+.2)
 curve(dt326, -3, 3, ylab="Probability density function")
@@ -660,33 +656,29 @@ polygon(-c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
 @
 }
 
-\frame{\frametitle{Hand calculation}
+\begin{frame}[fragile]
+\frametitle{Hand calculation}
 	To calculate the quantity by hand, we need 6 numbers:
-	\begin{center}
-	\begin{tabular}{cccc}
-	Car & N & Mean & SD \\
-	\hline
-	Japanese & 79 & 30.5 & 6.11 \\
-	American & 249 & 20.1 & 6.41 \\
-	\hline
-	\end{tabular}
-	\end{center}
+<<car_summary_statistics>>=
+library(plyr)
+ddply(mpg, .(country), summarize, n=length(mpg), mean=mean(mpg), sd=sd(mpg))
+@
 	
 	Calculate 
 	\[ \begin{array}{rll}
 	s_p &= \sqrt{\frac{(79-1)\cdot 6.11^2+(249-1)\cdot 6.41^2}{79+249-2}} &= 6.34 \pause \\
-	SE(\overline{Y}_1-\overline{Y}_2) &= 6.34 \sqrt{\frac{1}{279}+\frac{1}{249}} &= 0.82 \pause \\
+	SE(\overline{Y}_1-\overline{Y}_2) &= 6.34 \sqrt{\frac{1}{79}+\frac{1}{249}} &= 0.82 \pause \\
 	t &= \frac{30.5-20.1}{0.82} &= 12.6 
 	\end{array} \]
-	\pause Finally, we are interested in finding $P(|t_{326}|>|12.6|)\pause <0.0001$ which is found using a table or software.
-}
+	\pause Finally, we are interested in finding $P(|t_{326}|>|12.6|) = 2P(t_{326}<-|12.6|) \pause <0.0001$ which is found using a table or software.
+\end{frame}
 
 \subsection{Confidence interval}
 \frame{\frametitle{Confidence interval}
 	Alternatively, we can construct a 100(1-$\alpha$)\% confidence interval. \pause The formula is 
 	\[ \overline{Y}_1-\overline{Y}_2 \pm t_{n_1+n_2-2}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
 	where 
-	\pause $\pm$ indicates plus and minus \pause and $t_{v}(1-\alpha/2)$ is the value such that $P(t_{v} < t_{v}(1-\alpha/2))=1-\alpha/2$. \pause If $\alpha=0.05$ and $df=326$, then $t_{v}(1-\alpha/2)= 1.97$. \pause
+	\pause $\pm$ indicates plus and minus \pause and $t_{\nu}(1-\alpha/2)$ is the value such that $P(t_{\nu} < t_{\nu}(1-\alpha/2))=1-\alpha/2$. \pause If $\alpha=0.05$ and $\nu=326$, then $t_{\nu}(1-\alpha/2)= 1.97$. \pause
 	
 	\vspace{0.2in} 
 	
@@ -731,14 +723,14 @@ PROC TTEST DATA=mpg;
   Diff (1-2)    Pooled            10.3364      8.7252  11.9477      6.3426      5.8909   6.8699
   Diff (1-2)    Satterthwaite     10.3364      8.7576  11.9152
 
-                   Method           Variances        DF    t Value    Pr > |t|
+                   Method           Variances        df    t Value    Pr > |t|
 
                    Pooled           Equal           326      12.62      <.0001
                    Satterthwaite    Unequal      136.87      12.95      <.0001
 
                                       Equality of Variances
 
-                        Method      Num DF    Den DF    F Value    Pr > F
+                        Method      Num df    Den df    F Value    Pr > F
 
                         Folded F       248        78       1.10    0.6194
 \end{verbatim}
