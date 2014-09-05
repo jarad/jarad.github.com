@@ -414,7 +414,7 @@ Two main approaches to statistical inference:
 		
 	\item Statistical question:
 		\begin{itemize}
-		\item[] What is the reduction of rusty leaves \alert{in our sample} between year 1 and year 2 (perhaps due to removal of red cedar trees?
+		\item[] What is the expected reduction of rusty leaves \alert{in our sample} between year 1 and year 2 (perhaps due to removal of red cedar trees)?
 		\end{itemize}
 	\end{itemize}
 }
@@ -423,11 +423,12 @@ Two main approaches to statistical inference:
 \frametitle{Data}
 	Here are the data
 <<paired_data>>=
+library(plyr)
 y1 = c(38,10,84,36,50,35,73,48)
 y2 = c(32,16,57,28,55,12,61,29)
 leaves  = data.frame(year1=y1, year2=y2, diff=y1-y2)
 leaves
-mean(leaves$diff)
+summarize(leaves, n=length(diff), mean=mean(diff), sd=sd(diff))
 @
 
 \pause
@@ -448,11 +449,12 @@ Is this a statistically significant difference?
 	
 	\vspace{0.2in} \pause
 	
-	Then 
+	Then the statistical hypothesis test is
 	\begin{itemize}
 	\item[$H_0$:] $\mu= 0$  ($\mu\le 0$)
 	\item[$H_1$:] $\mu> 0$
 	\end{itemize}
+  while the statistical question is 'what is $\mu$?'
 }
 
 \frame{\frametitle{Paired t-test pvalue}
@@ -463,7 +465,7 @@ Is this a statistically significant difference?
 	\item $n$ being the number of observations (differences) and 
 	\item $s$ being the sample standard deviation of the differences.
 	\end{itemize}
-	\pause If $H_0$ is true, then $\mu=0$ and $t\sim t_{n-1}$. \pause The pvalue is $P(t_{n-1}>t)$ since this is a one-sided test.
+	\pause If $H_0$ is true, then $\mu=0$ and $t\sim t_{n-1}$. \pause The pvalue is $P(t_{n-1}>t)$ since this is a one-sided test. \pause By symmetry, $P(t_{n-1}>t) = P(t_{n-1}<-t)$. 
 	
 	\vspace{0.2in} \pause 
 	
@@ -476,7 +478,7 @@ Is this a statistically significant difference?
 	\end{itemize}
 }
 
-\frame{\frametitle{Confidence interval}
+\frame{\frametitle{Confidence interval for $\mu$}
 	The 100(1-$\alpha$)\% confidence interval has lower endpoint 
 	\[ \overline{D_j} - t_{n-1}(1-\alpha) SE(\overline{D_j}) \]
 	and upper endpoint at infinity
@@ -574,7 +576,7 @@ t.test(leaves$year1, leaves$year2, paired=TRUE, alternative="greater")
 	
 	\item Data collection:
 		\begin{itemize}
-		\item Collect a random sample of Japan/American cars
+		\item Collect a random sample of Japanese/American cars
 		\end{itemize}
 	\end{itemize}
 }
