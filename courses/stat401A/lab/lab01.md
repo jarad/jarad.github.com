@@ -12,7 +12,7 @@ tagline:
 
 SAS instructions
 ---
-1. Start SAS 9.3.
+1. Start SAS 9.4.
 1. Paste the code below into the editor window.
 1. Click on the Run button (looks like a person running).
 {% highlight bash %}
