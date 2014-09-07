@@ -7,7 +7,6 @@ tagline:
 
 With the exception of Lab 01, you should download and open up the scripts associated with the chapters we will cover in lab.  
 
-- [Lab 01](lab01.html)
-  - [SAS](example.sas) v [R](example.R)
-
+- [Lab 01](lab01.html): [SAS](example.sas) v [R](example.R)
+- Lab 02: [SAS](ch02.sas) and [R](ch02.R)
 
