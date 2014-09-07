@@ -58,3 +58,9 @@ t.test(case0202$unaffected, case0202$affected, paired=TRUE)
 # Displays 2.8, 2.9, 2.10 
 stats = function(x) return(c(length(x), mean(x), sd(x)))
 by(case0201$depth, case0201$year, stats)
+
+
+
+
+# When you quit R, it will ask you 'Save workspace image?' 
+# get into the habit of clicking 'No'
