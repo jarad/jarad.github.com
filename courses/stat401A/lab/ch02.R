@@ -8,7 +8,7 @@ getwd() # Check your working directory
 
 
 
-# For calculative pvalues
+# For calculating pvalues
 (p1 = 1-pnorm(2))         # P(Z > 2)
 (p2 = 1-pt(3,5))          # P(t_5 > 3)
 (p3 = 1-pt(3,5)+pt(-3,5)) # P(t_5 > |3|)
