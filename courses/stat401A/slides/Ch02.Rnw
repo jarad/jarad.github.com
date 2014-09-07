@@ -27,9 +27,14 @@ opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.
 
 \begin{document}
 
+
+\begin{comment}
+
+
 \begin{frame}
 \maketitle
 \end{frame}
+
 
 \section{Background}
 \subsection{Random variables}
@@ -181,217 +186,6 @@ arrows(2.4, .08, 2, 0.03)
 @
 \end{frame}
 
-
-
-\subsection{Hypothesis testing}
-\frame{\frametitle{Hypotheses}
-	Three key features:
-	\begin{itemize}[<+->]
-	\item a test statistic calculated from data
-	\item a sampling distribution for the test statistic under the null hypothesis
-	\item a region that is as or more extreme (one-sided vs two-sided hypotheses)
-	\end{itemize}
-	
-	\vspace{0.2in} \pause
-  
-	Calculate probability of being in the region:
-  \begin{definition}
-	A \alert{pvalue} is the probability of observing a test statistic as or more extreme than that observed, if the null hypothesis is true. 
-	\end{definition}
-  
-  \vspace{0.2in} \pause
-  \begin{itemize}
-  \item If pvalue is less than or equal to $\alpha$, we reject the null hypothesis.
-  \item If pvalue is greater than $\alpha$, we fail to reject the null hypothesis.
-  \end{itemize}
-}
-
-
-
-\frame{\frametitle{Z-statistics}
-	Let's assume, we have 
-	\begin{itemize}
-	\item calculated a test statistic $z$ that
-	\item has a $Z\sim N(0,1)$ sampling distribution if the null hypothesis is true. 
-	\end{itemize}
-	
-	{\tiny We could easily replace $z$ with $t$ and have a sampling distribution that is $t_{\nu}$ for some $\nu$.}
-	
-	\vspace{0.2in} \pause
-	
-	Now, we can have one of three types of hypotheses:
-	\begin{itemize}[<+->]
-	\item Two-sided: $P(|Z|>|z|)$ \uncover<6->{$=P(Z>|z|)+P(Z<-|z|)$} 
-	
-	\uncover<7->{\hspace{1.6in}$=2P(Z<-|z|)$}
-	\item One-sided:
-		\begin{itemize}
-		\item $P(Z>z)$ \uncover<8->{$=P(Z<-z)$}
-		\item $P(Z<z)$ 
-		\end{itemize}
-	\end{itemize}
-	
-	\vspace{0.2in} 
-	
-	\uncover<9->{$F(c)=P(Z<c)$ is the \alert{cumulative distribution function} for the standard normal.}
-}
-
-\begin{frame}[fragile]
-\frametitle{Symmetric distributions}
-	The standard normal and $t$ distributions are both symmetric around zero.  \pause
-<<z, echo=FALSE>>=
-xx = seq(-3,-1.5,by=0.1)
-yy = dnorm(xx)
-par(mar=c(4,4,0,0)+.1)
-curve(dnorm, -3, 3, ylab="Probability density function", 
-      axes=F, frame=T, cex.main=1.5)
-polygon(c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
-polygon(-c(xx,-1.5,-3), c(yy,0,0), col="blue", border=NA)
-axis(1, c(-1,0,1)*1.5, labels=c("-c","0","c"))
-@
-	\pause
-	
-	\[ P(Z>c) = P(Z<-c) \quad \mbox{blue area is equal to red area}  \]
-\end{frame}
-
-
-\subsection{Example}
-\frame{\frametitle{Paired t-test example}
-	In a paired t-test, \pause we might have
-	\begin{itemize}[<+->]
-	\item a one-sided hypothesis that the difference is greater than zero
-	\item a test statistic $t=2.43$
-	\item which has a $t$ distribution with 7 degrees of freedom when the null hypothesis is true.
-	\end{itemize}
-	
-	\vspace{0.2in} \pause
-	
-	So we need to calculate 
-	\[ P(t_{7}>2.43)\pause =1-P(t_7<2.43) \] \pause
-	where $t_{7}$ represents a t-distribution with 7 degrees of freedom. 
-}
-
-\frame[containsverbatim]{\frametitle{Using SAS or R}
-In SAS,
-\begin{verbatim}
-PROC IML;
-  p = 1-Cdf('T', 2.43, 7);
-  PRINT p;
-  QUIT;
-\end{verbatim}
-
-\vspace{0.2in}
-
-In R,
-\begin{verbatim}
-p = 1-pt(2.43,7)
-\end{verbatim}
-
-\vspace{0.2in}
-
-Both obtain p=0.0227. 
-}
-
-
-\frame{\frametitle{Paired t-test example}
-  In a paired t-test, \pause we might have
-	\begin{itemize}
-	\item a one-sided hypothesis that the difference is greater than zero
-	\item a test statistic $t=2.43$
-	\item which has a $t$ distribution with 7 degrees of freedom when the null hypothesis is true.
-	\end{itemize}
-	
-	\vspace{0.2in} 
-	
-	So we need to calculate 
-	\[ P(t_{7}>2.43) =1-P(t_7<2.43)=0.02 \] 
-	
-  \vspace{0.2in} \pause
-  
-  So, we reject the null hypothesis that there is no difference\pause, but how big is the difference?
-}
-
-
-\subsection{Confidence intervals}
-\begin{frame}
-\frametitle{Confidence interval construction}
-
-Key steps in confidence interval construction:
-\begin{enumerate}
-\item Calculate statistic
-\item Calculate standard error of the statistic
-\item Find the appropriate critical value
-\item Construct the interval
-  \begin{itemize}
-  \item Two-sided interval:
-  \[ \mbox{statistic} \pm \mbox{critical value}\times\mbox{standard error} \]
-  \item One-sided interval:
-  \[ \mbox{statistic} - \mbox{critical value}\times\mbox{standard error} \]
-  or
-  \[ \mbox{statistic} + \mbox{critical value}\times\mbox{standard error} \]
-  \end{itemize}
-\end{enumerate}
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Critical values}
-	A related quantity are critical values for confidence interval construction, \pause e.g. 
-	\[ (\overline{Y}_2-\overline{Y}_1) \pm \alert{t_{\nu}(1-\alpha/2)} SE(\overline{Y}_2-\overline{Y}_1). \]
-	
-	\pause
-	
-<<z2, echo=FALSE>>=
-par(mar=c(4,4,0,0)+.1)
-curve(dnorm, -3, 3, ylab="Probability density function", 
-      axes=F, frame=T, cex.main=1.5)
-polygon(-c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
-axis(1, c(-1,0,1)*1.5, labels=expression(c("","0",expression("t[df](1-alpha/2)"))))
-@
-	The red area is $\alpha/2$. \pause Let $c=t_{\nu}(1-\alpha/2)$, \pause then we need $P(t_{\nu} < c) = 1-\alpha/2$.
-\end{frame}
-
-\frame[containsverbatim]{\frametitle{Using SAS or R}
-If $\alpha=0.05$, then $1-\alpha/2=0.975$.
-
-\vspace{0.2in}
-
-In SAS,
-\begin{verbatim}
-PROC IML;
-  q = QUANTILE('T', 0.975, 7);
-  PRINT q;
-  QUIT;
-\end{verbatim}
-
-\vspace{0.2in}
-
-In R,
-\begin{verbatim}
-q = qt(0.975,7)
-\end{verbatim}
-
-\vspace{0.2in}
-
-Both obtain q=2.364. 
-}
-
-
-% Need example of confidence interval construction
-
-
-\section{Summary}
-\begin{frame}
-\frametitle{Summary}
-
-Two main approaches to statistical inference:
-\begin{itemize}
-\item Statistical hypothesis (hypothesis test)
-\item Statistical question (confidence interval)
-\end{itemize}
-
-\end{frame}
 
 
 
@@ -750,6 +544,245 @@ t.test(mpg~country, data=mpg, var.equal=TRUE)
 \frame{\frametitle{Conclusion}
 	Mean miles per gallon of Japanese cars is significantly different than mean miles per gallon of American cars (two-sample t-test t=12.62, $p<0.0001$). \pause Japanese cars get an average of 10.3 [95\% CI (8.7,11.9)] more miles per gallon than American cars.
 }
+
+
+\end{comment}
+
+
+\section{Tests and CIs}
+
+
+\subsection{Hypothesis testing}
+\frame{\frametitle{Hypotheses}
+  Three key features:
+	\begin{itemize}[<+->]
+	\item a test statistic calculated from data
+	\item a sampling distribution for the test statistic under the null hypothesis
+	\item a region that is as or more extreme (one-sided vs two-sided hypotheses)
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+  
+	Calculate probability of being in the region:
+  \begin{definition}
+	A \alert{pvalue} is the probability of observing a test statistic as or more extreme than that observed, if the null hypothesis is true. 
+	\end{definition}
+  
+  \vspace{0.2in} \pause
+  \begin{itemize}
+  \item If pvalue is less than or equal to $\alpha$, we reject the null hypothesis.
+  \item If pvalue is greater than $\alpha$, we fail to reject the null hypothesis.
+  \end{itemize}
+}
+
+
+
+\frame{
+\frametitle{Hypothesis framework}
+{\small
+	Let's assume, we have 
+	\begin{itemize}[<+->]
+  \item $Y_i \stackrel{iid}{\sim} N(\mu,\sigma^2)$ for $i=1,\ldots,n$ and have
+	\item calculated a test statistic $t$, and
+	\item if the null hypothesis is true, $t$ has a $t_\nu$ sampling distribution. 
+	\end{itemize}
+	
+  \pause
+	
+	Now, we can have one of three types of hypotheses:
+	\begin{itemize}[<+->]
+	\item Two-sided ($H_0:\mu=\mu_0$ vs $H_1: \mu\ne \mu_0$):
+  \[ \mbox{pvalue} = P(|t_\nu|>|t|) = P(t_\nu > |t|) + P(t_\nu<-|t|) = 2P(t_\nu<-|t|) \]
+  \item One-sided ($H_0:\mu\le \mu_0$ vs $H_1: \mu> \mu_0$):
+  \[ \mbox{pvalue} = P(t_\nu>t) = P(t_\nu<-t) \]
+  \item One-sided ($H_0:\mu\ge \mu_0$ vs $H_1: \mu< \mu_0$):
+  \[ \mbox{pvalue} = P(t_\nu<t) \]
+  \end{itemize}
+	
+	\vspace{-0.2in} \pause
+	
+	\uncover<9->{$F(c)=P(t_\nu<c)$ is the \alert{cumulative distribution function} for a $t$ distribution with $\nu$ degrees of freedom.}
+}
+}
+
+\begin{frame}[fragile]
+\frametitle{Symmetric distributions}
+	The standard normal and $t$ distributions are both symmetric around zero.  \pause
+<<z, echo=FALSE>>=
+xx = seq(-3,-1.5,by=0.1)
+yy = dnorm(xx)
+par(mar=c(4,4,0,0)+.1)
+curve(dnorm, -3, 3, ylab="Probability density function", 
+      axes=F, frame=T, cex.main=1.5)
+polygon(c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
+polygon(-c(xx,-1.5,-3), c(yy,0,0), col="blue", border=NA)
+axis(1, c(-1,0,1)*1.5, labels=c("-c","0","c"))
+@
+	\pause
+	
+	\[ P(T_\nu>c) = P(t_\nu<-c) \quad \mbox{blue area is equal to red area}  \]
+\end{frame}
+
+
+\frame{\frametitle{Paired t-test example}
+	In the paired t-test example, we had a test statistic $t=2.43$ with a $t_7$ sampling distribution if the null hypothesis is true.
+	
+	\vspace{0.2in} \pause
+	
+	Consider the following hypotheses ($\mu$ is the expected difference):
+	\begin{itemize}[<+->]
+	\item Two-sided ($H_0:\mu=0$ vs $H_1: \mu\ne 0$):
+  \[ \mbox{pvalue} = 2P(t_7<-2.43) = 0.0454 \]
+  \item One-sided ($H_0:\mu\le 0$ vs $H_1: \mu> 0$):
+  \[ \mbox{pvalue} = \phantom{2}P(t_7<-2.43) = 0.0227\]
+  \item One-sided ($H_0:\mu\ge 0$ vs $H_1: \mu< 0$):
+  \[ \mbox{pvalue} = \phantom{2}P(t_7<2.43) = 0.9773 \]
+  \end{itemize}
+}
+
+
+\frame{\frametitle{Two-sample t-test example}
+  In a two-sample t-test, we might have a test statistic $t=-2$ with a $t_{30}$ sampling distribution if the null hypothesis is true.
+	
+	\vspace{0.2in} \pause
+	
+	Consider the following hypotheses ($\mu_1-\mu_2$ is the expected difference):
+	\begin{itemize}[<+->]
+	\item Two-sided ($H_0:\mu_1-\mu_2=0$ vs $H_1: \mu_1-\mu_2\ne 0$):
+  \[ \mbox{pvalue} = 2P(t_{30}<-2) = 0.0546 \]
+  \item One-sided ($H_0:\mu_1-\mu_2\le 0$ vs $H_1: \mu_1-\mu_2> 0$):
+  \[ \mbox{pvalue} = \phantom{2}P(t_{30}<2) = 0.9727 \]
+  \item One-sided ($H_0:\mu_1-\mu_2\ge 0$ vs $H_1: \mu_1-\mu_2< 0$):
+  \[ \mbox{pvalue} = \phantom{2}P(t_{30}<-2) = 0.0273 \]
+  \end{itemize}
+}
+
+
+
+\subsection{Confidence intervals}
+\begin{frame}
+\frametitle{Confidence interval construction}
+
+Key steps in confidence interval construction:
+\begin{enumerate}
+\item Calculate point estimate
+\item Calculate standard error of the statistic
+\item Set error level $\alpha$
+\item Find the appropriate critical value
+\item Construct the $100(1-\alpha)\%$ confidence interval
+  \begin{itemize}
+  \item Two-sided ($H_0:\mu=\mu_0$ vs $H_1: \mu\ne \mu_0$): $(L,U)$
+  \[ (L,U) = \mbox{estimate} \pm \mbox{critical value}(1-\alpha/2)\times\mbox{standard error} \]
+  \item One-sided ($H_0:\mu\le \mu_0$ vs $H_1: \mu> \mu_0$): $(L,\infty)$
+  \[ L = \mbox{estimate} - \mbox{critical value}(1-\alpha)\times\mbox{standard error} \]
+  \item One-sided ($H_0:\mu\ge \mu_0$ vs $H_1: \mu< \mu_0$): $(-\infty, U)$
+  \[ U = \mbox{estimate} + \mbox{critical value}(1-\alpha)\times\mbox{standard error} \]
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Critical values}
+	A related quantity are critical values, e.g. $\alert{t_{\nu}(1-\alpha/2)}$.
+	
+	\pause
+	
+<<z2, echo=FALSE>>=
+par(mar=c(4,4,0,0)+.1)
+curve(dnorm, -3, 3, ylab="Probability density function", axes=F, frame=T, cex.main=1.5)
+polygon(-c(xx,-1.5,-3), c(yy,0,0), col="red", border="red")
+axis(1, 0)
+axis(1, 1.5, labels=expression(t[nu](1-alpha/2)))
+text(1.8, .02, expression(alpha/2), col="white", pos=3)
+text(-.5, .02, expression(1-alpha/2), pos=3)
+@
+\pause 
+Let $c=t_{\nu}(1-\alpha/2)$, \pause then we need $P(t_{\nu} < c) = 1-\alpha/2$, i.e. the inverse of the cumulative distribution function.
+\end{frame}
+
+
+
+\frame{\frametitle{Paired t-test example}
+  In paired t-test example, we had an estimate $\hat{\mu} = 10.5$ and a standard error of $4.3136$ with $7$ degrees of freedom. 
+  
+	\vspace{0.2in} \pause
+  
+	The 95\%, i.e. $\alpha=0.05$, confidence intervals for $\mu$ are 
+  \begin{itemize}
+  \item Two-sided ($t_7(.975)=2.364624$) 
+  \[ 10.5\pm 2.364624\cdot 4.3136 = (0.30,20.7) \]
+  \item One-sided (positive) ($t_7(.95)=1.894579$) 
+  \[ (10.5- 1.894579\cdot 4.3136,\infty) = (2.33,\infty) \]
+  \item One-sided (negative) ($t_7(.95)=1.894579$)
+  \[ (-\infty,10.5+ 1.894579\cdot 4.3136) = (-\infty,18.7) \]
+  \end{itemize}
+}
+
+
+
+
+\frame{\frametitle{Two-sample t-test example}
+  In the two-sample t-test example, we had an estimate $\hat{\mu_1-\mu_2} = 10.33643$ and a pooled standard error of $0.8190$ with $326$ degrees of freedom. 
+  
+  \vspace{0.2in} \pause
+  
+	The 90\%, i.e. $\alpha=0.10$, confidence intervals for $\mu$ are 
+  \begin{itemize}
+  \item Two-sided ($t_{326}(.95)=1.649541$) 
+  \[ 10.33643\pm 1.649541\cdot 0.8190 = (9.0,11.7) \]
+  \item One-sided (positive) ($t_{326}(.90)=1.285149$) 
+  \[ (10.33643- 1.285149\cdot 0.8190,\infty) = (9.3,\infty) \]
+  \item One-sided (negative) ($t_{326}(.90)=1.285149$)
+  \[ (-\infty,10.33643+ 1.285149\cdot 0.8190) = (-\infty,11.4) \]
+  \end{itemize}
+}
+
+
+
+
+\frame[containsverbatim]{\frametitle{Find critical values using SAS or R}
+If $\alpha=0.05$, then $1-\alpha/2=0.975$.
+
+\vspace{0.2in}
+
+In SAS,
+\begin{verbatim}
+PROC IML;
+  q = QUANTILE('T', 0.975, 7);
+  PRINT q;
+  QUIT;
+\end{verbatim}
+
+\vspace{0.2in}
+
+In R,
+\begin{verbatim}
+q = qt(0.975,7)
+\end{verbatim}
+
+\vspace{0.2in}
+
+Both obtain q=2.364. 
+}
+
+
+% Need example of confidence interval construction
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+Two main approaches to statistical inference:
+\begin{itemize}
+\item Statistical hypothesis (hypothesis test)
+\item Statistical question (confidence interval)
+\end{itemize}
+
+\end{frame}
 
 
 \end{document}
