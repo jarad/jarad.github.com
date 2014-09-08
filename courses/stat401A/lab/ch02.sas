@@ -72,3 +72,15 @@ PROC MEANS DATA=case0201 N MEAN STD;
   VAR depth;
   TITLE 'Displays 2.8, 2.9, 2.10';
   RUN;
+
+
+/* Getting help
+ *
+ * The best way I have found to get help is to google the PROC and other keywords, e.g.
+ * 
+ * proc ttest one-sided hypothesis
+ *
+ * the two most helpful sites are
+ *  - support.sas.com
+ *  - www.ats.ucla.edu
+*/

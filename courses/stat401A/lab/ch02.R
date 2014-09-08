@@ -59,6 +59,18 @@ t.test(case0202$unaffected, case0202$affected, paired=TRUE)
 stats = function(x) return(c(length(x), mean(x), sd(x)))
 by(case0201$depth, case0201$year, stats)
 
+# An alternative is to use the plyr package
+# this package needs to be installed prior to use
+install.packages("plyr") 
+# after installing, comment the line above by putting a '#' at the beginning
+require(plyr) # this loads the package for the current R session
+ddply(case0201, .(year), summarize, n=length(depth), mean=mean(depth), sd=sd(depth))
+
+
+
+# Getting help
+?t.test              # function name must match exactly
+help.search("ttest")
 
 
 
