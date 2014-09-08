@@ -17,7 +17,7 @@ As a TA for [STAT 401A](../), I expect you to
     - alphabetized by last name
     - by next class period
 - provide homework solutions
-  - provide by XX
+  - by two class periods after assigned
   - many solutions are available in the CyBox folder
 - provide assistance during labs
   - attend lab (2 hours)
