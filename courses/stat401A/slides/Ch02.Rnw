@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass{beamer}
 
 \usepackage{verbatim,xmpmulti,multicol,multirow}
 
@@ -273,7 +273,7 @@ Is this a statistically significant difference?
 	\pause \vspace{0.2in} 
 	
 	For these data at 95\% confidence, $t_7(0.9)=1.89$ and thus the lower endpoint is
-	\[ 10.5 - 1.89 \cdot 4.31 = 2.33 \]
+	\[ 10.5 - 1.89 \times 4.31 = 2.33 \]
 	\pause So we are 95\% confident that the true difference in the number of rusty leaves is greater than 2.33. 
 }
 
@@ -457,7 +457,7 @@ ddply(mpg, .(country), summarize, n=length(mpg), mean=mean(mpg), sd=sd(mpg))
 	
 	Calculate 
 	\[ \begin{array}{rll}
-	s_p &= \sqrt{\frac{(79-1)\cdot 6.11^2+(249-1)\cdot 6.41^2}{79+249-2}} &= 6.34 \pause \\
+	s_p &= \sqrt{\frac{(79-1)\times 6.11^2+(249-1)\times 6.41^2}{79+249-2}} &= 6.34 \pause \\
 	SE(\overline{Y}_1-\overline{Y}_2) &= 6.34 \sqrt{\frac{1}{79}+\frac{1}{249}} &= 0.82 \pause \\
 	t &= \frac{30.5-20.1}{0.82} &= 12.6 
 	\end{array} \]
@@ -474,7 +474,7 @@ ddply(mpg, .(country), summarize, n=length(mpg), mean=mean(mpg), sd=sd(mpg))
 	\vspace{0.2in} 
 	
 	The 95\% confidence interval is 
-	\[ 30.5-20.1\pm 1.97\cdot 0.82 = (8.73, 11.9) \]
+	\[ 30.5-20.1\pm 1.97\times 0.82 = (8.73, 11.9) \]
 	\pause We are 95\% confident that, on average, Japanese cars get between 8.73 and 11.9 more mpg than American cars.
 }
 
@@ -545,7 +545,12 @@ t.test(mpg~country, data=mpg, var.equal=TRUE)
 
 
 \section{Tests and CIs}
+\begin{frame}
+\frametitle{Tests and CIs}
 
+Goal: provide a generic framework for hypothesis test and confidence interval construction
+
+\end{frame}
 
 \subsection{Hypothesis testing}
 \frame{\frametitle{Hypotheses}
@@ -577,8 +582,8 @@ t.test(mpg~country, data=mpg, var.equal=TRUE)
 {\small
 	Let's assume, we have 
 	\begin{itemize}[<+->]
-  \item $Y_i \stackrel{iid}{\sim} N(\mu,\sigma^2)$ for $i=1,\ldots,n$ and have
-	\item calculated a test statistic $t$, and
+  \item a parameter $\mu$ and an estimate $\hat{\mu}$, 
+	\item calculated a test statistic $t=(\mu-\hat{\mu})/SE(\hat{\mu})$, and
 	\item if the null hypothesis is true, $t$ has a $t_\nu$ sampling distribution. 
 	\end{itemize}
 	
@@ -596,13 +601,13 @@ t.test(mpg~country, data=mpg, var.equal=TRUE)
 	
 	\vspace{-0.2in} \pause
 	
-	\uncover<9->{$F(c)=P(t_\nu<c)$ is the \alert{cumulative distribution function} for a $t$ distribution with $\nu$ degrees of freedom.}
+	\uncover<9->{$F(t)=P(t_\nu<t)$ is the \alert{cumulative distribution function} for a $t$ distribution with $\nu$ degrees of freedom.}
 }
 }
 
 \begin{frame}[fragile]
 \frametitle{Symmetric distributions}
-	The standard normal and $t$ distributions are both symmetric around zero.  \pause
+	The standard normal and $t$ distributions are both symmetric around zero.  
 <<z, echo=FALSE>>=
 xx = seq(-3,-1.5,by=0.1)
 yy = dnorm(xx)
@@ -613,14 +618,13 @@ polygon(c(xx,-1.5,-3), c(yy,0,0), col="red", border=NA)
 polygon(-c(xx,-1.5,-3), c(yy,0,0), col="blue", border=NA)
 axis(1, c(-1,0,1)*1.5, labels=c("-c","0","c"))
 @
-	\pause
 	
-	\[ P(T_\nu>c) = P(t_\nu<-c) \quad \mbox{blue area is equal to red area}  \]
+	\[ P(t_\nu>c) = P(t_\nu<-c) \quad \mbox{blue area is equal to red area}  \]
 \end{frame}
 
 
 \frame{\frametitle{Paired t-test example}
-	In the paired t-test example, we had a test statistic $t=2.43$ with a $t_7$ sampling distribution if the null hypothesis is true.
+	In the paired t-test example, we had a test statistic $t=(\overline{D}-0)/SE(\overline{D})=2.43$ with a $t_7$ sampling distribution if the null hypothesis is true.
 	
 	\vspace{0.2in} \pause
 	
@@ -658,11 +662,11 @@ axis(1, c(-1,0,1)*1.5, labels=c("-c","0","c"))
 \begin{frame}
 \frametitle{Confidence interval construction}
 
-Key steps in confidence interval construction:
-\begin{enumerate}
-\item Calculate point estimate
-\item Calculate standard error of the statistic
-\item Set error level $\alpha$
+Key steps in confidence interval construction for $\mu$:
+\begin{enumerate}[<+->]
+\item Calculate point estimate $\hat{\mu}$
+\item Calculate standard error of the statistic $SE(\hat{\mu})$
+\item Set error level $\alpha$ (usually 0.05)
 \item Find the appropriate critical value
 \item Construct the $100(1-\alpha)\%$ confidence interval
   \begin{itemize}
@@ -695,24 +699,24 @@ text(1.8, .02, expression(alpha/2), col="white", pos=3)
 text(-.5, .02, expression(1-alpha/2), pos=3)
 @
 \pause 
-Let $c=t_{\nu}(1-\alpha/2)$, \pause then we need $P(t_{\nu} < c) = 1-\alpha/2$, i.e. the inverse of the cumulative distribution function.
+Let $c=t_{\nu}(1-\alpha/2)$, \pause then we need $P(t_{\nu} < c) = 1-\alpha/2$, i.e. the inverse of the cumulative distribution function (quantile function).
 \end{frame}
 
 
 
 \frame{\frametitle{Paired t-test example}
-  In paired t-test example, we had an estimate $\hat{\mu} = 10.5$ and a standard error of $4.3136$ with $7$ degrees of freedom. 
+  In the paired t-test example, we had an estimate $\hat{\mu} = 10.5$ and a standard error of $4.3136$ with $7$ degrees of freedom. 
   
 	\vspace{0.2in} \pause
   
 	The 95\%, i.e. $\alpha=0.05$, confidence intervals for $\mu$ are 
-  \begin{itemize}
+  \begin{itemize}[<+->]
   \item Two-sided ($t_7(.975)=2.364624$) 
-  \[ 10.5\pm 2.364624\cdot 4.3136 = (0.30,20.7) \]
+  \[ 10.5\pm 2.364624\times 4.3136 = (0.30,20.7) \]
   \item One-sided (positive) ($t_7(.95)=1.894579$) 
-  \[ (10.5- 1.894579\cdot 4.3136,\infty) = (2.33,\infty) \]
+  \[ (10.5- 1.894579\times 4.3136,\infty) = (2.33,\infty) \]
   \item One-sided (negative) ($t_7(.95)=1.894579$)
-  \[ (-\infty,10.5+ 1.894579\cdot 4.3136) = (-\infty,18.7) \]
+  \[ (-\infty,10.5+ 1.894579\times 4.3136) = (-\infty,18.7) \]
   \end{itemize}
 }
 
@@ -720,18 +724,18 @@ Let $c=t_{\nu}(1-\alpha/2)$, \pause then we need $P(t_{\nu} < c) = 1-\alpha/2$, 
 
 
 \frame{\frametitle{Two-sample t-test example}
-  In the two-sample t-test example, we had an estimate $\hat{\mu_1-\mu_2} = 10.33643$ and a pooled standard error of $0.8190$ with $326$ degrees of freedom. 
+  In the two-sample t-test example, we had an estimate $\widehat{\mu_1-\mu_2} = 10.33643$ and a pooled standard error of $0.8190$ with $326$ degrees of freedom. 
   
   \vspace{0.2in} \pause
   
-	The 90\%, i.e. $\alpha=0.10$, confidence intervals for $\mu$ are 
-  \begin{itemize}
+	The 90\%, i.e. $\alpha=0.10$, confidence intervals for $\mu_1-\mu_2$ \pause are 
+  \begin{itemize}[<+->]
   \item Two-sided ($t_{326}(.95)=1.649541$) 
-  \[ 10.33643\pm 1.649541\cdot 0.8190 = (9.0,11.7) \]
+  \[ 10.33643\pm 1.649541\times 0.8190 = (9.0,11.7) \]
   \item One-sided (positive) ($t_{326}(.90)=1.285149$) 
-  \[ (10.33643- 1.285149\cdot 0.8190,\infty) = (9.3,\infty) \]
+  \[ (10.33643- 1.285149\times 0.8190,\infty) = (9.3,\infty) \]
   \item One-sided (negative) ($t_{326}(.90)=1.285149$)
-  \[ (-\infty,10.33643+ 1.285149\cdot 0.8190) = (-\infty,11.4) \]
+  \[ (-\infty,10.33643+ 1.285149\times 0.8190) = (-\infty,11.4) \]
   \end{itemize}
 }
 
