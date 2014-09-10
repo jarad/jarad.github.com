@@ -22,6 +22,8 @@
 
 <<options, echo=FALSE>>=
 opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center')
+library(plyr)
+library(ggplot2)
 @
 
 
@@ -43,7 +45,34 @@ In the two-sample t-test, we assume
 
 \pause
 
-Key features of the normal distribution:
+<<visualize, echo=FALSE, out.width='\\textwidth'>>=
+par(mfrow=c(2,2))
+curve(dnorm(x,1), -4, 4, main="Paired t-test", xlab="Difference", ylab="Distribution", 
+      lwd=2, axes=F, frame=T)
+axis(1,0)
+abline(v=0, col="gray", lty=2)
+points(.8,0, pch=19)
+segments(.8-1.3,0,.8+1.3,0, lwd=2)
+
+curve(dnorm(x,-1), -4, 4, main="Two-sample t-test", xlab="", ylab="", lwd=2, axes=F, frame=T, col=2, lty=1)
+curve(dnorm(x,1), add=TRUE, col=3, lwd=2, lty=2)
+legend("bottomright", paste("Pop",1:2),col=2:3, lwd=2, lty=1:2)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Normality assumptions}
+
+In the paired t-test, we assume
+\[ D_i \stackrel{iid}{\sim} N(\mu,\sigma^2). \]
+In the two-sample t-test, we assume
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2). \]
+
+\vspace{0.2in} \pause
+
+Key features of the normal distribution assumption:
 \begin{itemize}
 \item Centered at the mean (expectation) $\mu$
 \item Standard deviation describes the spread
@@ -57,7 +86,7 @@ Key features of the normal distribution:
 \begin{frame}[fragile]
 \frametitle{Normality assumptions}
 <<normal_distribution, echo=FALSE>>=
-curve(dnorm, -3.1, 3.1, main='Probability density function', xlab='y', ylab='f(y)', lwd=2, axes=F, frame=TRUE)
+curve(dnorm, -3.1, 3.1, main='Probability density function', xlab='y', ylab='Probability density function, f(y)', lwd=2, axes=F, frame=TRUE)
 abline(v=-3:3, lty=2, col='gray')
 axis(1,-3:3,expression(mu-3*sigma, mu-2*sigma, mu-sigma, mu,mu+sigma,mu+2*sigma,mu+3*sigma))
 arrows(-1:-3, dnorm(1:3), 1:3, dnorm(1:3), code=3)
@@ -65,6 +94,69 @@ text(0, dnorm(1:3), round(1-2*pnorm(-1:-3),3), pos=3)
 @
 
 \end{frame}
+
+
+\subsection{Kurtosis (heavy-tailedness)}
+\begin{frame}[fragile]
+\frametitle{Kurtosis (heavy-tailedness)}
+<<kurtosis, echo=FALSE>>=
+v = c(Inf,30,15,5)
+sigma = v/(v-2); sigma[1] = 1
+mykurtosis = paste("Kurtosis=", round(6/(v-4),2))
+curve(dnorm, -3, 3, main="t distribution", ylab='Probability density function, f(y)', xlab='y', lwd=2, axes=F, frame=TRUE)
+for (i in 2:4) curve(dt(x/sigma[i],v[i])/sigma[i], add=TRUE, col=i, lty=i, lwd=2)
+abline(v=-3:3, lty=2, col='gray')
+legend("topright", mykurtosis, lwd=2, lty=1:4, col=1:4)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Kurtosis (heavy-tailedness)}
+<<outliers, echo=FALSE>>=
+v = 5
+sigma = sqrt(v/(v-2))
+
+curve(dnorm, -4, 4, main='Probability density function', xlab='y', ylab='Probability density function, f(y)', lwd=2, axes=F, frame=TRUE, col='gray')
+curve(dt(x/sigma,v)/sigma, lwd=2, add=TRUE)
+curve(dnorm, col="gray", add=TRUE)
+abline(v=-3:3, lty=2, col='gray')
+axis(1,-3:3,expression(mu-3*sigma, mu-2*sigma, mu-sigma, mu,mu+sigma,mu+2*sigma,mu+3*sigma))
+arrows(-1:-3, dt(1:3/sigma,v)/sigma, 1:3, dt(1:3/sigma,v)/sigma, code=3)
+text(0, dt(3:1/sigma,v)/sigma, round(1-2*pt(-3:-1,v),3), pos=3)
+legend("topright", c("Normal", "Scaled t_5"), lwd=2, col=c("gray","black"))
+@
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Kurtosis (heavy-tailedness)}
+<<kurtosis_samples, echo=FALSE>>=
+v = c(Inf,30,15,5)
+sigma = v/(v-2); sigma[1] = 1
+d = data.frame(v=v, sigma=sigma, kurtosis=mykurtosis)
+samps = ddply(d, .(v,kurtosis), function(x) data.frame(samples = x$sigma*rt(100,x$v))) 
+qplot(samples, data=samps, facets=~kurtosis, binwidth=8/30)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Kurtosis (heavy-tailedness)}
+<<kurtosis_samples_boxplot, echo=FALSE>>=
+v = c(Inf,30,15,5)
+sigma = v/(v-2); sigma[1] = 1
+d = data.frame(v=v, sigma=sigma, kurtosis=mykurtosis)
+samps = ddply(d, .(v,kurtosis), function(x) data.frame(samples = x$sigma*rt(100,x$v))) 
+ggplot(samps, aes(factor(kurtosis), samples))+geom_boxplot()
+@
+\end{frame}
+
+
 
 
 \subsection{Skewness}
@@ -75,7 +167,7 @@ skewness = function(mu,sigma) (exp(sigma^2)+2)*sqrt(exp(sigma^2)-1)
 mydlnorm = function(x,sigma) dlnorm(x, -sigma^2/2, sigma) 
 sigma = c(.5,1,1.5)
 myskewness = paste("Skewness=", round(skewness(-sigma^2/2,sigma),2))
-curve(mydlnorm(x,sigma[1]), 0, 4, main="Log-normal distribution", ylab='f(y)', xlab='y', lwd=2, axes=F, frame=TRUE, ylim=c(0,1.5))
+curve(mydlnorm(x,sigma[1]), 0, 4, main="Log-normal distribution", ylab='Probability density function, f(y)', xlab='y', lwd=2, axes=F, frame=TRUE, ylim=c(0,1.5))
 curve(mydlnorm(x,sigma[2]), add=TRUE, col=2, lty=2, lwd=2)
 curve(mydlnorm(x,sigma[3]), add=TRUE, col=3, lty=3, lwd=2)
 legend("topright", myskewness, lwd=2, lty=1:3, col=1:3)
@@ -89,8 +181,6 @@ text(1,1,"Mean", pos=4, col="gray")
 \frametitle{Samples from skewed distributions}
 
 <<skewness_samples, echo=FALSE>>=
-library(plyr)
-library(ggplot2)
 d = data.frame(sigma=sigma, skewness=myskewness)
 samps = ddply(d, .(sigma,skewness), function(x) data.frame(samples = rlnorm(100,-x$sigma^2/2, x$sigma))) 
 qplot(samples, data=samps, facets=~sigma, binwidth=15/30)
@@ -98,51 +188,6 @@ qplot(samples, data=samps, facets=~sigma, binwidth=15/30)
 
 \end{frame}
 
-
-\subsection{Kurtosis (heavy-tailedness)}
-\begin{frame}[fragile]
-\frametitle{Kurtosis (heavy-tailedness)}
-<<kurtosis, echo=FALSE>>=
-v = c(5,10,30)
-mykurtosis = paste("Kurtosis=", round(6/(v-4),2))
-curve(dt(x,v[1]), -3, 3, main="t distribution", ylab='f(y)', xlab='y', lwd=2, axes=F, frame=TRUE, ylim=c(0,dt(0,max(v))))
-curve(dt(x,v[2]), add=TRUE, col=2, lty=2, lwd=2)
-curve(dt(x,v[3]), add=TRUE, col=3, lty=3, lwd=2)
-legend("topright", mykurtosis, lwd=2, lty=1:3, col=1:3)
-@
-\end{frame}
-
-
-% Want to show the probability of outliers is greater for a heavy-tailed distribution
-% compared to a normal distribution
-\begin{comment}
-\begin{frame}[fragile]
-\frametitle{Kurtosis (heavy-tailedness)}
-<<outliers, echo=FALSE>>=
-v = 5
-sigma = sqrt(v/(v-2))
-curve(dt(x/sigma,5)/sigma, -4, 4, main='Probability density function', xlab='y', ylab='f(y)', lwd=2, axes=F, frame=TRUE)
-curve(dnorm, col="gray", add=TRUE)
-abline(v=-3:3, lty=2, col='gray')
-axis(1,-3:3,expression(mu-3*sigma, mu-2*sigma, mu-sigma, mu,mu+sigma,mu+2*sigma,mu+3*sigma))
-arrows(-1:-3, dt(1:3,v), 1:3, dt(1:3,v), code=3)
-text(0, dt(1:3,v), round(1-2*pt(-3:-1,v),3), pos=3)
-@
-\end{frame}
-\end{comment}
-
-
-
-
-
-\begin{frame}[fragile]
-\frametitle{Kurtosis (heavy-tailedness)}
-<<kurtosis_samples, echo=FALSE>>=
-d = data.frame(v=v, kurtosis=mykurtosis)
-samps = ddply(d, .(v,kurtosis), function(x) data.frame(samples = rt(100,x$v))) 
-qplot(samples, data=samps, facets=~kurtosis, binwidth=8/30)
-@
-\end{frame}
 
 
 
@@ -165,7 +210,7 @@ If a 95\% confidence interval is robust to departures from a particular assumpti
 \begin{frame}[fragile]
 \frametitle{Robustness to skewness and kurtosis}
 
-Proportion of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test. 
+Percentage of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test with non-normal populations (where the distributions are the same other than their means).
 
 <<"robustness data", echo=FALSE>>=
 options(width=170)
@@ -182,11 +227,36 @@ d
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{Differences in variances}
+
+<<different_variances, echo=FALSE>>=
+par(mfrow=c(1,1))
+sigma = c(1,2,4)
+curve(dnorm, -5, 5, main="Normal distribution", xlab="", ylab="",
+      axes=F, frame=T, type="n")
+for (i in 1:3) curve(dnorm(x,0,sigma[i]), add=TRUE, lwd=2, col=i, lty=i)
+legend("topright", paste("SD=",sigma), lwd=2, col=1:3, lty=1:3)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Differences in variances}
+
+<<different_variances_samples, echo=FALSE>>=
+d = adply(sigma,1,function(x) data.frame(sigma=x,y=rnorm(100,0,x)))
+ggplot(d, aes(factor(sigma), y))+geom_boxplot()
+@
+
+\end{frame}
+
 
 \begin{frame}[fragile]
 \frametitle{Robustness to differences in variances}
 
-Proportion of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test. 
+Percentage of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test (r is the ratio of the standard deviations in the two populations). 
 
 <<"robustness data2", echo=FALSE>>=
 options(width=170)
@@ -211,7 +281,7 @@ d
 A statistical procedure is \alert{resistant} if it does not change very much when a small part of the data changes, perhaps drastically.
 \end{definition}
 
-\pause 
+\vspace{0.2in} \pause 
 
 Identify outliers:
 \begin{enumerate}
@@ -241,11 +311,11 @@ Identify outliers:
   \end{itemize}
 \item Correlation effect
   \begin{itemize}
-  \item e.g. measurements in time
+  \item e.g. measurements in time with drifting scale
   \end{itemize}
 \item Spatial effect
   \begin{itemize}
-  \item e.g. corn fields (drainage)
+  \item e.g. corn yield plots (drainage)
   \end{itemize}
 \end{itemize}
 
