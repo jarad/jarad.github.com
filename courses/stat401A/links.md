@@ -9,7 +9,7 @@ On this page I hope to link to anything that will be relevant for STAT 401A spli
 
 ### Course related
 - [Course](index.html)
-- [Book](http://www.science.oregonstate.edu/~schafer/Sleuth/) ([datasets](http://www.science.oregonstate.edu/~schafer/Sleuth/files/sleuth3csv.zip))
+- [The Statistical Sleuth (3rd ed)](http://www.science.oregonstate.edu/~schafer/Sleuth/) ([datasets](http://www.science.oregonstate.edu/~schafer/Sleuth/files/sleuth3csv.zip))
 - [Videos](http://www.youtube.com/jaradniemi)
 
 ### Other resources
