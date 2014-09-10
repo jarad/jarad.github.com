@@ -1,6 +1,6 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
-\usepackage{verbatim,xmpmulti,multicol,multirow}
+\usepackage{verbatim,multicol}
 
 % Theme settings
 \usetheme{AnnArbor}\usecolortheme{beaver}
@@ -24,6 +24,7 @@
 opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center')
 library(plyr)
 library(ggplot2)
+library(xtable)
 @
 
 
@@ -212,7 +213,8 @@ If a 95\% confidence interval is robust to departures from a particular assumpti
 
 Percentage of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test with non-normal populations (where the distributions are the same other than their means).
 
-<<"robustness data", echo=FALSE>>=
+{\tiny
+<<"robustness data", echo=FALSE, results='asis'>>=
 options(width=170)
 d = 
 data.frame("sample size" = c(5,10,25,50,100),
@@ -220,9 +222,12 @@ data.frame("sample size" = c(5,10,25,50,100),
            "moderately skewed" = c(95.4,95.4,95.3,95.3,95.3),
            "mildly skewed" = c(95.2,95.2,95.1,95.1,95.0),
            "heavy-tailed" = c(98.3, 98.3, 98.2, 98.1, 98.0),
-           "short-tailed" = c(94.5, 94.6, 94.9, 95.2, 95.6))
-d
+           "short-tailed" = c(94.5, 94.6, 94.9, 95.2, 95.6), 
+           check.names=FALSE)
+print(xtable(d, digits=c(NA,0,1,1,1,1,1), align='c|r|ccccc|'),
+      include.row=FALSE)
 @
+}
 
 \end{frame}
 
@@ -256,19 +261,24 @@ ggplot(d, aes(factor(sigma), y))+geom_boxplot()
 \begin{frame}[fragile]
 \frametitle{Robustness to differences in variances}
 
-Percentage of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test (r is the ratio of the standard deviations in the two populations). 
+Percentage of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test ($r=\sigma_1/\sigma_2$). 
 
-<<"robustness data2", echo=FALSE>>=
+{\small
+<<"robustness data2", echo=FALSE, results='asis'>>=
 options(width=170)
 d = 
-data.frame(n1=c(10,10,10,100,100,100), n2=c(10,20,40,100,200,400), 
-           "r0.25x"= c(95.2,83,71,94.8,86.5,71.6),
-           "r0.5x" = c(94.2,89.3,82.6,96.2,88.3,81.5),
-           "r1x"   = c(94.7,94.4,95.2,95.4,94.8,95.0),
-           "r2x"   = c(95.2,98.7,99.5,95.3,98.8,99.5),
-           "r4x"   = c(94.5,99.1,99.9,95.1,99.4,99.9))
-d
+data.frame(n1=c(10,10,10,100,100,100), 
+           n2=c(10,20,40,100,200,400), 
+           "r=1/4" = c(95.2,83,71,94.8,86.5,71.6),
+           "r=1/2" = c(94.2,89.3,82.6,96.2,88.3,81.5),
+           "r=1"   = c(94.7,94.4,95.2,95.4,94.8,95.0),
+           "r=2"   = c(95.2,98.7,99.5,95.3,98.8,99.5),
+           "r=4"   = c(94.5,99.1,99.9,95.1,99.4,99.9),
+           check.names=FALSE)
+print(xtable(d, digits=c(NA,0,0,1,1,1,1,1), align='c|rr|ccccc|'),
+      include.row=FALSE)
 @
+}
 
 \end{frame}
 
