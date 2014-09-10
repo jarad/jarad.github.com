@@ -24,3 +24,9 @@ With the exception of Lab 01, you should download and open up the scripts associ
 - Lab 21: [SAS](ch21.sas) and [R](ch21.R)
 - Lab 22: [SAS](ch21.sas) and [R](ch22.R)
 
+Other scripts
+
+- F-tests: [SAS](ftests.sas) and [R](ftests.R)
+- Subsetting: [SAS](subset.sas) and [R](subset.R)
+- Random effects: [SAS](random.sas) and [R](random.R)
+
