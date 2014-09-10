@@ -9,5 +9,5 @@ tagline: Statistical Methods for Research Workers
 
 - [Chapter 1](Ch01.pdf)
 - [Chapter 2](Ch02.pdf)
-- [Chapter 3](CH03.pdf)
+- [Chapter 3](Ch03.pdf)
 
