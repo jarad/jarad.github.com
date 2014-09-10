@@ -5,19 +5,23 @@ description: "Links to anything STAT 401A related"
 ---
 {% include JB/setup %}
 
-On this page I hope to link to anything that will be relevant for STAT 401A split into categories: Course related, RSS feeds, R and packages, and Bayesian software.
+On this page I hope to link to anything that will be relevant for STAT 401A.
+
+<img src="http://www.science.oregonstate.edu/~schafer/Sleuth/images/pasted%20image%20150x188.jpg" align="right" />
 
 ### Course related
 - [Course](index.html)
-- [The Statistical Sleuth (3rd ed)](http://www.science.oregonstate.edu/~schafer/Sleuth/) ([datasets](http://www.science.oregonstate.edu/~schafer/Sleuth/files/sleuth3csv.zip))
+- [The Statistical Sleuth (3rd ed)](http://www.amazon.com/gp/product/1133490670/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=1133490670&linkCode=as2&tag=jarnieassprod-20&linkId=I3SZN5NVAJCORUOZ) 
+  - [student solutions manual](http://www.amazon.com/gp/product/1133491332/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=1133491332&linkCode=as2&tag=jarnieassprod-20&linkId=M3A6G6QEUIACI43S)
+  - [datasets](http://www.science.oregonstate.edu/~schafer/Sleuth/files/sleuth3csv.zip)
 - [Videos](http://www.youtube.com/jaradniemi)
 
 ### Other resources
 - [Handbook of Biological Statistics](http://udel.edu/~mcdonald/statintro.html)
 
 ### SAS
-- [ISU Access](http://www.stat.iastate.edu/resources/software/sas/)
-- [Documentation](http://support.sas.com/documentation/)
+- [Software](http://www.stat.iastate.edu/resources/software/sas/)
+- [Documentation](http://support.sas.com/documentation/) ([9.4](http://support.sas.com/documentation/94/))
 - [UCLA SAS resource](http://www.ats.ucla.edu/stat/sas/)
 
 ### R (the statistical software environment)
