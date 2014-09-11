@@ -28,6 +28,12 @@ PROC TTEST DATA=case0301;
   VAR lrainfall;
   RUN;
 
+/* This is equivalent */
+PROC TTEST DATA=case0301 TEST=RATio;
+  CLASS treatment;
+  VAR rainfall; /* we are not using the log of rainfall */
+  RUN;
+
 DATA case0302;
   INFILE 'case0302.csv' DELIMITER=',' FIRSTOBS=2;
   INPUT dioxin veteran $;
