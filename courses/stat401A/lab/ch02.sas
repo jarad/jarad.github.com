@@ -1,10 +1,9 @@
-/* The very first thing to do is change your working directory by 
- * double-clicking the bottom right where it says C:\Users\<netid>
- * and selecting the folder U:\401A\sleuth3csv. The bottom right should
- * now say U:\401A\sleuth3csv. If this doesn't happen for you, please
- * let us know.
-*/
+/* The first thing to do is change your working directory by 
+ * running the command below. */ 
+X 'cd U:\401A\sleuth3csv';
 
+/* The bottom right should now say U:\401A\sleuth3csv. 
+ * If it doesn't, please let us know. */
 
 
 /* Calculate distribution probabilities and quantiles */

@@ -1,3 +1,9 @@
+setwd("U:\401A\sleuth3csv") # or whever your data are
+
+#######################################################
+# Chapter 5                                         
+#######################################################
+
 ################### Displays from Chapter 5 ######################
 mice = read.csv("case0501.csv")
 names(mice) = tolower(names(mice)) # makes variable names lower case

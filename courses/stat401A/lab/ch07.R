@@ -1,18 +1,17 @@
-#################################
-# Chapter 7
-#################################
-# You can use this to read a file from a different directory
-data.dir = "/Users/niemi/Dropbox/zzzzToWork/teaching/401A/SleuthData3rd/CSV"
-data.dir = "" # Use this if your working directory is where the data are stored
+setwd("U:\401A\sleuth3csv") # or whever your data are
 
-bigbang = read.csv(paste(data.dir,"case0701.csv",sep=""))
+#######################################################
+# Chapter 7                                         
+#######################################################
+
+bigbang = read.csv("case0701.csv")
 names(bigbang) = tolower(names(bigbang))
 summary(bigbang) 
 pairs(bigbang)
 
 plot(distance~velocity, bigbang, main='Compare to Display 7.1')
 
-carcass = read.csv(paste(data.dir,"case0702.csv", sep=""))
+carcass = read.csv("case0702.csv")
 names(carcass) = tolower(names(carcass))
 names(carcass)[1] = "hours"
 

@@ -1,3 +1,8 @@
+setwd("U:\401A\sleuth3csv") # or whever your data are
+
+#######################################################
+# Chapter 89                                        
+#######################################################
 
 case0901 = read.csv("case0901.csv")
 names(case0901) = tolower(names(case0901))

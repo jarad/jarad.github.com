@@ -1,3 +1,5 @@
+X 'cd U:\401A\sleuth3csv';
+
 /* Creation of Displays from Chapter 6 */
 DATA discrimination;
   INFILE 'case0601.csv' DELIMITER=',' FIRSTOBS=2;  

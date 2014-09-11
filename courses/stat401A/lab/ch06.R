@@ -1,3 +1,9 @@
+setwd("U:\401A\sleuth3csv") # or whever your data are
+
+#######################################################
+# Chapter 6                                         
+#######################################################
+
 ################### Displays from Chapter 6 ######################
 discrimination = read.csv("case0601.csv")
 names(discrimination) = tolower(names(discrimination))

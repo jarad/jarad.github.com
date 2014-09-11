@@ -1,3 +1,5 @@
+X 'cd U:\401A\sleuth3csv';
+
 /* Displays from Chapter 5 */
 
 DATA mice;  
