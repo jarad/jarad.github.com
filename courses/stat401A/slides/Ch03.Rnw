@@ -30,7 +30,6 @@ library(xtable)
 
 \begin{document}
 
-\begin{comment}
 \begin{frame}
 \maketitle
 \end{frame}
@@ -331,18 +330,16 @@ Identify outliers:
 
 \end{frame}
 
-\end{comment}
-
 
 
 \section{Transformations of the data}
 \begin{frame}
 \frametitle{Common transformations for data}
 
-{\tiny From: \url{http://en.wikipedia.org/wiki/Data_transformation_\%28statistics\%29}}
+{\tiny From: \url{http://en.wikipedia.org/wiki/Data_transformation_(statistics)}}
 
 \begin{definition}
-In statistics, \alert{data transformation} refers to the application of a deterministic mathematical function to each point in a data set \pause — that is, each data point $z_i$ is replaced with the transformed value $y_i = f(z_i)$, where $f$ is a function. 
+In statistics, \alert{data transformation} refers to the application of a deterministic mathematical function to each point in a data set \pause — that is, each data point $y_i$ is replaced with the transformed value $z_i = f(y_i)$, where $f$ is a function. 
 \end{definition}
 
 \vspace{0.2in} \pause
@@ -350,16 +347,16 @@ In statistics, \alert{data transformation} refers to the application of a determ
 The most common transformations to 
 
 \begin{itemize}[<+->]
-\item If $z\in (0,1)$, then $f(z) = sin^{-1}(\sqrt{z})$.
-\item If $z$ is a count, then $f(z) = sqrt{z}$. 
-\item If $z$ is positive and right-skewed, then $f(z) = log(z)$, the \emph{natural logarithm} of $z$. 
+\item If $y\in (0,1)$, then $f(y) = sin^{-1}(\sqrt{y})$.
+\item If $y$ is a count, then $f(y) = \sqrt{y}$. 
+\item If $y$ is positive and right-skewed, then $f(y) = log(y)$, the \emph{natural logarithm} of $y$. 
 \end{itemize}
 
 \pause
 
 {\scriptsize
 \begin{remark}
-Since $log(0)=-\infty$, the logarithm cannot be used directly when some $z_i$ are zero. In these cases, use $\log(z+c)$ where $c$ is something small relative to your data, e.g. the minimum non-zero value divided by 2. 
+Since $log(0)=-\infty$, the logarithm cannot be used directly when some $y_i$ are zero. In these cases, use $\log(y+c)$ where $c$ is something small relative to your data, e.g. half of the minimum non-zero value. 
 \end{remark}
 }
 
@@ -371,58 +368,192 @@ Since $log(0)=-\infty$, the logarithm cannot be used directly when some $z_i$ ar
 \begin{frame}
 \frametitle{Log transformation}
 
-If $y=log(z)$, then $z=e^y$ and so if 
-\[ Y_{ij} \sim N(\mu_j, \sigma^2) \mbox{ then } Z_{ij}=e^{Y_{ij}} \sim LN(\mu_j,\sigma^2). \]
-Let $\delta = \mu_1-\mu_2 = E[Y_{i1}] - E[(Y_{i2}]$ 
-
+If $z_{ij}=log(y_{ij})$ \pause and we run a two-sample t-test on the z's, \pause then we assume
+\[ Z_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
+and we calculate the quantity $\overline{Z}_2-\overline{Z}_1$ and $\exp\left(\overline{Z}_2-\overline{Z}_1\right)=e^{\overline{Z}_2-\overline{Z}_1}$ estimates 
+\[ \frac{\mbox{Median of population 2}}{\mbox{Median of population 1}} \]
+on the original scale \pause or, equivalently, it estimates the \alert{multiplicative effect} of moving from population 1 to population 2. 
 
 \end{frame}
 
 
-\subsection{Two-sample t-test using logarithms}
-\frame[containsverbatim]{\frametitle{SAS code for t-test using logartihms}
+\begin{frame}
+\frametitle{Log transformation interpretation}
+
+If we have a randomized experiment:
+\begin{remark}
+It is estimated that the response of an experimental unit to treatment 2 will be $\exp\left(\overline{Z}_2-\overline{Z}_1\right)$ times as large as its response to treatment 1.
+\end{remark}
+
+\vspace{0.2in} \pause
+
+If we have an observational study:
+\begin{remark}
+It is estimated that the median for population 2 is $\exp\left(\overline{Z}_2-\overline{Z}_1\right)$ times as large as the median for population 1.
+\end{remark}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Confidence intervals with log transformation}
+
+
+If $z_{ij}=log(y_{ij})$ and we assume
+\[ Z_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2), \]
+then a $100(1-\alpha)\%$ two-sided confidence interval for $\mu_2-\mu_1$ is 
+\[ (L,U) = \overline{Z}_2-\overline{Z}_1 \pm t_{n_1+n_2-2}(1-\alpha/2) SE\left(\overline{Z}_2-\overline{Z}_1\right). \]
+
+\vspace{0.2in} \pause
+
+A $100(1-\alpha)\%$ confidence interval for 
+\[ \frac{\mbox{Median of population 2}}{\mbox{Median of population 1}} \]
+is $(e^L,e^U)$. 
+
+\end{frame}
+
+
+
+\subsection{Example}
+\begin{frame}[fragile]
+\frametitle{Miles per gallon data}
+
+Untransformed:
+<<echo=FALSE, fig.height=2.5, message=FALSE>>=
+d = read.csv("mpg.csv")
+
+grid <- with(d, seq(min(mpg), max(mpg), length = 100))
+normaldens <- ddply(d, "country", function(df) {
+  data.frame( 
+    predicted = grid,
+    density = dnorm(grid, mean(df$mpg), sd(df$mpg))
+  )
+})
+
+ggplot(d, aes(x=mpg)) + geom_histogram(aes(y=..density..)) + facet_wrap(~country) + geom_line(data=normaldens, aes(x=predicted, y=density, color='red'), size=2)+guides(color=FALSE)
+@
+
+\pause
+
+Logged:
+<<echo=FALSE, fig.height=2.5, message=FALSE>>=
+d$lmpg = log(d$mpg)
+grid <- with(d, seq(min(lmpg), max(lmpg), length = 100))
+normaldens <- ddply(d, "country", function(df) {
+  data.frame( 
+    predicted = grid,
+    density = dnorm(grid, mean(df$lmpg), sd(df$lmpg))
+  )
+})
+ggplot(d, aes(x=lmpg)) + geom_histogram(aes(y=..density..)) + facet_wrap(~country) + geom_line(data=normaldens, aes(x=predicted, y=density, color='red'), size=2)+guides(color=FALSE)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Miles per gallon data}
+
+Untransformed:
+<<echo=FALSE, fig.height=2.5, message=FALSE>>=
+ggplot(d, aes(x=country, y=mpg)) + geom_boxplot()
+@
+
+Logged:
+<<echo=FALSE, fig.height=2.5, message=FALSE>>=
+ggplot(d, aes(x=country, y=lmpg)) + geom_boxplot() 
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Equal variances?}
+
+We might also be concerned about the assumption of equal variances.
+
+\vspace{0.2in} \pause
+
+Untransformed:
+<<echo=FALSE, results='asis'>>=
+xtable(ddply(d, .(country), summarise, n=length(mpg), mean=mean(mpg), sd=mean(mpg)))
+@
+the ratio of the standard deviations is around 1.5 and there are 3 times as many observations in the US.
+
+\vspace{0.2in} \pause
+
+Logged:
+<<echo=FALSE, results='asis'>>=
+xtable(ss<-ddply(d, .(country), summarise, n=length(lmpg), mean=mean(lmpg), sd=mean(lmpg)))
+@
+Now the ratio of standard deviations is only 1.15. 
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Using R for t-test using logarithms}
+
+<<>>=
+t = t.test(log(mpg)~country, d, var.equal=TRUE)
+exp(t$estimate)
+exp(-diff(t$estimate)) # I had to put in the negative sign 
+exp(t$conf.int)
+@
+
+\end{frame}
+
+
+\frame[containsverbatim]{\frametitle{SAS code for t-test using logarithms}
 {\small
 \begin{verbatim}
 DATA mpg;
-  INFILE 'mpg.csv' DELIMITER=',' firstobs=2;
+  INFILE 'mpg.csv' DELIMITER=',' FIRSTOBS=2;
 	INPUT mpg country $;
-	lmpg = log(mpg);
 
-PROC TTEST DATA=mpg;
+PROC TTEST DATA=mpg TEST=ratio;
 	CLASS country;
-	VAR lmpg;
-	RUN;
+	VAR mpg;
+	run;
 \end{verbatim}
 }
 }
 
-\frame[containsverbatim]{\frametitle{SAS code for t-test on logarithms}
+
+\frame[containsverbatim]{
+\frametitle{SAS output for t-test using logarithms}
 {\tiny
 \begin{verbatim}
-                                       The TTEST Procedure
+                                        The TTEST Procedure
+ 
+                                           Variable:  mpg
 
-                                         Variable:  lmpg
+                                     Geometric     Coefficient
+              country           N         Mean    of Variation     Minimum     Maximum
 
-         country          N        Mean     Std Dev     Std Err     Minimum     Maximum
+              Japan            79      29.8525          0.2111     18.0000     47.0000
+              US              249      19.2051          0.3147      9.0000     39.0000
+              Ratio (1/2)               1.5544          0.2928                        
 
-         Japan           79      3.3963      0.2088      0.0235      2.8904      3.8501
-         US             249      2.9552      0.3073      0.0195      2.1972      3.6636
-         Diff (1-2)              0.4411      0.2868      0.0370
+                                Geometric                          Coefficient
+country        Method                Mean       95% CL Mean       of Variation        95% CL CV
 
-  country       Method               Mean       95% CL Mean        Std Dev      95% CL Std Dev
+Japan                             29.8525     28.4887  31.2817          0.2111      0.1820   0.2514
+US                                19.2051     18.4825  19.9560          0.3147      0.2882   0.3467
+Ratio (1/2)    Pooled              1.5544      1.4452   1.6719          0.2928      0.2712   0.3183
+Ratio (1/2)    Satterthwaite       1.5544      1.4636   1.6508                                     
 
-  Japan                            3.3963      3.3495   3.4430      0.2088      0.1805   0.2476
-  US                               2.9552      2.9168   2.9935      0.3073      0.2824   0.3369
-  Diff (1-2)    Pooled             0.4411      0.3682   0.5139      0.2868      0.2664   0.3106
-  Diff (1-2)    Satterthwaite      0.4411      0.3809   0.5013
+                                                  Coefficients
+                  Method           of Variation        DF    t Value    Pr > |t|
 
-                   Method           Variances        DF    t Value    Pr > |t|
-
-                   Pooled           Equal           326      11.91      <.0001
-                   Satterthwaite    Unequal      193.33      14.46      <.0001
+                  Pooled           Equal              326      11.91      <.0001
+                  Satterthwaite    Unequal         193.33      14.46      <.0001
 
                                       Equality of Variances
-
+ 
                         Method      Num DF    Den DF    F Value    Pr > F
 
                         Folded F       248        78       2.17    0.0001
@@ -431,15 +562,9 @@ PROC TTEST DATA=mpg;
 }
 
 
-
 \frame{\frametitle{Conclusion}
-	Take the 
 
-	\pause Japanese median miles per gallon is 1.55 [95\% CI (1.46,1.65)] times as large as the US median miles per gallon.
-	
-	\vspace{0.4in} \pause
-	
-	\[ e^{0.4411} = 1.554416 \quad e^{0.3809}=1.463601 \quad e^{0.5013} = 1.650866 \]
+  Japanese median miles per gallon is 1.55 [95\% CI (1.46,1.65)] times as large as US median miles per gallon.
 }
 
 
