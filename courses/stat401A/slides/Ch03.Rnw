@@ -313,18 +313,18 @@ Identify outliers:
 
 
 
-\begin{itemize}[<+->]
+\begin{itemize}
 \item Cluster effect
   \begin{itemize}
-  \item e.g. pigs in a pen
+  \item e.g. pigs in a pen \pause
   \end{itemize}
 \item Correlation effect
   \begin{itemize}
-  \item e.g. measurements in time with drifting scale
+  \item e.g. measurements in time with drifting scale \pause
   \end{itemize}
 \item Spatial effect
   \begin{itemize}
-  \item e.g. corn yield plots (drainage)
+  \item e.g. corn yield plots (drainage) \pause
   \end{itemize}
 \end{itemize}
 
@@ -339,24 +339,24 @@ Identify outliers:
 {\tiny From: \url{http://en.wikipedia.org/wiki/Data_transformation_(statistics)}}
 
 \begin{definition}
-In statistics, \alert{data transformation} refers to the application of a deterministic mathematical function to each point in a data set \pause — that is, each data point $y_i$ is replaced with the transformed value $z_i = f(y_i)$, where $f$ is a function. 
+In statistics, \alert{data transformation} refers to the application of a deterministic mathematical function to each point in a data set\pause — that is, each data point $y_i$ is replaced with the transformed value $z_i = f(y_i)$, where $f$ is a function. 
 \end{definition}
 
 \vspace{0.2in} \pause
 
-The most common transformations to 
+The most common transformations are
 
 \begin{itemize}[<+->]
-\item If $y\in (0,1)$, then $f(y) = sin^{-1}(\sqrt{y})$.
+\item If $y$ is a proportion, then $f(y) = sin^{-1}(\sqrt{y})$.
 \item If $y$ is a count, then $f(y) = \sqrt{y}$. 
-\item If $y$ is positive and right-skewed, then $f(y) = log(y)$, the \emph{natural logarithm} of $y$. 
+\item If $y$ is positive and right-skewed, then $f(y) = \log(y)$, the \emph{natural logarithm} of $y$. 
 \end{itemize}
 
 \pause
 
 {\scriptsize
 \begin{remark}
-Since $log(0)=-\infty$, the logarithm cannot be used directly when some $y_i$ are zero. In these cases, use $\log(y+c)$ where $c$ is something small relative to your data, e.g. half of the minimum non-zero value. 
+Since $\log(0)=-\infty$, the logarithm cannot be used directly when some $y_i$ are zero. In these cases, use $\log(y+c)$ where $c$ is something small relative to your data, e.g. half of the minimum non-zero value. 
 \end{remark}
 }
 
@@ -368,9 +368,9 @@ Since $log(0)=-\infty$, the logarithm cannot be used directly when some $y_i$ ar
 \begin{frame}
 \frametitle{Log transformation}
 
-If $z_{ij}=log(y_{ij})$ \pause and we run a two-sample t-test on the z's, \pause then we assume
+Consider two-sample data and let $z_{ij}=log(y_{ij})$. \pause Now, run a two-sample t-test on the z's. \pause Then we assume
 \[ Z_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
-and we calculate the quantity $\overline{Z}_2-\overline{Z}_1$ and $\exp\left(\overline{Z}_2-\overline{Z}_1\right)=e^{\overline{Z}_2-\overline{Z}_1}$ estimates 
+\pause and the quantity $\overline{Z}_2-\overline{Z}_1$ \pause estimates the ``difference in population means on the (natural) log scale''. \pause The quantity $\exp\left(\overline{Z}_2-\overline{Z}_1\right)=e^{\overline{Z}_2-\overline{Z}_1}$ \pause estimates 
 \[ \frac{\mbox{Median of population 2}}{\mbox{Median of population 1}} \]
 on the original scale \pause or, equivalently, it estimates the \alert{multiplicative effect} of moving from population 1 to population 2. 
 
@@ -402,14 +402,14 @@ It is estimated that the median for population 2 is $\exp\left(\overline{Z}_2-\o
 
 If $z_{ij}=log(y_{ij})$ and we assume
 \[ Z_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2), \]
-then a $100(1-\alpha)\%$ two-sided confidence interval for $\mu_2-\mu_1$ is 
+\pause then a $100(1-\alpha)\%$ two-sided confidence interval for $\mu_2-\mu_1$ is 
 \[ (L,U) = \overline{Z}_2-\overline{Z}_1 \pm t_{n_1+n_2-2}(1-\alpha/2) SE\left(\overline{Z}_2-\overline{Z}_1\right). \]
 
 \vspace{0.2in} \pause
 
 A $100(1-\alpha)\%$ confidence interval for 
 \[ \frac{\mbox{Median of population 2}}{\mbox{Median of population 1}} \]
-is $(e^L,e^U)$. 
+\pause is $(e^L,e^U)$. 
 
 \end{frame}
 
@@ -468,7 +468,7 @@ ggplot(d, aes(x=country, y=lmpg)) + geom_boxplot()
 \end{frame}
 
 
-
+\begin{comment}
 \begin{frame}[fragile]
 \frametitle{Equal variances?}
 
@@ -478,7 +478,7 @@ We might also be concerned about the assumption of equal variances.
 
 Untransformed:
 <<echo=FALSE, results='asis'>>=
-xtable(ddply(d, .(country), summarise, n=length(mpg), mean=mean(mpg), sd=mean(mpg)))
+xtable(ddply(d, .(country), summarise, n=length(mpg), mean=mean(mpg), sd=sd(mpg)))
 @
 the ratio of the standard deviations is around 1.5 and there are 3 times as many observations in the US.
 
@@ -486,12 +486,12 @@ the ratio of the standard deviations is around 1.5 and there are 3 times as many
 
 Logged:
 <<echo=FALSE, results='asis'>>=
-xtable(ss<-ddply(d, .(country), summarise, n=length(lmpg), mean=mean(lmpg), sd=mean(lmpg)))
+xtable(ss<-ddply(d, .(country), summarise, n=length(lmpg), mean=mean(lmpg), sd=sd(lmpg)))
 @
 Now the ratio of standard deviations is only 1.15. 
 
 \end{frame}
-
+\end{comment}
 
 
 \begin{frame}[fragile]
@@ -499,9 +499,10 @@ Now the ratio of standard deviations is only 1.15.
 
 <<>>=
 t = t.test(log(mpg)~country, d, var.equal=TRUE)
-exp(t$estimate)
-exp(-diff(t$estimate)) # I had to put in the negative sign 
-exp(t$conf.int)
+t$estimate # On log scale
+exp(t$estimate) # On original scale
+exp(t$estimate[1]-t$estimate[2]) # Ratio of medians (Japan/US)
+exp(t$conf.int) # Confidence interval for ratio of medians
 @
 
 \end{frame}
@@ -565,6 +566,14 @@ Ratio (1/2)    Satterthwaite       1.5544      1.4636   1.6508
 \frame{\frametitle{Conclusion}
 
   Japanese median miles per gallon is 1.55 [95\% CI (1.46,1.65)] times as large as US median miles per gallon.
+  
+  \vspace{0.2in} 
+  
+  OR
+  
+  \vspace{0.2in} \pause
+  
+  Japenese median miles per gallon is 55\% [95\% CI (46\%,65\%)] larger than US median miles per gallon.
 }
 
 
