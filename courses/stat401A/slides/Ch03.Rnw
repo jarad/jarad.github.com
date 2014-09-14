@@ -30,6 +30,8 @@ library(xtable)
 
 \begin{document}
 
+\begin{comment}
+
 \begin{frame}
 \maketitle
 \end{frame}
@@ -318,7 +320,7 @@ Identify outliers:
   \begin{itemize}
   \item e.g. pigs in a pen \pause
   \end{itemize}
-\item Correlation effect
+\item Serial effect
   \begin{itemize}
   \item e.g. measurements in time with drifting scale \pause
   \end{itemize}
@@ -608,6 +610,252 @@ Ratio (1/2)    Satterthwaite       1.5544      1.4636   1.6508
   
   Japenese median miles per gallon is 55\% [95\% CI (46\%,65\%)] larger than US median miles per gallon.
 }
+
+
+\end{comment}
+
+\section{Welch's two-sample t-test}
+\begin{frame}
+\frametitle{Unequal standard deviations}
+
+The two-sample t-test tools assume either
+
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \qquad \mbox{ or } \qquad Z_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \]
+depending on whether we were working on the original scale ($Y$) or log scale ($Z$), respectively.
+
+\vspace{0.2in} \pause
+
+But what if we don't believe the variances in the two populations are equal\pause, e.g. in the log transformed miles per gallon data set?
+
+\vspace{0.2in} \pause
+
+Instead compare 
+
+
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma_j^2) \qquad \mbox{ or } \qquad Z_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma_j^2), \]
+i.e. the populations have unequal variances. \pause 
+But still test $H_0:\mu_1=\mu_2$ vs $H_1:\mu_1\ne \mu_2$ or construct a confidence interval for $\mu_2-\mu_1$. 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Welch's SE with Satterthwaite's approximation to df}
+
+Estimate of ($\mu_2-\mu_1$):
+\[ \overline{Y}_2-\overline{Y}_1  \]
+Standard error:
+\[ SE_W\left(\overline{Y}_2-\overline{Y}_1 \right) =\sqrt{\frac{s_1^2}{n_1}+\frac{s_2^2}{n_2}} \]
+Degrees of freedom using the Satterthwaite's approximation:
+\[ df_W = \frac{SE_W\left(\overline{Y}_2-\overline{Y}_1 \right)^4}{ \frac{SE\left(\overline{Y}_2\right)^4}{n_2-1}+\frac{SE\left(\overline{Y}_1\right)^4}{n_1-1} } \]
+where 
+\[ SE\left(\overline{Y}_2\right)=\frac{s_2}{\sqrt{n_2}} \qquad \mbox{ and } \qquad SE\left(\overline{Y}_1\right)=\frac{s_1}{\sqrt{n_1}} \]
+{\tiny (which is the same formula as in the paired t-test)}
+
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Welch's t-test and CI}
+
+Welch's t-test has test statistic:
+\[ t = \frac{\mbox{(Estimate-Parameter)}}{\mbox{SE(Estimate)}} \pause = \frac{\overline{Y}_2-\overline{Y}_1-(\mu_2-\mu_1)}{SE_W\left(\overline{Y}_2-\overline{Y}_1 \right)} \]
+\pause 
+which has a $t$ distribution with (approximately) $df_W$ degrees of freedom if the null hypothesis is true. \pause Calculate the pvalue
+\begin{itemize}[<+->]
+\item Two-sided ($H_1:\mu_2\ne \mu_1$): $p=2P(t_{df_W} < -|t|)$
+\item One-sided ($H_1:\mu_2> \mu_1$): $p=P(t_{df_{W}} < -t)$
+\item One-sided ($H_1:\mu_2< \mu_1$): $p=P(t_{df_{W}} < t)$
+\end{itemize}
+
+\vspace{0.2in} \pause 
+
+Two-sided $100(1-\alpha)\%$ confidence interval for $\mu_2-\mu_1$:
+\[ \overline{Y}_2-\overline{Y}_1 \pm t_{df_W}(1-\alpha/2) SE_W\left(\overline{Y}_2-\overline{Y}_1 \right) \]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Are the variances equal?}
+
+Suppose 
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma_j^2) \]
+and you want to test $H_0: \sigma_1=\sigma_2$ vs $H_1: \sigma_1\ne\sigma_2$.
+
+\vspace{0.2in} \pause 
+
+You can use an $F$-test and its associated pvalue. \pause If the pvalue is small, e.g. less than 0.05, then we reject $H_0$. \pause If the pvalue is not small, then we fail to reject $H_0$, but this does not mean the variances are not equal. 
+
+\vspace{.2in} \pause
+
+{\tiny (Section 4.5.3) discusses another approach called Levene's test}
+
+\end{frame}
+
+
+
+\subsection{Example using original Japan vs US mpg data}
+\begin{frame}[fragile]
+\frametitle{Welch's test and CI using R}
+<<welch>>=
+var.test(mpg~country,d) # F-test
+(t=t.test(mpg~country, d, var.equal=FALSE))
+@
+
+\end{frame}
+
+
+\frame[containsverbatim]{\frametitle{SAS code for two-sample t-test}
+\begin{verbatim}
+DATA mpg;
+    INFILE 'mpg.csv' DELIMITER=',' FIRSTOBS=2;
+    INPUT mpg country $;
+
+PROC TTEST DATA=mpg;
+    CLASS country;
+    VAR mpg;
+    RUN;
+\end{verbatim}
+}
+
+
+
+\frame[containsverbatim]{
+\frametitle{SAS output for t-test}
+{\tiny
+\begin{verbatim}
+                                       The TTEST Procedure
+
+                                         Variable:  mpg
+
+         country          N        Mean     Std Dev     Std Err     Minimum     Maximum
+
+         Japan           79     30.4810      6.1077      0.6872     18.0000     47.0000
+         US             249     20.1446      6.4147      0.4065      9.0000     39.0000
+         Diff (1-2)             10.3364      6.3426      0.8190
+
+  country       Method               Mean       95% CL Mean        Std Dev      95% CL Std Dev
+
+  Japan                           30.4810     29.1130  31.8491      6.1077      5.2814   7.2429
+  US                              20.1446     19.3439  20.9452      6.4147      5.8964   7.0336
+  Diff (1-2)    Pooled            10.3364      8.7252  11.9477      6.3426      5.8909   6.8699
+  Diff (1-2)    Satterthwaite     10.3364      8.7576  11.9152
+
+                   Method           Variances        df    t Value    Pr > |t|
+
+                   Pooled           Equal           326      12.62      <.0001
+                   Satterthwaite    Unequal      136.87      12.95      <.0001
+
+                                      Equality of Variances
+
+                        Method      Num df    Den df    F Value    Pr > F
+
+                        Folded F       248        78       1.10    0.6194
+\end{verbatim}
+}
+}
+
+
+
+\subsection{Example using logarithm of Japan vs US mpg data}
+\begin{frame}[fragile]
+
+<<welch_on_log>>=
+var.test(log(mpg)~country,d)
+(t = t.test(log(mpg)~country, d, var.equal=FALSE))
+exp(t$conf.int)
+@
+
+\end{frame}
+
+
+
+
+\frame[containsverbatim]{\frametitle{SAS code for t-test using logarithms}
+{\small
+\begin{verbatim}
+DATA mpg;
+  INFILE 'mpg.csv' DELIMITER=',' FIRSTOBS=2;
+  INPUT mpg country $;
+
+PROC TTEST DATA=mpg TEST=ratio;
+	CLASS country;
+	VAR mpg;
+	run;
+\end{verbatim}
+}
+}
+
+
+\frame[containsverbatim]{
+\frametitle{SAS output for t-test using logarithms}
+{\tiny
+\begin{verbatim}
+                                        The TTEST Procedure
+ 
+                                           Variable:  mpg
+
+                                     Geometric     Coefficient
+              country           N         Mean    of Variation     Minimum     Maximum
+
+              Japan            79      29.8525          0.2111     18.0000     47.0000
+              US              249      19.2051          0.3147      9.0000     39.0000
+              Ratio (1/2)               1.5544          0.2928                        
+
+                                Geometric                          Coefficient
+country        Method                Mean       95% CL Mean       of Variation        95% CL CV
+
+Japan                             29.8525     28.4887  31.2817          0.2111      0.1820   0.2514
+US                                19.2051     18.4825  19.9560          0.3147      0.2882   0.3467
+Ratio (1/2)    Pooled              1.5544      1.4452   1.6719          0.2928      0.2712   0.3183
+Ratio (1/2)    Satterthwaite       1.5544      1.4636   1.6508                                     
+
+                                                  Coefficients
+                  Method           of Variation        DF    t Value    Pr > |t|
+
+                  Pooled           Equal              326      11.91      <.0001
+                  Satterthwaite    Unequal         193.33      14.46      <.0001
+
+                                      Equality of Variances
+ 
+                        Method      Num DF    Den DF    F Value    Pr > F
+
+                        Folded F       248        78       2.17    0.0001
+\end{verbatim}
+}
+}
+
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+Two-sample $t$ tools assumptions
+\begin{itemize}
+\item Normality
+  \begin{itemize}
+  \item No skewness (take logs?)
+  \item No heavy tails
+  \end{itemize}
+\item Equal variances
+  \begin{itemize}
+  \item Test: F-test or Levene's test
+  \item Use Welch's two-sample t-test and CI
+  \end{itemize}
+\item Independence (use random effects or avoid)
+  \begin{itemize}
+  \item Cluster
+  \item Serial
+  \item Spatial
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
 
 
 
