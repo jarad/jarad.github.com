@@ -468,7 +468,7 @@ ggplot(d, aes(x=country, y=lmpg)) + geom_boxplot()
 \end{frame}
 
 
-\begin{comment}
+
 \begin{frame}[fragile]
 \frametitle{Equal variances?}
 
@@ -478,20 +478,53 @@ We might also be concerned about the assumption of equal variances.
 
 Untransformed:
 <<echo=FALSE, results='asis'>>=
-xtable(ddply(d, .(country), summarise, n=length(mpg), mean=mean(mpg), sd=sd(mpg)))
+print(xtable(ddply(d, .(country), summarise, n=length(mpg), mean=mean(mpg), sd=sd(mpg))), include.rownames=F)
 @
-the ratio of the standard deviations is around 1.5 and there are 3 times as many observations in the US.
+the ratio of sample standard deviations is around 1.05 and there are 3 times as many observations in the US.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Logged:
 <<echo=FALSE, results='asis'>>=
-xtable(ss<-ddply(d, .(country), summarise, n=length(lmpg), mean=mean(lmpg), sd=sd(lmpg)))
+print(xtable(ss<-ddply(d, .(country), summarise, n=length(lmpg), mean=mean(lmpg), sd=sd(lmpg))), include.rownames=F)
 @
-Now the ratio of standard deviations is only 1.15. 
+Now the ratio of standard deviations is only 1.5 which argues for not using the logarithm.  
 
 \end{frame}
-\end{comment}
+
+
+\begin{frame}[fragile]
+\frametitle{95\% two-sample CI for the ratio by hand}
+
+{\tiny
+<<echo=FALSE, results='asis'>>=
+print(xtable(ss), include.rownames=F)
+@
+
+Choose group 2 to be Japan and group 1 to be the US: 
+\[ \begin{array}{ll}
+\alpha &= 0.05 \\
+n_1+n_2-2 &= 249+79-2 = 326 \\
+t_{n_1+n_2-2}(1-\alpha/2) &= t_{326}(0.975) = 1.96 \\
+\overline{Z}_2 - \overline{Z}_1  &= 3.40-2.96 = 0.44 \\
+s_p &= \sqrt{\frac{(n_1-1)s_1^2+(n_2-1)s_2^2}{n_1+n_2-2}} = \sqrt{\frac{(249-1)0.31^2+(79-1)0.21^2}{249+79-2}} = 0.29 \\
+SE\left( \overline{Z}_2 - \overline{Z}_1 \right) &= s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}} = 0.29 \sqrt{\frac{1}{249}+\frac{1}{79}} = 0.037 
+\end{array}
+\]
+
+Thus a $95\%$ two-sided confidence interval for the difference (on the log scale) is 
+\[ \begin{array}{rl}
+(L,U) &= \overline{Z}_2 - \overline{Z}_1 \pm t_{n_1+n_2-2}(1-\alpha/2) SE\left( \overline{Z}_2 - \overline{Z}_1 \right) \\
+&=  0.44 \pm 1.96\times 0.037 \\
+&= (0.37, 0.51) 
+\end{array} \]
+
+and a $95\%$ two-sided confidence interval for the ratio (on the original scale) is 
+
+\[ (e^L,e^U) = (e^{0.37},e^{0.51}) = (1.45,1,67) \]
+}
+
+\end{frame}
 
 
 \begin{frame}[fragile]
