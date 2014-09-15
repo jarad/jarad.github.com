@@ -1,4 +1,4 @@
-setwd("U:\401A\sleuth3csv") # or whever your data are
+setwd("U:\\401A\\sleuth3csv") # or whever your data are
 
 #######################################################
 # Chapter 3                                         
@@ -30,7 +30,5 @@ names(case0302) = tolower(names(case0302))
 boxplot(dioxin~veteran,case0302)
 
 # Results on the top of page 62
-t.test(dioxin~veteran, case0302, var.equal=TRUE, alternative="less")
--t.test(dioxin~veteran, case0302, var.equal=TRUE)$conf.int
-
-
+(t = t.test(dioxin~veteran, case0302, var.equal=TRUE, alternative="less"))
+-t$conf.int
