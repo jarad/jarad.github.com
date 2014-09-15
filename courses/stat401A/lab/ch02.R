@@ -1,6 +1,6 @@
 
 # The first thing is to change your working directory
-setwd("U:\401A\sleuth3csv")
+setwd("U:\\401A\\sleuth3csv")
 # if you are using your own computer, select File -> Change dir...
 # and select the location where you put all the datasets. 
 
