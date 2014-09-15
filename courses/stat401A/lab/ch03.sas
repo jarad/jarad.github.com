@@ -29,7 +29,7 @@ PROC TTEST DATA=case0301;
   RUN;
 
 /* This is equivalent */
-PROC TTEST DATA=case0301 TEST=RATio;
+PROC TTEST DATA=case0301 TEST=ratio;
   CLASS treatment;
   VAR rainfall; /* we are not using the log of rainfall */
   RUN;
@@ -44,13 +44,9 @@ PROC BOXPLOT DATA=case0302;
   RUN;
 
 /* Results on the top of page 62 */
-PROC TTEST DATA=case0302 SIDED=L;
+PROC TTEST DATA=case0302;
   CLASS veteran;
   VAR dioxin;
   RUN;
 
-PROC TTEST DATA=case0302 SIDED=U PLOTS=none ORDER=DATA;
-  CLASS veteran;
-  VAR dioxin;
-  RUN;
 
