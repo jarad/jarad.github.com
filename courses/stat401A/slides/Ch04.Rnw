@@ -1,6 +1,6 @@
 \documentclass[handout]{beamer}
 
-\usepackage{verbatim,multicol}
+\usepackage{verbatim,multicol,amsmath}
 
 % Theme settings
 \usetheme{AnnArbor}\usecolortheme{beaver}
@@ -8,7 +8,7 @@
 
 
 % Document settings
-\newcommand{\lecturetitle}{Modeling assumptions}
+\newcommand{\lecturetitle}{Nonparametric two-sample tests}
 \title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
 \subtitle{\lecturetitle}
 \author[Jarad Niemi]{Jarad Niemi (Dr. J)}
@@ -34,579 +34,465 @@ library(xtable)
 \maketitle
 \end{frame}
 
-\section{Normality assumptions}
-\begin{frame}[fragile]
-\frametitle{Normality assumptions}
 
-In the paired t-test, we assume
-\[ D_i \stackrel{iid}{\sim} N(\mu,\sigma^2). \]
-In the two-sample t-test, we assume
-\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2). \]
-
-\pause
-
-<<visualize, echo=FALSE, out.width='\\textwidth'>>=
-par(mfrow=c(2,2))
-curve(dnorm(x,1), -4, 4, main="Paired t-test", xlab="Difference", ylab="Distribution", 
-      lwd=2, axes=F, frame=T)
-axis(1,0)
-abline(v=0, col="gray", lty=2)
-points(.8,0, pch=19)
-segments(.8-1.3,0,.8+1.3,0, lwd=2)
-
-curve(dnorm(x,-1), -4, 4, main="Two-sample t-test", xlab="", ylab="", lwd=2, axes=F, frame=T, col=2, lty=1)
-curve(dnorm(x,1), add=TRUE, col=3, lwd=2, lty=2)
-legend("bottomright", paste("Pop",1:2),col=2:3, lwd=2, lty=1:2)
-@
-\end{frame}
-
-
-
+\section{Nonparametric statistics}
 \begin{frame}
-\frametitle{Normality assumptions}
+\frametitle{Nonparametric statistics}
 
-In the paired t-test, we assume
-\[ D_i \stackrel{iid}{\sim} N(\mu,\sigma^2). \]
-In the two-sample t-test, we assume
-\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2). \]
-
-\vspace{0.2in}
-
-Key features of the normal distribution assumption:
-\begin{itemize}[<+->]
-\item Centered at the mean (expectation) $\mu$
-\item Standard deviation describes the spread
-\item Symmetric around $\mu$ (no skewness)
-\item Non-heavy tails, i.e. outliers are rare (no kurtosis)
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Normality assumptions}
-<<normal_distribution, echo=FALSE>>=
-curve(dnorm, -3.1, 3.1, main='Probability density function', xlab='y', ylab='Probability density function, f(y)', lwd=2, axes=F, frame=TRUE)
-abline(v=-3:3, lty=2, col='gray')
-axis(1,-3:3,expression(mu-3*sigma, mu-2*sigma, mu-sigma, mu,mu+sigma,mu+2*sigma,mu+3*sigma))
-arrows(-1:-3, dnorm(1:3), 1:3, dnorm(1:3), code=3)
-text(0, dnorm(1:3), round(1-2*pnorm(-1:-3),3), pos=3)
-@
-
-\end{frame}
-
-
-\subsection{Kurtosis (heavy-tailedness)}
-\begin{frame}[fragile]
-\frametitle{Kurtosis (heavy-tailedness)}
-<<kurtosis, echo=FALSE>>=
-v = c(Inf,30,15,5)
-sigma = v/(v-2); sigma[1] = 1
-mykurtosis = paste("Kurtosis=", round(6/(v-4),2))
-curve(dnorm, -3, 3, main="t distribution", ylab='Probability density function, f(y)', xlab='y', lwd=2, axes=F, frame=TRUE)
-for (i in 2:4) curve(dt(x/sigma[i],v[i])/sigma[i], add=TRUE, col=i, lty=i, lwd=2)
-abline(v=-3:3, lty=2, col='gray')
-legend("topright", mykurtosis, lwd=2, lty=1:4, col=1:4)
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Kurtosis (heavy-tailedness)}
-<<outliers, echo=FALSE>>=
-v = 5
-sigma = sqrt(v/(v-2))
-
-curve(dnorm, -4, 4, main='Probability density function', xlab='y', ylab='Probability density function, f(y)', lwd=2, axes=F, frame=TRUE, col='gray')
-curve(dt(x/sigma,v)/sigma, lwd=2, add=TRUE)
-curve(dnorm, col="gray", add=TRUE)
-abline(v=-3:3, lty=2, col='gray')
-axis(1,-3:3,expression(mu-3*sigma, mu-2*sigma, mu-sigma, mu,mu+sigma,mu+2*sigma,mu+3*sigma))
-arrows(-1:-3, dt(1:3/sigma,v)/sigma, 1:3, dt(1:3/sigma,v)/sigma, code=3)
-text(0, dt(3:1/sigma,v)/sigma, round(1-2*pt(-3:-1,v),3), pos=3)
-legend("topright", c("Normal", "Scaled t_5"), lwd=2, col=c("gray","black"))
-@
-\end{frame}
-
-
-
-
-
-
-\begin{frame}[fragile]
-\frametitle{Kurtosis (heavy-tailedness)}
-<<kurtosis_samples, echo=FALSE>>=
-v = c(Inf,30,15,5)
-sigma = v/(v-2); sigma[1] = 1
-d = data.frame(v=v, sigma=sigma, kurtosis=mykurtosis)
-samps = ddply(d, .(v,kurtosis), function(x) data.frame(samples = x$sigma*rt(100,x$v))) 
-qplot(samples, data=samps, facets=~kurtosis, binwidth=8/30)
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Kurtosis (heavy-tailedness)}
-<<kurtosis_samples_boxplot, echo=FALSE>>=
-v = c(Inf,30,15,5)
-sigma = v/(v-2); sigma[1] = 1
-d = data.frame(v=v, sigma=sigma, kurtosis=mykurtosis)
-samps = ddply(d, .(v,kurtosis), function(x) data.frame(samples = x$sigma*rt(100,x$v))) 
-ggplot(samps, aes(factor(kurtosis), samples))+geom_boxplot()
-@
-\end{frame}
-
-
-
-
-\subsection{Skewness}
-\begin{frame}[fragile]
-\frametitle{Skewness}
-<<skewness, echo=FALSE>>=
-skewness = function(mu,sigma) (exp(sigma^2)+2)*sqrt(exp(sigma^2)-1)
-mydlnorm = function(x,sigma) dlnorm(x, -sigma^2/2, sigma) 
-sigma = c(.5,1,1.5)
-myskewness = paste("Skewness=", round(skewness(-sigma^2/2,sigma),2))
-curve(mydlnorm(x,sigma[1]), 0, 4, main="Log-normal distribution", ylab='Probability density function, f(y)', xlab='y', lwd=2, axes=F, frame=TRUE, ylim=c(0,1.5))
-curve(mydlnorm(x,sigma[2]), add=TRUE, col=2, lty=2, lwd=2)
-curve(mydlnorm(x,sigma[3]), add=TRUE, col=3, lty=3, lwd=2)
-legend("topright", myskewness, lwd=2, lty=1:3, col=1:3)
-abline(v=1, lty=4, col='gray')
-text(1,1,"Mean", pos=4, col="gray")
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Samples from skewed distributions}
-
-<<skewness_samples, echo=FALSE>>=
-d = data.frame(sigma=sigma, skewness=myskewness)
-samps = ddply(d, .(sigma,skewness), function(x) data.frame(samples = rlnorm(100,-x$sigma^2/2, x$sigma))) 
-qplot(samples, data=samps, facets=~sigma, binwidth=15/30)
-@
-
-\end{frame}
-
-
-
-
-\subsection{Robustness}
-\begin{frame}
-\frametitle{Robustness}
+{\tiny \url{http://en.wikipedia.org/wiki/Parametric_statistics}}
 
 \begin{definition}
-A statistical procedure is \alert{robust to departures from a particular assumption} if it is valid even when the assumption is not met.
-\end{definition}
-
-\vspace{0.2in} \pause 
-
-\begin{remark}
-If a 95\% confidence interval is robust to departures from a particular assumption, the confidence interval should cover the true value about 95\% of the time.
-\end{remark}
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Robustness to skewness and kurtosis}
-
-Percentage of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test with non-normal populations (where the distributions are the same other than their means).
-
-{\tiny
-<<"robustness data", echo=FALSE, results='asis'>>=
-options(width=170)
-d = 
-data.frame("sample size" = c(5,10,25,50,100),
-           "strongly skewed" = c(95.5,95.5,95.3,95.1,94.8),
-           "moderately skewed" = c(95.4,95.4,95.3,95.3,95.3),
-           "mildly skewed" = c(95.2,95.2,95.1,95.1,95.0),
-           "heavy-tailed" = c(98.3, 98.3, 98.2, 98.1, 98.0),
-           "short-tailed" = c(94.5, 94.6, 94.9, 95.2, 95.6), 
-           check.names=FALSE)
-print(xtable(d, digits=c(NA,0,1,1,1,1,1), align='c|r|ccccc|'),
-      include.row=FALSE)
-@
-}
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Differences in variances}
-
-<<different_variances, echo=FALSE>>=
-par(mfrow=c(1,1))
-sigma = c(1,2,4)
-curve(dnorm, -5, 5, main="Normal distribution", xlab="", ylab="",
-      axes=F, frame=T, type="n")
-for (i in 1:3) curve(dnorm(x,0,sigma[i]), add=TRUE, lwd=2, col=i, lty=i)
-legend("topright", paste("SD=",sigma), lwd=2, col=1:3, lty=1:3)
-@
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Differences in variances}
-
-<<different_variances_samples, echo=FALSE>>=
-d = adply(sigma,1,function(x) data.frame(sigma=x,y=rnorm(100,0,x)))
-ggplot(d, aes(factor(sigma), y))+geom_boxplot()
-@
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Robustness to differences in variances}
-
-Percentage of 95\% confidence intervals that cover the true difference in means in an equal-sample two-sample t-test ($r=\sigma_1/\sigma_2$). 
-
-{\small
-<<"robustness data2", echo=FALSE, results='asis'>>=
-options(width=170)
-d = 
-data.frame(n1=c(10,10,10,100,100,100), 
-           n2=c(10,20,40,100,200,400), 
-           "r=1/4" = c(95.2,83,71,94.8,86.5,71.6),
-           "r=1/2" = c(94.2,89.3,82.6,96.2,88.3,81.5),
-           "r=1"   = c(94.7,94.4,95.2,95.4,94.8,95.0),
-           "r=2"   = c(95.2,98.7,99.5,95.3,98.8,99.5),
-           "r=4"   = c(94.5,99.1,99.9,95.1,99.4,99.9),
-           check.names=FALSE)
-print(xtable(d, digits=c(NA,0,0,1,1,1,1,1), align='c|rr|ccccc|'),
-      include.row=FALSE)
-@
-}
-
-\end{frame}
-
-
-
-
-\begin{frame}
-\frametitle{Outliers}
-\begin{definition}
-A statistical procedure is \alert{resistant} if it does not change very much when a small part of the data changes, perhaps drastically.
-\end{definition}
-
-\vspace{0.2in} \pause 
-
-Identify outliers:
-\begin{enumerate}[<+->]
-\item If recording errors, fix.
-\item If outlier comes from a different population, remove and report.
-\item If results are the same with and without outliers, report with outliers.
-\item If results are different, use resistant analysis or report both analyses. 
-\end{enumerate}
-
-
-\end{frame}
-
-
-
-
-\section{Independence}
-
-\begin{frame}
-\frametitle{Common ways for independence to be violated}
-
-
-
-\begin{itemize}
-\item Cluster effect
-  \begin{itemize}
-  \item e.g. pigs in a pen \pause
-  \end{itemize}
-\item Correlation effect
-  \begin{itemize}
-  \item e.g. measurements in time with drifting scale \pause
-  \end{itemize}
-\item Spatial effect
-  \begin{itemize}
-  \item e.g. corn yield plots (drainage) \pause
-  \end{itemize}
-\end{itemize}
-
-\end{frame}
-
-
-
-\section{Transformations of the data}
-\begin{frame}
-\frametitle{Common transformations for data}
-
-{\tiny From: \url{http://en.wikipedia.org/wiki/Data_transformation_(statistics)}}
-
-\begin{definition}
-In statistics, \alert{data transformation} refers to the application of a deterministic mathematical function to each point in a data set\pause — that is, each data point $y_i$ is replaced with the transformed value $z_i = f(y_i)$, where $f$ is a function. 
+\alert{Parametric statistics} assumes that the data have come from a certain probability distribution and makes inferences about the parameters of this distribution\pause, e.g. assuming the data come from a normal distribution and estimating the mean $\mu$.
 \end{definition}
 
 \vspace{0.2in} \pause
 
-The most common transformations are
+{\tiny \url{http://en.wikipedia.org/wiki/Nonparametric_statistics}}
 
-\begin{itemize}[<+->]
-\item If $y$ is a proportion, then $f(y) = sin^{-1}(\sqrt{y})$.
-\item If $y$ is a count, then $f(y) = \sqrt{y}$. 
-\item If $y$ is positive and right-skewed, then $f(y) = \log(y)$, the \emph{natural logarithm} of $y$. 
-\end{itemize}
+\begin{definition}
+\alert{Nonparametric statistics} make no assumptions about the probability distributions of the [data],\pause e.g. randomization and permutation tests.
+\end{definition}
+
+\end{frame}
+
+
+\subsection{Central limit theorem}
+
+\begin{frame}
+\frametitle{Central limit theorem}
+
+\begin{theorem}
+Let $X_1,X_2,\ldots$ be a sequence of iid random variables with $E[X_i]=\mu$ and $0<V[X_i]=\sigma^2<\infty$. \pause Then 
+\[ \frac{\overline{X}_n-\mu}{\sigma/\sqrt{n}} \stackrel{n\to\infty}{\longrightarrow} \pause N(0,1) \]
+\pause 
+where 
+\[ \overline{X}_n = \frac{1}{n} \sum_{i=1}^n X_i \]
+i.e. the sample mean using the first $n$ variables.
+\end{theorem}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Central limit theorem}
+
+\begin{lemma}
+Let $X_1,X_2,\ldots$ be a sequence of iid random variables with $E[X_i]=\mu$ and $0<V[X_i]=\sigma^2<\infty$. \pause Then 
+\[ \frac{\overline{X}_n-\mu}{s_n/\sqrt{n}} \stackrel{n\to\infty}{\longrightarrow} \pause N(0,1) \]
+\pause 
+where 
+\[ \overline{X}_n = \frac{1}{n} \sum_{i=1}^n X_i \qquad \mbox{ and } \qquad s_n^2 = \frac{1}{n-1} \sum_{i=1}^n \left(X_i-\overline{X}_n\right)^2  \]
+i.e. the sample mean and variance using the first $n$ variables.
+\end{lemma}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Bernoulli example}
+
+Consider $X_i\stackrel{iid}{\sim} Ber(p)$, i.e. $X_i=1$ with probability $p$ and $X_i=0$ with probability $1-p$. \pause Then $E[X_i] = p$ and $0<V[X_i]=p(1-p)<\infty$. 
+% So,
+% \[ \frac{\overline{X}_n-p}{s_n/\sqrt{n}} \stackrel{n\to\infty}{\longrightarrow} \pause N(0,1). \]
 
 \pause
 
-{\scriptsize
-\begin{remark}
-Since $\log(0)=-\infty$, the logarithm cannot be used directly when some $y_i$ are zero. In these cases, use $\log(y+c)$ where $c$ is something small relative to your data, e.g. half of the minimum non-zero value. 
-\end{remark}
+<<bernoulli, echo=FALSE>>=
+p = .5
+res = ddply(data.frame(n=10^(2:4)), .(n), 
+            function(x) rdply(1000, { y = rbinom(x$n, 1, p); data.frame(x = (mean(y)-p)/(sd(y)/sqrt(x$n)))  }))
+ggplot(res, aes(x=x)) + geom_histogram(aes(y=..density..), alpha=0.4) + stat_function(fun=dnorm, col="red") + facet_wrap(~n)
+@
+
+\end{frame}
+
+
+\section{Nonparametric approaches to paired data}
+\begin{frame}[fragile]
+\frametitle{Rusty leaves data}
+
+<<rustyd_leaves_data, results='asis', echo=FALSE>>=
+d = data.frame(year1=c(38,10,84,36,50,35,73,48), 
+              year2=c(32,16,57,28,55,12,61,29))
+d$diff = with(d, year1-year2)
+d$"diff>0" = (d$diff>0)*1
+
+print(xtable(d, digits=0), include.rownames=FALSE)
+@
+
+If there is no effect, then the ``diff$>$0'' column should be a 1 or 0 with probability 0.5, i.e. $X_i\stackrel{iid}{\sim} Ber(p)$ and $K=\sum_{i=1}^n X_i \sim Bin(n,p)$.
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Sign test}
+  The sign test calculates the probability of observing this many ones (or more extreme) if the null hypothesis is true. \pause For our one-sided hypothesis (removing leaves will decrease rusty leaves), that is the probability of observing 6, 7, or 8 ones. \pause This is 
+	\[ \binom{8,6} 0.5^8 + \binom{8,7} 0.5^8 + \binom{8,8} 0.5^8 = 0.14 \]
+	\pause 
+  
+<<sign_test>>=
+K = sum(d[,4]) 
+sum(dbinom(K:8,8,.5))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Sign test using normal approximation}
+
+  Recall that if $K\sim Bin(n,p)$, then $E[K] = np$ and $V[K] = np(1-p)$. \pause Thus, if $p=0.5$, then 
+  \[ Z = \frac{K-(n/2)}{\sqrt{n/4}} \stackrel{n\to\infty}{\longrightarrow} N(0,1) \]
+  and we can approximate the pvalue by calculating the area under the normal curve.
+  
+<<sign_test_approximation>>=
+Z = (K-n/2)/(sqrt(n/4))
+1-pnorm(Z)
+@
+
+The continuity correction accounts for the fact that K is discrete:
+
+<<sign_test_approximation_with_continuity correction>>=
+Z = (K-n/2-1/2)/(sqrt(n/4))
+1-pnorm(Z)
+@
+\end{frame}
+
+
+
+\subsection{Wilcoxon signed-rank test}
+\frame{\frametitle{Wilcoxon signed-rank test}
+  Also known as the Wilcoxon signed-rank test: \pause
+	\begin{enumerate}[<+->]
+	\item Compute the difference in each pair.
+	\item Drop zeros from the list.
+	\item Order the absolute differences from smallest to largest and assign them their ranks.
+	\item Calculate $S$: the sum of the ranks from the pairs for which the difference is positive. 
+	\item Calculate $E[S] = n(n+1)/4$ where $n$ is the number of pairs.
+	\item Calculate $SD[S]=[n(n+1)(2n+1)/24]^{1/2}$.
+	\item Calculate $Z=(S-E[S]+c)/SD[S]$ where $c$ is the appropriate continuity correction.
+	\item Calculate the pvalue comparing $Z$ to a standard normal.
+	\end{enumerate}
 }
 
-\end{frame}
-
-
-
-\subsection{Log transformation}
-\begin{frame}
-\frametitle{Log transformation}
-
-Consider two-sample data and let $z_{ij}=log(y_{ij})$. \pause Now, run a two-sample t-test on the z's. \pause Then we assume
-\[ Z_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
-\pause and the quantity $\overline{Z}_2-\overline{Z}_1$ \pause estimates the ``difference in population means on the (natural) log scale''. \pause The quantity $\exp\left(\overline{Z}_2-\overline{Z}_1\right)=e^{\overline{Z}_2-\overline{Z}_1}$ \pause estimates 
-\[ \frac{\mbox{Median of population 2}}{\mbox{Median of population 1}} \]
-on the original scale \pause or, equivalently, it estimates the \alert{multiplicative effect} of moving from population 1 to population 2. 
-
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Log transformation interpretation}
-
-If we have a randomized experiment:
-\begin{remark}
-It is estimated that the response of an experimental unit to treatment 2 will be $\exp\left(\overline{Z}_2-\overline{Z}_1\right)$ times as large as its response to treatment 1.
-\end{remark}
-
-\vspace{0.2in} \pause
-
-If we have an observational study:
-\begin{remark}
-It is estimated that the median for population 2 is $\exp\left(\overline{Z}_2-\overline{Z}_1\right)$ times as large as the median for population 1.
-\end{remark}
-
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Confidence intervals with log transformation}
-
-
-If $z_{ij}=log(y_{ij})$ and we assume
-\[ Z_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2), \]
-\pause then a $100(1-\alpha)\%$ two-sided confidence interval for $\mu_2-\mu_1$ is 
-\[ (L,U) = \overline{Z}_2-\overline{Z}_1 \pm t_{n_1+n_2-2}(1-\alpha/2) SE\left(\overline{Z}_2-\overline{Z}_1\right). \]
-
-\vspace{0.2in} \pause
-
-A $100(1-\alpha)\%$ confidence interval for 
-\[ \frac{\mbox{Median of population 2}}{\mbox{Median of population 1}} \]
-\pause is $(e^L,e^U)$. 
-
-\end{frame}
-
-
-
-\subsection{Example}
 \begin{frame}[fragile]
-\frametitle{Miles per gallon data}
+\frametitle{Signed rank test}
+<<ranked_data, echo=FALSE, results='asis'>>=
+#Signed rank test
+d$absdiff = abs(d$diff)
+ordr = order(d$absdiff)
+d = d[ordr,]
+d$rank = rank(d$absdiff)
 
-Untransformed:
-<<echo=FALSE, fig.height=2.5, message=FALSE>>=
-d = read.csv("mpg.csv")
-
-grid <- with(d, seq(min(mpg), max(mpg), length = 100))
-normaldens <- ddply(d, "country", function(df) {
-  data.frame( 
-    predicted = grid,
-    density = dnorm(grid, mean(df$mpg), sd(df$mpg))
-  )
-})
-
-ggplot(d, aes(x=mpg)) + geom_histogram(aes(y=..density..)) + facet_wrap(~country) + geom_line(data=normaldens, aes(x=predicted, y=density, color='red'), size=2)+guides(color=FALSE)
+#d$rank = as.character(d$rank)
+tab = xtable(d, digits=c(NA,0,0,0,0,0,1))
+print(tab, include.rownames=FALSE)
 @
-
-\pause
-
-Logged:
-<<echo=FALSE, fig.height=2.5, message=FALSE>>=
-d$lmpg = log(d$mpg)
-grid <- with(d, seq(min(lmpg), max(lmpg), length = 100))
-normaldens <- ddply(d, "country", function(df) {
-  data.frame( 
-    predicted = grid,
-    density = dnorm(grid, mean(df$lmpg), sd(df$lmpg))
-  )
-})
-ggplot(d, aes(x=lmpg)) + geom_histogram(aes(y=..density..)) + facet_wrap(~country) + geom_line(data=normaldens, aes(x=predicted, y=density, color='red'), size=2)+guides(color=FALSE)
-@
-
+	
+	\pause
+	
+	\begin{itemize}
+	\item $S=32.5$
+	\item $E[S]=18$
+	\item $SD[S]=7.14$
+	\item $Z=1.96$ (with continuity correction of -0.5)
+	\item $p=0.02$
+	\end{itemize}
 \end{frame}
 
 
 \begin{frame}[fragile]
-\frametitle{Miles per gallon data}
+\frametitle{Signed-rank test in R}
 
-Untransformed:
-<<echo=FALSE, fig.height=2.5, message=FALSE>>=
-ggplot(d, aes(x=country, y=mpg)) + geom_boxplot()
+<<signed_rank_test>>=
+# By hand
+S = sum(d$rank[d$"diff>0"==1])
+n = nrow(d)
+ES = n*(n+1)/4
+SDS = sqrt(n*(n+1)*(2*n+1)/24)
+z = (S-0.5-ES)/SDS
+1-pnorm(z)
+
+# Using a function
+wilcox.test(d$year1, d$year2, paired=T)
 @
 
-Logged:
-<<echo=FALSE, fig.height=2.5, message=FALSE>>=
-ggplot(d, aes(x=country, y=lmpg)) + geom_boxplot() 
-@
-
+Divide this two-sided pvalue by 2 since the data are in agreement with the alternative hypothesis (fewer rusty leaves after removal).
 \end{frame}
 
 
 
-\begin{frame}[fragile]
-\frametitle{Equal variances?}
-
-We might also be concerned about the assumption of equal variances.
-
-\vspace{0.2in} \pause
-
-Untransformed:
-<<echo=FALSE, results='asis'>>=
-print(xtable(ddply(d, .(country), summarise, n=length(mpg), mean=mean(mpg), sd=sd(mpg))), include.rownames=F)
-@
-the ratio of sample standard deviations is around 1.05 and there are 3 times as many observations in the US.
-
-\vspace{0.1in} \pause
-
-Logged:
-<<echo=FALSE, results='asis'>>=
-print(xtable(ss<-ddply(d, .(country), summarise, n=length(lmpg), mean=mean(lmpg), sd=sd(lmpg))), include.rownames=F)
-@
-Now the ratio of standard deviations is only 1.5 which argues for not using the logarithm.  
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{95\% two-sample CI for the ratio by hand}
-
-{\tiny
-<<echo=FALSE, results='asis'>>=
-print(xtable(ss), include.rownames=F)
-@
-
-Choose group 2 to be Japan and group 1 to be the US: 
-\[ \begin{array}{ll}
-\alpha &= 0.05 \\
-n_1+n_2-2 &= 249+79-2 = 326 \\
-t_{n_1+n_2-2}(1-\alpha/2) &= t_{326}(0.975) = 1.96 \\
-\overline{Z}_2 - \overline{Z}_1  &= 3.40-2.96 = 0.44 \\
-s_p &= \sqrt{\frac{(n_1-1)s_1^2+(n_2-1)s_2^2}{n_1+n_2-2}} = \sqrt{\frac{(249-1)0.31^2+(79-1)0.21^2}{249+79-2}} = 0.29 \\
-SE\left( \overline{Z}_2 - \overline{Z}_1 \right) &= s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}} = 0.29 \sqrt{\frac{1}{249}+\frac{1}{79}} = 0.037 
-\end{array}
-\]
-
-Thus a $95\%$ two-sided confidence interval for the difference (on the log scale) is 
-\[ \begin{array}{rl}
-(L,U) &= \overline{Z}_2 - \overline{Z}_1 \pm t_{n_1+n_2-2}(1-\alpha/2) SE\left( \overline{Z}_2 - \overline{Z}_1 \right) \\
-&=  0.44 \pm 1.96\times 0.037 \\
-&= (0.37, 0.51) 
-\end{array} \]
-
-and a $95\%$ two-sided confidence interval for the ratio (on the original scale) is 
-
-\[ (e^L,e^U) = (e^{0.37},e^{0.51}) = (1.45,1,67) \]
-}
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Using R for t-test using logarithms}
-
-<<>>=
-t = t.test(log(mpg)~country, d, var.equal=TRUE)
-t$estimate # On log scale
-exp(t$estimate) # On original scale
-exp(t$estimate[1]-t$estimate[2]) # Ratio of medians (Japan/US)
-exp(t$conf.int) # Confidence interval for ratio of medians
-@
-
-\end{frame}
-
-
-\frame[containsverbatim]{\frametitle{SAS code for t-test using logarithms}
+\frame[containsverbatim]{\frametitle{SAS code for paired nonparametric test}
 {\small
 \begin{verbatim}
-DATA mpg;
-  INFILE 'mpg.csv' DELIMITER=',' FIRSTOBS=2;
-	INPUT mpg country $;
+DATA leaves;
+  INPUT tree year1 year2;
+  diff = year1-year2;
+  DATALINES;
+1 38 32
+2 10 16
+3 84 57
+4 36 28
+5 50 55
+6 35 12
+7 73 61
+8 48 29
+;
 
-PROC TTEST DATA=mpg TEST=ratio;
-	CLASS country;
-	VAR mpg;
-	run;
+PROC UNIVARIATE DATA=leaves;
+    VAR diff;
+    RUN;
 \end{verbatim}
 }
 }
+
+\frame[containsverbatim]{\frametitle{SAS code for paired nonparametric tests}
+{\tiny
+\begin{verbatim}
+                                    The UNIVARIATE Procedure
+                                         Variable:  diff
+
+                                             Moments
+
+                 N                           8    Sum Weights                  8
+                 Mean                     10.5    Sum Observations            84
+                 Std Deviation      12.2007026    Variance            148.857143
+                 Skewness           -0.1321468    Kurtosis            -1.2476273
+                 Uncorrected SS           1924    Corrected SS              1042
+                 Coeff Variation    116.197167    Std Error Mean      4.31359976
+
+
+                                   Basic Statistical Measures
+
+                         Location                    Variability
+
+                     Mean     10.50000     Std Deviation           12.20070
+                     Median   10.00000     Variance               148.85714
+                     Mode       .          Range                   33.00000
+                                           Interquartile Range     20.50000
+
+
+                                   Tests for Location: Mu0=0
+
+                        Test           -Statistic-    -----p Value------
+
+                        Student's t    t  2.434162    Pr > |t|    0.0451
+                        Sign           M         2    Pr >= |M|   0.2891
+                        Signed Rank    S      14.5    Pr >= |S|   0.0469
+
+
+                                    Quantiles (Definition 5)
+
+                                     Quantile      Estimate
+
+                                     100% Max          27.0
+                                     99%               27.0
+                                     95%               27.0
+                                     90%               27.0
+                                     75% Q3            21.0
+                                     50% Median        10.0
+                                     25% Q1             0.5
+                                     10%               -6.0
+                                     5%                -6.0
+                                     1%                -6.0
+                                     0% Min            -6.0
+
+
+                                    The UNIVARIATE Procedure
+                                         Variable:  diff
+
+                                      Extreme Observations
+
+                              ----Lowest----        ----Highest---
+
+                              Value      Obs        Value      Obs
+
+                                 -6        2            8        4
+                                 -5        5           12        7
+                                  6        1           19        8
+                                  8        4           23        6
+                                 12        7           27        3
+
+\end{verbatim}
+}
+}
+
+\frame{\frametitle{Conclusion}
+	Removal of red cedar trees within 100 yards is associated with a significant reduction in rusty apple leaves (Wilcoxon signed rank test, p=0.023). 
+}
+
+
+
+\section{Wilcoxon Rank-Sum Test}
+\begin{frame}[fragile]
+\frametitle{Do these data look normal?}
+<<mpg, echo=FALSE>>=
+mpg = read.csv("mpg.csv")
+
+ss = ddply(mpg, .(country), summarize, mn=mean(mpg), sd=sd(mpg))
+attach(ss)
+
+ggplot(mpg, aes(x=mpg))+
+  geom_histogram(aes(y=..density..), data=subset(mpg,country=="Japan"), fill="red", alpha=0.5)+
+  geom_histogram(aes(y=..density..), data=subset(mpg,country=="US"), fill="blue", alpha=0.5)+
+  stat_function(fun=function(x) dnorm(x,mn[1],sd[1]), colour="red")+
+  stat_function(fun=function(x) dnorm(x,mn[2],sd[2]), colour="blue")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Rank-sum test}
+  Also referred to as the Wilcoxon rank-sum test and the Mann-Whitney U test: \pause
+	\begin{enumerate}[<+->]
+	\item Transform the data to ranks 
+	\item Calculate $U$, the sum of ranks of the group with a smaller sample size 
+	\item Calculate $E[U] = n_1 \overline{R}$  
+		\begin{enumerate}
+		\item $n_1$: sample size of the smaller group 
+		\item $\overline{R}$: average rank
+		\end{enumerate}
+	\item Calculate $SD(U) = s_R \sqrt{\frac{n_1 n_2}{(n_1+n_2)}}$
+		\begin{enumerate}
+		\item $n_2$: sample size of the larger group
+		\item $s_R$: standard deviation of the ranks
+		\end{enumerate}
+	\item Calculate $Z=(U+c-E[U])/SD(U)$ where c, the continuity correction, is either 0.5 or -0.5.
+	\item Determine the pvalue using a standard normal distribution.
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Example on a small dataset}
+<<mpg_small, echo=FALSE, results='asis'>>=
+set.seed(2)
+id = sample(nrow(mpg),9)
+sm = mpg[id,]
+
+ordr = order(sm$mpg)
+sm = sm[ordr,]
+sm$mpg[5] = 26 # make tie
+sm$rank = rank(sm$mpg)
+rownames(sm) = 1:nrow(sm)
+
+tab = xtable(sm, digits=c(NA,0,NA,1))
+print(tab, include.rownames=FALSE)
+@
+	\pause
+	\begin{itemize}[<+->]
+	\item $U=22.5$
+	\item $E[U] = 15$
+	\item $SD[U]=3.86$
+	\item $z=1.81$ (appropriate continuity correction is -0.5)
+	\item $p=0.07$
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Example on a small dataset}
+<<mpg_small_by_hand>>=
+n1 = sum(sm$country=="Japan")
+n2 = sum(sm$country=="US")
+U = sum(sm$rank[sm$country=="Japan"])
+EU = n1*mean(sm$rank)
+SDU = sd(sm$rank) * sqrt(n1*n2/(n1+n2))
+Z = (U-.5-EU)/SDU
+2*pnorm(-Z)
+
+wilcox.test(mpg~country, sm)
+@
+\end{frame}
+
+
+
+\subsection{Full data}
+\begin{frame}[fragile]
+\frametitle{Visual representation of Rank Sum Test}
+<<visual_representation>>=
+ordr = order(mpg$mpg)
+mpg.ordered = mpg[ordr,]
+
+par(mar=c(5,4,0,0)+.1)
+plot(mpg.ordered$mpg, 1:nrow(mpg), col=mpg.ordered$country, pch=19, xlab="MPG", cex=0.7, ylab="Rank")
+legend("topleft", c("Japan","US"), col=1:2, pch=19)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output for Rank Sum Test}
+<<wilcoxon_rank_sum_test>>=
+wilcox.test(mpg~country,mpg)
+@
+\end{frame}
+
 
 
 \frame[containsverbatim]{
-\frametitle{SAS output for t-test using logarithms}
+\frametitle{SAS code for Wilcoxon rank sum test}
+\begin{verbatim}
+DATA mpg;
+    INFILE 'mpg.csv' DELIMITER=',' FIRSTOBS=2;
+    INPUT mpg country $;
+
+PROC NPAR1WAY DATA=mpg WILCOXON;
+    CLASS country;
+    VAR mpg;
+    RUN;
+\end{verbatim}
+
+}
+
+
+
+\frame[containsverbatim]{\frametitle{}
 {\tiny
 \begin{verbatim}
-                                        The TTEST Procedure
- 
-                                           Variable:  mpg
 
-                                     Geometric     Coefficient
-              country           N         Mean    of Variation     Minimum     Maximum
+                                     The NPAR1WAY Procedure
 
-              Japan            79      29.8525          0.2111     18.0000     47.0000
-              US              249      19.2051          0.3147      9.0000     39.0000
-              Ratio (1/2)               1.5544          0.2928                        
+                          Wilcoxon Scores (Rank Sums) for Variable mpg
+                                 Classified by Variable country
 
-                                Geometric                          Coefficient
-country        Method                Mean       95% CL Mean       of Variation        95% CL CV
+                                    Sum of      Expected       Std Dev          Mean
+             country       N        Scores      Under H0      Under H0         Score
+             -----------------------------------------------------------------------
+             US          249      33646.50      40960.50    733.579091    135.126506
+             Japan        79      20309.50      12995.50    733.579091    257.082278
 
-Japan                             29.8525     28.4887  31.2817          0.2111      0.1820   0.2514
-US                                19.2051     18.4825  19.9560          0.3147      0.2882   0.3467
-Ratio (1/2)    Pooled              1.5544      1.4452   1.6719          0.2928      0.2712   0.3183
-Ratio (1/2)    Satterthwaite       1.5544      1.4636   1.6508                                     
+                               Average scores were used for ties.
 
-                                                  Coefficients
-                  Method           of Variation        DF    t Value    Pr > |t|
 
-                  Pooled           Equal              326      11.91      <.0001
-                  Satterthwaite    Unequal         193.33      14.46      <.0001
+                                    Wilcoxon Two-Sample Test
 
-                                      Equality of Variances
- 
-                        Method      Num DF    Den DF    F Value    Pr > F
+                                Statistic             20309.5000
 
-                        Folded F       248        78       2.17    0.0001
+                                Normal Approximation
+                                Z                         9.9696
+                                One-Sided Pr >  Z         <.0001
+                                Two-Sided Pr > |Z|        <.0001
+
+                                t Approximation
+                                One-Sided Pr >  Z         <.0001
+                                Two-Sided Pr > |Z|        <.0001
+
+                           Z includes a continuity correction of 0.5.
+
+
+                                      Kruskal-Wallis Test
+
+                                Chi-Square               99.4068
+                                DF                             1
+                                Pr > Chi-Square           <.0001
 \end{verbatim}
 }
 }
 
-
 \frame{\frametitle{Conclusion}
-
-  Japanese median miles per gallon is 1.55 [95\% CI (1.46,1.65)] times as large as US median miles per gallon.
-  
-  \vspace{0.2in} 
-  
-  OR
-  
-  \vspace{0.2in} \pause
-  
-  Japenese median miles per gallon is 55\% [95\% CI (46\%,65\%)] larger than US median miles per gallon.
+	Average miles per gallon of Japanese cars are significantly different than average miles per gallon of American cars (Wilcoxon rank sum test, $p<0.0001$). 
 }
 
 

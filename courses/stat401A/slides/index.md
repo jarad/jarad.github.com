@@ -12,4 +12,5 @@ The slide sets correspond to the material in the corresponding chapters of The S
 - [Chapter 1](Ch01.pdf)
 - [Chapter 2](Ch02.pdf)
 - [Chapter 3](Ch03.pdf)
+- [Chapter 4](Ch04.pdf)
 
