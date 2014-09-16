@@ -20,7 +20,7 @@ On this page I hope to link to anything that will be relevant for STAT 401A.
 - [Handbook of Biological Statistics](http://udel.edu/~mcdonald/statintro.html)
 
 ### SAS
-- [Software](http://www.stat.iastate.edu/resources/software/sas/)
+- [Software](http://www.stat.iastate.edu/resources-2/software-sasjmpr/statistical-software-sas/)
 - [Documentation](http://support.sas.com/documentation/) ([9.4](http://support.sas.com/documentation/94/))
 - [UCLA SAS resource](http://www.ats.ucla.edu/stat/sas/)
 
