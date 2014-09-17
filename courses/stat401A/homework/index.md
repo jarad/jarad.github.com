@@ -58,6 +58,7 @@ For those using the 2nd ed. of the book, scans of the 3rd ed. problems can be fo
 - HW1 (due 3 Sep): 1.17, 1.18, 1.19, 1.20
 - HW2 (due 10 Sep): 2.12, 2.15, 2.18, 2.23
 - HW3 (due 17 Sep): [crab](crab/), 3.20, 3.22, 3.30
+- HW4 (not due, but one question will be on exam I): [crab2](crab/crab2.html), 4.20, 4.25, 4.30
 
 <!---
 ## Previous semesters
