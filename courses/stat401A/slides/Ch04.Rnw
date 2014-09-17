@@ -129,16 +129,49 @@ If there is no effect, then the ``diff$>$0'' column should be a 1 or 0 with prob
 
 \begin{frame}[fragile]
 \frametitle{Sign test}
-  The sign test calculates the probability of observing this many ones (or more extreme) if the null hypothesis is true. \pause For our one-sided hypothesis (removing leaves will decrease rusty leaves), that is the probability of observing 6, 7, or 8 ones. \pause This is 
-	\[ \binom{8,6} 0.5^8 + \binom{8,7} 0.5^8 + \binom{8,8} 0.5^8 = 0.14 \]
+  The sign test calculates the probability of observing this many ones (or more extreme) if the null hypothesis is true. Here the hypotheses are 
+  \[ H_0: p=0.5 \qquad H_1:p>0.5. \]
+  \pause 
+  For our one-sided hypothesis (removing leaves will decrease rusty leaves), the pvalue is the probability of observing 6, 7, or 8 ones. \pause This is 
+	\[ {8\choose 6} 0.5^8 + {8\choose 7} 0.5^8 + {8\choose 8} 0.5^8 = 0.14 \]
 	\pause 
   
 <<sign_test>>=
 K = sum(d[,4]) 
+n = nrow(d)
 sum(dbinom(K:8,8,.5))
 @
 \end{frame}
 
+
+\begin{frame}[fragile]
+\frametitle{Visualizing pvalues}
+
+<<pvalue_visualization, echo=FALSE>>=
+base_plot <- function(...) {
+  xx = -1:10
+  plot(xx-.5,dbinom(xx,8,.5), type="s", ylab="Bin(8,.5) probability mass function",...)
+  segments(xx+.5, 0, xx+.5, dbinom(xx[-6],8,.5))
+  abline(h=0)
+}
+
+fill_plot <- function(x,...) {
+  rect(x-.5, 0, x+.5, dbinom(x,8,.5), col="red",...)
+}
+
+par(mfrow=c(1,3))
+base_plot(main="H1: p<0.5")
+fill_plot(0:K)
+
+base_plot(main="H1: p!=0.5")
+fill_plot(K:n)
+fill_plot(0:(n-K))
+
+base_plot(main="H1: p>0.5")
+fill_plot(K:n)
+@
+
+\end{frame}
 
 
 \begin{frame}[fragile]
@@ -161,6 +194,19 @@ Z = (K-n/2-1/2)/(sqrt(n/4))
 @
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Continuity correction}
+
+<<continuity_correction, echo=FALSE>>=
+par(mfrow=c(1,1))
+base_plot(main="Continuity correction")
+fill_plot(6:8)
+curve(dnorm(x, n/2, sqrt(n/4)), add=TRUE)
+abline(v=6)
+@
+
+\end{frame}
 
 
 \subsection{Wilcoxon signed-rank test}
