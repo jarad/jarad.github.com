@@ -21,7 +21,7 @@
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
 <<options, echo=FALSE>>=
-opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center')
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
 library(plyr)
 library(ggplot2)
 library(xtable)
@@ -219,7 +219,7 @@ abline(v=6)
 	\item Calculate $S$: the sum of the ranks from the pairs for which the difference is positive. 
 	\item Calculate $E[S] = n(n+1)/4$ where $n$ is the number of pairs.
 	\item Calculate $SD[S]=[n(n+1)(2n+1)/24]^{1/2}$.
-	\item Calculate $Z=(S-E[S]+c)/SD[S]$ where $c$ is the appropriate continuity correction.
+	\item Calculate $Z=(S-E[S]+c)/SD[S]$ where c, the continuity correction, is either 0.5 or -0.5.
 	\item Calculate the pvalue comparing $Z$ to a standard normal.
 	\end{enumerate}
 }
@@ -259,7 +259,7 @@ S = sum(d$rank[d$"diff>0"==1])
 n = nrow(d)
 ES = n*(n+1)/4
 SDS = sqrt(n*(n+1)*(2*n+1)/24)
-z = (S-0.5-ES)/SDS
+z = (S-ES-0.5)/SDS
 1-pnorm(z)
 
 # Using a function
@@ -406,7 +406,7 @@ ggplot(mpg, aes(x=mpg))+
 		\item $n_2$: sample size of the larger group
 		\item $s_R$: standard deviation of the ranks
 		\end{enumerate}
-	\item Calculate $Z=(U+c-E[U])/SD(U)$ where c, the continuity correction, is either 0.5 or -0.5.
+	\item Calculate $Z=(U-E[U]+c)/SD(U)$ where c, the continuity correction, is either 0.5 or -0.5.
 	\item Determine the pvalue using a standard normal distribution.
 	\end{enumerate}
 \end{frame}
@@ -457,7 +457,7 @@ wilcox.test(mpg~country, sm)
 \subsection{Full data}
 \begin{frame}[fragile]
 \frametitle{Visual representation of Rank Sum Test}
-<<visual_representation>>=
+<<visual_representation, echo=FALSE>>=
 ordr = order(mpg$mpg)
 mpg.ordered = mpg[ordr,]
 
