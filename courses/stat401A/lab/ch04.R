@@ -28,8 +28,12 @@ wilcox.test(time~treatment, case0402, conf.int=TRUE)
 
 
 
+# Signed rank test
 # results on page 101 
-case0202 = read.csv('U:401A/sleuth3csv/case0202.csv')
+case0202 = read.csv('case0202.csv')
 names(case0202) = tolower(names(case0202))
+case0202$diff = with(case0202, unaffected-affected)
 wilcox.test(case0202$diff, alternative="greater")
+
+
 

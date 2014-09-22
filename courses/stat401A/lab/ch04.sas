@@ -8,15 +8,15 @@ DATA case0401;
   INFILE 'case0401.csv' DELIMITER=',' FIRSTOBS=2;
   INPUT incidents launch $;
 
-/* Display 4.1 */
 PROC PRINT DATA=case0401; 
+  TITLE 'Display 4.1';
   RUN;
 
-/* Statistical conclusion on page 86 */
 PROC NPAR1WAY DATA=case0401 SCORES=DATA;
   CLASS launch;
   VAR incidents;
   EXACT;
+  TITLE 'Statistical conclusion on page 86';
   RUN;
 
 DATA case0402;
@@ -29,3 +29,15 @@ PROC NPAR1WAY DATA=case0402 WILCOXON HL;
   RUN;
 
 
+
+
+/* Sign and signed rank tests */
+DATA case0202;
+  INFILE 'case0202.csv' DELIMITER=',' FIRSTOBS=2;
+  INPUT unaffected affected;
+  diff = unaffected-affected;
+
+PROC UNIVARIATE DATA=case0202;
+    VAR diff;
+    TITLE 'sign and signed rank tests, results on page 101';
+    RUN;
