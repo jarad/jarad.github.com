@@ -29,7 +29,7 @@ wilcox.test(time~treatment, case0402, conf.int=TRUE)
 
 
 # results on page 101 
-case0202 = read.csv(''U:401A/sleuth3csv/case0202.csv')
+case0202 = read.csv('U:401A/sleuth3csv/case0202.csv')
 names(case0202) = tolower(names(case0202))
 wilcox.test(case0202$diff, alternative="greater")
 
