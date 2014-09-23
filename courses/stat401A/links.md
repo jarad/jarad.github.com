@@ -17,7 +17,7 @@ On this page I hope to link to anything that will be relevant for STAT 401A.
 - [Videos](http://www.youtube.com/jaradniemi)
 
 ### Other resources
-- [Handbook of Biological Statistics](http://udel.edu/~mcdonald/statintro.html)
+- [Handbook of Biological Statistics](http://www.biostathandbook.com/)
 - [Wormbook - A Biologist's Guide to Statistics](http://www.wormbook.org/chapters/www_statisticalanalysis/statisticalanalysis.html) (I haven't looked at this.)
 
 ### SAS
