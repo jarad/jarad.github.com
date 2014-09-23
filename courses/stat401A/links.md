@@ -27,4 +27,6 @@ On this page I hope to link to anything that will be relevant for STAT 401A.
 
 ### R (the statistical software environment)
 - [R](http://www.r-project.org/)
+- [R for Biologists](http://cran.r-project.org/doc/contrib/Martinez-RforBiologistv1.1.pdf) (this seems pretty old)
+- [Foundational and Applied Statistics for Biologists using R](http://www.isu.edu/~ahoken/book/Intro_to_R.pdf)
 - [My short course](http://niemiconsulting.com/blog/includes/class/IntroR.zip)
