@@ -9,8 +9,16 @@ With the exception of Lab 01, you should download and open up the scripts associ
 
 - [Lab 01](lab01.html): [SAS](example.sas) v [R](example.R)
 - Lab 02: [SAS](ch02.sas) and [R](ch02.R)
+  - Pvalues
+  - Critical values
+  - Paired t-test
+  - Two-sample t-test
 - Lab 03: [SAS](ch03.sas) and [R](ch03.R)
+  - Two-sample t-test using logs
 - Lab 04: [SAS](ch04.sas) and [R](ch04.R)
+  - Sign test
+  - Signed rank test
+  - Rank sum test
 - Lab 05: [SAS](ch05.sas) and [R](ch05.R)
 - Lab 06: [SAS](ch06.sas) and [R](ch06.R)
 - Lab 07: [SAS](ch07.sas) and [R](ch07.R)
