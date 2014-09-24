@@ -46,7 +46,7 @@ Methods of analyzing and interpreting experimental and survey data. Statistical 
 
 ## Prerequisite
 
-The prerequisite for the course is [STAT 101, 104, 105, 201, or 226](http://catalog.iastate.edu/azcourses/stat/) or equivalent. The content that you are expected to know is [here](prerequisites.html).
+The prerequisite for the course is [STAT 101, 104, 105, 201, or 226](http://catalog.iastate.edu/azcourses/stat/) or equivalent. 
 
 ## Q&A
 
