@@ -53,7 +53,9 @@ length(case0202$diff)
 
 # Results above Display 2.2 and on the next page
 t.test(case0202$diff) # or the next one
-t.test(case0202$unaffected, case0202$affected, paired=TRUE)
+t.test(case0202$unaffected, case0202$affected, paired=TRUE, mu=0)
+
+
 
 # Displays 2.8, 2.9, 2.10 
 stats = function(x) return(c(length(x), mean(x), sd(x)))

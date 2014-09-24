@@ -73,6 +73,17 @@ PROC MEANS DATA=case0201 N MEAN STD;
   RUN;
 
 
+/* An alternate way to perform a paired t-test 
+ * TEST=diff tests unaffected-affected
+ * TEST=ratio tests unaffected/affected
+ * H0 is null hypothesis value
+*/
+PROC TTEST TEST=diff DATA=case0202 H0=0;
+  PAIRED unaffected*affected; 
+  RUN;
+
+
+
 /* Getting help
  *
  * The best way I have found to get help is to google the PROC and other keywords, e.g.
