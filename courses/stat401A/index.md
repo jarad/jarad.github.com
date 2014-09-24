@@ -41,14 +41,12 @@ Methods of analyzing and interpreting experimental and survey data. Statistical 
 - Learn to use statistical methods, e.g. t-tests, rank sum tests, ANOVA, regression, etc., to analyze experimental and observational data.
 - Perform, check assumptions, and interpret multiple linear regression.
 - Write, interpret, and critically evaluate statements such as
-  - Example 1:
-    > No significant differences were observed between A/H5N1_HA N182K- and A/H5N1_HA Q222L,G2245-inoculated animals, as calculated by comparing the viral titer (Mann-Whitney test, P=0.589 and 0.818 for nose and throat titers, respectively).
-  - Example 2:
-    > ... estimate gross carbon emissions across tropical regions between 2000 and 2005 as 0.81 petagram of carbon per year, with a 90% prediction interval of 0.57 to 1.22 petagrams of carbon per year.
+  - No significant differences were observed between A/H5N1_HA N182K- and A/H5N1_HA Q222L,G2245-inoculated animals, as calculated by comparing the viral titer (Mann-Whitney test, P=0.589 and 0.818 for nose and throat titers, respectively).
+  - ... estimate gross carbon emissions across tropical regions between 2000 and 2005 as 0.81 petagram of carbon per year, with a 90% prediction interval of 0.57 to 1.22 petagrams of carbon per year.
 
 ## Prerequisite
 
-The prerequisite for the course is [STAT 101, 104, 105, 201, or 226](http://catalog.iastate.edu/azcourses/stat/) or equivalent.
+The prerequisite for the course is [STAT 101, 104, 105, 201, or 226](http://catalog.iastate.edu/azcourses/stat/) or equivalent. The content that you are expected to know is [here](prerequisites.html).
 
 ## Q&A
 
