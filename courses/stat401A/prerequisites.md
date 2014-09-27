@@ -11,7 +11,17 @@ tagline:
     </script>
 </head>
 
-This page is a work in progress but it is intended to provide a summary of the mathematics, probability, and statistics background that you are expected to know before you take STAT 401A. 
+-> UNDER CONSTRUCTION <-
+
+This page is intended to provide a summary of the mathematics, probability, and statistics background that you are expected to know before you take STAT 401A. Alternatively, you could find the relevant material in an introductory statistics textbook. Here are a few free options:
+
+- [Introductory Statistics from OpenStax College](http://openstaxcollege.org/textbooks/introductory-statistics)
+- [Introductory Statistics from OpenIntro](http://www.openintro.org/stat/textbook.php)
+- [Online Statistics Education](http://onlinestatbook.com/)
+
+
+
+
 
 ## [Exponents](http://hotmath.com/hotmath_help/topics/properties-of-exponents.html)
 
