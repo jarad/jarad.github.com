@@ -1,0 +1,239 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{One-way ANOVA}
+\title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+\institute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, echo=FALSE>>=
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+library(plyr)
+library(ggplot2)
+library(xtable)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Multi-sample models}
+\subsection{Assumptions}
+
+\begin{frame}[fragile]
+\frametitle{ANOVA assumptions}
+  \vspace{-0.1in}
+
+	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
+	
+	\vspace{0.2in} \pause
+	
+	$i=1,\ldots,n_j$ and $j=1,\ldots,J$
+	
+	\color{gray}{($n_j$ means there can be different \# of observations in each group)}
+
+	\vspace{0.1in} \pause
+	
+<<echo=FALSE>>=
+mu = 0:3
+par(mfrow=c(1,2), mar=rep(0,4)+.1)
+curve(dnorm(x,mu[1]),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
+for (i in 2:length(mu)) curve(dnorm(x,mu[i]), add=T, col=i, lwd=2)
+curve(dnorm(x,mu[1],.25),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
+for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
+@
+\end{frame}
+
+\subsection{F-test}
+\begin{frame}[fragile]
+\frametitle{One-way ANOVA F-test}
+
+	\vspace{-0.1in}
+
+	\[ \begin{array}{ll@{\qquad\qquad}l}
+	H_0: & \mu_i=\mu \mbox{ for all } i & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
+	H_a: & \mu_i\ne\mu_{i'} \mbox{ for some $i$ and $i'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N(\mu_i, \sigma^2)}
+	\end{array} 
+	\]
+	
+	\vspace{0.2in} \pause
+	
+<<echo=FALSE>>=
+par(mfrow=c(2,2), mar=c(0,2,0,0)+.1)
+curve(dnorm(x,2),-3,6, axes=F, frame=T, xlab="", ylab="H_0 true", line=1, lwd=2)
+curve(dnorm(x,2,.25),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
+curve(dnorm(x,mu[1]),-3,6, axes=F, frame=T, xlab="", ylab="H_a true", line=1, lwd=2)
+for (i in 2:length(mu)) curve(dnorm(x,mu[i]), add=T, col=i, lwd=2)
+curve(dnorm(x,mu[1],.25),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
+for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
+@
+\end{frame}
+
+\subsection{Full vs reduced model}
+\frame{\frametitle{Full vs reduced model}
+
+	\vspace{-0.2in}
+
+	\[ \begin{array}{|l|c|c|}
+	\hline && \\
+	\mbox{Model}& Full & Reduced \\ &&\\ \hline && \\
+	\mbox{Assumption} & 
+	\uncover<2->{H_a:  Y_{ij} \stackrel{ind}{\sim} N(\mu_i, \sigma^2)} & \uncover<6->{
+	H_0:  Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\ && \\ \hline && \\
+	\mbox{Mean} & 
+	\uncover<3->{\hat{\mu}_i = \overline{Y}_i = \frac{1}{n_i} \sum_{j=1}^{n_i} Y_{ij}} & 
+	\uncover<7->{\hat{\mu} = \overline{Y} = \frac{1}{n} \sum_{i=1}^{I} \sum_{j=1}^{n_i} Y_{ij}} \\ && \\ \hline && \\
+	\mbox{Residual}  & 
+	\uncover<4->{r_{ij} = Y_{ij}-\overline{Y}_i} & 
+	\uncover<8->{r_{ij} = Y_{ij}-\overline{Y}} \\ &&\\ \hline && \\
+	\mbox{Sum of squares} & 
+	\uncover<5->{SSE=\sum_{i=1}^{\I} \sum_{j=1}^{n_i} r_{ij}^2}  & 
+	\uncover<9->{SST=\sum_{i=1}^{\I} \sum_{j=1}^{n_i} r_{ij}^2}  \\ &&\\\hline
+	\end{array} \]
+}
+
+\subsection{ANOVA table}
+\frame{\frametitle{ANOVA table}
+\footnotesize
+	A start of an ANOVA table:
+	\[ \begin{array}{llcc}
+	\mbox{Source of variation} & 
+	\mbox{Sum of squares} &
+	\mbox{d.f.} & \mbox{Mean square}  \\
+	\hline
+	\mbox{Factor A (Between groups)} &  
+	SSA=\sum_{i=1}^{\I} n_i (\overline{Y}_i-\overline{Y})^2 & 
+	\I-1 & 
+	\frac{SSA}{\I-1} \phantom{\left(=s_p^2\right)} \\
+	\mbox{Error (Within groups)} & 
+	SSE=\sum_{i=1}^{\I} \sum_{j=1}^{n_i} (Y_{ij}-\overline{Y}_i)^2 & 
+	n-\I &  
+	\frac{SSE}{n-\I} \left(=s_p^2\right) \\
+	\hline
+	\mbox{Total} & 
+	SST=\sum_{i=1}^{\I} \sum_{j=1}^{n_i} (Y_{ij}-\overline{Y})^2 &
+	n-1 \\
+	\end{array} \]
+	where 
+	\begin{itemize}
+	\item $\I$ is the number of groups, 
+	\item $n_i$ is the number of observations in group $i$, 
+	\item $n=\sum_{i=1}^\I n_i$ (total observations), 
+	\item $\overline{Y}_i = \frac{1}{n_i}\sum_{j=1}^{n_i} Y_{ij}$ (average in group $i$), 
+	\item and $\overline{Y} = \frac{1}{n}\sum_{i=1}^\I \sum_{j=1}^{n_i} Y_{ij}$ (overall average).
+	\end{itemize}
+}
+
+\frame{\frametitle{ANOVA table}
+{\tiny
+	An easier to remember ANOVA table:
+	
+	\vspace{0.1in}
+	
+	\begin{tabular}{llcccc}
+	Source of variation & Sum of squares & df & Mean square & F-statistic & p-value \\
+	\hline
+	Factor A (between groups) & SSA & $\I-1$ & MSA = SSA/$\I-1$ & MSA/MSE & \mbox{(see below)} \\
+	Error (within groups) & SSE & $n-\I$ & MSE = SSE/$n-\I$ \\
+	\hline
+	Total & SST & $n-1$ 
+	\end{tabular}
+	}
+	
+	\vspace{0.3in}
+	 
+	Under $H_0$, 
+	\begin{itemize}
+	\item the quantity MSA/MSE has an F-distribution with $\I-1$ numerator and $n-\I$ denominator degrees of freedom,
+	\item larger values of MSA/MSE indicate evidence against $H_0$, and
+	\item the p-value is determined by $P(F_{\I-1,n-\I}>MSA/MSE)$.
+	\end{itemize}
+}
+
+\subsection{Example}
+\begin{frame}[fragile]
+\frametitle{Lifetimes of mice on different diets}
+
+<<>>=
+library(Sleuth3)
+names(case0501) = tolower(names(case0501))
+boxplot(lifetime~diet, case0501)
+@
+	\begin{column}{0.3\textwidth}
+	\begin{tabular}{rl}
+	  Diet & Count \\
+	  \hline
+   lopro &56 \\
+   N/N85 &57\\
+   N/R40 &60\\
+   N/R50 &71\\
+      NP &49\\
+   R/R50 &56\\
+   \hline
+   \end{tabular}
+   \end{column}
+   \end{columns}
+\end{frame}
+
+\frame[containsverbatim]{\frametitle{SAS code and output for one-way ANOVA}
+{\tiny
+\begin{verbatim}
+DATA mice;
+  INFILE 'case0501.csv' DSD FIRSTOBS=2;
+  INPUT lifetime diet $;
+  
+PROC GLM DATA=mice;
+  CLASS diet;
+  MODEL lifetime = diet;
+  RUN;
+
+                                        The GLM Procedure
+
+Dependent Variable: lifetime
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        5     12733.94181      2546.78836      57.10    <.0001
+       Error                      343     15297.41532        44.59888
+       Corrected Total            348     28031.35713
+\end{verbatim}
+
+}
+}
+
+\frame{\frametitle{Summary}
+	One-way ANOVA F-test model:
+	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i, \sigma^2) \]
+	
+	\vspace{0.2in} \pause
+	
+	The test:
+	\[ \begin{array}{rl}
+	H_0: & \mu_i=\mu \mbox{ for all } i  \\
+	H_a: & \mu_i\ne\mu_{i'} \mbox{ for some $i$ and $i'$} 
+	\end{array} \]
+	
+	\vspace{0.2in} \pause
+	
+	An ANOVA table organizes the relevant quantities for this test and computes the pvalue. 
+}
+
+
+\end{document}
