@@ -25,6 +25,7 @@ opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.
 library(plyr)
 library(ggplot2)
 library(xtable)
+library(Sleuth3)
 @
 
 
@@ -39,18 +40,20 @@ library(xtable)
 
 \begin{frame}[fragile]
 \frametitle{ANOVA assumptions}
-  \vspace{-0.1in}
+  Begin with the two-sample t-test model:
 
 	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
 	
 	\vspace{0.2in} \pause
 	
-	$i=1,\ldots,n_j$ and $j=1,\ldots,J$
+  but now	$j=1,\ldots,J$ and $i=1,\ldots,n_j$
 	
 	\color{gray}{($n_j$ means there can be different \# of observations in each group)}
+\end{frame}
 
-	\vspace{0.1in} \pause
-	
+
+\begin{frame}[fragile]
+\frametitle{ANOVA assumptions graphically}
 <<echo=FALSE>>=
 mu = 0:3
 par(mfrow=c(1,2), mar=rep(0,4)+.1)
@@ -68,8 +71,8 @@ for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
 	\vspace{-0.1in}
 
 	\[ \begin{array}{ll@{\qquad\qquad}l}
-	H_0: & \mu_i=\mu \mbox{ for all } i & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
-	H_a: & \mu_i\ne\mu_{i'} \mbox{ for some $i$ and $i'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N(\mu_i, \sigma^2)}
+	H_0: & \mu_j=\mu \mbox{ for all } i & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
+	H_a: & \mu_j\ne\mu_{j'} \mbox{ for some $j$ and $j'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2)}
 	\end{array} 
 	\]
 	
@@ -77,9 +80,9 @@ for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
 	
 <<echo=FALSE>>=
 par(mfrow=c(2,2), mar=c(0,2,0,0)+.1)
-curve(dnorm(x,2),-3,6, axes=F, frame=T, xlab="", ylab="H_0 true", line=1, lwd=2)
+curve(dnorm(x,2),-3,6, axes=F, frame=T, xlab="", ylab="H_0 true", lwd=2)
 curve(dnorm(x,2,.25),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
-curve(dnorm(x,mu[1]),-3,6, axes=F, frame=T, xlab="", ylab="H_a true", line=1, lwd=2)
+curve(dnorm(x,mu[1]),-3,6, axes=F, frame=T, xlab="", ylab="H_a true", lwd=2)
 for (i in 2:length(mu)) curve(dnorm(x,mu[i]), add=T, col=i, lwd=2)
 curve(dnorm(x,mu[1],.25),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
 for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
@@ -95,17 +98,17 @@ for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
 	\hline && \\
 	\mbox{Model}& Full & Reduced \\ &&\\ \hline && \\
 	\mbox{Assumption} & 
-	\uncover<2->{H_a:  Y_{ij} \stackrel{ind}{\sim} N(\mu_i, \sigma^2)} & \uncover<6->{
+	\uncover<2->{H_a:  Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2)} & \uncover<6->{
 	H_0:  Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\ && \\ \hline && \\
 	\mbox{Mean} & 
-	\uncover<3->{\hat{\mu}_i = \overline{Y}_i = \frac{1}{n_i} \sum_{j=1}^{n_i} Y_{ij}} & 
-	\uncover<7->{\hat{\mu} = \overline{Y} = \frac{1}{n} \sum_{i=1}^{I} \sum_{j=1}^{n_i} Y_{ij}} \\ && \\ \hline && \\
+	\uncover<3->{\hat{\mu}_j = \overline{Y}_j = \frac{1}{n_j} \sum_{i=1}^{n_j} Y_{ij}} & 
+	\uncover<7->{\hat{\mu} = \overline{Y} = \frac{1}{n} \sum_{j=1}^{J} \sum_{i=1}^{n_j} Y_{ij}} \\ && \\ \hline && \\
 	\mbox{Residual}  & 
-	\uncover<4->{r_{ij} = Y_{ij}-\overline{Y}_i} & 
+	\uncover<4->{r_{ij} = Y_{ij}-\overline{Y}_j} & 
 	\uncover<8->{r_{ij} = Y_{ij}-\overline{Y}} \\ &&\\ \hline && \\
 	\mbox{Sum of squares} & 
-	\uncover<5->{SSE=\sum_{i=1}^{\I} \sum_{j=1}^{n_i} r_{ij}^2}  & 
-	\uncover<9->{SST=\sum_{i=1}^{\I} \sum_{j=1}^{n_i} r_{ij}^2}  \\ &&\\\hline
+	\uncover<5->{SSE=\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  & 
+	\uncover<9->{SST=\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  \\ &&\\\hline
 	\end{array} \]
 }
 
@@ -119,30 +122,30 @@ for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
 	\mbox{d.f.} & \mbox{Mean square}  \\
 	\hline
 	\mbox{Factor A (Between groups)} &  
-	SSA=\sum_{i=1}^{\I} n_i (\overline{Y}_i-\overline{Y})^2 & 
-	\I-1 & 
-	\frac{SSA}{\I-1} \phantom{\left(=s_p^2\right)} \\
+	SSA=\sum_{j=1}^{J} n_j (\overline{Y}_j-\overline{Y})^2 & 
+	J-1 & 
+	\frac{SSA}{J-1} \phantom{\left(=s_p^2\right)} \\
 	\mbox{Error (Within groups)} & 
-	SSE=\sum_{i=1}^{\I} \sum_{j=1}^{n_i} (Y_{ij}-\overline{Y}_i)^2 & 
-	n-\I &  
-	\frac{SSE}{n-\I} \left(=s_p^2\right) \\
+	SSE=\sum_{j=1}^{J} \sum_{i=1}^{n_j} (Y_{ij}-\overline{Y}_j)^2 & 
+	n-J &  
+	\frac{SSE}{n-J} \left(=s_p^2\right) \\
 	\hline
 	\mbox{Total} & 
-	SST=\sum_{i=1}^{\I} \sum_{j=1}^{n_i} (Y_{ij}-\overline{Y})^2 &
+	SST=\sum_{j=1}^{J} \sum_{i=1}^{n_j} (Y_{ij}-\overline{Y})^2 &
 	n-1 \\
 	\end{array} \]
 	where 
 	\begin{itemize}
-	\item $\I$ is the number of groups, 
-	\item $n_i$ is the number of observations in group $i$, 
-	\item $n=\sum_{i=1}^\I n_i$ (total observations), 
-	\item $\overline{Y}_i = \frac{1}{n_i}\sum_{j=1}^{n_i} Y_{ij}$ (average in group $i$), 
-	\item and $\overline{Y} = \frac{1}{n}\sum_{i=1}^\I \sum_{j=1}^{n_i} Y_{ij}$ (overall average).
+	\item $J$ is the number of groups, 
+	\item $n_j$ is the number of observations in group $j$, 
+	\item $n=\sum_{j=1}^J n_j$ (total observations), 
+	\item $\overline{Y}_j = \frac{1}{n_j}\sum_{i=1}^{n_j} Y_{ij}$ (average in group $j$), 
+	\item and $\overline{Y} = \frac{1}{n}\sum_{j=1}^J \sum_{i=1}^{n_j} Y_{ij}$ (overall average).
 	\end{itemize}
 }
 
 \frame{\frametitle{ANOVA table}
-{\tiny
+  {\tiny
 	An easier to remember ANOVA table:
 	
 	\vspace{0.1in}
@@ -150,8 +153,8 @@ for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
 	\begin{tabular}{llcccc}
 	Source of variation & Sum of squares & df & Mean square & F-statistic & p-value \\
 	\hline
-	Factor A (between groups) & SSA & $\I-1$ & MSA = SSA/$\I-1$ & MSA/MSE & \mbox{(see below)} \\
-	Error (within groups) & SSE & $n-\I$ & MSE = SSE/$n-\I$ \\
+	Factor A (between groups) & SSA & $J-1$ & MSA = SSA/$J-1$ & MSA/MSE & \mbox{(see below)} \\
+	Error (within groups) & SSE & $n-J$ & MSE = SSE/$n-J$ \\
 	\hline
 	Total & SST & $n-1$ 
 	\end{tabular}
@@ -161,35 +164,28 @@ for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
 	 
 	Under $H_0$, 
 	\begin{itemize}
-	\item the quantity MSA/MSE has an F-distribution with $\I-1$ numerator and $n-\I$ denominator degrees of freedom,
+	\item the quantity MSA/MSE has an F-distribution with $J-1$ numerator and $n-J$ denominator degrees of freedom,
 	\item larger values of MSA/MSE indicate evidence against $H_0$, and
-	\item the p-value is determined by $P(F_{\I-1,n-\I}>MSA/MSE)$.
+	\item the p-value is determined by $P(F_{J-1,n-J}>MSA/MSE)$.
 	\end{itemize}
 }
+
 
 \subsection{Example}
 \begin{frame}[fragile]
 \frametitle{Lifetimes of mice on different diets}
 
-<<>>=
+<<echo=FALSE>>=
 library(Sleuth3)
-names(case0501) = tolower(names(case0501))
-boxplot(lifetime~diet, case0501)
+ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 @
-	\begin{column}{0.3\textwidth}
-	\begin{tabular}{rl}
-	  Diet & Count \\
-	  \hline
-   lopro &56 \\
-   N/N85 &57\\
-   N/R40 &60\\
-   N/R50 &71\\
-      NP &49\\
-   R/R50 &56\\
-   \hline
-   \end{tabular}
-   \end{column}
-   \end{columns}
+
+<<echo=FALSE>>=
+ddply(case0501, .(Diet), summarize,
+      n = length(Lifetime),
+      mean = mean(Lifetime),
+      sd = sd(Lifetime))
+@
 \end{frame}
 
 \frame[containsverbatim]{\frametitle{SAS code and output for one-way ANOVA}
@@ -220,20 +216,301 @@ Dependent Variable: lifetime
 
 \frame{\frametitle{Summary}
 	One-way ANOVA F-test model:
-	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i, \sigma^2) \]
+	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
 	
 	\vspace{0.2in} \pause
 	
 	The test:
 	\[ \begin{array}{rl}
-	H_0: & \mu_i=\mu \mbox{ for all } i  \\
-	H_a: & \mu_i\ne\mu_{i'} \mbox{ for some $i$ and $i'$} 
+	H_0: & \mu_j=\mu \mbox{ for all } j  \\
+	H_a: & \mu_j\ne\mu_{j'} \mbox{ for some $j$ and $j'$} 
 	\end{array} \]
 	
 	\vspace{0.2in} \pause
 	
 	An ANOVA table organizes the relevant quantities for this test and computes the pvalue. 
 }
+
+
+
+\section{Hypotheses}
+\subsection{Simple vs Composite}
+\frame{\frametitle{Simple vs Composite Hypotheses}
+  Suppose \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \]
+	for $i=1,\ldots,3$ \pause then a \alert{simple hypothesis} is 
+	\begin{itemize}
+	\item $H_0: \mu_1=\mu_2$
+	\item $H_1: \mu_1\ne \mu_2$
+	\end{itemize}
+	\pause and a \alert{composite hypothesis} is 
+	\begin{itemize}
+	\item $H_0: \mu_1=\mu_2=\mu_3$
+	\item $H_1: \mu_i\ne \mu_j$ for some $i\ne j$
+	\end{itemize}
+	\pause since there are four possibilities under $H_1$
+	\begin{itemize}[<+->]
+	\item $\mu_1=\mu_2\ne\mu_3$
+	\item $\mu_2=\mu_3\ne\mu_1$
+	\item $\mu_3=\mu_1\ne\mu_2$
+	\item $\mu_1\ne\mu_2\ne\mu_3\ne\mu_1$
+	\end{itemize}
+}
+
+\subsection{Equality of two means}
+\frame{\frametitle{Equality of two means}
+	If $Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ for $i=1,\ldots,\I$ and we want to test the \alert{simple hypothesis} 
+	\begin{itemize}
+	\item $H_0: \mu_1=\mu_2$
+	\item $H_1: \mu_1\ne \mu_2$
+	\end{itemize}
+	\pause then we use the same t-test and confidence interval formulas from the two-sample t-test:
+	\[ t = \frac{\overline{Y}_1-\overline{Y}_2}{SE(\overline{Y}_1-\overline{Y}_2)} \qquad 
+	CI: \overline{Y}_1-\overline{Y}_2 \pm t_{df}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
+	\pause where 
+	\[ SE(\overline{Y}_1-\overline{Y}_2) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}} \]
+	\pause with two modifications:
+	\[ \begin{array}{rl}
+	df &= n_1+n_2+\cdots+n_\I - \I \pause \\
+	s_p^2 &= \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_\I-1)s_\I^2}{n_1+n_2+\cdots+n_\I - \I } \pause = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_\I-1)s_\I^2}{df}
+	\end{array} \]
+}
+
+\frame[containsverbatim]{\frametitle{}
+
+\begin{verbatim}
+DATA mice;
+  INFILE 'case0501.csv' DSD FIRSTOBS=2;
+  INPUT lifetime diet $;
+  
+PROC GLM DATA=mice;
+  CLASS diet;
+  MODEL lifetime = diet;
+  LSMEANS diet / ADJUST=T CL;
+  RUN;
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{}
+\tiny
+\begin{verbatim}
+                                        The GLM Procedure
+                                       Least Squares Means
+
+                                             lifetime      LSMEAN
+                                diet           LSMEAN      Number
+
+                                N/N85      32.6912281           1
+                                N/R40      45.1166667           2
+                                N/R50      42.2971831           3
+                                NP         27.4020408           4
+                                R/R50      42.8857143           5
+                                lopro      39.6857143           6
+
+
+                              Least Squares Means for effect diet
+                              Pr > |t| for H0: LSMean(i)=LSMean(j)
+
+                                  Dependent Variable: lifetime
+
+    i/j              1             2             3             4             5             6
+
+       1                      <.0001        <.0001        <.0001        <.0001        <.0001
+       2        <.0001                      0.0166        <.0001        0.0731        <.0001
+       3        <.0001        0.0166                      <.0001        0.6223        0.0293
+       4        <.0001        <.0001        <.0001                      <.0001        <.0001
+       5        <.0001        0.0731        0.6223        <.0001                      0.0117
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{}
+\tiny
+\begin{verbatim}
+                lifetime
+                       diet           LSMEAN      95% Confidence Limits
+
+                       N/N85       32.691228       30.951394    34.431062
+                       N/R40       45.116667       43.420886    46.812447
+                       N/R50       42.297183       40.738291    43.856075
+                       NP          27.402041       25.525547    29.278535
+                       R/R50       42.885714       41.130415    44.641014
+                       lopro       39.685714       37.930415    41.441014
+                
+                               Least Squares Means for Effect diet
+
+                                   Difference
+                                      Between    95% Confidence Limits for
+                       i    j           Means       LSMean(i)-LSMean(j)
+
+                       1    2      -12.425439      -14.854984    -9.995893
+                       1    3       -9.605955      -11.942013    -7.269897
+                       1    4        5.289187        2.730232     7.848142
+                       1    5      -10.194486      -12.665943    -7.723030
+                       1    6       -6.994486       -9.465943    -4.523030
+                       2    3        2.819484        0.516048     5.122919
+                       2    4       17.714626       15.185417    20.243835
+                       2    5        2.230952       -0.209692     4.671597
+                       2    6        5.430952        2.990308     7.871597
+                       3    4       14.895142       12.455599    17.334686
+                       3    5       -0.588531       -2.936130     1.759068
+                       3    6        2.611469        0.263870     4.959068
+                       4    5      -15.483673      -18.053169   -12.914178
+                       4    6      -12.283673      -14.853169    -9.714178
+                       5    6        3.200000        0.717632     5.682368
+\end{verbatim}
+}
+
+\subsection{Composite hypotheses}
+\frame{\frametitle{Testing Composite hypotheses}
+	If $Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ for $i=1,\ldots,\I$ and we want to test the \alert{composite hypothesis} 
+	\begin{itemize}
+	\item $H_0: \mu_i=\mu_j$
+	\item $H_1: \mu_i\ne \mu_j$ for some $i\ne j$
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	 think about this as two models: \pause
+	\begin{itemize}
+	\item $H_0: Y_{ij} \stackrel{ind}{\sim} N(\mu,\sigma^2)$ \uncover<6->{\alert{(reduced)}}\pause
+	\item $H_1: Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ \uncover<5->{\alert{(full)}}
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	\uncover<7->{We can use an F-test to calculate a p-value for tests of this type.}	
+}
+
+\subsection{F-tests}
+\frame{\frametitle{F-tests}
+\small
+	Do the following
+	\begin{enumerate}[1.]
+	\item Calculate 
+	\[ \begin{array}{r} 
+	\multicolumn{1}{l}{\mbox{Extra sum of squares =}}\\
+	 \mbox{ Residual sum of squares (reduced) - Residual sum of squares (full)} 
+	\end{array} \] \pause 
+	\item Calculate 
+	\[ \begin{array}{r}
+	\multicolumn{1}{l}{\mbox{Extra degrees of freedom =}} \\ 
+	\mbox{ \# of mean parameters (full) - \# of mean parameters (reduced)} \end{array} \] \pause
+	\item Calculate 
+	\[ \mbox{F-statistic} = \frac{\mbox{Extra sum of squares / Extra degrees of freedom}}{\hat{\sigma}^2_{full}} \] \pause 
+	\item Compare this to an F-distribution with 
+		\begin{itemize}
+		\item numerator degrees of freedom = Extra degrees of freedom
+		\item denominator degrees of freedom = n - \# of mean parameters (full)
+		\end{itemize}
+	\end{enumerate}
+}
+
+\subsection{Example}
+\frame{\frametitle{Example}
+	Recall the mice data set. \pause Consider the hypothesis that all diets except NP have a common mean and this mean is different from the NP.
+	
+	\vspace{0.2in} \pause
+	
+	Let
+	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \]
+	with $i=1$ being the NP group \pause then the hypotheses are
+	\begin{itemize}
+	\item $H_0: \mu_i=\mu$ for $i\ne 1$
+	\item $H_1: \mu_i\ne\mu_j$ for $i\ne j$ and $i,j=2,\ldots,6$
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	As models:
+	\begin{itemize}
+	\item $H_0: Y_{1j}\sim N(\mu_1,\sigma^2)$ and $Y_{ij}\sim N(\mu,\sigma^2)$ for $i\ne 1$
+	\item $H_1: Y_{ij}\sim N(\mu_i,\sigma^2)$
+	\end{itemize}
+	
+	
+}
+
+\frame[containsverbatim]{\frametitle{}
+\begin{verbatim}
+DATA mice;
+  INFILE 'case0501.csv' DSD FIRSTOBS=2;
+  INPUT lifetime diet $;
+  IF diet='NP' THEN group=1; ELSE group=0;
+
+PROC PRINT DATA=mice; RUN;
+  
+TITLE 'Full Model';
+PROC GLM DATA=mice;
+  CLASS diet;
+  MODEL lifetime = diet;
+  RUN;
+
+TITLE 'Reduced Model';
+PROC GLM DATA=mice;
+  MODEL lifetime = group;
+  RUN;
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{}
+\tiny
+\begin{verbatim}
+                                           Full Model        
+
+                                        The GLM Procedure
+
+Dependent Variable: lifetime
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        5     12733.94181      2546.78836      57.10    <.0001
+       Error                      343     15297.41532        44.59888
+       Corrected Total            348     28031.35713
+                                           
+                                
+                                           
+                                          Reduced Model     
+
+                                        The GLM Procedure
+
+Dependent Variable: lifetime
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        1      7401.77817      7401.77817     124.50    <.0001
+       Error                      347     20629.57896        59.45124
+       Corrected Total            348     28031.35713
+\end{verbatim}
+}
+
+\frame{\frametitle{General F-test calculations}
+ 	\[\begin{array}{rl}
+	ESS & = 20629.57896 - 15297.41532 = 5332.164 \\
+	Edf &= 5 -1 = 4 \\
+	F &= (ESS/Edf)/\hat{\sigma}^2_{full} = (5332.164/4)/44.59888 = 29.88956 
+	\end{array}\]
+	
+	\vspace{0.2in} \pause
+	
+	Finally, we calculate the pvalue: 
+	\[ P(F>F_{4,343}) <0.0001 \]
+
+	\vspace{0.2in} \pause
+	
+	Since this is very small, we reject the null hypothesis that the reduced model is adequate. \pause So there is evidence that the mean is not the same for all the non-NP groups.
+}
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+	\begin{itemize}[<+->]
+	\item Use t-tests for simple hypothesis tests and CIs
+	\item Use F-tests for composite hypothesis tests
+	\item Think about tests as comparing models
+	\item For F-test, fit both models and compute the pvalue
+	\end{itemize}
+}
+
+
+
 
 
 \end{document}
