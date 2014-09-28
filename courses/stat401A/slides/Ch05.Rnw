@@ -20,7 +20,7 @@
 \newenvironment{remark}[1][Remark]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
-<<options, echo=FALSE>>=
+<<options, echo=FALSE, warning=FALSE>>=
 opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
 library(plyr)
 library(ggplot2)
@@ -35,82 +35,196 @@ library(Sleuth3)
 \maketitle
 \end{frame}
 
-\section{Multi-sample models}
-\subsection{Assumptions}
-
+\section{Multi-group data}
 \begin{frame}[fragile]
-\frametitle{ANOVA assumptions}
-  Begin with the two-sample t-test model:
+\frametitle{Lifetimes of mice on different diets}
 
-	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
+<<echo=FALSE>>=
+ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
+@
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Two-group analysis}
+  Begin with the two group (equal variance) model:
+
+	\[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right) \]
 	
 	\vspace{0.2in} \pause
 	
-  but now	$j=1,\ldots,J$ and $i=1,\ldots,n_j$
+  but now	$j=1,2$ and $i=1,\ldots,n_j$
 	
-	\color{gray}{($n_j$ means there can be different \# of observations in each group)}
+	{\color{gray}($n_j$ means there can be different \# of observations in each group)}
+  
+  To perform a hypothesis test or a CI for the difference in means, the relevant quantities are:
+  \begin{itemize}
+  \item $\overline{Y}_2-\overline{Y}_1$
+  \item $SE(\overline{Y}_2-\overline{Y}_1) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}}$
+  \item $t$ distribution with $n_1+n_2-2$ degrees of freedom
+  \end{itemize}
+  where 
+  \[ s_p = \sqrt{\frac{ (n_1-1)s_1^2 + (n_2-1)s_2^2 }{n1+n_2-2}} \]
+  What if you have more than two groups?
 \end{frame}
 
+
+
+\begin{frame}
+\frametitle{Multi-group analysis}
+  The multi-group (equal variance) model:
+
+  \[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right) \]
+	
+	\vspace{0.2in} \pause
+	
+  but now	$j=1,\alert{\ldots,J}$ and $i=1,\ldots,n_j$
+	
+	{\color{gray}($n_j$ means there can be different \# of observations in each group)}
+  
+  To perform a hypothesis test or a CI for the difference in means, the relevant quantities are:
+  \begin{itemize}
+  \item $\overline{Y}_2-\overline{Y}_1$
+  \item $SE(\overline{Y}_2-\overline{Y}_1) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}}$
+  \item $t$ distribution with $n_1+n_2\alert{+\cdots+n_J-J}$ degrees of freedom
+  \end{itemize}
+  where 
+  \[ s_p = \sqrt{\frac{ (n_1-1)s_1^2 + (n_2-1)s_2^2 \alert{+ \cdots + (n_J-1)s_J^2} }{n1+n_2\alert{+\cdots+n_J-J}}} \]
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Hypothesis test for comparison of two means (in multi-group data)}
+  If $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ for $j=1,\ldots,J$ and we want to test the hypothesis
+	\begin{itemize}
+	\item $H_0: \mu_1=\mu_2$
+	\item $H_1: \mu_1\ne \mu_2$
+	\end{itemize}
+	\pause then we compute:
+	\[ t = \frac{\overline{Y}_1-\overline{Y}_2}{SE(\overline{Y}_1-\overline{Y}_2)} \]
+	\pause where 
+	\[ SE(\overline{Y}_1-\overline{Y}_2) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}} \]
+	\pause and
+	\[ s_p = \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_J-1)s_J^2}{n_1+n_2+\cdots+n_J - J }} \]
+  and we compare this to a $t$ distribution with $n_1+n_2+\cdots+n_J-J$ degrees of freedom. 
+\end{frame}
+
+
+
+\subsection{Example}
+\begin{frame}[fragile]
+<<echo=FALSE>>=
+sm = ddply(case0501, .(Diet), summarize,
+          n = length(Lifetime),
+          mean = mean(Lifetime),
+          sd = sd(Lifetime))
+sm
+@
+
+\pause 
+
+<<>>=
+g1 = which(sm$Diet == "NP")
+g2 = which(sm$Diet == "N/N85")
+(sp = with(sm, sqrt(sum((n-1)*sd^2)/sum(n-1))))
+(se = sp*sqrt(1/sm$n[g1]+1/sm$n[g2]))
+(t = (sm$mean[g1]-sm$mean[g2])/se)
+(p = 2*pt(-abs(t), sum(sm$n-1)))
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Confidence interval for difference of two means (in multi-group data)}
+
+  If $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ for $j=1,\ldots,J$, a $100(1-\alpha)$\% confidence interval for $\mu_1-\mu_2$ is 
+	\pause 
+	\[ \overline{Y}_1-\overline{Y}_2 \pm t_{df}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
+	\pause where the $t$ critical value, $t_{n_1+n_2+\cdots+n_J-J}(1-\alpha/2)$, needs to be calculated using a statistical software.
+	\end{array} \]
+
+  \vspace{0.2in} \pause
+  
+  For a 95\% confidence interval for the difference in mean lifetime between NP and N/N85 ($\mu_1-\mu_2$), we have 
+<<>>=
+(t_critical_value = qt(.975,sum(sm$n-1)))
+(sm$mean[g1]-sm$mean[g2]) + c(-1,1)*t_critical_value*se
+@
+\end{frame}
+
+
+
+\subsection{Assumptions}
+\begin{frame}
+\frametitle{One-way ANOVA model/assumptions}
+
+\[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right) \]
+
+\vspace{0.2in} \pause
+
+Assumptions:
+\begin{itemize}
+\item Normality
+  \begin{itemize}
+  \item Not skewed
+  \item Not heavy-tailed
+  \end{itemize}
+\item Common variance for all groups
+\item Independence
+  \begin{itemize}
+  \item No cluster effects
+  \item No serial effects
+  \item No spatial effects
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
 
 \begin{frame}[fragile]
 \frametitle{ANOVA assumptions graphically}
 <<echo=FALSE>>=
-mu = 0:3
-par(mfrow=c(1,2), mar=rep(0,4)+.1)
-curve(dnorm(x,mu[1]),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
-for (i in 2:length(mu)) curve(dnorm(x,mu[i]), add=T, col=i, lwd=2)
-curve(dnorm(x,mu[1],.25),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
-for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
+set.seed(1)
+mu = rnorm(4)
+curve(dnorm(x,mu[1]),-4,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
+for (i in 2:length(mu)) curve(dnorm(x, mu[i]), add=TRUE, lwd=2, col=i, lty=i)
 @
 \end{frame}
+
+
+
 
 \subsection{F-test}
 \begin{frame}[fragile]
 \frametitle{One-way ANOVA F-test}
 
-	\vspace{-0.1in}
+  Are any of the means different?
 
+  \vspace{0.2in} \pause
+  
+  Hypotheses in English:
+  \begin{itemize}
+  \item[$H_0$:] all the means are the same
+  \item[$H_a$:] at least one of the means is different
+  \end{itemize}
+
+  \vspace{0.2in} \pause
+
+  Statistical hypotheses:
 	\[ \begin{array}{ll@{\qquad\qquad}l}
 	H_0: & \mu_j=\mu \mbox{ for all } i & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
-	H_a: & \mu_j\ne\mu_{j'} \mbox{ for some $j$ and $j'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2)}
+	H_a: & \mu_j\ne\mu_{j'} \mbox{ for some $j$ and $j'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right)}
 	\end{array} 
 	\]
-	
-	\vspace{0.2in} \pause
-	
-<<echo=FALSE>>=
-par(mfrow=c(2,2), mar=c(0,2,0,0)+.1)
-curve(dnorm(x,2),-3,6, axes=F, frame=T, xlab="", ylab="H_0 true", lwd=2)
-curve(dnorm(x,2,.25),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
-curve(dnorm(x,mu[1]),-3,6, axes=F, frame=T, xlab="", ylab="H_a true", lwd=2)
-for (i in 2:length(mu)) curve(dnorm(x,mu[i]), add=T, col=i, lwd=2)
-curve(dnorm(x,mu[1],.25),-3,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
-for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
-@
 \end{frame}
 
-\subsection{Full vs reduced model}
-\frame{\frametitle{Full vs reduced model}
 
-	\vspace{-0.2in}
-
-	\[ \begin{array}{|l|c|c|}
-	\hline && \\
-	\mbox{Model}& Full & Reduced \\ &&\\ \hline && \\
-	\mbox{Assumption} & 
-	\uncover<2->{H_a:  Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2)} & \uncover<6->{
-	H_0:  Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\ && \\ \hline && \\
-	\mbox{Mean} & 
-	\uncover<3->{\hat{\mu}_j = \overline{Y}_j = \frac{1}{n_j} \sum_{i=1}^{n_j} Y_{ij}} & 
-	\uncover<7->{\hat{\mu} = \overline{Y} = \frac{1}{n} \sum_{j=1}^{J} \sum_{i=1}^{n_j} Y_{ij}} \\ && \\ \hline && \\
-	\mbox{Residual}  & 
-	\uncover<4->{r_{ij} = Y_{ij}-\overline{Y}_j} & 
-	\uncover<8->{r_{ij} = Y_{ij}-\overline{Y}} \\ &&\\ \hline && \\
-	\mbox{Sum of squares} & 
-	\uncover<5->{SSE=\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  & 
-	\uncover<9->{SST=\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  \\ &&\\\hline
-	\end{array} \]
-}
 
 \subsection{ANOVA table}
 \frame{\frametitle{ANOVA table}
@@ -122,16 +236,16 @@ for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
 	\mbox{d.f.} & \mbox{Mean square}  \\
 	\hline
 	\mbox{Factor A (Between groups)} &  
-	SSA=\sum_{j=1}^{J} n_j (\overline{Y}_j-\overline{Y})^2 & 
+	SSA=\sum_{j=1}^{J} n_j \left(\overline{Y}_j-\overline{Y}\right)^2 & 
 	J-1 & 
 	\frac{SSA}{J-1} \phantom{\left(=s_p^2\right)} \\
 	\mbox{Error (Within groups)} & 
-	SSE=\sum_{j=1}^{J} \sum_{i=1}^{n_j} (Y_{ij}-\overline{Y}_j)^2 & 
+	SSE=\sum_{j=1}^{J} \sum_{i=1}^{n_j} \left(Y_{ij}-\overline{Y}_j\right)^2 & 
 	n-J &  
 	\frac{SSE}{n-J} \left(=s_p^2\right) \\
 	\hline
 	\mbox{Total} & 
-	SST=\sum_{j=1}^{J} \sum_{i=1}^{n_j} (Y_{ij}-\overline{Y})^2 &
+	SST=\sum_{j=1}^{J} \sum_{i=1}^{n_j} \left(Y_{ij}-\overline{Y}\right)^2 &
 	n-1 \\
 	\end{array} \]
 	where 
@@ -171,22 +285,29 @@ for (i in 2:length(mu)) curve(dnorm(x,mu[i],.25), add=T, col=i, lwd=2)
 }
 
 
-\subsection{Example}
 \begin{frame}[fragile]
-\frametitle{Lifetimes of mice on different diets}
+\frametitle{F-distribution}
 
-<<echo=FALSE>>=
-library(Sleuth3)
-ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
+<<F-distribution, echo=FALSE>>=
+df = c(5,300)
+curve(df(x,df[1], df[2]), 0, 4, main=expression(F[list(5,300)]),
+      xlab="x",
+      ylab="Probability density function",
+      lwd=2)
+xx = c(2, seq(2, 4,by=.01), 4)
+yy = c(0, df(xx[-c(1,length(xx))], df[1], df[2]), 0)
+polygon(xx,yy, col='red', border=NA)
 @
 
-<<echo=FALSE>>=
-ddply(case0501, .(Diet), summarize,
-      n = length(Lifetime),
-      mean = mean(Lifetime),
-      sd = sd(Lifetime))
-@
 \end{frame}
+
+
+
+
+
+
+\subsection{Example}
+
 
 \frame[containsverbatim]{\frametitle{SAS code and output for one-way ANOVA}
 {\tiny
@@ -216,7 +337,7 @@ Dependent Variable: lifetime
 
 \frame{\frametitle{Summary}
 	One-way ANOVA F-test model:
-	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
+	\[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right) \]
 	
 	\vspace{0.2in} \pause
 	
@@ -234,6 +355,30 @@ Dependent Variable: lifetime
 
 
 \section{Hypotheses}
+\subsection{Full vs reduced model}
+\frame{\frametitle{Full vs reduced model}
+
+  \vspace{-0.2in}
+
+	\[ \begin{array}{|l|c|c|}
+	\hline && \\
+	\mbox{Model}& Full & Reduced \\ &&\\ \hline && \\
+	\mbox{Assumption} & 
+	\uncover<2->{H_a:  Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right)} & \uncover<6->{
+	H_0:  Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\ && \\ \hline && \\
+	\mbox{Mean} & 
+	\uncover<3->{\hat{\mu}_j = \overline{Y}_j = \frac{1}{n_j} \sum_{i=1}^{n_j} Y_{ij}} & 
+	\uncover<7->{\hat{\mu} = \overline{Y} = \frac{1}{n} \sum_{j=1}^{J} \sum_{i=1}^{n_j} Y_{ij}} \\ && \\ \hline && \\
+	\mbox{Residual}  & 
+	\uncover<4->{r_{ij} = Y_{ij}-\overline{Y}_j} & 
+	\uncover<8->{r_{ij} = Y_{ij}-\overline{Y}} \\ &&\\ \hline && \\
+	\mbox{Sum of squares} & 
+	\uncover<5->{SSE=\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  & 
+	\uncover<9->{SST=\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  \\ &&\\\hline
+	\end{array} \]
+}
+
+
 \subsection{Simple vs Composite}
 \frame{\frametitle{Simple vs Composite Hypotheses}
   Suppose \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \]
@@ -256,24 +401,7 @@ Dependent Variable: lifetime
 	\end{itemize}
 }
 
-\subsection{Equality of two means}
-\frame{\frametitle{Equality of two means}
-	If $Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ for $i=1,\ldots,\I$ and we want to test the \alert{simple hypothesis} 
-	\begin{itemize}
-	\item $H_0: \mu_1=\mu_2$
-	\item $H_1: \mu_1\ne \mu_2$
-	\end{itemize}
-	\pause then we use the same t-test and confidence interval formulas from the two-sample t-test:
-	\[ t = \frac{\overline{Y}_1-\overline{Y}_2}{SE(\overline{Y}_1-\overline{Y}_2)} \qquad 
-	CI: \overline{Y}_1-\overline{Y}_2 \pm t_{df}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
-	\pause where 
-	\[ SE(\overline{Y}_1-\overline{Y}_2) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}} \]
-	\pause with two modifications:
-	\[ \begin{array}{rl}
-	df &= n_1+n_2+\cdots+n_\I - \I \pause \\
-	s_p^2 &= \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_\I-1)s_\I^2}{n_1+n_2+\cdots+n_\I - \I } \pause = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_\I-1)s_\I^2}{df}
-	\end{array} \]
-}
+
 
 \frame[containsverbatim]{\frametitle{}
 
@@ -361,7 +489,7 @@ PROC GLM DATA=mice;
 
 \subsection{Composite hypotheses}
 \frame{\frametitle{Testing Composite hypotheses}
-	If $Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ for $i=1,\ldots,\I$ and we want to test the \alert{composite hypothesis} 
+	If $Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ for $i=1,\ldots,J$ and we want to test the \alert{composite hypothesis} 
 	\begin{itemize}
 	\item $H_0: \mu_i=\mu_j$
 	\item $H_1: \mu_i\ne \mu_j$ for some $i\ne j$
