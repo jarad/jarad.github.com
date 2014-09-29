@@ -22,7 +22,7 @@ PROC MEANS DATA=mice MAXDEC=1 N MIN MAX MEAN STDDEV CLM;
 
 PROC ANOVA DATA=mice;
   CLASS diet;
-  VAR lifetime;
+  MODEL lifetime = diet;
   TITLE 'Compare to statistical conclusions';
   RUN;
 
