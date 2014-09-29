@@ -10,7 +10,7 @@ names(mice) = tolower(names(mice)) # makes variable names lower case
 
 head(mice,10)
 
-boxplot(lifetime~diet,mice, main="Compare to Display 5.1")
+boxplot(lifetime~diet, mice, main="Compare to Display 5.1")
 
 # Compare to Display 5.2
 library(plyr)
@@ -20,8 +20,19 @@ sm = ddply(mice, .(diet), summarise,
            max = max(lifetime),
            mean = mean(lifetime),
            sd = sd(lifetime))
-sm$ciL = sm$mean - qt(.025, sm$n)*sm$sd/sqrt(sm$n)
-sm$ciU = sm$mean + qt(.025, sm$n)*sm$sd/sqrt(sm$n)
+sm$ciL = sm$mean - qt(.975, sm$n-1)*sm$sd/sqrt(sm$n)
+sm$ciU = sm$mean + qt(.975, sm$n-1)*sm$sd/sqrt(sm$n)
+sm
+
+# ANOVA
+m = lm(lifetime~diet, mice)
+anova(m) # R doesn't give you the bottom line
+
+pairwise.t.test(mice$lifetime, mice$diet, pool.sd = TRUE, p.adjust.method="none")
+
+# pairwise.t.test doesn't provide confidence intervals, but the following will
+TukeyHSD(aov(m)) # but this uses the Tukey adjustment (discussed in chapter 6)
+
 
 
 spock = read.csv("case0502.csv")

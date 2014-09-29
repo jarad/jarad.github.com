@@ -1,6 +1,6 @@
 X 'cd U:\401A\sleuth3csv';
 
-/* Displays from Chapter 5 */
+/* Chapter 5 */
 
 DATA mice;  
   INFILE 'case0501.csv' DELIMITER=',' FIRSTOBS=2;  
@@ -20,6 +20,20 @@ PROC MEANS DATA=mice MAXDEC=1 N MIN MAX MEAN STDDEV CLM;
   TITLE 'Compare to Display 5.2';
   RUN;
 
+PROC ANOVA DATA=mice;
+  CLASS diet;
+  VAR lifetime;
+  TITLE 'Compare to statistical conclusions';
+  RUN;
+
+/* Alternatively */
+PROC GLM DATA=mice;
+  CLASS diet;
+  MODEL lifetime = diet;
+  LSMEANS diet / DIFF CL; /* Pairwise comparisons */
+  RUN;
+
+
 
 DATA spock;
   INFILE 'case0502.csv' DELIMITER=',' FIRSTOBS=2;
@@ -36,7 +50,7 @@ PROC ANOVA DATA=spock;
 
 PROC GLM DATA=spock PLOTS=(DIAGNOSTICS RESIDUALS);
   CLASS judge;
-  MODEL percent=judge;
+  MODEL percent = judge;
   RUN;
 
 DATA spock; SET spock;
@@ -44,7 +58,7 @@ DATA spock; SET spock;
   IF judge="Spock's" THEN others=0;
   RUN;
 
-PROC PRINT DATA=spock; RUN;
+PROC PRINT DATA=spock; RUN; /* Just to check the previous DATA step */
 
 PROC ANOVA DATA=spock;
   CLASS judge others;
@@ -53,7 +67,7 @@ PROC ANOVA DATA=spock;
   RUN;
 
 
-/* For homework */
+/* May need for homework */
 TITLE 'Residual plots';
 PROC GLM DATA=spock PLOTS=(DIAGNOSTICS RESIDUALS);
   CLASS judge;
