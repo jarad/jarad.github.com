@@ -118,6 +118,44 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 
 \subsection{Example}
 \begin{frame}[fragile]
+\frametitle{Diet effect on mice lifetime}
+<<echo=FALSE, results='asis'>>=
+sm = ddply(case0501, .(Diet), summarize,
+          n = length(Lifetime),
+          mean = mean(Lifetime),
+          sd = sd(Lifetime))
+tab = xtable(sm, digits=c(NA,NA,0,1,1), caption="Summary statistics for mice lifetime (months) on different diets")
+print(tab, caption.placement="top")
+@
+
+\pause
+
+Test for difference in mean lifetime between NP and N/N85, i.e. 
+\[ H_0: \mu_4=\mu_1 \mbox{ vs } H_a: \mu_4\ne \mu_1. \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Showing work}
+
+{\small
+\[ \begin{array}{rl}
+\overline{Y}_1-\overline{Y}_4 &= 32.7-27.4 = 5.3 \\
+df &= 57+60+71+49+56+56-6 = 343 \\
+s_p^2 &= \frac{(57-1)5.1^2 + (60-1)6.7^2+(71-1)7.8^2+(49-1)6.1^2+(56-1)6.7^2+(56-1)7.0^2}{57+60+71+49+56+56-6} \\
+&= \frac{15314}{343} = 44.6 \\
+s_p &= \sqrt{s_p^2} = \sqrt{44.6} = 6.7 \\
+SE(\overline{Y}_1-\overline{Y}_4) &= s_p\sqrt{\frac{1}{n_1}+\frac{1}{n_4}} = 6.7\sqrt{\frac{1}{57}+\frac{1}{49}} = 1.3 \\
+t &= \frac{\overline{Y}_1-\overline{Y}_4}{SE(\overline{Y}_1-\overline{Y}_4) } =\frac{5.3}{1.2} = 4.1 \\
+p &= 2P(t_{343}<-|t|) = 2P(t_{343}<-4.1) = 0.000052 
+\end{array} \]
+}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
 <<echo=FALSE>>=
 sm = ddply(case0501, .(Diet), summarize,
           n = length(Lifetime),
@@ -148,7 +186,6 @@ g2 = which(sm$Diet == "N/N85")
 	\pause 
 	\[ \overline{Y}_1-\overline{Y}_2 \pm t_{df}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
 	\pause where the $t$ critical value, $t_{n_1+n_2+\cdots+n_J-J}(1-\alpha/2)$, needs to be calculated using a statistical software.
-	\end{array} \]
 
   \vspace{0.2in} \pause
   
@@ -220,8 +257,7 @@ for (i in 2:length(mu)) curve(dnorm(x, mu[i]), add=TRUE, lwd=2, col=i, lty=i)
 	\[ \begin{array}{ll@{\qquad\qquad}l}
 	H_0: & \mu_j=\mu \mbox{ for all } i & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
 	H_a: & \mu_j\ne\mu_{j'} \mbox{ for some $j$ and $j'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right)}
-	\end{array} 
-	\]
+	\end{array}	\]
 \end{frame}
 
 
