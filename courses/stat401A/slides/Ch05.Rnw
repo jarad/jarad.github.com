@@ -37,11 +37,65 @@ library(Sleuth3)
 
 \section{Multi-group data}
 \begin{frame}[fragile]
-\frametitle{Lifetimes of mice on different diets}
+\frametitle{Lifetime (months) of mice on different diets}
 
 <<echo=FALSE>>=
 ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 @
+\end{frame}
+
+\subsection{Assumptions}
+\begin{frame}
+\frametitle{One-way ANOVA model/assumptions}
+
+\[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right) \]
+for $j=1,\ldots,J$ and $i=1,\ldots,n_j$. 
+  
+	{\color{gray} \small ($n_j$ means there can be different \# of observations in each group)}
+
+\vspace{0.2in} \pause
+
+Assumptions:
+\begin{itemize}
+\item Normality
+  \begin{itemize}
+  \item Not skewed
+  \item Not heavy-tailed
+  \end{itemize}
+\item Common variance for all groups
+\item Independence
+  \begin{itemize}
+  \item No cluster effects
+  \item No serial effects
+  \item No spatial effects
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{ANOVA assumptions graphically}
+<<echo=FALSE>>=
+set.seed(1)
+mu = rnorm(4)
+curve(dnorm(x,mu[1]),-4,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
+for (i in 2:length(mu)) curve(dnorm(x, mu[i]), add=TRUE, lwd=2, col=i, lty=i)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{What if you want to compare two groups?}
+
+We may still be interested in comparing two groups. 
+
+\vspace{0.2in} \pause
+
+Statistical hypothesis: Is there a difference in mean lifetimes between the mice in two groups, e.g. NP and N/N85?
+
+\vspace{0.2in} \pause
+
+Statistical question: What is the difference in mean lifetimes between the mice in two groups, e.g. NP and N/N85?
+
 \end{frame}
 
 
@@ -56,8 +110,6 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 	\vspace{0.2in} \pause
 	
   but now	$j=1,2$ and $i=1,\ldots,n_j$
-	
-	{\color{gray}($n_j$ means there can be different \# of observations in each group)}
   
   To perform a hypothesis test or a CI for the difference in means, the relevant quantities are:
   \begin{itemize}
@@ -66,7 +118,7 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
   \item $t$ distribution with $n_1+n_2-2$ degrees of freedom
   \end{itemize}
   where 
-  \[ s_p = \sqrt{\frac{ (n_1-1)s_1^2 + (n_2-1)s_2^2 }{n1+n_2-2}} \]
+  \[ s_p^2 = \frac{ (n_1-1)s_1^2 + (n_2-1)s_2^2 }{n1+n_2-2} \]
   What if you have more than two groups?
 \end{frame}
 
@@ -91,7 +143,7 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
   \item $t$ distribution with $n_1+n_2\alert{+\cdots+n_J-J}$ degrees of freedom
   \end{itemize}
   where 
-  \[ s_p = \sqrt{\frac{ (n_1-1)s_1^2 + (n_2-1)s_2^2 \alert{+ \cdots + (n_J-1)s_J^2} }{n1+n_2\alert{+\cdots+n_J-J}}} \]
+  \[ s_p^2 = \frac{ (n_1-1)s_1^2 + (n_2-1)s_2^2 \alert{+ \cdots + (n_J-1)s_J^2} }{n1+n_2\alert{+\cdots+n_J-J}} \]
 \end{frame}
 
 
@@ -110,8 +162,9 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 	\pause where 
 	\[ SE(\overline{Y}_1-\overline{Y}_2) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}} \]
 	\pause and
-	\[ s_p = \sqrt{\frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_J-1)s_J^2}{n_1+n_2+\cdots+n_J - J }} \]
-  and we compare this to a $t$ distribution with $n_1+n_2+\cdots+n_J-J$ degrees of freedom. 
+	\[ s_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_J-1)s_J^2}{n_1+n_2+\cdots+n_J - J }. \]
+  \pause 
+  Then we compare $t$ to a $t$ distribution with $n_1+n_2+\cdots+n_J-J$ degrees of freedom. 
 \end{frame}
 
 
@@ -150,89 +203,66 @@ t &= \frac{\overline{Y}_1-\overline{Y}_4}{SE(\overline{Y}_1-\overline{Y}_4) } =\
 p &= 2P(t_{343}<-|t|) = 2P(t_{343}<-4.1) = 0.000052 
 \end{array} \]
 }
+So we reject the null hypothesis that there is no difference between mean lifetime of mice on the NP and N/N85 diets.
 
 \end{frame}
 
 
 
+% \begin{frame}[fragile]
+% <<echo=FALSE>>=
+% sm = ddply(case0501, .(Diet), summarize,
+%           n = length(Lifetime),
+%           mean = mean(Lifetime),
+%           sd = sd(Lifetime))
+% sm
+% @
+% 
+% \pause 
+% 
+% <<>>=
+% g1 = which(sm$Diet == "NP")
+% g2 = which(sm$Diet == "N/N85")
+% (sp = with(sm, sqrt(sum((n-1)*sd^2)/sum(n-1))))
+% (se = sp*sqrt(1/sm$n[g1]+1/sm$n[g2]))
+% (t = (sm$mean[g1]-sm$mean[g2])/se)
+% (p = 2*pt(-abs(t), sum(sm$n-1)))
+% @
+% 
+% confidence interval
+% 
+% <<>>=
+% (t_critical_value = qt(.975,sum(sm$n-1)))
+% (sm$mean[g1]-sm$mean[g2]) + c(-1,1)*t_critical_value*se
+% @
+% 
+% \end{frame}
+
+
+
 \begin{frame}[fragile]
-<<echo=FALSE>>=
-sm = ddply(case0501, .(Diet), summarize,
-          n = length(Lifetime),
-          mean = mean(Lifetime),
-          sd = sd(Lifetime))
-sm
-@
-
-\pause 
-
-<<>>=
-g1 = which(sm$Diet == "NP")
-g2 = which(sm$Diet == "N/N85")
-(sp = with(sm, sqrt(sum((n-1)*sd^2)/sum(n-1))))
-(se = sp*sqrt(1/sm$n[g1]+1/sm$n[g2]))
-(t = (sm$mean[g1]-sm$mean[g2])/se)
-(p = 2*pt(-abs(t), sum(sm$n-1)))
-@
-
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Confidence interval for difference of two means (in multi-group data)}
+\frametitle{Confidence interval for the difference of two means (in multi-group data)}
 
   If $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ for $j=1,\ldots,J$, a $100(1-\alpha)$\% confidence interval for $\mu_1-\mu_2$ is 
 	\pause 
-	\[ \overline{Y}_1-\overline{Y}_2 \pm t_{df}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
+	\[ \overline{Y}_1-\overline{Y}_4 \pm t_{df}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_4) \]
 	\pause where the $t$ critical value, $t_{n_1+n_2+\cdots+n_J-J}(1-\alpha/2)$, needs to be calculated using a statistical software.
 
   \vspace{0.2in} \pause
   
-  For a 95\% confidence interval for the difference in mean lifetime between NP and N/N85 ($\mu_1-\mu_2$), we have 
-<<>>=
-(t_critical_value = qt(.975,sum(sm$n-1)))
-(sm$mean[g1]-sm$mean[g2]) + c(-1,1)*t_critical_value*se
-@
-\end{frame}
-
-
-
-\subsection{Assumptions}
-\begin{frame}
-\frametitle{One-way ANOVA model/assumptions}
-
-\[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right) \]
-
-\vspace{0.2in} \pause
-
-Assumptions:
-\begin{itemize}
-\item Normality
-  \begin{itemize}
-  \item Not skewed
-  \item Not heavy-tailed
-  \end{itemize}
-\item Common variance for all groups
-\item Independence
-  \begin{itemize}
-  \item No cluster effects
-  \item No serial effects
-  \item No spatial effects
-  \end{itemize}
-\end{itemize}
+  A 95\% confidence interval for the difference in mean lifetime for N/N85 minus NP ($\mu_1-\mu_4$) is 
+  \[ 5.3 \pm 1.96\times 1.3 = (2.8,7.8). \]
+  The statistical conclusion would be 
+  \begin{quote}
+  In this study, mice on the N/N85 diet lived an average of 5.3 months longer than mice on the NP diet (95\% CI (2.8,7.8)). 
+  \end{quote}
 
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{ANOVA assumptions graphically}
-<<echo=FALSE>>=
-set.seed(1)
-mu = rnorm(4)
-curve(dnorm(x,mu[1]),-4,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
-for (i in 2:length(mu)) curve(dnorm(x, mu[i]), add=TRUE, lwd=2, col=i, lty=i)
-@
-\end{frame}
+
+
+
+
 
 
 
@@ -258,6 +288,10 @@ for (i in 2:length(mu)) curve(dnorm(x, mu[i]), add=TRUE, lwd=2, col=i, lty=i)
 	H_0: & \mu_j=\mu \mbox{ for all } i & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
 	H_a: & \mu_j\ne\mu_{j'} \mbox{ for some $j$ and $j'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right)}
 	\end{array}	\]
+  
+  \pause
+  
+  An ANOVA table organizes the relevant quantities for this test and computes the pvalue. 
 \end{frame}
 
 
@@ -306,7 +340,7 @@ for (i in 2:length(mu)) curve(dnorm(x, mu[i]), add=TRUE, lwd=2, col=i, lty=i)
 	Factor A (between groups) & SSA & $J-1$ & MSA = SSA/$J-1$ & MSA/MSE & \mbox{(see below)} \\
 	Error (within groups) & SSE & $n-J$ & MSE = SSE/$n-J$ \\
 	\hline
-	Total & SST & $n-1$ 
+	Total & SST=SSA+SSE & $n-1$ 
 	\end{tabular}
 	}
 	
@@ -339,7 +373,7 @@ polygon(xx,yy, col='red', border=NA)
 
 
 
-
+\begin{comment}
 
 
 \subsection{Example}
@@ -385,7 +419,6 @@ Dependent Variable: lifetime
 	
 	\vspace{0.2in} \pause
 	
-	An ANOVA table organizes the relevant quantities for this test and computes the pvalue. 
 }
 
 
@@ -673,7 +706,7 @@ Dependent Variable: lifetime
 	\end{itemize}
 }
 
-
+\end{comment}
 
 
 
