@@ -368,7 +368,7 @@ PROC GLM DATA=mice;
 
   Statistical hypotheses:
 	\[ \begin{array}{ll@{\qquad\qquad}l}
-	H_0: & \mu_j=\mu \mbox{ for all } i & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
+	H_0: & \mu_j=\mu \mbox{ for all } j & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
 	H_1: & \mu_j\ne\mu_{j'} \mbox{ for some $j$ and $j'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right)}
 	\end{array}	\]
   
@@ -471,7 +471,7 @@ So
 \[ \begin{array}{rl}
 SSA =& 57\times (32.7-38.8)^2+60\times (45.1-38.8)^2+71\times (42.3-38.8)^2 + 49\times (27.4-38.8)^2 \\
 &+ 56\times (42.9-38.8)^2 + 56\times(39.7-38.8)^2 = 12734 \pause \\
-SST =& (35.5-38.8)^2 - (35.4-38.8)^2 + (34.9-38.8)^2 + \cdots + (19.6-38.8)^2 + (47.6-38.8)^2 = 28031 \pause \\
+SST =& (35.5-38.8)^2 + (35.4-38.8)^2 + (34.9-38.8)^2 + \cdots + (19.6-38.8)^2 + (47.6-38.8)^2 = 28031 \pause \\
 SSE =& SST-SSA = 28031 - 12734 = 15297 \\
 J-1 =& 5 \\
 n-J =& 349-6 = 343 \\
@@ -693,7 +693,7 @@ ggplot(case0501, aes(x=Diet, y=Lifetime)) + geom_jitter(size=3) + geom_errorbar(
 DATA mice;
   INFILE 'case0501.csv' DSD FIRSTOBS=2;
   INPUT lifetime diet $;
-  IF diet='NP' THEN group=1; ELSE group=0;
+  IF diet='NP' THEN NP=1; ELSE NP=0;
 
 PROC PRINT DATA=mice; RUN;
   
@@ -705,7 +705,7 @@ PROC GLM DATA=mice;
 
 TITLE 'Reduced Model';
 PROC GLM DATA=mice;
-  MODEL lifetime = group;
+  MODEL lifetime = NP;
   RUN;
 \end{verbatim}
 }
@@ -751,7 +751,7 @@ Dependent Variable: lifetime
 	\vspace{0.2in} \pause
 	
 	Finally, we calculate the pvalue: 
-	\[ P(F>F_{4,343}) <0.0001 \]
+	\[ P(F_{4,343}>F) <0.0001 \]
 
 	\vspace{0.2in} \pause
 	
@@ -766,11 +766,11 @@ Dependent Variable: lifetime
 DATA mice;
   INFILE 'case0501.csv' DSD FIRSTOBS=2;
   INPUT lifetime diet $;
-  IF diet='NP' THEN group=1; ELSE group=0;
+  IF diet='NP' THEN NP=1; ELSE NP=0;
 
 PROC GLM DATA=mice;
-  CLASS diet group;
-  MODEL lifetime = group diet(group);
+  CLASS diet NP;
+  MODEL lifetime = NP diet(NP);
   RUN;
   
                                        The GLM Procedure
@@ -786,8 +786,8 @@ Dependent Variable: lifetime
 
 
       Source                      DF     Type III SS     Mean Square    F Value    Pr > F
-      group                        1     7256.758693     7256.758693     162.71    <.0001
-      diet(group)                  4     5332.163640     1333.040910      29.89    <.0001
+      NP                           1     7256.758693     7256.758693     162.71    <.0001
+      diet(NP)                     4     5332.163640     1333.040910      29.89    <.0001
 \end{verbatim}
 }
 \end{frame}
@@ -798,11 +798,87 @@ Dependent Variable: lifetime
 \frametitle{Making R do the calculations}
 
 <<>>=
-case0501$group = 1*(case0501$Diet == "NP")
+case0501$NP = factor(case0501$Diet == "NP")
 
-mod1 = lm(Lifetime~group, case0501)
-mod2 = lm(Lifetime~Diet, case0501)
-anova(mod1,mod2)
+modR = lm(Lifetime~NP,   case0501)
+modF = lm(Lifetime~Diet, case0501)
+anova(modR,modF)
+@
+
+\end{frame}
+
+
+\subsection{Another example}
+\begin{frame}
+\frametitle{Are there differences in means amongst low calorie diets?}
+
+Let $Y_{ij}$ be the lifetime in months for mouse $i$ in group $j$ where the groups are N/N85 (j=1), N/R40 (j=2), N/R50 (j=3), NP (j=4), R/R50 (j=5), and lopro (j=6). \pause Assume 
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
+and test the hypotheses
+\begin{itemize}
+\item[$H_0$:] $\mu_2=\mu_3=\mu_5=\mu_6$
+\item[$H_1$:] at least one of $\mu_2,\mu_3,\mu_5,\mu_6$ is different from the rest
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Implicitly, we are allowing $\mu_1$ and $\mu_4$ to be different from the others. 
+
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Making SAS do the calculations}
+{\tiny
+\begin{verbatim}
+DATA mice;
+  INFILE 'case0501.csv' DSD FIRSTOBS=2;
+  INPUT lifetime diet $;
+  IF diet='N/N85' THEN local=1; ELSE local=2; /* NP is 2 here */
+  IF diet='NP' THEN local=0;                  /* NP is now 0  */
+
+/* I needed to run this PROC PRINT to set the data up appropriately 
+PROC PRINT DATA=mice; RUN;
+*/
+
+PROC GLM DATA=mice;
+  CLASS diet local;
+  MODEL lifetime = local diet(local);
+  RUN;
+  
+                                       The GLM Procedure
+ 
+Dependent Variable: lifetime   
+
+                                              Sum of
+      Source                      DF         Squares     Mean Square    F Value    Pr > F
+      Model                        5     12733.94181      2546.78836      57.10    <.0001
+      Error                      343     15297.41532        44.59888                     
+      Corrected Total            348     28031.35713                                     
+
+      Source                      DF       Type I SS     Mean Square    F Value    Pr > F
+      local                        2     11868.52098      5934.26049     133.06    <.0001
+      diet(local)                  3       865.42083       288.47361       6.47    0.0003
+\end{verbatim}
+}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Making R do the calculations}
+
+<<>>=
+case0501$local = ifelse(case0501$Diet=='N/N85', 1, 2) # NP is 2 here 
+case0501$local[case0501$Diet=='NP'] = 0               # now NP is 1
+case0501$local = factor(case0501$local)
+mod1 = lm(Lifetime~1,     case0501)
+modR = lm(Lifetime~local, case0501)
+modF = lm(Lifetime~Diet,  case0501)
+anova(mod1, modR, modF)
+
+anova(modF) # To get the pooled estimate of the variance for the full model
 @
 
 \end{frame}
@@ -818,6 +894,10 @@ anova(mod1,mod2)
     \item General F-tests
     \end{itemize}
 	\end{itemize}
+  
+  \vspace{0.2in} \pause 
+  
+  Think about F-tests as comparing models.
 }
 
 
