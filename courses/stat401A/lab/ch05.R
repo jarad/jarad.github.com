@@ -44,7 +44,9 @@ boxplot(percent~judge, spock, main="Compare to Display 5.5")
 # Compare to Display 5.10
 anova(lm(percent~judge, spock))
 
-spock$others = spock$judge == "Spock's"
+# Create a new factor variable distinguishing
+# the Spock judge from the rest
+spock$others = factor(spock$judge != "Spock's")
 head(spock,15)
 
 # Compare to Display 5.12
