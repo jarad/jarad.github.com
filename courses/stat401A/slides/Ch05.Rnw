@@ -485,7 +485,17 @@ p =& P(F_{5,343}>57.1) < 0.0001
 \end{frame}
 
 
-\subsection{Example}
+
+
+\begin{frame}[fragile]
+\frametitle{As a picture}
+
+<<echo=FALSE>>=
+ggplot(case0501, aes(x=Diet, y=Lifetime)) + geom_jitter(size=3) + geom_hline(data=sm2, aes(yintercept=mean[7]), col='red', size=2) + geom_errorbar(data=sm, aes(y=mean, ymin=mean, ymax=mean), col='blue', size=2)
+@
+
+\end{frame}
+
 
 
 \frame[containsverbatim]{\frametitle{SAS code and output for one-way ANOVA}
@@ -529,8 +539,8 @@ anova(m)
 \section{General F-tests}
 \subsection{Simple vs Composite}
 \frame{\frametitle{Simple vs Composite Hypotheses}
-  Suppose \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \]
-	for $i=1,\ldots,3$ \pause then a \alert{simple hypothesis} is 
+  Suppose \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \]
+	for $j=1,\ldots,3$ \pause then a \alert{simple hypothesis} is 
 	\begin{itemize}
 	\item $H_0: \mu_1=\mu_2$
 	\item $H_1: \mu_1\ne \mu_2$
@@ -538,14 +548,14 @@ anova(m)
 	\pause and a \alert{composite hypothesis} is 
 	\begin{itemize}
 	\item $H_0: \mu_1=\mu_2=\mu_3$
-	\item $H_1: \mu_i\ne \mu_j$ for some $i\ne j$
+	\item $H_1: j\ne \mu_{j'}$ for some $j$ and $j'$
 	\end{itemize}
 	\pause since there are four possibilities under $H_1$
 	\begin{itemize}[<+->]
 	\item $\mu_1=\mu_2\ne\mu_3$
 	\item $\mu_2=\mu_3\ne\mu_1$
 	\item $\mu_3=\mu_1\ne\mu_2$
-	\item $\mu_1\ne\mu_2\ne\mu_3\ne\mu_1$
+	\item none of $\mu_1,\mu_2,\mu_3$ are equal
 	\end{itemize}
 }
 
@@ -554,10 +564,10 @@ anova(m)
 
 \subsection{Composite hypotheses}
 \frame{\frametitle{Testing Composite hypotheses}
-	If $Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ for $i=1,\ldots,J$ and we want to test the \alert{composite hypothesis} 
+	If $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ for $j=1,\ldots,J$ and we want to test the \alert{composite hypothesis} 
 	\begin{itemize}
-	\item $H_0: \mu_i=\mu_j$
-	\item $H_1: \mu_i\ne \mu_j$ for some $i\ne j$
+	\item $H_0: \mu_j=\mu$ for all $j$
+	\item $H_1: \mu_j\ne \mu_{j'}$ for some $j$ and $j'$
 	\end{itemize}
 	
 	\vspace{0.2in} \pause
@@ -565,7 +575,7 @@ anova(m)
 	 think about this as two models: \pause
 	\begin{itemize}
 	\item $H_0: Y_{ij} \stackrel{ind}{\sim} N(\mu,\sigma^2)$ \uncover<6->{\alert{(reduced)}}\pause
-	\item $H_1: Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ \uncover<5->{\alert{(full)}}
+	\item $H_1: Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ \uncover<5->{\alert{(full)}}
 	\end{itemize}
 	
 	\vspace{0.2in} \pause
@@ -574,7 +584,24 @@ anova(m)
 }
 
 
-\frame{\frametitle{Full vs reduced model}
+\begin{frame}
+\frametitle{Nested models: full vs reduced}
+
+\begin{definition}
+Two models are \alert{nested} the \alert{reduced} model is a special case of the \alert{full} model. 
+\end{definition}
+
+For example, consider the full model 
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2). \]
+One special case of this model occurs when $\mu_j=\mu$ and thus 
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu,\sigma^2). \]
+is a \alert{reduced} model and these two models are nested. 
+
+\end{frame}
+
+
+\frame{
+\frametitle{Calculating the sum of squared residuals (errors)}
 
   \vspace{-0.2in}
 
@@ -623,28 +650,43 @@ anova(m)
 
 \subsection{Example}
 \frame{\frametitle{Example}
-	Recall the mice data set. \pause Consider the hypothesis that all diets except NP have a common mean and this mean is different from the NP.
+	Recall the mice data set. 
+  
+  \pause 
+  
+  Consider the hypothesis that all diets have a common mean lifetime except NP.
 	
 	\vspace{0.2in} \pause
 	
 	Let
-	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \]
-	with $i=1$ being the NP group \pause then the hypotheses are
+	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \]
+	with $j=1$ being the NP group \pause then the hypotheses are
 	\begin{itemize}
-	\item $H_0: \mu_i=\mu$ for $i\ne 1$
-	\item $H_1: \mu_i\ne\mu_j$ for $i\ne j$ and $i,j=2,\ldots,6$
+	\item $H_0: \mu_j=\mu$ for $j\ne 1$
+	\item $H_1: \mu_j\ne\mu_{j'}$ for some $j,j'=2,\ldots,6$
 	\end{itemize}
 	
 	\vspace{0.2in} \pause
 	
 	As models:
 	\begin{itemize}
-	\item $H_0: Y_{1j}\sim N(\mu_1,\sigma^2)$ and $Y_{ij}\sim N(\mu,\sigma^2)$ for $i\ne 1$
-	\item $H_1: Y_{ij}\sim N(\mu_i,\sigma^2)$
+	\item $H_0: Y_{ij}\sim N(\mu_1,\sigma^2)$ and $Y_{ij}\sim N(\mu,\sigma^2)$ for $j\ne 1$
+	\item $H_1: Y_{ij}\sim N(\mu_j,\sigma^2)$
 	\end{itemize}
-	
-	
 }
+
+
+\begin{frame}[fragile]
+\frametitle{As a picture}
+
+<<echo=FALSE>>=
+sm3 = sm 
+sm3$mean[-which(sm3$Diet=="NP")] = mean(case0501$Lifetime[case0501$Diet!="NP"])
+ggplot(case0501, aes(x=Diet, y=Lifetime)) + geom_jitter(size=3) + geom_errorbar(data=sm, aes(y=mean, ymin=mean, ymax=mean), col='blue', size=2) + geom_errorbar(data=sm3, aes(y=mean, ymin=mean, ymax=mean), col='red', size=2)
+@
+
+\end{frame}
+
 
 \frame[containsverbatim]{\frametitle{}
 \begin{verbatim}
@@ -771,8 +813,10 @@ anova(mod1,mod2)
 	\begin{itemize}[<+->]
 	\item Use t-tests for simple hypothesis tests and CIs
 	\item Use F-tests for composite hypothesis tests
-	\item Think about tests as comparing models
-	\item For F-test, fit both models and compute the pvalue
+    \begin{itemize}
+    \item One-way ANOVA F-test
+    \item General F-tests
+    \end{itemize}
 	\end{itemize}
 }
 
