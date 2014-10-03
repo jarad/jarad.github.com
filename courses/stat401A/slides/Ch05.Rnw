@@ -537,7 +537,23 @@ anova(m)
 
 
 \section{General F-tests}
-\subsection{Simple vs Composite}
+\begin{frame}
+\frametitle{General F-tests}
+
+The one-way ANOVA F-test is an example of a general hypothesis testing framework that uses F-tests. 
+\pause 
+This framework can be used to test 
+\begin{itemize}
+\item composite alternative hypotheses\pause or, equivalently,
+\item a full vs a reduced model. \pause 
+\end{itemize}
+
+The general idea is to balance the amount of variability remaining when moving from the reduced model to the full model measured using the sums of squared errors (SSEs) relative to the amount of complexity, i.e. parameters, added to the model. 
+
+\end{frame}
+
+
+\subsection{Simple vs Composite Hypotheses}
 \frame{\frametitle{Simple vs Composite Hypotheses}
   Suppose \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \]
 	for $j=1,\ldots,3$ \pause then a \alert{simple hypothesis} is 
@@ -548,7 +564,7 @@ anova(m)
 	\pause and a \alert{composite hypothesis} is 
 	\begin{itemize}
 	\item $H_0: \mu_1=\mu_2=\mu_3$
-	\item $H_1: j\ne \mu_{j'}$ for some $j$ and $j'$
+	\item $H_1: \mu_j\ne \mu_{j'}$ for some $j$ and $j'$
 	\end{itemize}
 	\pause since there are four possibilities under $H_1$
 	\begin{itemize}[<+->]
@@ -588,14 +604,16 @@ anova(m)
 \frametitle{Nested models: full vs reduced}
 
 \begin{definition}
-Two models are \alert{nested} the \alert{reduced} model is a special case of the \alert{full} model. 
+Two models are \alert{nested} if the \alert{reduced} model is a special case of the \alert{full} model. 
 \end{definition}
+
+\vspace{0.2in} \pause
 
 For example, consider the full model 
 \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2). \]
-One special case of this model occurs when $\mu_j=\mu$ and thus 
+\pause One special case of this model occurs when $\mu_j=\mu$ \pause and thus 
 \[ Y_{ij} \stackrel{ind}{\sim} N(\mu,\sigma^2). \]
-is a \alert{reduced} model and these two models are nested. 
+is a reduced model and these two models are nested. 
 
 \end{frame}
 
@@ -625,7 +643,7 @@ is a \alert{reduced} model and these two models are nested.
 
 
 
-\frame{\frametitle{F-tests}
+\frame{\frametitle{General F-tests}
 \small
 	Do the following
 	\begin{enumerate}[1.]
@@ -670,7 +688,7 @@ is a \alert{reduced} model and these two models are nested.
 	
 	As models:
 	\begin{itemize}
-	\item $H_0: Y_{ij}\sim N(\mu_1,\sigma^2)$ and $Y_{ij}\sim N(\mu,\sigma^2)$ for $j\ne 1$
+	\item $H_0: Y_{i1}\sim N(\mu_1,\sigma^2)$ and $Y_{ij}\sim N(\mu,\sigma^2)$ for $j\ne 1$
 	\item $H_1: Y_{ij}\sim N(\mu_j,\sigma^2)$
 	\end{itemize}
 }
@@ -697,15 +715,16 @@ DATA mice;
 
 PROC PRINT DATA=mice; RUN;
   
-TITLE 'Full Model';
 PROC GLM DATA=mice;
   CLASS diet;
   MODEL lifetime = diet;
+  TITLE 'Full Model';
   RUN;
 
-TITLE 'Reduced Model';
 PROC GLM DATA=mice;
+  CLASS NP;
   MODEL lifetime = NP;
+  TITLE 'Reduced Model';
   RUN;
 \end{verbatim}
 }
@@ -750,7 +769,7 @@ Dependent Variable: lifetime
 	
 	\vspace{0.2in} \pause
 	
-	Finally, we calculate the pvalue: 
+	Finally, we calculate the pvalue (using statistical software): 
 	\[ P(F_{4,343}>F) <0.0001 \]
 
 	\vspace{0.2in} \pause
