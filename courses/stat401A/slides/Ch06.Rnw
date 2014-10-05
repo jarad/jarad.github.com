@@ -1,0 +1,211 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{One-way ANOVA}
+\title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+Jnstitute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, echo=FALSE, warning=FALSE>>=
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(Sleuth3)
+@
+
+
+\begin{document}
+
+
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Contrasts}
+\begin{frame}[fragile]
+\frametitle{Mice lifetimes}
+<<echo=FALSE>>=
+ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
+@
+\end{frame}
+
+
+
+
+\frame{\frametitle{Simple hypothesis}	
+	Consider the one-way ANOVA model: $Y_{ij} \sim N(\mu_j,\sigma^2)$ where $j=1,\ldots,J$.
+	
+	\vspace{0.2in} \pause
+	
+	Here are a few simple alternative hypotheses:
+	
+	\begin{itemize}
+	Jtem Mean lifetime for N/R40 and N/R50 diet is different. \pause
+	Jtem Mean lifetime for N/R40 is different than for N/R50 and R/R50 combined. \pause
+	Jtem Mean lifetime for NP and N/N85 combined is different than for low calorie diets combined.
+	\end{itemize}
+	
+	\vspace{0.2in} \pause 
+	
+	$H_0: \gamma=0 \qquad H_1: \gamma \ne 0:$ \pause
+	\[ \begin{array}{rl}
+	\gamma_1 &=  \mu_{N/R40}-\mu_{N/R50} \pause\\
+	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
+	\gamma_3 &= \frac{1}{2}(\mu_{NP}+\mu_{N/N85})-\frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro}) \\
+	\end{array} \]
+}
+
+\frame{\frametitle{Contrasts}
+\small
+	\begin{center}
+	\begin{tabular}{l|cccccc}
+	i & NP & N/N85 & lopro & N/R50 & R/R50 & N/R40 \\
+	\hline 
+	1 & 0 & 0 & 0 & -1 & 0 & 1 \pause \\ 
+	2 & 0 & 0 & 0 & $-1/2$ & $-1/2$ & 1 \pause \\ 
+	3 & $1/2$ & $1/2$ & $-1/4$ & $-1/4$ & $-1/4$ & $-1/4$ \pause \\ 
+	\hline
+	& $C_1$ & $C_2$ & $C_3$ & $C_4$ & $C_5$ & $C_6$ 
+	\end{tabular}
+	\end{center}
+	
+	\pause
+	
+	\[ \gamma = C_1 \mu_1 + C_2 \mu_2 + \cdots + C_J \mu_J \] 
+	
+	\pause 
+	
+	Estimated by 
+	\[ g = C_1 \overline{Y}_1 + C_2 \overline{Y}_2 + \cdots + C_J \overline{Y}_J \] 
+	
+	\pause
+	
+	with standard error
+	\[ SE(g) = s_p \sqrt{\frac{C_1^2}{n_1}+\frac{C_2^2}{n_2}+\cdots+\frac{C_J^2}{n_J}} \]
+	
+	\pause
+	
+	t-statistic and CI
+	\[ t = \frac{g}{SE(g)} \pause \qquad g \pm t_{df}(1-\alpha/2) SE(g) \]
+}
+
+\begin{frame}[fragile]
+\frametitle{Examples}
+<<echo=FALSE,results='asis'>>=
+sm = ddply(mice, .(diet), summarise, 
+           n = length(lifetime),
+           mean = mean(lifetime),
+           sd = sd(lifetime))
+
+print(xtable(sm), row.names=FALSE)
+
+m = lm(lifetime~diet, mice)
+sp = summary(m)$sigma
+
+C = rbind(c(0,0,0,-1,0,1),
+          c(0,0,0,-.5,-.5,1),
+          c(.5,.5,rep(-.25,4)))
+
+g = rowSums(C%*%sm$mean)
+SEg = rowSums(sp*sqrt(C^2%*%(1/sm$n)))
+
+df = sum(sm$n-1)
+t = g/SEg
+p = 2*pt(-abs(t),df)
+L = g-qt(.975,df)*SEg
+U = g+qt(.975,df)*SEg
+
+tests = data.frame(g=g,SEg=SEg,t=t,p=p,L=L,U=U)
+
+print(xtable(tests), row.names=FALSE)
+@
+\end}frame}
+
+\subsection{SAS}
+\frame[containsverbatim]{\frametitle{}
+\tiny
+	\begin{verbatim}
+DATA case0501;
+  INFILE 'case0501.csv' DSD FIRSTOBS=2;
+  INPUT lifetime diet $ ;
+
+PROC MEANS DATA=case0501;
+  CLASS diet;
+  VAR lifetime;
+  RUN;
+
+
+
+     diet        Obs      N            Mean         Std Dev         Minimum         Maximum
+     --------------------------------------------------------------------------------------
+     N/N85        57     57      32.6912281       5.1252972      17.9000000      42.3000000
+     N/R40        60     60      45.1166667       6.7034058      19.6000000      54.6000000
+     N/R50        71     71      42.2971831       7.7681947      18.6000000      51.9000000
+     NP           49     49      27.4020408       6.1337010       6.4000000      35.5000000
+     R/R50        56     56      42.8857143       6.6831519      24.2000000      50.7000000
+     lopro        56     56      39.6857143       6.9916945      23.4000000      49.7000000
+     --------------------------------------------------------------------------------------
+
+	\end{verbatim}
+}
+
+
+\frame[containsverbatim]{\frametitle{}
+\tiny
+	\begin{verbatim}
+PROC GLM;
+  CLASS diet;
+  MODEL lifetime = diet / CLPARM;
+  ESTIMATE 'N/R40 - N/R50'                              
+    diet 0 1 -1 0 0 0 ;
+  ESTIMATE 'N/R40 - (N/R50+R/R50)/2'                    
+    diet 0 1 -.5 0 -.5 0 ;
+  ESTIMATE '(NP+N/N85)/2 - (N/R50+R/R50+N/R40+lopro)/4' 
+    diet 2 -1 -1 2 -1 -1 / DIVISOR = 4 ;
+  RUN;
+
+
+
+                                                                  Standard
+Parameter                                         Estimate           Error    t Value    Pr > |t|
+
+N/R40 - N/R50                                    2.8194836      1.17109686       2.41      0.0166
+N/R40 - (N/R50+R/R50)/2                          2.5252180      1.04854904       2.41      0.0166
+(NP+N/N85)/2 - (N/R50+R/R50+N/R40+lopro)/4     -12.4496851      0.78001425     -15.96      <.0001
+
+             Parameter                                       95% Confidence Limits
+
+             N/R40 - N/R50                                    0.5160481    5.1229190
+             N/R40 - (N/R50+R/R50)/2                          0.4628224    4.5876136
+             (NP+N/N85)/2 - (N/R50+R/R50+N/R40+lopro)/4     -13.9838985  -10.9154718
+	\end{verbatim}
+}
+
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+	\begin{itemize}
+	Jtem Contrasts are linear combinations that sum to zero
+	Jtem t-test tools are used to calculate pvalues and confidence intervals 
+	\end{itemize}
+}
+
+
+\end{document}
