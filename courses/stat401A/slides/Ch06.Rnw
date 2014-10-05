@@ -55,42 +55,52 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 	\vspace{0.2in} \pause
 	
 	Here are a few simple alternative hypotheses:
-	
+  
 	\begin{itemize}
-	\item Mean lifetime for N/R40 and N/R50 diet is different. \pause
-	\item Mean lifetime for N/R40 is different than for N/R50 and R/R50 combined. \pause
-	\item Mean lifetime for NP and N/N85 combined is different than for low calorie diets combined.
+	\item Mean lifetimes for N/R50 and R/R50 diet are different. \pause
+	\item Mean lifetimes for N/R40 is different than for N/R50 and R/R50 combined. \pause
+	\item Mean lifetimes for high calorie (NP and N/N85) diets is different than for low calorie diets combined.
 	\end{itemize}
-	
+
 	\vspace{0.2in} \pause 
 	
 	$H_0: \gamma=0 \qquad H_1: \gamma \ne 0:$ \pause
 	\[ \begin{array}{rl}
-	\gamma_1 &=  \mu_{N/R40}-\mu_{N/R50} \pause\\
-	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
+	\gamma_1 &=  \mu_{R/R50}-\mu_{N/R50} \pause\\
+	\gamma_2 &= \frac{1}{2}(\mu_{N/R50}+\mu_{R/R50})-\mu_{N/R40} \pause\\
 	\gamma_3 &= \frac{1}{2}(\mu_{NP}+\mu_{N/N85})-\frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro}) \\
 	\end{array} \]
 }
 
 
+\begin{frame}
+\frametitle{Contrasts}
+
+\begin{definition}
+A \alert{linear combination} of group means has the form 
+\[ \gamma = C_1\mu_1+C_2\mu_2 +\ldots + C_J\mu_J  \]
+where $C_j$ are known coefficients and $\mu_j$ are the unknown population means.
+\end{definition}
+
+vspace{0.2in} \pause 
+
+\begin{definition}
+A linear combination with $C_1+C_2+\cdots+C_J=0$ is a \alert{contrast}. 
+\end{definition}
+
+\vspace{0.2in} \pause 
+
+\begin{remark}
+Contrast interpretation is usually best if $|C_1|+|C_2|+\cdots+|C_J|=2$, i.e. both the positive and negative coefficients sum to 1. 
+\end{remark}
+
+\end{frame}
 
 
 
-\frame{\frametitle{Contrasts}
-	\begin{center}
-	\begin{tabular}{l|cccccc}
-	i & NP & N/N85 & lopro & N/R50 & R/R50 & N/R40 \\
-	\hline 
-	1 & 0 & 0 & 0 & -1 & 0 & 1 \pause \\ 
-	2 & 0 & 0 & 0 & $-1/2$ & $-1/2$ & 1 \pause \\ 
-	3 & $1/2$ & $1/2$ & $-1/4$ & $-1/4$ & $-1/4$ & $-1/4$ \pause \\ 
-	\hline
-	& $C_1$ & $C_2$ & $C_3$ & $C_4$ & $C_5$ & $C_6$ 
-	\end{tabular}
-	\end{center}
-	
-	\pause
-	
+\begin{frame}[fragile]
+\frametitle{Inference on contrasts}
+
 	\[ \gamma = C_1 \mu_1 + C_2 \mu_2 + \cdots + C_J \mu_J \] 
 	
 	\pause 
@@ -105,15 +115,45 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 	
 	\pause
 	
-	t-statistic and CI
-	\[ t = \frac{g}{SE(g)} \pause \qquad g \pm t_{df}(1-\alpha/2) SE(g) \]
-}
+	t-statistic (compare to $t_{n-J}$) and CI:
+	\[ t = \frac{g}{SE(g)}  \pause \qquad g \pm t_{n-J}(1-\alpha/2) SE(g) \]
+\end{frame}
 
+
+\begin{frame}[fragile]
+\frametitle{Contrasts for mice lifetime dataset}
+
+For these contrasts: 
+\begin{itemize}
+	\item Mean lifetimes for N/R50 and R/R50 diet are different. \pause
+	\item Mean lifetimes for N/R40 is different than for N/R50 and R/R50 combined. \pause
+	\item Mean lifetimes for high calorie (NP and N/N85) diets is different than for low calorie diets combined.
+\end{itemize}
+
+\pause 
+	
+	$H_0: \gamma=0 \qquad H_1: \gamma \ne 0:$ \pause
+	\[ \begin{array}{rl}
+	\gamma_1 &=  \mu_{R/R50}-\mu_{N/R50} \pause\\
+	\gamma_2 &= \frac{1}{2}(\mu_{N/R50}+\mu_{R/R50})-\mu_{N/R40} \pause\\
+	\gamma_3 &= \frac{1}{2}(\mu_{NP}+\mu_{N/N85})-\frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro}) \\
+	\end{array} \]
+
+{\tiny
+<<echo=FALSE, results='asis'>>=
+K = rbind("early rest - none @ 50kcal"=c( 0, 0,-1, 0, 1, 0),
+          "40kcal/week - 50kcal/week" =c( 0, 2,-1, 0,-1, 0) / 2,
+          "lo cal - hi cal"           =c(-2, 1, 1,-2, 1, 1) / 4)
+colnames(K) = levels(case0501$Diet)
+print(xtable(K))
+@
+}
+\end{frame}
 
 
 
 \begin{frame}[fragile]
-\frametitle{Examples}
+\frametitle{Mice liftime examples}
 <<echo=FALSE,results='asis'>>=
 sm = ddply(case0501, .(Diet), summarise, 
            n = length(Lifetime),
@@ -121,16 +161,17 @@ sm = ddply(case0501, .(Diet), summarise,
            sd = sd(Lifetime))
 
 print(xtable(sm), row.names=FALSE)
+@
 
+\pause 
+
+Contrasts:
+<<echo=FALSE, results='asis'>>=
 m = lm(Lifetime~Diet, case0501)
 sp = summary(m)$sigma
 
-C = rbind(c(0,0,0,-1,0,1),
-          c(0,0,0,-.5,-.5,1),
-          c(.5,.5,rep(-.25,4)))
-
-g = rowSums(C%*%sm$mean)
-SEg = rowSums(sp*sqrt(C^2%*%(1/sm$n)))
+g = rowSums(K%*%sm$mean)
+SEg = rowSums(sp*sqrt(K^2%*%(1/sm$n)))
 
 df = sum(sm$n-1)
 t = g/SEg
@@ -138,7 +179,7 @@ p = 2*pt(-abs(t),df)
 L = g-qt(.975,df)*SEg
 U = g+qt(.975,df)*SEg
 
-tests = data.frame(g=g,SEg=SEg,t=t,p=p,L=L,U=U)
+tests = data.frame(g=g,"SE(g)"=SEg,t=t,p=p,L=L,U=U, check.names=FALSE)
 
 print(xtable(tests), row.names=FALSE)
 @
@@ -161,18 +202,19 @@ PROC MEANS DATA=case0501;
   VAR lifetime;
   RUN;
 
-
-
-     diet        Obs      N            Mean         Std Dev         Minimum         Maximum
-     --------------------------------------------------------------------------------------
-     N/N85        57     57      32.6912281       5.1252972      17.9000000      42.3000000
-     N/R40        60     60      45.1166667       6.7034058      19.6000000      54.6000000
-     N/R50        71     71      42.2971831       7.7681947      18.6000000      51.9000000
-     NP           49     49      27.4020408       6.1337010       6.4000000      35.5000000
-     R/R50        56     56      42.8857143       6.6831519      24.2000000      50.7000000
-     lopro        56     56      39.6857143       6.9916945      23.4000000      49.7000000
-     --------------------------------------------------------------------------------------
-
+                                      The MEANS Procedure
+                                Analysis Variable : lifetime 
+ 
+                  N
+    diet        Obs      N            Mean         Std Dev         Minimum         Maximum
+    --------------------------------------------------------------------------------------
+    N/N85        57     57      32.6912281       5.1252972      17.9000000      42.3000000
+    N/R40        60     60      45.1166667       6.7034058      19.6000000      54.6000000
+    N/R50        71     71      42.2971831       7.7681947      18.6000000      51.9000000
+    NP           49     49      27.4020408       6.1337010       6.4000000      35.5000000
+    R/R50        56     56      42.8857143       6.6831519      24.2000000      50.7000000
+    lopro        56     56      39.6857143       6.9916945      23.4000000      49.7000000
+    --------------------------------------------------------------------------------------
 	\end{verbatim}
 }
 
@@ -183,30 +225,63 @@ PROC MEANS DATA=case0501;
 PROC GLM;
   CLASS diet;
   MODEL lifetime = diet / CLPARM;
-  ESTIMATE 'N/R40 - N/R50'                              
-    diet 0 1 -1 0 0 0 ;
-  ESTIMATE 'N/R40 - (N/R50+R/R50)/2'                    
-    diet 0 1 -.5 0 -.5 0 ;
-  ESTIMATE '(NP+N/N85)/2 - (N/R50+R/R50+N/R40+lopro)/4' 
-    diet 2 -1 -1 2 -1 -1 / DIVISOR = 4 ;
+  ESTIMATE 'early rest - none @ 50kcal' diet  0  1 -1  0  0  0 ;
+  ESTIMATE '40kcal/week - 50kcal/week'  diet  0  2 -1  0 -1  0 / DIVISOR = 2;
+  ESTIMATE 'lo cal - hi cal'            diet -2  1  1 -2  1  1 / DIVISOR = 4 ;
   RUN;
+  QUIT;
 
 
+                                       The GLM Procedure
 
-                                                                  Standard
-Parameter                                         Estimate           Error    t Value    Pr > |t|
+                                              Sum of
+      Source                      DF         Squares     Mean Square    F Value    Pr > F
+      Model                        5     12733.94181      2546.78836      57.10    <.0001
+      Error                      343     15297.41532        44.59888                     
+      Corrected Total            348     28031.35713                                     
 
-N/R40 - N/R50                                    2.8194836      1.17109686       2.41      0.0166
-N/R40 - (N/R50+R/R50)/2                          2.5252180      1.04854904       2.41      0.0166
-(NP+N/N85)/2 - (N/R50+R/R50+N/R40+lopro)/4     -12.4496851      0.78001425     -15.96      <.0001
+                                                         Standard
+       Parameter                         Estimate           Error    t Value    Pr > |t|
+       early rest - none @ 50kcal       0.5885312      1.19355007       0.49      0.6223
+       40kcal/week - 50kcal/week        2.5252180      1.04854904       2.41      0.0166
+       lo cal - hi cal                 12.4496851      0.78001425      15.96      <.0001
 
-             Parameter                                       95% Confidence Limits
-
-             N/R40 - N/R50                                    0.5160481    5.1229190
-             N/R40 - (N/R50+R/R50)/2                          0.4628224    4.5876136
-             (NP+N/N85)/2 - (N/R50+R/R50+N/R40+lopro)/4     -13.9838985  -10.9154718
+                    Parameter                       95% Confidence Limits
+                    early rest - none @ 50kcal      -1.7590676    2.9361299
+                    40kcal/week - 50kcal/week        0.4628224    4.5876136
+                    lo cal - hi cal                 10.9154718   13.9838985
 	\end{verbatim}
 }
+
+
+\subsection{R}
+\begin{frame}[fragile]
+
+<<warning=FALSE>>=
+library(multcomp)
+m = lm(Lifetime~Diet-1, case0501) # The -1 indicates no intercept (see Ch 7)
+summary(m)
+K
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+
+<<warning=FALSE>>=
+t = glht(m, linfct=K)
+summary(t)
+confint(t, calpha=univariate_calpha())
+@
+
+\end{frame}
+
+
+
+
 
 
 \subsection{Summary}

@@ -17,4 +17,7 @@ The slide sets correspond to the material in the corresponding chapters of The S
   - Comparing two means in multi-group data
   - One-way ANOVA F-test
   - General F-tests
+- [Chapter 6](Ch06.pdf)
+  - Contrasts
+  - Multiple comparison adjustments
 
