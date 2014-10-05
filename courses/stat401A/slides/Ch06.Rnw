@@ -12,7 +12,7 @@
 \title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
 \subtitle{\lecturetitle}
 \author[Jarad Niemi]{Jarad Niemi (Dr. J)}
-Jnstitute[Iowa State]{Iowa State University}
+\institute[Iowa State]{Iowa State University}
 \date[\today]{last updated: \today}
 
 
@@ -57,9 +57,9 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 	Here are a few simple alternative hypotheses:
 	
 	\begin{itemize}
-	Jtem Mean lifetime for N/R40 and N/R50 diet is different. \pause
-	Jtem Mean lifetime for N/R40 is different than for N/R50 and R/R50 combined. \pause
-	Jtem Mean lifetime for NP and N/N85 combined is different than for low calorie diets combined.
+	\item Mean lifetime for N/R40 and N/R50 diet is different. \pause
+	\item Mean lifetime for N/R40 is different than for N/R50 and R/R50 combined. \pause
+	\item Mean lifetime for NP and N/N85 combined is different than for low calorie diets combined.
 	\end{itemize}
 	
 	\vspace{0.2in} \pause 
@@ -72,8 +72,11 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 	\end{array} \]
 }
 
+
+
+
+
 \frame{\frametitle{Contrasts}
-\small
 	\begin{center}
 	\begin{tabular}{l|cccccc}
 	i & NP & N/N85 & lopro & N/R50 & R/R50 & N/R40 \\
@@ -106,17 +109,20 @@ ggplot(case0501, aes(x=Diet, y=Lifetime))+geom_boxplot()
 	\[ t = \frac{g}{SE(g)} \pause \qquad g \pm t_{df}(1-\alpha/2) SE(g) \]
 }
 
+
+
+
 \begin{frame}[fragile]
 \frametitle{Examples}
 <<echo=FALSE,results='asis'>>=
-sm = ddply(mice, .(diet), summarise, 
-           n = length(lifetime),
-           mean = mean(lifetime),
-           sd = sd(lifetime))
+sm = ddply(case0501, .(Diet), summarise, 
+           n = length(Lifetime),
+           mean = mean(Lifetime),
+           sd = sd(Lifetime))
 
 print(xtable(sm), row.names=FALSE)
 
-m = lm(lifetime~diet, mice)
+m = lm(Lifetime~Diet, case0501)
 sp = summary(m)$sigma
 
 C = rbind(c(0,0,0,-1,0,1),
@@ -136,7 +142,11 @@ tests = data.frame(g=g,SEg=SEg,t=t,p=p,L=L,U=U)
 
 print(xtable(tests), row.names=FALSE)
 @
-\end}frame}
+\end{frame}
+
+
+
+
 
 \subsection{SAS}
 \frame[containsverbatim]{\frametitle{}
@@ -202,10 +212,9 @@ N/R40 - (N/R50+R/R50)/2                          2.5252180      1.04854904      
 \subsection{Summary}
 \frame{\frametitle{Summary}
 	\begin{itemize}
-	Jtem Contrasts are linear combinations that sum to zero
-	Jtem t-test tools are used to calculate pvalues and confidence intervals 
+	\item Contrasts are linear combinations that sum to zero
+	\item t-test tools are used to calculate pvalues and confidence intervals 
 	\end{itemize}
 }
-
 
 \end{document}
