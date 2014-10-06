@@ -4,18 +4,18 @@ setwd("U:\\401A\\sleuth3csv") # or whever your data are
 # Chapter 6                                         
 #######################################################
 
-discrimination = read.csv("case0601.csv")
-names(discrimination) = tolower(names(discrimination))
+case0601 = read.csv("case0601.csv")
+names(case0601) = tolower(names(case0601))
 
-fish = read.csv("case0602.csv")
-names(fish) = tolower(names(fish))
-fish$percentage = fish$proportion*100
+case0602 = read.csv("case0602.csv")
+names(case0602) = tolower(names(case0602))
+case0602$percentage = case0602$proportion*100
 
 # Compare to Display 6.3
 # Slightly different due to rounding
 # install.packages("plyr")
 library(plyr)
-ddply(fish, .(pair), summarize,
+ddply(case0602, .(pair), summarize,
       n = length(percentage),
       mean = mean(percentage),
       sd = sd(percentage))
@@ -23,29 +23,31 @@ ddply(fish, .(pair), summarize,
 # Compare to Display 6.4
 # install.packages("multcomp")
 library(multcomp)
-levels(discrimination$handicap)
-K = cbind("Diff: C+W - A+H"=c(-1,1,-1,0,1)/2)
-mod = lm(score~handicap-1, discrimination) # No intercept
-cont = glht(mod, linfct=t(K))
+levels(case0601$handicap)
+K = rbind("Diff: C+W - A+H"=c(-1,1,-1,0,1)/2)
+mod = lm(score~handicap-1, case0601) # No intercept
+cont = glht(mod, linfct=K)
 summary(cont)
 confint(cont)
 
 # Compare to Display 6.5
-levels(fish$pair)
-K = cbind("Linear trend:" = c(5,-3,1,3,-9,3))
-mod= lm(percentage~pair-1, fish)
-cont = glht(mod, linfct=t(K))
+levels(case0602$pair)
+K = rbind("Linear trend:" = c(5,-3,1,3,-9,3))
+mod= lm(percentage~pair-1, case0602)
+cont = glht(mod, linfct=K)
 summary(cont)
 confint(cont)
 
 # Compare to Display 6.6
-pairwise.t.test(discrimination$score, discrimination$handicap, 
+pairwise.t.test(case0601$score, case0601$handicap, 
                 p.adjust="bonferroni")
 
 # In pairwise.t.test there is no p.adjust="tukey", instead use 
-TukeyHSD(aov(score~handicap, discrimination), "handicap")
+TukeyHSD(aov(score~handicap, case0601), "handicap")
 
 # Try Kruskal-Wallis due to concerns about normality based on histograms 
-kruskal.test(lifetime~diet, mice)
+case0501 = read.csv("case0501.csv")
+names(case0501) = tolower(names(0501))
+kruskal.test(lifetime~diet, case0501)
 
 
