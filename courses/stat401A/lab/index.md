@@ -23,6 +23,7 @@ With the exception of Lab 01, you should download and open up the scripts associ
   - One-way ANOVA F-tests
   - Pairwise comparisons
   - General F-tests
+  - Getting residuals
 - Lab 06: [SAS](ch06.sas) and [R](ch06.R)
   - Contrasts
   - Multiple comparison adjustments

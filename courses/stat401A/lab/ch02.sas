@@ -9,10 +9,10 @@ X 'cd U:\401A\sleuth3csv';
 /* Calculate distribution probabilities and quantiles */
 PROC IML;  
   /* For calculating pvalues */
-  p1 = 1-cdf('NORMAL',2);            /* P(Z       >  2 ) */  
-  p2 = 1-cdf('T',3,5);               /* P(t_5     >  3 ) */  
-  p3 = 1-cdf('T',3,5)+cdf('T',-3,5); /* P(t_5     > |3|) */ 
-  p4 = 1-cdf('F',5,25,26);           /* P(F_25,26 >  5 ) */  
+  p1 = cdf('NORMAL',2);                /* P(Z       <=  2 )         */  
+  p2 = cdf('T',3,5);                   /* P(t_5     <= 3 )          */  
+  p3 = cdf('T',-3,5)+(1-cdf('T',3,5)); /* P(t_5 <= -3) + P(t_5 > 3) */ 
+  p4 = 1-cdf('F',5,25,26);             /* P(F_25,26 >=  5 )         */  
 
   /* Critical values for constructing confidence intervals */ 
   q1 = quantile('NORMAL',.975);      /* 0.975=P(Z < q1)     */  
