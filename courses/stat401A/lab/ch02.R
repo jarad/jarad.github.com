@@ -12,7 +12,8 @@ getwd() # Check your working directory
 (p1 = pnorm(2))             # P(Z <= 2)
 (p2 = pt(3,5))              # P(t_5 <= 3)
 (p3 = pt(-3,5)+(1-pt(3,5))) # P(t_5 <= -3) + P(t_5 >= 3)
-(p4 = 1-pf(5,25,26))        # P(F_25,26 >= 5)
+(p4 = 2*pt(-3,5)            #    same as previous
+(p5 = 1-pf(5,25,26))        # P(F_25,26 >= 5)
 
 # Critical values for constructing confidence intervals
 (q1 = qnorm(.975))        # 0.975 = P(Z<q1)
