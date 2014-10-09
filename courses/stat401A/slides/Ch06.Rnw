@@ -674,4 +674,410 @@ In high-throughput fiels a more common multiple comparison adjustment is false d
 
 
 
+
+\section{Data analysis: sulfur effect on scab disease in potatoes}
+\frame{\frametitle{Sulfur effect on scab disease in potatoes}
+\begin{quote}
+The experiment was conducted to investigate the effect of sulfur on controlling scab disease in potatoes. There were seven treatments: control, plus spring and fall application of 300, 600, 1200 lbs/acre of sulfur. The response variable was percentage of the potato surface area covered with scab averaged over 100 random selected potatoes. A completely randomized design was used with 8 replications of the control and 4 replications of the other treatments. 
+\end{quote}
+{\tiny 
+Cochran and Cox. (1957) Experimental Design (2nd ed). pg96 and Agron. J. 80:712-718 (1988)
+}
+
+\vspace{0.2in} \pause
+
+Scientific question:
+\begin{itemize}[<+->]
+\item Does sulfur have any impact at all?
+\item Is there a difference between spring and fall?
+\item Is there an effect of increased sulfur {\footnotesize (expect more sulfur causes less scab)}?
+\end{itemize}
+}
+
+
+\subsection{Exploratory}
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+d = read.csv("potato.csv")
+d
+d$sulfur = as.numeric(gsub("\\D","",d$trt))*100
+d$sulfur[is.na(d$sulfur)] = 0
+d$application = NA
+d$application[grep("F",d$trt)] = "fall"
+d$application[grep("S",d$trt)] = "spring"
+d$application = factor(d$application)
+
+d$trt = factor(d$trt, levels=c("F12","F6","F3","O","S3","S6","S12"), ordered=TRUE)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Design}
+<<echo=FALSE>>=
+plot(0,0, xlab="Sulfur (lbs/acre)", ylab="Application", main="Treatment visualization",
+     type="n", axes=F,
+     xlim=c(-100,1500), ylim=c(.5,2.5))
+axis(1, c(0,300,600,1200), lwd=0)
+axis(2, c(1,2), c("spring","fall"), lwd=0)
+xc = c(0,300,300,600,600,1200,1200)
+yc = c(1.5,1,2,1,2,1,2)
+rect(xc-100,yc-.4,xc+100,yc+.4)
+text(xc,yc, c(8,rep(4,6)))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Design}
+<<echo=FALSE>>=
+plot(0,0, xlab="col", ylab="row", main="Completely randomized design\n potato scab experiment",
+     xlim=range(d$col)+c(-.5,.5), ylim=range(d$row)+c(-.5,.5), axes=F, type="n")
+text(d$col, d$row, d$trt)
+axis(1, 1:8, lwd=0)
+axis(2, 1:4, lwd=0)
+segments(1:9-.5,0.5,1:9-.5,4.5)
+segments(0.5,1:5-.5,8.5,1:5-.5)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+qplot(trt, inf, data=d, geom=c("boxplot","jitter"), xlab="Sulfur", ylab="Scab percent")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+qplot(sulfur, inf, data=d, color=application, geom="jitter", xlab="Sulfur", ylab="Scab percent")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+qplot(col, inf, data=d, color=application, geom="jitter", xlab="Column ID", ylab="Scab percent")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+qplot(row, inf, data=d, color=application, geom="jitter", xlab="Row ID", ylab="Scab percent")
+@
+\end{frame}
+
+
+
+
+\subsection{Model}
+\frame{\frametitle{Model}
+$Y_{ij}$: avg \% of scab for observation $i$ in treatment $j$ for $j=1,\ldots,7$. 
+
+\vspace{0.2in} \pause 
+
+Assume $Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2)$. 
+
+\vspace{0.2in} \pause
+
+Hypotheses:
+\begin{itemize}[<+->]
+\item \emph{Any effect}: One-way ANOVA F-test
+\item \emph{Fall vs spring}: Contrast comparing fall vs spring applications
+\item \emph{Sulfur level}: Linear trend contrast
+\end{itemize}
+}
+
+\frame{\frametitle{Fall vs spring contrast}
+\small 
+\begin{center}
+\begin{tabular}{c|ccccccc|c}
+i & 1 & 2 & 3 & 4 & 5 & 6 & 7 & Div \\
+\hline 
+Trt & F12 & F6 & F3 & O & S3 & S6 & S12 \\
+\uncover<5->{Fall v Spring & 1 & 1 & 1 & 0 & -1  & -1 & -1 & 3 }
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+\item \emph{Fall vs spring}: Contrast comparing fall vs spring applications \pause 
+
+\[ \begin{array}{rl} 
+\gamma &= \frac{1}{3} (\mu_{F12}+ \mu_{F6} + \mu_{F3})+ 0 \mu_O -\frac{1}{3} (\mu_{S3} + \mu_{S6} + \mu_{S12}) \pause \\ \\
+&= \frac{1}{3} \mu_{F12} + \frac{1}{3} \mu_{F6} + \frac{1}{3} \mu_{F3} + 0 \mu_O -\frac{1}{3} \mu_{S3} -\frac{1}{3} \mu_{S6} -\frac{1}{3} \mu_{S12} \pause \\ \\
+&= \frac{1}{3} \left[\mu_{F12} + \mu_{F6} + \mu_{F3} + 0 \mu_O -1 \mu_{S3} -1 \mu_{S6} -1 \mu_{S12} \right] 
+\end{array} \] 
+
+\end{itemize}	
+}
+
+
+\frame{\frametitle{Linear trend contrasts}
+\small 
+\begin{center}
+\begin{tabular}{c|ccccccc|c}
+i & 1 & 2 & 3 & 4 & 5 & 6 & 7 & Div \\
+\hline 
+Trt & F12 & F6 & F3 & O & S3 & S6 & S12 \\
+Fall v Spring & 1 & 1 & 1 & 0 & -1  & -1 & -1 & 3 \\
+\uncover<8->{Linear Trend & 27 & 3 & -9 & -42 & -9 & 3 & 27 & 8 \\
+\hline  }
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+
+\item \emph{Sulfur level}: Linear trend contrast \pause 
+
+	\begin{itemize}
+	\item The unique $X_i$ are 0, 3, 6, and 12. \pause 
+	\item So the linear trend contrast ($X_i-\overline{X}$) is  
+	\item \uncover<5->{But 3, 6, and 12 are duplicated, so need the average of the groups }
+
+	\[ \begin{array}{rl}
+	\uncover<4->{\gamma &= -\frac{21}{4} \mu_0 - \frac{9}{4} \mu_3 + \frac{3}{4} \mu_6 + \frac{27}{4} \mu_{12}} \\ \\
+	\uncover<6->{&= -\frac{21}{4} \mu_0 - \frac{9}{4} \left( \frac{\mu_{S3}+\mu_{F3}}{2} \right) + \frac{3}{4} \left( \frac{\mu_{S6}+\mu_{F6}}{2} \right) + \frac{27}{4} \left( \frac{\mu_{S12}+\mu_{F12}}{2} \right)} \\ \\
+	\uncover<7->{&= \frac{1}{8} \left[ -42\mu_0 -9\mu_{S3}-9\mu_{F3}  + 3 \mu_{S6}+ 3\mu_{F6}  + 27 \mu_{S12}+ 27 \mu_{F12} \right]} \\ \\
+	\end{array} \]
+	
+	\end{itemize}
+	
+
+\end{itemize}	
+}
+
+\frame[containsverbatim]{\frametitle{SAS code}
+\tiny 
+\begin{verbatim}
+DATA d;
+  INFILE 'potato.csv' DSD FIRSTOBS=2;
+  INPUT scabp treatment $ row col;
+  sulfur = 0;
+  IF treatment in ("F3","S3") THEN sulfur=300;
+  IF treatment in ("F6","S6") THEN sulfur=600;
+  IF treatment in ("F12","S12") THEN sulfur=1200;
+  application = "NA    ";
+  IF treatment in ("F3","F6","F12") THEN application="fall";
+  IF treatment in ("S3","S6","S12") THEN application="spring";
+
+PROC PRINT DATA=d (OBS=10); RUN; 
+
+PROC MEANS;
+  CLASS treatment;
+  VAR scabp;
+  RUN;
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{SAS code}
+\tiny 
+\begin{verbatim}
+                Obs    scabp    treatment    row    col    sulfur    application
+
+                  1       9        F3         4      1       300       fall     
+                  2      12        O          4      2         0       NA       
+                  3      18        S6         4      3       600       spring   
+                  4      10        F12        4      4      1200       fall     
+                  5      24        S6         4      5       600       spring   
+                  6      17        S12        4      6      1200       spring   
+                  7      30        S3         4      7       300       spring   
+                  8      16        F6         4      8       600       fall     
+                  9      10        O          3      1         0       NA       
+                 10       7        S3         3      2       300       spring   
+                                         
+                                         
+
+                                       The MEANS Procedure
+
+                                   Analysis Variable : scabp 
+ 
+                    N
+     treatment    Obs     N            Mean         Std Dev         Minimum         Maximum
+     --------------------------------------------------------------------------------------
+     F12            4     4       5.7500000       2.8722813       4.0000000      10.0000000
+     F3             4     4       9.5000000       4.9328829       4.0000000      16.0000000
+     F6             4     4      15.5000000       3.7859389      10.0000000      18.0000000
+     O              8     8      22.6250000       8.3655330      10.0000000      32.0000000
+     S12            4     4      14.2500000       4.8562674       7.0000000      17.0000000
+     S3             4     4      16.7500000      10.7819293       7.0000000      30.0000000
+     S6             4     4      18.2500000       4.9244289      12.0000000      24.0000000
+     --------------------------------------------------------------------------------------
+\end{verbatim}
+}
+
+
+
+
+\frame[containsverbatim]{\frametitle{SAS code}
+\tiny 
+\begin{verbatim}
+PROC GLM DATA=d PLOTS=(DIAGNOSTICS RESIDUALS);
+  CLASS treatment;
+  MODEL scabp = treatment;
+  LSMEANS treatment / CL;
+  ESTIMATE 'fall - spring' treatment 1 1 1 0 -1 -1 -1 / DIVISOR=3;
+  ESTIMATE 'linear trend'  treatment 27 -9 3 -42 27 -9 3 / DIVISOR=8;
+  OUTPUT OUT=dres P=predicted R=residuals;
+  RUN;
+
+PROC GPLOT DATA=dres;
+  PLOT residuals*predicted;
+  PLOT residuals*sulfur;
+  PLOT residuals*application;
+  PLOT residuals*row;
+  PLOT residuals*col;
+  RUN;
+\end{verbatim}
+}
+
+
+
+\subsection{Diagnostics}
+\frame{\frametitle{Diagnostics}
+	\begin{center}
+	\includegraphics{PotatoDiagnosticsPanel}
+	\end{center}
+}
+
+
+
+
+
+\subsection{Results}
+\frame[containsverbatim]{\frametitle{SAS output}
+\tiny 
+\begin{verbatim}
+                                        The GLM Procedure
+
+                                     Class Level Information
+ 
+                         Class          Levels    Values
+
+                         treatment           7    F12 F3 F6 O S12 S3 S6 
+
+
+                             Number of Observations Read          32
+                             Number of Observations Used          32
+                                        
+                                        
+
+ 
+Dependent Variable: scabp   
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        6      972.343750      162.057292       3.61    0.0103
+       Error                       25     1122.875000       44.915000                     
+       Corrected Total             31     2095.218750                                     
+
+                       R-Square     Coeff Var      Root MSE    scabp Mean
+                       0.464077      42.80633      6.701865      15.65625
+
+\end{verbatim}
+}
+
+
+
+\frame[containsverbatim]{\frametitle{SAS output}
+\tiny 
+\begin{verbatim}
+                     treatment    scabp LSMEAN      95% Confidence Limits
+
+                     F12              5.750000       -1.151375    12.651375
+                     F3               9.500000        2.598625    16.401375
+                     F6              15.500000        8.598625    22.401375
+                     O               22.625000       17.744991    27.505009
+                     S12             14.250000        7.348625    21.151375
+                     S3              16.750000        9.848625    23.651375
+                     S6              18.250000       11.348625    25.151375
+
+
+
+                                        The GLM Procedure
+ 
+Dependent Variable: scabp   
+
+                                         Standard
+ Parameter                 Estimate         Error  t Value  Pr > |t|    95% Confidence Limits
+
+ fall - spring           -6.1666667     2.7360251    -2.25    0.0332   -11.8016158   -0.5317175
+ linear trend           -68.1562500    21.0269359    -3.24    0.0034  -111.4620350  -24.8504650
+\end{verbatim}
+}
+
+
+
+\subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{}
+<<potato_in_R>>=
+library(multcomp)
+K = rbind("fall - spring" = c(1,1,1,0,-1,-1,-1)/3,
+          "linear trend"  = c(27,3,-9,-42,-9,3,27)/8)
+m = lm(inf~trt,d)
+anova(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<echo=FALSE>>=
+par(mfrow=c(2,3))
+plot(m,1:6)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<>>=
+g = glht(lm(inf~trt-1,d), linfct=K) # notice the -1 in the model
+summary(g, test=adjusted(type="none")) # unadjusted pvalues
+confint(g, calpha=univariate_calpha()) # unadjusted confidence intervals
+@
+\end{frame}
+
+
+
+\section{Summary}
+\frame{\frametitle{Summary}
+	For this particular data analysis
+	\begin{itemize}[<+->]
+	\item Significant differences in means between the groups (ANOVA $F_{6,25}=3.61$ p=0.01)
+	\item Fall more effective (p=0.03, 95\% CI (0.53, 11.8))
+	\item Linear trend in sulfur (p=0.003) 
+	
+	\vspace{0.2in}\pause
+	
+	\item Concerned about spatial correlation among columns
+	\item Consider a transformation of the response 
+		\begin{itemize}
+		\item CI for F12 (-1.2, 12.7)
+		\item Non-constant variance (residuals vs predicted, sulfur, application)
+		\end{itemize}
+	\end{itemize}
+}
+
+
+% \frame{\frametitle{Summary}
+% 	Statistical analysis process (post-design):
+% 	\begin{enumerate}[<+->]
+% 	\item Determine scientific questions of interest
+% 	\item Determine what data were collected
+% 	\item Exploratory analysis of data
+% 	\item Create statistical analysis to answer questions
+% 	\item Check model assumptions
+% 	\item Answer scientific questions
+% 	\item Improve future data collection
+% 	\end{enumerate}
+% }
+
+
+
+
 \end{document}
