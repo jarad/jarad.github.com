@@ -46,6 +46,15 @@ PROC MEANS DATA=case0602 N MEAN STDDEV;
   TITLE2 'Slightly different due to rounding';
   RUN;
 
+
+/* Determine linear trend contrast coefficients */
+PROC IML;
+  doseL={28 31 33 34 35};
+  contrL=orpol(doseL,2);  /* gets linear and quadratic (I think) */
+  PRINT contrL;
+  QUIT;
+
+
 PROC GLM DATA=case0602;
   CLASS pair;
   MODEL percentage = pair / CLPARM;

@@ -14,8 +14,10 @@ levels(case0601$handicap)
 K = rbind("Diff: C+W - A+H"=c(-1,1,-1,0,1)/2)
 mod = lm(score~handicap-1, case0601) # No intercept
 cont = glht(mod, linfct=K)
-summary(cont)
-confint(cont)
+summary(cont, test=adjusted(type="none")) # unadjusted pvalues
+confint(cont, calpha=univariate_calpha()) # unadjusted confidence intervals
+
+
 
 # Compare to Display 6.6
 pairwise.t.test(case0601$score, case0601$handicap, 

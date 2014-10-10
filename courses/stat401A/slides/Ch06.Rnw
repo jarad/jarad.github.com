@@ -650,7 +650,7 @@ Not wanting to make a single mistake is pretty conservative.
 
 \pause
 
-In high-throughput fiels a more common multiple comparison adjustment is false discovery rate.
+In high-throughput fields a more common multiple comparison adjustment is false discovery rate.
 
 \vspace{0.2in} \pause
 
@@ -776,7 +776,7 @@ qplot(row, inf, data=d, color=application, geom="jitter", xlab="Row ID", ylab="S
 
 \subsection{Model}
 \frame{\frametitle{Model}
-$Y_{ij}$: avg \% of scab for observation $i$ in treatment $j$ for $j=1,\ldots,7$. 
+$Y_{ij}$: avg \% of surface area covered with scab for plot $i$ in treatment $j$ for $j=1,\ldots,7$. 
 
 \vspace{0.2in} \pause 
 
@@ -786,22 +786,27 @@ Assume $Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2)$.
 
 Hypotheses:
 \begin{itemize}[<+->]
-\item \emph{Any effect}: One-way ANOVA F-test
+\item Difference amongst any means: One-way ANOVA F-test
+\item \emph{Any effect}: Control vs sulfur
 \item \emph{Fall vs spring}: Contrast comparing fall vs spring applications
 \item \emph{Sulfur level}: Linear trend contrast
 \end{itemize}
 }
 
+
+\begin{frame}
+\frametitle{Control vs sulfur}
+
+\[ \begin{array}{rl} 
+\gamma &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12})- \mu_O \pause \\ \\
+\gamma &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12}- 6\mu_O)  
+\end{array} \] 
+
+\end{frame}
+
+
+
 \frame{\frametitle{Fall vs spring contrast}
-\small 
-\begin{center}
-\begin{tabular}{c|ccccccc|c}
-i & 1 & 2 & 3 & 4 & 5 & 6 & 7 & Div \\
-\hline 
-Trt & F12 & F6 & F3 & O & S3 & S6 & S12 \\
-\uncover<5->{Fall v Spring & 1 & 1 & 1 & 0 & -1  & -1 & -1 & 3 }
-\end{tabular}
-\end{center}
 
 \begin{itemize}
 \item \emph{Fall vs spring}: Contrast comparing fall vs spring applications \pause 
@@ -816,39 +821,48 @@ Trt & F12 & F6 & F3 & O & S3 & S6 & S12 \\
 }
 
 
-\frame{\frametitle{Linear trend contrasts}
-\small 
+\frame{\frametitle{Sulfur level: linear trend contrasts}
+
+\begin{itemize}
+\item The unique $X_i$ are 0, 3, 6, and 12. \pause 
+\item So the linear trend contrast ($X_i-\overline{X}$) is
+\[ \begin{array}{ccccc}
+X_i & 0 & 3 & 6 & 12 \\
+\hline
+X_i-\overline{X} & -\frac{21}{4} & -\frac{9}{4} & \frac{3}{4} & \frac{12}{4} 
+\end{array} \]
+\item But 3, 6, and 12 are duplicated, so we need the average of the groups 
+
+\[ \begin{array}{rl}
+\gamma &= -\frac{21}{4} \mu_0 - \frac{9}{4} \mu_3 + \frac{3}{4} \mu_6 + \frac{27}{4} \mu_{12} \\ \\
+&= -\frac{21}{4} \mu_0 - \frac{9}{4} \left( \frac{\mu_{S3}+\mu_{F3}}{2} \right) + \frac{3}{4} \left( \frac{\mu_{S6}+\mu_{F6}}{2} \right) + \frac{27}{4} \left( \frac{\mu_{S12}+\mu_{F12}}{2} \right) \\ \\
+&= \frac{1}{8} \left[ -42\mu_0 -9\mu_{S3}-9\mu_{F3}  + 3 \mu_{S6}+ 3\mu_{F6}  + 27 \mu_{S12}+ 27 \mu_{F12} \right]
+\end{array} \]
+	
+\end{itemize}
+	
+
+}
+
+
+\begin{frame}
+\frametitle{Contrasts}
+
 \begin{center}
 \begin{tabular}{c|ccccccc|c}
-i & 1 & 2 & 3 & 4 & 5 & 6 & 7 & Div \\
-\hline 
-Trt & F12 & F6 & F3 & O & S3 & S6 & S12 \\
+Trt & F12 & F6 & F3 & O & S3 & S6 & S12 $ Div \\
+\hline
+Sulfur vs control & 1 & 1 & 1 & -6 & 1  & 1 & 1 & 6 \\
 Fall v Spring & 1 & 1 & 1 & 0 & -1  & -1 & -1 & 3 \\
-\uncover<8->{Linear Trend & 27 & 3 & -9 & -42 & -9 & 3 & 27 & 8 \\
-\hline  }
+Linear Trend & 27 & 3 & -9 & -42 & -9 & 3 & 27 & 8 \\
+\hline  
 \end{tabular}
 \end{center}
 
-\begin{itemize}
 
-\item \emph{Sulfur level}: Linear trend contrast \pause 
+\end{frame}
 
-	\begin{itemize}
-	\item The unique $X_i$ are 0, 3, 6, and 12. \pause 
-	\item So the linear trend contrast ($X_i-\overline{X}$) is  
-	\item \uncover<5->{But 3, 6, and 12 are duplicated, so need the average of the groups }
 
-	\[ \begin{array}{rl}
-	\uncover<4->{\gamma &= -\frac{21}{4} \mu_0 - \frac{9}{4} \mu_3 + \frac{3}{4} \mu_6 + \frac{27}{4} \mu_{12}} \\ \\
-	\uncover<6->{&= -\frac{21}{4} \mu_0 - \frac{9}{4} \left( \frac{\mu_{S3}+\mu_{F3}}{2} \right) + \frac{3}{4} \left( \frac{\mu_{S6}+\mu_{F6}}{2} \right) + \frac{27}{4} \left( \frac{\mu_{S12}+\mu_{F12}}{2} \right)} \\ \\
-	\uncover<7->{&= \frac{1}{8} \left[ -42\mu_0 -9\mu_{S3}-9\mu_{F3}  + 3 \mu_{S6}+ 3\mu_{F6}  + 27 \mu_{S12}+ 27 \mu_{F12} \right]} \\ \\
-	\end{array} \]
-	
-	\end{itemize}
-	
-
-\end{itemize}	
-}
 
 \frame[containsverbatim]{\frametitle{SAS code}
 \tiny 
@@ -1003,7 +1017,7 @@ Dependent Variable: scabp
 
                                          Standard
  Parameter                 Estimate         Error  t Value  Pr > |t|    95% Confidence Limits
-
+ sulfur - control        -9.2916667     2.7360251    -3.40    0.0023   -14.9266158   -3.6567175
  fall - spring           -6.1666667     2.7360251    -2.25    0.0332   -11.8016158   -0.5317175
  linear trend           -68.1562500    21.0269359    -3.24    0.0034  -111.4620350  -24.8504650
 \end{verbatim}
@@ -1016,8 +1030,9 @@ Dependent Variable: scabp
 \frametitle{}
 <<potato_in_R>>=
 library(multcomp)
-K = rbind("fall - spring" = c(1,1,1,0,-1,-1,-1)/3,
-          "linear trend"  = c(27,3,-9,-42,-9,3,27)/8)
+K = rbind("sulfur - control" = c(1, 1, 1, -6, 1, 1, 1)/6,
+          "fall - spring"    = c(1,1,1,0,-1,-1,-1)/3,
+          "linear trend"     = c(27,3,-9,-42,-9,3,27)/8)
 m = lm(inf~trt,d)
 anova(m)
 @
@@ -1026,7 +1041,7 @@ anova(m)
 
 \begin{frame}[fragile]
 \frametitle{}
-<<echo=FALSE>>=
+<<>>=
 par(mfrow=c(2,3))
 plot(m,1:6)
 @
@@ -1049,8 +1064,9 @@ confint(g, calpha=univariate_calpha()) # unadjusted confidence intervals
 	For this particular data analysis
 	\begin{itemize}[<+->]
 	\item Significant differences in means between the groups (ANOVA $F_{6,25}=3.61$ p=0.01)
-	\item Fall more effective (p=0.03, 95\% CI (0.53, 11.8))
-	\item Linear trend in sulfur (p=0.003) 
+  \item Sulfur had a significant impact on scab (p=0.002)
+	\item Fall was better than spring (p=0.03, 95\% CI (0.53, 11.8))
+	\item Linear trend in sulfur was significant(p=0.003) 
 	
 	\vspace{0.2in}\pause
 	
