@@ -38,6 +38,227 @@ library(Sleuth3)
 \end{frame}
 
 
+\section{Model}
+\frame{\frametitle{Simple Linear Regression}
+  Recall the One-way ANOVA model:
+	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \]
+	where $Y_{ij}$ is the observation for individual $j$ in group $i$.
+	
+	\vspace{0.2in}  \pause
+	
+	The \alert{simple linear regression} model is 
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+	where $Y_i$ and $X_i$ are the response and explanatory variable, respectively, for individual $i$.
+	
+	\pause
+	
+	Terminology (all of these are equivalent):
+	\begin{tabular}{ll}
+	\hline
+	response & explanatory \\
+	outcome & covariate \\
+	dependent & independent \\
+	endogenous & exogenous \\
+	\hline
+	\end{tabular}
+}
+
+\begin{frame}[fragile]
+\frametitle{}
+<<echo=FALSE>>=
+library(abd)
+data(Telomeres)
+ggplot(Telomeres, aes(x=years, y=telomere.length))+geom_point()+geom_smooth(method='lm', se=FALSE)
+@
+\end{frame}
+
+
+\subsection{Interpretation}
+\frame{\frametitle{Interpretation}
+
+	\vspace{-0.2in}
+
+	\[ E[Y_i|X_i=x] = \beta_0 + \beta_1 x \qquad V[Y_i|X_i=x] = \sigma^2 \]
+
+\pause
+	
+	\begin{itemize}
+	\item	If $X_i=0$, then $E[Y_i|X_i=0] = \beta_0$. \pause 
+	
+	\alert{$\beta_0$ is the expected response when the explanatory variable is zero.} \pause 
+	
+	\vspace{0.2in} 
+	
+	\item If $X_i$ increases from $x$ to $x+1$, then 
+	\[ \begin{array}{rl}
+	E[Y_i|X_i=x+1] &= \beta_0+\beta_1x+\beta_1 \pause \\
+	\uncover<6->{-} E[Y_i|X_i=x\phantom{\,+\,1}] &= \beta_0+\beta_1 x  \pause \\
+	\hline
+	&= \beta_1 \pause
+	\end{array} \]
+	
+	\alert{$\beta_1$ is the expected increase in the response for each unit increase in the explanatory variable.} 
+	
+	\vspace{0.2in} \pause
+	
+	\item 
+	
+	\alert{$\sigma$ is the standard deviation of the response for a fixed value of the explanatory variable.}
+	\end{itemize}
+}
+
+\subsection{Estimators}
+\frame{\frametitle{}
+	\small
+
+	Remove the mean:
+	\[ Y_i = \beta_0+\beta_1 X_i +e_i \qquad e_i \stackrel{iid}{\sim} N(0,\sigma^2) \]
+	
+	 \pause
+	
+	So 
+	\[ e_i = Y_i - (\beta_0+\beta_1X_i) \]
+	\pause which we approximate by the \alert{residual}
+	\[ r_i = \hat{e}_i = Y_i - (\hat{\beta}_0+\hat{\beta}_1X_i) \]
+	\pause The least squares, maximum likelihood, and Bayesian estimators are \pause
+	\[ \begin{array}{rl}
+	\hat{\beta}_1 &= SXY/SXX \\
+	\hat{\beta}_0 &= \overline{Y}-\hat{\beta}_1\overline{X} \\ 
+	\hat{\sigma}^2 &=  SSE/(n-2) \qquad \mbox{d.f.}=n-2  \\  \pause 
+	\\
+	SXY &= \sum_{i=1}^n (X_i-\overline{X})(Y_i-\overline{Y}) \\
+	SXX &= \sum_{i=1}^n (X_i-\overline{X})(X_i-\overline{X}) = \sum_{i=1}^n (X_i-\overline{X})^2 \\
+	SSE &= \sum_{i=1}^n r_i^2 \\ \pause
+	\\
+	\overline{X} &= \frac{1}{n} \sum_{i=1}^n X_i \\
+	\overline{Y} &= \frac{1}{n} \sum_{i=1}^n Y_i \\
+	\end{array} \]
+}
+
+\subsection{Standard errors}
+\frame{\frametitle{}
+\small
+	How certain are we about $\hat{\beta}_0$ and $\hat{\beta}_1$ being equal to $\beta_0$ and $\beta_1$? 
+	
+	\vspace{0.2in} \pause
+	
+	We quantify this uncertainty using their standard errors:
+	\[ \begin{array}{rlll}
+	SE(\beta_0) &= \hat{\sigma} \sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_X^2}} & d.f.=n-2 \\ \pause
+	SE(\beta_1) &= \hat{\sigma} \sqrt{\phantom{\frac{1}{n} +\,\, }\frac{1}{(n-1)s_X^2}} & d.f.=n-2 \\ \pause
+	\\
+	s_X^2 &= SXX/(n-1) \\ \pause
+	s_Y^2 &= SYY/(n-1) \\ \pause
+	SYY &=  \sum_{i=1}^n (Y_i-\overline{Y})^2 \\ \pause
+	\\
+	r_{XY} &= \frac{SXY/(n-1)}{s_Xs_Y} &&\pause \mbox{correlation coefficient} \\ \pause
+	R^2 &= r^2_{XY} \pause &= \frac{SST-SSE}{SST} \pause & \mbox{coefficient of determination} \\ \pause
+	SST &= SYY = \sum_{i=1}^n (Y_i-\overline{Y})^2 \pause 
+	\end{array} \]
+The coefficient of determination is the percentage of the total response variation explained by the explanatory variable(s).
+}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<echo=FALSE>>=
+Telomeres$jyears = jitter(Telomeres$years)
+plot(telomere.length~jyears, Telomeres,
+     main="Telomere length vs years post diagnosis",
+     xlab="Years post diagnosis (jittered)",
+     ylab="Telomere length")
+
+m = lm(telomere.length~years, Telomeres)
+abline(m, col="red", lwd=2)
+
+segments(Telomeres$jyears, predict(m), 
+         Telomeres$jyears, predict(m)+residuals(m), 
+         lty=2, col="red")
+@
+\end{frame}
+
+
+\subsection{Pvalues and confidence intervals}
+\frame{\frametitle{Pvalues and confidence interval}
+	We can compute two-sided pvalues via
+	\[ 2P\left(t_{n-2}>\left|\frac{\hat{\beta_0}}{SE(\beta_0)}\right|\right) \qquad \mbox{and} \qquad 2P\left(t_{n-2}>\left|\frac{\hat{\beta_1}}{SE(\beta_1)}\right|\right) \]
+	\pause These test the null hypothesis that the corresponding parameter is zero.
+	
+	\vspace{0.4in} \pause 
+	
+	We can construct $100(1-\alpha)\%$ confidence intervals via
+	\[ \hat{\beta}_0 \pm t_{n-2}(1-\alpha/2) SE(\beta_0) \qquad \mbox{and} \qquad \hat{\beta}_1 \pm t_{n-2}(1-\alpha/2) SE(\beta_1)  \]
+
+	These provide ranges of the parameter consistent with the data.
+}
+
+
+
+
+\frame[containsverbatim]{\frametitle{}
+\tiny
+\begin{verbatim}
+DATA t;
+  INFILE 'telomeres.csv' DSD FIRSTOBS=2;
+  INPUT years length;
+
+PROC REG DATA=t;
+  MODEL length = years;
+  RUN;
+                                        The REG Procedure
+                                          Model: MODEL1
+                                   Dependent Variable: length 
+
+                             Number of Observations Read          39
+                             Number of Observations Used          39
+
+                                      Analysis of Variance
+ 
+                                             Sum of           Mean
+         Source                   DF        Squares         Square    F Value    Pr > F
+
+         Model                     1        0.22777        0.22777       8.42    0.0062
+         Error                    37        1.00033        0.02704                     
+         Corrected Total          38        1.22810                                    
+
+                      Root MSE              0.16443    R-Square     0.1855
+                      Dependent Mean        1.22026    Adj R-Sq     0.1634
+                      Coeff Var            13.47473                       
+
+
+                                      Parameter Estimates
+                      Parameter      Standard
+   Variable    DF      Estimate         Error   t Value   Pr > |t|     95% Confidence Limits
+
+   Intercept    1       1.36768       0.05721     23.91     <.0001       1.25176       1.48360
+   years        1      -0.02637       0.00909     -2.90     0.0062      -0.04479      -0.00796\end{verbatim}
+}
+
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+\begin{itemize}[<+->]
+\item The \alert{simple linear regression} model is 
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+	where $Y_i$ and $X_i$ are the response and explanatory variable, respectively, for individual $i$.
+
+	\vspace{0.1in} 
+	
+\item Know how to use SAS/R to obtain $\hat{\beta}_0$, $\hat{\beta}_1$, $\hat{\sigma}^2$, $R^2$, pvalues, CIs, etc. 
+	
+	\vspace{0.1in}
+	
+\item Interpret SAS output
+	\begin{itemize}
+	\item At a value of zero for the explanatory variable ($X_i=0$), $\beta_0$ is the expected value for the response ($Y_i$).
+	\item For each unit increase in the explanatory variable value, $\beta_1$ is the expected increase in the response.
+	\item At a constant value of the explanatory variable, $\sigma^2$ is the variance of the responses. 
+	\item The coefficient of determination ($R^2$) is the percentage of the total response variation explained by the explanatory variable(s).
+	\end{itemize}
+\end{itemize}
+}
+
+
 
 
 
