@@ -13,9 +13,8 @@ PROC GPLOT DATA=case0701;
   TITLE 'Compare to Display 7.1';
   RUN;
 
-/* Compare to Display 7.9 */
 PROC GLM DATA=case0701 PLOT=diagnostics;
-  MODEL distance = velocity;
+  MODEL distance = velocity / CLPARM;
   OUTPUT OUT=case0701reg PREDICTED=fitted RESIDUAL=resid; 
   TITLE 'Compare to Display 7.9';
   RUN;
