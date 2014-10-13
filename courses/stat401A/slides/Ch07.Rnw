@@ -20,7 +20,7 @@
 \newenvironment{remark}[1][Remark]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
-<<options, echo=FALSE, warning=FALSE>>=
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
 opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
 library(plyr)
 library(ggplot2)
@@ -41,9 +41,9 @@ library(abd)
 
 \section{Model}
 \frame{\frametitle{Simple Linear Regression}
-  Recall the One-way ANOVA model:
-	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \]
-	where $Y_{ij}$ is the observation for individual $j$ in group $i$.
+  Recall the one-way ANOVA model:
+	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \]
+	where $Y_{ij}$ is the observation for individual $i$ in group $j$.
 	
 	\vspace{0.2in}  \pause
 	
@@ -107,7 +107,7 @@ ggplot(Telomeres, aes(x=years, y=telomere.length))+geom_point()+geom_smooth(meth
 	\end{itemize}
 }
 
-\subsection{Estimators}
+\subsection{Parameter Estimation}
 \frame{\frametitle{}
 	\small
 
@@ -116,22 +116,22 @@ ggplot(Telomeres, aes(x=years, y=telomere.length))+geom_point()+geom_smooth(meth
 	
 	 \pause
 	
-	So 
+	So the error is
 	\[ e_i = Y_i - (\beta_0+\beta_1X_i) \]
 	\pause which we approximate by the \alert{residual}
 	\[ r_i = \hat{e}_i = Y_i - (\hat{\beta}_0+\hat{\beta}_1X_i) \]
 	\pause The least squares, maximum likelihood, and Bayesian estimators are \pause
 	\[ \begin{array}{rl}
-	\hat{\beta}_1 &= SXY/SXX \\
+  \hat{\beta}_1 &= SXY/SXX \\
 	\hat{\beta}_0 &= \overline{Y}-\hat{\beta}_1\overline{X} \\ 
-	\hat{\sigma}^2 &=  SSE/(n-2) \qquad \mbox{d.f.}=n-2  \\  \pause 
-	\\
-	SXY &= \sum_{i=1}^n (X_i-\overline{X})(Y_i-\overline{Y}) \\
+	\hat{\sigma}^2 &=  SSE/(n-2) \qquad \mbox{df}=n-2 \\ \pause
+  \\
+  \overline{X} &= \frac{1}{n} \sum_{i=1}^n X_i \\
+	\overline{Y} &= \frac{1}{n} \sum_{i=1}^n Y_i \\ \pause 
+  \\
+  SXY &= \sum_{i=1}^n (X_i-\overline{X})(Y_i-\overline{Y}) \\
 	SXX &= \sum_{i=1}^n (X_i-\overline{X})(X_i-\overline{X}) = \sum_{i=1}^n (X_i-\overline{X})^2 \\
-	SSE &= \sum_{i=1}^n r_i^2 \\ \pause
-	\\
-	\overline{X} &= \frac{1}{n} \sum_{i=1}^n X_i \\
-	\overline{Y} &= \frac{1}{n} \sum_{i=1}^n Y_i \\
+	SSE &= \sum_{i=1}^n r_i^2 
 	\end{array} \]
 }
 
@@ -144,10 +144,10 @@ ggplot(Telomeres, aes(x=years, y=telomere.length))+geom_point()+geom_smooth(meth
 	
 	We quantify this uncertainty using their standard errors:
 	\[ \begin{array}{rlll}
-	SE(\beta_0) &= \hat{\sigma} \sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_X^2}} & d.f.=n-2 \\ \pause
-	SE(\beta_1) &= \hat{\sigma} \sqrt{\phantom{\frac{1}{n} +\,\, }\frac{1}{(n-1)s_X^2}} & d.f.=n-2 \\ \pause
+	SE(\beta_0) &= \hat{\sigma} \sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_X^2}} & df=n-2 \\ \pause
+	SE(\beta_1) &= \hat{\sigma} \sqrt{\phantom{\frac{1}{n} +\,\, }\frac{1}{(n-1)s_X^2}} & df=n-2 \\ \pause
 	\\
-	s_X^2 &= SXX/(n-1) \\ \pause
+	s_X^2 &= SXX/(n-1) \\ 
 	s_Y^2 &= SYY/(n-1) \\ \pause
 	SYY &=  \sum_{i=1}^n (Y_i-\overline{Y})^2 \\ \pause
 	\\
@@ -155,7 +155,7 @@ ggplot(Telomeres, aes(x=years, y=telomere.length))+geom_point()+geom_smooth(meth
 	R^2 &= r^2_{XY} \pause &= \frac{SST-SSE}{SST} \pause & \mbox{coefficient of determination} \\ \pause
 	SST &= SYY = \sum_{i=1}^n (Y_i-\overline{Y})^2 \pause 
 	\end{array} \]
-The coefficient of determination is the percentage of the total response variation explained by the explanatory variable(s).
+The coefficient of determination ($R^2$) is the percentage of the total response variation explained by the explanatory variable(s).
 }
 
 
@@ -186,10 +186,10 @@ segments(Telomeres$jyears, predict(m),
 	
 	\vspace{0.4in} \pause 
 	
-	We can construct $100(1-\alpha)\%$ confidence intervals via
+	We can construct $100(1-\alpha)\%$ two-sided confidence intervals via
 	\[ \hat{\beta}_0 \pm t_{n-2}(1-\alpha/2) SE(\beta_0) \qquad \mbox{and} \qquad \hat{\beta}_1 \pm t_{n-2}(1-\alpha/2) SE(\beta_1)  \]
 
-	These provide ranges of the parameter consistent with the data.
+	These provide ranges of the parameters consistent with the data.
 }
 
 
@@ -233,6 +233,29 @@ PROC REG DATA=t;
    Intercept    1       1.36768       0.05721     23.91     <.0001       1.25176       1.48360
    years        1      -0.02637       0.00909     -2.90     0.0062      -0.04479      -0.00796\end{verbatim}
 }
+
+
+\begin{frame}[fragile]
+\frametitle{Regression in R}
+
+<<>>=
+m = lm(telomere.length~years, Telomeres)
+anova(m)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Regression in R}
+
+<<>>=
+m = lm(telomere.length~years, Telomeres)
+summary(m)
+confint(m)
+@
+
+\end{frame}
 
 
 \subsection{Summary}
