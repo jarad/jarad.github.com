@@ -73,6 +73,26 @@ ggplot(Telomeres, aes(x=years, y=telomere.length))+geom_point()+geom_smooth(meth
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Telomere length}
+
+{\tiny \url{http://www.pnas.org/content/101/49/17312}}
+
+\begin{quote}
+People who are stressed over long periods tend to look haggard, and it is commonly thought that psychological stress leads to premature aging and the earlier onset of diseases of aging. 
+
+...
+
+This design allowed us to examine the importance of perceived stress and measures of objective stress (caregiving status and chronicity of caregiving stress based on the number of years since a child's diagnosis).
+
+...
+
+Telomere length values were measured from DNA by a quantitative PCR assay that determines the relative ratio of telomere repeat copy number to single-copy gene copy number (T/S ratio) in experimental samples as compared with a reference DNA sample.
+\end{quote}
+
+\end{frame}
+
+
 \subsection{Interpretation}
 \frame{\frametitle{Interpretation}
 
@@ -195,6 +215,7 @@ segments(Telomeres$jyears, predict(m),
 
 
 
+
 \frame[containsverbatim]{\frametitle{}
 \tiny
 \begin{verbatim}
@@ -202,37 +223,75 @@ DATA t;
   INFILE 'telomeres.csv' DSD FIRSTOBS=2;
   INPUT years length;
 
-PROC REG DATA=t;
-  MODEL length = years;
+PROC CORR DATA=t;
+  VAR length;
+  WITH years;
   RUN;
-                                        The REG Procedure
-                                          Model: MODEL1
-                                   Dependent Variable: length 
 
+                                       The CORR Procedure
+
+                                   1 With Variables:    years    
+                                   1      Variables:    length   
+
+
+                                       Simple Statistics
+ 
+   Variable           N          Mean       Std Dev           Sum       Minimum       Maximum
+
+   years             39       5.58974       2.93543     218.00000       1.00000      12.00000
+   length            39       1.22026       0.17977      47.59000       0.84000       1.63000
+
+
+                            Pearson Correlation Coefficients, N = 39 
+                                   Prob > |r| under H0: Rho=0
+ 
+                                                    length
+
+                                       years      -0.43065
+                                                    0.0062
+\end{verbatim}
+}
+
+
+
+
+\frame[containsverbatim]{\frametitle{}
+\tiny
+\begin{verbatim}
+PROC GLM DATA=t;
+  MODEL length = years / SOLUTION CLPARM;
+  RUN;
+
+                                        The GLM Procedure
                              Number of Observations Read          39
                              Number of Observations Used          39
-
-                                      Analysis of Variance
  
-                                             Sum of           Mean
-         Source                   DF        Squares         Square    F Value    Pr > F
+Dependent Variable: length   
 
-         Model                     1        0.22777        0.22777       8.42    0.0062
-         Error                    37        1.00033        0.02704                     
-         Corrected Total          38        1.22810                                    
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        1      0.22776588      0.22776588       8.42    0.0062
+       Error                       37      1.00033156      0.02703599                     
+       Corrected Total             38      1.22809744                                     
 
-                      Root MSE              0.16443    R-Square     0.1855
-                      Dependent Mean        1.22026    Adj R-Sq     0.1634
-                      Coeff Var            13.47473                       
+                       R-Square     Coeff Var      Root MSE    length Mean
+                       0.185462      13.47473      0.164426       1.220256
 
+       Source                      DF       Type I SS     Mean Square    F Value    Pr > F
+       years                        1      0.22776588      0.22776588       8.42    0.0062
 
-                                      Parameter Estimates
-                      Parameter      Standard
-   Variable    DF      Estimate         Error   t Value   Pr > |t|     95% Confidence Limits
+       Source                      DF     Type III SS     Mean Square    F Value    Pr > F
+       years                        1      0.22776588      0.22776588       8.42    0.0062
 
-   Intercept    1       1.36768       0.05721     23.91     <.0001       1.25176       1.48360
-   years        1      -0.02637       0.00909     -2.90     0.0062      -0.04479      -0.00796\end{verbatim}
+                                   Standard
+ Parameter         Estimate           Error    t Value    Pr > |t|      95% Confidence Limits
+ Intercept      1.367682067      0.05721112      23.91      <.0001     1.251761335  1.483602799
+ years         -0.026374315      0.00908674      -2.90      0.0062    -0.044785794 -0.007962836
+
+\end{verbatim}
 }
+
+
 
 
 \begin{frame}[fragile]
@@ -240,6 +299,7 @@ PROC REG DATA=t;
 
 <<>>=
 m = lm(telomere.length~years, Telomeres)
+with(Telomeres, cor(telomere.length,years))
 anova(m)
 @
 
@@ -256,6 +316,29 @@ confint(m)
 @
 
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Conclusion}
+
+Telomere length at the time of diagnosis of a child's chronic illness is estimated to be 1.37 with a 95\% confidence interval of (1.25, 1.48). \pause For each year increase since diagnosis, the length decreases by 0.026 with a 95\% confidence interval of (0.008, 0.045). \pause The proportional of variability in telomere length described by years since diagnosis is 18.5\%. 
+
+\vspace{0.2in} \pause
+
+
+{\tiny \url{http://www.pnas.org/content/101/49/17312}}
+\begin{quote}
+The zero-order correlation between chronicity of caregiving [years] and mean telomere length, r,is –0.445 (P $<$0.01). [$R^2=0.198$ was shown in the plot.]
+\end{quote}
+
+{\tiny 
+\begin{remark}
+I'm guessing our analysis and that reported in the paper don't match exactly due to a discrepancy in the data.
+\end{remark}
+}
+
+\end{frame}
+
 
 
 \subsection{Summary}
