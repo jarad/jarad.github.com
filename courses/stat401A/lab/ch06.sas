@@ -21,12 +21,12 @@ PROC GLM DATA=case0601;
 PROC GLM DATA=case0601;
   CLASS handicap;
   MODEL score = handicap / CLPARM;
-  LSMEANS handicap / STDERR PDIFF CL;          /* LSD, i.e. no adjustment */
+  LSMEANS handicap / STDERR CL PDIFF;          /* LSD, i.e. no adjustment */
   /* 
-  LSMEANS handicap / STDERR PDIFF CL ADJUST=DUNNETT PDIFF=CONTROL('None');
-  LSMEANS handicap / STDERR PDIFF CL ADJUST=TUKEY;
-  LSMEANS handicap / STDERR PDIFF CL ADJUST=BONFERRONI;
-  LSMEANS handicap / STDERR PDIFF CL ADJUST=SCHEFFE;
+  LSMEANS handicap / STDERR CL ADJUST=DUNNETT    PDIFF=CONTROL('None');
+  LSMEANS handicap / STDERR CL ADJUST=TUKEY      PDIFF;
+  LSMEANS handicap / STDERR CL ADJUST=BONFERRONI PDIFF;
+  LSMEANS handicap / STDERR CL ADJUST=SCHEFFE    PDIFF;
   */
   TITLE ' Compare to Display 6.6';
   RUN;
