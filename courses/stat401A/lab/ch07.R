@@ -15,8 +15,9 @@ plot(distance~velocity, case0701, main='Compare to Display 7.1')
 
 mod = lm(distance~velocity, case0701)
 summary(mod) # Compare to Display 7.9
+confint(mod)
 case0701$fit = predict(mod)
-case0701$res = residual(mod)
+case0701$res = residuals(mod)
 case0701 # Compare to Display 7.8
 
 plot(distance~velocity, case0701)
@@ -57,6 +58,7 @@ mod = lm(ph ~ log(hours), case0702)
 ggplot(case0702, aes(x=ph, y=log(hours))) + geom_point() + geom_smooth(method='lm',formula=y~x)
 
 # This gets prediction band
+par(mfrow=c(1,1)) # Reset the plotting window
 plot(ph~hours, case0702, log='x', main="Compare to Display 7.4", pch=19)
 pred = predict(mod, interval="prediction")
 lines(case0702$hours,pred[,1])
