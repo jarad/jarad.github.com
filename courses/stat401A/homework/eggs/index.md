@@ -11,7 +11,7 @@ description: ""
     </script>
 </head>
 
-I collected the amphipod crustacean (<emph>Platorchestia platensis</emph>) on a beach near Stony Brook, Long Island, in April, 1987, removed and counted the number of eggs each female was carrying, then freeze-dried and weighed the mothers. Summary statistics are provided in the table below. 
+A scientist collected amphipod crustacean (*Platorchestia platensis*) on a beach near Stony Brook, Long Island, in April, 1987. The scientist removed and counted the number of eggs each female was carrying, and then freeze-dried and weighed the mothers. Summary statistics are provided in the table below. 
 
 
 |variable  |n |mean|sd  |
