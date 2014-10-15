@@ -366,6 +366,56 @@ I'm guessing our analysis and that reported in the paper don't match exactly due
 
 
 
+\section{Statements about a particular value of $X$}
+
+\begin{frame}
+\frametitle{What is $E[Y|X=x]$?}
+
+We know $\beta_0 = E[Y|X=0]$, but what about $X=x$? \pause
+
+\[ E[Y|X=x] = \beta_0+\beta_1 x \]
+which we can estimate via 
+\[ \widehat{E[Y|X=x]} = \hat{\beta}_0 + \hat{\beta}_1x \]
+\pause
+but there is uncertainty in both $\beta_0$ and $\beta_1$. \pause So the standard error of $E[Y|X=x]$ is 
+\[ SE(E[Y|X=x]) = \hat{\sigma} \sqrt{\frac{1}{n} + \frac{(\overline{X}-x)^2}{(n-1)s_X^2}}  \]
+and a $100(1-\alpha)$\% confidence interval is 
+\[ \hat{\beta}_0 + \hat{\beta}_1x \pm t_{n-2}(1-\alpha/2)SE(E[Y|X=x]) \]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{What do we predict about $Y$ at $X=x$?}
+
+On the last slide, we calculated $E[Y|X=x]$ and it's uncertainty\pause, but if we are trying to predict a new observation, we need to account for the sampling variablity $\sigma^2$. \pause Thus a prediction about $Y$ at a new $X=x$ is still
+
+\[ Pred(Y|X=x) = \hat{\beta}_0 + \hat{\beta}_1 x \]
+but the uncertainty includes the variability due to $\sigma^2$. \pause  So the standard error of $Pred(Y|X=x)$ is 
+\[ SE(Pred(Y|X=x])) = \hat{\sigma} \sqrt{1+\frac{1}{n} + \frac{(\overline{X}-x)^2}{(n-1)s_X^2}}  \]
+and a $100(1-\alpha)$\% confidence interval is 
+\[ \hat{\beta}_0 + \hat{\beta}_1x \pm t_{n-2}(1-\alpha/2)SE(Pred(Y|X=x)). \]
+\end{frame}
+
+
+\begin{frame}[fragile]
+
+<<echo=FALSE>>=
+plot(telomere.length~years, Telomeres, pch=19)
+abline(m)
+d = data.frame(years=seq(0,13,by=.1))
+tmp = predict(m, d, interval="confidence")  
+lines(d$years, tmp[,2], lwd=2, lty=2, col=2)
+lines(d$years, tmp[,3], lwd=2, lty=2, col=2)
+tmp = predict(m, d, interval="prediction")  
+lines(d$years, tmp[,2], lwd=2, lty=3, col=3)
+lines(d$years, tmp[,3], lwd=2, lty=3, col=3)
+legend("topright", c("Regression line","Confidence bands","Prediction bands"), lty=1:3, lwd=2, col=1:3)
+@
+\end{frame}
+
+
 
 
 \section{Lack-of-fit F-test}
@@ -473,6 +523,19 @@ PROC REG DATA=t;
 Indicates no evidence for a lack of fit, i.e. regression seems adequate.
 }
 
+
+
+\begin{frame}[fragile]
+<<>>=
+m_anova = lm(telomere.length ~ as.factor(years), Telomeres)
+m_reg   = lm(telomere.length ~           years , Telomeres)
+anova(m_reg, m_anova)
+@
+No evidence of a lack of fit. 
+
+\end{frame}
+
+
 \subsection{Summary}
 \frame{\frametitle{Summary}
 	\begin{itemize}[<+->]
@@ -520,7 +583,7 @@ x = runif(n,0,10)
 y = rnorm(n,x)
 set.seed(1)
 
-myplot = function(x,y,main) {
+myplot = function(x,y,main="") {
   plot(x,y,axes=FALSE, frame=TRUE, main=main)
 }
 
@@ -543,7 +606,6 @@ myplot(x, y, "log(x), log(y)")
 <<echo=FALSE>>=
 n = 1000
 x = rnorm(n)
-pdf("normal.pdf", height=5)
 par(mfrow=c(1,3))
 for (i in c(10,100,1000)) { qqnorm(x[1:i], main=paste("n=",i)); qqline(x[1:i]) }
 @
