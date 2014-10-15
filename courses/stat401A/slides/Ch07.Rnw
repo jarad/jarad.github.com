@@ -368,4 +368,262 @@ I'm guessing our analysis and that reported in the paper don't match exactly due
 
 
 
+\section{Lack-of-fit F-test}
+\frame{\frametitle{Testing Composite hypotheses}
+  Comparing two models
+	\begin{itemize}
+	\item $H_0:$ \alert{(reduced)}
+	\item $H_1:$ \alert{(full)}
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	\small
+	Do the following
+	\begin{enumerate}[1.]
+	\item Calculate extra sum of squares.
+	\item Calculate extra degrees of freedom
+	\item Calculate 
+	\[ \mbox{F-statistic} = \frac{\mbox{Extra sum of squares / Extra degrees of freedom}}{\hat{\sigma}^2_{full}} \]
+	\item Compare this to an F-distribution with 
+		\begin{itemize}
+		\item numerator degrees of freedom = extra degrees of freedom
+		\item denominator degrees of freedom = degrees of freedom in estimating $\hat{\sigma}_{full}^2$
+		\end{itemize}
+	\end{enumerate}
+}
+
+
+\frame{\frametitle{Simple Linear Regression}
+	Two models:
+	
+	\begin{tabular}{lll}
+	ANOVA: & $Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ & \pause \uncover<3->{\alert{(full)}} \\
+	Regression: & $Y_{ij} \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2)$ & \uncover<3->{\alert{(reduced)}}
+	\end{tabular}
+	
+	\vspace{0.2in} \pause \pause
+	
+	\begin{itemize}[<+->]
+	\item Regression model is reduced:
+	\begin{itemize}
+	\item ANOVA has $J$ parameters for the mean
+	\item Regression has 2 parameters for the mean
+	\item $\mu_{i} = \beta_0+\beta_1 X_i$ 
+	\end{itemize}
+	\item Small pvalues indicate a lack-of-fit, i.e. the reduced model is not adequate.
+	\item Lack-of-fit F-test requires multiple observations at a few $X_i$ values.
+	\end{itemize}
+	
+}
+
+\begin{frame}[fragile]
+\frametitle{Telomere length}
+<<echo=FALSE>>=
+ggplot(Telomeres, aes(factor(years), telomere.length))+
+  geom_boxplot()+
+  geom_jitter()+
+  labs(x="Years", y="Telomere length", 
+       title="Telomere length vs years since diagnosis")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Telomere length}
+<<echo=FALSE>>=
+ggplot(Telomeres, aes(years, telomere.length))+
+  geom_jitter()+
+  geom_smooth(method=lm, se=FALSE)+
+  labs(x="Years", y="Telomere length", 
+       title="Telomere length vs years since diagnosis")
+@
+\end{frame}
+
+\subsection{SAS code}
+\frame[containsverbatim]{\frametitle{SAS code}
+\tiny
+\begin{verbatim}
+DATA t;
+  INFILE 'telomeres.csv' DSD FIRSTOBS=2;
+  INPUT years length;
+
+PROC REG DATA=t;
+  MODEL length = years / CLB LACKFIT;
+  RUN;
+
+                                        The REG Procedure
+                                          Model: MODEL1
+                                   Dependent Variable: length 
+
+                             Number of Observations Read          39
+                             Number of Observations Used          39
+
+
+                                      Analysis of Variance
+ 
+                                             Sum of           Mean
+         Source                   DF        Squares         Square    F Value    Pr > F
+
+         Model                     1        0.22777        0.22777       8.42    0.0062
+         Error                    37        1.00033        0.02704                     
+           Lack of Fit             9        0.18223        0.02025       0.69    0.7093
+           Pure Error             28        0.81810        0.02922                     
+         Corrected Total          38        1.22810           
+\end{verbatim}
+Indicates no evidence for a lack of fit, i.e. regression seems adequate.
+}
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+	\begin{itemize}[<+->]
+	\item Lack-of-fit F-test tests the assumption of linearity
+	\item Needs multiple observations at various explanatory variable values
+	\item Small pvalue indicates a lack-of-fit, i.e. means are not linear
+		\begin{itemize}
+		\item Transform response, e.g. log
+		\item Transform explanatory variable
+		\item Add other explanatory variables
+		\end{itemize}
+	\end{itemize}
+}
+
+
+
+\section{Regression Diagnostics}
+\frame{\frametitle{Regression}
+  The simpler linear regression model is 
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+	\pause this can be rewritten as 
+	\[ Y_i = \beta_0 + \beta_1 X_i + e_i \qquad e_i \stackrel{ind}{\sim} N(0,\sigma^2) \]
+	\pause where we estimate the errors via the residuals
+	\[ r_i = \hat{e}_i = Y_i - (\hat{\beta}_0+\hat{\beta}_1 X_i). \]
+	
+	\vspace{0.2in} \pause
+	
+	Key assumptions are:
+	\begin{itemize}[<+->]
+	\item Linearity between mean response and explanatory variable
+	\item Normality of the errors
+	\item Constant variance of the errors
+	\item Independence between observations
+	\end{itemize}
+}
+
+\subsection{Linearity}
+\begin{frame}[fragile]
+\frametitle{Linearity}
+	Assess using scatterplots of transformed response vs transformed explanatory variable:
+	
+<<echo=FALSE>>=
+n = 100
+x = runif(n,0,10)
+y = rnorm(n,x)
+set.seed(1)
+
+myplot = function(x,y,main) {
+  plot(x,y,axes=FALSE, frame=TRUE, main=main)
+}
+
+par(mfrow=c(2,4), mar=c(0,0,4,0)+.5)
+myplot(x, y)
+myplot(x, exp(y))
+myplot(exp(x), y)
+myplot(exp(x), exp(y))
+myplot(x, y)
+myplot(x, y, "log(y)")
+myplot(x, y, "log(x)")
+myplot(x, y, "log(x), log(y)")
+@
+\end{frame}
+
+\subsection{Normality}
+\begin{frame}[fragile]
+\frametitle{Normality}
+	These are normal.
+<<echo=FALSE>>=
+n = 1000
+x = rnorm(n)
+pdf("normal.pdf", height=5)
+par(mfrow=c(1,3))
+for (i in c(10,100,1000)) { qqnorm(x[1:i], main=paste("n=",i)); qqline(x[1:i]) }
+@
+	SAS swaps the x and y axes
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Normality}
+	These are normal.
+<<echo=FALSE>>=
+par(mfrow=c(2,5), mar=rep(0,4)+.5)
+for (i in 1:10) {
+  x = rnorm(100)
+  qqnorm(x, main="", xlab="", ylab=""); qqline(x)
+}
+@
+	SAS swaps the x and y axes
+\end{frame}
+\begin{frame}
+\frametitle{Normality}
+<<echo=FALSE>>=
+n=1000
+x = rnorm(n, 10)
+par(mfrow=c(2,2), mar=c(0,0,4,0)+.5)
+qqnorm(x, main="normal"); qqline(x)
+qqnorm(exp(x), main="right-skewed", xlab="", ylab=""); qqline(exp(x))
+qqnorm(log(x), main="left-skewed", xlab="", ylab=""); qqline(log(x))
+qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab=""); qqline(y)
+@
+	SAS swaps the x and y axes
+\end{frame}
+
+\subsection{Constant variance}
+\begin{frame}[fragile]
+\frametitle{Constant variance}
+	Most common non-constant variance is when the variance increases with the mean
+<<echo=FALSE>>=
+d = read.csv("reddye40.csv")
+m = lm(weeks~dose,d)
+plot(predict(m), residuals(m), main="Red Dye 40 residuals vs fitted values")
+@
+\end{frame}
+
+\subsection{Independence}
+\frame{\frametitle{Independence}
+	Lack of independence includes
+	\begin{itemize}
+	\item Cluster effect
+	\item Serial correlation
+	\item Spatial association
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	Make plots of residuals vs relevant explanatory variables and look for patterns, \pause e.g.
+	\begin{itemize}[<+->]
+	\item Residuals vs groups (prefer blocking)
+	\item Residuals vs time (or observation number)
+	\item Residuals vs spatial variable 
+	\end{itemize}
+}
+
+
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+	Often the best strategy is graphical exploration of the data, \pause here are some relevant graphs: \pause
+	\begin{itemize}
+	\item transformed response vs transformed explanatory
+	\item transformed response vs transformed explanatory
+	\item qqplot of residuals
+	\item residual vs fitted value
+	\item residual vs explanatory
+	\item residual vs observation number
+	\item residual vs any other variable
+	\end{itemize}
+}
+
+
+
+
+
 \end{document}
