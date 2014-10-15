@@ -20,4 +20,6 @@ The slide sets correspond to the material in the corresponding chapters of The S
 - [Chapter 6](Ch06.pdf)
   - Contrasts
   - Multiple comparison adjustments
+- [Chapter 7](Ch07.pdf)
+  - Simple linear regression
 

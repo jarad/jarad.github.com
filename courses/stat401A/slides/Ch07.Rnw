@@ -214,7 +214,39 @@ segments(Telomeres$jyears, predict(m),
 
 
 
+\begin{frame}[fragile]
+\frametitle{Calculations by hand}
+{\tiny
+<<echo=FALSE>>=
+ddply(Telomeres, .(), summarize,
+      n = length(years),
+      Xbar = mean(years),
+      Ybar = mean(telomere.length),
+      s_X = sd(years),
+      s_Y = sd(telomere.length),
+      r_XY = cor(telomere.length,years)
+      )[,-1]
+@
 
+\[ \begin{array}{rl}
+SXX &= (n-1) s_x^2 = (39-1)\times 2.935427^2 = 327.4358 \\
+SYY &= (n-1) s_Y^2 = (39-1)\times 0.1797731^2 = 1.228098 \\
+SXY &= (n-1) s_X s_Y r_{XY} = (39-1) \times 2.935427 \times 0.1797731 \times-0.4306534 = -8.635897 \\
+\hat{\beta}_1 &= SXY/SXX = -8.635897/327.4358 = -0.02637432 \\
+\hat{\beta}_0 &= \overline{Y}-\hat{\beta}_1\overline{X} = 1.220256 - (-0.02637432)\times 5.589744 = 1.367682 \\
+R^2 &= r_{XY}^2 = (-0.4306534)^2 = 0.1854624 \\
+SSE &= SYY(1-R^2) = 1.228098(1-0.1854624) = 1.000332 \\
+\hat{\sigma}^2 &= SSE/(n-2) = 1.000332/(39-2) = 0.027036 \\
+\hat{\sigma} &= \sqrt{\hat{\sigma}^2} = \sqrt{0.027036} = 0.1644263 \\
+SE(\hat{\beta}_0) &= \hat{\sigma}\sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_x^2}} =  0.1644263 \sqrt{\frac{1}{39} + \frac{ 5.589744^2}{327.4358}} = 0.05721115 \\
+SE(\hat{\beta}_1) &= \hat{\sigma}\sqrt{\frac{1}{(n-1)s_x^2}} =  0.1644263 \sqrt{\frac{1}{327.4358}} = 0.009086742 \\
+p_{H_0:\beta_0=0} &= 2P\left(t_{n-2} < -\left| \frac{1.367682}{0.05721115} \right|\right) = 2P(t_{37} < - 23.90586) < 0.0001 \\
+p_{H_0:\beta_1=0} &= 2P\left(t_{n-2} < -\left| \frac{-0.02637432 }{0.009086742} \right|\right) = 2P(t_{37} < - 2.902506) < 0.0062 \\
+CI_{95\%\, \beta_0} &= \hat{\beta}_0 \pm t_{n-2}(1-\alpha/2) SE(\hat{\beta}_0) = 1.367682 \pm 2.026192\times  0.05721115 = (1.251761, 1.483603) \\
+CI_{95\%\, \beta_1} &= \hat{\beta}_1 \pm t_{n-2}(1-\alpha/2) SE(\hat{\beta}_1) = -0.02637432  \pm 2.026192\times  0.009086742 = (-0.044785804 -0.007962836)
+\end{array} \]
+}
+\end{frame}
 
 \frame[containsverbatim]{\frametitle{}
 \tiny
@@ -374,6 +406,7 @@ I'm guessing our analysis and that reported in the paper don't match exactly due
 We know $\beta_0 = E[Y|X=0]$, but what about $X=x$? \pause
 
 \[ E[Y|X=x] = \beta_0+\beta_1 x \]
+\pause 
 which we can estimate via 
 \[ \widehat{E[Y|X=x]} = \hat{\beta}_0 + \hat{\beta}_1x \]
 \pause
@@ -464,7 +497,6 @@ legend("topright", c("Regression line","Confidence bands","Prediction bands"), l
 	\item Small pvalues indicate a lack-of-fit, i.e. the reduced model is not adequate.
 	\item Lack-of-fit F-test requires multiple observations at a few $X_i$ values.
 	\end{itemize}
-	
 }
 
 \begin{frame}[fragile]
@@ -552,6 +584,9 @@ No evidence of a lack of fit.
 
 
 
+% Put in interpretable intercept
+
+\begin{comment}
 \section{Regression Diagnostics}
 \frame{\frametitle{Regression}
   The simpler linear regression model is 
@@ -684,7 +719,7 @@ plot(predict(m), residuals(m), main="Red Dye 40 residuals vs fitted values")
 	\end{itemize}
 }
 
-
+\end{comment}
 
 
 
