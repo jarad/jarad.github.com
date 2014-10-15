@@ -12,4 +12,4 @@ sm = ddply(melt(d), .(variable), summarize,
 cor(d)
 
 tab = xtable(sm)
-print(tab, file="table.html", include.rownames=FALSE)
+print(tab, file="table.html", type="html", include.rownames=FALSE)
