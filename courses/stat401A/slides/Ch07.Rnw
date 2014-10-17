@@ -39,7 +39,7 @@ library(abd)
 \end{frame}
 
 
-\section{Model}
+\section{Simple linear regression}
 \frame{\frametitle{Simple Linear Regression}
   Recall the one-way ANOVA model:
 	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \]
@@ -93,8 +93,8 @@ Telomere length values were measured from DNA by a quantitative PCR assay that d
 \end{frame}
 
 
-\subsection{Interpretation}
-\frame{\frametitle{Interpretation}
+\subsection{Parameter interpretation}
+\frame{\frametitle{Parameter interpretation}
 
 	\vspace{-0.2in}
 
@@ -127,7 +127,7 @@ Telomere length values were measured from DNA by a quantitative PCR assay that d
 	\end{itemize}
 }
 
-\subsection{Parameter Estimation}
+\subsection{Parameter estimation}
 \frame{\frametitle{}
 	\small
 
@@ -424,11 +424,11 @@ and a $100(1-\alpha)$\% confidence interval is
 
 On the last slide, we calculated $E[Y|X=x]$ and it's uncertainty\pause, but if we are trying to predict a new observation, we need to account for the sampling variablity $\sigma^2$. \pause Thus a prediction about $Y$ at a new $X=x$ is still
 
-\[ Pred{Y|X=x} = \hat{\beta}_0 + \hat{\beta}_1 x \]
-but the uncertainty includes the variability due to $\sigma^2$. \pause  So the standard error of $Pred{Y|X=x}$ is 
-\[ SE(Pred{Y|X=x}) = \hat{\sigma} \sqrt{1+\frac{1}{n} + \frac{(\overline{X}-x)^2}{(n-1)s_X^2}}  \]
+\[ Pred\{Y|X=x\} = \hat{\beta}_0 + \hat{\beta}_1 x \]
+but the uncertainty includes the variability due to $\sigma^2$. \pause  So the standard error of $Pred\{Y|X=x\}$ is 
+\[ SE(Pred\{Y|X=x\}) = \hat{\sigma} \sqrt{1+\frac{1}{n} + \frac{(\overline{X}-x)^2}{(n-1)s_X^2}}  \]
 and a $100(1-\alpha)$\% confidence interval is 
-\[ \hat{\beta}_0 + \hat{\beta}_1x \pm t_{n-2}(1-\alpha/2)SE(Pred{Y|X=x}). \]
+\[ \hat{\beta}_0 + \hat{\beta}_1x \pm t_{n-2}(1-\alpha/2)SE(Pred\{Y|X=x\}). \]
 \end{frame}
 
 
@@ -506,7 +506,7 @@ legend("topright", c("Regression line","Confidence bands","Prediction bands"), l
 
 
 
-\section{Lack-of-fit F-test}
+\subsection{Lack-of-fit F-test}
 \frame{\frametitle{Testing Composite hypotheses}
   Comparing two models
 	\begin{itemize}
@@ -533,11 +533,15 @@ legend("topright", c("Regression line","Confidence bands","Prediction bands"), l
 
 
 \frame{\frametitle{Lack-of-fit F-test}
+  Let $Y_{ij}$ be the $i^{th}$ observation from the $j^{th}$ group where the group is defined by those observations having the same explanatory variable value ($X_j$). 
+  
+  \vspace{0.1in} \pause
+
 	Two models:
 	
 	\begin{tabular}{lll}
-	ANOVA: & $Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ & \pause \uncover<3->{\alert{(full)}} \\
-	Regression: & $Y_{ij} \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2)$ & \uncover<3->{\alert{(reduced)}}
+	ANOVA: & $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ & \pause \uncover<3->{\alert{(full)}} \\
+	Regression: & $Y_{ij} \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_j, \sigma^2)$ & \uncover<3->{\alert{(reduced)}}
 	\end{tabular}
 	
 	\vspace{0.2in} \pause \pause
@@ -547,10 +551,10 @@ legend("topright", c("Regression line","Confidence bands","Prediction bands"), l
 	\begin{itemize}
 	\item ANOVA has $J$ parameters for the mean
 	\item Regression has 2 parameters for the mean
-	\item Set $\mu_{i} = \beta_0+\beta_1 X_i$.
+	\item Set $\mu_{j} = \beta_0+\beta_1 X_j$.
 	\end{itemize}
 	\item Small pvalues indicate a lack-of-fit, i.e. the reduced model is not adequate.
-	\item Lack-of-fit F-test requires multiple observations at a few $X_i$ values!
+	\item Lack-of-fit F-test requires multiple observations at a few $X_j$ values!
 	\end{itemize}
 }
 
@@ -576,7 +580,6 @@ ggplot(Telomeres, aes(years, telomere.length))+
 @
 \end{frame}
 
-\subsection{SAS code}
 \frame[containsverbatim]{\frametitle{SAS code}
 \tiny
 \begin{verbatim}
@@ -607,6 +610,9 @@ PROC REG DATA=t;
            Pure Error             28        0.81810        0.02922                     
          Corrected Total          38        1.22810           
 \end{verbatim}
+
+\pause
+
 Indicates no evidence for a lack of fit, i.e. regression seems adequate.
 }
 
@@ -614,10 +620,14 @@ Indicates no evidence for a lack of fit, i.e. regression seems adequate.
 
 \begin{frame}[fragile]
 <<>>=
-m_anova = lm(telomere.length ~ as.factor(years), Telomeres)
+# Use as.factor to turn a continuous variable into a categorical variable
+m_anova = lm(telomere.length ~ as.factor(years), Telomeres) 
 m_reg   = lm(telomere.length ~           years , Telomeres)
 anova(m_reg, m_anova)
 @
+
+\vspace{0.2in} \pause
+
 No evidence of a lack of fit. 
 
 \end{frame}
