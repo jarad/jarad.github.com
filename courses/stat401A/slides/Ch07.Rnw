@@ -424,17 +424,71 @@ and a $100(1-\alpha)$\% confidence interval is
 
 On the last slide, we calculated $E[Y|X=x]$ and it's uncertainty\pause, but if we are trying to predict a new observation, we need to account for the sampling variablity $\sigma^2$. \pause Thus a prediction about $Y$ at a new $X=x$ is still
 
-\[ Pred(Y|X=x) = \hat{\beta}_0 + \hat{\beta}_1 x \]
-but the uncertainty includes the variability due to $\sigma^2$. \pause  So the standard error of $Pred(Y|X=x)$ is 
-\[ SE(Pred(Y|X=x])) = \hat{\sigma} \sqrt{1+\frac{1}{n} + \frac{(\overline{X}-x)^2}{(n-1)s_X^2}}  \]
+\[ Pred{Y|X=x} = \hat{\beta}_0 + \hat{\beta}_1 x \]
+but the uncertainty includes the variability due to $\sigma^2$. \pause  So the standard error of $Pred{Y|X=x}$ is 
+\[ SE(Pred{Y|X=x}) = \hat{\sigma} \sqrt{1+\frac{1}{n} + \frac{(\overline{X}-x)^2}{(n-1)s_X^2}}  \]
 and a $100(1-\alpha)$\% confidence interval is 
-\[ \hat{\beta}_0 + \hat{\beta}_1x \pm t_{n-2}(1-\alpha/2)SE(Pred(Y|X=x)). \]
+\[ \hat{\beta}_0 + \hat{\beta}_1x \pm t_{n-2}(1-\alpha/2)SE(Pred{Y|X=x}). \]
 \end{frame}
+
+
+
+\frame[containsverbatim]{\frametitle{}
+\tiny
+\begin{verbatim}
+DATA tnew;
+  INPUT years;
+  DATALINES;
+  4
+  ;
+
+DATA combined;
+  SET t tnew;
+  RUN;
+
+PROC PRINT DATA=combined;
+  WHERE years=4;
+  RUN;
+  
+                                     Obs    years    length
+
+                                      10      4       1.51 
+                                      11      4       1.31 
+                                      15      4       1.03 
+                                      16      4       0.84 
+                                      40      4        .   
+                                      
+PROC GLM DATA=combined;
+ MODEL length = years;
+ OUTPUT OUT=combinedreg PREDICTED=predicted  LCLM=lclm UCLM=uclm LCL=lcl UCL=ucl;
+ RUN;
+
+PROC PRINT DATA=combinedreg;
+  WHERE length=.;             /* . is missing data in SAS */
+  RUN;
+  
+         Obs    years    length    predicted      lclm       uclm       lcl        ucl
+          40      4         .       1.26218     1.20133    1.32303    0.92351    1.60086
+\end{verbatim}
+}
 
 
 \begin{frame}[fragile]
 
-<<echo=FALSE>>=
+<<>>=
+m = lm(telomere.length~years, Telomeres)
+new = data.frame(years=4)
+predict(m, new, interval="confidence")  
+predict(m, new, interval="prediction") 
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+
+<<echo=FALSE, fig.height=6, fig.width=7, out.width='0.8\\textwidth'>>=
 plot(telomere.length~years, Telomeres, pch=19)
 abline(m)
 d = data.frame(years=seq(0,13,by=.1))
@@ -444,7 +498,8 @@ lines(d$years, tmp[,3], lwd=2, lty=2, col=2)
 tmp = predict(m, d, interval="prediction")  
 lines(d$years, tmp[,2], lwd=2, lty=3, col=3)
 lines(d$years, tmp[,3], lwd=2, lty=3, col=3)
-legend("topright", c("Regression line","Confidence bands","Prediction bands"), lty=1:3, lwd=2, col=1:3)
+legend("topright", c("Regression line","Confidence bands","Prediction bands"), lty=1:3, lwd=2, col=1:3,
+       bg="white")
 @
 \end{frame}
 
@@ -477,7 +532,7 @@ legend("topright", c("Regression line","Confidence bands","Prediction bands"), l
 }
 
 
-\frame{\frametitle{Simple Linear Regression}
+\frame{\frametitle{Lack-of-fit F-test}
 	Two models:
 	
 	\begin{tabular}{lll}
@@ -492,10 +547,10 @@ legend("topright", c("Regression line","Confidence bands","Prediction bands"), l
 	\begin{itemize}
 	\item ANOVA has $J$ parameters for the mean
 	\item Regression has 2 parameters for the mean
-	\item $\mu_{i} = \beta_0+\beta_1 X_i$ 
+	\item Set $\mu_{i} = \beta_0+\beta_1 X_i$.
 	\end{itemize}
 	\item Small pvalues indicate a lack-of-fit, i.e. the reduced model is not adequate.
-	\item Lack-of-fit F-test requires multiple observations at a few $X_i$ values.
+	\item Lack-of-fit F-test requires multiple observations at a few $X_i$ values!
 	\end{itemize}
 }
 
