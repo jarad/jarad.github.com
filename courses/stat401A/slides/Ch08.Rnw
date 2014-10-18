@@ -38,6 +38,33 @@ library(abd)
 \maketitle
 \end{frame}
 
+
+\begin{frame}
+\frametitle{All models are wrong!}
+
+George Box (Empirical Model-Building and Response Surfaces, 1987):
+\begin{quote}
+All models are wrong, but some are useful. 
+\end{quote}
+
+\vspace{0.2in} \pause
+
+{\tiny \url{http://stats.stackexchange.com/questions/57407/what-is-the-meaning-of-all-models-are-wrong-but-some-are-useful}}
+
+{\small
+\begin{quotation}
+``All models are wrong" that is, every model is wrong because it is a simplification of reality. Some models, especially in the "hard" sciences, are only a little wrong. They ignore things like friction or the gravitational effect of tiny bodies. Other models are a lot wrong - they ignore bigger things. \pause \\
+
+``But some are useful" - simplifications of reality can be quite useful. They can help us explain, predict and understand the universe and all its various components. \pause \\
+
+This isn't just true in statistics! Maps are a type of model; they are wrong. But good maps are very useful. 
+\end{quotation}
+}
+
+
+\end{frame}
+
+
 \section{Regression diagnostics}
 \frame{\frametitle{Regression}
   The simpler linear regression model is 
@@ -51,67 +78,61 @@ library(abd)
 	
 	Key assumptions are:
 	\begin{itemize}[<+->]
-	\item Linearity between mean response and explanatory variable
-	\item Normality of the errors
+  \item Normality of the errors
 	\item Constant variance of the errors
 	\item Independence between observations
+  \item Linearity between mean response and explanatory variable
 	\end{itemize}
 }
-
-\subsection{Linearity}
-\begin{frame}[fragile]
-\frametitle{Linearity}
-	Assess using scatterplots of transformed response vs transformed explanatory variable:
-	
-<<echo=FALSE>>=
-n = 100
-set.seed(1) 
-x = runif(n,0,10)
-e = rnorm(n)
-y = x+e
-
-myplot = function(x,y,main="") {
-  plot(x,y,axes=FALSE, frame=TRUE, main=main)
-}
-
-par(mfrow=c(2,4), mar=c(0,0,4,0)+.5)
-myplot(x, y)
-myplot(x, exp(y))
-myplot(exp(x), y)
-myplot(exp(x), exp(y))
-myplot(x, y)
-myplot(x, y, "log(y)")
-myplot(x, y, "log(x)")
-myplot(x, y, "log(x), log(y)")
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Linearity - doubled $\sigma$}
-  Assess using scatterplots of transformed response vs transformed explanatory variable:
-	
-<<echo=FALSE>>=
-y = x+5*e
-
-par(mfrow=c(2,4), mar=c(0,0,4,0)+.5)
-myplot(x, y)
-myplot(x, exp(y))
-myplot(exp(x), y)
-myplot(exp(x), exp(y))
-myplot(x, y)
-myplot(x, y, "log(y)")
-myplot(x, y, "log(x)")
-myplot(x, y, "log(x), log(y)")
-@
-\end{frame}
 
 
 
 \subsection{Normality}
 \begin{frame}[fragile]
-\frametitle{Normality}
-	These are normal.
-<<echo=FALSE>>=
+\frametitle{Histograms with best fitting bell curves}
+
+<<echo=FALSE, out.width='0.8\\textwidth'>>=
+set.seed(20141018)
+x = rnorm(100)
+hist(x, freq=F, main="Normal data", ylim=c(0,dnorm(0)))
+curve(dnorm, add=TRUE, lwd=2)
+@
+
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Normal QQ-plot}
+
+\begin{definition}
+The quantile-quantile or qq-plot is an exploratory graphical device used to check the validity of a distributional assumption for a data set.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+A normal qq-plot graphs the theoretical quantiles from a normal distribution versus the observed quantiles. 
+
+\vspace{0.2in} \pause
+
+\begin{remark}
+The bottom line is that, if the distribution assumption is satisfied, the points should fall roughly along the y=x line. 
+\end{remark}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Normal}
+<<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
+set.seed(20141018)
 n = 1000
 x = rnorm(n)
 par(mfrow=c(1,3))
@@ -120,42 +141,113 @@ for (i in c(10,100,1000)) { qqnorm(x[1:i], main=paste("n=",i)); qqline(x[1:i]) }
 	SAS swaps the x and y axes
 \end{frame}
 
+
+
+
+
 \begin{frame}[fragile]
-\frametitle{Normality}
-	These are normal.
-<<echo=FALSE>>=
+\frametitle{Normal (n=10)}
+<<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
 par(mfrow=c(2,5), mar=rep(0,4)+.5)
 for (i in 1:10) {
-  x = rnorm(100)
-  qqnorm(x, main="", xlab="", ylab=""); qqline(x)
+  qqnorm(rnorm(10), main='', xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(x)
 }
 @
 	SAS swaps the x and y axes
 \end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Normal(n=100)}
+<<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
+par(mfrow=c(2,5), mar=rep(0,4)+.5)
+for (i in 1:10) {
+  qqnorm(rnorm(100), main='', xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(x)
+}
+@
+  SAS swaps the x and y axes
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Normal (n=1000)}
+<<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
+par(mfrow=c(2,5), mar=rep(0,4)+.5)
+for (i in 1:10) {
+  qqnorm(rnorm(1000), main='', xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(x)
+}
+@
+  SAS swaps the x and y axes
+\end{frame}
+
+
+
+
 \begin{frame}
-\frametitle{Normality}
+\frametitle{Not normal (n=10).}
 <<echo=FALSE>>=
-n=1000
+n=10
 x = rnorm(n, 10)
 par(mfrow=c(2,2), mar=c(0,0,4,0)+.5)
-qqnorm(x, main="normal"); qqline(x)
-qqnorm(exp(x), main="right-skewed", xlab="", ylab=""); qqline(exp(x))
-qqnorm(log(x), main="left-skewed", xlab="", ylab=""); qqline(log(x))
-qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab=""); qqline(y)
+qqnorm(x, main="normal", axes=FALSE, frame=TRUE); qqline(x)
+qqnorm(exp(x), main="right-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(exp(x))
+qqnorm(log(x), main="left-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(log(x))
+qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(y)
 @
 	SAS swaps the x and y axes
 \end{frame}
 
+
+
+\begin{frame}
+\frametitle{Not normal (n=100).}
+<<echo=FALSE>>=
+n=100
+x = rnorm(n, 10)
+par(mfrow=c(2,2), mar=c(0,0,4,0)+.5)
+qqnorm(x, main="normal", axes=FALSE, frame=TRUE); qqline(x)
+qqnorm(exp(x), main="right-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(exp(x))
+qqnorm(log(x), main="left-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(log(x))
+qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(y)
+@
+  SAS swaps the x and y axes
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Not normal (n=1000).}
+<<echo=FALSE>>=
+n=1000
+x = rnorm(n, 10)
+par(mfrow=c(2,2), mar=c(0,0,4,0)+.5)
+qqnorm(x, main="normal", axes=FALSE, frame=TRUE); qqline(x)
+qqnorm(exp(x), main="right-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(exp(x))
+qqnorm(log(x), main="left-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(log(x))
+qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(y)
+@
+  SAS swaps the x and y axes
+\end{frame}
+
+
+
+
+
+
 \subsection{Constant variance}
 \begin{frame}[fragile]
 \frametitle{Constant variance}
-	Most common non-constant variance is when the variance increases with the mean
-<<echo=FALSE>>=
-d = read.csv("reddye40.csv")
-m = lm(weeks~dose,d)
-plot(predict(m), residuals(m), main="Red Dye 40 residuals vs fitted values")
-@
+
+
+
 \end{frame}
+
+
+
+
 
 \subsection{Independence}
 \frame{\frametitle{Independence}
@@ -193,6 +285,36 @@ plot(predict(m), residuals(m), main="Red Dye 40 residuals vs fitted values")
 }
 
 
+
+
+
+\subsection{Linearity}
+\begin{frame}[fragile]
+\frametitle{Linearity}
+  Assess using scatterplots of (transformed) response vs (transformed) explanatory variable:
+	
+<<echo=FALSE>>=
+n = 100
+set.seed(1) 
+x = runif(n,0,10)
+e = rnorm(n)
+y = x+e
+
+myplot = function(x,y,main="") {
+  plot(x,y,axes=FALSE, frame=TRUE, main=main)
+}
+
+par(mfrow=c(2,4), mar=c(0,0,4,0)+.5)
+myplot(x, y)
+myplot(x, exp(y))
+myplot(exp(x), y)
+myplot(exp(x), exp(y))
+myplot(x, y)
+myplot(x, y, "log(y)")
+myplot(x, y, "log(x)")
+myplot(x, y, "log(x), log(y)")
+@
+\end{frame}
 
 
 
