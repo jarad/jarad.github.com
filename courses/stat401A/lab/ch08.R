@@ -37,6 +37,11 @@ abline(0,0)
 par(mfrow=c(2,3))
 plot(mod, 1:6)
 
+# Histogram with best fitting normal curve
+par(mfrow=c(1,1))
+hist(residuals(mod), freq=F)
+curve(dnorm(x,0,sd(residuals(mod))), add=TRUE, col='red', lwd=2)
+
 
 # Lack of fit ANOVA table compare to Display 8.10
 mod.a = lm(log(time)~               1  , case0802) # Intercept only model
