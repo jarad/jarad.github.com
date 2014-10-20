@@ -49,7 +49,7 @@ PROC SGPLOT DATA=fluid;
   RUN;
 
 
-PROC GLM DATA=fluid PLOT=diagnostics;
+PROC GLM DATA=fluid PLOT=(diagnostics residuals);
   MODEL sqrttime = voltage;
   TITLE 'Compare to Display 8.7';
   RUN;
