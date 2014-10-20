@@ -14,7 +14,7 @@ plot(area~species, species, log='xy', main='Compare to Display 8.2')
 
 
 
-fluid = read.csv(paste(data.dir,"case0802.csv",sep=""))
+fluid = read.csv("case0802.csv")
 names(fluid) = tolower(names(fluid))
 
 
