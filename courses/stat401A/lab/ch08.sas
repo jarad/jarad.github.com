@@ -12,11 +12,15 @@ PROC PRINT;
   TITLE 'Compare to Display 8.1';
   RUN; 
 
-axis1 logbase=10;
-axis2 logbase=10;
 PROC SGPLOT DATA=species;
-  PLOT species*area;
-  PLOT species*area / HAXIS=axis1 VAXIS=axis2;
+  SCATTER Y=species X=area;
+  TITLE 'Compare to Display 8.2';
+  RUN;
+
+PROC SGPLOT DATA=species;
+  SCATTER Y=species X=area;
+  XAXIS TYPE=log; /* default is base 10 */
+  YAXIS TYPE=log;
   TITLE 'Compare to Display 8.2';
   RUN;
   
@@ -32,13 +36,14 @@ DATA fluid;
   RUN;
 
 PROC SGPLOT DATA=fluid;
-  PLOT l10time*voltage;
-  PLOT2 ltime*voltage;
+  SCATTER Y=time X=voltage;
+  YAXIS  TYPE=log LOGBASE=10;
+  Y2AXIS TYPE=log LOGBASE=e LOGSTYLE=linear; /* currently not working */
   TITLE 'Compare to Display 8.4';
   RUN;
 
 PROC SGPLOT DATA=fluid;
-  PLOT time*voltage;
+  SCATTER Y=time X=voltage;
   TITLE 'Compare to Display 8.5';
   RUN;
 
