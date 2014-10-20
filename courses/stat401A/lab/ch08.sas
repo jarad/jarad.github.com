@@ -14,7 +14,7 @@ PROC PRINT;
 
 axis1 logbase=10;
 axis2 logbase=10;
-PROC GPLOT DATA=species;
+PROC SGPLOT DATA=species;
   PLOT species*area;
   PLOT species*area / HAXIS=axis1 VAXIS=axis2;
   TITLE 'Compare to Display 8.2';
@@ -31,13 +31,13 @@ DATA fluid;
   sqrttime = sqrt(time);
   RUN;
 
-PROC GPLOT DATA=fluid;
+PROC SGPLOT DATA=fluid;
   PLOT l10time*voltage;
   PLOT2 ltime*voltage;
   TITLE 'Compare to Display 8.4';
   RUN;
 
-PROC GPLOT DATA=fluid;
+PROC SGPLOT DATA=fluid;
   PLOT time*voltage;
   TITLE 'Compare to Display 8.5';
   RUN;
