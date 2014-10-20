@@ -19,7 +19,7 @@ PROC SGPLOT DATA=species;
 
 PROC SGPLOT DATA=species;
   SCATTER Y=species X=area;
-  XAXIS TYPE=log; /* default is base 10 */
+  XAXIS TYPE=log;                            /* default is base 10 */
   YAXIS TYPE=log;
   TITLE 'Compare to Display 8.2';
   RUN;
@@ -31,20 +31,21 @@ DATA fluid;
   INFILE 'case0802.csv' DSD FIRSTOBS=2;
   INPUT time voltage group $;
   ltime = log(time);
-  l10time = log10(time);
   sqrttime = sqrt(time);
   RUN;
+
+
+PROC SGPLOT DATA=fluid;
+  SCATTER Y=time X=voltage;
+  TITLE 'Compare to Display 8.5';
+  RUN;
+
 
 PROC SGPLOT DATA=fluid;
   SCATTER Y=time X=voltage;
   YAXIS  TYPE=log LOGBASE=10;
   Y2AXIS TYPE=log LOGBASE=e LOGSTYLE=linear; /* currently not working */
   TITLE 'Compare to Display 8.4';
-  RUN;
-
-PROC SGPLOT DATA=fluid;
-  SCATTER Y=time X=voltage;
-  TITLE 'Compare to Display 8.5';
   RUN;
 
 
@@ -59,8 +60,6 @@ PROC REG DATA=fluid;
   RUN;
 
 
-
-
 PROC MEANS DATA=fluid N MEAN STD STDERR;
   CLASS voltage;
   VAR ltime;
@@ -68,7 +67,7 @@ PROC MEANS DATA=fluid N MEAN STD STDERR;
   RUN;
 
 PROC GLM DATA=fluid;
-  CLASS voltage; /* treating voltage as categorical */
+  CLASS voltage;                     /* treating voltage as categorical */
   MODEL ltime = voltage;
   LSMEANS voltage / STDERR;
   RUN;
@@ -77,8 +76,8 @@ PROC GLM DATA=fluid;
   MODEL ltime = voltage;
   OUTPUT OUT=fluidreg 
     PREDICTED=Estimate 
-    STDP = SE            /* standard error of mean       */
-    STDI = SEPred;       /* standard error of prediction */
+    STDP = SE                        /* standard error of mean       */
+    STDI = SEPred;                   /* standard error of prediction */
   RUN;
 
 PROC PRINT DATA=fluidreg; 
