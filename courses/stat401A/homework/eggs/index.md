@@ -21,7 +21,7 @@ A scientist collected amphipod crustacean (*Platorchestia platensis*) on a beach
 |----------|--|----|----|
 
 
-Using the summary statistics and the correlation between weight (mg) and number of eggs which is estimated to be 0.45. Calculate the following quantities:
+Using the summary statistics and the correlation between weight (mg) and number of eggs which is estimated to be 0.45. Treating eggs as the response and weight as the explanatory variable, calculate the following quantities:
 
 - Intercept (\\(\beta_0\\))
 - Slope (\\(\beta_1\\))
