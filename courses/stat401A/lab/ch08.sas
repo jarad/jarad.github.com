@@ -41,21 +41,6 @@ PROC GPLOT DATA=fluid;
   TITLE 'Compare to Display 8.5';
   RUN;
 
-/* Compare to Display 8.6 */
-TITLE 'Hypothetical scatterplots of response versus explanatory variable';
-DATA hypothetical;
-  INFILE 'hypothetical.csv' DSD FIRSTOBS=2;
-  INPUT x y1 y2 y3 y4 y5 y6;
-  RUN;
-
-PROC GPLOT;
-  PLOT y1*x;
-  PLOT y2*x;
-  PLOT y3*x;
-  PLOT y4*x;
-  PLOT y5*x;
-  PLOT y6*x;
-  RUN;
 
 PROC GLM DATA=fluid PLOT=diagnostics;
   MODEL sqrttime = voltage;

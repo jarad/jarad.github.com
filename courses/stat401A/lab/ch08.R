@@ -21,11 +21,6 @@ lines(fluid$voltage, exp(predict(mod)))
 
 plot(time~voltage, fluid, main="Compare to Display 8.5")
 
-
-# Compare to Display 8.6
-hypothetical = read.csv("hypothetical.csv")
-par(mfrow=c(3,2), mar=rep(0,4))
-for (i in 1:6) plot(hypothetical[,1], hypothetical[,i+1], xlab="", ylab="", axes=F, frame=T)
  
 mod = lm(sqrt(time)~voltage,fluid)
 par(mfrow=c(1,2))
