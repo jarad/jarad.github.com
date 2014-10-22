@@ -132,11 +132,15 @@ The bottom line is that, if the distribution assumption is satisfied, the points
 \begin{frame}[fragile]
 \frametitle{Normal}
 <<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
-set.seed(20141018)
+
 n = 1000
 x = rnorm(n)
-par(mfrow=c(1,3))
-for (i in c(10,100,1000)) { qqnorm(x[1:i], main=paste("n=",i)); qqline(x[1:i]) }
+opar = par(mfrow=c(1,3))
+for (i in c(10,100,1000)) { 
+  qqnorm(x[1:i], main=paste("n=",i))
+  qqline(x[1:i]) 
+}
+par(opar)
 @
 	
 \end{frame}
@@ -148,10 +152,16 @@ for (i in c(10,100,1000)) { qqnorm(x[1:i], main=paste("n=",i)); qqline(x[1:i]) }
 \begin{frame}[fragile]
 \frametitle{Normal (n=10)}
 <<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
-par(mfrow=c(2,5), mar=rep(0,4)+.5)
-for (i in 1:10) {
-  qqnorm(rnorm(10), main='', xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(x)
+my_normal_qqplots = function(n) {
+  opar = par(mfrow=c(2,5), mar=rep(0,4)+.5)
+  for (i in 1:10) {
+    qqnorm(rnorm(n), main='', xlab="", ylab="", axes=FALSE, frame=TRUE)
+    qqline(x)
+  }
+  par(opar)
 }
+
+my_normal_qqplots(10)
 @
 	
 \end{frame}
@@ -162,10 +172,7 @@ for (i in 1:10) {
 \begin{frame}[fragile]
 \frametitle{Normal(n=100)}
 <<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
-par(mfrow=c(2,5), mar=rep(0,4)+.5)
-for (i in 1:10) {
-  qqnorm(rnorm(100), main='', xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(x)
-}
+my_normal_qqplots(100)
 @
   
 \end{frame}
@@ -175,10 +182,7 @@ for (i in 1:10) {
 \begin{frame}[fragile]
 \frametitle{Normal (n=1000)}
 <<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
-par(mfrow=c(2,5), mar=rep(0,4)+.5)
-for (i in 1:10) {
-  qqnorm(rnorm(1000), main='', xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(x)
-}
+my_normal_qqplots(100)
 @
   
 \end{frame}
@@ -189,14 +193,21 @@ for (i in 1:10) {
 \begin{frame}
 \frametitle{Not normal (n=10)}
 <<echo=FALSE>>=
-set.seed(20141018)
-n=10
-x = rnorm(n)
-par(mfrow=c(2,2), mar=c(0,0,4,0)+.5)
-qqnorm(x, main="normal", axes=FALSE, frame=TRUE); qqline(x)
-qqnorm(exp(x), main="right-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(exp(x))
-qqnorm(55-exp(x), main="left-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(55-exp(x))
-qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(y)
+my_qqplots = function(n) {
+  x = rnorm(n)
+  
+  opar = par(mfrow=c(2,3), mar=c(0,0,4,0)+.5)
+  qqnorm(x, main="normal", axes=FALSE, frame=TRUE); qqline(x)
+  qqnorm(exp(x), main="right-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(exp(x))
+  qqnorm(55-exp(x), main="left-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(55-exp(x))
+  plot(0,0,type='n', axes=FALSE, xlab='', ylab='')
+  qqnorm(y <- runif(n), main="light-tailed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(y)
+  qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(y)
+  par(opar)
+}
+
+
+my_qqplots(10)
 @
 	
 \end{frame}
@@ -206,13 +217,7 @@ qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TR
 \begin{frame}
 \frametitle{Not normal (n=100)}
 <<echo=FALSE>>=
-n=100
-x = rnorm(n)
-par(mfrow=c(2,2), mar=c(0,0,4,0)+.5)
-qqnorm(x, main="normal", axes=FALSE, frame=TRUE); qqline(x)
-qqnorm(exp(x), main="right-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(exp(x))
-qqnorm(55-exp(x), main="left-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(55-exp(x))
-qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(y)
+my_qqplots(100)
 @
   
 \end{frame}
@@ -222,19 +227,32 @@ qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TR
 \begin{frame}
 \frametitle{Not normal (n=1000)}
 <<echo=FALSE>>=
-n=1000
-x = rnorm(n)
-par(mfrow=c(2,2), mar=c(0,0,4,0)+.5)
-qqnorm(x, main="normal", axes=FALSE, frame=TRUE); qqline(x)
-qqnorm(exp(x), main="right-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(exp(x))
-qqnorm(55-exp(x), main="left-skewed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(55-exp(x))
-qqnorm(y <- rt(n,5), main="heavy-tailed", xlab="", ylab="", axes=FALSE, frame=TRUE); qqline(y)
+my_qqplots(1000)
 @
   
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Summary}
 
+For normal qq-plots with (standardized) residuals (y-axis) vs theoretical quantiles (x-axis), the following interpretations apply 
+
+\vspace{0.2in} \pause
+
+\begin{itemize}[<+->]
+\item If the residuals fall roughly along the line, then normality is reasonable.
+\item If the residuals have a U pattern, then there is right-skewness.
+\item If the residuals have an upside down U pattern, then there is left-skewness.
+\item If the residuals have an S pattern, then there are light tails (we are not too concerned about this situation because our inferences will be conservative). 
+\item If the residuals have a rotated Z pattern, then there are heavy tails. 
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Other patterns are certainly possible, but these are the most common. 
+
+\end{frame}
 
 
 
@@ -266,7 +284,7 @@ The most common way this assumption is violated is by having increasing variance
 \frametitle{Constant variance}
 
 <<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
-set.seed(20141018)
+
 par(mfrow=c(1,3), mar=c(5,4,4,2)+.1)
 for (n in c(10,100,1000)) { 
   plot(runif(n), rnorm(n), axes=FALSE, frame=TRUE, xlab="Predicted mean", ylab="Residual")
@@ -281,7 +299,7 @@ for (n in c(10,100,1000)) {
 \frametitle{Constant variance}
 
 <<echo=FALSE, out.width='0.8\\textwidth'>>=
-set.seed(20141018)
+
 par(mfrow=c(1,1), mar=c(5,4,4,2)+.1)
 n = 1000
 plot(runif(n), rnorm(n), axes=FALSE, frame=TRUE, xlab="Predicted mean", ylab="Residual")
@@ -299,13 +317,15 @@ abline(h=0, col="blue")
 \frametitle{Extreme non-constant variance (funnel)}
 
 <<echo=FALSE, out.width='0.8\\textwidth'>>=
-set.seed(20141018)
-par(mfrow=c(1,1), mar=c(5,4,4,2)+.1)
+
+opar = par(mfrow=c(1,1), mar=c(5,4,4,2)+.1)
 n = 1000
 ub = 1
 x = runif(n,0, ub)
 e = rnorm(n,0,x)
 plot(x, e, axes=FALSE, frame=TRUE, xlab="Predicted mean", ylab="Residual")
+
+# par = opar on next slide
 @
 
 \end{frame}
@@ -320,6 +340,7 @@ xx = ub*(1:4)/5
 yy = ub*(.5+(1:4))/2
 arrows(xx, -yy, xx, yy, col="red", lwd=2, code = 3)
 abline(h=0, col="blue")
+par(opar)
 @
 
 \end{frame}
@@ -329,16 +350,19 @@ abline(h=0, col="blue")
 \begin{frame}[fragile]
 \frametitle{Non-constant variance (n=10, $\sigma_2/\sigma_1=4$)}
 <<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
-set.seed(20141018)
-par(mfrow=c(1,3), mar=c(5,4,4,2)+.1)
-n = 10
-lb = 1
-ub = 4
-for (i in 1:3) {
-  x = runif(n, lb, ub)
-  e = rnorm(n,0,x)
-  plot(x, e, axes=FALSE, frame=TRUE, xlab="Predicted mean", ylab="Residual")
+my_nonconstant_variance_plots = function(n) {
+  opar = par(mfrow=c(2,5), mar=rep(0,4)+.5)
+  lb = 1
+  ub = 4
+  for (i in 1:10) {
+    x = runif(n, lb, ub)
+    e = rnorm(n,0,x)
+    plot(x, e, axes=FALSE, frame=TRUE, xlab="", ylab="") 
+  }
+  par = opar
 }
+
+my_nonconstant_variance_plots(10)
 @
 \end{frame}
 
@@ -347,14 +371,7 @@ for (i in 1:3) {
 \begin{frame}[fragile]
 \frametitle{Non-constant variance (n=100, $\sigma_2/\sigma_1=4$)}
 <<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
-set.seed(20141018)
-par(mfrow=c(1,3), mar=c(5,4,4,2)+.1)
-n = 100
-for (i in 1:3) {
-  x = runif(n, lb, ub)
-  e = rnorm(n,0,x)
-  plot(x, e, axes=FALSE, frame=TRUE, xlab="Predicted mean", ylab="Residual")
-}
+my_nonconstant_variance_plots(100)
 @
 \end{frame}
 
@@ -363,14 +380,7 @@ for (i in 1:3) {
 \begin{frame}[fragile]
 \frametitle{Non-constant variance (n=1000, $\sigma_2/\sigma_1=4$)}
 <<echo=FALSE, fig.width=8, out.width='0.8\\textwidth'>>=
-set.seed(20141018)
-par(mfrow=c(1,3), mar=c(5,4,4,2)+.1)
-n = 1000
-for (i in 1:3) {
-  x = runif(n, lb, ub)
-  e = rnorm(n,0,x)
-  plot(x, e, axes=FALSE, frame=TRUE, xlab="Predicted mean", ylab="Residual")
-}
+my_nonconstant_variance_plots(1000)
 @
 \end{frame}
 
@@ -379,7 +389,7 @@ for (i in 1:3) {
 \frametitle{Extreme non-constant variance (football)}
 
 <<echo=FALSE, out.width='0.8\\textwidth'>>=
-set.seed(20141018)
+
 par(mfrow=c(1,1), mar=c(5,4,4,2)+.1)
 n = 1000
 ub = 1
@@ -405,7 +415,7 @@ plot(x, e, axes=FALSE, frame=TRUE, xlab="Predicted mean", ylab="Residual")
 	
 	\vspace{0.2in} \pause
 	
-	Make plots of residuals vs relevant explanatory variables and look for patterns, \pause e.g.
+	Make plots of residuals vs relevant explanatory variable(s) and look for patterns, \pause e.g.
 	\begin{itemize}[<+->]
 	\item Residuals vs groups 
 	\item Residuals vs time (or observation number)
@@ -414,20 +424,44 @@ plot(x, e, axes=FALSE, frame=TRUE, xlab="Predicted mean", ylab="Residual")
 }
 
 
+\begin{frame}[fragile]
+\frametitle{No evidence for lack of independence}
 
-\subsection{Summary}
-\frame{\frametitle{Summary}
-	Often the best strategy is graphical exploration of the data, \pause here are some relevant graphs: \pause
-	\begin{itemize}
-	\item transformed response vs transformed explanatory
-	\item transformed response vs transformed explanatory
-	\item qqplot of residuals
-	\item residual vs fitted value
-	\item residual vs explanatory
-	\item residual vs observation number
-	\item residual vs any other variable
-	\end{itemize}
+\vspace{-0.1in}
+
+<<echo=FALSE, out.width='0.7\\textwidth'>>=
+my_lack_of_independence_plots = function(d) {
+  m = lm(y~x, d)
+  d$r = residuals(m)
+  opar = par(mfrow=c(2,2), mar=c(5,4,0,2)+.1)
+  plot(y~x, d, xlab="Explanatory variable", ylab="Response")
+  plot(y~i, d, xlab="Observation number", ylab="Response")
+  plot(x~i, d, xlab="Observation number", ylab="Explanatory variable")
+  plot(r~i, d, xlab="Observation number", ylab="Residual")
+  par(opar)
 }
+
+n = 100
+d = data.frame(i = 1:n, 
+               x = rnorm(n))
+d$y = with(d, rnorm(n,3*x))
+my_lack_of_independence_plots(d)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Evidence for lack of independence}
+
+\vspace{-0.1in}
+
+<<echo=FALSE, out.width='0.7\\textwidth'>>=
+d$y = with(d, rnorm(n, 3*x+i/20))
+my_lack_of_independence_plots(d)
+@
+
+\end{frame}
 
 
 
@@ -598,10 +632,60 @@ No evidence of a lack of fit.
 		\begin{itemize}
 		\item Transform response, e.g. log
 		\item Transform explanatory variable
-		\item Add other explanatory variables
+		\item Add other explanatory variable(s)
 		\end{itemize}
 	\end{itemize}
 }
+
+
+\subsection{Summary of diagnostics}
+\frame{\frametitle{Summary of diagnostics}
+  \begin{itemize}[<+->]
+  \item Normality
+    \begin{itemize}
+    \item Normal qq-plots should have points falling on the line
+    \end{itemize}
+  \item Constant variance
+    \begin{itemize}
+    \item Residuals vs predicted values should have random scatter on y-axis
+    \item Residuals vs explanatory variable(s) should have random scatter on y-axis
+    \end{itemize}
+  \item Independence
+    \begin{itemize}
+    \item Residuals vs anything should not have a pattern
+    \end{itemize}
+  \item Linearity
+    \begin{itemize}
+    \item Response vs explanatory variable should be linear
+    \item Lack-of-fit F-test should not be significant
+    \end{itemize}
+  \end{itemize}
+}
+
+
+\begin{frame}
+\frametitle{Default diagnostics in SAS}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{Ch08_DiagnosticsPanel}
+\end{center}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Default diagnostics in R}
+
+<<echo=FALSE,out.width='0.75\\textwidth'>>=
+m = lm(sqrt(Time)~Voltage, case0802)
+opar = par(mfrow=c(2,3))
+plot(m, which=1:6)
+par(opar)
+@
+
+\end{frame}
+
 
 
 
@@ -609,7 +693,7 @@ No evidence of a lack of fit.
 \begin{frame}
 \frametitle{Interpretations using logs}
 
-The most common transformation of either the response or explanatory is to take logarithms \pause because
+The most common transformation of either the response or explanatory variable(s) is to take logarithms \pause because
 \begin{itemize}[<+->]
 \item linearity will often then be approximately true,
 \item the variance will likely be approximately constant, and
@@ -632,8 +716,9 @@ We will talk about interpretation of $\beta_0$ and $\beta_1$ when
 \frametitle{Neither response nor explanatory variable are logged}
 
 If 
-\[ E[Y|X] = \beta_0 + \beta_1 X \]
-\pause, then
+\[ E[Y|X] = \beta_0 + \beta_1 X, \]
+\pause
+then
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected response when $X$ is zero and
 \item $\beta_1$ is the expected change in the response for a one unit increase in the explanatory variable.
@@ -676,8 +761,9 @@ Then, if
 \frametitle{Response is logged}
 
 If 
-\[ E[\log(Y)|X] = \beta_0 + \beta_1 X \quad \mbox{or} \quad Median\{Y|X\} = e^{\beta_0} e^{\beta_1 X} \]
-\pause, then
+\[ E[\log(Y)|X] = \beta_0 + \beta_1 X \quad \mbox{or} \quad Median\{Y|X\} = e^{\beta_0} e^{\beta_1 X}, \]
+\pause
+then
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected $\log(Y)$ when $X$ is zero and
 \item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in the explanatory variable. 
@@ -711,7 +797,7 @@ Then, if
 \[ E[\log(Y)|X] = \beta_0 + \beta_1 X \quad \mbox{or} \quad Median\{Y|X\} = e^{\beta_0} e^{\beta_1 X} \]
 
 \begin{itemize}[<+->]
-\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is zero and 
+\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 0 and 
 \item $e^{\beta_1}$ is the multiplicative effect in median corn yield per acre when fertilizer is increase by 1 lbs/acre. 
 \end{itemize}
 
@@ -723,8 +809,9 @@ Then, if
 \frametitle{Explanatory variable is logged}
 
 If 
-\[ E[Y|X] = \beta_0 + \beta_1 \log(X)  \]
-\pause, then
+\[ E[Y|X] = \beta_0 + \beta_1 \log(X),  \]
+\pause
+then
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected response when $\log(X)$ is zero and
 \item $\beta_1$ is the expected change in the response for a one unit increase in $\log(X)$. 
@@ -762,7 +849,7 @@ Then, if
 \[ E[Y|X] = \beta_0 + \beta_1 \log(X)  \]
 
 \begin{itemize}[<+->]
-\item $\beta_0$ is the median corn yield per acre when fertilizer level is 1 lb/acre and 
+\item $\beta_0$ is the expected corn yield per acre when fertilizer level is 1 lb/acre and 
 \item $\beta_1 \log(2)$ is the expected change in corn yield when fertilizer level is doubled. 
 \end{itemize}
 
@@ -771,11 +858,12 @@ Then, if
 
 
 \begin{frame}
-\frametitle{Both response and explanatory variables are logged}
+\frametitle{Both response and explanatory variable are logged}
 
 If 
-\[ E[\log(Y)|X] = \beta_0 + \beta_1 \log(X) \quad \mbox{or} \quad Median\{Y|X\} = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1} \]
-\pause, then
+\[ E[\log(Y)|X] = \beta_0 + \beta_1 \log(X) \quad \mbox{or} \quad Median\{Y|X\} = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1}, \]
+\pause
+then
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected $\log(Y)$ when $\log(X)$ is zero and
 \item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in $\log(X)$. 
@@ -799,7 +887,7 @@ Alternatively,
 
 
 \begin{frame}
-\frametitle{Both response and explanatory variables are logged}
+\frametitle{Both response and explanatory variable are logged}
 
 Suppose 
 \begin{itemize}
@@ -817,6 +905,24 @@ Then, if
 \item $2^{\beta_1}$ is the multiplicative effect on median corn yield per acre when fertilizer level doubles.
 \end{itemize}
 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Summary of interpretations when using logarithms}
+
+\begin{itemize}[<+->]
+\item When using the log of the response, 
+  \begin{itemize}
+  \item $\beta_0$ will affect the median response
+  \item $\beta_1$ will affect the multiplicative change in the median response
+  \end{itemize}
+\item When using the log of the explanatory variable ($X$),
+  \begin{itemize}
+  \item $\beta_0$ will affect the response when $X=1$
+  \item $\beta_1$ will affect the change in the response when there is a multiplicative change in $X$
+  \end{itemize}
+\end{itemize}
 \end{frame}
 
 
