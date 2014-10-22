@@ -24,4 +24,5 @@ The slide sets correspond to the material in the corresponding chapters of The S
   - Simple linear regression
 - [Chapter 8](Ch08.pdf)
   - Regression diagnostics
+  - Interpretations when using logs
 
