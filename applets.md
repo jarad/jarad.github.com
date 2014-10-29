@@ -9,6 +9,7 @@ group: navigation
 # Teaching
 
 - [Pvalue applet](https://jaradniemi.shinyapps.io/pvalue/)
+- [Poisson process applet](https://jaradniemi.shinyapps.io/poisson_process/)
 
 # Research
 
