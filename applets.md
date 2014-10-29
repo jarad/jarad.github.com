@@ -15,5 +15,5 @@ group: navigation
 
 # Other
 
-- [Great Ames Adventure Race (GAAR)results](https://jaradniemi.shinyapps.io/GAAR/)
+- [Great Ames Adventure Race (GAAR) results](https://jaradniemi.shinyapps.io/GAAR/)
 
