@@ -11,7 +11,7 @@ names(case0601) = tolower(names(case0601))
 # install.packages("multcomp")
 library(multcomp)
 levels(case0601$handicap)
-K = rbind("Diff: C+W - A+H"=c(-1,1,-1,0,1)/2)
+K = rbind("Diff: C+W - A+H"=c(-1, 1, -1,0,1)/2)
 mod = lm(score~handicap-1, case0601) # No intercept
 cont = glht(mod, linfct=K)
 summary(cont, test=adjusted(type="none")) # unadjusted pvalues
