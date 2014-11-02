@@ -1,6 +1,7 @@
 \documentclass[handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
+\usepackage{animate}
 
 % Theme settings
 \usetheme{AnnArbor}\usecolortheme{beaver}
@@ -26,7 +27,7 @@ library(plyr)
 library(ggplot2)
 library(xtable)
 library(Sleuth3)
-library(abd)
+#library(animation)
 @
 
 
@@ -47,8 +48,70 @@ library(abd)
 	
 	The \alert{multiple regression model} is 
 	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
-	\pause where $Y_i$ is the response for observation $i$ and $X_{i,p}$ is the $p^{th}$ explanatory variable for observation $i$. 
+	\pause where 
+  \begin{itemize}
+  \item $Y_i$ is the response for observation $i$ and 
+  \item $X_{i,p}$ is the $p^{th}$ explanatory variable for observation $i$. 
+  \end{itemize}
 }
+
+
+
+\frame{\frametitle{Explanatory variables}
+  The \alert{multiple regression model} is 
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
+  and there are many possibilities for the explanatory variables:
+
+  \vspace{0.2in} \pause
+  
+	\begin{itemize}[<+->]  
+  \item Higher order terms
+	\item Additional explanatory variables
+	\item Dummy/indicator variables for categorical variables
+	\item Interactions 
+	\end{itemize}
+}
+
+
+\subsection{Adding higher order terms}
+\begin{frame}
+\frametitle{Case1001}
+
+<<echo=FALSE>>=
+source("multiplot.R")
+g = ggplot(case1001, aes(x=Height, y=Distance)) + geom_point(size=3)
+multiplot(
+  g,
+  g+stat_smooth(method="lm"),
+  g+stat_smooth(method="lm", formula=y~x+I(x^2)),
+  g+stat_smooth(method="lm", formula=y~x+I(x^2)+I(x^3)),
+  layout = matrix(1:4,2,byrow=TRUE)
+)
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Adding higher order terms}
+
+Let 
+\begin{itemize}
+\item $Y_i$ be the distance for the $i^{th}$ run of the experiment and
+\item $H_i$ be the height for the $i^{th}$ run of the experiment.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Simple linear regression assumes
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i\phantom{ +\beta_2 H_i^2 + \beta_3 H_i^3}, \sigma^2) \]
+The quadratic multiple regression assumes
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2\phantom{+ \beta_3 H_i^3}, \sigma^2) \]
+The cubic multiple regression assumes 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2 + \beta_3 H_i^3, \sigma^2) \]
+\end{frame}
+
+
 
 
 \subsection{Interpretation}
@@ -162,17 +225,6 @@ summary(m)
 	\item Coefficient of determination: The model explains 19\% of the variability in the count of Longnose Dace.
 	\end{itemize}
 }
-
-\frame{\frametitle{Future}
-	Possible explanatory variables:\pause
-	\begin{itemize}[<+->]
-	\item Additional explanatory variables  
-	\item Higher order terms
-	\item Dummy/indicator variables for categorical variables
-	\item Interactions 
-	\end{itemize}
-}
-
 
 
 
