@@ -61,8 +61,9 @@ lm( log(Mass) ~ Energy + eBats + neBats + eBatsXenergy + neBatsXenergy, case1002
 lm( log(Mass) ~ Energy + Type + Energy:Type,                             case1002)
 lm( log(Mass) ~ Energy*Type,                                             case1002)
 
-### but this is different
+### but this only includes the interaction and not the main effects
 lm( log(Mass) ~ Energy:Type, case1002)
+
 
 
 #######################################################
@@ -72,7 +73,7 @@ lm( log(Mass) ~ Energy:Type, case1002)
 case0901 = read.csv("case0901.csv")
 names(case0901) = tolower(names(case0901))
 names(case0901)[3] = "light"
-case0901$early = case0901$time-1
+case0901$early = case0901$time-1 # time=1 is late, time=2 is early 
 case0901$lightXearly = case0901$light*case0901$early
 
 plot(flowers~light,case0901, pch=1+18*early)

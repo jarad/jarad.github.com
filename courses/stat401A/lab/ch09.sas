@@ -33,7 +33,7 @@ PROC PRINT DATA=case1002; RUN;
 TITLE  'Higher order terms';
 TITLE2 '(these are equivalent)';
 PROC GLM DATA=case1002;
-  MODEL lMass = Energy + Energy2;
+  MODEL lMass = Energy Energy2;
 
 PROC GLM DATA=case1002; 
   MODEL lMass = Energy|Energy;
@@ -47,30 +47,31 @@ PROC GLM DATA=case1002;
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='echolocating bats');
-  MODEL lMass = Type;
+  MODEL lMass = Type / SOLUTION;
 
 PROC GLM DATA=case1002;
   CLASS typeNumeric(ref=1);
-  MODEL lmass = typeNumeric;
+  MODEL lmass = typeNumeric / SOLUTION;
+  RUN;
 
 TITLE2 '(these are not equivalent)';
 PROC GLM DATA=case1002;
   CLASS typeNumeric;
-  MODEL lMass = typeNumeric;
+  MODEL lMass = typeNumeric / SOLUTION;
 
 PROC GLM DATA=case1002;
-  MODEL lMass = typeNumeric;
+  MODEL lMass = typeNumeric; /* treats typeNumeric as continuous */
   RUN;
 
 
 TITLE  'Change reference level';
 TITLE2 '(these are equivalent)';
 PROC GLM DATA=case1002;
-  MODEL lMass = eBats neBats;
+  MODEL lMass = eBats neBats; /* notice these dummy variables are different */
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Type;
+  MODEL lMass = Type / SOLUTION;
   RUN;
 
 
@@ -80,7 +81,7 @@ PROC GLM DATA=case1002;
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Energy Type;
+  MODEL lMass = Energy Type / SOLUTION;
   RUN;
 
 
@@ -90,22 +91,22 @@ PROC GLM DATA=case1002;
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Energy Type Energy*Type;
+  MODEL lMass = Energy Type Energy*Type / SOLUTION;
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Energy|Type;
+  MODEL lMass = Energy|Type / SOLUTION;
   RUN;
 
 
-TITLE2 'but this is different';
+TITLE2 'but this only includes the interaction and not the main effects';
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Energy*Type;
+  MODEL lMass = Energy*Type / SOLUTION;
   RUN;
 
 
-
+/* Apparently SOLUTION is needed whenever the explanatory variables are not all numeric */
 
 
 
