@@ -2,6 +2,7 @@ X 'cd U:\401A\sleuth3csv';
 
 DATA case1002;
   INFILE 'case1002.csv' DSD FIRSTOBS=2;
+  LENGTH Type $22.; /* Let Type be up to 22 characters */
   INPUT Mass Type $ Energy;
   lMass = log(Mass);
 
