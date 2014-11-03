@@ -1,4 +1,4 @@
-setwd("U:\\401A\\sleuth3csv") # or whever your data are
+setwd("U:\\401A\\sleuth3csv") # or wherever your data are
 
 #######################################################
 # Chapter 22                                         

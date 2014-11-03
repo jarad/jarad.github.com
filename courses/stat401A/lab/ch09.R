@@ -1,7 +1,7 @@
-setwd("U:\\401A\\sleuth3csv") # or whever your data are
+setwd("U:\\401A\\sleuth3csv") # or wherever your data are
 
 #######################################################
-# Chapter 89                                        
+# Chapter 9                                        
 #######################################################
 
 case0901 = read.csv("case0901.csv")
