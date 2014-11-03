@@ -25,4 +25,10 @@ The slide sets correspond to the material in the corresponding chapters of The S
 - [Chapter 8](Ch08.pdf)
   - Regression diagnostics
   - Interpretations when using logs
+- [Chapter 9](Ch09.pdf)
+  - Multiple regression
+    - Higher order terms
+    - Additional explanatory variables
+    - Categorical variables
+    - Interactions
 

@@ -17,6 +17,8 @@
 \date[\today]{last updated: \today}
 
 
+\newcommand{\I}{\mathrm{I}}
+
 \setkeys{Gin}{width=0.6\textwidth}
 \newenvironment{remark}[1][Remark]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
@@ -27,6 +29,7 @@ library(plyr)
 library(ggplot2)
 library(xtable)
 library(Sleuth3)
+library(reshape2)
 #library(animation)
 @
 
@@ -53,27 +56,62 @@ library(Sleuth3)
   \item $Y_i$ is the response for observation $i$ and 
   \item $X_{i,p}$ is the $p^{th}$ explanatory variable for observation $i$. 
   \end{itemize}
+  
+  \vspace{0.2in} \pause
+  
+  We may also write
+  \[ Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \quad\mbox{ or }\quad 
+     Y_i = \mu_i + e_i, e_i \stackrel{iid}{\sim} N(0,\sigma^2) \]
+  where 
+  \[ \mu_i=\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}. \]
 }
 
 
 
 \frame{\frametitle{Explanatory variables}
-  The \alert{multiple regression model} is 
-	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
-  and there are many possibilities for the explanatory variables:
+  There is a lot of flexibility in the mean
+	\[ \mu_i = E[Y_i|X_{i,1},\ldots,X_{i,p}] = \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p} \]
+  and there are many possibilities for the explanatory variables $X_{i,1},\ldots,X_{i,p}$:
 
   \vspace{0.2in} \pause
   
 	\begin{itemize}[<+->]  
-  \item Higher order terms
-	\item Additional explanatory variables
-	\item Dummy/indicator variables for categorical variables
-	\item Interactions 
+  \item Higher order terms ($X^2$)
+	\item Additional explanatory variables ($X_1$ and $X_2$)
+	\item Dummy/indicator variables for categorical variables ($X_1=\I()$)
+	\item Interactions ($X_1X_2$)
+    \begin{itemize}
+    \item Continuous-continuous
+    \item Continuous-categorical
+    \item Categorical-categorical
+    \end{itemize}
 	\end{itemize}
 }
 
 
-\subsection{Adding higher order terms}
+\begin{frame}
+\frametitle{Higher order terms ($X^2$)}
+
+Let 
+\begin{itemize}
+\item $Y_i$ be the distance for the $i^{th}$ run of the experiment and
+\item $H_i$ be the height for the $i^{th}$ run of the experiment.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Simple linear regression assumes
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i\phantom{ +\beta_2 H_i^2 + \beta_3 H_i^3}, \sigma^2) \]
+The quadratic multiple regression assumes
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2\phantom{+ \beta_3 H_i^3}, \sigma^2) \]
+The cubic multiple regression assumes 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2 + \beta_3 H_i^3, \sigma^2) \]
+\end{frame}
+
+
+
+
+
 \begin{frame}
 \frametitle{Case1001}
 
@@ -92,23 +130,114 @@ multiplot(
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Adding higher order terms}
 
-Let 
-\begin{itemize}
-\item $Y_i$ be the distance for the $i^{th}$ run of the experiment and
-\item $H_i$ be the height for the $i^{th}$ run of the experiment.
-\end{itemize}
+\begin{frame}[containsverbatim]
+\frametitle{SAS code and output}
 
-\vspace{0.2in} \pause
+{\tiny 
+\begin{verbatim}
+DATA case1001;
+  INFILE 'case1001.csv' DSD FIRSTOBS=2;
+  INPUT distance height;
+  height2 = height*height;
+  height3 = height*height2;
 
-Simple linear regression assumes
-\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i\phantom{ +\beta_2 H_i^2 + \beta_3 H_i^3}, \sigma^2) \]
-The quadratic multiple regression assumes
-\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2\phantom{+ \beta_3 H_i^3}, \sigma^2) \]
-The cubic multiple regression assumes 
-\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2 + \beta_3 H_i^3, \sigma^2) \]
+# PROC REG allows multiple MODEL statements
+PROC REG DATA=case1001;
+  MODEL distance = height;
+  MODEL distance = height height2;
+  MODEL distance = height height2 height3;
+  RUN;
+
+                                      Parameter Estimates
+ 
+                                   Parameter       Standard
+              Variable     DF       Estimate          Error    t Value    Pr > |t|
+
+              Intercept     1      269.71246       24.31239      11.09      0.0001
+              height        1        0.33334        0.04203       7.93      0.0005
+
+              Intercept     1      199.91282       16.75945      11.93      0.0003
+              height        1        0.70832        0.07482       9.47      0.0007
+              height2       1    -0.00034369     0.00006678      -5.15      0.0068
+
+              Intercept     1      155.77551        8.32579      18.71      0.0003
+              height        1        1.11530        0.06567      16.98      0.0004
+              height2       1       -0.00124     0.00013842      -8.99      0.0029
+              height3       1    5.477104E-7    8.327329E-8       6.58      0.0072
+\end{verbatim}
+}
+
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS code and output}
+
+{\tiny 
+\begin{verbatim}
+DATA case1001;
+  INFILE 'case1001.csv' DSD FIRSTOBS=2;
+  INPUT distance height;
+  height2 = height ** 2;
+  height3 = height ** 3;
+
+PROC GLM DATA=case1001;
+  MODEL distance = height height2 height3;
+
+
+
+/* PROC GLM allows the variable construction within the MODEL statement
+   and provides nicer output (not shown here) */
+DATA case1001;
+  INFILE 'case1001.csv' DSD FIRSTOBS=2;
+  INPUT distance height;   
+   
+/* This shorthand puts in H, H^2, and H^3 */
+PROC GLM DATA=case1001;
+  MODEL distance = height|height|height; 
+   
+/* This only puts H^3 */
+PROC GLM DATA=case1001;
+  MODEL distance = height*height*height; 
+\end{verbatim}
+}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output}
+
+<<tidy=FALSE>>=
+# Construct the variables by hand
+case1001$Height2 = case1001$Height^2
+case1001$Height3 = case1001$Height^3
+
+m1 = lm(Distance~Height,                 case1001)
+m2 = lm(Distance~Height+Height2,         case1001)
+m3 = lm(Distance~Height+Height2+Height3, case1001)
+
+coefficients(m1)
+coefficients(m2)
+coefficients(m3)
+
+# Let R construct the variables for you
+lm(Distance~poly(Height,3), case1001)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output}
+
+<<tidy=FALSE>>=
+# Let R construct the variables for you
+m = lm(Distance~poly(Height,3), case1001)
+summary(m)
+@
+
 \end{frame}
 
 
@@ -140,7 +269,7 @@ I extracted some data from the Maryland Biological Stream Survey. ... The depend
 	
 	\pause
 	
-	Let's focus on the following model 
+Consider the model 
 	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\beta_2 X_{i,2}, \sigma^2) \]
 	\pause where 
 	\begin{itemize}[<+->]
@@ -156,10 +285,9 @@ I extracted some data from the Maryland Biological Stream Survey. ... The depend
 \frametitle{Exploratory}
 <<echo=FALSE>>=
 d = read.csv("longnosedace.csv")
-par(mfrow=c(1,2), mar=c(5,4,0,0)+.1)
-plot(count~no3, d)
-plot(count~maxdepth, d)
-
+m = melt(d[,c("stream","count","acreage","no3","maxdepth")], 
+         id.vars=c("stream","count","acreage"))
+ggplot(m, aes(x=value,y=count))+geom_point(size=2)+facet_wrap(~variable, scales="free")
 @
 \end{frame}
 
@@ -209,7 +337,7 @@ PROC REG DATA=dace;
 
 \begin{frame}[fragile]
 \frametitle{R code and output}
-<<echo=FALSE>>=
+<<>>=
 d = read.csv("longnosedace.csv")
 m = lm(count~no3+maxdepth,d)
 summary(m)
@@ -227,10 +355,10 @@ summary(m)
 }
 
 
+\begin{comment}
 
-\section{Categorical variables}
 
-\subsection{Two-group example}
+\subsection{Categorical variables}
 \begin{frame}[fragile]
 \frametitle{Two-sample regression}
 <<echo=FALSE>>=
@@ -458,6 +586,6 @@ summary(m)
 \end{frame}
 
 
-
+\end{comment}
 
 \end{document}
