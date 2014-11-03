@@ -50,7 +50,7 @@ PROC GLM DATA=case1002;
   MODEL lMass = Type / SOLUTION;
 
 PROC GLM DATA=case1002;
-  CLASS typeNumeric(ref=1);
+  CLASS typeNumeric(ref='1');
   MODEL lmass = typeNumeric / SOLUTION;
   RUN;
 
@@ -60,7 +60,7 @@ PROC GLM DATA=case1002;
   MODEL lMass = typeNumeric / SOLUTION;
 
 PROC GLM DATA=case1002;
-  MODEL lMass = typeNumeric; /* treats typeNumeric as continuous */
+  MODEL lMass = typeNumeric / SOLUTION; /* treats typeNumeric as continuous */
   RUN;
 
 

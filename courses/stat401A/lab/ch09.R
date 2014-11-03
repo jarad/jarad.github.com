@@ -84,7 +84,7 @@ mod = lm(flowers~light+early+lightXearly, case0901)
 summary(mod)
 
 mod = lm(flowers~light+early+light:early, case0901)
-sumary(mod)
+summary(mod)
 
 # Include main effects plus the interaction
 mod = lm(flowers~light*early, case0901) 
@@ -105,5 +105,5 @@ mod = lm(lbrain~lbody+lgest+llitter, case0902)
 summary(mod)
 
 # Alternatively
-mod = lm(log(brain) ~ log(body) + log(gest) + log(litter), case0902)
+mod = lm(log(brain) ~ log(body) + log(gestation) + log(litter), case0902)
 summary(mod)
