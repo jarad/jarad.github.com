@@ -32,6 +32,11 @@ With the exception of Lab 01, you should download and open up the scripts associ
 - Lab 08: [SAS](ch08.sas) and [R](ch08.R)
   - Regression diagnostics
 - Lab 09: [SAS](ch09.sas) and [R](ch09.R)
+  - Multiple regression model construction
+    - Higher order terms
+    - Additional explanatory variables
+    - Dummy/indicator variables for categorical explanatory variables
+    - Interactions
 - Lab 10: [SAS](ch10.sas) and [R](ch10.R)
 - Lab 11: [SAS](ch11.sas) and [R](ch11.R)
 - Lab 12: [SAS](ch12.sas) and [R](ch12.R)
