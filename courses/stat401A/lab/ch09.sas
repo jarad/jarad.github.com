@@ -3,13 +3,14 @@ X 'cd U:\401A\sleuth3csv';
 DATA case1002;
   INFILE 'case1002.csv' DSD FIRSTOBS=2;
   LENGTH Type $22.; /* Let Type be up to 22 characters */
-  INPUT Mass Type $ Energy;
-  lMass = log(Mass);
+  INPUT Energy Type $ Mass;
+  lEnergy = log(Energy);
+  lMass   = log(Mass);
 
   /* Construct variables by hand            */
 
   /* Higher order terms                     */
-  Energy2 = Energy ** 2;
+  lMass2 = lMass ** 2;
 
   /* Numeric coding of categorical variable */
   typeNumeric = 1; /* echolocating bats     */
@@ -22,9 +23,9 @@ DATA case1002;
   IF Type='non-echolocating birds' THEN neBirds = 1; ELSE neBirds = 0;
 
   /* Interactions                           */
-    eBatsXenergy =   eBats * Energy;
-   neBatsXenergy =  neBats * Energy;
-  neBirdsXenergy = neBirds * Energy;
+    eBatsXlMass =   eBats * lMass;
+   neBatsXlMass =  neBats * lMass;
+  neBirdsXlMass = neBirds * lMass;
 
 /* Verify columns */
 PROC PRINT DATA=case1002; RUN;
@@ -33,76 +34,76 @@ PROC PRINT DATA=case1002; RUN;
 TITLE  'Higher order terms';
 TITLE2 '(these are equivalent)';
 PROC GLM DATA=case1002;
-  MODEL lMass = Energy Energy2;
+  MODEL lEnergy = lMass lMass2;
 
 PROC GLM DATA=case1002; 
-  MODEL lMass = Energy|Energy;
+  MODEL lEnergy = lMass|lMass;
   RUN;
 
 
 TITLE  'Categorical variables';
 TITLE2 '(these are equivalent)';
 PROC GLM DATA=case1002;
-  MODEL lMass = neBats neBirds;
+  MODEL lEnergy = neBats neBirds;
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='echolocating bats');
-  MODEL lMass = Type / SOLUTION;
+  MODEL lEnergy = Type / SOLUTION;
 
 PROC GLM DATA=case1002;
   CLASS typeNumeric(ref='1');
-  MODEL lmass = typeNumeric / SOLUTION;
+  MODEL lEnergy = typeNumeric / SOLUTION;
   RUN;
 
 TITLE2 '(these are not equivalent)';
 PROC GLM DATA=case1002;
   CLASS typeNumeric;
-  MODEL lMass = typeNumeric / SOLUTION;
+  MODEL lEnergy = typeNumeric / SOLUTION;
 
 PROC GLM DATA=case1002;
-  MODEL lMass = typeNumeric / SOLUTION; /* treats typeNumeric as continuous */
+  MODEL lEnergy = typeNumeric / SOLUTION; /* treats typeNumeric as continuous */
   RUN;
 
 
 TITLE  'Change reference level';
 TITLE2 '(these are equivalent)';
 PROC GLM DATA=case1002;
-  MODEL lMass = eBats neBats; /* notice these dummy variables are different */
+  MODEL lEnergy = eBats neBats; /* notice these dummy variables are different */
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Type / SOLUTION;
+  MODEL lEnergy = Type / SOLUTION;
   RUN;
 
 
 TITLE  'Additional explanatory variables';
 PROC GLM DATA=case1002;
-  MODEL lMass = Energy eBats neBats;
+  MODEL lEnergy = lMass eBats neBats;
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Energy Type / SOLUTION;
+  MODEL lEnergy = lMass Type / SOLUTION;
   RUN;
 
 
 TITLE  'Interactions';
 PROC GLM DATA=case1002;
-  MODEL lMass = Energy eBats neBats eBatsXenergy neBatsXenergy;
+  MODEL lEnergy = lMass eBats neBats eBatsXlMass neBatsXlMass;
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Energy Type Energy*Type / SOLUTION;
+  MODEL lEnergy = lMass Type lMass*Type / SOLUTION;
 
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Energy|Type / SOLUTION;
+  MODEL lEnergy = lMass|Type / SOLUTION;
   RUN;
 
 
 TITLE2 'but this only includes the interaction and not the main effects';
 PROC GLM DATA=case1002;
   CLASS Type(ref='non-echolocating birds');
-  MODEL lMass = Energy*Type / SOLUTION;
+  MODEL lEnergy = lMass*Type / SOLUTION;
   RUN;
 
 

@@ -8,8 +8,10 @@ case1002 = read.csv("case1002.csv")
 # Here we use the mutate function in the plyr package to add new columns
 # to the data set
 case1002 = mutate(case1002,
+                  lMass = log(Mass),
+                  
                   ## Higher order terms
-                  Energy2 = Energy^2,
+                  lMass2 = lMass^2,
                   
                   ## Numeric coding of categorical variable
                   typeNumeric = as.numeric(Type),
@@ -20,9 +22,9 @@ case1002 = mutate(case1002,
                   neBirds = ifelse(Type == "non-echolocating birds", 1, 0),
                   
                   ## Interactions
-                    eBatsXenergy =   eBats*Energy,
-                   neBatsXenergy =  neBats*Energy,
-                  neBirdsXenergy = neBirds*Energy
+                    eBatsXlMass =   eBats*lMass,
+                   neBatsXlMass =  neBats*lMass,
+                  neBirdsXlMass = neBirds*lMass
                   )
 
 # Verify columns
@@ -31,38 +33,39 @@ summary(case1002)
 
 
 ## Higher order terms (these are equivalent)
-lm(log(Mass) ~ Energy + Energy2,               case1002)
-lm(log(Mass) ~ Energy + I(Energy^2),           case1002)
-lm(log(Mass) ~ poly(Energy,2, raw=TRUE),       case1002)
+lm( log(Energy) ~ lMass + lMass2,               case1002)
+lm( log(Energy) ~ lMass + I(lMass^2),           case1002)
+lm( log(Energy) ~ log(Mass) + I(log(Mass)^2),   case1002)
+lm( log(Energy) ~ poly(log(Mass), 2, raw=TRUE), case1002)
 
 
 ## Categorical variables (these are equivalent)
-lm( log(Mass) ~ neBats + neBirds,       case1002)
-lm( log(Mass) ~ Type,                   case1002)
-lm( log(Mass) ~ as.factor(typeNumeric), case1002)
+lm( log(Energy) ~ neBats + neBirds,       case1002)
+lm( log(Energy) ~ Type,                   case1002)
+lm( log(Energy) ~ as.factor(typeNumeric), case1002)
 
 ### These are not equivalent
-lm( log(Mass) ~ Type,        case1002)
-lm( log(Mass) ~ typeNumeric, case1002) # treats typeNumeric as a continuous explanatory variable
+lm( log(Energy) ~ Type,        case1002)
+lm( log(Energy) ~ typeNumeric, case1002) # treats typeNumeric as a continuous explanatory variable
 
 ### Change reference level (these are equivalent)
 case1002$Type = relevel(case1002$Type, ref="non-echolocating birds")
-lm( log(Mass) ~ eBats + neBats, case1002)
-lm( log(Mass) ~ Type,           case1002)
+lm( log(Energy) ~ eBats + neBats, case1002)
+lm( log(Energy) ~ Type,           case1002)
 
 
 ## Additional explanatory variables (these are equivalent)
-lm( log(Mass) ~ Energy + eBats + neBats, case1002)
-lm( log(Mass) ~ Energy + Type,           case1002)
+lm( log(Energy) ~ log(Mass) + eBats + neBats, case1002)
+lm( log(Energy) ~ log(Mass) + Type,           case1002)
 
 
 ## Interactions (these are equivalent)
-lm( log(Mass) ~ Energy + eBats + neBats + eBatsXenergy + neBatsXenergy, case1002)
-lm( log(Mass) ~ Energy + Type + Energy:Type,                             case1002)
-lm( log(Mass) ~ Energy*Type,                                             case1002)
+lm( log(Energy) ~ log(Mass) + eBats + neBats + eBatsXlMass + neBatsXlMass, case1002)
+lm( log(Energy) ~ log(Mass) + Type + log(Mass):Type,                       case1002)
+lm( log(Energy) ~ log(Mass)*Type,                                        case1002)
 
 ### but this only includes the interaction and not the main effects
-lm( log(Mass) ~ Energy:Type, case1002)
+lm( log(Energy) ~ log(Mass):Type, case1002)
 
 
 
