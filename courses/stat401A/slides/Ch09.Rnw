@@ -24,23 +24,22 @@
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
 <<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
 opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
 library(plyr)
 library(ggplot2)
 library(xtable)
 library(Sleuth3)
 library(reshape2)
-#library(animation)
 @
 
 
 \begin{document}
 
-
-
 \begin{frame}
 \maketitle
 \end{frame}
+
 
 \section{Multiple regression model}
 \frame{\frametitle{Multiple regression}
@@ -250,7 +249,7 @@ coefficients(m3)
 
 <<tidy=FALSE>>=
 # Let R construct the variables for you
-m = lm(Distance~poly(Height,3), case1001)
+m = lm(Distance~poly(Height, 3, raw=TRUE), case1001)
 summary(m)
 @
 
@@ -358,89 +357,8 @@ summary(m)
 }
 
 
-\begin{comment}
-
 
 \subsection{Categorical variables}
-\begin{frame}[fragile]
-\frametitle{Two-sample regression}
-<<echo=FALSE>>=
-plot(Humerus~I(as.numeric(Status)-1), 
-     ex0221, xaxt='n', pch=19, cex.lab=1.5, xlab="", col='gray')
-axis(1, c(0,1), c("Perished","Survived"), cex=1.5)
-
-# Add regression line
-mod = lm(Humerus~Status, ex0221)
-abline(mod, col="red", lwd=2, cex=1.5)
-
-# 
-abline(h=coef(mod)[1], lwd=2)
-yy = with(ex0221, by(Humerus, Status, mean))
-points(c(0,1), yy, col='red', pch='*', cex=3)
-segments(1,yy[1],1,yy[2], col='red', lwd=4)
-@
-\end{frame}
-
-\frame{\frametitle{Two-sample regression}
-	\begin{itemize}
-	\item Choose one of the levels as the \alert{reference} level, e.g. perished  \pause
-	\item Construct a dummy variable using an indicator function for the other level, \pause e.g.
-	\[ X_{i,1} = \left\{ \begin{array}{ll} 1 & \mbox{observation $i$ survived} \\ 0& \mbox{otherwise} \end{array} \right. \] 
-	\pause we often write $X_{i,1}= \mathrm{I}(\mbox{observation $i$ survived})$ \pause where an indicator function has the following definition:
-	\[ \mathrm{I}(\mbox{A}) = \left\{ \begin{array}{ll} 1 & \mbox{A is true} \\ 0& \mbox{otherwise} \end{array} \right. \] 
-	\item Run a simple linear regression using this dummy variable.
-	\end{itemize}
-}
-
-\subsection{SAS output}
-\frame[containsverbatim]{\frametitle{}
-{\tiny
-\begin{verbatim}
-DATA ex0221;
-  INFILE 'ex0221.csv' DSD FIRSTOBS=2;
-  INPUT humerus status;
-  IF status='perished THEN x1=0; ELSE x1=1;
-  
-PROC REG DATA=ex0221;
-  MODEL humerus = x1;
-  RUN;
-
-                                        The REG Procedure
-                                          Model: MODEL1
-                                  Dependent Variable: humerus
-
-                             Number of Observations Read          59
-                             Number of Observations Used          59
-
-
-                                      Analysis of Variance
-
-                                             Sum of           Mean
-         Source                   DF        Squares         Square    F Value    Pr > F
-
-         Model                     1     1447.55650     1447.55650       3.16    0.0809
-         Error                    57          26130      458.41813
-         Corrected Total          58          27577
-
-
-                      Root MSE             21.41070    R-Square     0.0525
-                      Dependent Mean      733.89831    Adj R-Sq     0.0359
-                      Coeff Var             2.91739
-
-
-                                      Parameter Estimates
-
-                                   Parameter       Standard
-              Variable     DF       Estimate          Error    t Value    Pr > |t|
-              Intercept     1      727.91667        4.37044     166.55      <.0001
-              x1            1       10.08333        5.67436       1.78      0.0809
-\end{verbatim}
-}
-}
-
-
-
-\subsection{Multi-group example}
 %\subsection{Categorical variable}
 \begin{frame}[fragile]
 \frametitle{Using a categorical variable as an explanatory variable.}
@@ -458,16 +376,21 @@ segments(0:5,yy[1],0:5,yy,col='red', lwd=4)
 \frame{\frametitle{Regression with a categorical variable}
 	\begin{itemize}
 	\item Choose one of the levels as the \alert{reference} level, e.g. N/N85 \pause
-	\item Construct dummy variables  using indicator functions for the other levels, \pause e.g.
+	\item Construct dummy variables using indicator functions for the other levels, \pause e.g.
 	\[ \begin{array}{ll} 
-	X_{i,1} = \mathrm{I}(\mbox{diet for observation $i$ is NP})\pause \\
-	X_{i,2} = \mathrm{I}(\mbox{diet for observation $i$ is N/R50 lopro})\pause \\
-	X_{i,3} = \mathrm{I}(\mbox{diet for observation $i$ is N/R50})\pause \\
-	X_{i,4} = \mathrm{I}(\mbox{diet for observation $i$ is R/R50})\pause \\
-	X_{i,5} = \mathrm{I}(\mbox{diet for observation $i$ is N/R40})\pause
+	X_{i,1} = \I(\mbox{diet for observation $i$ is NP})\pause \\
+	X_{i,2} = \I(\mbox{diet for observation $i$ is N/R50 lopro})\pause \\
+	X_{i,3} = \I(\mbox{diet for observation $i$ is N/R50})\pause \\
+	X_{i,4} = \I(\mbox{diet for observation $i$ is R/R50})\pause \\
+	X_{i,5} = \I(\mbox{diet for observation $i$ is N/R40})\pause
 	\end{array} \] 
 	\item \pause Run a multiple linear regression using these dummy variables.
 	\end{itemize}
+  
+  \vspace{0.2in} \pause
+  
+  An indicator function is 
+  \[ \I(A) = \left\{ \begin{array}{ll} 1 & A\mbox{ is TRUE} \\ 0 & A\mbox{ is FALSE} \end{array}\right.\]
 }
 
 
@@ -484,9 +407,10 @@ DATA case0501;
   IF diet ='N/R40' THEN x5=1; ELSE x5=0;
   RUN;
 
-PROC REG DATA=case0501;
+PROC GLM DATA=case0501;
   MODEL lifetime = x1 x2 x3 x4 x5;
-  RUN; QUIT;
+  RUN;
+  ods listing close;
 \end{verbatim}
 }
 }
@@ -495,39 +419,27 @@ PROC REG DATA=case0501;
 \frame[containsverbatim]{\frametitle{}
 {\tiny
 \begin{verbatim}
-                                        The REG Procedure
-                                          Model: MODEL1
-                                  Dependent Variable: lifetime
+                                        The GLM Procedure
+ 
+Dependent Variable: lifetime   
 
-                             Number of Observations Read         349
-                             Number of Observations Used         349
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        5     12733.94181      2546.78836      57.10    <.0001
+       Error                      343     15297.41532        44.59888                     
+       Corrected Total            348     28031.35713                                     
 
+                      R-Square     Coeff Var      Root MSE    lifetime Mean
+                      0.454275      17.21323      6.678239         38.79713
 
-                                      Analysis of Variance
-
-                                             Sum of           Mean
-         Source                   DF        Squares         Square    F Value    Pr > F
-
-         Model                     5          12734     2546.78836      57.10    <.0001
-         Error                   343          15297       44.59888
-         Corrected Total         348          28031
-
-
-                      Root MSE              6.67824    R-Square     0.4543
-                      Dependent Mean       38.79713    Adj R-Sq     0.4463
-                      Coeff Var            17.21323
-
-
-                                      Parameter Estimates
-
-                                   Parameter       Standard
-              Variable     DF       Estimate          Error    t Value    Pr > |t|
-              Intercept     1       32.69123        0.88455      36.96      <.0001
-              x1            1       -5.28919        1.30101      -4.07      <.0001
-              x2            1        6.99449        1.25652       5.57      <.0001
-              x3            1        9.60596        1.18768       8.09      <.0001
-              x4            1       10.19449        1.25652       8.11      <.0001
-              x5            1       12.42544        1.23521      10.06      <.0001
+                                                  Standard
+                Parameter         Estimate           Error    t Value    Pr > |t|
+                Intercept      32.69122807      0.88455439      36.96      <.0001
+                x1             -5.28918725      1.30100640      -4.07      <.0001
+                x2              6.99448622      1.25652099       5.57      <.0001
+                x3              9.60595503      1.18768248       8.09      <.0001
+                x4             10.19448622      1.25652099       8.11      <.0001
+                x5             12.42543860      1.23521298      10.06      <.0001
 \end{verbatim}
 }
 }
@@ -589,6 +501,359 @@ summary(m)
 \end{frame}
 
 
-\end{comment}
+\begin{frame}
+\frametitle{Interpretation}
+
+\begin{itemize}[<+->]
+\item $\beta_0 = E[Y_i| \mbox{reference level}]$, i.e. expected response for the reference level
+
+{\color{gray}
+Note: the only way $X_{i,1}=\cdots=X_{i,p}=0$ is if all indicators are zero, i.e. at the reference level. 
+}
+
+\item $\beta_p, p>0$: expected change in the response moving from the reference level to the level associated with the $p^{th}$ dummy variable
+
+{\color{gray}
+Note: the only way for $X_{i,p}$ to increase by one and all other indicators to stay constant is if initially $X_{i,1}=\cdots=X_{i,p}=0$ and now $X_{i,p}=1$
+}
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+For example, 
+\begin{itemize}[<+->]
+\item The expected lifetime for mice on the N/N85 diet is 37 weeks.
+\item The expected increase in lifetime for mice on the N/R40 diet compared to the N/N85 diet is 12.4 weeks. 
+\item The model explains 45\% of the variability in mice lifetimes.
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Interactions}
+\begin{frame}
+Why an interaction? \pause
+\begin{quote}
+Two explanatory variables are said to \alert{interact} if the effect that one of them has on the mean response depends on the value of the other. 
+\end{quote}
+
+\vspace{0.2in} \pause
+
+For example, 
+\begin{itemize}
+\item Longnose dace: The effect of no3 on longnose dace count depends on the maxdepth. (Continuous-continuous)
+\item Case1002: The effect of mass on energy depends on the species type. (Continuous-categorical)
+\item Yield: the effect of fertilizer depends on the block (Categorical-categorical)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Continuous-continuous interaction}
+
+For observation $i$, let 
+\begin{itemize}
+\item $Y_i$ be the response 
+\item $X_{i,1}$ be the first explanatory variable and
+\item $X_{i,2}$ be the second explanatory variable. 
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The mean containing only \alert{main effects} is 
+\[ \mu_i = \beta_0 + \beta_1X_{i,1}+\beta_2X_{i,2}.\phantom{+\beta_3X_{i,1}X_{i,2}} \]
+\pause
+The mean with the \alert{interaction} is 
+\[ \mu_i = \beta_0 + \beta_1X_{i,1}+\beta_2X_{i,2}+\beta_3X_{i,1}X_{i,2}.  \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Intepretation}
+
+\begin{itemize}
+\item $\beta_0$: expected response when explanatory variables are zero
+\item $\beta_1$: expected change in the response for each change in $X_{i,1}$ when \alert{$X_{i,2}$ is zero}
+\item $\beta_2$: expected change in the response for each change in $X_{i,2}$ when \alert{$X_{i,1}$ is zero}
+\item $\beta_3X_{i,2}$: expected change in the effect of $X_{i,1}$ on the response when \alert{$X_{i,2}$ is not zero}
+\item $\beta_3X_{i,1}$: expected change in the effect of $X_{i,2}$ on the response when \alert{$X_{i,1}$ is not zero}
+\end{itemize}
+
+\pause 
+
+For example, 
+\[ \begin{array}{l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
+E[Y_i|X_{i,1}=&x_1+1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 (&x_1+1)&+ \beta_2x_2 &+ \beta_3 (&x_1+1)&x_2 \\
+E[Y_i|X_{i,1}=&x_1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 & x_1 & + \beta_2 x_2 &+ \beta_3 & x_1 & x_2 \\
+\hline
+&&&= \phantom{\beta_0+} &\beta_1 &&&+  \beta_3 &&x_2
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output}
+
+<<>>=
+d = read.csv("longnosedace.csv")
+m = lm(count ~ maxdepth + no3 + maxdepth:no3, d)
+summary(m)
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Continuous-categorical interaction}
+
+Let category A be the reference level. Then observation $i$, let 
+\begin{itemize}
+\item $Y_i$ be the response 
+\item $X_{i,1}$ be the continuous explanatory variable, 
+\item $B_i$ be a dummy variable for category B, and 
+\item $C_i$ be a dummy variable for category C.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The mean containing only \alert{main effects} is 
+\[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i.\phantom{+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i} \]
+\pause
+The mean with the \alert{interaction} is 
+\[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i. \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpretation for the main effect model}
+
+The mean containing only \alert{main effects} is 
+\[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i.\phantom{+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i} \]
+
+\vspace{0.2in} \pause
+
+\begin{itemize}[<+->]
+\item $\beta_1$ is the change in the response when the continuous explanatory variable increases by one for any category
+\item when the continuous explanatory variable is zero 
+  \begin{itemize}
+  \item $\beta_0\phantom{+\beta_2}\,\,$ is the expected response for category A
+  \item $\beta_0+\beta_2$ is the expected response for category B
+  \item $\beta_0+\beta_3$ is the expected response for category C
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Interpretation for the model with an interaction}
+
+The model with an \alert{interaction} is 
+\[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i \]
+
+\vspace{0.2in} \pause
+
+{\footnotesize
+\begin{itemize}[<+->]
+\item $\beta_0$ is the expected response when the continuous explanatory variable is zero and we are in category A
+\item $\beta_1$ is the change in the response when the continuous explanatory variable increases by one for category A
+\item When the continuous explanatory variable ($X_{i,1}$) is zero,
+  \begin{itemize}
+  \item $\beta_2$ is the change in the expected response when moving from category A to category B 
+  \item $\beta_3$ is the change in the expected response when moving from category A to category C
+  \end{itemize}
+\item $\beta_1+\beta_4$ is the change in the response when the continuous explanatory variable increases by one for category B
+\item $\beta_1+\beta_5$ is the change in the response when the continuous explanatory variable increases by one for category C 
+\end{itemize}
+}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the models}
+
+<<echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
+b = c(0,3,7)
+opar = par(mar=c(5,5,4,2)+.1, mfrow=c(1,2))
+
+plot(0, 0, type='n', xlim=c(0,10), ylim=c(0,15), axes=F, frame=TRUE, 
+     xlab="Continuous explanatory variable", ylab="Expected response",
+     main="Main effects only", xaxs='i')
+for (i in 1:length(b)) abline(b[i],1, col=i, lty=i, lwd=2)
+axis(2, b, expression(beta[0],beta[0]+beta[2],beta[0]+beta[3]), las=1)
+loc=c(1,3,6)
+arrows(loc[1],b[1]+loc[1], loc[1], b[2]+loc[1], code=3)
+text(loc[1], b[2]/2+loc[1], expression(beta[2]), pos=4)
+arrows(loc[2], b[1]+loc[2], loc[2], b[3]+loc[2], code=3)
+text(loc[2], mean(b[c(1,3)])+loc[2]+1, expression(beta[3]), pos=4)
+arrows(loc[3], b[2]+loc[3], loc[3], b[3]+loc[3], code=3)
+text(loc[3], mean(b[2:3])+loc[3], expression(beta[3]-beta[2]), pos=4)
+
+segments(5, 5, 8, 5)
+segments(8, 5, 8, 8)
+text(8, 6.5, expression(beta[1]), pos=4)
+
+b0 = c(0, 10, 13)
+b1 = c(1, .5, -0.3)
+plot(0, 0, type='n', xlim=c(0,10), ylim=c(0,15), axes=F, frame=TRUE, 
+     xlab="Continuous explanatory variable", ylab="",
+     main="With interactions", xaxs='i')
+
+x1 = 5
+x2 = 8
+i = 1
+for (i in 1:length(b)) {
+  abline(b0[i],b1[i], col=i, lty=i, lwd=2)
+  segments(x1, b0[i]+b1[i]*x1, x2, b0[i]+b1[i]*x1, col=i, lty=i)
+  segments(x2, b0[i]+b1[i]*x1, x2, b0[i]+b1[i]*x2, col=i, lty=i)
+}
+axis(2, b0, expression(beta[0],beta[0]+beta[2],beta[0]+beta[3]), las=1)
+text(8, b0+b1*(x1+x2)/2, expression(beta[1], beta[1]+beta[4], beta[1]+beta[5]), pos=4)
+par(opar)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output - Main effects only}
+<<>>=
+summary(lm(log(Energy)~log(Mass)+Type, case1002))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{R code and output - with interaction}
+<<>>=
+summary(lm(log(Energy)~log(Mass)*Type, case1002))
+@
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Categorical-categorical}
+
+Let category A and type 0 be the reference level. For observation $i$, let 
+\begin{itemize}
+\item $Y_i$ be the response, 
+\item $1_i$ be a dummy variable for type 1, 
+\item $B_i$ be a dummy variable for category B, and 
+\item $C_i$ be a dummy variable for category C.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The mean containing only main effects is 
+\[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i.\phantom{ + \beta_4 1_i B_i + \beta_5 1_i C_i} \]
+\pause
+The mean with an interaction is 
+\[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i + \beta_4 1_i B_i + \beta_5 1_i C_i. \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpretation for the main effects model}
+
+The mean containing only main effects is 
+\[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i.\phantom{ + \beta_4 1_i B_i + \beta_5 1_i C_i} \]
+
+\vspace{0.2in} \pause
+
+\begin{itemize}
+\item $\beta_0$ is the expected response for category A and type 0
+\item $\beta_1$ is the change in response for moving from type 0 to type 1
+\item $\beta_2$ is the change in response for moving from category A to category B
+\item $\beta_3$ is the change in response for moving from category A to category C
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The means are then 
+\[ \begin{array}{c|ccc} 
+& \multicolumn{3}{c}{\mbox{Category}} \\
+\mbox{Type} & A & B & C \\
+\hline
+0 & \beta_0 \phantom{+\beta_1}\, & \beta_0 \phantom{+\beta_1}\,+\beta_2 & \beta_0 \phantom{+\beta_1}\,+\beta_3 \\
+1 & \beta_0+\beta_1 & \beta_0+\beta_1+\beta_2 & \beta_0+\beta_1+\beta_3 \\
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpretation for the model with an interaction}
+
+The mean with an interaction is 
+\[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i + \beta_4 1_i B_i + \beta_5 1_i C_i. \]
+
+ \pause
+
+{\tiny
+\begin{itemize}
+\item $\beta_0$ is the expected response for category A and type 0
+\item $\beta_1$ is the change in response for moving from type 0 to type 1 for category A
+\item $\beta_2$ is the change in response for moving from category A to category B for type 0
+\item $\beta_3$ is the change in response for moving from category A to category C for type 0
+\item $\beta_4$ is the difference in change in response for moving from category A to category B for type 1 compared to type 0
+\item $\beta_5$ is the difference in change in response for moving from category A to category C for type 1 compared to type 0
+\end{itemize}
+}
+\pause
+
+The means are then 
+\[ \begin{array}{c|ccc} 
+& \multicolumn{3}{c}{\mbox{Category}} \\
+\mbox{Type} & A & B & C \\
+\hline
+0 & \beta_0 \phantom{+\beta_1}\, & \beta_0 \phantom{+\beta_1}\,+\beta_2\phantom{+\beta_4} & \beta_0 \phantom{+\beta_1}\,+\beta_3\phantom{+\beta_5} \\
+1 & \beta_0+\beta_1 & \beta_0+\beta_1+\beta_2+\beta_4 & \beta_0+\beta_1+\beta_3+\beta_5 \\
+\end{array} \]
+This is referred to as the \alert{cell-means model}.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output - main effects only}
+
+<<>>=
+summary(lm(Cover~Block+Treat, case1301, subset=Block %in% c("B1","B2") & Treat %in% c("L","Lf","LfF")))
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output - with interaction}
+
+<<>>=
+summary(lm(Cover~Block*Treat, case1301, subset=Block %in% c("B1","B2") & Treat %in% c("L","Lf","LfF")))
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{When to include interaction terms}
+
+From \_The Statistical Sleuth (3rd ed)\_ page 250:
+\begin{itemize}
+\item when a question of interest pertains to an interaction
+\item when good reason exists to suspect interaction or
+\item when interactions are proposed as a more general model for the purpose of examining the goodness of fit of a model without interaction
+\end{itemize}
+
+\end{frame}
+
 
 \end{document}
