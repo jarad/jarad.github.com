@@ -42,6 +42,7 @@ library(reshape2)
 
 
 \section{Multiple regression model}
+
 \frame{\frametitle{Multiple regression}
   Recall the simple linear regression model is 
 	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
@@ -76,7 +77,7 @@ library(reshape2)
   
 	\begin{itemize}[<+->]  
   \item Higher order terms ($X^2$)
-	\item Additional explanatory variables ($X_1$ and $X_2$)
+	\item Additional explanatory variables ($X_1+X_2$)
 	\item Dummy variables for categorical variables ($X_1=\I()$)
 	\item Interactions ($X_1X_2$)
     \begin{itemize}
@@ -88,7 +89,6 @@ library(reshape2)
 }
 
 
-\subsection{Interpretation}
 \frame{\frametitle{Interpretation}
   Model:
 	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
@@ -260,7 +260,7 @@ summary(m)
 
 
 
-\subsection{Additional explanatory variables}
+\subsection{Additional explanatory variables ($X_1+X_2$)}
 \frame{\frametitle{Longnose Dace Abundance}
 From \url{http://udel.edu/~mcdonald/statmultreg.html}: 
 {\scriptsize
@@ -296,7 +296,6 @@ ggplot(m, aes(x=value,y=count))+geom_point(size=2)+facet_wrap(~variable, scales=
 
 
 
-\subsection{SAS code and output}
 \frame[containsverbatim]{\frametitle{}
 \tiny
 \begin{verbatim}
@@ -358,8 +357,7 @@ summary(m)
 
 
 
-\subsection{Categorical variables}
-%\subsection{Categorical variable}
+\subsection{Categorical variables ($X_1=\I()$)}
 \begin{frame}[fragile]
 \frametitle{Using a categorical variable as an explanatory variable.}
 <<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
@@ -377,73 +375,72 @@ par(opar)
 \frame{\frametitle{Regression with a categorical variable}
 	\begin{itemize}
 	\item Choose one of the levels as the \alert{reference} level, e.g. N/N85 \pause
-	\item Construct dummy variables using indicator functions for the other levels, \pause e.g.
-	\[ \begin{array}{ll} 
-	X_{i,1} = \I(\mbox{diet for observation $i$ is NP})\pause \\
-	X_{i,2} = \I(\mbox{diet for observation $i$ is N/R50 lopro})\pause \\
-	X_{i,3} = \I(\mbox{diet for observation $i$ is N/R50})\pause \\
-	X_{i,4} = \I(\mbox{diet for observation $i$ is R/R50})\pause \\
-	X_{i,5} = \I(\mbox{diet for observation $i$ is N/R40})\pause
-	\end{array} \] 
-	\item \pause Run a multiple linear regression using these dummy variables.
-	\end{itemize}
-  
-  \vspace{0.2in} \pause
-  
-  An indicator function is 
+	\item Construct dummy variables using indicator functions, i.e.  
   \[ \I(A) = \left\{ \begin{array}{ll} 1 & A\mbox{ is TRUE} \\ 0 & A\mbox{ is FALSE} \end{array}\right.\]
+  
+  \pause 
+  
+  for the other levels, \pause e.g.
+	\[ \begin{array}{ll} 
+	X_{i,1} = \I(\mbox{diet for observation $i$ is N/R40})\pause \\
+	X_{i,2} = \I(\mbox{diet for observation $i$ is N/R50})\pause \\
+	X_{i,3} = \I(\mbox{diet for observation $i$ is NP})\pause \\
+	X_{i,4} = \I(\mbox{diet for observation $i$ is R/R50})\pause \\
+	X_{i,5} = \I(\mbox{diet for observation $i$ is lopro})\pause
+	\end{array} \] 
+	\item \pause Estimate the parameters of a multiple regression model using these dummy variables.
+	\end{itemize}
 }
 
 
-\frame[containsverbatim]{\frametitle{}
-{\scriptsize
-\begin{verbatim}
-DATA case0501;
-  INFILE 'case0501.csv' DSD FIRSTOBS=2;
-  INPUT lifetime diet $;
-  IF diet ='NP'    THEN x1=1; ELSE x1=0;
-  IF diet ='lopro' THEN x2=1; ELSE x2=0;
-  IF diet ='N/R50' THEN x3=1; ELSE x3=0;
-  IF diet ='R/R50' THEN x4=1; ELSE x4=0;
-  IF diet ='N/R40' THEN x5=1; ELSE x5=0;
-  RUN;
-
-PROC GLM DATA=case0501;
-  MODEL lifetime = x1 x2 x3 x4 x5;
-  RUN;
-  ods listing close;
-\end{verbatim}
-}
-}
-
-
-\frame[containsverbatim]{\frametitle{}
-{\tiny
-\begin{verbatim}
-                                        The GLM Procedure
- 
-Dependent Variable: lifetime   
-
-                                               Sum of
-       Source                      DF         Squares     Mean Square    F Value    Pr > F
-       Model                        5     12733.94181      2546.78836      57.10    <.0001
-       Error                      343     15297.41532        44.59888                     
-       Corrected Total            348     28031.35713                                     
-
-                      R-Square     Coeff Var      Root MSE    lifetime Mean
-                      0.454275      17.21323      6.678239         38.79713
-
-                                                  Standard
-                Parameter         Estimate           Error    t Value    Pr > |t|
-                Intercept      32.69122807      0.88455439      36.96      <.0001
-                x1             -5.28918725      1.30100640      -4.07      <.0001
-                x2              6.99448622      1.25652099       5.57      <.0001
-                x3              9.60595503      1.18768248       8.09      <.0001
-                x4             10.19448622      1.25652099       8.11      <.0001
-                x5             12.42543860      1.23521298      10.06      <.0001
-\end{verbatim}
-}
-}
+% \frame[containsverbatim]{\frametitle{}
+% {\scriptsize
+% \begin{verbatim}
+% DATA case0501;
+%   INFILE 'case0501.csv' DSD FIRSTOBS=2;
+%   INPUT lifetime diet $;
+%   IF diet ='NP'    THEN x1=1; ELSE x1=0;
+%   IF diet ='lopro' THEN x2=1; ELSE x2=0;
+%   IF diet ='N/R50' THEN x3=1; ELSE x3=0;
+%   IF diet ='R/R50' THEN x4=1; ELSE x4=0;
+%   IF diet ='N/R40' THEN x5=1; ELSE x5=0;
+%   RUN;
+% 
+% PROC GLM DATA=case0501;
+%   MODEL lifetime = x1 x2 x3 x4 x5;
+%   RUN;
+% \end{verbatim}
+% }
+% }
+% 
+% 
+% \frame[containsverbatim]{\frametitle{}
+% {\tiny
+% \begin{verbatim}
+%                                         The GLM Procedure
+%  
+% Dependent Variable: lifetime   
+% 
+%                                                Sum of
+%        Source                      DF         Squares     Mean Square    F Value    Pr > F
+%        Model                        5     12733.94181      2546.78836      57.10    <.0001
+%        Error                      343     15297.41532        44.59888                     
+%        Corrected Total            348     28031.35713                                     
+% 
+%                       R-Square     Coeff Var      Root MSE    lifetime Mean
+%                       0.454275      17.21323      6.678239         38.79713
+% 
+%                                                   Standard
+%                 Parameter         Estimate           Error    t Value    Pr > |t|
+%                 Intercept      32.69122807      0.88455439      36.96      <.0001
+%                 x1             -5.28918725      1.30100640      -4.07      <.0001
+%                 x2              6.99448622      1.25652099       5.57      <.0001
+%                 x3              9.60595503      1.18768248       8.09      <.0001
+%                 x4             10.19448622      1.25652099       8.11      <.0001
+%                 x5             12.42543860      1.23521298      10.06      <.0001
+% \end{verbatim}
+% }
+% }
 
 
 
@@ -523,7 +520,7 @@ Note: the only way for $X_{i,p}$ to increase by one and all other indicators to 
 
 For example, 
 \begin{itemize}[<+->]
-\item The expected lifetime for mice on the N/N85 diet is 37 weeks.
+\item The expected lifetime for mice on the N/N85 diet is 32.7 weeks.
 \item The expected increase in lifetime for mice on the N/R40 diet compared to the N/N85 diet is 12.4 weeks. 
 \item The model explains 45\% of the variability in mice lifetimes.
 \end{itemize}
@@ -551,7 +548,7 @@ par(opar)
 
 
 
-\subsection{Interactions}
+\subsection{Interactions ($X_1X_2$)}
 \begin{frame}
 \frametitle{Interactions}
 Why an interaction? \pause
@@ -562,10 +559,10 @@ Two explanatory variables are said to \alert{interact} if the effect that one of
 \vspace{0.2in} \pause
 
 For example, 
-\begin{itemize}
-\item Longnose dace: The effect of no3 on longnose dace count depends on the maxdepth. (Continuous-continuous)
+\begin{itemize}[<+->]
+\item Longnose dace: The effect of nitrate (no3) on longnose dace count depends on the maxdepth. (Continuous-continuous)
 \item Case1002: The effect of mass on energy depends on the species type. (Continuous-categorical)
-\item Yield: the effect of fertilizer type depends on the fertilizer brand (Categorical-categorical)
+\item Yield: the effect of fertilizer level depends on the fertilizer brand (Categorical-categorical)
 \end{itemize}
 \end{frame}
 
@@ -595,24 +592,69 @@ The mean with the \alert{interaction} is
 
 \begin{itemize}
 \item $\beta_0$: expected response when explanatory variables are zero
-\item $\beta_1$: expected change in the response for each change in $X_{i,1}$ when \alert{$X_{i,2}$ is zero}
-\item $\beta_2$: expected change in the response for each change in $X_{i,2}$ when \alert{$X_{i,1}$ is zero}
-\item $\beta_3X_{i,2}$: expected change in the effect of $X_{i,1}$ on the response when \alert{$X_{i,2}$ is not zero}
-\item $\beta_3X_{i,1}$: expected change in the effect of $X_{i,2}$ on the response when \alert{$X_{i,1}$ is not zero}
+\item $\beta_1+\beta_3x_2$: expected change in the response for each unit change in $X_{i,1}$ when \alert{$X_{i,2}=x_2$}
+\item $\beta_2+\beta_3x_1$: expected change in the response for each unit change in $X_{i,2}$ when \alert{$X_{i,1}=x_1$}
+%\item $\beta_3X_{i,2}$: expected change in the effect of $X_{i,1}$ on the response when \alert{$X_{i,2}$ is not zero}
+%\item $\beta_3X_{i,1}$: expected change in the effect of $X_{i,2}$ on the response when \alert{$X_{i,1}$ is not zero}
 \end{itemize}
 
 \pause 
 
-For example, 
+Proof:
 \[ \begin{array}{l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
 E[Y_i|X_{i,1}=&x_1+1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 (&x_1+1)&+ \beta_2x_2 &+ \beta_3 (&x_1+1)&x_2 \\
 E[Y_i|X_{i,1}=&x_1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 & x_1 & + \beta_2 x_2 &+ \beta_3 & x_1 & x_2 \\
 \hline
-&&&= \phantom{\beta_0+} &\beta_1 &&&+  \beta_3 &&x_2
+\multicolumn{3}{c}{\mbox{Diff}} &= &\beta_1 &&&+  \beta_3 &&x_2
+\end{array} \]
+\pause
+\[ \begin{array}{l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
+E[Y_i|X_{i,1}=x_1, X_{i,2}=&x_2+1&] &= \beta_0 +&\beta_1 x_1+ &\beta_2 (&x_2+1) &+ \beta_3 x_1& (&x_2+1) \\
+E[Y_i|X_{i,1}=x_1, X_{i,2}=&x_2&] &= \beta_0 +&\beta_1 x_1  + &\beta_2 &x_2 &+ \beta_3 x_1 & &x_2 \\
+\hline
+\multicolumn{3}{c}{\mbox{Diff}}&= &&\beta_2 &&+  \beta_3 x_1
 \end{array} \]
 
 \end{frame}
 
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS code and output}
+
+{\tiny
+\begin{verbatim}
+DATA longnosedace;
+  INFILE 'longnosedace.csv' DSD FIRSTOBS=2;
+  INPUT stream $ count acreage do2 maxdepth no3 so4 temp;
+
+PROC GLM DATA=longnosedace;
+  MODEL count = no3|maxdepth;
+  RUN;
+
+                                        The GLM Procedure
+ 
+Dependent Variable: count   
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        3      34648.4646      11549.4882       6.34    0.0008
+       Error                       63     114783.8040       1821.9651                     
+       Corrected Total             66     149432.2687                                     
+
+                       R-Square     Coeff Var      Root MSE    count Mean
+                       0.231867      109.1550      42.68448      39.10448
+
+                                                   Standard
+              Parameter            Estimate           Error    t Value    Pr > |t|
+              Intercept         13.32104269     23.45570999       0.57      0.5721
+              no3               -4.64627211      7.85693213      -0.59      0.5564
+              maxdepth          -0.00933787      0.32918045      -0.03      0.9775
+              no3*maxdepth       0.20121872      0.11357647       1.77      0.0813
+\end{verbatim}
+}
+
+\end{frame}
 
 
 \begin{frame}[fragile]
@@ -620,17 +662,51 @@ E[Y_i|X_{i,1}=&x_1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 & x_1 & + \beta_2 x_2 &+ 
 
 <<>>=
 d = read.csv("longnosedace.csv")
-m = lm(count ~ maxdepth + no3 + maxdepth:no3, d)
+m = lm(count ~ maxdepth*no3, d)
 summary(m)
 @
 
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{Illustration of interaction effect}
+
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+opar = par(mfrow=c(1,2), mar=c(5,5,0,2)+.1)
+b = coef(m)
+plot(d$no3, b[2]+b[4]*d$no3, type="l", xaxs='i', axes=FALSE, frame=TRUE,
+     xlab="Nitrate (mg/L)", ylab="Expected change in the longnose dace count\n for a one cm increase in maxdepth")
+axis(1, unique(round(d$no3)))
+axis(2, b[2], expression(beta[1]), las=1)
+axis(2, c(.5,1,1.5))
+x1 = 4; x2 = 5
+segments(x1, b[2]+b[4]*x1, x2, b[2]+b[4]*x1)
+segments(x2, b[2]+b[4]*x1, x2, b[2]+b[4]*x2)
+text(x2, b[2]+b[4]*mean(c(x1,x2)), expression(beta[3]), pos=4)
+
+mx = max(round(d$maxdepth))
+plot(c(0,mx), b[3]+b[4]*c(0,mx), type="l", xaxs='i', xlim=c(0,mx), axes=FALSE, frame=TRUE,
+     xlab="Max Depth (cm)", ylab="Expected change in the longnose dace count\n for a one mg/L increase in nitrate concentration")
+axis(1, seq(from=0, to=mx, by=10))
+axis(2, b[3], expression(beta[2]), las=1)
+axis(2, seq(0,25, by=5))
+x1 = 90; x2 = 100
+segments(x1, b[3]+b[4]*x1, x2, b[3]+b[4]*x1)
+segments(x2, b[3]+b[4]*x1, x2, b[3]+b[4]*x2)
+text(x2, b[3]+b[4]*mean(c(x1,x2)), expression(10*beta[3]), pos=4)
+text(mean(c(x1,x2)), b[3]+b[4]*x1, '10', pos=1)
+par(opar)
+@
+
+\end{frame}
+
+
+
 \begin{frame}
 \frametitle{Continuous-categorical interaction}
 
-Let category A be the reference level. Then observation $i$, let 
+Let category A be the reference level. For observation $i$, let 
 \begin{itemize}
 \item $Y_i$ be the response 
 \item $X_{i,1}$ be the continuous explanatory variable, 
@@ -743,23 +819,131 @@ par(opar)
 \end{frame}
 
 
+\begin{frame}[containsverbatim]
+\frametitle{SAS code and output - main effects only}
+
+{\tiny
+\begin{verbatim}
+DATA case1002;
+  INFILE 'case1002.csv' DSD FIRSTOBS=2;
+  LENGTH Type $22.;
+  INPUT Mass Type $ Energy;
+  lMass   = log(Mass);
+  lEnergy = log(Energy);
+
+PROC GLM DATA=case1002;
+  CLASS Type(REF='non-echolocating bats');
+  MODEL lEnergy = Type lMass / SOLUTION;
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        3     29.42148268      9.80716089     283.59    <.0001
+       Error                       16      0.55331753      0.03458235                     
+       Corrected Total             19     29.97480021                                     
+
+                      R-Square     Coeff Var      Root MSE    lEnergy Mean
+                      0.981541      7.491872      0.185963        2.482201
+
+                                                              Standard
+   Parameter                                Estimate             Error    t Value    Pr > |t|
+   Intercept                            -1.576360194 B      0.28723642      -5.49      <.0001
+   Type      echolocating bats           0.078663681 B      0.20267926       0.39      0.7030
+   Type      non-echolocating birds      0.102261918 B      0.11418264       0.90      0.3837
+   Type      non-echolocating bats       0.000000000 B       .                .         .    
+   lMass                                 0.814957494        0.04454143      18.30      <.0001
+
+NOTE: The X'X matrix has been found to be singular, and a generalized inverse was used to solve 
+      the normal equations.  Terms whose estimates are followed by the letter 'B' are not 
+      uniquely estimable.
+\end{verbatim}
+}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS code and output - with interaction}
+
+{\tiny
+\begin{verbatim}
+PROC GLM DATA=case1002;
+  CLASS Type(REF='non-echolocating bats');
+  MODEL lEnergy = Type|lMass / SOLUTION;
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        5     29.46993221      5.89398644     163.44    <.0001
+       Error                       14      0.50486800      0.03606200                     
+       Corrected Total             19     29.97480021                                     
+
+                      R-Square     Coeff Var      Root MSE    lEnergy Mean
+                      0.983157     7.650468      0.189900        2.482201
+
+                                                               Standard
+   Parameter                                 Estimate             Error    t Value    Pr > |t|
+   Intercept                             -0.202447571 B      1.26133425      -0.16      0.8748
+   Type       echolocating bats          -1.268067693 B      1.28542004      -0.99      0.3406
+   Type       non-echolocating birds     -1.378390198 B      1.29524130      -1.06      0.3053
+   Type       non-echolocating bats       0.000000000 B       .                .         .    
+   lMass                                  0.589782057 B      0.20613801       2.86      0.0126
+   lMass*Type echolocating bats           0.214874992 B      0.22362264       0.96      0.3529
+   lMass*Type non-echolocating birds      0.245588273 B      0.21343221       1.15      0.2691
+   lMass*Type non-echolocating bats       0.000000000 B       .                .         .    
+   
+NOTE: The X'X matrix has been found to be singular, and a generalized inverse was used to solve 
+      the normal equations.  Terms whose estimates are followed by the letter 'B' are not 
+      uniquely estimable.
+\end{verbatim}
+}
+\end{frame}
+
+
+
 
 \begin{frame}[fragile]
-\frametitle{R code and output - Main effects only}
+\frametitle{R code and output - main effects only}
 <<>>=
-summary(lm(log(Energy)~log(Mass)+Type, case1002))
+summary(mM <- lm(log(Energy)~log(Mass)+Type, case1002))
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{R code and output - with interaction}
 <<>>=
-summary(lm(log(Energy)~log(Mass)*Type, case1002))
+summary(mI <- lm(log(Energy)~log(Mass)*Type, case1002))
 @
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{Visualizing the models}
 
+<<echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
+opar = par(mar=c(5,5,4,2)+.1, mfrow=c(1,2))
+
+plot(Energy~Mass, case1002, log='xy', 
+     pch=as.numeric(Type), col=as.numeric(Type), 
+     xlab="Mass (grams)", ylab="Energy (W)",
+     main="Main effects only")
+with(case1002, legend("topleft", legend=levels(Type), pch=1:nlevels(Type), col=1:nlevels(Type)))
+xrng = range(case1002$Mass)
+for (i in 1:3) {
+  yy = predict(mM, data.frame(Type=levels(case1002$Type)[i], Mass=xrng))
+  lines(xrng, exp(yy), col=i, lty=i, lwd=2)
+}
+
+
+b = coef(mI)
+plot(Energy~Mass, case1002, log='xy', 
+     pch=as.numeric(Type), col=as.numeric(Type), 
+     xlab="Mass (grams)", ylab="Energy (W)",
+     main="With interaction")
+for (i in 1:3) {
+  yy = predict(mI, data.frame(Type=levels(case1002$Type)[i], Mass=xrng))
+  lines(xrng, exp(yy), col=i, lty=i, lwd=2)
+}
+par(opar)
+@
+
+\end{frame}
 
 \begin{frame}
 \frametitle{Categorical-categorical}
@@ -843,10 +1027,99 @@ This is referred to as the \alert{cell-means model}.
 \end{frame}
 
 
+\begin{frame}[containsverbatim]
+\frametitle{SAS code and output - main effects only}
+
+{\tiny
+\begin{verbatim}
+DATA case1002;
+  INFILE 'case1301.csv' DSD FIRSTOBS=2;
+  INPUT Cover Block $ Treat $;
+
+PROC GLM DATA=case1002;
+  WHERE Block IN ('B1','B2') AND Treat IN ('L','Lf','LfF');
+  CLASS Block Treat;
+  MODEL Cover = Block Treat / SOLUTION;
+  
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        3     32.08333333     10.69444444       6.04    0.0188
+       Error                        8     14.16666667      1.77083333                     
+       Corrected Total             11     46.25000000                                     
+
+                       R-Square     Coeff Var      Root MSE    Cover Mean
+                       0.693694      31.31121      1.330727      4.250000
+
+                                                     Standard
+             Parameter             Estimate             Error    t Value    Pr > |t|
+             Intercept          4.666666667 B      0.76829537       6.07      0.0003
+             Block     B2       2.166666667 B      0.76829537       2.82      0.0225
+             Block     B1       0.000000000 B       .                .         .    
+             Treat     Lf      -1.500000000 B      0.94096582      -1.59      0.1496
+             Treat     LfF     -3.000000000 B      0.94096582      -3.19      0.0128
+             Treat     L        0.000000000 B       .                .         .    
+
+NOTE: The X'X matrix has been found to be singular, and a generalized inverse was used to solve 
+      the normal equations.  Terms whose estimates are followed by the letter 'B' are not 
+      uniquely estimable.
+\end{verbatim}
+}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS code and output - with interaction}
+
+{\tiny
+\begin{verbatim}
+PROC GLM DATA=case1002;
+  WHERE Block IN ('B1','B2') AND Treat IN ('L','Lf','LfF');
+  CLASS Block Treat;
+  MODEL Cover = Block|Treat / SOLUTION;
+  
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        5     36.75000000      7.35000000       4.64    0.0443
+       Error                        6      9.50000000      1.58333333                     
+       Corrected Total             11     46.25000000                                     
+
+                       R-Square     Coeff Var      Root MSE    Cover Mean
+                       0.794595      29.60719      1.258306      4.250000
+
+                                                       Standard
+          Parameter                  Estimate             Error    t Value    Pr > |t|
+          Intercept               4.000000000 B      0.88975652       4.50      0.0041
+          Block       B2          3.500000000 B      1.25830574       2.78      0.0319
+          Block       B1          0.000000000 B       .                .         .    
+          Treat       Lf          0.000000000 B      1.25830574       0.00      1.0000
+          Treat       LfF        -2.500000000 B      1.25830574      -1.99      0.0941
+          Treat       L           0.000000000 B       .                .         .    
+          Block*Treat B2 Lf      -3.000000000 B      1.77951304      -1.69      0.1428
+          Block*Treat B2 LfF     -1.000000000 B      1.77951304      -0.56      0.5945
+          Block*Treat B2 L        0.000000000 B       .                .         .    
+          Block*Treat B1 Lf       0.000000000 B       .                .         .    
+          Block*Treat B1 LfF      0.000000000 B       .                .         .    
+          Block*Treat B1 L        0.000000000 B       .                .         .    
+
+NOTE: The X'X matrix has been found to be singular, and a generalized inverse was used to solve 
+      the normal equations.  Terms whose estimates are followed by the letter 'B' are not 
+      uniquely estimable.
+\end{verbatim}
+}
+\end{frame}
+
+
+
+
+
+
 \begin{frame}[fragile]
 \frametitle{R code and output - main effects only}
 
 <<>>=
+# Set the reference levels
+case1301$Block = relevel(case1301$Block, ref='B1')
+case1301$Treat = relevel(case1301$Treat, ref='L' )
 summary(lm(Cover~Block+Treat, case1301, subset=Block %in% c("B1","B2") & Treat %in% c("L","Lf","LfF")))
 @
 
@@ -867,11 +1140,11 @@ summary(lm(Cover~Block*Treat, case1301, subset=Block %in% c("B1","B2") & Treat %
 \begin{frame}
 \frametitle{When to include interaction terms}
 
-From \_The Statistical Sleuth (3rd ed)\_ page 250:
+From The Statistical Sleuth (3rd ed) page 250:
 \begin{itemize}
 \item when a question of interest pertains to an interaction
-\item when good reason exists to suspect interaction or
-\item when interactions are proposed as a more general model for the purpose of examining the goodness of fit of a model without interaction
+\item when good reason exists to suspect an interaction or
+\item when interactions are proposed as a more general model for the purpose of examining the goodness of fit of a model without interaction.
 \end{itemize}
 
 \end{frame}
