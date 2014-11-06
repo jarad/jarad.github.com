@@ -21,6 +21,8 @@ On this page I hope to link to anything that will be relevant for STAT 401A.
 - [Wormbook - A Biologist's Guide to Statistics](http://www.wormbook.org/chapters/www_statisticalanalysis/statisticalanalysis.html) (I haven't looked at this.)
 - [OpenIntro Statistics](http://www.openintro.org/stat/textbook.php)
 - [Online Statistics Education](http://onlinestatbook.com/)
+- Applets
+  - [Regression diagnostics](http://spark.rstudio.com/minebocek/slr_diag/)
 
 ### SAS
 - [Software](http://www.stat.iastate.edu/resources-2/software-sasjmpr/statistical-software-sas/)
