@@ -1,0 +1,216 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+\usepackage{animate}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{Multiple regression inference}
+\title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+\institute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+
+\newcommand{\I}{\mathrm{I}}
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(Sleuth3)
+library(reshape2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Multiple regression inference}
+
+\begin{frame}
+\frametitle{Multiple regression model}
+
+  The \alert{multiple regression model} is 
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
+  
+  \vspace{0.2in} \pause
+  
+  Scientific questions/hypotheses can typically be written in one of the following forms:
+  \[ \begin{array}{l|cc}
+  & \mbox{Estimate} & \mbox{Null Hypothesis} \\
+  \hline
+  \mbox{Single coefficient} & \beta_j & \beta_j=0 \\
+  \mbox{Linear combination} & \gamma= C_0\beta_0 + C_1\beta_1 + \cdots C_p\beta_p & \gamma = 0 \\
+  \mbox{F-test} & & \mbox{a set of $\beta_j$'s are zero} \\
+  \mbox{Prediction} & \mu = \beta_0 + \beta_1X_1 + \cdots + \beta_pX_p & \\
+  \hline
+  \end{array}  \]
+
+\end{frame}
+
+
+\subsection{Echolocation energy cost example}
+\begin{frame}
+\frametitle{Echolocation energy cost example}
+
+Questions:
+\begin{enumerate}[<+->]
+\item Do body mass or species type have any effect on energy expenditure?
+\item After accounting for species type, what is the effect of body mass?
+\item After accounting for body mass, is there any difference between species type?
+\item After accounting for body mass, what are the pairwise differences in energy expenditure?
+\item What would we expect the energy expenditure to be for an echolocating bat with body mass of 50 grams?
+\end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Echolocation energy cost example}
+
+Consider the model 
+\[ Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \qquad \mu_i = \beta_0 + \beta_1 X_{i,1} + \beta_2 X_{i,2} + \beta_3 X_{i,3} \]
+\pause
+where, for observation $i$, we have
+\begin{itemize}
+\item $Y_i$ is log energy expenditure (W) 
+\item $X_{i,1}$ is log body mass (g)
+\item $X_{i,2}$ is 1 if non-echolocating bats and 0 otherwise
+\item $X_{i,3}$ is 1 if non-echolocating birds and 0 otherwise
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+\begin{enumerate}[<+->]
+\item F-test: $\beta_1=\beta_2=\beta_3=0$
+\item Coefficient: $\beta_1$
+\item F-test: $\beta_2=\beta_3=0$
+\item Coefficient: $\beta_2,\beta_3$ and Contrast: $\beta_2-\beta_3$
+\item Prediction: 
+\end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Echolocation energy cost example}
+
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+case1002$Species =      ifelse(grepl("bats", case1002$Type), "Bats", "Birds")
+case1002$Echolocating = ifelse(grepl("non-", case1002$Type), "No", "Yes")
+ggplot(case1002, aes(x=Mass, y=Energy, color=Species, shape=Echolocating)) +
+  geom_point() + 
+  scale_x_log10() + 
+  scale_y_log10()
+@
+
+\end{frame}
+
+
+\subsection{Single coefficient}
+\begin{frame}
+\frametitle{Single coefficient}
+
+Hypothesis test:
+\[ H_0: \beta_j = 0 \mbox{ v } H_1: \beta_j\ne 0 \]
+calculate the t-statistic and a (two-sided) pvalue  
+\[ t = \frac{\hat{\beta}_j}{SE(\hat{\beta}_j)} \qquad p=2P(t_{n-p}<-|t|).  \]
+
+\vspace{0.2in} \pause
+
+$100(1-\alpha)$\% two-sided confidence interval:
+\[ \hat{\beta}_j \pm t_{n-p}(1-\alpha/2)SE(\hat{\beta}_j)\]
+
+\end{frame}
+
+
+
+
+
+\subsection{Linear combination}
+\begin{frame}
+\frametitle{Linear combination}
+
+Let 
+\[ C_0\beta_0 + C_1\beta_1 + \cdots C_p\beta_p. \]
+
+\vspace{0.2in} \pause 
+
+Hypothesis test:
+\[ H_0: \gamma = 0 \mbox{ v } H_1: \gamma\ne 0 \]
+calculate the t-statistic and a (two-sided) pvalue  
+\[ t = \frac{\hat{\gamma}}{SE(\hat{\gamma})} \qquad p=2P(t_{n-p}<-|t|).  \]
+
+\vspace{0.2in} \pause
+
+$100(1-\alpha)$\% two-sided confidence interval:
+\[ \hat{\gamma} \pm t_{n-p}(1-\alpha/2)SE(\hat{\gamma})\]
+
+\end{frame}
+
+
+
+\subsection{F-test}
+\begin{frame}
+\frametitle{Testing Composite hypotheses}
+  Comparing two models
+  \begin{itemize}
+	\item $H_0:$ \alert{(reduced)}
+	\item $H_1:$ \alert{(full)}
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	\small
+	Do the following
+	\begin{enumerate}[1.]
+	\item Calculate extra sum of squares.
+	\item Calculate extra degrees of freedom
+	\item Calculate 
+	\[ \mbox{F-statistic} = \frac{\mbox{Extra sum of squares / Extra degrees of freedom}}{\hat{\sigma}^2_{full}} \]
+	\item Compare this to an F-distribution with 
+		\begin{itemize}
+		\item numerator degrees of freedom = extra degrees of freedom
+		\item denominator degrees of freedom = degrees of freedom in estimating $\hat{\sigma}_{full}^2$
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+
+
+
+\subsection{Prediction}
+\begin{frame}
+\frametitle{What do we say about $Y$ when $X_1=x_1, \ldots, X_p=x_p$?}
+
+We can estimate 
+\[ \hat{\mu}\{Y|X\} = \hat{\beta}_0+\hat{\beta}_1 x_1 + \cdots + \hat{\beta}_p x_p  \]
+\pause 
+Calculation of the standard error is not simple, but it is straight-forward. \pause We'll just refer to it as the standard error of the mean, $SE(\hat{\mu}\{Y|X\})$. 
+
+\vspace{0.2in} \pause 
+
+Just like before, we also have a standard error for a prediction: 
+\[ SE(Pred\{Y|X\})^2 = \hat{\sigma}^2 + SE(\hat{\mu}\{Y|X\})^2. \]
+\end{frame}
+
+
+
+
+\end{document}
