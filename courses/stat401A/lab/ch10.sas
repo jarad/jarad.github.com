@@ -1,5 +1,53 @@
 X 'cd U:\401A\sleuth3csv';
 
+/* From lecture */
+DATA case1002;
+  INFILE 'case1002.csv' DSD FIRSTOBS=2;
+  LENGTH Type $ 30;
+  INPUT Mass Type $ Energy;
+
+DATA case1002new;
+  INPUT Mass Type & $30.;
+  DATALINES;
+  50 echolocating bats
+;
+
+DATA case1002; 
+  SET case1002 case1002new;
+  lMass   = log(Mass) ;
+  lEnergy = log(Energy);
+  RUN;
+
+PROC PRINT DATA=case1002; RUN;
+
+PROC GLM DATA=case1002 PLOTS=all;
+  CLASS Type(REF='echolocating bats');
+  MODEL lEnergy = lMass Type / SOLUTION CLPARM;
+  LSMEANS Type / PDIFF CL;
+  ESTIMATE 'neBird - neBat' Type 0 -1 1;
+  OUTPUT OUT=case1002reg PREDICTED=predicted LCL=lcl UCL=ucl LCLM=lclm UCLM=uclm;
+
+PROC PRINT DATA=case1002reg;
+  WHERE Energy=.;
+  RUN;
+
+
+/* If you have interactions, you can also ask questions about differences between groups at 
+  particular values of the continuous explanatory variable or averaged over the 
+  values of the continuous explanatory variable. */
+PROC GLM DATA=case1002;
+  CLASS Type(REF='echolocating bats');
+  MODEL lEnergy = lMass|Type / SOLUTION CLPARM;
+  LSMEANS Type / PDIFF CL PLOT=none; /* uses AT lMass=<mean of lMass> */
+  LSMEANS Type / PDIFF CL PLOT=none AT lMass=0;
+  LSMEANS Type / PDIFF CL PLOT=none AT lMass=5.5;
+  RUN; QUIT;
+
+
+
+
+
+
 /***************************************************************/
 /* Chapter 10
 /***************************************************************/
