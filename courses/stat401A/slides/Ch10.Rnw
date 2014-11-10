@@ -55,9 +55,9 @@ library(reshape2)
   \[ \begin{array}{l|cc}
   & \mbox{Estimate} & \mbox{Null Hypothesis} \\
   \hline
-  \mbox{Single coefficient} & \beta_j & \beta_j=0 \\
-  \mbox{Linear combination} & \gamma= C_0\beta_0 + C_1\beta_1 + \cdots C_p\beta_p & \gamma = 0 \\
-  \mbox{F-test} & & \mbox{a set of $\beta_j$'s are zero} \\
+  \mbox{Single coefficient} & \beta_j & \beta_j=0 \pause \\
+  \mbox{Linear combination} & \gamma= C_0\beta_0 + C_1\beta_1 + \cdots C_p\beta_p & \gamma = 0 \pause \\
+  \mbox{F-test} & & \mbox{a set of $\beta_j$'s are zero} \pause \\
   \mbox{Prediction} & \mu = \beta_0 + \beta_1X_1 + \cdots + \beta_pX_p & \\
   \hline
   \end{array}  \]
@@ -73,11 +73,24 @@ Questions:
 \begin{enumerate}[<+->]
 \item Do body mass or species type have any effect on energy expenditure?
 \item After accounting for species type, what is the effect of body mass?
-\item After accounting for body mass, is there any difference between species type?
-\item After accounting for body mass, what are the pairwise differences in energy expenditure?
+\item After accounting for body mass, is there any difference in energy expenditure amongst the species types?
+\item After accounting for body mass, what are the pairwise differences in energy expenditure amongst the species types?
 \item What would we expect the energy expenditure to be for an echolocating bat with body mass of 50 grams?
 \end{enumerate}
 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Echolocation energy cost example}
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+case1002$Species =      ifelse(grepl("bats", case1002$Type), "Bats", "Birds")
+case1002$Echolocating = ifelse(grepl("non-", case1002$Type), "No", "Yes")
+ggplot(case1002, aes(x=Mass, y=Energy, color=Species, shape=Echolocating)) +
+  geom_point() + 
+  scale_x_log10() + 
+  scale_y_log10()
+@
 \end{frame}
 
 
@@ -108,19 +121,7 @@ where, for observation $i$, we have
 \end{frame}
 
 
-\begin{frame}[fragile]
-\frametitle{Echolocation energy cost example}
 
-<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
-case1002$Species =      ifelse(grepl("bats", case1002$Type), "Bats", "Birds")
-case1002$Echolocating = ifelse(grepl("non-", case1002$Type), "No", "Yes")
-ggplot(case1002, aes(x=Mass, y=Energy, color=Species, shape=Echolocating)) +
-  geom_point() + 
-  scale_x_log10() + 
-  scale_y_log10()
-@
-
-\end{frame}
 
 
 \subsection{Single coefficient}
@@ -416,6 +417,7 @@ PRINTing the data set constructed in the OUTPUT statement provides the predictio
     21 echolocating bats  50     .   3.91202    .    1.69044  1.23358 2.14729 1.45956 1.92132
 \end{verbatim}
 }
+Now exponentiate since we used log(Energy).
 \end{frame}
 
 
@@ -487,8 +489,8 @@ anova(lm(log(Energy)~log(Mass), case1002), m1)
 
 <<tidy=FALSE>>=
 new = data.frame(Mass=50, Type='echolocating bats')
-predict(m1, new, interval='confidence')
-predict(m1, new, interval='prediction')
+exp(predict(m1, new, interval='confidence'))
+exp(predict(m1, new, interval='prediction'))
 @
 \end{frame}
 
