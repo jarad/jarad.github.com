@@ -211,6 +211,288 @@ Just like before, we also have a standard error for a prediction:
 \end{frame}
 
 
+\subsection{SAS Code and Output}
+\begin{frame}[containsverbatim]
+\frametitle{SAS Code and Output}
+{\tiny
+\begin{verbatim}
+DATA case1002;
+  INFILE 'case1002.csv' DSD FIRSTOBS=2;
+  LENGTH Type $ 30;
+  INPUT Mass Type $ Energy;
+
+DATA case1002new;
+  INPUT Mass Type & $30.;
+  DATALINES;
+  50 echolocating bats
+;
+
+DATA case1002; 
+  SET case1002 case1002new;
+  lMass   = log(Mass) ;
+  lEnergy = log(Energy);
+  RUN;
+
+PROC PRINT DATA=case1002; RUN;
+
+PROC GLM DATA=case1002 PLOTS=all;
+  CLASS Type(REF='echolocating bats');
+  MODEL lEnergy = lMass Type / SOLUTION CLPARM;
+  LSMEANS Type / PDIFF CL;
+  ESTIMATE 'neBird - neBat' Type 0 -1 1;
+  OUTPUT OUT=case1002reg PREDICTED=predicted LCL=lcl UCL=ucl LCLM=lclm UCLM=uclm;
+
+PROC PRINT DATA=case1002reg;
+  WHERE Energy=.;
+  RUN;
+\end{verbatim}
+}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS Code and Output - ANOVA}
+
+The F-test from the ANOVA table tests the null hypothesis $\beta_1=\cdots=\beta_p=0$.
+
+{\tiny
+\begin{verbatim}
+                                        The GLM Procedure
+ 
+Dependent Variable: lEnergy   
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        3     29.42148268      9.80716089     283.59    <.0001
+       Error                       16      0.55331753      0.03458235                     
+       Corrected Total             19     29.97480021                                     
+
+                      R-Square     Coeff Var      Root MSE    lEnergy Mean
+                      0.981541      7.491872      0.185963        2.482201
+\end{verbatim}
+}
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS Code and Output - Parameter Estimates}
+
+The parameter estimates table provides tests and confidence intervals for individual $\beta_j$'s. 
+
+{\tiny
+\begin{verbatim}
+                                                              Standard
+   Parameter                                Estimate             Error    t Value    Pr > |t|
+   Intercept                            -1.497696514 B      0.14986901      -9.99      <.0001
+   lMass                                 0.814957494        0.04454143      18.30      <.0001
+   Type      non-echolocating bats      -0.078663681 B      0.20267926      -0.39      0.7030
+   Type      non-echolocating birds      0.023598237 B      0.15760050       0.15      0.8828
+   Type      echolocating bats           0.000000000 B       .                .         .    
+
+                 Parameter                              95% Confidence Limits
+
+                 Intercept                            -1.815404627 -1.179988400
+                 lMass                                 0.720533885  0.909381102
+                 Type      non-echolocating bats      -0.508324522  0.350997161
+                 Type      non-echolocating birds     -0.310499899  0.357696373
+                 Type      echolocating bats            .            .         
+\end{verbatim}
+}
+\end{frame}
+
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS Code and Output - LSMEANS}
+
+The LSMEANS statement performs pairwise differences.
+
+{\tiny
+\begin{verbatim}
+                                        The GLM Procedure
+                                       Least Squares Means
+
+
+
+                              Least Squares Means for effect Type
+                              Pr > |t| for H0: LSMean(i)=LSMean(j)
+                                                
+                                  Dependent Variable: lEnergy
+ 
+                         i/j              1             2             3
+
+                            1                      0.3837        0.7030
+                            2        0.3837                      0.8828
+                            3        0.7030        0.8828              
+
+
+
+                               Least Squares Means for Effect Type
+ 
+                                   Difference
+                                      Between    95% Confidence Limits for
+                       i    j           Means       LSMean(i)-LSMean(j)
+
+                       1    2       -0.102262       -0.344318     0.139794
+                       1    3       -0.078664       -0.508325     0.350997
+                       2    3        0.023598       -0.310500     0.357696
+\end{verbatim}
+}
+\end{frame}
+
+
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS Code and Output - ESTIMATE statement}
+
+The ESTIMATE statement can be used for specific comparisons.
+
+{\tiny
+\begin{verbatim}
+
+                                        The GLM Procedure
+ 
+Dependent Variable: lEnergy   
+
+                                         Standard
+ Parameter                 Estimate         Error  t Value  Pr > |t|    95% Confidence Limits
+ neBird - neBat         -0.02359824    0.15760050    -0.15    0.8828   -0.35769637   0.31049990
+\end{verbatim}
+}
+\end{frame}
+
+
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS Code and Output - Type I and III SS}
+
+Type I and III SS tables perform specific F-tests:
+\begin{itemize}
+\item Type I performs sequential tests
+\item Type III performs conditional tests
+\end{itemize}
+
+In this case, the line for lMass in the 
+\[ \begin{array}{lll}
+& H_0 &H_1 \\
+\hline 
+\mbox{Type I SS} & \beta_0 & \beta_0 + \beta_1 X_1 \\
+\mbox{Type III SS} & \beta_0 + \beta_2 X_2 + \beta_3 X_3 & \beta_0 + \beta_1 X_ 1 + \beta_2 X_2 + \beta_3 X_3 \\
+\hline
+\end{array} \]
+
+
+\vspace{0.2in} \pause 
+
+{\tiny
+\begin{verbatim}
+       Source                      DF       Type I SS     Mean Square    F Value    Pr > F
+       lMass                        1     29.39190909     29.39190909     849.91    <.0001
+       Type                         2      0.02957359      0.01478680       0.43    0.6593
+
+       Source                      DF     Type III SS     Mean Square    F Value    Pr > F
+       lMass                        1     11.57700181     11.57700181     334.77    <.0001
+       Type                         2      0.02957359      0.01478680       0.43    0.6593
+\end{verbatim}
+}
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS Code and Output - OUTPUT statement}
+
+PRINTing the data set constructed in the OUTPUT statement provides the predictions and uncertainties
+
+{\tiny
+\begin{verbatim}
+   Obs       Type        Mass Energy  lMass  Energy predicted   lcl     ucl     lclm    uclm
+    21 echolocating bats  50     .   3.91202    .    1.69044  1.23358 2.14729 1.45956 1.92132
+\end{verbatim}
+}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R Code and Output - ANOVA Table}
+
+For F-tests in R, fit both models and then use anova to compare them. 
+
+<<>>=
+m0 = lm(log(Energy)~1, case1002)
+m1 = lm(log(Energy)~log(Mass)+Type, case1002)
+anova(m0,m1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R Code and Output - Parameter estimates}
+<<>>=
+summary(m1)
+confint(m1)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R Code and Output - LSMEANS}
+
+Compared to the SAS output, these pvalues are adjusted. 
+
+<<>>=
+library(lsmeans)
+lsmeans(m1, 'Type', contr='pairwise')
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R Code and Output - F-tests}
+
+Type III SS F-tests, i.e. drop 1 term
+
+<<>>=
+drop1(m1, test='F')
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R Code and Output - F-tests}
+
+or you could fit the models and compare them using anova
+
+<<tidy=FALSE>>=
+anova(lm(log(Energy)~Type, case1002),      m1)
+anova(lm(log(Energy)~log(Mass), case1002), m1)
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{R Code and Output - Predictions}
+
+<<tidy=FALSE>>=
+new = data.frame(Mass=50, Type='echolocating bats')
+predict(m1, new, interval='confidence')
+predict(m1, new, interval='prediction')
+@
+\end{frame}
+
+
 
 
 \end{document}

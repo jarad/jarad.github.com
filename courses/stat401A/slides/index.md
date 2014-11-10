@@ -31,4 +31,10 @@ The slide sets correspond to the material in the corresponding chapters of The S
     - Additional explanatory variables
     - Categorical variables
     - Interactions
+- [Chapter 10](Ch10.pdf)
+  - Inference in multiple regression models
+    - Coefficients
+    - Contrasts
+    - Predictions
+    - F-tests
 
