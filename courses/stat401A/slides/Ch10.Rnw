@@ -98,14 +98,14 @@ ggplot(case1002, aes(x=Mass, y=Energy, color=Species, shape=Echolocating)) +
 \frametitle{Echolocation energy cost example}
 
 Consider the model 
-\[ Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \qquad \mu_i = \beta_0 + \beta_1 X_{i,1} + \beta_2 X_{i,2} + \beta_3 X_{i,3} \]
+\[ Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \qquad \mu_i = \beta_0 + \beta_1 M_i + \beta_2 neBat_i + \beta_3 neBird_i \]
 \pause
 where, for observation $i$, we have
 \begin{itemize}
 \item $Y_i$ is log energy expenditure (W) 
-\item $X_{i,1}$ is log body mass (g)
-\item $X_{i,2}$ is 1 if non-echolocating bats and 0 otherwise
-\item $X_{i,3}$ is 1 if non-echolocating birds and 0 otherwise
+\item $M_i$ is log body mass (g)
+\item $neBat_i$  is 1 if observation $i$ is a non-echolocating bat  and 0 otherwise
+\item $neBird_i$ is 1 if observation $i$ is a non-echolocating bird and 0 otherwise
 \end{itemize}
 
 \vspace{0.2in} \pause
@@ -240,7 +240,7 @@ PROC GLM DATA=case1002 PLOTS=all;
   CLASS Type(REF='echolocating bats');
   MODEL lEnergy = lMass Type / SOLUTION CLPARM;
   LSMEANS Type / PDIFF CL;
-  ESTIMATE 'neBird - neBat' Type 0 -1 1;
+  ESTIMATE 'neBird - neBat' Type -1 1 0;
   OUTPUT OUT=case1002reg PREDICTED=predicted LCL=lcl UCL=ucl LCLM=lclm UCLM=uclm;
 
 PROC PRINT DATA=case1002reg;
@@ -254,7 +254,7 @@ PROC PRINT DATA=case1002reg;
 \begin{frame}[containsverbatim]
 \frametitle{SAS Code and Output - ANOVA}
 
-The F-test from the ANOVA table tests the null hypothesis $\beta_1=\cdots=\beta_p=0$.
+1. The F-test from the ANOVA table tests the null hypothesis $\beta_1=\cdots=\beta_p=0$.
 
 {\tiny
 \begin{verbatim}
@@ -279,7 +279,7 @@ Dependent Variable: lEnergy
 \begin{frame}[containsverbatim]
 \frametitle{SAS Code and Output - Parameter Estimates}
 
-The parameter estimates table provides tests and confidence intervals for individual $\beta_j$'s. 
+2. The parameter estimates table provides tests and confidence intervals for individual $\beta_j$'s. 
 
 {\tiny
 \begin{verbatim}
@@ -308,7 +308,7 @@ The parameter estimates table provides tests and confidence intervals for indivi
 \begin{frame}[containsverbatim]
 \frametitle{SAS Code and Output - LSMEANS}
 
-The LSMEANS statement performs pairwise differences.
+3. The LSMEANS statement performs pairwise differences.
 
 {\tiny
 \begin{verbatim}
@@ -350,7 +350,7 @@ The LSMEANS statement performs pairwise differences.
 \begin{frame}[containsverbatim]
 \frametitle{SAS Code and Output - ESTIMATE statement}
 
-The ESTIMATE statement can be used for specific comparisons.
+3. The ESTIMATE statement can be used for specific comparisons.
 
 {\tiny
 \begin{verbatim}
@@ -361,7 +361,7 @@ Dependent Variable: lEnergy
 
                                          Standard
  Parameter                 Estimate         Error  t Value  Pr > |t|    95% Confidence Limits
- neBird - neBat         -0.02359824    0.15760050    -0.15    0.8828   -0.35769637   0.31049990
+ neBird - neBat          0.10226192    0.11418264     0.90    0.3837   -0.13979447   0.34431831
 \end{verbatim}
 }
 \end{frame}
@@ -371,32 +371,52 @@ Dependent Variable: lEnergy
 
 
 \begin{frame}[containsverbatim]
-\frametitle{SAS Code and Output - Type I and III SS}
+\frametitle{SAS Code and Output - Type I SS}
 
-Type I and III SS tables perform specific F-tests:
-\begin{itemize}
-\item Type I performs sequential tests
-\item Type III performs conditional tests
-\end{itemize}
+4. Type I SS table performs sequential F-tests. \pause The unwritten initial line is $\mu=\beta_0$. \pause Then each line after that adds the terms in the model associated with that explanatory variable. 
 
-In this case, the line for lMass in the 
-\[ \begin{array}{lll}
-& H_0 &H_1 \\
-\hline 
-\mbox{Type I SS} & \beta_0 & \beta_0 + \beta_1 X_1 \\
-\mbox{Type III SS} & \beta_0 + \beta_2 X_2 + \beta_3 X_3 & \beta_0 + \beta_1 X_ 1 + \beta_2 X_2 + \beta_3 X_3 \\
+\[ \begin{array}{l|cc}
+& \multicolumn{2}{c}{\mbox{Source}} \\
+\mbox{Model }(\mu=) & \mbox{lMass} & \mbox{Type} \\
+\hline
+\beta_0 & H_0 & \\
+\beta_0 + \beta_1 M_i & H_1 & H_0 \\
+\beta_0 + \beta_1 M_i + \beta_2 neBat_i + \beta_3 neBird_i & & H_1 \\
 \hline
 \end{array} \]
-
-
-\vspace{0.2in} \pause 
 
 {\tiny
 \begin{verbatim}
        Source                      DF       Type I SS     Mean Square    F Value    Pr > F
        lMass                        1     29.39190909     29.39190909     849.91    <.0001
        Type                         2      0.02957359      0.01478680       0.43    0.6593
+\end{verbatim}
+}
+\end{frame}
 
+
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{SAS Code and Output - Type III SS}
+
+4. Type III SS tables perform F-tests where the full model is always the model with ALL explanatory variables. \pause In this case, 
+
+\[ H_1: \mu_i = \beta_0 + \beta_1 M_i + \beta_2 neBat_i + \beta_3 neBird_i \]
+
+\pause
+
+The reducd model for the line with Source equal to X, is the full model with terms associated with X removed. \pause For example, the reduced  model for the lMass line is 
+
+\[ H_0: \mu_i = \beta_0 + \phantom{\beta_1 M_i +} \beta_2 neBat_i + \beta_3 neBird_i \]
+
+\pause and the reduced model for the Type line is 
+
+\[ H_0: \mu_i = \beta_0 + \beta_1 M_i \phantom{+ \beta_2 neBat_i + \beta_3 neBird_i} \]
+
+{\tiny
+\begin{verbatim}
        Source                      DF     Type III SS     Mean Square    F Value    Pr > F
        lMass                        1     11.57700181     11.57700181     334.77    <.0001
        Type                         2      0.02957359      0.01478680       0.43    0.6593
@@ -406,10 +426,13 @@ In this case, the line for lMass in the
 
 
 
+
+
+
 \begin{frame}[containsverbatim]
 \frametitle{SAS Code and Output - OUTPUT statement}
 
-PRINTing the data set constructed in the OUTPUT statement provides the predictions and uncertainties
+5. PRINTing the data set constructed in the OUTPUT statement provides the predictions and uncertainties. 
 
 {\tiny
 \begin{verbatim}
@@ -425,7 +448,7 @@ Now exponentiate since we used log(Energy).
 \begin{frame}[fragile]
 \frametitle{R Code and Output - ANOVA Table}
 
-For F-tests in R, fit both models and then use anova to compare them. 
+1. For F-tests in R, fit both models and then use anova to compare them. 
 
 <<>>=
 m0 = lm(log(Energy)~1, case1002)
@@ -437,6 +460,8 @@ anova(m0,m1)
 
 \begin{frame}[fragile]
 \frametitle{R Code and Output - Parameter estimates}
+2. Parameter estimates provide inference about specific $\beta_j$'s.
+
 <<>>=
 summary(m1)
 confint(m1)
@@ -448,7 +473,7 @@ confint(m1)
 \begin{frame}[fragile]
 \frametitle{R Code and Output - LSMEANS}
 
-Compared to the SAS output, these pvalues are adjusted. 
+3. lsmeans provides comparisons amongst categorical variables. Compared to the SAS output, these pvalues are adjusted. 
 
 <<>>=
 library(lsmeans)
@@ -461,7 +486,7 @@ lsmeans(m1, 'Type', contr='pairwise')
 \begin{frame}[fragile]
 \frametitle{R Code and Output - F-tests}
 
-Type III SS F-tests, i.e. drop 1 term
+4. Type III SS F-tests, i.e. drop 1 term
 
 <<>>=
 drop1(m1, test='F')
@@ -473,7 +498,7 @@ drop1(m1, test='F')
 \begin{frame}[fragile]
 \frametitle{R Code and Output - F-tests}
 
-or you could fit the models and compare them using anova
+4. or you could fit the models and compare them using anova
 
 <<tidy=FALSE>>=
 anova(lm(log(Energy)~Type, case1002),      m1)
@@ -486,6 +511,8 @@ anova(lm(log(Energy)~log(Mass), case1002), m1)
 
 \begin{frame}[fragile]
 \frametitle{R Code and Output - Predictions}
+
+5. The predict function provides predictions and their uncertainties. 
 
 <<tidy=FALSE>>=
 new = data.frame(Mass=50, Type='echolocating bats')
