@@ -1,5 +1,57 @@
 setwd("U:\\401A\\sleuth3csv") # or wherever your data are
 
+
+
+# From lecture
+case1002 = read.csv("case1002.csv")
+
+# In R, I would perform all F-Tests "manually"
+# I would fit each model and then use anova to compare them
+# This is the equivalent to SAS's ANOVA table
+m0 = lm(log(Energy)~1, case1002)
+m1 = lm(log(Energy)~log(Mass)+Type, case1002)
+anova(m0,m1)
+
+# Parameter estimates and confidence intervals
+summary(m1)
+confint(m1)
+
+# Pairwise comparisons (R automatically performs a multiple comparison adjustment)
+# install.packages("lsmeans")
+library(lsmeans)
+lsmeans(m1, 'Type', contr='pairwise')
+
+
+# Type III SS F-tests
+drop1(m1, test='F')
+
+
+# Type I SS F-tests (manually)
+anova(lm(log(Energy)~Type, case1002),      m1)
+anova(lm(log(Energy)~log(Mass), case1002), m1)
+
+
+# Predictions
+new = data.frame(Mass=50, Type='echolocating bats')
+exp(predict(m1, new, interval='confidence'))
+exp(predict(m1, new, interval='prediction'))
+
+# When interactions are present, you can perform LSMEANS
+# at particular values for the continuous explanatory variable.
+mI = lm(log(Energy)~log(Mass)*Type, case1002)
+lsmeans(mI, 'Type', contr='pairwise', at=list(Mass=exp(mean(log(case1002$Mass))))) 
+lsmeans(mI, 'Type', contr='pairwise', at=list(Mass=exp(0)))
+lsmeans(mI, 'Type', contr='pairwise', at=list(Mass=exp(5.5)))
+
+
+
+lsmeans(mI, pairwise~Type)
+
+
+
+
+
+
 #######################################################
 # Chapter 10                                         
 #######################################################
@@ -70,7 +122,7 @@ summary(mod)
 
 
 ###################################################################
-# use relevel() to automatically create indicator variables, e.g.
+# use relevel() to change the reference level
 case0501 = read.csv("case0501.csv")
 case0501$Diet = relevel(case0501$Diet, "NP")
 
@@ -84,6 +136,9 @@ summary(case0501)
 
 summary(lm(Lifetime~Diet, case0501))            # Not what you want
 summary(lm(Lifetime~as.factor(Diet), case0501)) # but this is
+
+
+
 
 
 

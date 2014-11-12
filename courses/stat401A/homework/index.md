@@ -63,7 +63,7 @@ For those using the 2nd ed. of the book, scans of the 3rd ed. problems can be fo
 - HW6 (due 15 Oct): 6.12, 6.13, 6.14 (compare all but Scheffe), 6.16, 6.23
 - HW7 (due 22 Oct): [eggs](eggs/), 7.17, 7.18, 7.24, 7.26, 7.29
 - HW8 (not due, but one question will be on exam II): 8.16, 8.19, 8.22
-- HW9 (due 12 Nov): 9.13, 9.15, 9.18, 9.23
+- HW9 (due 12 Nov): 9.13, 9.15, [9.18](ex0918.html), 9.23
 
 <!---
 ## Previous semesters
