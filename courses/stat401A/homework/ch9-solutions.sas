@@ -43,10 +43,34 @@ PROC SGPLOT DATA=ex0915reg;
   SCATTER y=resid x=Year;
   RUN;
 
+DATA ex0915new;
+  INPUT Rainfall Year;
+  DATALINES;
+6.8 1890
+7.8 1890
+10.5 1890
+11.5 1890
+15.5 1890
+16.5 1890
+6.8 1927
+7.8 1927
+10.5 1927
+11.5 1927
+15.5 1927
+16.5 1927
+;
+
+DATA ex0915;
+  SET ex0915 ex0915new;
+
 PROC GLM DATA=ex0915 PLOTS=ALL;
   MODEL Yield = Rainfall|Rainfall Year / SOLUTION;
+  OUTPUT OUT=ex0915reg PREDICTED=predicted;
   RUN;
 
+PROC PRINT DATA=ex0915reg;
+  WHERE Yield='.';
+  RUN;
 
 
 

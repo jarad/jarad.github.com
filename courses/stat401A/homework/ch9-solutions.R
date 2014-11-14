@@ -1,15 +1,29 @@
 library(Sleuth3)
 library(ggplot2)
+library(reshape2) 
 
 #9.13
 m = lm(pH~Time, case0702)
+ggplot(case0702, aes(x=Time, y=pH)) + 
+  geom_point() + 
+  stat_smooth(method="lm", formula=y~x)
+
 plot(case0702$Time, residuals(m), pch=19)
 
 m = lm(pH~Time+I(Time^2), case0702)
 summary(m)
+ggplot(case0702, aes(x=Time, y=pH)) + 
+  geom_point() + 
+  stat_smooth(method="lm", formula=y~poly(x,2))
+plot(case0702$Time, residuals(m), pch=19)
 
 m = lm(pH~log(Time), case0702)
 plot(case0702$Time, residuals(m), pch=19)
+ggplot(case0702, aes(x=Time, y=pH)) + 
+  geom_point() + 
+  stat_smooth(method="lm", formula=y~log(x))
+
+
 
 m = lm(pH~log(Time)+I(log(Time)^2), case0702)
 summary(m)
@@ -32,9 +46,9 @@ new$pred = predict(m, new)
 plot(pred~Rainfall, new, pch=ifelse(Year==1890,1,2))
 legend("bottomright", legend=c(1890,1927), pch=1:2)
 
-
+m = lm(Yield~Rainfall+I(Rainfall^2) + Rainfall*Year, ex0915)
+summary(m)
 #9.18
-library(reshape2) 
 cols = c("Continent","Latitude","Females","Males")
 ex0918long = melt(ex0918[,cols], id.vars = cols[1:2], variable.name="Sex", value.name="WingSize")
 ex0918long$Sex = relevel(ex0918long$Sex, ref='Males')
