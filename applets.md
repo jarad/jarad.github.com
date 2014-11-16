@@ -16,7 +16,7 @@ group: navigation
 
 ## Research
 
-## Other
+## For fun
 
 - [Great Ames Adventure Race (GAAR) results](https://jaradniemi.shinyapps.io/GAAR/)
 - [Voter turnout](https://jaradniemi.shinyapps.io/voter_turnout/)
@@ -25,6 +25,7 @@ group: navigation
 
 # Applets from others
 
+- [ISU Statistics Dept Apps](http://shiny1.stat.iastate.edu/_Statistics/) (need to be on iastate.edu network)
 - [Mine Çetinkaya-Rundel](https://stat.duke.edu/~mc301/shiny/applets.html)
   - [Pvalue calculator](http://spark.rstudio.com/minebocek/dist_calc/)
   - [Central limit theorem for means](http://spark.rstudio.com/minebocek/CLT_mean/)
