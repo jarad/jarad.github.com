@@ -29,5 +29,5 @@ group: navigation
   - [Pvalue calculator](http://spark.rstudio.com/minebocek/dist_calc/)
   - [Central limit theorem for means](http://spark.rstudio.com/minebocek/CLT_mean/)
   - [Central limit theorem for proportions](http://spark.rstudio.com/minebocek/CLT_prop/)
-  - [Regression diagnostics]
+  - [Regression diagnostics](http://spark.rstudio.com/minebocek/slr_diag/)
 
