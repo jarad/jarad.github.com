@@ -8,11 +8,11 @@ case1101$i = 1:nrow(case1101)
 
 m = lm(metabol ~ gastric*sex*alcohol, case1101)
 case1101reg = mutate(case1101,
-                     residual = residuals(m),
-                     predicted = predict(m),
-                     leverage = hatvalues(m),
-                     cookd = cooks.distance(m),
-                     student = rstandard(m),
+                     residual   = residuals(m),
+                     predicted  = predict(m),
+                     leverage   = hatvalues(m),
+                     cookd      = cooks.distance(m),
+                     student    = rstandard(m),
                      extStudent = rstudent(m))
 
 case1101reg[case1101reg$cookd>0.5,]
