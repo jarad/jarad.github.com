@@ -15,8 +15,7 @@ case1101reg = mutate(case1101,
                      student = rstandard(m),
                      extStudent = rstudent(m))
 
-case1101reg = case1101reg[order(case1101reg$cookd, decreasing=TRUE),]
-head(case1101reg, 10)
+case1101reg[case1101reg$cookd>0.5,]
 
 ddply(case1101reg, .(sex, alcohol), summarize,
       n          = length(metabol),

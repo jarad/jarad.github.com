@@ -19,13 +19,12 @@ PROC GLM DATA=case1101 PLOTS=alls;
     RSTUDENT = extStudent;
   RUN; QUIT;
 
-PROC SORT DATA=case1101reg;
-  BY DESCENDING cookd;
-
-PROC PRINT DATA=case1101reg (OBS=10); RUN;
+PROC PRINT DATA=case1101reg; 
+  WHERE cookd>0.5;
+  RUN;
 
 /* This female alcoholic (of which there are only 3)
- * has the lowest metabolism and activity in that group */
+ * has the lowest gastric activity in that group */
 PROC MEANS DATA=case1101;
   BY sex alcohol;
   VAR activity;
