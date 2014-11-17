@@ -1,5 +1,47 @@
 X 'cd U:\401A\sleuth3csv';
 
+
+DATA case1101;
+  INFILE 'case1101.csv' DSD FIRSTOBS=2;
+  INPUT subject metabolism activity sex $ alcohol $;
+  i = _n_;        /* A variable for the observation number */
+  RUN;
+
+PROC GLM DATA=case1101 PLOTS=alls;
+  CLASS sex alcohol;
+  MODEL metabolism = activity|sex|alcohol / SOLUTION; 
+  OUTPUT OUT=case1101reg 
+    R = residual
+    P = predicted
+    H = leverage
+    COOKD = cookd
+    STUDENT = student
+    RSTUDENT = extStudent;
+  RUN; QUIT;
+
+PROC SORT DATA=case1101reg;
+  BY DESCENDING cookd;
+
+PROC PRINT DATA=case1101reg (OBS=10); RUN;
+
+/* This female alcoholic (of which there are only 3)
+ * has the lowest metabolism and activity in that group */
+PROC MEANS DATA=case1101;
+  BY sex alcohol;
+  VAR activity;
+  RUN;
+
+PROC SGPLOT DATA=case1101reg;
+  SCATTER y=extStudent x=predicted;
+  REFLINE -2 2;
+  RUN;
+
+PROC SGPLOT DATA=case1101reg;
+  SCATTER y=cookd x=i;
+  RUN;
+
+
+
 /***********************************************************************/
 /* Chapter 11                                                          */
 /***********************************************************************/
@@ -19,7 +61,7 @@ PROC SGPLOT;
   RUN;
 
 TITLE2 'Compare to Display 11.9';
-PROC GLM DATA=case1101 PLOTS=(diagnostics residuals);
+PROC GLM DATA=case1101 PLOTS=all;
   CLASS sex alcohol;
   MODEL metabolism = activity|sex|alcohol / SOLUTION; 
   OUTPUT OUT=case1101Out R=resid P=predict;
@@ -33,14 +75,14 @@ PROC GPLOT;
 PROC PRINT; RUN;
 
 TITLE2 'Compare to Display 11.9';
-PROC GLM DATA=case1101 PLOTS=(diagnostics residuals);
+PROC GLM DATA=case1101 PLOTS=all;
   CLASS sex alcohol;
   MODEL metabolism = activity|sex|alcohol / SOLUTION;
   WHERE subject<31;
   RUN; QUIT;
 
 TITLE2 'Compare to Display 11.12';
-PROC GLM DATA=case1101 PLOTS=(diagnostics residuals);
+PROC GLM DATA=case1101 PLOTS=all;
   CLASS sex;
   MODEL metabolism = activity|sex;
   OUTPUT OUT=case1101Out2 R=resid P=predict STUDENT=student H=leverage COOKD=cookd;
@@ -74,7 +116,7 @@ PROC GPLOT;
   RUN; QUIT;
 
 
-PROC GLM PLOTS=(diagnostics residuals);
+PROC GLM PLOTS=all;
   CLASS time treat days sex;
   MODEL response=time treat time*treat days sex weight loss tumor / SOLUTION;
   OUTPUT OUT=case1102Out R=resid P=predict;

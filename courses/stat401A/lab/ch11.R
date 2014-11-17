@@ -1,5 +1,37 @@
 setwd("U:\\401A\\sleuth3csv") # or wherever your data are
 
+library(plyr)
+
+case1101 = read.csv("case1101.csv")
+names(case1101) = tolower(names(case1101))
+case1101$i = 1:nrow(case1101)
+
+m = lm(metabol ~ gastric*sex*alcohol, case1101)
+case1101reg = mutate(case1101,
+                     residual = residuals(m),
+                     predicted = predict(m),
+                     leverage = hatvalues(m),
+                     cookd = cooks.distance(m),
+                     student = rstandard(m),
+                     extStudent = rstudent(m))
+
+case1101reg = case1101reg[order(case1101reg$cookd, decreasing=TRUE),]
+head(case1101reg, 10)
+
+ddply(case1101reg, .(sex, alcohol), summarize,
+      n          = length(metabol),
+      mn_gastric = mean(gastric),
+      sd_gastric = sd(gastric),
+      min_gastric = min(gastric),
+      max_gastric = max(gastric))
+
+plot(extStudent ~ predicted, case1101reg)
+abline(h=c(-2,2))
+
+plot(cookd~i, case1101reg) 
+
+
+
 #######################################################
 # Chapter 11                                         
 #######################################################
