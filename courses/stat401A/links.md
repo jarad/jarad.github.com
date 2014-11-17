@@ -23,6 +23,7 @@ On this page I hope to link to anything that will be relevant for STAT 401A.
 - [Online Statistics Education](http://onlinestatbook.com/)
 - Applets
   - [Regression diagnostics](http://spark.rstudio.com/minebocek/slr_diag/)
+  - [Case statistics](http://shiny1.stat.iastate.edu/_Statistics/14-outlier/)
 
 ### SAS
 - [Software](http://www.stat.iastate.edu/resources-2/software-sasjmpr/statistical-software-sas/)
