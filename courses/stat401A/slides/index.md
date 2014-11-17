@@ -37,4 +37,8 @@ The slide sets correspond to the material in the corresponding chapters of The S
     - Contrasts
     - Predictions
     - F-tests
-
+- [Chapter 11](Ch11.pdf)
+  - Case statistics
+    - Leverage
+    - Cook's D
+    - (Externally) studentized residuals
