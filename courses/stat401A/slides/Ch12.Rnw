@@ -1,0 +1,525 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+\usepackage{animate}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{Stepwise selection}
+\title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+\institute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+
+\newcommand{\I}{\mathrm{I}}
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(Sleuth3)
+library(reshape2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Variable selection}
+\frame{\frametitle{Why choose a subset of the explanatory variables?}
+\pause
+  \begin{enumerate}[1.]
+	\item Adjusting for a large set of explanatory variables \pause
+	\item Fishing for explanation \pause
+	\item Prediction
+	\end{enumerate}
+	
+	\vspace{0.2in} \pause
+
+	Reasons 1 and 3 have little to no interpretation of the resulting parameters and their significance. \pause Yet, often, interpretation of all parameters is performed \pause and importance is placed on the included explanatory variables. \pause Great restraint should be exercised.
+}
+
+
+
+\frame{\frametitle{Model selection criteria}
+	\begin{itemize}[<+->]
+	\item Criteria for linear regression, i.e. the data are normal
+		\begin{itemize}
+		\item $R^2$: always increases as parameters are added
+		\item Adjusted $R^2$: ``generally favors models with too many variables''
+		\item $F$-test: statistical test for normal, nested models
+		\item Mallow's Cp: $\alert{(n-p)}\hat{\sigma}^2/\hat{\sigma}^2_{full} + 2p-n$
+		\end{itemize}
+	\item More general criteria
+		\begin{itemize}
+		\item Akaike's information criterion (AIC): $n\log(\hat{\sigma}^2)+2p$
+		\item Bayesian informaiton criterion (BIC): $n\log(\hat{\sigma}^2)+\log(n)p$
+		\item Cross validation
+		\end{itemize}
+	\end{itemize}
+}
+
+\frame{\frametitle{Approach}
+	\begin{itemize}[<+->]
+	\item If the models can be enumerated, 
+	\begin{itemize}
+	\item[] choose a criterion and calculate it for all models
+	\end{itemize}
+	
+	\vspace{0.2in}
+	
+	\item If the models cannot be enumerated,
+	\begin{enumerate}[1.]
+	\item choose a criterion and 
+	\item perform a stepwise variable selection procedure:
+		\begin{itemize}
+		\item forward: start from null model and add explanatory variables
+		\item backward: start from full model and remove explanatory variables
+		\item stepwise: start from any model and use both forward and backward steps
+		\end{itemize}
+	\end{enumerate}
+	\end{itemize}
+}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Model enumeration in SAS}
+
+{\tiny
+\begin{verbatim}
+DATA case1201;
+  INFILE 'case1201.csv' DSD FIRSTOBS=2;
+  INPUT State $ SAT Takers Income Years Public Expend Rank;
+  lTakers = log(Takers);
+
+PROC REG;
+  MODEL SAT = lTakers Rank Years Income Public Expend / SELECTION=Cp AIC SBC; /* SBC is our BIC */
+  RUN; QUIT;
+\end{verbatim}
+}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Model enumeration in SAS}
+
+{\tiny
+\begin{verbatim}
+Number in
+  Model        C(p)  R-Square         AIC          SBC  Variables in Model
+       4     3.0834    0.8917    323.9013    333.46138  lTakers Rank Years Expend               
+       3     4.6829    0.8827    325.9132    333.56128  lTakers Years Expend                    
+       5     5.0404    0.8918    325.8513    337.32341  lTakers Rank Years Income Expend        
+       5     5.0760    0.8917    325.8927    337.36481  lTakers Rank Years Public Expend        
+       4     5.7877    0.8849    326.9451    336.50518  lTakers Years Public Expend             
+       4     6.1429    0.8840    327.3314    336.89156  lTakers Years Income Expend             
+       6     7.0000    0.8919    327.8043    341.18850  lTakers Rank Years Income Public Expend 
+       5     7.7048    0.8851    328.8545    340.32660  lTakers Years Income Public Expend      
+       2     8.7126    0.8675    329.9871    335.72313  lTakers Expend                          
+       4     8.9207    0.8771    330.2544    339.81450  Rank Years Public Expend                
+       3     9.2862    0.8711    330.6154    338.26348  Rank Years Expend                       
+       4     9.9138    0.8746    331.2592    340.81934  Rank Years Income Expend                
+       3    10.0193    0.8693    331.3250    338.97312  lTakers Income Expend                   
+       3    10.3732    0.8684    331.6641    339.31220  lTakers Rank Expend                     
+       3    10.6389    0.8677    331.9171    339.56522  lTakers Public Expend                   
+       5    10.8060    0.8773    332.1370    343.60910  Rank Years Income Public Expend         
+       4    11.5125    0.8705    332.8356    342.39567  lTakers Income Public Expend            
+       4    11.6922    0.8701    333.0097    342.56980  lTakers Rank Public Expend              
+       4    11.8600    0.8697    333.1717    342.73182  lTakers Rank Income Expend              
+       5    12.4221    0.8733    333.7658    345.23796  lTakers Rank Income Public Expend       
+       3    14.3572    0.8584    335.3298    342.97790  Rank Years Income                       
+       4    15.0584    0.8616    336.1641    345.72422  lTakers Rank Years Income               
+       5    15.1323    0.8665    336.3836    347.85569  lTakers Rank Years Income Public        
+       3    15.7468    0.8549    336.5477    344.19581  lTakers Rank Years                      
+       4    15.9756    0.8593    336.9901    346.55022  Rank Years Income Public                
+       4    16.3018    0.8585    337.2806    346.84076  lTakers Years Income Public             
+       2    16.8576    0.8471    337.1712    342.90724  Rank Years                              
+       4    16.9035    0.8570    337.8122    347.37232  lTakers Rank Years Public               
+       3    18.2222    0.8487    338.6464    346.29445  lTakers Years Public                    
+       3    18.7977    0.8472    339.1220    346.77006  Rank Years Public                       
+       3    21.2137    0.8411    341.0704    348.71846  Rank Public Expend                      
+       2    21.8838    0.8344    341.1390    346.87503  lTakers Years                           
+       3    22.4750    0.8380    342.0582    349.70629  lTakers Years Income                    
+       4    22.9220    0.8419    342.8392    352.39927  Rank Income Public Expend               
+       1    29.2992    0.8108    345.8178    349.64183  lTakers                                 
+       3    29.5304    0.8202    347.2505    354.89859  lTakers Rank Income                     
+       2    29.6417    0.8149    346.7049    352.44101  lTakers Rank                            
+       2    29.7391    0.8147    346.7710    352.50706  lTakers Income                          
+       3    29.9096    0.8193    347.5149    355.16294  lTakers Income Public                   
+       2    30.3968    0.8130    347.2150    352.95104  lTakers Public                          
+       4    31.2477    0.8209    349.0525    358.61260  lTakers Rank Income Public              
+       3    31.6160    0.8150    348.6875    356.33555  lTakers Rank Public                     
+       3    32.7162    0.8122    349.4292    357.07731  Rank Income Expend                      
+       2    33.4244    0.8054    349.2094    354.94550  Rank Expend                             
+       3    38.0076    0.7989    352.8504    360.49848  Rank Income Public                      
+       2    38.3897    0.7929    352.3174    358.05344  Rank Income                             
+       2    39.6083    0.7899    353.0515    358.78755  Rank Public                             
+       1    43.8317    0.7742    354.6412    358.46529  Rank                                    
+       4   149.0761    0.5248    397.8518    407.41193  Years Income Public Expend              
+       3   174.2804    0.4565    402.5731    410.22121  Years Income Public                     
+       3   185.0084    0.4295    404.9937    412.64179  Years Income Expend                     
+       2   192.2042    0.4064    404.9792    410.71525  Years Income                            
+       3   201.5950    0.3878    408.5197    416.16778  Income Public Expend                    
+       2   210.0747    0.3615    408.6257    414.36182  Income Expend                           
+       2   213.6933    0.3524    409.3328    415.06891  Income Public                           
+       1   215.9822    0.3416    408.1582    411.98221  Income                                  
+       3   305.8009    0.1259    426.3258    433.97393  Years Public Expend                     
+       2   307.5913    0.1164    424.8678    430.60387  Years Expend                            
+       1   308.3211    0.1095    423.2545    427.07856  Years                                   
+       2   308.7175    0.1136    425.0277    430.76378  Years Public                            
+       1   349.3387    0.0065    428.7315    432.55553  Public                                  
+       1   350.3349    0.0040    428.8573    432.68136  Expend                                  
+       2   350.6456    0.0082    430.6437    436.37982  Public Expend                           
+\end{verbatim}
+}
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{BIC stepwise model selection in SAS}
+
+{\tiny
+\begin{verbatim}
+DATA case1202;
+  INFILE 'case1202.csv' DSD FIRSTOBS=2;
+  INPUT Bsal Sal77 Sex $ Senior Age Educ Exper;
+  lBsal = log(Bsal);
+
+PROC GLMSELECT DATA=case1202;
+  CLASS Sex(REF='Female');
+  MODEL lBsal = Sex Senior Age Educ Exper / SELECTION=stepwise CHOOSE=SBC; /* SBC is our BIC */ 
+  RUN;
+\end{verbatim}
+}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{BIC stepwise model selection in SAS}
+
+{\tiny
+\begin{verbatim}
+                                     The GLMSELECT Procedure
+
+                                   Stepwise Selection Summary
+ 
+                       Effect     Effect         Number      Number
+               Step    Entered    Removed    Effects In    Parms In           SBC 
+
+                  0    Intercept                      1           1     -377.0828 
+              --------------------------------------------------------------------
+                  1    Sex                            2           2     -405.0656 
+                  2    Senior                         3           3     -418.1975 
+                  3    Educ                           4           4     -424.5180 
+                  4    Age                            5           5     -427.3876*
+
+                                  * Optimal Value Of Criterion
+
+
+                   Selection stopped at a local minimum of the SBC criterion.
+
+
+                                          Stop Details
+ 
+                      Candidate               Candidate         Compare
+                      For          Effect           SBC         SBC
+
+                      Entry        Exper      -423.0281    >    -427.3876 
+                      Removal      Age        -424.5180    >    -427.3876 
+\end{verbatim}
+}
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{BIC stepwise model selection in SAS}
+
+{\tiny
+\begin{verbatim}
+                                     The GLMSELECT Procedure
+                                         Selected Model
+
+                    The selected model, based on SBC, is the model at Step 4.
+
+                                      Analysis of Variance
+                                                 Sum of           Mean
+               Source                 DF        Squares         Square    F Value
+               Model                   4        0.80014        0.20003      23.92
+               Error                  88        0.73591        0.00836           
+               Corrected Total        92        1.53604                          
+
+                                  Root MSE              0.09145
+                                  Dependent Mean        8.58961
+                                  R-Square               0.5209
+                                  Adj R-Sq               0.4991
+                                  AIC                -345.05056
+                                  AICC               -344.07381
+                                  SBC                -427.38756
+                                  
+                                       Parameter Estimates
+                                                              Standard
+                Parameter           DF        Estimate           Error    t Value
+                Intercept            1        8.572205        0.108342      79.12
+                Sex       Male       1        0.143944        0.021605       6.66
+                Sex       Female     0               0               .        .  
+                Senior               1       -0.004100        0.000947      -4.33
+                Age                  1        0.000195     0.000072259       2.70
+                Educ                 1        0.017005        0.004474       3.80
+\end{verbatim}
+}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{BIC stepwise model selection in R}
+
+<<>>=
+m = step(lm(log(Bsal)~Sex+Senior+Age+Educ+Exper, case1202), direction="both", k=log(nrow(case1202)))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{BIC stepwise model selection in R}
+
+<<>>=
+summary(m)
+exp(confint(m))
+@
+\end{frame}
+
+
+\subsection{Healthy skepticism}
+\frame{\frametitle{Healthy skepticism}
+	Data simulated from the following model:
+	\[ Y_i\stackrel{ind}{\sim} N(\mu_i,1) \]
+	where
+	\[ \begin{array}{rcrcrcr}
+	\mu_i &=& 10 X_{i,1} &+& 10 X_{i,2} &+& 10 X_{i,3} \\
+	&+& X_{i,4} &+& X_{i,5} &+ &X_{i,6} \\
+	&+& 0.1 X_{i,7} &+& 0.1 X_{i,8} &+ &0.1 X_{i,9} 
+	\end{array} \]
+	
+	where $X_{i,j}\stackrel{iid}{\sim} N(0,1)$ for $i=1,\ldots,200$ and $j=1,\ldots,100$. 
+}
+
+
+
+\frame[containsverbatim]{\frametitle{Simulated model}
+{\small
+\begin{verbatim}
+# Simulated model
+set.seed(1)
+p = 100
+n = 200
+b = c(10,10,10,1,1,1,.1,.1,.1, rep(0,91))
+x = matrix(rnorm(n*p), n, p)
+y = rnorm(n,x%*%b)
+d = data.frame(y=y,x=x)
+mod = lm(y~.,d)
+summary(mod)
+mod.aic = step(mod)
+mod.bic = step(mod, k=log(n))
+\end{verbatim}
+}
+}
+
+\frame[containsverbatim]{\frametitle{}
+{\tiny 
+\begin{verbatim}
+> summary(mod.aic)
+...
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  0.18492    0.06404   2.888 0.004395 ** 
+x.1         10.10298    0.06939 145.601  < 2e-16 ***
+x.2         10.04751    0.06394 157.142  < 2e-16 ***
+x.3         10.04937    0.06018 167.000  < 2e-16 ***
+x.4          0.94539    0.05740  16.469  < 2e-16 ***
+x.5          0.95183    0.05752  16.549  < 2e-16 ***
+x.6          1.06018    0.06335  16.735  < 2e-16 ***
+x.9          0.27968    0.05936   4.712 5.15e-06 ***
+x.16        -0.24460    0.05935  -4.121 5.92e-05 ***
+x.18        -0.14809    0.06648  -2.228 0.027241 *  
+x.19         0.13453    0.06275   2.144 0.033493 *  
+x.21         0.10957    0.06849   1.600 0.111505    
+x.22         0.08906    0.06248   1.425 0.155893    
+x.27         0.19548    0.06842   2.857 0.004819 ** 
+
+... 31,32,34,35,38,40,44,45,49 are included ...
+
+x.50        -0.13274    0.06931  -1.915 0.057178 .  
+x.61         0.10487    0.06581   1.594 0.112922    
+x.68         0.14039    0.06764   2.076 0.039471 *  
+x.72         0.08631    0.06472   1.334 0.184134    
+x.78        -0.10080    0.06324  -1.594 0.112849    
+x.81         0.12723    0.06201   2.052 0.041749 *  
+x.84         0.23409    0.06506   3.598 0.000422 ***
+x.86         0.10954    0.06351   1.725 0.086446 .  
+x.90        -0.15650    0.06607  -2.369 0.018993 *  
+x.93         0.09983    0.05896   1.693 0.092263 .  
+
+Residual standard error: 0.8417 on 167 degrees of freedom
+Multiple R-squared: 0.9981,  Adjusted R-squared: 0.9977 
+F-statistic:  2745 on 32 and 167 DF,  p-value: < 2.2e-16 
+\end{verbatim}
+}
+}
+
+
+
+\frame[containsverbatim]{\frametitle{}
+{\tiny 
+\begin{verbatim}
+> summary(mod.bic)
+
+Call:
+lm(formula = y ~ x.1 + x.2 + x.3 + x.4 + x.5 + x.6 + x.9 + x.16 + 
+    x.27 + x.84, data = d)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.5419 -0.5243  0.1222  0.6292  2.5151 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  0.14420    0.06673   2.161 0.031967 *  
+x.1         10.03241    0.07132 140.673  < 2e-16 ***
+x.2         10.00679    0.06484 154.324  < 2e-16 ***
+x.3         10.05523    0.06155 163.378  < 2e-16 ***
+x.4          0.99144    0.06031  16.438  < 2e-16 ***
+x.5          0.98504    0.06144  16.033  < 2e-16 ***
+x.6          1.05357    0.06607  15.946  < 2e-16 ***
+x.9          0.20230    0.06038   3.351 0.000974 ***
+x.16        -0.15225    0.06108  -2.493 0.013543 *  
+x.27         0.18068    0.07120   2.538 0.011966 *  
+x.84         0.17341    0.06718   2.581 0.010598 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+
+Residual standard error: 0.9184 on 189 degrees of freedom
+Multiple R-squared: 0.9974,	Adjusted R-squared: 0.9973 
+F-statistic:  7373 on 10 and 189 DF,  p-value: < 2.2e-16 
+\end{verbatim}
+}
+}
+
+
+
+
+% \subsection{Cross validation}
+% \frame{\frametitle{Cross validation}
+% 	\begin{enumerate}
+% 	\item Randomly split the data into: 
+% 		\begin{itemize}
+% 		\item training  
+% 		\item testing \pause 
+% 		\end{itemize}
+% 	\item Use stepwise selection to find a model using the training data \pause
+% 	\item Fit that model again on the testing data to obtain the final model
+% 	\end{enumerate}
+% 	
+% 	\vspace{0.2in} \pause 
+% 	
+% 	Approaches that improve on this basic idea:
+% 	\begin{itemize}
+% 	\item Leave-one-out cross-validation
+% 	\item $k$-fold cross-validation
+% 	\end{itemize}
+% }
+% 
+% 
+% \frame[containsverbatim]{\frametitle{Cross validation}
+% {\scriptsize
+% \begin{verbatim}
+% testing.indices = sample(n,n*.25)
+% training        = d[setdiff(1:200,testing.indices),]
+% testing         = d[testing.indices,]
+% mod             = lm(y~., training)
+% mod.training    = step(mod, k=log(nrow(training)))
+% keep            = as.numeric(gsub("[^0-9]","",names(mod.training$coefficients)[-1]))
+% mod.testing     = step(lm(y~., testing[,c(1,1+keep)]), k=log(nrow(testing)))
+% \end{verbatim}
+% }
+% }
+% 
+% \frame[containsverbatim]{\frametitle{Cross validation}
+% {\tiny 
+% \begin{verbatim}
+% > summary(mod.testing)
+% 
+% Call:
+% lm(formula = y ~ x.1 + x.2 + x.3 + x.4 + x.5 + x.6 + x.16 + x.64, 
+%     data = testing[, c(1, 1 + keep)])
+% 
+% Residuals:
+%     Min      1Q  Median      3Q     Max 
+% -1.8349 -0.5965  0.1962  0.6256  1.6548 
+% 
+% Coefficients:
+%             Estimate Std. Error t value Pr(>|t|)    
+% (Intercept)   0.2833     0.1301   2.177   0.0353 *  
+% x.1           9.9088     0.1417  69.941  < 2e-16 ***
+% x.2           9.8353     0.1319  74.552  < 2e-16 ***
+% x.3          10.0542     0.1132  88.838  < 2e-16 ***
+% x.4           0.8640     0.1138   7.591 2.45e-09 ***
+% x.5           0.9291     0.1372   6.773 3.45e-08 ***
+% x.6           1.1560     0.1461   7.915 8.70e-10 ***
+% x.16         -0.2889     0.1141  -2.532   0.0153 *  
+% x.64          0.3453     0.1277   2.705   0.0099 ** 
+% ---
+% Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+% 
+% Residual standard error: 0.8621 on 41 degrees of freedom
+% Multiple R-squared:  0.9975,	Adjusted R-squared:  0.997 
+% F-statistic:  2024 on 8 and 41 DF,  p-value: < 2.2e-16
+% \end{verbatim}
+% }
+% }
+
+\subsection{Other options}
+\frame{\frametitle{Alternatives to variable selection}
+	\begin{itemize}
+	\item Model averaging
+    \begin{itemize}
+    \item Bayesian model averaging
+    \item AIC model averaging
+    \item BIC model averaging
+    \end{itemize}
+	\item \pause Keep all variables, but shrink them toward zero \pause
+		\begin{itemize}
+		\item Lasso
+		\item Ridge regression
+		\item Elastic net
+		\end{itemize}
+	\end{itemize}
+}
+
+
+\end{document}

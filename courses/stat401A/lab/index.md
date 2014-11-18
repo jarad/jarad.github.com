@@ -38,7 +38,11 @@ With the exception of Lab 01, you should download and open up the scripts associ
     - Dummy/indicator variables for categorical explanatory variables
     - Interactions
 - Lab 10: [SAS](ch10.sas) and [R](ch10.R)
+  - LSMEANS
+  - Contrasts
+  - Predictions
 - Lab 11: [SAS](ch11.sas) and [R](ch11.R)
+  - Variable selection
 - Lab 12: [SAS](ch12.sas) and [R](ch12.R)
 - Lab 13: [SAS](ch13.sas) and [R](ch13.R)
 - Lab 20: [SAS](ch20.sas) and [R](ch20.R)
