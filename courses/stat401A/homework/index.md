@@ -66,6 +66,7 @@ For those using the 2nd ed. of the book, scans of the 3rd ed. problems can be fo
 - HW9 (due 12 Nov): 9.13, 9.15, [9.18 modified](ex0918.html), 9.23  ([R](ch9-solutions.R) and [SAS](ch9-solutions.sas) solution scripts)
 - HW10 (due 19 Nov): 10.9, 10.10, 10.12, 10.26, 10.28
 - HW11 (due 3 Dec): 11.10, 11.12, 11.22, 12.10, 12.11, 12.12, 12.21
+- HW12 (due 12 Dec): 13.11, 13.15, 13.18, 13.19, 13.21
 
 <!---
 ## Previous semesters
