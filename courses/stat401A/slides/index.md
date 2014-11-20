@@ -10,9 +10,16 @@ The slide sets correspond to the material in the corresponding chapters of The S
 ## Slide sets
 
 - [Chapter 1](Ch01.pdf)
+  - Samples vs populations
+  - Random sample -> Inferences to populations
+  - Randomized treatment -> Causal inference
 - [Chapter 2](Ch02.pdf)
+  - Two-sample t-test
+  - Paired t-test
 - [Chapter 3](Ch03.pdf)
+  - Assumptions in t-tests
 - [Chapter 4](Ch04.pdf)
+  - Nonparametrics for two group comparisons
 - [Chapter 5](Ch05.pdf)
   - Comparing two means in multi-group data
   - One-way ANOVA F-test
