@@ -1,0 +1,426 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+\usepackage{animate}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{Model refinement analysis - Ames housing prices}
+\title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+\institute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+
+\newcommand{\I}{\mathrm{I}}
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(Sleuth3)
+library(reshape2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Objective}
+\frame{\frametitle{Objective}
+  Determine the fair market value of a house in Ames with asking price of \$240,000 with the following details: \pause
+	\begin{itemize}[<+->]
+	\item 2-story on 9201 ft$^2$ land
+	\item 4 bedroom
+	\item 2 bathroom
+	\item 2 car attached garage
+	\item built in 1975
+	\item 2199 ft$^2$ above grade plus 
+	\item basement: 780 ft$^2$ (75\% finished) with additional bath
+	\end{itemize}
+	\pause based on houses sold in Ames from June 2010 to August 2011. 
+	
+	\vspace{0.2in} \pause
+	
+	What does fair market value mean? \pause
+	\begin{itemize}
+	\item What would people pay on average? \pause
+	\item What would we predict the next person would pay?
+	\end{itemize}
+}
+
+\frame{\frametitle{Multiple regression}
+	Decisions to make before performing analysis (you can change your mind) \pause
+	
+	\vspace{0.2in}
+	
+	\begin{itemize}[<+->]
+	\item Data
+		\begin{itemize}
+		\item June 2010 to August 2011
+		\item 2-story vs 1.5-story vs 1-story
+		\end{itemize}
+	\item Response
+		\begin{itemize}
+		\item Price (log?)
+		\end{itemize}
+	\item Explanatory variables
+		\begin{itemize}
+		\item continuous vs categorical, e.g. \# of bathrooms
+		\item transformations (log)
+		\item higher order (squared terms)
+		\item interactions
+		\end{itemize}
+	\end{itemize}
+}
+
+\frame{\frametitle{Explanatory variables}
+\scriptsize
+	\begin{itemize}	
+	\item Year built
+	\item Year/month sold
+	\item Area of 
+		\begin{itemize}
+\scriptsize
+		\item Land
+		\item Above grade living space
+		\item Basement living space
+		\end{itemize}
+	\item Number of 
+		\begin{itemize}
+\scriptsize
+		\item Bedrooms 
+		\item Bathrooms above grade
+		\item Half bathrooms above grade
+		\item Bathrooms in basement
+		\item Half bathrooms in basement
+		\item Fireplaces
+		\end{itemize}
+	\item Garage 
+		\begin{itemize}
+\scriptsize
+		\item size: number of cars
+		\item type: (attached, detached, etc)
+		\end{itemize}
+	\item Exterior type:  (VinylSd, HdBoard, etc)
+	\item Number of levels
+	\item Percent of basement that is finished
+	\end{itemize}
+}
+
+\section{Exploratory analysis - partial summary}
+\begin{frame}[fragile]
+<<>>=
+t1 <- read.csv("Ch12a-2-Story & 1-1_2-Story Houses 1946 & Newer.csv")
+t2 <- read.csv("Ch12a-1-Story Houses 1946 & Newer (Detached).csv")
+
+dat <- merge(t1,t2,all=T)
+dat$YrSld = dat$Yr+dat$Mo/12
+
+dim(dat)
+summary(dat[,c(5,10,17,24,23)])
+summary(dat$Exterior1)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+opar = par(mfrow=c(5,5), mar=c(0,0,4,0)+.1)
+for (i in 7:ncol(dat)) {
+  plot(Price~dat[,i], dat, main=names(dat)[i], xlab="", ylab="", axes=FALSE, frame=TRUE)
+}
+par(opar)
+@
+\end{frame}
+
+
+\frame{\frametitle{Exploratory analysis}
+	Adjustments made:
+		\begin{itemize}[<+->]
+		\item Slimmed data set to include only the following
+			\begin{itemize}
+			\item Zoned residential low density
+			\item Sell price \$150-\$300k
+			\item Has central air
+			\item 1-story or 2-story (no 1.5 or 2.5 story)
+			\item Exterior not AsbShng, BrkFace, WdShing
+			\end{itemize}
+		\item Created new variables:
+			\begin{itemize}
+			\item Date sold (Year+Month/12)
+			\item Basement finished area
+			\item Basement unfinished area
+			\end{itemize}
+		\item Variables eliminated
+			\begin{itemize}
+			\item \% of basement finished
+			\end{itemize}
+		\end{itemize}
+		
+		\vspace{0.2in}\pause
+		
+		Fit initial model with all explanatory variables, but no interaction
+}
+
+\begin{frame}[fragile]
+\frametitle{Slimmed data set}
+<<>>=
+slim <- dat[dat$Zone=="RL" & 
+            dat$FB < 3 & 
+            dat$BR > 1 &
+            dat$Gar. < 4 & 
+            dat$Area < 3000 & 
+            dat$HB < 2 & 
+            dat$Price>150000 & dat$Price<300000 & 
+            dat$C.A =="Yes" &
+            dat$GarType=="Attachd" &
+            !(dat$Style %in% c("1.5 Fin", "2.5 Unf")) & 
+            dat$Land.SF < 50000 &
+            !(dat$Exterior1 %in% c("AsbShng", "BrkFace", "WdShing")),
+            c(5,7,9,11:16,18:21,23,24,27)]
+slim$Style = factor(slim$Style) # eliminate unused factor levels
+slim$Exterior1 = factor(slim$Exterior1)
+#rownames(slim) = 1:nrow(slim)
+            
+slim$BsmtFin = slim$Bsmt*slim$X.Fin/100
+#slim$BsmtUnf = slim$Bsmt-slim$BsmtFin
+#slim$Bsmt = NULL
+slim$X.Fin = NULL
+            
+dim(slim)
+            
+# Exploratory analysis
+summary(slim)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+opar = par(mfrow=c(4,4), mar=c(2,4,4,2)+.1)
+for (i in 2:ncol(slim)) plot(Price~slim[,i], slim, main=names(slim)[i], xlab="", ylab="")
+par(opar)
+@
+\end{frame}
+
+
+
+
+
+\subsection{Response/Outliers}
+\begin{frame}[fragile]\frametitle{}
+<<echo=TRUE>>=
+mod = lm(Price~., slim)
+par(mfrow=c(2,3))
+plot(mod,1:6, ask=F)
+@
+\end{frame}
+
+
+
+
+\frame{\frametitle{Response and outliers}
+	Comments from plots:
+	\begin{itemize}[<+->]
+	\item There is some evidence that increased price leads to increased residuals, so consider logarithm of Price as the response.
+	\item Some observations were flagged as important, but none are exerting an undo influence on the regression (Cook's distance less than 0.20).
+	\item There is a concern that there are outlying observations and therefore heavier tails. 
+	\end{itemize}
+}
+
+
+
+
+\subsection{Training-testing}
+\frame{\frametitle{Training-testing data sets}
+\begin{definition}
+A \alert{training data set} is used to estimate parameters in a model. 
+A \alert{testing data set} is used to evaluate the models performance.
+\end{definition}
+
+\vspace{0.2in} 
+
+For example, 
+\begin{enumerate}[<+->]
+\item Randomly split your observations into two sets:
+  \begin{itemize}
+  \item training 
+  \item testing
+  \end{itemize}
+\item Use the training data set to find model(s), e.g.
+  \begin{itemize}
+  \item use a model selection procedure to find a model and 
+  \item estimate the parameters in that model.
+  \end{itemize}
+\item Use the testing data set to evaluate the model(s), e.g. calculate mean square prediction in the testing data, i.e. 
+\[ MSPE = \frac{1}{n'} \sum_{i=1}^{n'} (P_i-\hat{P}_i)^2 \]
+where 
+\begin{itemize}
+\item $P_i$ is the actual sale price for house $i$ in the testing data set and
+\item $\hat{P}_i$ is the predicted sale price from a particular model.
+\end{itemize}
+\end{enumerate}
+}
+
+\frame{\frametitle{Candidate models}
+  Use all explanatory variables from earlier and allow the following models combinations:
+  \begin{itemize}[<+->]
+  \item Response: Price and log(Price)
+  \item Interactions: Yes and No
+  \item Selection criterion: AIC and BIC
+  \end{itemize}
+
+\vspace{0.2in} \pause
+
+  For a particular combination, 
+	\begin{enumerate}[<+->]
+	\item Initialize model to have all main effects.
+	\item Use stepwise selection to select a model.
+	\item Calculate the model's MSPE
+	\end{enumerate}
+	
+	\vspace{0.2in} \pause
+	
+	Choose the model that has the lowest mean square error amongst all these models.
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Results}
+
+<<>>=
+# Cross validation
+set.seed(20141121)
+test.id  = sample(nrow(slim), round(nrow(slim)*.25))
+train.id = setdiff(1:nrow(slim), test.id)
+test  = slim[test.id, ]
+train = slim[train.id,]
+
+mod = list()
+mod[[1]] = step(lm(    Price ~., train), scope=~.  )
+mod[[2]] = step(lm(    Price ~., train), scope=~.^2)
+mod[[3]] = step(lm(log(Price)~., train), scope=~.  )
+mod[[4]] = step(lm(log(Price)~., train), scope=~.^2)
+mod[[5]] = step(lm(    Price ~., train), scope=~.  , k=log(nrow(train)))
+mod[[6]] = step(lm(    Price ~., train), scope=~.^2, k=log(nrow(train)))
+mod[[7]] = step(lm(log(Price)~., train), scope=~.  , k=log(nrow(train)))
+mod[[8]] = step(lm(log(Price)~., train), scope=~.^2, k=log(nrow(train)))
+
+
+lg = c(F,F,T,T,F,F,T,T) # Keeps track of which model used log(Price)
+
+MSE = rep(NA,length(mod))
+for (i in 1:length(mod)) {
+  yhat = predict(mod[[i]],test)
+	if (lg[i]) yhat=exp(yhat)
+	MSE[i] = mean((yhat-test$Price)^2, na.rm=TRUE)
+}
+
+d_mse = data.frame(Response = ifelse(lg, "log(Price)", "Price"),
+                   Interactions = rep(c("No","Yes"),4),
+                   Criterion = c("AIC","BIC"),
+                   MSE = round(MSE), 
+                   Ratio = round(MSE/min(MSE),2))
+@
+
+<<mse, results='asis'>>=
+# print(xtable(d_mse), include.names=FALSE)
+@
+
+\end{frame}
+
+
+
+
+
+\subsection{Diagnostic plots}
+\begin{frame}[fragile]
+\frametitle{Diagnostic plots for model 3 using all data}
+<<>>=
+id = which.min(MSE)
+mod.final = lm(formula(mod[[id]]), slim)
+opar = par(mfrow=c(2,3))
+plot(mod.final, 1:6, ask=F)
+par(opar)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Quadratic terms?}
+<<>>=
+opar = par(mfrow=c(2,3))
+plot(residuals(mod.final)~slim$Area[-364])
+plot(residuals(mod.final)~slim$YrBlt[-364])
+plot(residuals(mod.final)~slim$BR[-364])
+plot(residuals(mod.final)~slim$Gar.[-364])
+plot(residuals(mod.final)~slim$Bsmt[-364])
+plot(residuals(mod.final)~slim$BsmtFin[-364])
+par(opar)
+@
+\end{frame}
+
+
+
+\section{Final model}
+\begin{frame}[fragile]
+\frametitle{Final model when using all data}
+Summary of the final model estimated using all observations
+<<>>=
+summary(mod.final)
+@
+\end{frame}
+
+
+
+
+\subsection{Prediction (fair market value estimation)}
+\begin{frame}[fragile]
+\frametitle{Prediction}
+
+<<>>=
+new <- read.csv("Ch12a-new.csv",header=T)
+new$YrSld = 2012
+predict(mod.final, new, interval="confidence")
+predict(mod.final, new, interval="prediction")
+@
+
+\vspace{0.2in} \pause
+	
+	One aspect that has been completely neglected is location of the properties which clearly has a large impact on the fair market value.
+\end{frame}
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+	Who would perform a regression like this?
+	\begin{itemize}[<+->]
+	\item Buyer
+	\item Seller
+	\item Real estate agent
+	\item Mortgage appraiser
+	\item Tax assessor
+	\end{itemize}
+}
+
+
+
+\end{document}
