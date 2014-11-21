@@ -35,7 +35,6 @@ opts_chunk$set(comment=NA,
 library(plyr)
 library(ggplot2)
 library(xtable)
-library(Sleuth3)
 library(reshape2)
 @
 
@@ -175,6 +174,8 @@ par(opar)
 		\item Variables eliminated
 			\begin{itemize}
 			\item \% of basement finished
+      \item Type
+      \item Assessed
 			\end{itemize}
 		\end{itemize}
 		
@@ -198,8 +199,10 @@ slim <- dat[dat$Zone=="RL" &
             !(dat$Style %in% c("1.5 Fin", "2.5 Unf")) & 
             dat$Land.SF < 50000 &
             !(dat$Exterior1 %in% c("AsbShng", "BrkFace", "WdShing")),
-            c(5,7,9,11:16,18:21,23,24,27)]
-slim$Style = factor(slim$Style) # eliminate unused factor levels
+            c(5,7,9,11:16,18:21,23:24,27)]
+
+# eliminate unused factor levels
+slim$Style = factor(slim$Style) 
 slim$Exterior1 = factor(slim$Exterior1)
 #rownames(slim) = 1:nrow(slim)
             
@@ -272,7 +275,7 @@ For example,
   \item use a model selection procedure to find a model and 
   \item estimate the parameters in that model.
   \end{itemize}
-\item Use the testing data set to evaluate the model(s), e.g. calculate mean square prediction in the testing data, i.e. 
+\item Use the testing data set to evaluate the model(s), e.g. calculate mean square prediction error in the testing data, i.e. 
 \[ MSPE = \frac{1}{n'} \sum_{i=1}^{n'} (P_i-\hat{P}_i)^2 \]
 where 
 \begin{itemize}
@@ -301,14 +304,14 @@ where
 	
 	\vspace{0.2in} \pause
 	
-	Choose the model that has the lowest mean square error amongst all these models.
+	Choose the model that has the lowest mean squared prediction error amongst all these models.
 }
 
 
 \begin{frame}[fragile]
 \frametitle{Results}
 
-<<"calculate mse", results='hide', warning=FALSE>>=
+<<"calculate MSPE", results='hide', warning=FALSE>>=
 set.seed(20141121)
 test.id  = sample(nrow(slim), round(nrow(slim)*.25))
 train.id = setdiff(1:nrow(slim), test.id)
@@ -328,22 +331,23 @@ mod[[8]] = step(lm(log(Price)~., train), scope=~.^2, k=log(nrow(train)))
 
 lg = c(F,F,T,T,F,F,T,T) # Keeps track of which model used log(Price)
 
-MSE = rep(NA,length(mod))
+MSPE = rep(NA,length(mod))
 for (i in 1:length(mod)) {
   yhat = predict(mod[[i]],test)
 	if (lg[i]) yhat=exp(yhat)
-	MSE[i] = mean((yhat-test$Price)^2, na.rm=TRUE)
+	MSPE[i] = mean((yhat-test$Price)^2, na.rm=TRUE)
 }
 
-d_mse = data.frame(Response = ifelse(lg, "log(Price)", "Price"),
+d_MSPE = data.frame(Response = ifelse(lg, "log(Price)", "Price"),
                    Interactions = c("No","Yes"),
                    Criterion = rep(c("AIC","BIC"), each=4),
-                   "sqrt(MSE)" = sqrt(MSE), 
-                   Ratio = MSE/min(MSE), check.names=FALSE)
+                   "sqrt(MSPE)" = sqrt(MSPE), 
+                   Ratio = MSPE/min(MSPE), check.names=FALSE)
 @
 
-<<mse, results='asis'>>=
-print(xtable(d_mse, digits=c(NA, NA, NA, NA, 0, 2)), include.names=FALSE)
+<<MSPE, results='asis'>>=
+print(xtable(d_MSPE, digits=c(NA, NA, NA, NA, 0, 2)), include.names=FALSE)
+id = which.min(MSPE)
 @
 
 \end{frame}
@@ -354,9 +358,8 @@ print(xtable(d_mse, digits=c(NA, NA, NA, NA, 0, 2)), include.names=FALSE)
 
 \subsection{Diagnostic plots}
 \begin{frame}[fragile]
-\frametitle{Diagnostic plots for model 3 using all data}
+\frametitle{Diagnostic plots for final model (\Sexpr{id}) {\bf using all data}}
 <<"diagnostic plots">>=
-id = which.min(MSE)
 mod.final = lm(formula(mod[[id]]), slim)
 opar = par(mfrow=c(2,3))
 plot(mod.final, 1:6, ask=F)
