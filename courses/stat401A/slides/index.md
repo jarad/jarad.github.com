@@ -49,6 +49,6 @@ The slide sets correspond to the material in the corresponding chapters of The S
     - Leverage
     - Cook's D
     - (Externally) studentized residuals
-- [Chapter 12](Ch12.pdf)
+- [Chapter 12](Ch12.pdf) ([Example](Ch12a.pdf))
   - Stepwise variable selection
   - Model selection criterion: AIC, BIC

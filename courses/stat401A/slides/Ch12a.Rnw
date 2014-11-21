@@ -129,7 +129,7 @@ library(reshape2)
 	\end{itemize}
 }
 
-\section{Exploratory analysis - partial summary}
+\subsection{Exploratory analysis - partial summary}
 \begin{frame}[fragile]
 <<>>=
 t1 <- read.csv("Ch12a-2-Story & 1-1_2-Story Houses 1946 & Newer.csv")
@@ -253,12 +253,12 @@ plot(mod,1:6, ask=F)
 
 \subsection{Training-testing}
 \frame{\frametitle{Training-testing data sets}
-\begin{definition}
-A \alert{training data set} is used to estimate parameters in a model. 
-A \alert{testing data set} is used to evaluate the models performance.
-\end{definition}
-
-\vspace{0.2in} 
+% \begin{definition}
+% A \alert{training data set} is used to estimate parameters in a model. 
+% A \alert{testing data set} is used to evaluate the models performance.
+% \end{definition}
+% 
+% \pause 
 
 For example, 
 \begin{enumerate}[<+->]
@@ -308,8 +308,7 @@ where
 \begin{frame}[fragile]
 \frametitle{Results}
 
-<<>>=
-# Cross validation
+<<"calculate mse", results='hide', warning=FALSE>>=
 set.seed(20141121)
 test.id  = sample(nrow(slim), round(nrow(slim)*.25))
 train.id = setdiff(1:nrow(slim), test.id)
@@ -337,14 +336,14 @@ for (i in 1:length(mod)) {
 }
 
 d_mse = data.frame(Response = ifelse(lg, "log(Price)", "Price"),
-                   Interactions = rep(c("No","Yes"),4),
-                   Criterion = c("AIC","BIC"),
-                   MSE = round(MSE), 
-                   Ratio = round(MSE/min(MSE),2))
+                   Interactions = c("No","Yes"),
+                   Criterion = rep(c("AIC","BIC"), each=4),
+                   "sqrt(MSE)" = sqrt(MSE), 
+                   Ratio = MSE/min(MSE), check.names=FALSE)
 @
 
 <<mse, results='asis'>>=
-# print(xtable(d_mse), include.names=FALSE)
+print(xtable(d_mse, digits=c(NA, NA, NA, NA, 0, 2)), include.names=FALSE)
 @
 
 \end{frame}
@@ -356,7 +355,7 @@ d_mse = data.frame(Response = ifelse(lg, "log(Price)", "Price"),
 \subsection{Diagnostic plots}
 \begin{frame}[fragile]
 \frametitle{Diagnostic plots for model 3 using all data}
-<<>>=
+<<"diagnostic plots">>=
 id = which.min(MSE)
 mod.final = lm(formula(mod[[id]]), slim)
 opar = par(mfrow=c(2,3))
@@ -367,7 +366,7 @@ par(opar)
 
 \begin{frame}[fragile]
 \frametitle{Quadratic terms?}
-<<>>=
+<<"quadratic terms?">>=
 opar = par(mfrow=c(2,3))
 plot(residuals(mod.final)~slim$Area[-364])
 plot(residuals(mod.final)~slim$YrBlt[-364])
@@ -381,11 +380,11 @@ par(opar)
 
 
 
-\section{Final model}
+\subsection{Final model}
 \begin{frame}[fragile]
 \frametitle{Final model when using all data}
 Summary of the final model estimated using all observations
-<<>>=
+<<"final model summary">>=
 summary(mod.final)
 @
 \end{frame}
@@ -397,17 +396,18 @@ summary(mod.final)
 \begin{frame}[fragile]
 \frametitle{Prediction}
 
-<<>>=
+<<prediction, echo=TRUE, size='normalsize'>>=
 new <- read.csv("Ch12a-new.csv",header=T)
 new$YrSld = 2012
-predict(mod.final, new, interval="confidence")
-predict(mod.final, new, interval="prediction")
+exp(predict(mod.final, new, interval="confidence"))
+exp(predict(mod.final, new, interval="prediction"))
 @
 
 \vspace{0.2in} \pause
 	
 	One aspect that has been completely neglected is location of the properties which clearly has a large impact on the fair market value.
 \end{frame}
+
 
 \subsection{Summary}
 \frame{\frametitle{Summary}
