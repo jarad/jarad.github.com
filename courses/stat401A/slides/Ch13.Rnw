@@ -49,5 +49,336 @@ library(reshape2)
 \section{Two-way ANOVA}
 
 
+\frame{\frametitle{Data}
+  An experiment was run on tomato plants to determine the effect of 
+	\begin{itemize}
+	\item 3 different varieties (A,B,C) \pause and 
+	\item 4 different planting densities (10,20,30,40) \pause 
+	\end{itemize}
+	on yield. 
+	
+	\vspace{0.2in} \pause 
+	
+	There is an expectation that planting density will have a different effect depending on the variety. \pause Therefore a \alert{balanced, complete, randomized} design was used. \pause 
+	\begin{itemize}\small
+	\item complete: each treatment (variety $\times$ density) is represented in the experiment \pause
+	\item balanced: each treatment in the experiment has the same number of replications \pause
+	\item randomized: treatment was randomly assigned to the plot \pause
+	\end{itemize}
+	This is also referred to as a \alert{full factorial} or \alert{fully cross} design.
+}
+
+\frame{\frametitle{Hypotheses}
+	\begin{itemize}
+	\item Does variety affect mean yield?
+		\begin{itemize}
+		\item<4-> Is the mean yield for variety A different from B \alert{on average}?
+		\item<5-> Is the mean yield for variety A different from B \alert{at a particular value for density}?
+		\end{itemize}
+	\item<2-> Does density affect mean yield?
+		\begin{itemize}
+		\item<6-> Is the mean yield for density 10 different from density 20 \alert{on average}?
+		\item<7-> Is the mean yield for density 10 different from density 20 \alert{at a particular value for variety}?
+		\end{itemize}
+	\item<3-> Does density affect yield differently for each variety?
+	\end{itemize}
+	
+	\vspace{0.2in} 
+	
+	\uncover<8->{For all of these questions, we want to know
+	\begin{itemize}
+	\item is there any effect and 
+	\item if yes, what is the nature of the effect.
+	\end{itemize}}
+	\uncover<9->{Confidence intervals can answer these questions. }
+}
+
+\begin{frame}[fragile]
+<<>>=
+tomato = read.csv("Ch13-tomato.csv")
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+
+<<>>=
+sm = 
+ddply(tomato, .(Variety, Density), summarize, 
+      n    = length(Yield),
+      mean = mean(Yield),
+      sd   = sd(Yield))
+dcast(sm[,c("Variety","Density","n")], Variety~Density, value.var="n")
+dcast(sm[,c("Variety","Density","mean")], Variety~Density, value.var="mean")
+dcast(sm[,c("Variety","Density","sd")], Variety~Density, value.var="sd")
+@
+
+\end{frame}
+
+\frame{\frametitle{Two-way ANOVA}
+	\begin{itemize}[<+->]
+	\item Setup: Two categorical explanatory variables with $I$ and $J$ levels
+	\item Model:
+	\[ Y_{ijk} \stackrel{ind}{\sim} N(\mu_{ij},\sigma^2) \]
+	where $Y_{ijk}$ is the 
+	\begin{itemize}
+	\item $k$ observation at the 
+	\item $i$th level of variable 1 (variety) with $i=1,\ldots,\I$ and the 
+	\item $j$th level of variable 2 (density) with $j=1,\ldots,\J$.
+	\end{itemize}
+	
+	\vspace{0.2in} \pause 
+	
+	Consider the models:
+		\begin{itemize}
+		\item Additive: $\mu_{ij} = \mu+\alpha_i + \eta_j$
+		\item Cell-means: $\mu_{ij} = \mu+\alpha_i + \eta_j + \gamma_{ij}$
+		\end{itemize}
+	\end{itemize}
+	\pause
+	\[ \begin{array}{|c|c|c|c|c|}
+	\hline
+	& 10 & 20 & 30 & 40 \\
+	\hline
+	\mbox{A} & \mu_{11} & \mu_{12} & \mu_{13} & \mu_{14} \\
+	\hline
+	\mbox{B} & \mu_{21} & \mu_{22} & \mu_{23} & \mu_{24} \\
+	\hline
+	\mbox{C} & \mu_{31} & \mu_{32} & \mu_{33} & \mu_{34} \\
+	\hline
+	\end{array} \]
+}
+
+\frame{\frametitle{As a regression model}
+	\begin{enumerate}[<+->]
+	\item Assign a reference level for both variety (C) and density (40).
+	\item Let $V_i$ and $D_i$ be the variety and density for observation $i$. 
+	\item Build indicator variables, e.g. $\I(V_i=A)$ and $\I(D_i=10)$. 
+	\item The additive model: {\scriptsize
+	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
+	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30).
+	\end{array} \]
+	$\beta_1$ is the expected difference in yield between varieties A and C at any fixed density}
+	\item The cell-means model:{\scriptsize
+	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
+	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30) \\ \\
+	&+\beta_6\I(V_i=A)\I(D_i=10)+\beta_7\I(V_i=A)\I(D_i=20)+\beta_8\I(V_i=A)\I(D_i=30) \\
+	&+\beta_9\I(V_i=B)\I(D_i=10)+\beta_{10}\I(V_i=B)\I(D_i=20)+\beta_{11}\I(V_i=B)\I(D_i=30) \\
+	\end{array} \]
+	$\beta_1$ is the expected difference in yield between varieties A and C at a density of 40}
+	\end{enumerate}
+}
+
+\subsection{PROC GLM}
+\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+\begin{verbatim}
+DATA tomato;
+  INFILE 'tomato.csv' DSD FIRSTOBS=2;
+  INPUT variety $ density yield;
+
+PROC GLM DATA=tomato;
+  CLASS variety density;
+  MODEL yield = variety|density;
+  LSMEANS variety / cl adjust=tukey;
+  LSMEANS density / cl adjust=tukey;
+  LSMEANS variety*density / cl adjust=tukey;
+  run;
+\end{verbatim}
+}
+
+\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+{\tiny
+\begin{verbatim}
+                                        The GLM Procedure
+
+Dependent Variable: yield
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                       11     422.3155556      38.3923232      24.22    <.0001
+       Error                       24      38.0400000       1.5850000
+       Corrected Total             35     460.3555556
+
+                       R-Square     Coeff Var      Root MSE    yield Mean
+                       0.917368      9.064568      1.258968      13.88889
+
+       Source                      DF       Type I SS     Mean Square    F Value    Pr > F
+       variety                      2     327.5972222     163.7986111     103.34    <.0001
+       density                      3      86.6866667      28.8955556      18.23    <.0001
+       variety*density              6       8.0316667       1.3386111       0.84    0.5484
+
+       Source                      DF     Type III SS     Mean Square    F Value    Pr > F
+       variety                      2     327.5972222     163.7986111     103.34    <.0001
+       density                      3      86.6866667      28.8955556      18.23    <.0001
+       variety*density              6       8.0316667       1.3386111       0.84    0.5484
+\end{verbatim}
+}
+}
+
+\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+{\tiny
+\begin{verbatim}
+                                        The GLM Procedure
+
+                                                        Standard
+         Parameter                    Estimate             Error    t Value    Pr > |t|
+
+         Intercept                 18.16666667 B      0.72686542      24.99      <.0001
+         variety         A         -7.36666667 B      1.02794293      -7.17      <.0001
+         variety         B         -5.40000000 B      1.02794293      -5.25      <.0001
+         variety         C          0.00000000 B       .                .         .    
+         density         10        -1.86666667 B      1.02794293      -1.82      0.0819
+         density         20        -0.06666667 B      1.02794293      -0.06      0.9488
+         density         30         1.76666667 B      1.02794293       1.72      0.0986
+         density         40         0.00000000 B       .                .         .    
+         variety*density A 10       0.26666667 B      1.45373083       0.18      0.8560
+         variety*density A 20       1.70000000 B      1.45373083       1.17      0.2537
+         variety*density A 30       0.33333333 B      1.45373083       0.23      0.8206
+         variety*density A 40       0.00000000 B       .                .         .    
+         variety*density B 10      -1.96666667 B      1.45373083      -1.35      0.1887
+         variety*density B 20      -0.06666667 B      1.45373083      -0.05      0.9638
+         variety*density B 30      -0.03333333 B      1.45373083      -0.02      0.9819
+         variety*density B 40       0.00000000 B       .                .         .    
+         variety*density C 10       0.00000000 B       .                .         .    
+\end{verbatim}
+}
+}
+
+\begin{frame}[fragile]
+
+<<>>=
+interaction.plot(tomato$Density, tomato$Variety, tomato$Yield, fun=mean, lwd=2)
+@
+
+\end{frame}
+
+
+\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+{\tiny
+\begin{verbatim}
+                                       Least Squares Means
+                           Adjustment for Multiple Comparisons: Tukey
+
+...
+
+                             Least Squares Means for effect variety
+                              Pr > |t| for H0: LSMean(i)=LSMean(j)
+
+                                   Dependent Variable: yield
+
+                         i/j              1             2             3
+                            1                      0.2249        <.0001
+                            2        0.2249                      <.0001
+                            3        <.0001        <.0001
+
+                      variety    yield LSMEAN      95% Confidence Limits
+                      A             11.333333       10.583245    12.083422
+                      B             12.208333       11.458245    12.958422
+                      C             18.125000       17.374912    18.875088
+
+                              Least Squares Means for Effect variety
+                                   Difference         Simultaneous 95%
+                                      Between      Confidence Limits for
+                       i    j           Means       LSMean(i)-LSMean(j)
+                       1    2       -0.875000       -2.158534     0.408534
+                       1    3       -6.791667       -8.075201    -5.508132
+                       2    3       -5.916667       -7.200201    -4.633132
+\end{verbatim}
+}
+}
+
+\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+{\tiny
+\begin{verbatim}
+                                       Least Squares Means
+                           Adjustment for Multiple Comparisons: Tukey
+                                        ...
+
+                             Least Squares Means for effect density
+                              Pr > |t| for H0: LSMean(i)=LSMean(j)
+
+                                   Dependent Variable: yield
+                  i/j              1             2             3             4
+                     1                      0.0003        <.0001        0.0022
+                     2        0.0003                      0.1169        0.8514
+                     3        <.0001        0.1169                      0.0213
+                     4        0.0022        0.8514        0.0213
+
+                      density    yield LSMEAN      95% Confidence Limits
+                      10            11.477778       10.611650    12.343905
+                      20            14.388889       13.522762    15.255016
+                      30            15.777778       14.911650    16.643905
+                      40            13.911111       13.044984    14.777238
+
+                              Least Squares Means for Effect density
+                                   Difference         Simultaneous 95%
+                                      Between      Confidence Limits for
+                       i    j           Means       LSMean(i)-LSMean(j)
+
+                       1    2       -2.911111       -4.548299    -1.273923
+                       1    3       -4.300000       -5.937188    -2.662812
+                       1    4       -2.433333       -4.070521    -0.796145
+                       2    3       -1.388889       -3.026077     0.248299
+                       2    4        0.477778       -1.159410     2.114966
+                       3    4        1.866667        0.229479     3.503855
+\end{verbatim}
+}
+}
+
+
+\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+{\tiny
+\begin{verbatim}
+                 variety    density    yield LSMEAN      95% Confidence Limits
+
+                 A          10             9.200000        7.699824    10.700176
+                 A          20            12.433333       10.933157    13.933510
+                 A          30            12.900000       11.399824    14.400176
+                 A          40            10.800000        9.299824    12.300176
+                 B          10             8.933333        7.433157    10.433510
+                 B          20            12.633333       11.133157    14.133510
+                 B          30            14.500000       12.999824    16.000176
+                 B          40            12.766667       11.266490    14.266843
+                 C          10            16.300000       14.799824    17.800176
+                 C          20            18.100000       16.599824    19.600176
+                 C          30            19.933333       18.433157    21.433510
+                 C          40            18.166667       16.666490    19.666843
+
+                          Least Squares Means for Effect variety*density
+ 
+                                    Difference         Simultaneous 95%
+                                       Between      Confidence Limits for
+                       i     j           Means       LSMean(i)-LSMean(j)
+
+                       1     2       -3.233333       -6.939704     0.473037
+                       1     3       -3.700000       -7.406371     0.006371
+                       1     4       -1.600000       -5.306371     2.106371
+                       1     5        0.266667       -3.439704     3.973037
+                       1     6       -3.433333       -7.139704     0.273037
+                       1     7       -5.300000       -9.006371    -1.593629
+                       1     8       -3.566667       -7.273037     0.139704
+                       1     9       -7.100000      -10.806371    -3.393629
+                       1    10       -8.900000      -12.606371    -5.193629
+                       1    11      -10.733333      -14.439704    -7.026963
+                       1    12       -8.966667      -12.673037    -5.260296
+                       2     3       -0.466667       -4.173037     3.239704
+                       2     4        1.633333       -2.073037     5.339704
+...
+\end{verbatim}
+}
+}
+
+
+\section{Summary}
+\frame{\frametitle{Summary}
+	\begin{itemize}[<+->]
+	\item The analysis follows the design.
+	\item Use LSMEANS to answer questions of scientific interest.
+	\item Check model assumptions
+	\item Consider alternative models, e.g. treating density as continuous 
+	\end{itemize}
+}
+
 
 \end{document}
