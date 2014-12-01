@@ -33,10 +33,9 @@ contrasts2 = glht(m2, linfct = mcp(treat=K))
 summary(contrasts2) # Compare to Display 13.13
 
 
-# Use of LSMEANS even in a model with the interaction */
 library(lsmeans)
-lsmeans(m, specs=pairwise~treat)       # marginal    treatment differences 
-lsmeans(m, specs=pairwise~treat*block) # conditional treatment differences 
+lsmeans(m2, specs=pairwise~treat)       # marginal    treatment differences 
+lsmeans(m2, specs=pairwise~treat*block) # conditional treatment differences 
 
 
 
