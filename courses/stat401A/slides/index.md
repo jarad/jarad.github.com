@@ -49,7 +49,7 @@ The slide sets correspond to the material in the corresponding chapters of The S
     - Leverage
     - Cook's D
     - (Externally) studentized residuals
-- [Chapter 12](Ch12.pdf)  ([R code](Ch12.R)) ([Ames housing price example](Ch12a.pdf)) ([R code](Ch12a.R))
+- [Chapter 12](Ch12.pdf)  ([R code](Ch12.R)) ([Ames housing price example](Ch12a.pdf), [R code](Ch12a.R))
   - Stepwise variable selection
   - Model selection criterion: AIC, BIC
 - [Chapter 13](Ch13.pdf)  ([R code](Ch13.R)) ([data](Ch13-tomato.csv))
