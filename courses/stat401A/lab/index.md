@@ -42,9 +42,17 @@ With the exception of Lab 01, you should download and open up the scripts associ
   - Contrasts
   - Predictions
 - Lab 11: [SAS](ch11.sas) and [R](ch11.R)
-  - Variable selection
+  - Regression diagnostics
+    - Leverage
+    - Cook's D
+    - Studentized residuals
 - Lab 12: [SAS](ch12.sas) and [R](ch12.R)
+  - Variable selection
+    - AIC
+    - BIC
+    - Stepwise selection
 - Lab 13: [SAS](ch13.sas) and [R](ch13.R)
+  - Two-way ANOVA
 - Lab 20: [SAS](ch20.sas) and [R](ch20.R)
 - Lab 21: [SAS](ch21.sas) and [R](ch21.R)
 - Lab 22: [SAS](ch21.sas) and [R](ch22.R)
