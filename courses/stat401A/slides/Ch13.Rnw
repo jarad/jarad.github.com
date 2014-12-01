@@ -20,6 +20,9 @@
 \newenvironment{remark}[1][Remark]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\J}{\mathrm{J}}
+
 <<options, echo=FALSE, warning=FALSE, message=FALSE>>=
 options(width=120)
 opts_chunk$set(comment=NA, 
@@ -127,14 +130,14 @@ dcast(sm[,c("Variety","Density","sd")], Variety~Density, value.var="sd")
 
 \frame{\frametitle{Two-way ANOVA}
 	\begin{itemize}[<+->]
-	\item Setup: Two categorical explanatory variables with $\mathrm{I}$ and $\mathrm{J}$ levels
+	\item Setup: Two categorical explanatory variables with $\I$ and $\J$ levels
 	\item Model:
 	\[ Y_{ijk} \stackrel{ind}{\sim} N(\mu_{ij},\sigma^2) \]
 	where $Y_{ijk}$ is the 
 	\begin{itemize}
 	\item $k$th observation at the 
-	\item $i$th level of variable 1 (variety) with $i=1,\ldots,\mathrm{I}$ and the 
-	\item $j$th level of variable 2 (density) with $j=1,\ldots,\mathrm{J}$.
+	\item $i$th level of variable 1 (variety) with $i=1,\ldots,\I$ and the 
+	\item $j$th level of variable 2 (density) with $j=1,\ldots,\J$.
 	\end{itemize}
 	
 	\vspace{0.2in} \pause 
@@ -163,21 +166,83 @@ dcast(sm[,c("Variety","Density","sd")], Variety~Density, value.var="sd")
 	\begin{enumerate}[<+->]
 	\item Assign a reference level for both variety (C) and density (40).
 	\item Let $V_i$ and $D_i$ be the variety and density for observation $i$. 
-	\item Build indicator variables, e.g. $\mathrm{I}(V_i=A)$ and $\mathrm{I}(D_i=10)$. 
+	\item Build indicator variables, e.g. $\I(V_i=A)$ and $\I(D_i=10)$. 
 	\item The additive model: {\scriptsize
-	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\mathrm{I}(V_i=A) + \beta_2\mathrm{I}(V_i=B) \\
-	&+ \beta_3\mathrm{I}(D_i=10)+\beta_4\mathrm{I}(D_i=20)+\beta_5\mathrm{I}(D_i=30).
+	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
+	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30).
 	\end{array} \]
 	$\beta_1$ is the expected difference in yield between varieties A and C at any fixed density}
 	\item The cell-means model:{\scriptsize
-	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\mathrm{I}(V_i=A) + \beta_2\mathrm{I}(V_i=B) \\
-	&+ \beta_3\mathrm{I}(D_i=10)+\beta_4\mathrm{I}(D_i=20)+\beta_5\mathrm{I}(D_i=30) \\ \\
-	&+\beta_6\mathrm{I}(V_i=A)\mathrm{I}(D_i=10)+\beta_7\mathrm{I}(V_i=A)\mathrm{I}(D_i=20)+\beta_8\mathrm{I}(V_i=A)\mathrm{I}(D_i=30) \\
-	&+\beta_9\mathrm{I}(V_i=B)\mathrm{I}(D_i=10)+\beta_{10}\mathrm{I}(V_i=B)\mathrm{I}(D_i=20)+\beta_{11}\mathrm{I}(V_i=B)\mathrm{I}(D_i=30) \\
+	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
+	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30) \\ \\
+	&+\beta_6\I(V_i=A)\I(D_i=10)+\beta_7\I(V_i=A)\I(D_i=20)+\beta_8\I(V_i=A)\I(D_i=30) \\
+	&+\beta_9\I(V_i=B)\I(D_i=10)+\beta_{10}\I(V_i=B)\I(D_i=20)+\beta_{11}\I(V_i=B)\I(D_i=30) \\
 	\end{array} \]
 	$\beta_1$ is the expected difference in yield between varieties A and C at a density of 40}
 	\end{enumerate}
 }
+
+
+
+\subsection{ANOVA Table}
+\begin{frame}
+\frametitle{ANOVA Table}
+
+ANOVA Table - Additive model
+\begin{center}
+\begin{tabular}{ccccc}
+Source & SS & df & MS & F \\
+\hline
+Factor A & SSA & ($\I$-1) & SSA/($\I$-1) & MSA/MSE\\
+Factor B & SSB & ($\J$-1) & SSB/($\J$-1) & MSB/MSE \\
+Error & SSE & n-$\I$-$\J$+1 & SSE/(n-$\I$-$\J$+1) \\
+Total & SST & n-$1$ 
+\end{tabular}
+\end{center}
+
+\vspace{0.2in} \pause
+
+ANOVA Table - Cell-means model
+\begin{center}
+\begin{tabular}{ccccc}
+Source & SS & df & MS & \\
+\hline
+Factor A & SSA & $\I$-1 & SSA/($\I$-1) & MSA/MSE \\
+Factor B & SSB & $\J$-1 & SSB/($\J$-1) & MSB/MSE \\
+Interaction AB & SSAB & ($\I$-1)($\J$-1) & SSAB /($\I$-1)($\J$-1) & MSAB/MSE \\
+Error & SSE & n-$\I$$\J$ & SSE/(n-$\I$$\J$) \\
+Total & SST & n-$1$ 
+\end{tabular}
+\end{center}
+
+\end{frame}
+
+
+
+\subsection{Additive vs cell-means}
+\begin{frame}
+\frametitle{Additive vs cell-means}
+
+Opinions differ on Whether to use an additive vs a cell-means model when the interaction is not significant. \pause Remember that an insignificant test does not prove that there is no interaction. 
+
+\vspace{0.2in} \pause
+
+\begin{center}
+\begin{tabular}{lcc}
+& Additive & Cell-means \\
+\hline
+Interpretation & Direct & Complicated \\
+Estimate of $\sigma^2$ & Biased & Unbiased
+\end{tabular}
+\end{center}
+
+\vspace{0.2in} \pause
+
+We will continue using the cell-means model to answer the scientific questions of interest.
+
+\end{frame}
+
+
 
 \subsection{PROC GLM}
 \frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
@@ -223,11 +288,14 @@ Dependent Variable: yield
        variety*density              6       8.0316667       1.3386111       0.84    0.5484
 \end{verbatim}
 }
+
+The Type I and Type III SS are equal because the design is balanced.
 }
 
 \frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
 {\tiny
 \begin{verbatim}
+MODEL yield = variety|density / SOLUTION;
                                         The GLM Procedure
 
                                                         Standard
@@ -255,17 +323,19 @@ Dependent Variable: yield
 }
 
 \begin{frame}[fragile]
-
 <<>>=
-interaction.plot(tomato$Density, tomato$Variety, tomato$Yield, fun=mean, lwd=2)
+ggplot(sm, aes(x=Density, y=mean, col=Variety)) + geom_line() +labs(y="Mean Yield")
 @
-
 \end{frame}
 
 
-\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+
+
+
+\frame[containsverbatim]{\frametitle{Is the mean yield for variety A different from B \alert{on average}?}
 {\tiny
 \begin{verbatim}
+LSMEANS variety / cl adjust=tukey;
                                        Least Squares Means
                            Adjustment for Multiple Comparisons: Tukey
 
@@ -297,22 +367,17 @@ interaction.plot(tomato$Density, tomato$Variety, tomato$Yield, fun=mean, lwd=2)
 }
 }
 
-\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+
+
+
+
+\frame[containsverbatim]{\frametitle{Is the mean yield at density 10 different from density 20 \alert{on average}?}
 {\tiny
 \begin{verbatim}
+LSMEANS density / cl adjust=tukey;
                                        Least Squares Means
                            Adjustment for Multiple Comparisons: Tukey
                                         ...
-
-                             Least Squares Means for effect density
-                              Pr > |t| for H0: LSMean(i)=LSMean(j)
-
-                                   Dependent Variable: yield
-                  i/j              1             2             3             4
-                     1                      0.0003        <.0001        0.0022
-                     2        0.0003                      0.1169        0.8514
-                     3        <.0001        0.1169                      0.0213
-                     4        0.0022        0.8514        0.0213
 
                       density    yield LSMEAN      95% Confidence Limits
                       10            11.477778       10.611650    12.343905
@@ -336,9 +401,12 @@ interaction.plot(tomato$Density, tomato$Variety, tomato$Yield, fun=mean, lwd=2)
 }
 
 
-\frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
+
+\frame[containsverbatim]{\frametitle{Is mean yield different for particular combinations?}
 {\tiny
 \begin{verbatim}
+LSMEANS variety*density / cl adjust=tukey;
+
                  variety    density    yield LSMEAN      95% Confidence Limits
 
                  A          10             9.200000        7.699824    10.700176
@@ -353,13 +421,22 @@ interaction.plot(tomato$Density, tomato$Variety, tomato$Yield, fun=mean, lwd=2)
                  C          20            18.100000       16.599824    19.600176
                  C          30            19.933333       18.433157    21.433510
                  C          40            18.166667       16.666490    19.666843
+\end{verbatim}
+}
+}
+
+
+
+\frame[containsverbatim]{\frametitle{Is mean yield different for particular combinations?}
+{\tiny
+\begin{verbatim}
+LSMEANS variety*density / cl adjust=tukey;
 
                           Least Squares Means for Effect variety*density
  
                                     Difference         Simultaneous 95%
                                        Between      Confidence Limits for
                        i     j           Means       LSMean(i)-LSMean(j)
-
                        1     2       -3.233333       -6.939704     0.473037
                        1     3       -3.700000       -7.406371     0.006371
                        1     4       -1.600000       -5.306371     2.106371
@@ -373,10 +450,64 @@ interaction.plot(tomato$Density, tomato$Variety, tomato$Yield, fun=mean, lwd=2)
                        1    12       -8.966667      -12.673037    -5.260296
                        2     3       -0.466667       -4.173037     3.239704
                        2     4        1.633333       -2.073037     5.339704
-...
+                       2     5        3.500000       -0.206371     7.206371
+                       2     6       -0.200000       -3.906371     3.506371
+                       2     7       -2.066667       -5.773037     1.639704
+                       2     8       -0.333333       -4.039704     3.373037
+                       2     9       -3.866667       -7.573037    -0.160296
+                       2    10       -5.666667       -9.373037    -1.960296
+                       2    11       -7.500000      -11.206371    -3.793629
+                       2    12       -5.733333       -9.439704    -2.026963
+                       3     4        2.100000       -1.606371     5.806371
+                       3     5        3.966667        0.260296     7.673037
+                       3     6        0.266667       -3.439704     3.973037
+                       3     7       -1.600000       -5.306371     2.106371
+                       3     8        0.133333       -3.573037     3.839704
+                       3     9       -3.400000       -7.106371     0.306371
+                       3    10       -5.200000       -8.906371    -1.493629
+                       3    11       -7.033333      -10.739704    -3.326963
+                       3    12       -5.266667       -8.973037    -1.560296
+                       4     5        1.866667       -1.839704     5.573037
+                       4     6       -1.833333       -5.539704     1.873037
+                       4     7       -3.700000       -7.406371     0.006371
+                       4     8       -1.966667       -5.673037     1.739704
+                       4     9       -5.500000       -9.206371    -1.793629
+                       4    10       -7.300000      -11.006371    -3.593629
+                       4    11       -9.133333      -12.839704    -5.426963
+                       4    12       -7.366667      -11.073037    -3.660296
+                       5     6       -3.700000       -7.406371     0.006371
+                       5     7       -5.566667       -9.273037    -1.860296
+                       5     8       -3.833333       -7.539704    -0.126963
+                       5     9       -7.366667      -11.073037    -3.660296
+                       5    10       -9.166667      -12.873037    -5.460296
+                       5    11      -11.000000      -14.706371    -7.293629
+                       5    12       -9.233333      -12.939704    -5.526963
+                       6     7       -1.866667       -5.573037     1.839704
+                       6     8       -0.133333       -3.839704     3.573037
+                       6     9       -3.666667       -7.373037     0.039704
+                       6    10       -5.466667       -9.173037    -1.760296
+                       6    11       -7.300000      -11.006371    -3.593629
+                       6    12       -5.533333       -9.239704    -1.826963
+                       7     8        1.733333       -1.973037     5.439704
+                       7     9       -1.800000       -5.506371     1.906371
+                       7    10       -3.600000       -7.306371     0.106371
+                       7    11       -5.433333       -9.139704    -1.726963
+                       7    12       -3.666667       -7.373037     0.039704
+                       8     9       -3.533333       -7.239704     0.173037
+                       8    10       -5.333333       -9.039704    -1.626963
+                       8    11       -7.166667      -10.873037    -3.460296
+                       8    12       -5.400000       -9.106371    -1.693629
+                       9    10       -1.800000       -5.506371     1.906371
+                       9    11       -3.633333       -7.339704     0.073037
+                       9    12       -1.866667       -5.573037     1.839704
+                      10    11       -1.833333       -5.539704     1.873037
+                      10    12       -0.066667       -3.773037     3.639704
+                      11    12        1.766667       -1.939704     5.473037
 \end{verbatim}
 }
 }
+
+
 
 
 \section{Summary}
