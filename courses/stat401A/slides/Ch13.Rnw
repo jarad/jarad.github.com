@@ -16,9 +16,6 @@
 \institute[Iowa State]{Iowa State University}
 \date[\today]{last updated: \today}
 
-
-\newcommand{\I}{\mathrm{I}}
-
 \setkeys{Gin}{width=0.6\textwidth}
 \newenvironment{remark}[1][Remark]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
@@ -65,7 +62,7 @@ library(reshape2)
 	\item balanced: each treatment in the experiment has the same number of replications \pause
 	\item randomized: treatment was randomly assigned to the plot \pause
 	\end{itemize}
-	This is also referred to as a \alert{full factorial} or \alert{fully cross} design.
+	This is also referred to as a \alert{full factorial} or \alert{fully crossed} design.
 }
 
 \frame{\frametitle{Hypotheses}
@@ -109,8 +106,20 @@ ddply(tomato, .(Variety, Density), summarize,
       n    = length(Yield),
       mean = mean(Yield),
       sd   = sd(Yield))
+@
+
+Number of replicates
+<<>>=
 dcast(sm[,c("Variety","Density","n")], Variety~Density, value.var="n")
+@
+
+Mean Yield 
+<<>>=
 dcast(sm[,c("Variety","Density","mean")], Variety~Density, value.var="mean")
+@
+
+Standard deviation of yield
+<<>>=
 dcast(sm[,c("Variety","Density","sd")], Variety~Density, value.var="sd")
 @
 
@@ -118,14 +127,14 @@ dcast(sm[,c("Variety","Density","sd")], Variety~Density, value.var="sd")
 
 \frame{\frametitle{Two-way ANOVA}
 	\begin{itemize}[<+->]
-	\item Setup: Two categorical explanatory variables with $I$ and $J$ levels
+	\item Setup: Two categorical explanatory variables with $\mathrm{I}$ and $\mathrm{J}$ levels
 	\item Model:
 	\[ Y_{ijk} \stackrel{ind}{\sim} N(\mu_{ij},\sigma^2) \]
 	where $Y_{ijk}$ is the 
 	\begin{itemize}
-	\item $k$ observation at the 
-	\item $i$th level of variable 1 (variety) with $i=1,\ldots,\I$ and the 
-	\item $j$th level of variable 2 (density) with $j=1,\ldots,\J$.
+	\item $k$th observation at the 
+	\item $i$th level of variable 1 (variety) with $i=1,\ldots,\mathrm{I}$ and the 
+	\item $j$th level of variable 2 (density) with $j=1,\ldots,\mathrm{J}$.
 	\end{itemize}
 	
 	\vspace{0.2in} \pause 
@@ -154,17 +163,17 @@ dcast(sm[,c("Variety","Density","sd")], Variety~Density, value.var="sd")
 	\begin{enumerate}[<+->]
 	\item Assign a reference level for both variety (C) and density (40).
 	\item Let $V_i$ and $D_i$ be the variety and density for observation $i$. 
-	\item Build indicator variables, e.g. $\I(V_i=A)$ and $\I(D_i=10)$. 
+	\item Build indicator variables, e.g. $\mathrm{I}(V_i=A)$ and $\mathrm{I}(D_i=10)$. 
 	\item The additive model: {\scriptsize
-	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
-	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30).
+	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\mathrm{I}(V_i=A) + \beta_2\mathrm{I}(V_i=B) \\
+	&+ \beta_3\mathrm{I}(D_i=10)+\beta_4\mathrm{I}(D_i=20)+\beta_5\mathrm{I}(D_i=30).
 	\end{array} \]
 	$\beta_1$ is the expected difference in yield between varieties A and C at any fixed density}
 	\item The cell-means model:{\scriptsize
-	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
-	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30) \\ \\
-	&+\beta_6\I(V_i=A)\I(D_i=10)+\beta_7\I(V_i=A)\I(D_i=20)+\beta_8\I(V_i=A)\I(D_i=30) \\
-	&+\beta_9\I(V_i=B)\I(D_i=10)+\beta_{10}\I(V_i=B)\I(D_i=20)+\beta_{11}\I(V_i=B)\I(D_i=30) \\
+	\[ \begin{array}{rl} \mu_{ij} =& \beta_0 + \beta_1\mathrm{I}(V_i=A) + \beta_2\mathrm{I}(V_i=B) \\
+	&+ \beta_3\mathrm{I}(D_i=10)+\beta_4\mathrm{I}(D_i=20)+\beta_5\mathrm{I}(D_i=30) \\ \\
+	&+\beta_6\mathrm{I}(V_i=A)\mathrm{I}(D_i=10)+\beta_7\mathrm{I}(V_i=A)\mathrm{I}(D_i=20)+\beta_8\mathrm{I}(V_i=A)\mathrm{I}(D_i=30) \\
+	&+\beta_9\mathrm{I}(V_i=B)\mathrm{I}(D_i=10)+\beta_{10}\mathrm{I}(V_i=B)\mathrm{I}(D_i=20)+\beta_{11}\mathrm{I}(V_i=B)\mathrm{I}(D_i=30) \\
 	\end{array} \]
 	$\beta_1$ is the expected difference in yield between varieties A and C at a density of 40}
 	\end{enumerate}
@@ -174,16 +183,16 @@ dcast(sm[,c("Variety","Density","sd")], Variety~Density, value.var="sd")
 \frame[containsverbatim]{\frametitle{Two-way ANOVA using PROC GLM}
 \begin{verbatim}
 DATA tomato;
-  INFILE 'tomato.csv' DSD FIRSTOBS=2;
+  INFILE 'Ch13-tomato.csv' DSD FIRSTOBS=2;
   INPUT variety $ density yield;
 
-PROC GLM DATA=tomato;
+PROC GLM DATA=tomato PLOTS=all;
   CLASS variety density;
-  MODEL yield = variety|density;
+  MODEL yield = variety|density / SOLUTION;
   LSMEANS variety / cl adjust=tukey;
   LSMEANS density / cl adjust=tukey;
   LSMEANS variety*density / cl adjust=tukey;
-  run;
+  RUN;
 \end{verbatim}
 }
 

@@ -52,3 +52,5 @@ The slide sets correspond to the material in the corresponding chapters of The S
 - [Chapter 12](Ch12.pdf) ([Ames housing price example](Ch12a.pdf))
   - Stepwise variable selection
   - Model selection criterion: AIC, BIC
+- [Chapter 13](Ch13.pdf)
+  - Two-way ANOVA
