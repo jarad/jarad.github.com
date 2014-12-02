@@ -1319,9 +1319,10 @@ The regression model here considers variety-density combination as a single expl
 The model is then $Y_i\stackrel{ind}{\sim} N(\mu_i, \sigma^2)$ and 
 {\tiny
 \[ \begin{array}{lllllll}
-\mu_i &= \beta_0 &+ \beta_1\I(V_i=A,D_i=10) &+ \beta_1\I(V_i=A,D_i=20)&+ \beta_1\I(V_i=A,D_i=30)&+ \beta_1\I(V_i=A,D_i=40) \\
-&&+ \beta_1\I(V_i=B,D_i=10)&+ \beta_1\I(V_i=B,D_i=20)&&+ \beta_1\I(V_i=B,D_i=40) \\
-&&+ \beta_1\I(V_i=C,D_i=10)&+ \beta_1\I(V_i=C,D_i=20)&+ \beta_1\I(V_i=C,D_i=30)&+ \beta_1\I(V_i=C,D_i=40)
+\mu_i &= \beta_0 
+&+ \beta_1\I(V_i=A,D_i=10) &+ \beta_2\I(V_i=A,D_i=20)&+ \beta_3\I(V_i=A,D_i=30)&+ \beta_4\I(V_i=A,D_i=40) \\
+&&+ \beta_5\I(V_i=B,D_i=10)&+ \beta_6\I(V_i=B,D_i=20)&&+ \beta_7\I(V_i=B,D_i=40) \\
+&&+ \beta_8\I(V_i=C,D_i=10)&+ \beta_9\I(V_i=C,D_i=20)&+ \beta_{10}\I(V_i=C,D_i=30)
 \end{array} \]
 }
 \end{frame}
@@ -1452,11 +1453,20 @@ anova(m)
 \begin{frame}[fragile]
 \frametitle{}
 <<echo=TRUE>>=
-K = 
+tomato$VarietyDensity = factor(paste(tomato$Variety, tomato$Density, sep=""))
+# Note the -1 in order to construct the contrast
+m = lm(Yield~VarietyDensity-1, tomato, subset=!(Variety=='B' & Density==30))
+#                   A10 A20 A30 A40 B10 B20 B40 C10 C20 C30 C40   
+K = rbind('C-B' = c(  0,  0,  0,  0, -1, -1, -1,  1,  1,  0,  1)/3,
+          'C-A' = c( -1, -1, -1, -1,  0,  0,  0,  1,  1,  1,  1)/4,
+          'B-A' = c( -1, -1,  0, -1,  1,  1,  1,  0,  0,  0,  0)/3)
+
+library(multcomp)
+t = glht(m, linfct=K)
+summary(t)
+confint(t, calpha=univariate_calpha())
 @
 \end{frame}
-
-
 
 
 \begin{frame}[fragile]
@@ -1466,11 +1476,13 @@ lsmeans(m, pairwise~Variety:Density)
 @
 \end{frame}
 
+
+
 \subsection{Summary}
 \begin{frame}
 \frametitle{Summary}
 
-The analysis can be completed just like the balanced design using LSMEANS to answer scientific questions of interest. 
+When dealing with an incomplete design, it is often easier to treat the analysis as a one-way ANOVA and use contrasts to answer appropriate questions of interest.
 
 \end{frame}
 
