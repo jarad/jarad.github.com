@@ -552,7 +552,7 @@ lsmeans(m, pairwise~Variety*Density)
 \begin{frame}
 \frametitle{Unbalanced design}
 
-Suppose for some reason that one of the variety B, density 30 samples was contaminated. \pause Although you started with a balanced design, the data is now unbalanced. \pause Fortunately, we can still use the tools we have used previously. 
+Suppose for some reason that a variety B, density 30 sample was contaminated. \pause Although you started with a balanced design, the data is now unbalanced. \pause Fortunately, we can still use the tools we have used previously. 
 
 \end{frame}
 
@@ -678,13 +678,6 @@ Dependent Variable: yield
                                        Least Squares Means
                         Adjustment for Multiple Comparisons: Tukey-Kramer
 
-                                                            LSMEAN
-                               variety    yield LSMEAN      Number
-
-                               A            11.3333333           1
-                               B            12.3083333           2
-                               C            18.1250000           3
-
                              Least Squares Means for effect variety
                               Pr > |t| for H0: LSMean(i)=LSMean(j)
                                                 
@@ -719,13 +712,6 @@ Dependent Variable: yield
                                         The GLM Procedure
                                        Least Squares Means
                         Adjustment for Multiple Comparisons: Tukey-Kramer
-
-                                                            LSMEAN
-                               density    yield LSMEAN      Number
-                               10           11.4777778           1
-                               20           14.3888889           2
-                               30           15.9111111           3
-                               40           13.9111111           4
 
                              Least Squares Means for effect density
                               Pr > |t| for H0: LSMean(i)=LSMean(j)
@@ -1037,15 +1023,10 @@ Notice the missing variety*density B 30 line.
                                A            11.3333333           1
                                B               Non-est           2
                                C            18.1250000           3
+                               
                              Least Squares Means for effect variety
                               Pr > |t| for H0: LSMean(i)=LSMean(j)
-                                                
-                                   Dependent Variable: yield
- 
-                         i/j              1             2             3
-                            1                       .            <.0001
-                            2         .                           .    
-                            3        <.0001         .                  
+                                              
 
                       variety    yield LSMEAN      95% Confidence Limits
                       A             11.333333       10.561360    12.105306
@@ -1078,17 +1059,6 @@ Notice the missing variety*density B 30 line.
                                20           14.3888889           2
                                30              Non-est           3
                                40           13.9111111           4
-
-                             Least Squares Means for effect density
-                              Pr > |t| for H0: LSMean(i)=LSMean(j)
-                                                
-                                   Dependent Variable: yield
- 
-                  i/j              1             2             3             4
-                     1                      0.0002         .            0.0017
-                     2        0.0002                       .            0.7153
-                     3         .             .                           .    
-                     4        0.0017        0.7153         .                  
 
                       density    yield LSMEAN      95% Confidence Limits
                       10            11.477778       10.586380    12.369175
@@ -1463,7 +1433,7 @@ K = rbind('C-B' = c(  0,  0,  0,  0, -1, -1, -1,  1,  1,  0,  1)/3,
 
 library(multcomp)
 t = glht(m, linfct=K)
-summary(t)
+#summary(t)
 confint(t, calpha=univariate_calpha())
 @
 \end{frame}
@@ -1472,7 +1442,9 @@ confint(t, calpha=univariate_calpha())
 \begin{frame}[fragile]
 \frametitle{}
 <<echo=TRUE>>=
+m = lm(Yield~Variety:Density, tomato, subset=!(Variety=='B' & Density==30))
 lsmeans(m, pairwise~Variety:Density)
+# We could have used the VarietyDensity model, but this looks nicer
 @
 \end{frame}
 
@@ -1482,7 +1454,7 @@ lsmeans(m, pairwise~Variety:Density)
 \begin{frame}
 \frametitle{Summary}
 
-When dealing with an incomplete design, it is often easier to treat the analysis as a one-way ANOVA and use contrasts to answer appropriate questions of interest.
+When dealing with an incomplete design, it is often easier to treat the analysis as a one-way ANOVA and use contrasts to answer scientific questions of interest.
 
 \end{frame}
 
