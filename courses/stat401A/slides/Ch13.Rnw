@@ -34,6 +34,7 @@ opts_chunk$set(comment=NA,
                echo=FALSE)
 library(plyr)
 library(ggplot2)
+library(gridExtra)
 library(xtable)
 library(Sleuth3)
 library(reshape2)
@@ -96,6 +97,7 @@ library(reshape2)
 \begin{frame}[fragile]
 <<>>=
 tomato = read.csv("Ch13-tomato.csv")
+tomato$Variety = relevel(tomato$Variety, ref="C")
 ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point()
 @
 \end{frame}
@@ -1456,6 +1458,252 @@ lsmeans(m, pairwise~Variety:Density)
 
 When dealing with an incomplete design, it is often easier to treat the analysis as a one-way ANOVA and use contrasts to answer scientific questions of interest.
 
+\end{frame}
+
+
+
+
+\section{Optimal yield}
+\begin{frame}
+\frametitle{Optimal yield}
+
+Now suppose you have the same data set, but your scientific question is different. \pause Specifically, you are interested in choosing a variety and density that provide the optimal yield. 
+
+\vspace{0.2in} \pause
+
+You can use the ANOVA analysis to choose from amongst the 3 varieties and one of the 4 densities\pause, but there is no reason to believe that the optimal density will be one of those 4. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+tomato = read.csv("Ch13-tomato.csv")
+tomato$Variety = relevel(tomato$Variety, ref="C")
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point()
+@
+\end{frame}
+
+
+\subsection{Modeling}
+\begin{frame}
+\frametitle{Modeling}
+
+Considering a single variety, if we assume a linear relationship between Yield ($Y_i$) and Density ($D_i$) then the maximum Yield will occur at either $-\infty$ or $+\infty$ which is unreasonable. \pause The easiest way to have a maximum (or minimum) is to assume a quadratic relationship, e.g. 
+
+\[ E[Y_i] = \mu_i = \beta_0 + \beta_1 D_i + \beta_2 D_i^2 \]
+
+\pause
+Now we can incorporate Variety ($V_i$) in many ways. \pause Two options are parallel curves or completely independent curves.
+
+\vspace{0.2in} \pause
+
+Parallel curves:
+
+\[ \begin{array}{rl}
+\mu_i =&  \beta_0 + \beta_1 D_i + \beta_2 D_i^2 \\
+&+ \beta_3 \I(V_i=A) + \beta_4 \I(V_i=B) 
+\end{array} \]
+
+Independent lines:
+
+\[ \begin{array}{rl}
+\mu_i =&  \beta_0 + \beta_1 D_i + \beta_2 D_i^2 \\
+&+ \beta_3 \I(V_i=A) D_i + \beta_4 \I(V_i=B) D_i  \\
+&+ \beta_5 \I(V_i=A) D_i^2 + \beta_6 \I(V_i=B) D_i^2 
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+g1 = ggplot(tomato, aes(x=Density, y=Yield)) + geom_point() + 
+  stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE, color="black") +
+  labs(title="No variety")
+
+
+# Need to construct the parallel curves 
+lines = with(tomato,expand.grid(Density=seq(min(Density),max(Density),length=41),
+                               Variety=levels(Variety)))
+lines$Yield <- predict(lm(Yield~Density+I(Density^2)+Variety, tomato),lines)
+
+g2 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + 
+  geom_line(data=lines) +
+  labs(title="Parallel curves")
+
+g3 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + 
+  stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE) +
+  labs(title="Independent curves")
+grid.arrange(g1,g2,g3, ncol=3)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Finding the maximum}
+
+For a particular variety, there will be an equation like 
+
+\[ E[Y_i] = \mu_i = \beta_0 + \beta_1 D_i + \beta_2 D_i^2 \]
+
+where these $\beta_1$ and $\beta_2$ need not correspond to any particular $\beta_1$ and $\beta_2$ we have discussed thus far. 
+
+\vspace{0.2in} \pause
+
+If $\beta_2<0$, then the quadratic curve has a maximum and it occurs at $-\beta_1/2\beta_2$. 
+
+\end{frame}
+
+
+\subsection{Analysis in SAS}
+\frame[containsverbatim]{\frametitle{Analysis in SAS}
+{\tiny
+\begin{verbatim}
+DATA tomato;
+  INFILE 'Ch13-tomato.csv' DSD FIRSTOBS=2;
+  INPUT variety $ density yield;
+
+/* No variety */
+PROC GLM DATA=tomato PLOTS=all;
+  CLASS variety; /* density is no longer here */
+  MODEL yield = density|density / SOLUTION;
+  RUN;
+
+/* Parallel curves */
+PROC GLM DATA=tomato PLOTS=all;
+  CLASS variety; /* density is no longer here */
+  MODEL yield = density|density variety/ SOLUTION;
+  RUN;
+
+/* Independent curves */
+PROC GLM DATA=tomato PLOTS=all;
+  CLASS variety; /* density is no longer here */
+  MODEL yield = density|density|variety/ SOLUTION;
+  RUN;
+\end{verbatim}
+}
+}
+
+
+\frame[containsverbatim]{\frametitle{No variety}
+{\tiny
+\begin{verbatim}
+                                        The GLM Procedure
+ 
+Dependent Variable: yield   
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        2      85.3346667      42.6673333       3.75    0.0340
+       Error                       33     375.0208889      11.3642694                     
+       Corrected Total             35     460.3555556                                     
+
+
+...
+
+       Source                      DF     Type III SS     Mean Square    F Value    Pr > F
+       density                      1     65.30344358     65.30344358       5.75    0.0223
+       density*density              1     51.36111111     51.36111111       4.52    0.0411
+
+                                                     Standard
+             Parameter               Estimate           Error    t Value    Pr > |t|
+             Intercept            5.744444444      3.12824210       1.84      0.0753
+             density              0.684111111      0.28538383       2.40      0.0223
+             density*density     -0.011944444      0.00561849      -2.13      0.0411
+\end{verbatim}
+}
+}
+
+\frame[containsverbatim]{\frametitle{Parallel curves}
+{\tiny
+\begin{verbatim}
+                                        The GLM Procedure
+ 
+Dependent Variable: yield   
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        4     412.9318889     103.2329722      67.48    <.0001
+       Error                       31      47.4236667       1.5297957                     
+       Corrected Total             35     460.3555556                                     
+
+...
+
+       Source                      DF     Type III SS     Mean Square    F Value    Pr > F
+       density                      1      65.3034436      65.3034436      42.69    <.0001
+       density*density              1      51.3611111      51.3611111      33.57    <.0001
+       variety                      2     327.5972222     163.7986111     107.07    <.0001
+
+                                                       Standard
+           Parameter                 Estimate             Error    t Value    Pr > |t|
+           Intercept              9.980555556 B      1.18419286       8.43      <.0001
+           density                0.684111111        0.10470690       6.53      <.0001
+           density*density       -0.011944444        0.00206142      -5.79      <.0001
+           variety         A     -6.791666667 B      0.50494153     -13.45      <.0001
+           variety         B     -5.916666667 B      0.50494153     -11.72      <.0001
+           variety         C      0.000000000 B       .                .         .    
+\end{verbatim}
+}
+}
+
+\frame[containsverbatim]{\frametitle{Independent curves}
+{\tiny
+\begin{verbatim}
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        8     419.8612222      52.4826528      34.99    <.0001
+       Error                       27      40.4943333       1.4997901                     
+       Corrected Total             35     460.3555556                                     
+...
+
+       Source                      DF     Type III SS     Mean Square    F Value    Pr > F
+       density                      1     65.30344358     65.30344358      43.54    <.0001
+       density*density              1     51.36111111     51.36111111      34.25    <.0001
+       variety                      2     21.66539427     10.83269713       7.22    0.0031
+       density*variety              2      2.07850215      1.03925108       0.69    0.5088
+       densit*densit*variet         2      1.65388889      0.82694444       0.55    0.5825
+
+                                                         Standard
+        Parameter                      Estimate             Error    t Value    Pr > |t|
+        Intercept                   11.80833333 B      1.96836425       6.00      <.0001
+        density                      0.52016667 B      0.17957029       2.90      0.0074
+        density*density             -0.00891667 B      0.00353529      -2.52      0.0179
+        variety              A      -8.45833333 B      2.78368742      -3.04      0.0052
+        variety              B      -9.73333333 B      2.78368742      -3.50      0.0016
+        variety              C       0.00000000 B       .                .         .    
+        density*variety      A       0.19916667 B      0.25395073       0.78      0.4397
+        density*variety      B       0.29266667 B      0.25395073       1.15      0.2592
+        density*variety      C       0.00000000 B       .                .         .    
+        densit*densit*variet A      -0.00441667 B      0.00499965      -0.88      0.3848
+        densit*densit*variet B      -0.00466667 B      0.00499965      -0.93      0.3589
+        densit*densit*variet C       0.00000000 B       .                .         .    
+\end{verbatim}
+}
+}
+
+
+\subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{No variety}
+<<>>=
+summary(lm(Yield~Density+I(Density^2), tomato))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Parallel curves}
+<<>>=
+summary(lm(Yield~Density+I(Density^2) + Variety, tomato))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Independent curves}
+<<>>=
+summary(lm(Yield~Density*Variety+I(Density^2)*Variety, tomato))
+@
 \end{frame}
 
 
