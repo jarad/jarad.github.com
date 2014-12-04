@@ -2,5 +2,5 @@ install.packages(c("ggplot2", "gridExtra", "knitr", "maps", "plyr", "reshape2", 
 download.file("http://www.jarad.me/ISDSWorkshop_0.1.tar.gz", "ISDSWorkshop.tar.gz", mode="wb")
 install.packages("ISDSWorkshop.tar.gz", repos = NULL, type = "source")
 
-if (require(ISDSWorkshop)) print("ISDS R Workshop installed succesfully!\n")
+if (require(ISDSWorkshop)) message("ISDS R Workshop installed succesfully!\n")
 
