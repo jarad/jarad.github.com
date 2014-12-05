@@ -1710,25 +1710,91 @@ summary(lm(Yield~Density*Variety+I(Density^2)*Variety, tomato))
 
 \section{Randomized complete block design}
 \begin{frame}
-\frametitle{Completely randomized design}
-
+\frametitle{Completely randomized design (CRD)}
 This semester, we have assumed a completely randomized design. \pause As an example, consider 36 plots and we are randomly assigning our variety-density combinations to the plots such that we have 3 reps of each combination. \pause The result may look something like this
-
-<<>>=
+<<out.width='0.6\\textwidth'>>=
 set.seed(20121204)
 opar = par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 
      xlab='', ylab='', xlim=c(0.5,6.5), ylim=c(0.5,6.5))
-abline(h=(1:7)-.5)
-abline(v=(1:7)-.5)
+segments(1:7-.5, .5, 1:7-.5, 6.5)
+segments(.5, 1:7-.5, 6.5, 1:7-.5)
 trts = rep(paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep=""),3)
-text(rep(1:6, each=6), rep(1:6, 6), trts)
+text(rep(1:6, each=6), rep(1:6, 6), sample(trts))
 par(opar)
 @
-
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Complete randomized block design (RBD)}
+
+A randomized block design is appropriate when there is a nuisance factor that you want to control for. \pause In our example, imagine you had 12 plots at 3 different locations and you expect these locations would have impact on yield. \pause A randomized block design might look like this.
+
+\vspace{-0.1in}
+
+<<out.width='0.6\\textwidth'>>=
+set.seed(20121204)
+opar = par(mar=rep(0,4))
+plot(0,0, type="n", axes=F, 
+     xlab='', ylab='', xlim=c(0,8.5), ylim=c(0,7.5))
+segments(1:9-.5, .5, 1:9-.5, 6.5)
+for (i in c(.5, 3.5, 6.5)) segments(i, 1:7-.5, i+2, 1:7-.5)
+trts = paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep="")
+for (i in c(1, 4, 7)) text(rep(c(i,i+1), each=2), rep(1:6, 2), sample(trts))
+text(c(1.5,4.5,7.5), 0, paste("Block", 1:3))
+par(opar)
+@
+\end{frame}
+
+
+
+\subsection{RBD Analysis}
+\begin{frame}
+\frametitle{RBD Analysis}
+
+{\small
+
+Generally, you will want to model a randomized block design using an additive model for the treatment and blocking factor. \pause If you have the replication, you should test for an interaction. \pause Let's compute the degrees of freedom for the ANOVA tables for this current design considering the variety-density combination as the treatment. 
+
+\vspace{0.1in} \pause
+
+\begin{center}
+
+
+\begin{tabular}{ll||ll||ll}
+\multicolumn{2}{c||}{V+D+B} & \multicolumn{2}{c||}{T+B} & \multicolumn{2}{c}{Cell-means} \\
+Factor & df & Factor & df & Factor & df \pause \\
+\hline
+Variety   &  2 &           &    &           &    \\
+Density   &  3 & Treatment & 11 & Treatment & 11 \\
+Block     &  2 & Block     &  2 & Block     &  2 \\
+          &    &           &    & Treatment x Block & 22 \\
+Error     & 28 & Error     & 22 & Error     & 0 \\
+Total     & 35 & Total     & 35 & Total     & 35 \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.1in} \pause
+The cell-means model does not have enough degrees of freedom to estimate the interacion because there is no replication of the treatment within a block. \pause 
+}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Why blocking helps}
+
+Estimation of treatment effects is performed within block because all treatments are available within a block. 
+
+\vspace{0.2in} \pause
+
+\begin{quote}
+Block what you can; randomize what you cannot.
+\end{quote}
+
+\end{frame}
 
 
 \end{document}
