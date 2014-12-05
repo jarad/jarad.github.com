@@ -39,4 +39,6 @@ This page is meant to link [my STAT 401A youtube videos](http://www.youtube.com/
   - [Case Statistics](http://www.youtube.com/watch?v=uDMj7SXfJWI&feature=youtube_gdata) ([slides]({{BASE_PATH}}/slides/M5-Lec1-CaseStatistics.pdf))
 - Chapter 12
   - [Variable Selection](http://www.youtube.com/watch?v=nDBci9QRVWg&feature=youtube_gdata) ([slides]({{BASE_PATH}}/slides/M5-Lec2-VariableSelection.pdf))
+- Chapter 20-22
+  - [Choosing between binomial and Poisson](http://youtu.be/CqnIdasMYbI) 
 
