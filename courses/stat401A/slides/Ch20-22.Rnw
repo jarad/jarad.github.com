@@ -1,0 +1,402 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+\usepackage{animate}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{Logistic and Poisson regression}
+\title[\lecturetitle]{STAT 401A - Statistical Methods for Research Workers}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+\institute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\J}{\mathrm{J}}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE)
+library(plyr)
+library(ggplot2)
+library(gridExtra)
+library(xtable)
+library(Sleuth3)
+library(reshape2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\frame{\frametitle{Linear regression}
+  The linear regression model
+	\[ \begin{array}{r@{\,}l} Y_i &\stackrel{ind}{\sim} N(\mu_i,\sigma^2) \\
+	\mu_i &= \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p} \end{array} \]
+	
+	\pause where
+	\begin{itemize}
+	\item $Y_i$ is continuous
+	\item $X_i$ is continuous or categorical (indicator variables)
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	What if $Y_i$ is a binary or a count? \pause Use
+	\begin{itemize}
+	\item logistic regression or
+	\item Poisson regression.
+	\end{itemize}
+}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial distribution}
+  The probability mass function of the binomial distribution is
+	\[ P(Y=y) = {n\choose y} p^y (1-p)^{n-y} \qquad y=0,1,2,\ldots,n\]
+	\pause Properties:
+	\begin{itemize}
+	\item $E[Y]=np$ \pause
+	\item $V[Y]=np(1-p)$ \pause
+	\end{itemize}
+	
+<<fig.width=10>>=
+xx = 0:10
+plot(xx, dbinom(xx, 10, .3), main="Probability mass function for Bin(10,.3)", xlab="x", ylab="P(X=x)", pch=19)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Poisson distribution}
+  The probability mass function of the Poisson distribution is
+	\[ P(Y=y) = \frac{\mu^y e^{-\mu}}{y!} \qquad \mu> 0,\, y=0,1,2,\ldots \]
+	\pause Properties:
+	\begin{itemize}
+	\item $E[Y]=V[Y]=\mu$ \pause
+	\end{itemize}
+	
+<<fig.width=10>>=
+xx = 0:15
+plot(xx, dpois(xx,3), main="Probability mass function for Po(3)", xlab="x", ylab="P(X=x)", pch=19)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Is Poisson or binomial more appropriate?}
+
+\begin{itemize}
+\item Use Poisson when there is no technical upper limit to how high the count could be. 
+\item Use binomial when you know a technical upper limit, this becomes $n$.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Examples
+
+\begin{itemize}[<+->]
+\item Binomial
+  \begin{itemize}
+  \item Number of head coin flips out of 10 trials
+  \item Whether or not somebody has lung cancer
+  \item Number of species that went extinct since last census
+  \end{itemize}
+\item Poisson
+  \begin{itemize}
+  \item Number of cars through an intersection in 10 minutes
+  \item Number of successful matings for African elephants
+  \item Number of salamanders found in a 49 m$^2$ area
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+\section{Logistic regression}
+\frame{\frametitle{Logistic regression}
+	The model
+	\[ \begin{array}{r@{\,}l}
+	Y_i &\stackrel{ind}{\sim} Bin(n_i,p_i) \pause \\ \\
+	\mbox{logit}(p_i)&=\mbox{log}\left( \frac{p_i}{1-p_i} \right)= \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p}
+	\end{array} \]
+	\pause where
+	\begin{itemize}
+	\item $Y_i$ is an integer from 0 to $m_i$ \pause
+	\item Bin refers to the binomial distribution \pause
+	\item Note: if $\mbox{logit}(p) = \eta$ then $p = \frac{e^\eta}{1+e^\eta}$
+	\end{itemize}
+}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Number of species that have gone extinct}
+<<>>=
+case2101
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Is there a relationship between the probability of extinction and island size?}
+<<out.width='0.7\\textwidth'>>=
+ggplot(case2101, aes(x=Area, y=Extinct/AtRisk)) + geom_point()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Is there a relationship between the probability of extinction and island size?}
+<<out.width='0.7\\textwidth'>>=
+logit = function(p) log(p/(1-p))
+ggplot(case2101, aes(x=log(Area), y=logit(Extinct/AtRisk))) + geom_point()
+@
+\end{frame}
+
+
+
+
+
+\frame{\frametitle{Parameter estimation}
+Fit the model
+\[ Y_i \stackrel{ind}{\sim} \mbox{Bin}(n_i,p_i) \qquad \mbox{logit}(p_i) = \beta_0+\beta_1 X_i \]
+\pause where
+\begin{itemize}
+\item $Y_i$ is the number of extinctions on island $i$ \pause 
+\item $m_i$ is the total extinctions possible (the number at risk) on island $i$ \pause
+\item $X_{i,1}$ is the logarithm of the area for island $i$ \pause
+\end{itemize}
+and 
+\[ \mbox{logit}(p) = \log\left( \frac{p}{1-p} \right)\]
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Logistic regression in R}
+
+<<>>=
+m = glm(cbind(Extinct, AtRisk-Extinct) ~ log(Area), data=case2101, family="binomial")
+summary(m)
+confint(m)
+@
+
+\end{frame}
+
+
+\frame{\frametitle{Logistic regression parameter interpretation}
+
+\begin{itemize} \small
+\item At an area size of 1 [log(area)=0], the probability of extinction is estimated to be 23\% with a 95\% confidence interval of (19\%, 38\%). \pause
+\[ \frac{e^{-1.1962}}{1+e^{-1.1962}}=0.23 \pause \qquad \frac{e^{-1.4283}}{1+e^{-1.4283}}=0.19\pause\qquad \frac{e^{-0.9640}}{1+e^{-0.9640}}=0.38 \]
+\item \pause With all other variables held constant, a unit increase in log(area) is associated with a 0.74 [$=e^{-0.2971}$] multiplicative change in the odds, \pause e.g. from log(area)=0 to log(area)=1
+\[ \begin{array}{r@{\,}l}
+0.74 \, \mbox{odds}_0 &= \mbox{odds}_1 \pause \implies
+0.74 \frac{p_0}{1-p_0} \pause = \frac{p_1}{1-p_1} \pause \\
+0.74 \frac{0.23}{1-0.23} &= \frac{p_1}{1-p_1} \pause \implies 0.17 = \frac{p_1}{1-p_1} \pause \implies p_1 = 0.15
+\end{array} \]
+\item \pause Since we used the logarithm of area, each doubling of area is associated with a multiplicative change in the odds of 0.81 [$=2^{-0.2971}$] \pause and each 10-fold increase in area is associated with a multiplicative change in the odds of 0.50 [$=10^{-0.2971}$].
+\end{itemize}
+}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Logistic regression with multiple explanatory variables}
+<<>>=
+# LC is binary
+summary(m <- glm(LC~FM+SS+BK+AG+YR+CD, data=case2002, family="binomial"))
+@
+\end{frame}
+
+\section{Poisson regression}
+\frame{\frametitle{Poisson regression}
+	\[ \begin{array}{r@{\,}l}
+	Y_i &\stackrel{ind}{\sim} Po(\mu_i) \pause \\ \\
+	\log(\mu_i)&= \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p}
+	\end{array} \]
+	\pause where
+	\begin{itemize}
+	\item $Y_i$ is a non-negative integer \pause
+	\item Po refers to the Poisson distribution
+	\end{itemize}
+}
+
+
+
+\begin{frame}[fragile]
+\frametitle{African elephant mating}
+<<echo=TRUE>>=
+head(case2201,10)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Is there a relationship between Matings and Age?}
+<<>>=
+ggplot(case2201, aes(x=Age, y=Matings)) + geom_point()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Is there a relationship between Matings and Age?}
+<<>>=
+ggplot(case2201, aes(x=Age, y=log(Matings+1))) + geom_point()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Poisson regression}
+<<echo=TRUE>>=
+m = glm(Matings~Age, data=case2201, family="poisson")
+summary(m)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Shifting the intercept}
+<<echo=TRUE>>=
+mAge = median(case2201$Age)
+m = glm(Matings~I(Age-mAge), data=case2201, family="poisson")
+summary(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Shifting the intercept}
+<<echo=TRUE>>=
+confint(m)
+@
+\end{frame}
+
+
+
+
+\frame{\frametitle{Poisson regression parameter interpretation}
+	\begin{itemize}
+	\item At the median age of 34, the expected number of matings is 2.1 [$=e^{0.7535}$] with a 95\% confidence interval of (1.7,2.7). \pause
+	\item With all other variables held constant, for each year increase in age there is a multiplicative effect on the expected number of matings of 1.07 [$=e^{0.0687}$] with a 95\% confidence interval of (1.04,1.10), \pause e.g.
+	\[ \begin{array}{rlll}
+	\mu(\mbox{age}=35) &= \mu(\mbox{age}=34) \cdot 1.07 &= 2.1\cdot 1.07  &= 2.28 \\
+	\mu(\mbox{age}=44) &= \mu(\mbox{age}=34) \cdot 1.07^{10} &= 2.1 \cdot 1.07^{10} &= 4.2
+	\end{array} \]
+	\end{itemize}
+}
+
+
+
+\section{Drop-in deviance test}
+\begin{frame}
+\frametitle{Drop-in-deviance test}
+
+To test whether a set of explanatory variables should be in the model, a drop-in-deviance test should be used. \pause This is analogous to the extra-sums-of-squares F-test for normally distributed data.
+
+\vspace{0.2in} \pause 
+
+The deviance is $-2\log L(\hat{\theta}_{MLE})$. \pause The drop-in-deviance test statistic is 
+
+\[ Deviance_{reduced} - Deviance_{full} \]
+
+which, if the null hypothesis is true, has a $\chi^2_v$ where $v$ is the difference in the number of parameters between the full and reduced models. 
+
+\end{frame}
+
+
+
+
+\defverbatim{\fa}{%
+{\scriptsize
+\begin{verbatim} 
+ Criterion                     DF           Value        Value/DF
+ Deviance                      39         51.0116          1.3080
+\end{verbatim}
+}
+}
+
+\defverbatim{\fb}{%
+{\scriptsize
+\begin{verbatim} 
+ Criterion                     DF           Value        Value/DF
+ Deviance                      38         50.8262          1.3375
+\end{verbatim}
+}
+}
+
+
+\frame{\frametitle{Drop-in deviance test for age squared} \pause
+\small
+  Fit the model with only age (reduced model):
+
+\fa \pause
+
+	Fit the model with age and age squared (full model):
+
+\fb \pause
+
+	Drop-in-deviance test:
+	\[ \mbox{Dev}_{red}-\mbox{Dev}_{full} = 51.0116-50.8262 = 0.1854 \]
+	\pause compare this to a $\chi^2_1$, \pause i.e.
+	\[ P(\chi^2_1>0.1854) = 0.67 \]
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Drop-in-deviance test}
+<<echo=TRUE>>=
+anova(glm(Matings~Age, data=case2201, family="poisson"),
+      glm(Matings~Age + I(Age^2), data=case2201, family="poisson"),
+      test="Chi")
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Poisson regression with multiple explanatory variables}
+<<echo=TRUE>>=
+summary(m <- glm(Salamanders~PctCover+ForestAge, data=case2202, family="poisson"))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Drop-in-deviance tests}
+<<echo=TRUE>>=
+# Perform all the drop-in-deviance tests
+drop1(m, test="Chi")
+@
+\end{frame}
+
+
+\end{document}

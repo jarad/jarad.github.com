@@ -54,3 +54,7 @@ The slide sets correspond to the material in the corresponding chapters of The S
   - Model selection criterion: AIC, BIC
 - [Chapter 13](Ch13.pdf)  ([R code](Ch13.R)) ([data](Ch13-tomato.csv))
   - Two-way ANOVA
+- [Chapters 20-22](Ch20-22.pdf) ([R code](Ch20-22.R))
+  - Logistic regression
+  - Poisson regression
+  
