@@ -1783,17 +1783,64 @@ The cell-means model does not have enough degrees of freedom to estimate the int
 
 
 
-\begin{frame}
-\frametitle{Why blocking helps}
 
-Estimation of treatment effects is performed within block because all treatments are available within a block. 
+\begin{frame}
+\frametitle{Why block?}
+Consider a simple experiment with 2 blocks each with 3 experimental units and 3 treatments (A, B, C). \pause 
+
+<<out.width='0.4\\textwidth', fig.width=4, fig.height=3>>=
+set.seed(20121204)
+opar = par(mar=rep(0,4))
+plot(0,0, type="n", axes=F, 
+     xlab='', ylab='', xlim=c(0,5.5), ylim=c(0,4))
+segments(1:6-.5, .5, 1:6-.5, 3.5)
+for (i in c(.5, 3.5)) segments(i, 1:4-.5, i+2, 1:4-.5)
+trts = rep(c("A","B","C"),each=2)
+for (i in c(1, 4)) text(rep(c(i,i+1), each=3), rep(1:3, 2), sample(trts))
+text(c(1,2,4,5), .3, paste("Block", 1:2))
+text(c(1.5,4.5), 3.7, c("Blocked","Unblocked"))
+par(opar)
+@
+
+Let's consider 3 possible analyses:
+\begin{itemize}
+\item Blocked experiment using an additive model for treatment and block (RBD)
+\item Unblocked experiment using only treatment (CRD)
+\item Unblocked experiment using an additive model for treatment and block
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Why block?}
+
+Now suppose, the true model is 
+\[ \mu_{ij} = \mu + T_i + B_j \]
+where $T_1=T_2=T_3$ and $B_1=0$ and $B_2=\delta$. 
+
+\vspace{0.2in} \pause 
+
+In the Blocked experiment using an additive model for treatment and block, the expected treatment differences to all be zero. 
 
 \vspace{0.2in} \pause
 
-\begin{quote}
-Block what you can; randomize what you cannot.
-\end{quote}
+In the Unblocked design using only treatment, the expected difference between treatments is 
+\[ \mu_{C} - \mu_{B} = \delta \qquad \mbox{and} \qquad \mu_{C}-\mu_{A} = \delta/2. \]
 
+\vspace{0.2in} \pause
+
+In the Unblocked design using an additive model for treatment and block, we would have an unbalanced design and it would be impossible to compare B and C. 
+
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+Block what you can control; randomize what you cannot.
 \end{frame}
 
 
