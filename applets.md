@@ -13,6 +13,7 @@ group: navigation
 - [Pvalue interpretation](https://jaradniemi.shinyapps.io/pvalue/)
 - [Poisson process simulation](https://jaradniemi.shinyapps.io/poisson_process/)
 - [Queueing system simulation](https://jaradniemi.shinyapps.io/queueing_system/)
+- [One parameter conjugate Bayesian analysis](https://jaradniemi.shinyapps.io/one_parameter_conjugate/)
 
 ## Research
 
