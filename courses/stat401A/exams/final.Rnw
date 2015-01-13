@@ -1,0 +1,273 @@
+\documentclass[12pt]{article}
+\usepackage{chicago}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage{graphicx, color}
+
+%\renewcommand{\baselinestretch}{1.5}
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newcommand{\I}{\mathrm{I}}
+
+\newcommand{\answer}[1]{{\color{red} #1}}
+
+% Uncomment the following line to remove answers, and comment line out to show answers:
+%\renewcommand{\answer}[1]{}
+
+
+\begin{document}
+
+\begin{center}
+{\textbf {Fall 2014}}\hfill  \textbf{\large Statistics 401A\hfill
+  Final Exam}\\
+ \hfill  \textbf{(40 points)}
+\end{center}
+\vspace*{1in}
+
+\noindent {\large Please write your first and last name here:} \\[.2in]
+{\textbf{Name} \rule{5in}{.01in}}\\[1in]
+
+\vfill 
+
+\textbf{Instructions:}\\[.1in]
+
+\begin{itemize}
+\item Do NOT open the exam until instructed to do so!
+\item Please check to make sure you have 3 pages with writing on the front and back (pages may be marked `intentionally left blank'). Please remove the last page.
+\item On the following pages you will find short answer questions related to the topics we covered in class for a total of 40 points. Please read the directions carefully.
+\item You are allowed to use a calculator and one $8\frac{1}{2}\times 11$ sheet of paper with writing on both front and back. 
+\item You will be given only the time allotted for the course; no extra time will be given.
+\end{itemize}
+
+\vfill
+
+\newpage
+
+\begin{enumerate}
+
+\newpage
+% Diagnostics
+\item For the following plots, describe what to look for and what it indicates. (2 pts each)
+
+\begin{enumerate}
+\item qq-plot
+
+\answer{Look for deviations from the y=x line which indicates lack of normality.} \vfill
+
+\item Residuals vs predicted value
+
+\answer{Funnel shape which indicates non-constant variance} \vfill
+
+\item Externally studentized residual vs observation number
+
+\answer{Externally studentized residuals whose values are extreme relative to a standard normal, e.g. if there are less than 100 observations, then values less than -2 and greater than 2 may indicate a poor fit from the model.} \vfill
+
+\item Leverage vs observation number 
+
+\answer{Observations whose leverage is greater than 2p/n which indicates the observation's explanatory variable values is far from the average of the other observations explanatory variable values.} \vfill
+
+\item Cook's D vs observation number
+
+\answer{Observations whose Cook's D is around 1 or larger which indicates that removal of that observation has a large impact on the estimated regression coefficients.} \vfill
+
+\end{enumerate}
+
+\newpage
+% Build multiple regression model
+\item Consider a two-way ANOVA model with 2 categorical explanatory variables. The first explanatory variable has two levels: A and B. The second explanatory variable has three levels: U, V, and W. A linear regression model assumes $Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2)$ where $Y_i$ is the response for observation $i$ where $i=1,\ldots,n$. Let $X_{i,1}$ be the first level for the first explanatory variable, i.e. $X_{i,1}$ can be A or B, and $X_{i,2}$ be the level for the second explantory variable, i.e. $X_{i,2}$ can be U, V, or W.
+
+\begin{enumerate}
+\item Write down $\mu_i$ for the additive model. (3 pts)
+
+\answer{
+Let $B$ and $W$ be the reference levels. 
+\begin{align*}
+\mu_i &= \beta_0 + \I(X_{i,1} = A) + \I(X_{i,2}=U) + \I(X_{i,2}=V) 
+\end{align*}
+} \vfill\vfill\vfill
+
+\item Write down the additional terms in $\mu_i$ for the cell means model. (3 pts)
+
+\answer{
+The additional terms are 
+\begin{align*}
+\I(X_{i,1} = A)\I(X_{i,2}=U) + \I(X_{i,1} = A)\I(X_{i,2}=V) 
+\end{align*}
+} \vfill\vfill\vfill
+
+\item If a complete, balanced design was used with 2 replicates per combination, how many observations would be needed. (1 pt)
+
+\answer{2*3*2 = 12} \vfill
+
+\item Complete the degrees of freedom for the cell-means model ANOVA table for the design in part c). (3 pts)
+
+\begin{center}
+{\Large
+\begin{tabular}{l|l}
+Source & df \\
+\hline 
+Variable 1 & \answer{1} \\
+Variable 2 & \answer{2} \\
+Interaction & \answer{2} \\
+Error & \answer{6} \\
+\hline
+Total & \answer{11}
+\end{tabular}
+}
+\end{center}
+
+\end{enumerate}
+
+\newpage
+% Extra sum of squares F-test
+\item An experiment is conducted to assess the effect of variety and irrigation type on yield. The additive and cell-means model are considered. Please answer the following questions based on the SAS code titled 'Experiment'.
+
+\begin{enumerate}
+  \item Find these quantities. (1 point each)
+  \begin{enumerate}
+  \item How many parameters are in the reduced model? \answer{6}
+  \item How many parameters are in the full model? \answer{12}
+  \item What is the residual sum of squares for the reduced model? \answer{55.75}
+  \item What is the residual sum of squares for the full model? \answer{51.30}
+  \item What is the estimate for $\hat{\sigma}^2$ for the full model? \answer{1.43}
+  \end{enumerate}
+\item Find the $F$ statistic for the extra-sum-of-squares F-test for comparing these two models. (3 pts)
+
+\answer{\[ F = \frac{(55.75-51.30)/(12-6)}{1.43} = 0.52 \]} \vfill \vfill
+
+\item If the null hypothesis is true, what is the distribution for the $F$ statistic in part b)? (1 pt)
+
+\answer{An $F$ distribution with 6 numerator degrees of freedom and 36 denominator degrees of freedom.} \vfill
+
+\item Does this $F$ statistic suggest the additive model or the cell-means model? Why? (1 pt)
+
+\answer{The additive model since the $F$ statistic is small, i.e. much less than 4.} \vfill
+
+
+\end{enumerate}
+
+
+\newpage 
+\item An experiment is conducted to make a superhard material using a laser. The experiment used two different samples and 3 different levels of overlap of the laser. The hardness is measured before and after the the laser treatment and the difference is recorded. The goal of the experiment is to find the overlap that maximizes hardness. Please answer the following questions based on the SAS code titled 'Hardness'.
+
+\begin{enumerate}
+%\item How many total observations are there? (1 pt)\answer{6} 
+\item Is the design balanced? (1 pt) \answer{No} 
+\item Is the design complete? (1 pt) \answer{No} 
+
+\item Based on this model, what is the value for overlap that maximizes hardness? (3 pts)
+
+\answer{$\frac{-70.68}{2\times -69.9} = 0.506$} \vfill \vfill
+
+\item None of the coefficients ($\beta$s) are significant. Should we remove some of the coefficients from the model? Why or why not? (3 pts)
+
+\answer{No, we should not remove any terms from the model since 1) we believe there will be differences between the samples and 2) since we are trying to find a maximum, the quadratic term is necessary.} \vfill \vfill \vfill
+
+\item What changes would you make if you were redesigning the experiment, but could still only use these 2 samples and 6 total observations? (2 pts)
+
+\answer{Make the design complete and balanced by doing one of the overlap 0.2 on sample 1.} \vfill \vfill
+
+
+\end{enumerate}
+
+\end{enumerate}
+
+
+\newpage
+(intentionally left blank)
+
+\newpage
+{\Large SAS code - Hardness}
+
+{\footnotesize
+\begin{verbatim}
+DATA d;
+  INPUT  sample overlap  diff;
+  DATALINES;
+      1     0.7 27.19
+      1     0.5 26.14
+      2     0.2 11.40
+      2     0.5 21.44
+      2     0.7 15.11
+      2     0.2 14.74
+;
+
+PROC GLM DATA=d;
+  CLASS sample;
+  MODEL diff = sample overlap|overlap / SOLUTION;
+  RUN;
+                                        The GLM Procedure
+ 
+Dependent Variable: diff   
+
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        3     195.1750333      65.0583444       6.78    0.1313
+       Error                        2      19.1939000       9.5969500                     
+       Corrected Total              5     214.3689333                                     
+
+                       R-Square     Coeff Var      Root MSE     diff Mean
+                       0.910463      16.02083      3.097894      19.33667
+
+       Source                      DF       Type I SS     Mean Square    F Value    Pr > F
+       sample                       1     161.1134083     161.1134083      16.79    0.0547
+       overlap                      1      12.0745800      12.0745800       1.26    0.3786
+       overlap*overlap              1      21.9870450      21.9870450       2.29    0.2693
+
+       Source                      DF     Type III SS     Mean Square    F Value    Pr > F
+       sample                       1     70.39210000     70.39210000       7.33    0.1136
+       overlap                      1     27.00358054     27.00358054       2.81    0.2355
+       overlap*overlap              1     21.98704500     21.98704500       2.29    0.2693
+
+                                                       Standard
+           Parameter                 Estimate             Error    t Value    Pr > |t|
+           Intercept               1.73000000 B      7.83031591       0.22      0.8456
+           sample          1       8.39000000 B      3.09789445       2.71      0.1136
+           sample          2       0.00000000 B       .                .         .    
+           overlap                70.68000000       42.13591995       1.68      0.2355
+           overlap*overlap       -69.90000000       46.18068379      -1.51      0.2693
+\end{verbatim}
+}
+
+\newpage
+{\Large SAS code - Experiment}
+
+{\footnotesize
+\begin{verbatim}
+DATA experiment;
+  INFILE 'temp.csv' DSD FIRSTOBS=2;
+  INPUT Yield Variety Irrigation;
+
+PROC GLM DATA=experiment;
+  CLASS Variety Irrigation;
+  MODEL Yield = Variety Irrigation;
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                        5      81.1851692      16.2370338      12.23    <.0001
+       Error                       42      55.7505053       1.3273930                     
+       Corrected Total             47     136.9356745                                          
+
+
+
+PROC GLM DATA=experiment;
+  CLASS Variety Irrigation;
+  MODEL Yield = Variety|Irrigation;
+  RUN;
+                                               Sum of
+       Source                      DF         Squares     Mean Square    F Value    Pr > F
+       Model                       11      85.6324117       7.7847647       5.46    <.0001
+       Error                       36      51.3032628       1.4250906                     
+       Corrected Total             47     136.9356745                                       
+\end{verbatim}
+}
+
+
+\end{document}
+
