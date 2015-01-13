@@ -18,7 +18,7 @@ This course meets
 Office hours are
 
 - Instructor: TBD ([online](https://iastate.zoom.us/j/6333942508))
-- TA: TBD
+- TA: TBD ([online](https://iastate.zoom.us/j/6672249203))
 
 ## Textbook
 
