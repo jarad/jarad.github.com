@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Welcome to STAT 544
+title: STAT 544
 tagline: Bayesian Statistics
 ---
 {% include JB/setup %}

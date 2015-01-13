@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Welcome to STAT 544
-tagline: Bayesian Statistics
+title: STAT 544
+tagline: Textbook
 ---
 {% include JB/setup %}
 
