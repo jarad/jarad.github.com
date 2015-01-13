@@ -1,0 +1,485 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+\usepackage{animate}
+
+% Theme settings
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\setbeamertemplate{navigation symbols}{}
+
+
+% Document settings
+\newcommand{\lecturetitle}{Probability and Inference}
+\title[\lecturetitle]{STAT 544 - Bayesian Statistics}
+\subtitle{\lecturetitle}
+\author[Jarad Niemi]{Jarad Niemi (Dr. J)}
+\institute[Iowa State]{Iowa State University}
+\date[\today]{last updated: \today}
+
+
+\newcommand{\I}{\mathrm{I}}
+
+\setkeys{Gin}{width=0.6\textwidth}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(Sleuth3)
+library(reshape2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Outline}
+\begin{frame}
+\begin{itemize}
+\item Quick review of probability
+  \begin{itemize}
+  \item Kolmogorov's axioms
+  \item Bayes' rule
+  \end{itemize}
+\item Applications of probability
+  \begin{itemize}
+  \item Down's syndrome
+  \end{itemize}
+\item Bayesian statistics
+  \item Condition on what is known
+  \item Describe uncertainty using probability
+\item What is probability?
+\end{itemize}
+\end{frame}
+
+
+\section{Quick review of probability}
+\subsection{Set theory}
+\frame{\frametitle{Events}
+  \begin{definition}
+	The set, $\Omega$, of all possible outcomes of a particular experiment is called the \alert{sample space} for the experiment.
+	\end{definition} 
+	
+	\pause
+	
+	\begin{definition}
+	An \alert{event} is any collection of possible outcomes of an experiment, that is, any subset of $\Omega$ (including $\Omega$ itself).
+	\end{definition}
+	
+	\vspace{0.2in} \pause
+	
+	Six-sided die-tossing example: \pause
+	\begin{itemize}
+	\item $\Omega=\{1,2,3,4,5,6\}$ \pause
+	\item Events:
+		\begin{itemize}
+		\item $A$: an odd number is rolled \pause
+		\item $B$: a number less than 4 is rolled \pause
+		\item $C$: a 1, 2, 3, 4, 5, or 6 is rolled
+		\end{itemize}
+	\end{itemize}
+}
+
+\frame{\frametitle{Pairwise disjoint}
+	\begin{definition}
+	Two events $A_1$ and $A_2$ are \alert{disjoint} (or \alert{mutually exclusive}) if both $A_1$ and $A_2$ cannot occur simultaneously. \pause The events $A_1, A_2,\ldots$ are \alert{pairwise disjoint} (or \alert{mutually exclusive}) if $A_i$ and $A_j$ cannot occur simultaneously for any $i\ne j$. 
+	\end{definition}
+	
+	\vspace{0.2in} \pause
+	
+	Six-sided die-tossing example:
+	\begin{itemize}
+	\item $A_1$: an odd number is rolled, $A_2:$ an even number is rolled \pause
+	\item $A_i$: $i$ is rolled for $i=1,2,\ldots,6$ 
+	\end{itemize}
+}
+
+\subsection{Axioms of probability}
+\frame{\frametitle{Axioms of probability}
+	\begin{definition}
+	Given a sample space $\Omega$, a \alert{probability function} is a function $P$ that satisfies \pause 
+	\begin{enumerate}[1.]
+	\item $P(A)\ge 0$ \pause
+	\item $P(\Omega)=1$ \pause
+	\item If $A_1, A_2,\ldots$ are pairwise disjoint, then $P(A_1\mbox{ or }A_2\mbox{ or }\ldots) = \sum_{i=1}^\infty P(A_i)$. 
+	\end{enumerate}
+	\end{definition}
+	
+	\vspace{0.2in} \pause
+	
+	Six-sided die-tossing example:
+	\begin{itemize}
+	\item $A_i$: $i$ is rolled for $i=1,2,\ldots,6$ \pause
+	\item $P(A_i)=1/6$
+	\end{itemize}
+}
+
+\subsection{Conditional probability}
+\frame{\frametitle{Conditional probability}
+	\begin{definition}
+	If $A$ and $B$ are events in $\Omega$, and $P(B)>0$, \pause then the \alert{conditional probability of A given B}, written $P(A|B)$, \pause is 
+	\[ P(A|B) = \frac{P(A \mbox{ and } B)}{P(B)} \]
+	\end{definition}
+	
+	\vspace{0.2in} \pause
+	
+	Six-sided die-tossing example:
+	\begin{itemize}
+	\item $A$: an odd number is rolled \pause
+	\item $B$: a number less than 4 is rolled \pause 
+	\item $P(A|B) = \pause \frac{2/6}{1/2} = \pause 2/3$
+	\end{itemize}
+}
+
+\subsection{Bayes' rule}
+\frame{\frametitle{Bayes' rule}
+	\begin{theorem}
+	If $A$ and $B$ are events in $\Omega$, \pause then \alert{Bayes' rule} states
+	\[ P(A|B) = \frac{P(B|A)P(A)}{P(B)}\phantom{= \frac{P(B|A)P(A)}{P(B|A)P(A)+P(B|A^c)P(A^c)}} \]
+	\end{theorem}
+	
+	\vspace{0.48in} \pause
+	
+	Six-sided die-tossing example:
+	\begin{itemize}
+	\item $A$: an odd number is rolled
+	\item $B$: a number less than 4 is rolled \pause 
+	\item $P(A|B) \pause =  \frac{2/3\cdot 1/2}{1/2} \pause =  2/3$
+	\end{itemize}
+}
+
+\frame{\frametitle{Bayes' rule}
+	\begin{theorem}
+	If $A$ and $B$ are events in $S$, then \alert{Bayes' rule} states
+	\[ P(A|B) = \frac{P(B|A)P(A)}{P(B)}= \frac{P(B|A)P(A)}{P(B|A)P(A)+P(B|A^c)P(A^c)} \]
+	\end{theorem}
+	
+	\vspace{0.2in} \pause
+	
+	Six-sided die-tossing example:
+	\begin{itemize}
+	\item $A$: an odd number is rolled
+	\item $B$: a number less than 4 is rolled \pause 
+	\item $A^c$: an even number is rolled \pause 
+	\item $P(A|B) \pause = \pause \frac{2/3\cdot 1/2}{2/3\cdot 1/2+1/3\cdot 1/2} \pause = \frac{1/3}{1/3+1/6} \pause = 2/3$
+	\end{itemize}
+}
+
+
+
+\section{Applications of probability}
+\subsection{Down Syndrome screening}
+\frame{\frametitle{Down Syndrome screening}
+    If a pregnant woman has a test for Down syndrome and it is positive, what is the probability that the child will have Down syndrome? \pause Let $D$ indicate a child with Down syndrome and $D^c$ the opposite. \pause Let `+' indicate a positive test result and `-' a negative result.
+
+    \vspace{0.1in} \pause
+
+    \[ \begin{array}{rl}
+    \mbox{sensitivity} &= P(+|D) \hspace{0.06in}= 0.94 \pause \\
+    \mbox{specificity} &= P(-|D^c) = 0.77 \pause \\
+    \mbox{prevalence} & = P(D)\hspace{0.23in} = 1/1000 \pause \\
+    \\ \\
+    P(D|+) &= \frac{P(+|D)P(D)}{P(+)} \pause = \frac{P(+|D)P(D)}{P(+|D)P(D)+P(+|D^c)P(D^c)} \pause
+    = \frac{0.94\cdot 0.001}{0.94\cdot 0.001+0.23\cdot 0.999} \pause \\
+    &\approx 1/250 \pause \\ \\
+    P(D|-) &\approx 1/10,000 
+    \end{array} \]
+}
+
+
+
+\section{Bayesian statistician}
+\begin{frame}
+\frametitle{A Bayesian statistician}
+
+Let 
+\begin{itemize}[<+->]
+\item $y$ the data we will collect from an experiment, 
+\item $K$ be everything we know for certain about the world (aside from $y$), and
+\item $\theta$ be anything we don't know for certain.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+My definition of a Bayesian statistician is an individual who makes decisions based on the probability distribution of those things we don't know conditional on what we know, \pause i.e. 
+\[ p(\theta|y, K). \]
+\pause 
+In all future notation, we will remove $K$ and implicitly condition on everything we know about the world (aside from the data). 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bayes' Rule}
+
+As originally stated, Bayes' Rule applied to a partition $A_i$, i.e. $\cup_{i=1}^n A_i = A$,
+\[ P(A_i|B) = \frac{P(B|A_i)P(A_i)}{\sum_{i=1}^n P(B|A_i)P(A_i)} \]
+
+\vspace{0.2in} \pause
+
+Bayes' Rule also applies to probability density (or mass) functions, e.g. 
+\[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta} =\frac{p(y|\theta)p(\theta)}{p(y)} \]
+where the integral plays the role of the sum in the above statement.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Posteriors and priors}
+
+If we think about 
+\begin{itemize}
+\item $y$ as data we are collecting in an experiment and 
+\item $\theta$ as the parameters of the model for that experiment,
+\end{itemize}
+
+\pause then we use the following terminology 
+\begin{center}
+\begin{tabular}{ll}
+Terminology & Notation \\
+\hline 
+Posterior & $p(\theta|y)$ \\
+Prior & $p(\theta)$ \\
+Model & $p(y|\theta)$ \\
+Prior predictive distribution & $p(y)$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.2in} \pause
+
+If $\theta$ is discrete (continuous), 
+
+\hspace{0.2in} then $p(\theta)$ and $p(\theta|y)$ are probability mass (density) functions.
+
+If $y$ is discrete (continuous), 
+
+\hspace{0.2in}  then $p(y|\theta)$ and $p(y)$ are probability mass (density) functions.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bayesian learning}
+
+So, Bayes' rule provides a formula for updating from prior beliefs to our posterior beliefs based on the data we observe, i.e.
+
+\[ p(\theta|y) = \frac{p(y|\theta)}{p(y)}p(\theta) \propto p(y|\theta)p(\theta) \]
+
+Suppose we gather $y_1,\ldots,y_n$ sequentially (and we assume $y_i$ independent conditional on $\theta$), then we have 
+
+\[ p(\theta|y_1) \propto p(y_1|\theta)p(\theta) \]
+\pause 
+and 
+\[ p(\theta|y_1,\ldots,y_j) \propto p(y_j|\theta)p(\theta|y_1,\ldots,y_{j-1}) \]
+
+\pause
+So Bayesian learning is 
+\[ p(\theta) \to p(\theta|y_1) \to p(\theta|y_1,y_2) \to \cdots \to p(\theta|y_1,\ldots,y_n). \]
+\end{frame}
+
+
+\section{Exponential model}
+\subsection{Exponential model}
+\begin{frame}
+\frametitle{Consider an exponential model}
+Let $Y|\theta\sim Exp(\theta)$, then this defines the likelihood, \pause i.e. 
+\[ p(y|\theta) = \theta e^{-\theta y}. \]
+\pause
+Let's assume a convenient prior $\theta \sim Ga(a, b)$, \pause then 
+\[ p(\theta) = \frac{b^{a}}{\mathrm{\Gamma}(a)} \theta^{a-1} e^{-b \theta}. \]
+\pause 
+The prior predictive distribution is 
+\[ p(y) = \int p(y|\theta)p(\theta) d\theta = \frac{b^{a}}{\mathrm{\Gamma}(a)}\frac{\mathrm{\Gamma}(a+1)}{(b+y)^{a+1}}. \]
+\pause 
+The posterior is 
+\[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)} = \frac{(b+y)^{a+1}}{\mathrm{\Gamma}(a+1)} \theta^{a+1-1} e^{-(b+y) \theta}, \]
+\pause
+thus $\theta|y \sim Ga(a+1,b+y)$. 
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{}
+
+<<>>=
+a = 1
+b = 1
+y = 0.5
+opar = par(mar=c(5,4,0,0)+.1)
+curve(dgamma(x, a, b), 0, 3, ylim=c(0,1),         col=1, lty=1, lwd=2, ylab="Density", xlab=expression(theta))
+curve(dgamma(x, 1, y),                      add=TRUE, col=2, lty=2, lwd=2)
+curve(dgamma(x, a+length(y), b+sum(y)), add=TRUE, col=3, lty=3, lwd=2)
+legend("topright", c("Prior","Normalized model","Posterior"), col=1:3, lty=1:3, lwd=2)
+legend("topleft", expression(a==1, b==1, y==1/2), bg="white")
+par(opar)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{A shortcut}
+
+If 
+\[ p(y) = \int p(y|\theta)p(\theta) d\theta < \infty, \]
+\pause 
+then we can actually use the following to find the posterior
+\[ p(\theta|y) \propto p(y|\theta) p(\theta) \]
+\pause
+where the $\propto$ signifies that terms not involving $\theta$ (or anything on the left of the conditioning bar) are irrelevant and can be dropped. 
+
+\vspace{0.2in} 
+
+In the exponential example
+\[ p(\theta|y) \propto p(y|\theta)p(\theta) = \theta e^{-\theta y} \theta^{a-1} e^{-b \theta} = \theta^{a+1-1} e^{-(b+y)\theta} \]
+\pause 
+where we can recognize $p(\theta|y)$ as the \alert{kernel} of a $Ga(a+1, b+y)$ distribution \pause and thus $\theta|y \sim Ga(a+1, b+y)$ and $p(y)<\infty$. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{More data}
+
+Suppose $Y_i|\theta \stackrel{ind}{\sim} Exp(\theta)$ for $i=1,\ldots,n$ and $y=(y_1,\ldots,y_n)$, then 
+\[ p(y|\theta) = \prod_{i=1}^n p(y_i|\theta) = \theta^n e^{-\theta n\overline{y}} \]
+\pause
+Then 
+\[ p(\theta|y) \propto p(y|\theta)p(\theta) = \theta^{a+n-1} e^{-\left(b+n\overline{y}\right) \theta}\]
+\pause
+which tells us that $\theta|y \sim Ga(a+n, b+n\overline{y})$. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+
+<<>>=
+a = 1
+b = 1
+set.seed(20141121)
+y = rexp(10, 2)
+opar = par(mar=c(5,4,0,0)+.1)
+curve(dgamma(x, a, b), 0, 5, ylim=c(0,1),           col=1, lty=1, lwd=2, ylab="Density", xlab=expression(theta))
+curve(dgamma(x, length(y), sum(y)),           add=TRUE, col=2, lty=2, lwd=2)
+curve(dgamma(x, a+length(y), b+sum(y)),   add=TRUE, col=3, lty=3, lwd=2)
+legend("topright", c("Prior","Normalized model","Posterior"), col=1:3, lty=1:3, lwd=2)
+legend("topleft", expression(a==1, b==1, n==10, bar(y)==0.4), bg="white")
+par(opar)
+@
+\end{frame}
+
+
+\subsection{Estimates and credible intervals}
+\begin{frame}
+\frametitle{Estimates and credible intervals}
+
+There is no standard estimator for parameters in a Bayesian analysis, but people typically use 
+\begin{itemize}[<+->]
+\item Posterior mean: $E[\theta|y]$
+\item Posterior mode (MAP): $\mbox{argmax}_\theta p(\theta|y)$
+\item Posterior median: $c: 0.5 = \int_{-\infty}^c p(\theta|y) d\theta$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+There are no standard $100(1-\alpha)\%$ interval estimators, but people typically use $(L,U)$
+\begin{itemize}[<+->]
+\item Equal-tailed: $\alpha/2 = \int_{-\infty}^L p(\theta|y) d\theta = \int_U^{\infty} p(\theta|y) d\theta$
+\item Highest posterior density (HPD): $1-\alpha = \int_L^U p(\theta|y) d\theta$ such that $U-L$ is minimized
+\item One-sided intervals:
+  \begin{itemize}
+  \item $L=-\infty$ and $\alpha=\int_U^{\infty} p(\theta|y) d\theta$
+  \item $U=\infty$ and $\alpha=\int_{-\infty}^L p(\theta|y) d\theta$
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Why or why not Bayesian?}
+
+Why do a Bayesian analysis?
+\begin{itemize}[<+->]
+\item Incorporate prior knowledge via $p(\theta)$
+\item Interpretability of results, e.g. the probability the parameter is in $(L,U)$ is 95\%
+\item Coherent, i.e. everything follows from specifying $p(\theta|y)$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Why not do a Bayesian analysis?
+\begin{itemize}[<+->]
+\item Need to specify $p(\theta)$ 
+\item Computational cost
+\item Does not guarantee coverage, i.e. how well do the procedures work over all their uses
+\end{itemize}
+\end{frame}
+
+
+
+\section{Binomial model}
+\begin{frame}
+\frametitle{Binomial model}
+Let $Y|\theta \sim Bin(n,\theta)$, then 
+\[ p(y|\theta) = {n\choose y} \theta^y (1-\theta)^{n-y}. \]
+If we choose a beta prior for $\theta$, i.e. 
+\[ \theta \sim Be(a,b), \]
+then 
+\[ \theta|y \sim Be(a+y,b+n-y). \] 
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Estimates and credible intervals}
+<<echo=TRUE>>=
+a = 1
+b = 1
+set.seed(20141121)
+n = 10
+y = rbinom(1, n, .4)
+
+# MLE
+y/n
+
+# Posterior mean
+(a+y)/(a+b+n)
+
+# Posterior median
+qbeta(.5, a+y, b+n-y)
+
+# Equal-tail credible interval
+qbeta(c(.025,.975), a+y, b+n-y)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+opar = par(mar=c(5,4,0,0)+.1)
+curve(dbeta(x, a, b), ylim=c(0,3),           col=1, lty=1, lwd=2, ylab="Density", xlab=expression(theta))
+curve(dbeta(x, y, n-y),           add=TRUE, col=2, lty=2, lwd=2)
+curve(dbeta(x, a+y, b+n-y),   add=TRUE, col=3, lty=3, lwd=2)
+legend("topright", c("Prior","Normalized model","Posterior"), col=1:3, lty=1:3, lwd=2)
+legend("topleft", expression(a==1, b==1, n==10, y==4), bg="white")
+par(opar)
+@
+\end{frame}
+
+
+\end{document}
