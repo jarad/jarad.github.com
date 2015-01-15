@@ -17,8 +17,8 @@ This course meets
 
 Office hours are
 
-- Instructor: TBD ([online](https://iastate.zoom.us/j/6333942508))
-- TA: TBD ([online](https://iastate.zoom.us/j/6672249203))
+- Instructor: W 12-2 in Snedecor 2208 ([online](https://iastate.zoom.us/j/6333942508))
+- TA: T 2:10-4 ([online](https://iastate.zoom.us/j/6672249203))
 
 ## Textbook
 
