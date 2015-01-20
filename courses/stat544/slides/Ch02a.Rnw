@@ -56,6 +56,7 @@ library(reshape2)
   \item Beta-binomial example
   \item Point estimation
   \item Interval estimation
+  \item Simulation from the posterior
   \end{itemize}
 \item Priors
   \begin{itemize}
@@ -107,7 +108,7 @@ library(reshape2)
 
 
 
-\subsection{the hard way}
+\subsection{Beta-binomial example}
 \frame{\frametitle{Derive the posterior - the hard way}
 	Suppose $Y\sim Bin(n,\theta)$ and $\theta\sim Be(a,b)$, \pause then 
 	\[ \begin{array}{ll}
@@ -116,7 +117,7 @@ library(reshape2)
 	&= {n\choose y} \frac{1}{\mbox{Beta}(a,b)} \int \theta^{a+y-1} (1-\theta)^{b+n-y-1} d\theta \pause \\
 	&= {n\choose y} \frac{\mbox{Beta}(a+y,b+n-y)}{\mbox{Beta}(a,b)} \pause
 	\end{array} \]
-	and 
+  which is known as the \href{http://en.wikipedia.org/wiki/Beta-binomial_distribution}{Beta-binomial distribution}. \pause
 	\[ \begin{array}{ll}
 	p(\theta|y) &= p(y|\theta)p(\theta) / p(y) \pause \\
 	&= {n\choose y} \theta^y(1-\theta)^{n-y}  \frac{\theta^{a-1} (1-\theta)^{b-1}}{\mbox{Beta}(a,b)}  \left/ {n\choose y} \frac{\mbox{Beta}(a+y,b+n-y)}{\mbox{Beta}(a,b)} \right. \pause \\
@@ -138,21 +139,33 @@ library(reshape2)
 
 
 \begin{frame}
-\frametitle{Point estimation}
+\frametitle{Example data}
 
-<<echo=FALSE, out.width='0.8\\textwidth'>>=
+Assume $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$ (which is equivalent to Unif(0,1)). \pause If we observe three successes ($y=3$) out of ten attempts ($n=10$). \pause Then our posterior is $\theta|y\sim Be(1+3,1+10-3) \stackrel{d}{=} Be(4,8)$.
+
+\vspace{3in}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior distribution}
+
+<<echo=FALSE, out.width='0.7\\textwidth'>>=
 n = 10
 y = 3
 a = b = 1
 opar = par(mar=c(5,4,.1,0)+.1)
-curve(dbeta(x, a+y, b+n-y), lwd=2, 
+curve(dbeta(x, a+y, b+n-y), lwd=2, col="red", lty=1, 
       xlab=expression(theta),
       ylab=expression(paste("p(", theta, "|y)")))
+curve(dbeta(x,a,b), lwd=2, col="blue", add=TRUE, lty=1)
+curve(dbeta(x,y,n-y), lwd=2, col="black", add=TRUE, lty=3)
+legend("topright", c("Prior","Normalized model","Posterior"), lwd=2, lty=c(1,3,1), col=c("blue","black","red"))
 par(opar)
 @
-
+{\tiny Try it yourself at \url{https://jaradniemi.shinyapps.io/one_parameter_conjugate/}.}
 \end{frame}
-
 
 
 
@@ -218,7 +231,7 @@ par(opar)
 
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Point estimation}
 
 <<echo=FALSE, out.width='0.8\\textwidth'>>=
@@ -257,7 +270,7 @@ par(opar)
 
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Point estimation}
 
 <<echo=FALSE, out.width='0.8\\textwidth'>>=
@@ -280,14 +293,44 @@ par(opar)
 
 
 
+\subsection{Simulation from the posterior}
+\begin{frame}[fragile]
+\frametitle{Simulation from the posterior}
 
+An estimate of the full posterior can be obtained via simulation, i.e. 
+
+<<>>=
+hist(samples <- rbeta(10000, a+y, b+n-y), 100, freq=F, ylim=c(0,3.5), xlim=c(0,1),
+     main="Samples from the posterior",
+     xlab=expression(theta),
+     ylab=expression(paste("p(", theta, "|y)")))
+curve(dbeta(x, a+y, b+n-y), col="gray", lwd=2, add=TRUE)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Estimates via simulation}
+
+We can also obtain point and interval estimates using these simulations
+
+<<echo=TRUE>>=
+c(mean=mean(samples), median=median(samples))
+quantile(samples, c(.025,.975)) # Equal-tail
+quantile(samples, .05) # Upper
+quantile(samples, .95) # Lower
+@
+
+\end{frame}
 
 
 \section{Priors}
 \frame{\frametitle{Guess the probability}
   \begin{itemize}[<+->]
   \item A coin spins heads.
-  \item Denver Broncos beat Seattle Seahawks in 2014 Super Bowl.
+  \item Seattle Seahawks win 2015 Super Bowl.
   \item The first base pair on my genome is A.
   \end{itemize}
 }
@@ -542,11 +585,14 @@ w = 0.01
 theta = seq(w/2, 1-w/2, by=w)
 d = f(theta)
 d = d/sum(d)/w
-theta[c(which(cumsum(d)*w>0.025)[1]-1, which(cumsum(d)*w>0.975)[1])] # 95\% CI
 plot(theta, d, type="l", col="red", lwd=2,  
       main="Binomial, nonconjugate prior", ylab="Density", xlab=expression(theta))
 curve(exp(x)/(exp(1)-1), col="blue", lwd=2, add=TRUE)
 legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
+@
+
+<<echo=TRUE>>=
+theta[c(which(cumsum(d)*w>0.025)[1]-1, which(cumsum(d)*w>0.975)[1])] # 95\% CI
 @
 \end{frame}
 
