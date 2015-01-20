@@ -18,7 +18,7 @@ This course meets
 Office hours are
 
 - Instructor: W 12-2 in Snedecor 2208 ([online](https://iastate.zoom.us/j/6333942508))
-- TA: T 2:10-4 ([online](https://iastate.zoom.us/j/6672249203))
+- TA: T 2:10-4 in Snedecor 3220 ([online](https://iastate.zoom.us/j/6672249203))
 
 ## Textbook
 
