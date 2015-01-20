@@ -9,7 +9,7 @@
 
 
 % Document settings
-\newcommand{\lecturetitle}{Probability and Inference}
+\newcommand{\lecturetitle}{Parameter estimation}
 \title[\lecturetitle]{STAT 544 - Bayesian Statistics}
 \subtitle{\lecturetitle}
 \author[Jarad Niemi]{Jarad Niemi (Dr. J)}
@@ -49,26 +49,27 @@ library(reshape2)
 
 \section{Outline}
 \begin{frame}
+\frametitle{Outline}
 \begin{itemize}
-\item Quick review of probability
+\item Parameter estimation
   \begin{itemize}
-  \item Kolmogorov's axioms
-  \item Bayes' rule
+  \item Beta-binomial example
+  \item Point estimation
+  \item Interval estimation
   \end{itemize}
-\item Applications of probability
+\item Priors
   \begin{itemize}
-  \item Down's syndrome
+  \item Subjective 
+  \item Conjugate 
+  \item Default 
+  \item Improper
   \end{itemize}
-\item Bayesian statistics
-  \item Condition on what is known
-  \item Describe uncertainty using probability
-\item What is probability?
 \end{itemize}
 \end{frame}
 
 
 \section{Parameter estimation}
-\frame{\frametitle{Posterior distribution}
+\frame{\frametitle{Parameter estimation}
   For point or interval estimation of a parameter $\theta$ in a model $M$ based on data $y$, \pause Bayesian inference is based off  
 	\[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{\alert<7->{p(y)}} \uncover<7->{= \frac{p(y|\theta)p(\theta)}{\alert<7->{\int p(y|\theta)p(\theta) d \theta}}}\uncover<8->{\propto p(y|\theta) p(\theta)} \]
 	
@@ -98,8 +99,12 @@ library(reshape2)
 	The \alert{kernel} of a probability density (mass) function is the form of the pdf (pmf) with any terms not involving the random variable omitted. \pause
 	\end{definition}
 	
-	For example, $\theta^{a-1}(1-\theta)^{b-1}$ is the kernel of a beta distribution. 
+	For example, $\theta^{a-1}(1-\theta)^{b-1}$ is the kernel of a \href{http://en.wikipedia.org/wiki/Beta_distribution}{beta distribution}. 
 }
+
+
+
+
 
 
 \subsection{the hard way}
@@ -132,6 +137,24 @@ library(reshape2)
 }
 
 
+\begin{frame}
+\frametitle{Point estimation}
+
+<<echo=FALSE, out.width='0.8\\textwidth'>>=
+n = 10
+y = 3
+a = b = 1
+opar = par(mar=c(5,4,.1,0)+.1)
+curve(dbeta(x, a+y, b+n-y), lwd=2, 
+      xlab=expression(theta),
+      ylab=expression(paste("p(", theta, "|y)")))
+par(opar)
+@
+
+\end{frame}
+
+
+
 
 \frame{\frametitle{Point and interval estimation}
 	Nothing inherently Bayesian about obtaining point and interval estimates. 
@@ -142,8 +165,11 @@ library(reshape2)
 	
 	\vspace{0.2in} \pause
 	
-	A $100(1-\alpha)\%$ credible interval is any interval in the posterior that contains the parameter with probability $(1-\alpha)$.
+	A $100(1-a)\%$ credible interval is any interval in the posterior that contains the parameter with probability $(1-a)$.
 }
+
+
+
 
 \subsection{Point estimation}
 \frame{\frametitle{Point estimation}
@@ -157,7 +183,7 @@ library(reshape2)
 	\vspace{0.1in} \pause 
 	
 	Find the estimator that maximizes the expected utility:
-	\[ \hat{\theta}_{Bayes} = \mbox{argmax}_{\hat{\theta}} \,E\left[ U\!\left(\theta,\hat{\theta}\right) \right] \] 
+	\[ \hat{\theta}_{Bayes} = \mbox{argmax}_{\hat{\theta}} \,E\left[ \left. U\!\left(\theta,\hat{\theta}\right)\right|y \right] \] 
 	\pause or minimizes expected loss. 
 	
 	\vspace{0.1in} \pause
@@ -182,14 +208,33 @@ library(reshape2)
 	\pause then 
 	
 	\[ \begin{array}{ll}
-	E_\theta \left[L\!\left(\theta,\hat{\theta}\right)\right] & = E_\theta\left[\theta^2\right] -2\hat{\theta}E_\theta[\theta] + \hat{\theta}^2 \pause \\ \\ 
-	\frac{d}{d\hat{\theta}} E\left[L\!\left(\theta,\hat{\theta}\right)\right] &= -2E_\theta[\theta] + 2\hat{\theta} \pause \stackrel{set}{=} 0 \pause \implies \hat{\theta} = E_\theta[\theta] \pause \\ \\
-	\frac{d^2}{d\hat{\theta}^2} E\left[L\!\left(\theta,\hat{\theta}\right)\right] &= 2 \pause
+	E \left[\left. L\!\left(\theta,\hat{\theta}\right)\right|y\right] & = E\left[\theta^2|y\right] -2\hat{\theta}E[\theta|y] + \hat{\theta}^2 \pause \\ \\ 
+	\frac{d}{d\hat{\theta}} E\left[\left. L\!\left(\theta,\hat{\theta}\right)\right|y\right] &= -2E[\theta|y] + 2\hat{\theta} \pause \stackrel{set}{=} 0 \pause \implies \hat{\theta} = E[\theta|y] \pause \\ \\
+	\frac{d^2}{d\hat{\theta}^2} E\left[\left. L\!\left(\theta,\hat{\theta}\right)\right|y\right] &= 2 \pause
 	\end{array} \]
-	So $\hat{\theta} = E_\theta[\theta]$ minimizes expected squared-error loss. 
+	So $\hat{\theta} = E[\theta|y]$ minimizes expected squared-error loss. 
 	\end{proof}
 }
 
+
+
+\begin{frame}
+\frametitle{Point estimation}
+
+<<echo=FALSE, out.width='0.8\\textwidth'>>=
+opar = par(mar=c(5,4,.1,0)+.1)
+curve(dbeta(x, a+y, b+n-y), lwd=2, 
+      xlab=expression(theta),
+      ylab=expression(paste("p(", theta, "|y)")), col="gray")
+estimates = c(mean = (a+y)/(a+b+n), 
+              median = qbeta(.5, a+y, b+n-y),
+              mode = (a+y-1)/(a+b+n-2))
+abline(v=estimates, lty=1:3, col=1:3, lwd=2)
+legend("topright", names(estimates), lty=1:3, col=1:3, lwd=2)
+par(opar)
+@
+
+\end{frame}
 
 
 
@@ -212,109 +257,29 @@ library(reshape2)
 
 
 
-\begin{comment}
+\begin{frame}
+\frametitle{Point estimation}
 
-\subsection{Priors}
-\frame{\frametitle{Priors}
-	\begin{definition}
-	A prior $p(\theta)$ is \alert{conjugate} if for $p(\theta)\in \mathcal{P}$ and $p(y|\theta)\in \mathcal{F}$, $p(\theta|y)\in \mathcal{P}$ where $\mathcal{F}$ and $\mathcal{P}$ are families of distributions.
-	\end{definition}
-	
-	\vspace{0.1in} \pause  
-	
-	For example, the beta distribution ($\mathcal{P}$) is conjugate to the binomial distribution with unknown probability of success ($\mathcal{F}$) \pause since 
-	\[ \theta \sim \alert{\mbox{Be}}(a,b) \qquad\mbox{and}\qquad \theta|y \sim \alert{\mbox{Be}}(a+y,b+n-y). \] 
-	
-	\pause
-	
-	\begin{definition}
-	A \alert{natural} conjugate prior is a conjugate prior that has the same functional form as the likelihood.
-	\end{definition}
-	
-	\vspace{0.1in} \pause 
-	
-	For example, the beta distribution is a natural conjugate prior since 
-	\[ p(\theta) \propto \theta^{a-1}(1-\theta)^{b-1} \qquad \mbox{and} \qquad L(\theta) \propto \theta^y(1-\theta)^{n-y}. \]
-}
+<<echo=FALSE, out.width='0.8\\textwidth'>>=
+library(pscl)
+opar = par(mar=c(5,4,.1,0)+.1)
+curve(dbeta(x, a+y, b+n-y), lwd=2, 
+      xlab=expression(theta),
+      ylab=expression(paste("p(", theta, "|y)")), col="gray")
+intervals = rbind(qbeta(c(.025,.975), a+y, b+n-y),
+                  qbeta(c(   0, .95), a+y, b+n-y),
+                  qbeta(c( .05,   1), a+y, b+n-y),
+                  betaHPD(a+y,b+n-y,.95))
+rownames(intervals) = c("Equal-tail", "Lower one-sided", "Upper one-sided", "Highest posterior density (HPD)")
+segments(intervals[,1], (1:4)/10, intervals[,2], (1:4)/10, lwd=2, lty=1:4, col=1:4)
+legend("topright", rownames(intervals), lwd=2, lty=1:4, col=1:4)
+par(opar)
+@
+
+\end{frame}
 
 
-\frame{\frametitle{Discrete priors are conjugate}
-	\begin{theorem}
-	Discrete priors are conjugate. \pause
-	\end{theorem}
-	
-	\begin{proof}
-	Suppose $p(\theta)$ is discrete, \pause i.e. 
-	\[ P(\theta=\theta_i) = p_i \pause \qquad \sum_{i=1}^\mathrm{I} p_i = 1 \]
-	\pause and $p(y|\theta)$ is the model. \pause Then, $P(\theta=\theta_i) = p_i'$ 
-	is the posterior \pause with 
-	\[ p_i' = \frac{p_i p(y|\theta_i)}{\sum_{j=1}^\mathrm{I} p_j p(y|\theta_j)} \propto p_i p(y|\theta_i). \]
-	\end{proof}
-}
 
-\frame{\frametitle{Mixtures of natural conjugate priors are conjugate}
-	\begin{theorem}
-	Mixtures of natural conjugate priors are conjugate. \pause
-	\end{theorem}
-	
-	\begin{proof}
-	Let 
-	\[ \theta\sim \sum_{i=1}^\mathrm{I} p_i p_i(\theta) \pause \qquad \sum_{i=1}^\mathrm{I} p_i=1\] \pause and $p_i(y) = \int p(y|\theta) p_i(\theta) d\theta$, \pause then 
-	\[ \theta|y \sim \sum_{i=1}^\mathrm{I} p_i' p_i(\theta|y) \pause \qquad p_i' \propto p_i p_i(y) \]
-	\pause where $p_i(\theta|y)$ is the posterior if $p_i(\theta)$ was the prior. 
-	\end{proof}
-}
-
-
-\subsection{Objective priors}
-\frame{\frametitle{Objective (default?) priors}
-	Can we always use $p(\theta)\propto 1$? 
-	
-	\vspace{0.2in} \pause 
-	
-	Suppose we use $\phi = \log(\theta/[1-\theta])$, the log odds as our parameter, \pause and set $p(\phi) \propto 1$, \pause then the implied prior on $\theta$ \pause is 
-	
-	\[ \begin{array}{ll}
-	p_\theta(\theta) \propto & 1 \left| \frac{d}{d\theta} \log(\theta/[1-\theta]) \right| \pause \\
-	&= \frac{1-\theta}{\theta} \left[ \frac{1}{1-\theta} + \frac{\theta}{[1-\theta]^2} \right] \pause \\	
-	&= \frac{1-\theta}{\theta} \left[ \frac{[1-\theta]+\theta}{[1-\theta]^2} \right] \pause \\
-	&= \theta^{-1}[1-\theta]^{-1} \pause \\
-	\end{array} \]
-	a Be(0,0) if that were a proper distribution. 
-}
-
-\frame{\frametitle{Jeffreys Prior}
-	\begin{definition}
-	\alert{Jeffreys prior} is a prior that is invariant to parameterization \pause and is obtained  via 
-	\[ p(\theta) \propto \sqrt{\mbox{det}\,  \mathcal{I}(\theta)} \]
-	\pause where $\mathcal{I}(\theta)$ is the Fisher information. 
-	\end{definition}
-	
-	\vspace{0.2in} \pause
-	
-	For example, for a binomial distribution $\mathcal{I}(\theta)=\frac{n}{\theta[1-\theta]}$, \pause so 
-	\[ p(\theta) \propto \theta^{-1/2}(1-\theta)^{-1/2} =  \theta^{1/2-1}(1-\theta)^{1/2-1} \]
-	\pause a Be(1/2,1/2) distribution. 
-}
-
-\subsection{Summary}
-\frame{\frametitle{Summary}
-	\begin{itemize}[<+->]
-	\item Bayesian parameter estimation
-		\begin{itemize}
-		\item $p(\theta|y) \propto p(y|\theta)p(\theta)$
-		\item Point estimation: mean, median, MAP
-		\item Interval estimation: equal-tailed, one-sided, HPD
-		\end{itemize}
-	\item Priors
-		\begin{itemize}
-		\item Conjugate
-		\item Jeffreys prior
-		\end{itemize}
-	\end{itemize}
-}
-
-\end{comment}
 
 
 
@@ -376,12 +341,10 @@ library(reshape2)
 
 \begin{frame}[fragile]
 \frametitle{Discrete prior}
-<<discrete, fig.width=10>>=
+<<discrete, fig.width=10, out.width='\\textwidth'>>=
 theta = seq(0.01, 0.99, by=0.01)
 prior = dbeta(theta, 3, 2)
 prior = prior / sum(prior)
-y = 3
-n = 10
 posterior = prior * dbinom(y, n, theta)
 posterior = posterior / sum(posterior)
 
@@ -426,7 +389,7 @@ legend("topleft", c("Prior","Posterior"), col=c("blue","red"), pch=19)
 
 \begin{frame}[fragile]
 \frametitle{Mixture priors}
-<<mixture, eval=FALSE>>=
+<<mixture>>=
 p = 0.4
 a = c(1,4)
 b = c(3,2)
@@ -456,13 +419,6 @@ legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 @
 \end{frame}
 
-
-\begin{frame}[fragile]
-\frametitle{Mixture priors}
-<<mixture-plot, echo=FALSE, fig.width=6, fig.height=5, out.width='.8\\linewidth', fig.align='center'>>=
-<<mixture>>
-@
-\end{frame}
 
 
 \subsection{Default priors}
@@ -534,7 +490,7 @@ legend("topright", c("Prior",'Posterior'), col=c("blue","red"), lwd=2, bg="white
 
 \subsection{Non-conjugate priors}
 \frame{\frametitle{Non-conjugate priors}
-  If $Y\sim Bin(n,\theta)$ and $p(\theta) = e^\theta$, then
+  If $Y\sim Bin(n,\theta)$ and $p(\theta) = e^\theta/(e-1)$, then
   \[ 
   p(\theta|y) \propto f(\theta) = \theta^y (1-\theta)^{n-y} e^\theta
   \]
@@ -553,7 +509,7 @@ legend("topright", c("Prior",'Posterior'), col=c("blue","red"), lwd=2, bg="white
 \frame{\frametitle{Analytical integration}
 \setkeys{Gin}{width=0.8\textwidth}
   \begin{center}
-  \includegraphics{L2-integral}
+  \includegraphics{Ch02a-integral}
   \end{center}
 }
 
@@ -561,7 +517,7 @@ legend("topright", c("Prior",'Posterior'), col=c("blue","red"), lwd=2, bg="white
 \setkeys{Gin}{width=0.8\textwidth}
   But we only need the integral for $y=3$ and $n=10$: 
   \begin{center}
-  \includegraphics{L2-integral2}
+  \includegraphics{Ch02a-integral2}
   \end{center}
 }
 
@@ -576,6 +532,9 @@ curve(1000*f(x), add=TRUE, col="red", lwd=2)
 legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 @
 \end{frame}
+
+
+
 
 \begin{frame}[fragile]
 <<nonconjugate_grid, fig.width=9>>=
@@ -609,7 +568,7 @@ legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 
 
 \frame{\frametitle{Be(0,0) prior}
-  Recall that $\mbox{Be}(a,b)$ is a proper probability distribution only if $a>0,b>0$. 
+  Recall that $\mbox{Be}(a,b)$ is a proper probability distribution if $a>0,b>0$. 
   
   \vspace{0.2in} \pause
   
@@ -617,7 +576,7 @@ legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
   
   \vspace{0.2in} \pause
   
-  The posterior, $\theta|y \sim Be(y,n-y)$, is proper only if $0<y<n$. 
+  The posterior, $\theta|y \sim Be(y,n-y)$, is proper if $0<y<n$. 
 }
 
 \end{document}
