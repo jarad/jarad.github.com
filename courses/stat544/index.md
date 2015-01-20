@@ -26,8 +26,9 @@ The required textbook for the course is [Bayesian Data Analysis (3rd edition)](h
 
 ## Relevant course pages
 
-- [Youtube Videos](https://www.youtube.com/playlist?list=PLFHD4aOUZFp0Xhzd5j1nWnExD54xJfnJX)
+- [Applets](applets.html)
 - [Slides](slides)
+- [Youtube Videos](https://www.youtube.com/playlist?list=PLFHD4aOUZFp0Xhzd5j1nWnExD54xJfnJX)
 
 ## Course Description
 
