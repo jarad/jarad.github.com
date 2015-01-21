@@ -17,6 +17,8 @@ group: navigation
 
 ## Research
 
+- [CDC Weekly Case Counts](https://michaud.shinyapps.io/MMWRPlot/)
+
 ## For fun
 
 - [Great Ames Adventure Race (GAAR) results](https://jaradniemi.shinyapps.io/GAAR/)
