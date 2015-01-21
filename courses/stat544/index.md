@@ -18,7 +18,7 @@ This course meets
 Office hours are
 
 - Instructor: W 12-2 in Snedecor 2208 ([online](https://iastate.zoom.us/j/6333942508))
-- TA: T 2:10-4 ([online](https://iastate.zoom.us/j/6672249203))
+- TA: T 2:10-4 in Snedecor 3220 ([online](https://iastate.zoom.us/j/6672249203))
 
 ## Textbook
 
@@ -26,8 +26,9 @@ The required textbook for the course is [Bayesian Data Analysis (3rd edition)](h
 
 ## Relevant course pages
 
-- [Youtube Videos](https://www.youtube.com/playlist?list=PLFHD4aOUZFp0Xhzd5j1nWnExD54xJfnJX)
+- [Applets](applets.html)
 - [Slides](slides)
+- [Youtube Videos](https://www.youtube.com/playlist?list=PLFHD4aOUZFp0Xhzd5j1nWnExD54xJfnJX)
 
 ## Course Description
 
@@ -55,3 +56,4 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 ## Faculty Senate Recommendations
 
 This course abides by the Faculty Senate Recommendations provided at >http://www.celt.iastate.edu/teaching/syllabus_inclusion.html>.
+

@@ -143,8 +143,15 @@ library(reshape2)
 
 Assume $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$ (which is equivalent to Unif(0,1)). \pause If we observe three successes ($y=3$) out of ten attempts ($n=10$). \pause Then our posterior is $\theta|y\sim Be(1+3,1+10-3) \stackrel{d}{=} Be(4,8)$.
 
-\vspace{3in}
+\vspace{0.5in} \pause
 
+\begin{remark}
+Note that a $Be(1,1)$ is equivalent to $p(\theta)=\mathrm{I}(0<\theta<1)$\pause, i.e. 
+
+\[ p(\theta|y) \propto p(y|\theta)p(\theta) = p(y|\theta)\mathrm{I}(0<\theta<1) \]
+\pause
+so it may seem that a reasonable approach to a default prior is to replace $p(\theta)$ by a 1 (times the parameter constraint). \pause We will see later that this depends on the parameterization.
+\end{remark}
 \end{frame}
 
 
@@ -186,26 +193,25 @@ par(opar)
 
 \subsection{Point estimation}
 \frame{\frametitle{Point estimation}
-	Define utility function $U\!\left(\theta,\hat{\theta}\right)$ \pause where 
+	Define a loss (or utility) function $L\!\left(\theta,\hat{\theta}\right)=-U\!\left(\theta,\hat{\theta}\right)$ \pause where 
 	\begin{itemize}
 	\item $\theta$ is the parameter of interest \pause
 	\item $\hat{\theta}=\hat{\theta}(y)$ is the estimator of $\theta$.  \pause
 	\end{itemize}
-	or loss function $L\!\left(\theta,\hat{\theta}\right)=-U\!\left(\theta,\hat{\theta}\right)$.
 	
 	\vspace{0.1in} \pause 
 	
-	Find the estimator that maximizes the expected utility:
-	\[ \hat{\theta}_{Bayes} = \mbox{argmax}_{\hat{\theta}} \,E\left[ \left. U\!\left(\theta,\hat{\theta}\right)\right|y \right] \] 
-	\pause or minimizes expected loss. 
+	Find the estimator that minimizes the expected loss:
+	\[ \hat{\theta}_{Bayes} = \mbox{argmin}_{\hat{\theta}} \,E\left[ \left. L\!\left(\theta,\hat{\theta}\right)\right|y \right] \] 
+	\pause or maximizes expected utility. 
 	
 	\vspace{0.1in} \pause
 	
 	Common estimators: \pause
 	\begin{itemize}
-	\item Mean: $\hat{\theta}_{Bayes} = E[\theta|y]$ minimizes $U\!\left(\theta,\hat{\theta}\right) = \left(\theta-\hat{\theta}\right)^2$ \pause
-	\item Median: $\int_{\hat{\theta}_{Bayes}}^\infty p(\theta|y) d\theta = \frac{1}{2}$ minimizes $U\!\left(\theta,\hat{\theta}\right) = \left|\theta-\hat{\theta}\right|$ \pause
-	\item Mode: $\hat{\theta}_{Bayes} = \mbox{argmax}_\theta \, p(\theta|y)$ minimizes $U\!\left(\theta,\hat{\theta}\right) = \mathrm{I}\left(\theta = \hat{\theta}\right)$  \pause also called \alert{maximum a posterior (MAP)}
+	\item Mean: $\hat{\theta}_{Bayes} = E[\theta|y]$ minimizes $L\!\left(\theta,\hat{\theta}\right) = \left(\theta-\hat{\theta}\right)^2$ \pause
+	\item Median: $\int_{\hat{\theta}_{Bayes}}^\infty p(\theta|y) d\theta = \frac{1}{2}$ minimizes $L\!\left(\theta,\hat{\theta}\right) = \left|\theta-\hat{\theta}\right|$ \pause
+	\item Mode: $\hat{\theta}_{Bayes} = \mbox{argmax}_\theta \, p(\theta|y)$ minimizes $L\!\left(\theta,\hat{\theta}\right) = -\mathrm{I}\left(\theta = \hat{\theta}\right)$  \pause also called \alert{maximum a posterior (MAP)}
 	\end{itemize}
 }
 
@@ -264,7 +270,7 @@ par(opar)
 	\begin{itemize}
 	\item Equal-tailed: $a/2 = \int_{-\infty}^L p(\theta|y) d\theta = \int_U^\infty p(\theta|y) d\theta$ \pause
 	\item One-sided: either $L=-\infty$ or $U=\infty$ \pause
-	\item \alert{Highest posterior density (HPD)}: $p(L|y) = p(U|y)$
+	\item \alert{Highest posterior density (HPD)}: $p(L|y) = p(U|y)$ for a uni-modal posterior \pause which is also the shortest interval
 	\end{itemize}
 }
 
@@ -505,7 +511,7 @@ legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 
 \frame{\frametitle{Fisher information}
   \begin{theorem}
-  The Fisher information for $Y\sim Bin(n,\theta)$ is $\mathcal{I}{\theta} = \frac{n}{\theta(1-\theta)}$.
+  The Fisher information for $Y\sim Bin(n,\theta)$ is $\mathcal{I}(\theta) = \frac{n}{\theta(1-\theta)}$.
   \end{theorem}
   \begin{proof}
   Since the binomial is an exponential family, we can use Lemma 7.3.11 of Casella and Berger (2nd ed). 
