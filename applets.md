@@ -6,7 +6,7 @@ group: navigation
 ---
 {% include JB/setup %}
 
-# My applets
+# My (or my student's) applets
 
 ## Teaching
 
