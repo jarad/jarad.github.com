@@ -22,3 +22,4 @@ To extract the R code, run
 ## Chapter slide source files
 
 - [Chapter 01](Ch01.Rnw)
+- [Chapter 02a](Ch02a.Rnw)
