@@ -6,7 +6,7 @@ group: navigation
 ---
 {% include JB/setup %}
 
-# My applets
+# My (or my student's) applets
 
 ## Teaching
 
@@ -16,6 +16,8 @@ group: navigation
 - [One parameter conjugate Bayesian analysis](https://jaradniemi.shinyapps.io/one_parameter_conjugate/)
 
 ## Research
+
+- [CDC Weekly Case Counts](https://michaud.shinyapps.io/MMWRPlot/)
 
 ## For fun
 
