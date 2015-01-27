@@ -28,6 +28,7 @@
 opts_chunk$set(fig.width=6, fig.height=5, out.width='.8\\linewidth', fig.align='center', size='tiny')
 require(MCMCpack)
 require(rjags)
+require(rstan)
 @
 
 \frame{\titlepage}
@@ -99,11 +100,11 @@ require(rjags)
   \begin{proof}
   Since the normal distribution with unknown mean is an exponential family, use Casella \& Berger Lemma 7.3.11 {\tiny
   \[ \begin{array}{rl}
-  -E_{y|\mu}\left[ \frac{\partial^2}{\partial \mu^2} \log p(y|\mu) \right] 
-  &=  -E_{y|\mu}\left[ \frac{\partial^2}{\partial \mu^2} -\log (2\pi s^2)/2 -\frac{1}{2s^2}\sum_{i=1}^n \left( y_i-\mu \right)^2 \right] \\
-  &=  -E_{y|\mu}\left[ \frac{\partial^2}{\partial \mu^2} -\log (2\pi s^2)/2 -\frac{1}{2s^2}\left( \sum_{i=1}^n y_i^2 - 2\mu n\overline{y} + n\mu^2 \right) \right] \\
-  &=  -E_{y|\mu}\left[ \frac{\partial}{\partial \mu} -\frac{1}{2s^2}\left( - 2 n\overline{y} + 2n\mu \right) \right] \\
-  &=  -E_{y|\mu}\left[  -\frac{1}{2s^2}\left( 2n \right) \right] \\
+  -E_y\left[ \frac{\partial^2}{\partial \mu^2} \log p(y|\mu) \right] 
+  &=  -E_y\left[ \frac{\partial^2}{\partial \mu^2} -\log (2\pi s^2)/2 -\frac{1}{2s^2}\sum_{i=1}^n \left( y_i-\mu \right)^2 \right] \\
+  &=  -E_y\left[ \frac{\partial^2}{\partial \mu^2} -\log (2\pi s^2)/2 -\frac{1}{2s^2}\left( \sum_{i=1}^n y_i^2 - 2\mu n\overline{y} + n\mu^2 \right) \right] \\
+  &=  -E_y\left[ \frac{\partial}{\partial \mu} -\frac{1}{2s^2}\left( - 2 n\overline{y} + 2n\mu \right) \right] \\
+  &=  -E_y\left[  -\frac{1}{2s^2}\left( 2n \right) \right] \\
   &=  n/s^2 \\ \\
   p(\mu) &\propto \sqrt{|\mathcal{I}(\mu)|} =  \sqrt{n/s^2} \\
   &= 1
@@ -189,6 +190,9 @@ require(rjags)
 }
 
 \begin{frame}[fragile]
+\frametitle{Example}
+
+Consider $Y_i\stackrel{ind}{\sim} N(\mu,1)$ and $\mu\sim N(0,1)$. 
 <<unknown_mean>>=
 # Prior
 m = 0
@@ -230,10 +234,10 @@ legend("topright", c("Prior","Posterior","Likelihood"), col=c("blue","red","seag
   \begin{proof}
   Since the normal distribution with unknown variance is an exponential family, use Casella \& Berger Lemma 7.3.11.{\tiny
   \[ \begin{array}{rl}
-  -E_{y| \sigma^2}\left[ \frac{\partial^2}{\partial  (\sigma^2)^2} \log p(y| \sigma^2) \right] 
-  &=  -E\left[ \frac{\partial^2}{\partial  (\sigma^2)^2} -n\log (2\pi \sigma^2)/2 -\frac{1}{2\sigma^2}\sum_{i=1}^n \left( y_i- m \right)^2 \right] \\
-  &=  -E\left[ \frac{\partial}{\partial  (\sigma^2)} -\frac{n}{2\sigma^2} +\frac{1}{2(\sigma^2)^2}\sum_{i=1}^n \left( y_i- m \right)^2 \right] \\
-  &=  -E\left[ \frac{n}{2(\sigma^2)^2} -\frac{1}{(\sigma^2)^3}\sum_{i=1}^n \left( y_i- m \right)^2 \right] \\
+  -E_y\left[ \frac{\partial^2}{\partial  (\sigma^2)^2} \log p(y| \sigma^2) \right] 
+  &=  -E_y \left[ \frac{\partial^2}{\partial  (\sigma^2)^2} -n\log (2\pi \sigma^2)/2 -\frac{1}{2\sigma^2}\sum_{i=1}^n \left( y_i- m \right)^2 \right] \\
+  &=  -E_y \left[ \frac{\partial}{\partial  (\sigma^2)} -\frac{n}{2\sigma^2} +\frac{1}{2(\sigma^2)^2}\sum_{i=1}^n \left( y_i- m \right)^2 \right] \\
+  &=  -E_y \left[ \frac{n}{2(\sigma^2)^2} -\frac{1}{(\sigma^2)^3}\sum_{i=1}^n \left( y_i- m \right)^2 \right] \\
   &=  -\frac{n}{2(\sigma^2)^2} +\frac{n}{(\sigma^2)^3} \sigma^2 \\
   &=  n/2 (\sigma^2)^{-2}\\
   \\
@@ -282,6 +286,9 @@ legend("topright", c("Prior","Posterior","Likelihood"), col=c("blue","red","seag
 
 
 \begin{frame}[fragile]
+\frametitle{Example}
+
+Suppose $Y_i\stackrel{ind}{\sim} N(1,\sigma^2)$ and $\sigma^2\sim IG(1,1)$.
 <<unknown_var>>=
 # Prior
 a = b = 1
@@ -368,7 +375,7 @@ legend("topright", c("Prior","Posterior","Likelihood"), col=c("blue","red","seag
 \end{comment}
 
 \subsection{Summary}
-\frame{\frametitle{}\small
+\frame{\frametitle{Summary}\small
   Suppose $Y_i \sim N(\mu,\sigma^2)$.
   \begin{itemize}[<+->]
   \item $\mu$ unknown ($\sigma^2$ known)
@@ -385,7 +392,7 @@ legend("topright", c("Prior","Posterior","Likelihood"), col=c("blue","red","seag
     \begin{itemize}
     \item Jeffreys prior: $p(\sigma^2) \propto 1/\sigma^2$ (think of this as $IG(0,0)$)
     \item Natural conjugate prior $IG(a,b)$
-    \item Posterior $IG\left(a+n, b+\sum_{i=1}^n (y_i-\mu)^2\right)$
+    \item Posterior $IG\left(a+n/2, b+\sum_{i=1}^n (y_i-\mu)^2/2\right)$
     \end{itemize}
     
     
@@ -411,7 +418,7 @@ legend("topright", c("Prior","Posterior","Likelihood"), col=c("blue","red","seag
 \begin{frame}
 \frametitle{JAGS}
 
-\url{http://mcmc-jags.sourceforge.net/}{Just another Gibbs sampler (JAGS)} ``is a program for analysis of Bayesian hierarchical models using Markov Chain Monte Carlo (MCMC) simulation  not wholly unlike \href{http://www.openbugs.net}{BUGS}.'' \pause We will use JAGS through its R interface \url{http://cran.r-project.org/web/packages/rjags/index.html}{\tt rjags}.
+\href{http://mcmc-jags.sourceforge.net/}{Just another Gibbs sampler (JAGS)} ``is a program for analysis of Bayesian hierarchical models using Markov Chain Monte Carlo (MCMC) simulation  not wholly unlike \href{http://www.openbugs.net}{BUGS}.'' \pause We will use JAGS through its R interface \href{http://cran.r-project.org/web/packages/rjags/index.html}{\tt rjags}.
 
 \vspace{0.2in} \pause
 
@@ -429,20 +436,20 @@ The basic workflow when using {\tt rjags} is
 \begin{frame}[fragile]
 \frametitle{Binomial model}
 
-Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(a,b)$. Suppose we assume $a=b=1$ and observe $y=3$ successes out of $n=10$ attempts.
+Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$ and we observe $y=3$ successes out of $n=10$ attempts.
 
 <<>>=
-m_string = "
+model = "
 model 
 {
-  y ~ dbin(theta,n)  # notice p then n
+  y     ~ dbin(theta,n)  # notice p then n
   theta ~ dbeta(a,b)
 }
 "
 
 dat = list(n=10, y=3, a=1, b=1)
 
-m = jags.model(textConnection(m_string), dat)
+m = jags.model(textConnection(model), dat)
 r = coda.samples(m, "theta", n.iter=1000)
 @
 \end{frame}
@@ -475,10 +482,10 @@ plot(r)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-Let $Y\sim N(\mu,s^2)$ and $\mu\sim N(m,C)$. Suppose we assume $m=0$ and $C=1$.
+Let $Y\sim N(\mu,s^2)$ and $\mu\sim N(0,1)$. 
 
 <<>>=
-m_string = "
+model = "
 model 
 {
   for (i in 1:n) {        # iterate over observations
@@ -493,7 +500,7 @@ dat = list(m=0,C=1,s2=1)
 dat$y = rnorm(3,1,sqrt(dat$s2))
 dat$n = length(dat$y)
 
-m = jags.model(textConnection(m_string), dat)
+m = jags.model(textConnection(model), dat)
 r = coda.samples(m, "mu", n.iter=1000)
 @
 \end{frame}
@@ -523,10 +530,10 @@ plot(r)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-Let $Y\sim N(m,\sigma^2)$ and $\sigma^2\sim IG(a,b)$. Suppose we assume $a=b=1$.
+Let $Y\sim N(m,\sigma^2)$ and $\sigma^2\sim IG(1,1)$.
 
 <<>>=
-m_string = "
+model = "
 model 
 {
   for (i in 1:n) {      
@@ -542,7 +549,7 @@ dat = list(m=1,a=1,b=1)
 dat$y = rnorm(3,dat$m,1)
 dat$n = length(dat$y)
 
-m = jags.model(textConnection(m_string), dat)
+m = jags.model(textConnection(model), dat)
 r = coda.samples(m, "sigma2", n.iter=1000)
 @
 \end{frame}
@@ -572,21 +579,21 @@ plot(r)
 \begin{frame}
 \frametitle{Stan}
 
-\url{http://mc-stan.org/}{Stan} ``is a probabilistic programming language implementing full Bayesian statistical inference.'' \pause We will use Stan through its R interface \url{http://mc-stan.org/rstan.html}{\tt rstan}.
+\href{http://mc-stan.org/}{Stan} ``is a probabilistic programming language implementing full Bayesian statistical inference.'' \pause We will use Stan through its R interface \href{http://mc-stan.org/rstan.html}{\tt rstan}.
 
 \vspace{0.2in} \pause
 
 The basic workflow when using {\tt rstan} is (exactly the same as for {\tt rjags})
 
-\begin{enumerate}[<+->]
+\begin{enumerate}
 \item Define model and priors in a string
 \item Assign data
-\item Run jags, i.e. simulate from the posterior
+\item Run Stan, i.e. simulate from the posterior
 \item Summarize as necessary, e.g. mean, median, credible intervals, etc
 \end{enumerate}
 
 \pause
-But, additional information is required to use Stan.
+But, additional coding is required for Stan.
 
 \end{frame}
 
@@ -597,10 +604,10 @@ But, additional information is required to use Stan.
 \begin{frame}[fragile]
 \frametitle{Binomial model}
 
-Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(a,b)$. Suppose we assume $a=b=1$ and observe $y=3$ successes out of $n=10$ attempts.
+Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$.
 
 <<>>=
-m_string = "
+model = "
 data {
   int<lower=0> n;
   int<lower=0> a;
@@ -618,8 +625,13 @@ model {
 
 dat = list(n=10, y=3, a=1, b=1)
 
-m = stan(model_code = m_string, data = dat)
+m = stan_model(model_code = model) # Only needs to be done once
 @
+
+<<message=FALSE>>=
+r = sampling(m, data=dat)
+@
+
 \end{frame}
 
 
@@ -628,7 +640,7 @@ m = stan(model_code = m_string, data = dat)
 \frametitle{Binomial model}
 
 <<>>=
-m
+r
 @
 \end{frame}
 
@@ -637,7 +649,7 @@ m
 \frametitle{Binomial model}
 
 <<fig.width=8>>=
-plot(m)
+plot(r)
 @
 \end{frame}
 
@@ -650,38 +662,42 @@ plot(m)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-Let $Y\sim N(\mu,s^2)$ and $\mu\sim N(m,C)$. Suppose we assume $m=0$ and $C=1$.
+Let $Y\sim N(\mu,s^2)$ and $\mu\sim N(0,1)$. 
 
 <<>>=
-m_string = "
+model = "
 data {
   int<lower=0> n;
-  real y;
+  real y[n];
   real<lower=0> s2;
   real m;
   real<lower=0> C;
 }
-transformed data {   # 
+transformed data {      # run once
   real<lower=0> s;
   real<lower=0> sqrtC;
   s     <- sqrt(s2);
   sqrtC <- sqrt(C);
 }
 parameters {
-  real mu;               # if used alone, implies a uniform prior 
+  real mu;              # if used alone, implies a uniform prior 
 }
 model {
-  y  ~ normal(mu,s);      # vectorized, i.e. assumed independent
-  mu ~ normal(m,sqrtC);   # standard deviation
+  y  ~ normal(mu,s);    # vectorized, i.e. assumed independent
+  mu ~ normal(m,sqrtC); # standard deviation
 }
 "
 
 set.seed(6)
 dat = list(m=0,C=1,s2=1)
-dat$y = dnorm(3,1,sqrt(dat$s2))
+dat$y = rnorm(3,1,sqrt(dat$s2))
 dat$n = length(dat$y)
 
-m = stan(model_code = m_string, data = dat)
+m = stan_model(model_code = model)
+@
+
+<<message=FALSE>>=
+r = sampling(m, data = dat)
 @
 \end{frame}
 
@@ -691,7 +707,7 @@ m = stan(model_code = m_string, data = dat)
 \frametitle{Normal model, unknown mean}
 
 <<>>=
-m
+r
 @
 \end{frame}
 
@@ -700,7 +716,7 @@ m
 \frametitle{Normal model, unknown mean}
 
 <<fig.width=8>>=
-plot(m)
+plot(r)
 @
 \end{frame}
 
@@ -712,22 +728,22 @@ plot(m)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-Let $Y\sim N(m,\sigma^2)$ and $\sigma^2\sim IG(a,b)$. Suppose we assume $a=b=1$.
+Let $Y\sim N(m,\sigma^2)$ and $\sigma^2\sim IG(1,1)$. 
 
 <<>>=
-m_string = "
+model = "
 data {
   int<lower=0> n;
-  real y;
+  real y[n];                # vector
   real m;
   real<lower=0> a;
   real<lower=0> b;
 }
 parameters {
-  real sigma2;               # if used alone, implies a uniform prior 
+  real<lower=0> sigma2;     # if used alone, implies a uniform prior on (0,Inf)
 }
-transformed parameters {
-  real sigma2;
+transformed parameters {    # deterministic function of parameters
+  real<lower=0> sigma;
   sigma <- sqrt(sigma2);
 }
 model {
@@ -737,11 +753,15 @@ model {
 "
 
 set.seed(6)
-dat = list(m=0,C=1,s2=1)
-dat$y = rnorm(3,1,sqrt(dat$s2))
+dat = list(a=1,b=1,m=1)
+dat$y = rnorm(3,1,1)
 dat$n = length(dat$y)
 
-m = stan(model_code = m_string, data = dat)
+m = stan_model(model_code = model)
+@
+
+<<message=FALSE>>=
+r = sampling(m, data = dat)
 @
 \end{frame}
 
@@ -751,7 +771,7 @@ m = stan(model_code = m_string, data = dat)
 \frametitle{Normal model, unknown variance}
 
 <<>>=
-m
+r
 @
 \end{frame}
 
@@ -760,7 +780,7 @@ m
 \frametitle{Normal model, unknown variance}
 
 <<fig.width=8>>=
-plot(m)
+plot(r)
 @
 \end{frame}
 

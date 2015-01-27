@@ -23,3 +23,4 @@ To extract the R code, run
 
 - [Chapter 01](Ch01.Rnw)
 - [Chapter 02a](Ch02a.Rnw)
+- [Chapter 02b](Ch02b.Rnw)
