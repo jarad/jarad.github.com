@@ -17,7 +17,7 @@ group: navigation
 
 ## Research
 
-- [CDC Weekly Case Counts](https://michaud.shinyapps.io/MMWRPlot/)
+- [CDC Weekly Case Counts](https://michaud.shinyapps.io/CDCPlot/)
 
 ## For fun
 
