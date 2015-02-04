@@ -1,0 +1,386 @@
+\documentclass[handout,xcolor=pdftex,dvipsnames,table]{beamer} % for handouts
+%\documentclass{beamer}
+
+
+
+
+\usecolortheme[RGB={0,0,144}]{structure}
+\usetheme{AnnArbor}\usecolortheme{beaver}
+%\usetheme{CambridgeUS}\usecolortheme{crane}
+
+\usepackage{verbatim,xmpmulti,color,multicol,multirow}
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+%\usepackage{beamerthemesplit}
+\setbeamertemplate{navigation symbols}{}
+%\setbeamercolor{alerted text}{fg=red}
+%\setbeamertemplate{block body theorem}{bg=orange}
+\setkeys{Gin}{width=0.6\textwidth}
+
+
+\title{Asymptotics}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\J}{\mathrm{J}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\myPhi}{\mathrm{\Phi}}
+
+\begin{document}
+
+<<chunk_options, echo=FALSE, message=FALSE>>=
+require(knitr) # only needed so the following command does not fail when sourcing R code
+opts_chunk$set(fig.width=7, fig.height=5, out.width='.8\\linewidth', fig.align='center', size='tiny', message=FALSE)
+##############################################
+# GLMMs                                      #
+##############################################
+require(reshape2)
+require(plyr)
+require(ggplot2)
+require(rstan)
+set.seed(20140424)
+@
+
+\frame{\maketitle}
+
+\section{Normal approximation to the posterior}
+\begin{frame}
+\frametitle{Normal approximation to the posterior}
+
+Suppose $p(\theta|y)$ is unimodal and roughly symmetric\pause, then a Taylor series expansion of the logarithm of the posterior around the posterior mode $\hat{\theta}$ \pause is 
+\[ \log p(\theta|y) = \log p(\hat{\theta}|y) + \frac{1}{2} (\theta-\hat{\theta})^\top \left[ \frac{d^2}{d\theta^2} \log p(\theta|y) \right]_{\theta=\hat{\theta}} (\theta-\hat{\theta}) + \cdots \] 
+\pause 
+where the linear term in the expansion is zero because the derivative of the log-posterior density is zero at its mode.
+
+\vspace{0.2in} \pause
+
+Disregarding the higher order terms, this expansion provides a normal approximation to the posterior, i.e. 
+\[ p(\theta|y) \stackrel{d}{\approx} N(\hat{\theta}, \I(\hat{\theta})^{-1}) \]
+\pause 
+where $\I(\theta)$ is the observed information, i.e. 
+\[ \I(\theta) = -\frac{d^2}{d\theta^2} \log p(\theta|y). \]
+\end{frame}
+
+
+\subsection{Example}
+\begin{frame}
+\frametitle{Binomial probability}
+
+Let $y \sim Bin(n,\theta)$ and $\theta \sim Be(\alpha,\beta)$, \pause then $\theta|y\sim \pause Be(\alpha+y,\beta+n-y)$ \pause and the posterior mode is 
+\[ \hat{\theta}=\frac{y'}{n'} = \frac{\alpha+y-1}{\alpha+\beta+n-2}. \] 
+\pause 
+Thus
+\[ \I(\theta) = \frac{n'}{\hat{\theta}(1-\hat{\theta})}. \]
+\pause 
+Thus 
+\[ p(\theta|y) \stackrel{d}{\approx} N\left( \hat{\theta}, \frac{\hat{\theta}(1-\hat{\theta})}{n'} \right). \]
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial probability}
+
+<<beta_normal_approximation, eval=FALSE>>=
+a = b = 1
+n = 10
+y = 3
+par(mar=c(5,4,0.5,0)+.1)
+curve(dbeta(x,a+y,b+n-y), lwd=2, xlab=expression(theta), ylab=expression(paste("p(", theta,"|y)")))
+
+# Approximation
+yp = a+y-1
+np = a+b+n-2
+theta_hat = yp/np
+curve(dnorm(x,theta_hat, sqrt(theta_hat*(1-theta_hat)/np)), add=TRUE, col="red", lwd=2)
+legend("topright",c("True posterior","Normal approximation"), col=c("black","red"), lwd=2)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Binomial probability}
+
+<<beta_normal_approximation_plot, echo=FALSE>>=
+<<beta_normal_approximation>>
+@
+\end{frame}
+
+
+
+\section{Large-sample theory}
+\begin{frame}
+\frametitle{Large-sample theory}
+
+Consider a model $y_i\stackrel{iid}{\sim} p(y|\theta_0)$ for some true value $\theta_0$.
+
+\vspace{0.2in} \pause
+
+\begin{itemize}
+\item Does the posterior distribution converge to $\theta_0$?
+\item Does a point estimator (mode) converge to $\theta_0$?
+\item What is the limiting posterior distribution?
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Convergence of the posterior distribution}
+\begin{frame}
+\frametitle{Convergence of the posterior distribution}
+
+Consider a model $y_i\stackrel{iid}{\sim} p(y|\theta_0)$ for some true value $\theta_0$. \pause 
+
+\begin{theorem}
+If the parameter space $\Theta$ is finite and $Pr(\theta=\theta_0)>0$, then $Pr(\theta=\theta_0|y)\to 1$ as $n\to\infty$. 
+\end{theorem}
+\pause 
+\begin{theorem}
+If the parameter space $\Theta$ is continuous and $A$ is a neighborhood around $\theta_0$ with $Pr(\theta\in A)>0$, then $Pr(\theta\in A|y)\to 1$ as $n\to\infty$. 
+\end{theorem}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<convergence_of_the_posterior_distribution_discrete, fig.width=10>>=
+library(smcUtils)
+theta = seq(0.1,0.9, by=0.1); theta0 = 0.3
+n = 1000
+y = rbinom(n, 1, theta0)
+p = matrix(NA, n,length(theta))
+p[1,] = renormalize(dbinom(y[1],1,theta, log=TRUE), log=TRUE)
+for (i in 2:n) {
+  p[i,] = renormalize(dbinom(y[i],1,theta, log=TRUE)+log(p[i-1,]), log=TRUE)
+}
+plot(p[,1], ylim=c(0,1), type="l", xlab="n", ylab="Probability")
+for (i in 1:length(theta)) lines(p[,i], col=i)
+legend("right", legend=theta, col=1:9, lty=1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<convergence_of_the_posterior_distribution_continuous, fig.width=10>>=
+a = b = 1
+e = 0.05
+p = rep(NA,n)
+for (i in 1:n) {
+  yy = sum(y[1:i])
+  zz = i-yy
+  p[i] = diff(pbeta(theta0+c(-1,1)*e, a+yy, b+zz))
+}
+plot(p, type="l", ylim=c(0,1), ylab="Posterior probability of neighborhood", xlab="n", main="Continuous parameter space")
+@
+\end{frame}
+
+
+
+\subsection{Consistency of Bayesian point estimates}
+\begin{frame}
+\frametitle{Consistency of Bayesian point estimates}
+
+Suppose $y_i\stackrel{iid}{\sim} p(y|\theta_0)$ where $\theta_0$ is a particular value for $\theta$.
+
+\vspace{0.2in} \pause
+
+Recall that an estimator is consistent, i.e. $\hat{\theta}\stackrel{p}{\to} \theta_0$ if 
+\[ \lim_{n\to\infty} P(|\hat{\theta}-\theta_0|<\epsilon) = 1. \]
+
+\vspace{0.2in} \pause
+
+Recall, under regularity conditions that $\hat{\theta}_{MLE}\stackrel{p}{\to} \theta_0$. \pause If Bayesian estimators converge to the MLE, then they have the same properties. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Binomial example}
+
+Consider $y \sim Bin(n,\theta)$ with true value $\theta=\theta_0$ and prior $\theta\sim Be(\alpha,\beta)$. \pause Then $\theta|y \sim Be(\alpha+y, \beta+n-y)$. 
+
+\vspace{0.2in} \pause
+
+Recall that $\hat{\theta}_{MLE} = y/n$. \pause The following estimators are all consistent
+
+\begin{itemize}[<+->]
+\item Posterior mean: $\frac{\alpha+y}{\alpha+\beta+n}$
+\item Posterior median: $\approx \frac{\alpha+y-1/3}{\alpha+\beta+n-2/3}$
+\item Posterior mode: $\frac{\alpha+y-1}{\alpha+\beta+n-2}$
+\end{itemize}
+\pause since as $n\to\infty$, these all converge to $\hat{\theta}_{MLE}=y/n$. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<beta_binomial_consistency, fig.width=10>>=
+a = b = 1
+n = 1000
+theta0 = 0.5
+y = rbinom(n, 1, theta0)
+yy = cumsum(y)
+nn = 1:n
+plot(0,0, type="n", xlim=c(0,n), ylim=c(0,1), xlab="Number of flips", ylab="Estimates")
+abline(h=theta0)
+lines((a+yy)/(a+b+nn), col=2)
+lines((a+yy-1/3)/(a+b+nn-2/3), col=3)
+lines((a+yy-1)/(a+b+nn-2), col=4)
+legend("topright",c("Truth","Mean","Median","Mode"), col=1:4, lty=1)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Normal example}
+
+Consider $Y_i\stackrel{iid}{\sim} N(\theta,1)$ with known and prior $\theta\sim N(c,1)$. \pause Then 
+\[ \theta|y \sim N\left( \frac{1}{n+1} c +\frac{n}{n+1}\overline{y}, \frac{1}{n+1} \right) \]
+
+\pause 
+
+Recall that $\hat{\theta}_{MLE} = \overline{y}$. \pause Since the posterior mean converges to the MLE, then the posterior mean (as well as the median and mode) are consistent.
+
+<<normal_consistency, echo=FALSE, fig.width=10>>=
+c = 0
+n = 200; nn = 1:n
+theta0 = 10
+y = rnorm(n, theta0, 1)
+ybar = cumsum(y)/nn
+yhat = ybar*nn/(nn+1) + c/(nn+1)
+plot(yhat, type="l", col="red", ylim=range(ybar, yhat), xlab="n", ylab="Estimates")
+abline(h=theta0)
+lines(ybar, lty=2)
+legend("bottomright", c("Truth","MLE","Posterior mean"), col=c("black","black","red"), lty=c(1,2,1))
+@
+
+\end{frame}
+
+
+
+\section{Asymptotic normality}
+\begin{frame}
+\frametitle{Asymptotic normality}
+{\small
+
+Consider the Taylor series expansion of the log posterior
+{\footnotesize 
+\[ 
+\log p(\theta|y) = 
+\log p(\hat{\theta}|y) + 
+\frac{1}{2} (\theta-\hat{\theta})^\top \frac{d^2}{d\theta^2} [\log p(\theta|y)]_{\theta=\hat{\theta}}(\theta-\hat{\theta}) + 
+R \]
+}
+
+\pause where the linear term is zero because the derivative at the posterior mode $\hat{\theta}$ is zero and $R$ represents all higher order terms.
+
+\vspace{0.2in} \pause
+
+The coefficient for the quadratic term can be written as 
+\[ 
+\frac{d^2}{d\theta^2} [\log p(\theta|y)]_{\theta=\hat{\theta}} = 
+\frac{d^2}{d\theta^2} \log p(\theta)_{\theta=\hat{\theta}} + 
+\sum_{i=1}^n \frac{d^2}{d\theta^2} [\log p(y_i|\theta)]_{\theta=\hat{\theta}}\]
+\pause 
+where 
+\[ E\left[ \frac{d^2}{d\theta^2} [\log p(y_i|\theta)]_{\theta=\hat{\theta}}\right] = -\J(\theta_0) \]
+\pause 
+where $\J(\theta_0)$ is the expected Fisher information \pause and thus, by the LLN, the second term converges to $-n\J(\theta_0)$. 
+}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Asymptotic normality}
+
+Since for large $n$ 
+\[ 
+\log p(\theta|y) \approx
+\log p(\hat{\theta}|y) + 
+\frac{1}{2} (\theta-\hat{\theta})^\top \left[ -n\J(\theta_0) \right](\theta-\hat{\theta})  \]
+\pause 
+and since $\hat{\theta}\to\theta_0$, we have 
+\[ p(\theta|y) \propto \exp\left(-\frac{1}{2} (\theta-\hat{\theta})^\top \left[ n\J(\hat{\theta}) \right](\theta-\hat{\theta}) \right) \]
+\pause 
+and thus, as $n\to\infty$
+\[ \theta|y \stackrel{d}{\to} N\left(\hat{\theta}, \frac{1}{n}\J(\hat{\theta})^{-1}\right) \]
+\pause 
+Thus, the posterior distribution is asymptotically normal. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Binomial example}
+Suppose $y\sim Bin(n,\theta)$ and $\theta\sim Be(a,b)$.
+<<binomial_example, echo=FALSE, fig.width=8>>=
+par(mar=c(3,4,4,0)+.1, mfrow=c(3,3))
+for (n in 10^(1:3)) {
+  for (a in 10^(0:2)) {
+    b = a
+    y = .3*n
+    curve(dbeta(x,a+y,b+n-y), lwd=2, xlab='', 
+          ylab=paste("a=b=",a), main=paste("n=",n))
+    abline(v=0.3, lty=2)
+    
+    # Approximation
+    yp = a+y-1
+    np = a+b+n-2
+    theta_hat = yp/np
+    curve(dnorm(x,theta_hat, sqrt(theta_hat*(1-theta_hat)/np)), add=TRUE, col="red", lwd=2)
+#    legend("bottomright",c("True posterior","Normal approximation"), col=c("black","red"), lwd=2, bg="white")
+  }
+}
+@
+\end{frame}
+
+
+\subsection{What can go wrong?}
+\begin{frame}
+\frametitle{What can go wrong?}
+
+\begin{itemize}[<+->]
+\item Not unique to Bayesian statistics
+  \begin{itemize}
+  \item Unidentified parameters
+  \item Number of parameters increase with sample size
+  \item Aliasing
+  \item Unbounded likelihoods
+  \item Tails of the distribution
+  \item True sampling distribution is not $p(y|\theta)$
+  \end{itemize}
+\item Unique to Bayesian statistics
+  \begin{itemize}
+  \item Improper posterior 
+  \item Prior distributions that exclude the point of convergence
+  \item Convergence to the edge of the parameter space
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{True sampling distribution is not $p(y|\theta)$}
+
+Suppose that $f(y)$ the true sampling distribution does not correspond to $p(y|\theta)$ for some $\theta=\theta_0$. 
+
+\vspace{0.2in} \pause
+
+Then the posterior $p(\theta|y)$ converges to the $\theta_0$ that is the smallest Kullback-Leibler divergence \pause where 
+\[ KL(\theta) = E\left[ \log\left(\frac{f(y_i)}{p(y_i|\theta)} \right)\right] = \int \log \left(\frac{f(y_i)}{p(y_i|\theta)} \right) f(y_i) dy_i. \]
+\pause
+That is, we do about the best that we can do given that we have assumed the wrong sampling distribution $p(y|\theta)$. 
+\end{frame}
+
+
+
+
+\end{document}
