@@ -1,25 +1,22 @@
-\documentclass[handout,xcolor=pdftex,dvipsnames,table]{beamer} % for handouts
-%\documentclass{beamer}
+\documentclass[handout]{beamer}
 
+\usepackage{verbatim}
 
+%\usecolortheme[RGB={0,0,144}]{structure}
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
 
-
-\usecolortheme[RGB={0,0,144}]{structure}
-\usetheme{AnnArbor}\usecolortheme{beaver}
-%\usetheme{CambridgeUS}\usecolortheme{crane}
-
-\usepackage{verbatim,xmpmulti,color,multicol,multirow}
 \setlength{\unitlength}{\textwidth}  % measure in textwidths
 \usepackage[normalem]{ulem}
 
-%\usepackage{beamerthemesplit}
 \setbeamertemplate{navigation symbols}{}
-%\setbeamercolor{alerted text}{fg=red}
-%\setbeamertemplate{block body theorem}{bg=orange}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
 \setkeys{Gin}{width=0.6\textwidth}
 
 
-\title{Asymptotics}
+\title{Data Asymptotics}
 \author[Jarad Niemi]{Dr. Jarad Niemi}
 \institute[Iowa State]{Iowa State University}
 \date{\today}
@@ -52,17 +49,17 @@ set.seed(20140424)
 \frametitle{Normal approximation to the posterior}
 
 Suppose $p(\theta|y)$ is unimodal and roughly symmetric\pause, then a Taylor series expansion of the logarithm of the posterior around the posterior mode $\hat{\theta}$ \pause is 
-\[ \log p(\theta|y) = \log p(\hat{\theta}|y) + \frac{1}{2} (\theta-\hat{\theta})^\top \left[ \frac{d^2}{d\theta^2} \log p(\theta|y) \right]_{\theta=\hat{\theta}} (\theta-\hat{\theta}) + \cdots \] 
+\[ \log p(\theta|y) = \log p(\hat{\theta}|y) - \frac{1}{2} (\theta-\hat{\theta})^\top \left[ -\frac{d^2}{d\theta^2} \log p(\theta|y) \right]_{\theta=\hat{\theta}} (\theta-\hat{\theta}) + \cdots \] 
 \pause 
 where the linear term in the expansion is zero because the derivative of the log-posterior density is zero at its mode.
 
 \vspace{0.2in} \pause
 
 Disregarding the higher order terms, this expansion provides a normal approximation to the posterior, i.e. 
-\[ p(\theta|y) \stackrel{d}{\approx} N(\hat{\theta}, \I(\hat{\theta})^{-1}) \]
+\[ p(\theta|y) \stackrel{d}{\approx} N(\hat{\theta}, \J(\hat{\theta})^{-1}) \]
 \pause 
 where $\I(\theta)$ is the observed information, i.e. 
-\[ \I(\theta) = -\frac{d^2}{d\theta^2} \log p(\theta|y). \]
+\[ \J(\theta) = -\frac{d^2}{d\theta^2} \log p(\theta|y). \]
 \end{frame}
 
 
@@ -70,11 +67,11 @@ where $\I(\theta)$ is the observed information, i.e.
 \begin{frame}
 \frametitle{Binomial probability}
 
-Let $y \sim Bin(n,\theta)$ and $\theta \sim Be(\alpha,\beta)$, \pause then $\theta|y\sim \pause Be(\alpha+y,\beta+n-y)$ \pause and the posterior mode is 
-\[ \hat{\theta}=\frac{y'}{n'} = \frac{\alpha+y-1}{\alpha+\beta+n-2}. \] 
+Let $y \sim Bin(n,\theta)$ and $\theta \sim Be(a,b)$, \pause then $\theta|y\sim \pause Be(a+y,b+n-y)$ \pause and the posterior mode is 
+\[ \hat{\theta}=\frac{y'}{n'} = \frac{a+y-1}{a+b+n-2}. \] 
 \pause 
 Thus
-\[ \I(\theta) = \frac{n'}{\hat{\theta}(1-\hat{\theta})}. \]
+\[ \J(\theta) = \frac{n'}{\hat{\theta}(1-\hat{\theta})}. \]
 \pause 
 Thus 
 \[ p(\theta|y) \stackrel{d}{\approx} N\left( \hat{\theta}, \frac{\hat{\theta}(1-\hat{\theta})}{n'} \right). \]
@@ -140,7 +137,7 @@ If the parameter space $\Theta$ is finite and $Pr(\theta=\theta_0)>0$, then $Pr(
 \end{theorem}
 \pause 
 \begin{theorem}
-If the parameter space $\Theta$ is continuous and $A$ is a neighborhood around $\theta_0$ with $Pr(\theta\in A)>0$, then $Pr(\theta\in A|y)\to 1$ as $n\to\infty$. 
+If the parameter space $\Theta$ is continuous and $A$ is in a neighborhood around $\theta_0$ with $Pr(\theta\in A)>0$, then $Pr(\theta\in A|y)\to 1$ as $n\to\infty$. 
 \end{theorem}
 
 \end{frame}
@@ -201,16 +198,16 @@ Recall, under regularity conditions that $\hat{\theta}_{MLE}\stackrel{p}{\to} \t
 \begin{frame}
 \frametitle{Binomial example}
 
-Consider $y \sim Bin(n,\theta)$ with true value $\theta=\theta_0$ and prior $\theta\sim Be(\alpha,\beta)$. \pause Then $\theta|y \sim Be(\alpha+y, \beta+n-y)$. 
+Consider $y \sim Bin(n,\theta)$ with true value $\theta=\theta_0$ and prior $\theta\sim Be(a,b)$. \pause Then $\theta|y \sim Be(a+y, b+n-y)$. 
 
 \vspace{0.2in} \pause
 
 Recall that $\hat{\theta}_{MLE} = y/n$. \pause The following estimators are all consistent
 
 \begin{itemize}[<+->]
-\item Posterior mean: $\frac{\alpha+y}{\alpha+\beta+n}$
-\item Posterior median: $\approx \frac{\alpha+y-1/3}{\alpha+\beta+n-2/3}$
-\item Posterior mode: $\frac{\alpha+y-1}{\alpha+\beta+n-2}$
+\item Posterior mean: $\frac{a+y}{a+b+n}$
+\item Posterior median: $\approx \frac{a+y-1/3}{a+b+n-2/3}$
+\item Posterior mode: $\frac{a+y-1}{a+b+n-2}$
 \end{itemize}
 \pause since as $n\to\infty$, these all converge to $\hat{\theta}_{MLE}=y/n$. 
 
@@ -272,8 +269,8 @@ Consider the Taylor series expansion of the log posterior
 {\footnotesize 
 \[ 
 \log p(\theta|y) = 
-\log p(\hat{\theta}|y) + 
-\frac{1}{2} (\theta-\hat{\theta})^\top \frac{d^2}{d\theta^2} [\log p(\theta|y)]_{\theta=\hat{\theta}}(\theta-\hat{\theta}) + 
+\log p(\hat{\theta}|y) - 
+\frac{1}{2} (\theta-\hat{\theta})^\top \left[-\frac{d^2}{d\theta^2} \log p(\theta|y)\right]_{\theta=\hat{\theta}}(\theta-\hat{\theta}) + 
 R \]
 }
 
@@ -283,14 +280,14 @@ R \]
 
 The coefficient for the quadratic term can be written as 
 \[ 
-\frac{d^2}{d\theta^2} [\log p(\theta|y)]_{\theta=\hat{\theta}} = 
-\frac{d^2}{d\theta^2} \log p(\theta)_{\theta=\hat{\theta}} + 
+-\frac{d^2}{d\theta^2} [\log p(\theta|y)]_{\theta=\hat{\theta}} = 
+-\frac{d^2}{d\theta^2} \log p(\theta)_{\theta=\hat{\theta}} - 
 \sum_{i=1}^n \frac{d^2}{d\theta^2} [\log p(y_i|\theta)]_{\theta=\hat{\theta}}\]
 \pause 
 where 
-\[ E\left[ \frac{d^2}{d\theta^2} [\log p(y_i|\theta)]_{\theta=\hat{\theta}}\right] = -\J(\theta_0) \]
+\[ E_y\left[ -\frac{d^2}{d\theta^2} [\log p(y_i|\theta)]_{\theta=\hat{\theta}}\right] = \I(\theta_0) \]
 \pause 
-where $\J(\theta_0)$ is the expected Fisher information \pause and thus, by the LLN, the second term converges to $-n\J(\theta_0)$. 
+where $\I(\theta_0)$ is the expected Fisher information \pause and thus, by the LLN, the second term converges to $-n\I(\theta_0)$. 
 }
 \end{frame}
 
@@ -302,14 +299,14 @@ where $\J(\theta_0)$ is the expected Fisher information \pause and thus, by the 
 Since for large $n$ 
 \[ 
 \log p(\theta|y) \approx
-\log p(\hat{\theta}|y) + 
-\frac{1}{2} (\theta-\hat{\theta})^\top \left[ -n\J(\theta_0) \right](\theta-\hat{\theta})  \]
+\log p(\hat{\theta}|y) - 
+\frac{1}{2} (\theta-\hat{\theta})^\top \left[ n\I(\theta_0) \right](\theta-\hat{\theta})  \]
 \pause 
 and since $\hat{\theta}\to\theta_0$, we have 
-\[ p(\theta|y) \propto \exp\left(-\frac{1}{2} (\theta-\hat{\theta})^\top \left[ n\J(\hat{\theta}) \right](\theta-\hat{\theta}) \right) \]
+\[ p(\theta|y) \propto \exp\left(-\frac{1}{2} (\theta-\hat{\theta})^\top \left[ n\I(\hat{\theta}) \right](\theta-\hat{\theta}) \right) \]
 \pause 
 and thus, as $n\to\infty$
-\[ \theta|y \stackrel{d}{\to} N\left(\hat{\theta}, \frac{1}{n}\J(\hat{\theta})^{-1}\right) \]
+\[ \theta|y \stackrel{d}{\to} N\left(\hat{\theta}, \frac{1}{n}\I(\hat{\theta})^{-1}\right) \]
 \pause 
 Thus, the posterior distribution is asymptotically normal. 
 
@@ -320,23 +317,27 @@ Thus, the posterior distribution is asymptotically normal.
 \frametitle{Binomial example}
 Suppose $y\sim Bin(n,\theta)$ and $\theta\sim Be(a,b)$.
 <<binomial_example, echo=FALSE, fig.width=8>>=
-par(mar=c(3,4,4,0)+.1, mfrow=c(3,3))
-for (n in 10^(1:3)) {
-  for (a in 10^(0:2)) {
-    b = a
-    y = .3*n
-    curve(dbeta(x,a+y,b+n-y), lwd=2, xlab='', 
-          ylab=paste("a=b=",a), main=paste("n=",n))
-    abline(v=0.3, lty=2)
-    
-    # Approximation
-    yp = a+y-1
-    np = a+b+n-2
-    theta_hat = yp/np
-    curve(dnorm(x,theta_hat, sqrt(theta_hat*(1-theta_hat)/np)), add=TRUE, col="red", lwd=2)
-#    legend("bottomright",c("True posterior","Normal approximation"), col=c("black","red"), lwd=2, bg="white")
-  }
-}
+d = expand.grid(n=10^(1:3), a=10^(0:2))
+tmp = ddply(d, .(n,a), function(x) {
+  d = with(x, data.frame(a=a,b=a,n=n,x=seq(0,1,length=1001)))
+  mutate(d, 
+         y = 0.3*n,
+         mode = (a+y-1)/(a+b+n-2),
+         "Posterior" = dbeta(x, a+y, b+n-y),
+         "Normal approximation" = dnorm(x, mode, sqrt(mode*(1-mode)/n)))
+})
+
+plot_d = melt(tmp, 
+              measure.vars=c("Posterior","Normal approximation"),
+              variable.name = c("Distribution"),
+              value.name = "Density")
+
+ggplot(mutate(plot_d, af = paste("a = b =",a), nf = paste("n =", n)),
+              aes(x=x, y=Density,color=Distribution)) + 
+  geom_line() + 
+  facet_grid(nf~af) + 
+  geom_vline(xintercept=0.3, style=3) + 
+  theme_bw()
 @
 \end{frame}
 
@@ -374,10 +375,10 @@ Suppose that $f(y)$ the true sampling distribution does not correspond to $p(y|\
 
 \vspace{0.2in} \pause
 
-Then the posterior $p(\theta|y)$ converges to the $\theta_0$ that is the smallest Kullback-Leibler divergence \pause where 
-\[ KL(\theta) = E\left[ \log\left(\frac{f(y_i)}{p(y_i|\theta)} \right)\right] = \int \log \left(\frac{f(y_i)}{p(y_i|\theta)} \right) f(y_i) dy_i. \]
+Then the posterior $p(\theta|y)$ converges to a $\theta_0$ that is the smallest in Kullback-Leibler divergence to the true $f(y)$ \pause where 
+\[ KL(f(y)||p(y|\theta)) = E\left[ \log\left(\frac{f(y)}{p(y|\theta)} \right)\right] = \int \log \left(\frac{f(y)}{p(y|\theta)} \right) f(y) dy. \]
 \pause
-That is, we do about the best that we can do given that we have assumed the wrong sampling distribution $p(y|\theta)$. 
+That is, we do about the best that we can given that we have assumed the wrong sampling distribution $p(y|\theta)$. 
 \end{frame}
 
 
