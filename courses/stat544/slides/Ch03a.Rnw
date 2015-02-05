@@ -32,6 +32,7 @@ opts_chunk$set(fig.width=6,
 library(plyr)
 @
 
+
 \frame{\titlepage}
 
 
@@ -254,7 +255,7 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 \subsection{Binomial model}
 \frame{\frametitle{Binomial model}
 	Assume an independent binomial model,
-	\[ Y_s \stackrel{ind}{\sim} Bin(n_s,\theta_s), \uncover<6->{\mbox{ i.e. }\quad   p(y|\theta) = \prod_{s=1}^S p(y_s|\theta_s) = \prod_{s=1}^S  {n_s\choose y_s} \theta_s^{y_s} (1-\theta_s)^{n_s-y_s}}  \]
+	\[ Y_s \stackrel{ind}{\sim} Bin(n_s,\theta_s), \uncover<6->{\mbox{ i.e. },\,    p(y|\theta) = \prod_{s=1}^S p(y_s|\theta_s) = \prod_{s=1}^S  {n_s\choose y_s} \theta_s^{y_s} (1-\theta_s)^{n_s-y_s}}  \]
 	\pause where 
 	\begin{itemize}
 	\item $y_s$ is the number of 3-pointers made in season $s$ \pause
@@ -666,182 +667,30 @@ To obtain a simulation from the predictive distribution $p(\tilde{y}|y)$, do the
 \end{frame}
 
 
-% 
-% \subsection{Activity}
-% \begin{frame}
-% \frametitle{Prior elicitation for average class height}
-%   Answer the following questions:
-%   \begin{itemize}[<+->]
-%   \item What do you think the average height in this STAT 544 is (without looking around the room)?
-%   \item How many prior observations is this worth?
-%   \item What is the standard deviation of heights in the class?
-%   \item How many observations is this worth?
-%   \end{itemize}
-% \end{frame}
-% 
-% 
-% \begin{frame}[fragile]
-% <<height_activity>>=
-% # Prior elicitation 
-% prior = list(m  = 67,    # Mean height 5'7''
-%              k  = 14,    
-%              s2 = 3.5^2,
-%              v  = 15)
-% 
-% tmp = read.csv("heights.csv")
-% heights = tmp$height[tmp$class=="stat544spring2014"]
-% 
-% normal_post = function(y,prior) {
-%   n  = length(y)
-%   kp = prior$k+n
-%   vp = prior$v+n
-%   return(list(k = kp, 
-%               v = prior$v+n, 
-%               m = (prior$k*prior$m+sum(y))/kp,
-%               s2 = (prior$v*prior$s2+(n-1)*var(y)+prior$k*n/kp*(mean(y)-prior$m)^2)/vp))
-% }
-% 
-% post = normal_post(heights, prior)
-% 
-% # Credible interval
-% cred_int = function(p, prob=0.95) { p$m+c(-1,1)*qt(1-(1-prob)/2,p$v)*sqrt(p$s2/p$k) }
-% cred_int(post)
-% @
-% \end{frame}
-% 
-% \begin{frame}[fragile]
-% \frametitle{Prior vs posterior}
-% <<height_activity_plot, fig.width=8>>=
-% dt2 = function(x, df, m, s, ...) dt((x-m)/s, df, ...)/s # Location-scale family
-% curve(dt2(x, post$k, post$m, sqrt(post$s2/post$k)), 5.2*12, 6*12, col="red", lwd=2,
-%       main="Mean height of students in STAT 544", xlab="Height (inches)", ylab="Density")
-% curve(dt2(x, prior$k, prior$m, sqrt(prior$s2/prior$k)), col="blue", lwd=2, add=TRUE)
-% legend("topleft", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
-% @
-% \end{frame}
-% 
-% \subsection{Non-informative prior}
-% \begin{frame}
-% \frametitle{Non-informative prior}
-%   A widely accepted non-informative prior for $\mu,\sigma^2$ is $p(\mu,\sigma^2) \propto 1/\sigma^2$ \pause which can be thought of as the prior as $k\to 0$ and $v\to 0$. \pause The posterior under this prior is 
-%   \[ \begin{array}{rl}
-%   \mu|\sigma^2,y &\sim N(m',\sigma^2/k') \\
-%   \sigma^2|y &\sim \mbox{Inv-}\chi^2(v',(s')^2) 
-%   \end{array} \]
-%   \pause where 
-%   \[ \begin{array}{rl}
-%   k' &= n \\
-%   m' &= \overline{y} \pause \\
-%   v' &= \alert{n-1} \\
-%   (s')^2 &= \alert{S^2},
-%   \end{array} \]
-%   \pause which is NOT the same as setting $v=0$. 
-%   
-%   \vspace{0.2in} \pause
-%   
-%   The marginal distribution for $\mu$ is $t_{n-1}(\overline{y}, s^2/n)$ \pause and an equal-tailed $100(1-\alpha)$\% credible interval is
-%   \[ \overline{y} \pm c s/\sqrt{n} \qquad c = t_{n-1}(1-\alpha/2). \]
-% \end{frame}
-% 
-% \subsection{Coverage rates}
-% \begin{frame}
-% \frametitle{Simulation study: confidence vs credible intervals}
-%   Consider the following simulation study:
-%   \begin{enumerate}[<+->]
-%   \item Repeat the following many times:
-%     \begin{itemize}
-%     \item Sample 4 heights randomly (without replacement) from students in this class.
-%     \item Calculate the credible and confidence intervals for mean class height.
-%     \end{itemize}
-%   \item Calculate the mean class height.
-%   \item Record the percentage of times the credible and confidence intervals cover the truth.
-%   \end{enumerate}
-%   
-%   \vspace{0.2in} \pause 
-%   
-%   Questions:
-%   \begin{itemize}
-%   \item What percentage of the confidence intervals are expected to cover the truth?
-%   \item What percentage of the credible intervals are expected to cover the truth?
-%   \end{itemize}
-% \end{frame}
-% 
-% \begin{frame}[fragile]
-% \frametitle{Coverage rate simulation study}
-% <<coverage, eval=FALSE>>=
-% conf_int = function(y, prob=0.95) { 
-%   n = length(y)
-%   mean(y) + c(-1,1)*qt(1-(1-prob)/2,n-1)*sqrt(var(y)/n)
-% }
-% set.seed(1)
-% 
-% sim = function(y,prior,size=4,prob=0.5) {
-%   sample = sample(y,size)
-%   cred = cred_int(normal_post(sample,prior),prob=prob)
-%   conf = conf_int(sample,prob=prob)
-%   data.frame(interval=c("credible","confidence"),
-%              L = c(cred[1], conf[1]), U = c(cred[2], conf[2]))
-% }
-% d = rdply(100, sim(heights,prior))
-% d$y = d$.n + (d$interval=="confidence")*0.1-0.05
-% 
-% p <- ggplot(d[1:40,], aes(x=L, y=y, xend=U, yend=y, colour=interval)) + geom_segment() + geom_vline(xintercept=mean(heights)) + labs(x=expression(mu), y="Simulation")
-% print(p)
-% @
-% \end{frame}
-% 
-% 
-% 
-% \begin{frame}[fragile]
-% <<coverage_plot, echo=FALSE>>=
-% <<coverage>>
-% @
-% \end{frame}
-% 
-% \begin{frame}[fragile]
-% \frametitle{Coverage rates}
-% <<coverage_rate>>=
-% m = mean(heights)
-% ddply(d, .(interval), summarize, coverage=mean(I(L<m) & I(m<U)))
-% @
-% \end{frame}
-% 
-% 
-% \subsection{JAGS}
-% \begin{frame}[fragile]
-% <<JAGS>>=
-% library(rjags)
-% model = "
-% model {
-%   for (i in 1:n) {
-%     y[i] ~ dnorm(mu, tau) # tau is the precision
-%   }
-%   mu ~ dnorm(m,tau*k)
-%   tau ~ dgamma(v/2, v*s2/2)
-%   sigma <- 1/sqrt(tau)
-% }"
-% 
-% dat = prior
-% dat$n = length(heights)
-% dat$y = heights
-% 
-% fit = jags.model(textConnection(model), dat, n.chains=3)
-% s = coda.samples(fit,c("mu","sigma"), n.iter=1000)
-% @
-% \end{frame}
-% 
-% \begin{frame}[fragile]
-% <<JAGS_plot>>=
-% plot(s,trace=FALSE)
-% @
-% \end{frame}
-% 
-% \begin{frame}[fragile]
-% <<JAGS_result>>=
-% summary(s)
-% @
-% \end{frame}
 
+
+\begin{frame}
+\frametitle{Summary of normal inference}
+\begin{itemize}
+\item Default analysis
+  \begin{itemize}
+  \item Prior: (think $\mu\sim N(0,\infty)$ and $\sigma^2 \sim \mbox{Inv-}\chi^2(0,0)$)
+  \[ p(\mu,\sigma^2) \propto 1/\sigma^2 \] 
+  \item Posterior:
+  \[ \mu|\sigma^2,y \sim N(\overline{y}, S^2/n) ,\,  \sigma^2|y \sim  \mbox{Inv-}\chi^2(n-1,S^2) ,\,  \mu|y \sim t_{n-1}(\overline{y}, S^2/n) \]
+  \end{itemize}
+\item Conjugate analysis
+  \begin{itemize}
+  \item Prior: 
+  \[ \mu|\sigma^2 \sim N(m, \sigma^2/k) ,\,  \sigma^2 \sim  \mbox{Inv-}\chi^2(v,s^2) ,\,  \mu \sim t_{v}(m, s^2/k) \] 
+  \item Posterior:
+  \[ \mu|\sigma^2,y \sim N(m', \sigma^2/k') ,\,  \sigma^2|y \sim  \mbox{Inv-}\chi^2(v',(s')^2) ,\,  \mu|y \sim t_{v'}(m', (s')^2/k') \]
+  with 
+  \[ k' = k+n, m' = [km+n\overline{y}]/k', v'=v+n, \]
+  \[ v'(s')^2 = vs^2 + (n-1)S^2 + \frac{kn}{k'}(\overline{y}-m)^2\]
+  \end{itemize}
+\end{itemize}
+\end{frame}
 
 
 
