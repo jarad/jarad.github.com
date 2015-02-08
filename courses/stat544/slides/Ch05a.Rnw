@@ -1,0 +1,470 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim}
+
+%\usecolortheme[RGB={0,0,144}]{structure}
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+
+
+\title{Hierarchical models}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<chunk_options, echo=FALSE, message=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=5, out.width='.8\\linewidth', fig.align='center', size='tiny')
+library(reshape2)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(rstan)
+library(hexbin)
+@
+
+\frame{\maketitle}
+
+\section{Modeling}
+\frame{\frametitle{Andre Dawkin's three-point percentage}
+  Suppose $Y_i$ are the number 3-pointers Andre Dawkin's makes in season $i$, \pause and assume
+  \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \]
+  where 
+  \begin{itemize}[<+->]
+  \item $n_i$ are the number of 3-pointers attempted and
+  \item $\theta_i$ is the probability of making a 3-pointer in season$i$.
+  \end{itemize}
+  
+  \vspace{0.2in} \pause
+  
+  Do these models make sense?
+  \begin{itemize}[<+->]
+  \item The 3-point percentage every season is the same, i.e. $\theta_i=\theta$. 
+  \item The 3-point percentage every season is independent of other seasons. 
+  \item The 3-point percentage every season should be similar to other seasons. 
+  \end{itemize}
+}
+
+
+\frame{\frametitle{Andre Dawkin's three-point percentage}
+  Suppose $Y_i$ are the number of 3-pointers Andre Dawkin's makes in \alert{game} $i$, \pause and assume
+  \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \]
+  where 
+  \begin{itemize}[<+->]
+  \item $n_i$ are the number of 3-pointers attempted in game $i$ and
+  \item $\theta_i$ is the probability of making a 3-pointer in game $i$.
+  \end{itemize}
+  
+  \vspace{0.2in} \pause
+  
+  Do these models make sense?
+  \begin{itemize}[<+->]
+  \item The 3-point percentage every game is the same, i.e. $\theta_i=\theta$. 
+  \item The 3-point percentage every game is independent of other games. 
+  \item The 3-point percentage every game should be similar to other games. 
+  \end{itemize}
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Andre Dawkin's 3-point percentage}
+<<dawkins_data, echo=FALSE>>=
+d = read.csv("Ch05a-dawkins.csv")
+d = rbind(d, data.frame(date=NA, opponent='Total', made=sum(d$made), attempts=sum(d$attempts)))
+d = mutate(d, 
+           a = 0.5 + made,
+           b = 0.5 + attempts-made,
+           lcl = qbeta(0.025,a,b),
+           ucl = qbeta(0.975,a,b),
+           Estimate = ifelse(opponent=="Total", "Combined", "Individual"))
+d$game = 1:nrow(d)
+ggplot(d, 
+       aes(x     = lcl, 
+           xend  = ucl, 
+           y     = game, 
+           yend  = game, 
+           color = estimate))+
+  geom_segment(lwd=2) + 
+#  theme(legend.position="none") + 
+  labs(x=expression(theta))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Andre Dawkin's 3-point percentage}
+{\tiny
+<<results='asis', echo=FALSE>>=
+xtable(d)
+d = subset(d, opponent!="Total")
+@
+}
+\end{frame}
+
+
+\section{Hierarchical models}
+\frame{\frametitle{Hierarchical models}
+  Consider the following model
+	\[ \begin{array}{ll}
+	y_i &\stackrel{ind}{\sim} p(y|\theta_i) \pause \\
+	\theta_i &\stackrel{iid}{\sim} p(\theta|\phi) \pause \\
+	\phi &\sim p(\phi)
+	\end{array} \]
+  \pause where 
+  \begin{itemize}
+  \item $y_i$ is observed\pause, 
+	\item $\theta=(\theta_1,\ldots,\theta_n)$ and $\phi$ are parameters\pause, and 
+	\item only $\phi$ has a prior that is set.
+	\end{itemize}
+	
+	\vspace{0.2in} \pause 
+	
+	This is a hierarchical or multilevel model.
+}
+
+\subsection{Posteriors}
+\frame{\frametitle{Posterior distribution for hierarchical models}
+	The joint posterior distribution of interest in hierarchical models is 
+	\[ p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause = p(y|\theta)p(\theta|\phi)p(\phi). \]
+	\pause The joint posterior distribution can be decomposed via 
+  \[ p(\theta,\phi|y) = p(\theta|\phi,y)p(\phi|y) \]
+  where 
+  \[ \begin{array}{rl}
+  p(\theta|\phi,y) &\propto p(y|\theta)p(\theta|\phi) = \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi) \propto \prod_{i=1}^n p(\theta_i|\phi,y_i) \\
+  p(\phi|y) &\propto p(y|\phi)p(\phi) \pause \\
+  p(y|\phi) &= 
+  \int p(y|\theta)p(\theta|\phi) d\theta \pause \\
+  &= \int \cdots \int  \prod_{i=1}^n  p(y_i|\theta_i)p(\theta_i|\phi) d\theta_1 \cdots d\theta_n \pause \\
+  &= \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\phi) d\theta_i \pause \\
+  &= \prod_{i=1}^n p(y_i|\phi)  
+  \end{array} \]
+}
+
+\subsection{Example}
+\frame{\frametitle{Three-pointer example}
+	Our statistical model 
+	\[ \begin{array}{ll}
+	Y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \pause \\
+	\theta_i&\stackrel{ind}{\sim} Be(\alpha,\beta) \pause \\
+	\alpha,\beta &\sim p(\alpha,\beta) 
+	\end{array} \]
+	
+	\vspace{0.2in} \pause
+	
+	In this example,
+	\begin{itemize}
+	\item $\phi=(\alpha,\beta)$\pause\,
+	\item $\alpha,\beta$ describes the variability in 3-point percentage across games\pause, and
+	\item we are going to learn about this variability. 
+	\end{itemize}
+}
+
+\begin{frame}
+\frametitle{Decomposed posterior}
+  \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \quad \theta_i\stackrel{ind}{\sim} Be(\alpha,\beta) \quad \alpha,\beta \sim p(\alpha,\beta) \]
+  Conditional posterior for $\theta$:
+\[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_i|\alpha,\beta,y_i) \pause = \prod_{i=1}^n Be(y_i|\alpha+y_i,\beta+n_i-y_i) \]
+\pause 
+Marginal posterior for $(\alpha,\beta)$:
+\[ \begin{array}{rl}
+p(\alpha,\beta|y) &= p(y|\alpha,\beta)p(\alpha,\beta) \pause \\
+p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_i|\alpha,\beta) \pause \\
+&= \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\alpha,\beta) d\theta_i \pause \\
+&= \prod_{i=1}^n \int Bin(y_i|n_i,\theta_i)Be(\theta_i|\alpha,\beta) d\theta_i \pause \\
+&= \prod_{i=1}^n \int_0^1 {n_i\choose y_i} \theta_i^{y_i} (1-\theta_i)^{n_i-y_i} \frac{\theta_i^{\alpha-1}(1-\theta_i)^{\beta-1}}{B(\alpha,\beta)} d\theta_i \pause \\
+&= \prod_{i=1}^n {n_i\choose y_i}\frac{1}{B(\alpha,\beta)} \int_0^1 \theta_i^{\alpha+y_i-1} (1-\theta_i)^{\beta+n_i-y_i-1}  d\theta_i \pause \\
+&= \prod_{i=1}^n {n_i\choose y_i}\frac{B(\alpha+y_i,\beta+n_i-y_i)}{B(\alpha,\beta)} 
+\end{array} \]
+\pause
+Thus $y_i|\alpha,\beta \sim Beta-binomial(n_i,\alpha,\beta)$. 
+\end{frame}
+
+
+
+\subsection{Prior}
+\frame{\frametitle{A prior distribution for $\alpha$ and $\beta$}
+  Recall the interpretation: \pause
+  \begin{itemize}[<+->]
+  \item $\alpha$: prior successes
+  \item $\beta$: prior failures
+  \end{itemize}
+  
+  \vspace{0.2in} \pause 
+  
+  A more natural parameterization is 
+  \begin{itemize}[<+->]
+  \item prior expectation: $\mu = \frac{\alpha}{\alpha+\beta}$
+  \item prior sample size: $\eta = \alpha + \beta$
+  \end{itemize}
+  
+  \vspace{0.2in} \pause 
+  
+  Place priors on these parameters or transformed to the real line:
+  \begin{itemize}[<+->]
+  \item $\mbox{logit } \mu = \log(\mu/[1-\mu]) = \log(\alpha/\beta)$
+  \item $\log \eta$
+  \end{itemize}
+}
+
+\frame{\frametitle{A prior distribution for $\alpha$ and $\beta$}
+  It seems reasonable to assume the mean ($\mu$) and size ($\eta$) are independent \emph{a priori}:
+  \[ p(\mu,\eta) = p(\mu)p(\eta) \]
+  
+  \vspace{0.2in} \pause
+  
+  Let's assume a proper prior for $\mu$ and $\eta$ \pause perhaps
+  \begin{itemize}
+  \item $\mu \sim Be(1,1)$
+  \item $\eta \sim LN(0,1)$
+  \end{itemize}
+  \pause where $LN(0,1)$ is a log-normal distribution, i.e. $\log(\eta) \sim N(0,1)$.
+}
+
+\begin{frame}[fragile]
+\frametitle{Prior draws}
+<<proper_prior>>=
+n = 1e4
+mean = runif(n, 0 , 1) # mu
+size = rlnorm(n, 0, 1) # eta
+summary(size)
+summary(mean)
+alpha = size*mean
+beta  = size*(1-mean)
+summary(alpha)
+summary(beta)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<proper_prior_plot, fig.width=8>>=
+par(mfrow=c(2,3))
+hist(size,100)
+hist(mean,100)
+plot(hexbin(log(size),mean))
+hist(alpha)
+hist(beta)
+plot(hexbin(alpha,beta))
+@
+\end{frame}
+
+
+
+\section{Stan}
+\begin{frame}[fragile]
+\frametitle{Stan}
+<<stan, eval=FALSE>>=
+model = "
+data {
+  int<lower=0> N;
+  int<lower=0> n[N];
+  int<lower=0> y[N];
+}
+parameters {
+  real<lower=0,upper=1> mu;
+  real<lower=0> eta;
+  real<lower=0,upper=1> theta[N];
+}
+transformed parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+
+  alpha <- eta*   mu ;
+  beta  <- eta*(1-mu);
+}
+model {
+  mu    ~ beta(1,1);
+  eta   ~ lognormal(1,1);
+
+  # implicit joint distributions
+  theta ~ beta(alpha,beta); 
+  y     ~ binomial(n,theta);
+}
+"
+
+dat = list(y=d$made, n=d$attempts, N=nrow(d))
+m = stan_model(model_code="model")
+r = sampling(m, dat, c("mu","eta","theta"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Stan}
+<<stan_run, echo=FALSE, cache=TRUE>>=
+<<stan>>
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{stan}
+<<stan_post, dependson="stan_run", echo=FALSE>>=
+r
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{stan}
+<<stan_plot, dependson="stan_run", echo=FALSE>>=
+plot(r)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Comparing independent and hierarchical models}
+<<quantiles, dependson="stan_run", echo=FALSE>>=
+d$model = "independent"
+
+tmp = data.frame(summary(r)$summary[,c(4,8)])
+new_d = mutate(d,
+               model = "hierarchical",
+               lcl = tmp[3:26,1],
+               ucl = tmp[3:26,2])
+
+e = 0.2
+ggplot(rbind(d, new_d), aes(x=lcl, 
+                     xend=ucl, 
+                     y=game+e*(model=="hierarchical"), 
+                     yend=game+e*(model=="hierarchical"), 
+                     color=model))+
+  geom_segment(lwd=2, alpha=0.5) + 
+  labs(x=expression(theta), y="game")
+@
+\end{frame}
+
+
+
+
+\frame{\frametitle{A prior distribution for $\alpha$ and $\beta$}
+  In Bayesian Data Analysis (3rd ed) page 110, several priors are discussed 
+  
+  \vspace{0.2in} \pause
+  
+	\begin{itemize}
+	\item $(\log(\alpha/\beta), \log(\alpha+\beta)) \propto 1$ leads to an improper posterior.
+  
+  \vspace{0.2in} \pause
+  
+  \item $(\log(\alpha/\beta), \log(\alpha+\beta)) \sim Unif([-10^{10},10^{10}] \times [-10^{10},10^{10}])$ \pause while proper and seemingly vague is a very informative prior.
+  
+  \vspace{0.2in} \pause
+	
+  \item $(\log(\alpha/\beta), \log(\alpha+\beta)) \propto \alpha\beta(\alpha+\beta)^{-5/2}$ \pause which leads to a proper posterior \pause and is equivalent to $p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}$.
+	\end{itemize}
+}
+
+
+
+\subsection{improper prior}
+\begin{frame}[fragile]
+\frametitle{Stan - improper prior}
+<<stan2, eval=FALSE>>=
+model2 = "
+data {
+  int<lower=0> N;
+  int<lower=0> n[N];
+  int<lower=0> y[N];
+}
+parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+  real<lower=0,upper=1> theta[N];
+}
+
+model {
+  # improper prior
+  increment_log_prob(-5*log(alpha+beta)/2);
+
+  # implicit joint distributions
+  theta ~ beta(alpha,beta); 
+  y     ~ binomial(n,theta);
+}
+"
+
+dat = list(y=d$made, n=d$attempts, N=nrow(d))
+m2 = stan_model(model_code="model2")
+r2 = sampling(m2, dat, c("alpha","beta","theta"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Stan - improper prior}
+<<stan2_run, echo=FALSE, cache=TRUE>>=
+<<stan2>>
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - improper prior}
+<<stan_post2, dependson="stan2_run", echo=FALSE>>=
+r
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - improper prior}
+<<stan_plot2, dependson="stan2_run", echo=FALSE>>=
+plot(r)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Comparing independent and hierarchical models}
+<<quantiles2, dependson=c("stan_run","stan2_run"), echo=FALSE>>=
+new_d$prior = "proper"
+
+tmp = data.frame(summary(r2)$summary[,c(4,8)])
+new_d2 = mutate(new_d,
+                prior = "improper",
+                lcl = tmp[3:26,1],
+                ucl = tmp[3:26,2])
+
+e = 0.2
+ggplot(rbind(new_d,new_d2), aes(x=lcl, 
+                     xend=ucl, 
+                     y=game+e*(prior=="improper"), 
+                     yend=game+e*(prior=="improper"), 
+                     color=prior))+
+  geom_segment(lwd=2, alpha=0.5) + 
+  labs(x=expression(theta), y="game")
+@
+\end{frame}
+
+
+
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+  Hierarchical models: \pause
+	\begin{itemize}[<+->]
+	\item Basic structure
+	\[ y\sim p(y|\theta) \qquad \theta\sim p(\theta|\phi) \qquad \phi\sim p(\phi) \phantom{|\psi\qquad \psi\sim p(\psi)} \]
+	\item \pause Extension (one more level in the hierarchy)
+	\[ y\sim p(y|\theta) \qquad \theta\sim p(\theta|\phi) \qquad \phi\sim p(\phi|\psi) \qquad \psi\sim p(\psi) \]
+	\item \pause When deriving posteriors, remember the conditional independence structure, \pause e.g.
+	\[ p(\theta,\phi,\psi|y) \propto p(y|\theta) p(\theta|\phi) p(\phi|\psi) p(\psi) \]
+	\end{itemize}
+}
+
+
+
+\end{document}
