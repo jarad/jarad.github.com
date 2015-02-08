@@ -428,8 +428,9 @@ plot(r)
 
 
 \begin{frame}[fragile]
-\frametitle{Comparing independent and hierarchical models}
+\frametitle{Comparing all models}
 <<quantiles2, dependson=c("stan_run","stan2_run"), echo=FALSE>>=
+d$prior     = "independent"
 new_d$prior = "proper"
 
 tmp = data.frame(summary(r2)$summary[,c(4,8)])
@@ -439,11 +440,12 @@ new_d2 = mutate(new_d,
                 ucl = tmp[3:26,2])
 
 e = 0.2
-ggplot(rbind(new_d,new_d2), aes(x=lcl, 
-                     xend=ucl, 
-                     y=game+e*(prior=="improper"), 
-                     yend=game+e*(prior=="improper"), 
-                     color=prior))+
+ggplot(rbind(d,new_d,new_d2), 
+       aes(x     = lcl, 
+           xend  = ucl, 
+           y     = game+e*(prior=="improper")-e*(prior=="independent"), 
+           yend  = game+e*(prior=="improper")-e*(prior=="independent"), 
+           color = prior))+
   geom_segment(lwd=2, alpha=0.5) + 
   labs(x=expression(theta), y="game")
 @
