@@ -96,7 +96,7 @@ ggplot(d,
            xend  = ucl, 
            y     = game, 
            yend  = game, 
-           color = estimate))+
+           color = Estimate))+
   geom_segment(lwd=2) + 
 #  theme(legend.position="none") + 
   labs(x=expression(theta))
@@ -120,7 +120,7 @@ d = subset(d, opponent!="Total")
   Consider the following model
 	\[ \begin{array}{ll}
 	y_i &\stackrel{ind}{\sim} p(y|\theta_i) \pause \\
-	\theta_i &\stackrel{iid}{\sim} p(\theta|\phi) \pause \\
+	\theta_i &\stackrel{ind}{\sim} p(\theta|\phi) \pause \\
 	\phi &\sim p(\phi)
 	\end{array} \]
   \pause where 
@@ -138,19 +138,25 @@ d = subset(d, opponent!="Total")
 \subsection{Posteriors}
 \frame{\frametitle{Posterior distribution for hierarchical models}
 	The joint posterior distribution of interest in hierarchical models is 
-	\[ p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause = p(y|\theta)p(\theta|\phi)p(\phi). \]
+{\small
+	\[ \begin{array}{rl}
+  p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause = p(y|\theta)p(\theta|\phi)p(\phi)\pause = \left[ \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi)\right] p(\phi). 
+  \end{array} \]
+}
 	\pause The joint posterior distribution can be decomposed via 
   \[ p(\theta,\phi|y) = p(\theta|\phi,y)p(\phi|y) \]
   where 
+{\small
   \[ \begin{array}{rl}
   p(\theta|\phi,y) &\propto p(y|\theta)p(\theta|\phi) = \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi) \propto \prod_{i=1}^n p(\theta_i|\phi,y_i) \\
   p(\phi|y) &\propto p(y|\phi)p(\phi) \pause \\
   p(y|\phi) &= 
   \int p(y|\theta)p(\theta|\phi) d\theta \pause \\
-  &= \int \cdots \int  \prod_{i=1}^n  p(y_i|\theta_i)p(\theta_i|\phi) d\theta_1 \cdots d\theta_n \pause \\
+  &= \int \cdots \int  \prod_{i=1}^n  \left[ p(y_i|\theta_i)p(\theta_i|\phi) \right] d\theta_1 \cdots d\theta_n \pause \\
   &= \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\phi) d\theta_i \pause \\
   &= \prod_{i=1}^n p(y_i|\phi)  
   \end{array} \]
+}
 }
 
 \subsection{Example}
@@ -167,7 +173,7 @@ d = subset(d, opponent!="Total")
 	In this example,
 	\begin{itemize}
 	\item $\phi=(\alpha,\beta)$\pause\,
-	\item $\alpha,\beta$ describes the variability in 3-point percentage across games\pause, and
+	\item $Be(\alpha,\beta)$ describes the variability in 3-point percentage across games\pause, and
 	\item we are going to learn about this variability. 
 	\end{itemize}
 }
@@ -179,17 +185,18 @@ d = subset(d, opponent!="Total")
 \[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_i|\alpha,\beta,y_i) \pause = \prod_{i=1}^n Be(y_i|\alpha+y_i,\beta+n_i-y_i) \]
 \pause 
 Marginal posterior for $(\alpha,\beta)$:
+{\small 
 \[ \begin{array}{rl}
 p(\alpha,\beta|y) &= p(y|\alpha,\beta)p(\alpha,\beta) \pause \\
-p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_i|\alpha,\beta) \pause \\
-&= \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\alpha,\beta) d\theta_i \pause \\
+p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_i|\alpha,\beta) \pause = \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\alpha,\beta) d\theta_i \pause \\
 &= \prod_{i=1}^n \int Bin(y_i|n_i,\theta_i)Be(\theta_i|\alpha,\beta) d\theta_i \pause \\
 &= \prod_{i=1}^n \int_0^1 {n_i\choose y_i} \theta_i^{y_i} (1-\theta_i)^{n_i-y_i} \frac{\theta_i^{\alpha-1}(1-\theta_i)^{\beta-1}}{B(\alpha,\beta)} d\theta_i \pause \\
 &= \prod_{i=1}^n {n_i\choose y_i}\frac{1}{B(\alpha,\beta)} \int_0^1 \theta_i^{\alpha+y_i-1} (1-\theta_i)^{\beta+n_i-y_i-1}  d\theta_i \pause \\
 &= \prod_{i=1}^n {n_i\choose y_i}\frac{B(\alpha+y_i,\beta+n_i-y_i)}{B(\alpha,\beta)} 
 \end{array} \]
+}
 \pause
-Thus $y_i|\alpha,\beta \sim Beta-binomial(n_i,\alpha,\beta)$. 
+Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\beta)$. 
 \end{frame}
 
 
@@ -298,7 +305,7 @@ model {
 
 dat = list(y=d$made, n=d$attempts, N=nrow(d))
 m = stan_model(model_code="model")
-r = sampling(m, dat, c("mu","eta","theta"))
+r = sampling(m, dat, c("mu","eta","alpha","beta","theta"))
 @
 \end{frame}
 
@@ -334,8 +341,8 @@ d$model = "independent"
 tmp = data.frame(summary(r)$summary[,c(4,8)])
 new_d = mutate(d,
                model = "hierarchical",
-               lcl = tmp[3:26,1],
-               ucl = tmp[3:26,2])
+               lcl = tmp[5:28,1],
+               ucl = tmp[5:28,2])
 
 e = 0.2
 ggplot(rbind(d, new_d), aes(x=lcl, 
@@ -397,24 +404,20 @@ model {
 }
 "
 
-dat = list(y=d$made, n=d$attempts, N=nrow(d))
 m2 = stan_model(model_code="model2")
 r2 = sampling(m2, dat, c("alpha","beta","theta"))
 @
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{Stan - improper prior}
-<<stan2_run, echo=FALSE, cache=TRUE>>=
+<<stan2_run, echo=FALSE, cache=TRUE, results='hide'>>=
 <<stan2>>
 @
-\end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Stan - improper prior}
 <<stan_post2, dependson="stan2_run", echo=FALSE>>=
-r
+r2
 @
 \end{frame}
 
@@ -422,7 +425,7 @@ r
 \begin{frame}[fragile]
 \frametitle{Stan - improper prior}
 <<stan_plot2, dependson="stan2_run", echo=FALSE>>=
-plot(r)
+plot(r2)
 @
 \end{frame}
 
@@ -450,6 +453,81 @@ ggplot(rbind(d,new_d,new_d2),
   labs(x=expression(theta), y="game")
 @
 \end{frame}
+
+
+
+
+\subsection{beta-binomial}
+\begin{frame}
+\frametitle{Marginal posterior for $\alpha,\beta$}
+
+An alternative to jointly sampling $\theta,\alpha,\beta$ is to 
+\begin{enumerate}
+\item sample $\alpha,\beta\sim p(\alpha,\beta|y)$\pause, and then
+\item sample $\theta_i \stackrel{ind}{\sim} p(\theta_i|\alpha,\beta,y_i) \stackrel{d}{=} Be(\alpha+y_i,\beta+n_i-y_i)$. 
+\end{enumerate}
+
+\vspace{0.2in} \pause
+
+The maginal posterior for $\alpha,\beta$ is 
+\[ p(\alpha,\beta|y) \propto p(y|\alpha,\beta)p(\alpha,\beta) = \left[ \prod_{i=1}^n \mbox{Beta-binomial}(y_i|n_i,\alpha,\beta) \right] p(\alpha,\beta) \]
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - beta-binomial}
+<<stan3, eval=FALSE>>=
+model3 = "
+data {
+  int<lower=0> N;
+  int<lower=0> n[N];
+  int<lower=0> y[N];
+}
+parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+}
+model {
+  increment_log_prob(-5*log(alpha+beta)/2);
+  y     ~ beta_binomial(n,alpha,beta);
+}
+"
+
+m3 = stan_model(model_code="model3")
+r3 = sampling(m3, dat, c("alpha","beta"))
+@
+\end{frame}
+
+<<stan3_run, echo=FALSE, cache=TRUE, results='hide'>>=
+<<stan3>>
+@
+
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - beta-binomial}
+<<stan3_post, dependson="stan3_run", echo=FALSE>>=
+r3
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - beta-binomial}
+<<stan3_plot, dependson="stan3_run", echo=TRUE, fig.width=10>>=
+samples = extract(r3, c("alpha","beta"))
+game = 22
+theta = rbeta(length(samples$alpha), 
+              samples$alpha + d$made[game], 
+              samples$beta  + d$attempts[game] - d$made[game])
+hist(theta, 100, 
+     main=paste("Posterior for game against", d$opponent[game], "on", d$date[game]),
+     xlab="3-point probability", 
+     ylab="Posterior")
+@
+\end{frame}
+
 
 
 
