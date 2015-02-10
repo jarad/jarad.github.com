@@ -26,17 +26,61 @@
 
 %\section{Temp??} \begin{comment}
 
-<<chunk_options, echo=FALSE, message=FALSE>>=
-opts_chunk$set(fig.width=6, fig.height=5, out.width='.8\\linewidth', fig.align='center', size='tiny')
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny')
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE>>=
 library(reshape2)
 library(plyr)
 library(ggplot2)
 library(xtable)
 library(rstan)
-library(hexbin)
+library(GGally)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(1)
 @
 
 \frame{\maketitle}
+
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Motivating example
+  \begin{itemize}
+  \item Independent vs pooled estimates
+  \end{itemize}
+\item Hierarchical models
+  \begin{itemize}
+  \item General structure
+  \item Posterior distribution
+  \end{itemize}
+\item Binomial hierarchial model
+  \begin{itemize}
+  \item Posterior distribution
+  \item Prior distributions
+  \end{itemize}
+\item Stan for binomial hierarchical model
+  \begin{itemize}
+  \item proper prior
+  \item improper prior
+  \item integrating out $\theta$
+  \item across seasons
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
 
 \section{Modeling}
 \frame{\frametitle{Andre Dawkin's three-point percentage}
@@ -78,11 +122,32 @@ library(hexbin)
   \end{itemize}
 }
 
+<<data, echo=FALSE, results='hide'>>=
+d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L, 
+14L, 15L, 20L, 17L, 18L, 19L, 21L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 
+6L, 22L, 23L, 24L), .Label = c("1/11/14", "1/13/14", "1/18/14", 
+"1/22/14", "1/25/14", "1/27/14", "1/4/14", "1/7/14", "11/12/13", 
+"11/15/13", "11/18/13", "11/19/13", "11/24/13", "11/27/13", "11/29/13", 
+"11/8/13", "12/16/13", "12/19/13", "12/28/13", "12/3/13", "12/31/13", 
+"2/1/14", "2/4/14", "2/8/14"), class = "factor"), opponent = structure(c(5L, 
+13L, 9L, 21L, 6L, 22L, 1L, 2L, 15L, 11L, 20L, 7L, 8L, 17L, 12L, 
+4L, 23L, 16L, 14L, 10L, 18L, 19L, 24L, 3L), .Label = c("alabama", 
+"arizona", "boston college", "clemson", "davidson", "east carolina", 
+"eastern michigan", "elon", "florida atlantic", "florida state", 
+"gardner-webb", "georgia tech", "kansas", "miami", "michigan", 
+"nc state", "notre dame", "pitt", "syracuse", "ucla", "unc asheville", 
+"vermont", "virginia", "wake forest"), class = "factor"), made = c(0L, 
+0L, 5L, 3L, 0L, 3L, 0L, 1L, 2L, 4L, 1L, 6L, 5L, 1L, 1L, 0L, 1L, 
+3L, 2L, 3L, 6L, 4L, 4L, 0L), attempts = c(0L, 0L, 8L, 6L, 1L, 
+9L, 2L, 1L, 2L, 8L, 5L, 10L, 7L, 4L, 5L, 4L, 1L, 7L, 6L, 6L, 
+7L, 9L, 7L, 1L)), .Names = c("date", "opponent", "made", "attempts"
+), class = "data.frame", row.names = c(NA, -24L))
+@
+
 
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
 <<dawkins_data, echo=FALSE>>=
-d = read.csv("Ch05a-dawkins.csv")
 d = rbind(d, data.frame(date=NA, opponent='Total', made=sum(d$made), attempts=sum(d$attempts)))
 d = mutate(d, 
            a = 0.5 + made,
@@ -148,7 +213,7 @@ d = subset(d, opponent!="Total")
   where 
 {\small
   \[ \begin{array}{rl}
-  p(\theta|\phi,y) &\propto p(y|\theta)p(\theta|\phi) = \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi) \propto \prod_{i=1}^n p(\theta_i|\phi,y_i) \\
+  p(\theta|\phi,y) &\propto p(y|\theta)p(\theta|\phi) \pause = \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi) \pause \propto \prod_{i=1}^n p(\theta_i|\phi,y_i) \pause \\
   p(\phi|y) &\propto p(y|\phi)p(\phi) \pause \\
   p(y|\phi) &= 
   \int p(y|\theta)p(\theta|\phi) d\theta \pause \\
@@ -159,7 +224,7 @@ d = subset(d, opponent!="Total")
 }
 }
 
-\subsection{Example}
+\section{Binomial hierarchical model}
 \frame{\frametitle{Three-pointer example}
 	Our statistical model 
 	\[ \begin{array}{ll}
@@ -182,12 +247,12 @@ d = subset(d, opponent!="Total")
 \frametitle{Decomposed posterior}
   \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \quad \theta_i\stackrel{ind}{\sim} Be(\alpha,\beta) \quad \alpha,\beta \sim p(\alpha,\beta) \]
   Conditional posterior for $\theta$:
-\[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_i|\alpha,\beta,y_i) \pause = \prod_{i=1}^n Be(y_i|\alpha+y_i,\beta+n_i-y_i) \]
+\[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_i|\alpha,\beta,y_i) \pause = \prod_{i=1}^n Be(\theta_i|\alpha+y_i,\beta+n_i-y_i) \]
 \pause 
 Marginal posterior for $(\alpha,\beta)$:
 {\small 
 \[ \begin{array}{rl}
-p(\alpha,\beta|y) &= p(y|\alpha,\beta)p(\alpha,\beta) \pause \\
+p(\alpha,\beta|y) &\propto p(y|\alpha,\beta)p(\alpha,\beta) \pause \\
 p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_i|\alpha,\beta) \pause = \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\alpha,\beta) d\theta_i \pause \\
 &= \prod_{i=1}^n \int Bin(y_i|n_i,\theta_i)Be(\theta_i|\alpha,\beta) d\theta_i \pause \\
 &= \prod_{i=1}^n \int_0^1 {n_i\choose y_i} \theta_i^{y_i} (1-\theta_i)^{n_i-y_i} \frac{\theta_i^{\alpha-1}(1-\theta_i)^{\beta-1}}{B(\alpha,\beta)} d\theta_i \pause \\
@@ -244,28 +309,19 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
 \frametitle{Prior draws}
 <<proper_prior>>=
 n = 1e4
-mean = runif(n, 0 , 1) # mu
-size = rlnorm(n, 0, 1) # eta
-summary(size)
-summary(mean)
-alpha = size*mean
-beta  = size*(1-mean)
-summary(alpha)
-summary(beta)
+prior_draws = mutate(data.frame(mu  = runif(n, 0 , 1), eta = rlnorm(n, 0, 1)),
+                      alpha = eta*   mu,
+                      beta  = eta*(1-mu))
+ddply(melt(prior_draws), .(variable), function(x) quantile(x$value, prob=c(.025,.5,.975)))
+
 @
 \end{frame}
 
 
 
 \begin{frame}[fragile]
-<<proper_prior_plot, fig.width=8>>=
-par(mfrow=c(2,3))
-hist(size,100)
-hist(mean,100)
-plot(hexbin(log(size),mean))
-hist(alpha)
-hist(beta)
-plot(hexbin(alpha,beta))
+<<proper_prior_plot, out.width='0.8\\textwidth'>>=
+ggpairs(prior_draws, lower=list(continuous='density'))
 @
 \end{frame}
 
@@ -274,7 +330,7 @@ plot(hexbin(alpha,beta))
 \section{Stan}
 \begin{frame}[fragile]
 \frametitle{Stan}
-<<stan, eval=FALSE>>=
+<<stan>>=
 model = "
 data {
   int<lower=0> N;
@@ -295,24 +351,22 @@ transformed parameters {
 }
 model {
   mu    ~ beta(1,1);
-  eta   ~ lognormal(1,1);
+  eta   ~ lognormal(0,10);
 
   # implicit joint distributions
   theta ~ beta(alpha,beta); 
   y     ~ binomial(n,theta);
 }
 "
-
-dat = list(y=d$made, n=d$attempts, N=nrow(d))
-m = stan_model(model_code="model")
-r = sampling(m, dat, c("mu","eta","alpha","beta","theta"))
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Stan}
 <<stan_run, echo=FALSE, cache=TRUE>>=
-<<stan>>
+dat = list(y=d$made, n=d$attempts, N=nrow(d))
+m = stan_model(model_code="model")
+r = sampling(m, dat, c("mu","eta","alpha","beta","theta"))
 @
 \end{frame}
 
@@ -381,7 +435,7 @@ ggplot(rbind(d, new_d), aes(x=lcl,
 \subsection{improper prior}
 \begin{frame}[fragile]
 \frametitle{Stan - improper prior}
-<<stan2, eval=FALSE>>=
+<<stan2_run, results='hide', cache=TRUE>>=
 model2 = "
 data {
   int<lower=0> N;
@@ -408,11 +462,6 @@ m2 = stan_model(model_code="model2")
 r2 = sampling(m2, dat, c("alpha","beta","theta"))
 @
 \end{frame}
-
-<<stan2_run, echo=FALSE, cache=TRUE, results='hide'>>=
-<<stan2>>
-@
-
 
 \begin{frame}[fragile]
 \frametitle{Stan - improper prior}
@@ -477,7 +526,7 @@ The maginal posterior for $\alpha,\beta$ is
 
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
-<<stan3, eval=FALSE>>=
+<<stan3_run, results='hide', cache=TRUE>>=
 model3 = "
 data {
   int<lower=0> N;
@@ -499,11 +548,6 @@ r3 = sampling(m3, dat, c("alpha","beta"))
 @
 \end{frame}
 
-<<stan3_run, echo=FALSE, cache=TRUE, results='hide'>>=
-<<stan3>>
-@
-
-
 
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
@@ -514,26 +558,138 @@ r3
 
 
 \begin{frame}[fragile]
-\frametitle{Stan - beta-binomial}
-<<stan3_plot, dependson="stan3_run", echo=TRUE, fig.width=10>>=
+\frametitle{}
+
+Posterior samples for $\alpha$ and $\beta$ 
+
+<<stan3_alpha_beta, dependson="stan3_run", echo=TRUE>>=
 samples = extract(r3, c("alpha","beta"))
+ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)), log_beta  = log(as.numeric(samples$beta))),
+        lower  = list(continuous='density'))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Posterior sample for $\theta_{22}$}
+<<stan3_theta, dependson="stan3_run", fig.width=10>>=
 game = 22
-theta = rbeta(length(samples$alpha), 
+theta22 = rbeta(length(samples$alpha), 
               samples$alpha + d$made[game], 
               samples$beta  + d$attempts[game] - d$made[game])
-hist(theta, 100, 
+hist(theta22, 100, 
      main=paste("Posterior for game against", d$opponent[game], "on", d$date[game]),
      xlab="3-point probability", 
      ylab="Posterior")
 @
 \end{frame}
 
+\begin{frame}[fragile]
+\frametitle{$\theta$s are not independent in the posterior}
+<<stan3_thetas, dependson="stan3_run", echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
+game = 23
+theta23 = rbeta(length(samples$alpha), 
+              samples$alpha + d$made[game], 
+              samples$beta  + d$attempts[game] - d$made[game])
+ggpairs(data.frame(theta22=theta22,theta23=theta23), lower=list(continuous='density'))
+@
+\end{frame}
 
+
+
+\subsection{3-point percentage across seasons}
+\begin{frame}[fragile]
+\frametitle{3-point percentage across seasons}
+
+An alternative to modeling game-specific 3-point percentage is to model 3-point percentage in a season. \pause The model is exactly the same, but the data changes. \pause
+
+<<echo=FALSE, results='asis'>>=
+d = data.frame(season=1:4, y=c(36,64,67,64), n=c(95,150,171,152))
+xtable(d)
+@
+
+Due to the low number of seasons (observations), we will use the proper prior for $\alpha$ and $\beta$. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - beta-binomial}
+<<stan_season, echo=TRUE, results='hide', cache=TRUE>>=
+model4 = "
+data {
+  int<lower=0> N;
+  int<lower=0> n[N];
+  int<lower=0> y[N];
+  real eta_sd;
+}
+parameters {
+  real<lower=0,upper=1> mu;
+  real<lower=0> eta;
+}  
+transformed parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+  alpha <- eta *    mu;
+  beta  <- eta * (1-mu);
+}
+model {
+  mu  ~ beta(20,30);
+  eta ~ lognormal(0,eta_sd);
+  y   ~ beta_binomial(n,alpha,beta);
+}
+generated quantities {
+  real<lower=0,upper=1> theta[N];
+  for (i in 1:N) theta[i] <- beta_rng(alpha+y[i], beta+n[i]-y[i]);
+}
+"
+
+m4 = stan_model(model_code="model4")
+r_seasons = sampling(m4, list(N=nrow(d), y=d$y, n=d$n, eta_sd=2), 
+                     c("alpha","beta","mu","eta","theta"), seed=1)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Stan - hierarchical model for seasons}
+
+<<stan_season_summary, dependson="stan_season">>=
+r_seasons
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - hierarchical model for seasons}
+
+<<stan_season_posteriors, echo=FALSE>>=
+posterior = melt(extract(r_seasons, "theta")[[1]])
+names(posterior)[2] = "season"
+posterior$season = factor(posterior$season)
+ggplot(posterior, aes(x=value, fill=season)) + geom_density(alpha=0.5)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - hierarchical model for seasons}
+
+Probabilities that 3-point percentage is greater in season 4 than in the other seasons:
+
+<<stan_season_comparison, echo=TRUE, dependson="stan_season">>=
+theta = extract(r_seasons, "theta")[[1]] 
+mean(theta[,4] > theta[,1])
+mean(theta[,4] > theta[,2])
+mean(theta[,4] > theta[,3])
+@
+
+\end{frame}
 
 
 
 \subsection{Summary}
-\frame{\frametitle{Summary}
+\frame{\frametitle{Summary - hierarchical models}
   Hierarchical models: \pause
 	\begin{itemize}[<+->]
 	\item Basic structure
