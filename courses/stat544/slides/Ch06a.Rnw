@@ -54,6 +54,19 @@ set.seed(1)
 \frame{\maketitle}
 
 \begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Sensitivity analysis
+\item Posterior predictive checks
+  \begin{itemize}
+  \item Graphical checks
+  \item Posterior predictive pvalues
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
 \frametitle{Posterior predictive checking}
   Let $y^{rep}$ be a replication of $y$, \pause then 
   \[ p(y^{rep}|y) = \int p(y^{rep}|\theta,y) p(\theta|y) d\theta \pause = \int p(y^{rep}|\theta) p(\theta|y) d\theta. \]
@@ -76,6 +89,9 @@ set.seed(1)
   \end{itemize}
 \end{frame}
 
+
+
+
 \begin{frame}[fragile]
 \frametitle{Airline accident data}
   Let 
@@ -87,7 +103,7 @@ set.seed(1)
   Consider the model 
   \[ Y_i \stackrel{ind}{\sim} Po(x_i\lambda) \qquad p(\lambda)\propto 1/\sqrt{\lambda}. \]
   
-\small
+\footnotesize
 <<airline_accident_data, results='asis'>>=
 d = data.frame(year=1976:1985, 
               fatal_accidents = c(24,25,31,31,22,21,26,20,16,22),
@@ -134,15 +150,25 @@ if (id==20) {
 @
 \end{frame}
 
+
+
 \begin{frame}[fragile]
 <<histograms, message=FALSE>>=
-(qplot(fatal_accidents, data=rep, facets=~.n, geom="histogram", fill=factor(1))+ theme(legend.position="none"))
+ggplot(rep, aes(x=fatal_accidents, fill=factor(1))) + 
+  geom_histogram(binwidth=1) +
+  facet_wrap(~.n) +
+  theme(legend.position="none")
 @
 \end{frame}
 
+
+
 \begin{frame}[fragile]
 <<histograms_observed, message=FALSE>>=
-(qplot(fatal_accidents, data=rep, facets=~.n, geom="histogram", fill=.n==id)+ theme(legend.position="none"))
+ggplot(rep, aes(x=fatal_accidents, fill=.n==id)) + 
+  geom_histogram(binwidth=1) +
+  facet_wrap(~.n) +
+  theme(legend.position="none")
 @
 \end{frame}
 
@@ -157,84 +183,100 @@ if (id==20) {
   Consider the model 
   \[ Y_i \stackrel{ind}{\sim} Po(x_i\lambda) \qquad p(\lambda)\propto 1/\sqrt{\lambda}. \]
   
-<<airline_accident_data_repeated>>=
-<<airline_accident_data>>
+\footnotesize
+<<results='asis'>>=
+print(xtable(d, digits=0, include.rownames=FALSE))
 @
 \end{frame}
 
+
+
 \begin{frame}[fragile]
 <<scatterplot>>=
-(qplot(year, fatal_accidents, data=rep, facets=~.n, col=factor(1))+ theme(legend.position="none"))
+g = ggplot(rep, aes(x=year, y=fatal_accidents, col=factor(1))) + 
+  geom_point() + 
+  facet_wrap(~.n) +
+  theme(legend.position="none")
+g
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 <<scatterplot_with_regression_line>>=
-(qplot(year, fatal_accidents, data=rep, facets=~.n, col=factor(1))+stat_smooth(method="lm", formula=y~x)+ theme(legend.position="none"))
+g = g + stat_smooth(method="lm", formula=y~x)
+g
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 <<scatterplot_with_observed>>=
-(qplot(year, fatal_accidents, data=rep, facets=~.n, col=.n==id)+stat_smooth(method="lm", formula=y~x)+ theme(legend.position="none"))
+g + aes(col=.n==id)
 @
 \end{frame}
+
+
 
 \begin{frame}
 \frametitle{Posterior predictive pvalues}
   To quantify the discrepancy between observed and replicated data: \pause
   \begin{enumerate}
   \item Define a test statistic $T(y,\theta)$. \pause
-  \item Calculate the posterior predictive pvalue
+  \item Define the posterior predictive pvalue
   \[ p_B = P(T(y^{rep},\theta)\ge T(y,\theta)|y) \]
   \pause where $y^{rep}$ and $\theta$ are treated as random. \pause Typically this pvalue is calculated via simulation, \pause i.e. 
-  \[ p_B = \int \int \mathrm{I}(T(y^{rep},\theta)\ge T(y,\theta)) p(y^{rep}|\theta) p(\theta|y) dy^{rep} d\theta \]
+  \[ \begin{array}{rl}
+  p_B
+  &= E_{y^{rep},\theta}[\mathrm{I}(T(y^{rep},\theta)\ge T(y,\theta)) p(y^{rep}|\theta) p(\theta|y)|y] \pause \\
+  &= \int \int \mathrm{I}(T(y^{rep},\theta)\ge T(y,\theta)) p(y^{rep}|\theta) p(\theta|y) dy^{rep} d\theta \pause \\
+  &\approx \frac{1}{J} \sum_{j=1}^J \mathrm{I}(T(y^{rep,j},\theta^{(j)})\ge T(y,\theta^{(j)})) 
+  \end{array} \]
+  \pause where $\theta^{(j)} \sim p(\theta|y)$ and $y^{rep,j} \sim p(y|\theta^{(r)})$. 
    
   \end{enumerate}
   \pause Large or small pvalues are (possible) cause for concern. 
 \end{frame}
 
-\begin{frame}
-\frametitle{Posterior predictive pvalues}
-  Typically simulations are used to approximate $p_B$, \pause i.e. 
-  \begin{enumerate}[<+->]
-  \item Simulate $\theta^{(j)} \sim p(\theta|y)$.
-  \item Simulate $y^{rep,j} \sim p(y^{rep}|\theta^{(j)})$ and 
-  \item Calculate 
-  \[ p_B \approx \frac{1}{J} \sum_{j=1}^J \mathrm{I}(T(y^{rep,j},\theta^{(j)})\ge T(y,\theta^{(j)})).  \]
-  \end{enumerate}
-\end{frame}
+
+
+
 
 
 \begin{frame}[fragile]
 \frametitle{Posterior predictive pvalue for slope}
   Let 
-  \[ Y_i = \beta_0+\beta_1 i \]
+  \[ Y_i^{obs} = \beta_0^{obs}+\beta_1^{obs} i \]
   where 
   \begin{itemize}
-  \item $Y_i$ is the number of fatal accidents in year $i$ \pause and 
-  \item $\beta_1$ be the test statistic. 
+  \item $Y_i^{obs}$ is the observed number of fatal accidents in year $i$ \pause and 
+  \item $\beta_1^{obs}$ be the test statistic. 
   \end{itemize}
   
   \vspace{0.2in} \pause 
+
+  Now, generate replicate data $y^{rep}$ and fit 
+  \[ Y_i^{rep} = \beta_0^{rep} + \beta_1^{rep} i.\]
+  \pause
+  Now compare $\beta_1^{obs}$ to the distribution of $\beta_1^{rep}$.
 
 <<slope, cache=TRUE>>=
 rep = rdply(1000, { 
   tmp=d
   lambda = rgamma(1,a,b)
   tmp$fatal_accidents = rpois(nrow(d), lambda*d$miles_flown)
-  coefficients(lm(fatal_accidents~year, tmp))[2]
+  data.frame(beta1 = coefficients(lm(fatal_accidents~year, tmp))[2])
 })
 observed_slope = coefficients(lm(fatal_accidents~year,d))[2]
 @
 \end{frame}
 
+
+
 \begin{frame}[fragile]
 <<slope_plot, dependson="slope", fig.width=8>>=
-mean(rep$year<observed_slope) 
-(qplot(year, data=rep, geom="histogram")+geom_vline(xintercept=observed_slope, color="red"))
+mean(rep$beta1<observed_slope) 
+ggplot(rep, aes(x=beta1)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=observed_slope, color="red")
 @
 \end{frame}
 
@@ -255,63 +297,76 @@ mean(rep$year<observed_slope)
   
   \vspace{0.2in} \pause
   
-  Here the $\lambda_i$ are deterministic, but (possibly) different each year.
+  Here the $\lambda_i$ are a deterministic function of year, but (possibly) different each year.
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{JAGS linear model for accident rate}
-<<jags>>=
-model = "
-model {
-  for (i in 1:n) {
-    y[i] ~ dpois(x[i]*lambda[i])
-    log(lambda[i]) <- beta[1]+beta[2]*i
-  }
-  beta[1] ~ dnorm(0, 1e-5)
-  beta[2] ~ dnorm(0, 1e-5)
-}"
 
-dat = list(n=nrow(d), y=d$fatal_accidents, x=d$miles_flown)
-m = jags.model(textConnection(model), dat, n.chains=3)
-res = coda.samples(m, c("beta","lambda"), 1000)
+
+
+\begin{frame}[fragile]
+\frametitle{Stan linear model for accident rate}
+<<stan, echo=TRUE, results='hide', cache=TRUE>>=
+model = "
+data {
+  int<lower=0> n;
+  int<lower=0> y[n];
+  vector<lower=0>[n] x;
+}
+transformed data {
+  vector[n] logx;
+  logx <- log(x); # both x and logx need to be vectors 
+}
+parameters {
+  real beta[2];
+}
+transformed parameters {
+  vector[n] lambda;
+  for (i in 1:n) lambda[i] <- beta[1] + beta[2]*i;
+}
+model {
+  y ~ poisson_log(logx + lambda); # _log indicates mean on log scale
+}
+"
+
+m = stan_model(model_code = model)
+r = sampling(m, list(n=nrow(d), y=d$fatal_accidents, x=d$miles_flown))
 @
 \end{frame}
 
 \begin{frame}[fragile]
-<<jags_posteriors>>=
-plot(res[,c("beta[1]","beta[2]")])
+<<stan_posteriors, dependson='stan'>>=
+r
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Posterior predictive pvalue: slope}
-<<jags_rep>>=
-lambda = res[[1]][,3:12] # Using samples from chain 1
-reps = adply(lambda, 1, function(x) {
-  tmp = d[,1:5]
-  tmp$fatal_accidents = rpois(nrow(d), tmp$miles_flown*x)
-  tmp
+<<stan_rep, dependson='stan', cache=TRUE>>=
+lambda = extract(r, "lambda")[["lambda"]]
+reps = adply(lambda, 1, function(a) {
+  d = data.frame(yrep = rpois(nrow(d), d$miles_flown * exp(a)),
+             year = 1:10)
 })
 
+rep_slopes = daply(reps, .(iterations), function(d) {
+  slopes=coefficients(lm(yrep~year, d))[2]
+})
+@
+
+<<echo=TRUE, dependson='stan_rep'>>=
 # Posterior predictive pvalue: slope
-mean(daply(reps, .(X1), function(x) {
-  coefficients(lm(x$fatal_accidents~x$year, tmp))[2]
-})>observed_slope)
+mean(rep_slopes>observed_slope)
+@
 
-# Replace one sample with observed data
-random_reps = sample(levels(reps$X1),20)
-rep = reps[reps$X1 %in% random_reps,]
-obs_rep = sample(random_reps,1)
-rep[rep$X1 == obs_rep,-1] = d[,names(rep)[-1]]
+<<fig.width=8, dependson='stan_rep'>>=
+ggplot(data.frame(slopes=rep_slopes), aes(x=slopes)) + 
+  geom_histogram(binwidth=0.1) + 
+  geom_vline(xintercept = observed_slope, color='red')
 @
 \end{frame}
 
 
-\begin{frame}[fragile]
-<<jags_rep_plot>>=
-(qplot(year, fatal_accidents, data=rep, facets=~X1, col=X1==obs_rep)+stat_smooth(method="lm", formula=y~x)+ theme(legend.position="none"))
-@
-\end{frame}
+
 
 \end{document}
