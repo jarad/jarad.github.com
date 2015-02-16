@@ -56,8 +56,12 @@ set.seed(1)
 \begin{frame}
 \frametitle{Outline}
 
+We assume $p(y|\theta)$ and $p(\theta)$, so it would be prudent to determine if these assumptions are reasonable. 
+
+\vspace{0.2in} \pause
+
 \begin{itemize}
-\item Sensitivity analysis
+\item (Prior) sensitivity analysis 
 \item Posterior predictive checks
   \begin{itemize}
   \item Graphical checks
@@ -66,8 +70,141 @@ set.seed(1)
 \end{itemize}
 \end{frame}
 
+
+
+
+\section{Prior sensitivity analysis}
 \begin{frame}
-\frametitle{Posterior predictive checking}
+\frametitle{Prior sensitivity analysis}
+
+Since a prior specifies our prior belief, we may want to check to determine whether our conclusions would change it we held different prior beliefs. \pause Suppose a particular scientific question can be boiled down to 
+\[ Y_i \stackrel{ind}{\sim} Ber(\theta) \]
+\pause 
+and that there is wide disagreement about the value for $\theta$ such that following might actually characterize different individual beliefs before the experiment is run: \pause
+\begin{itemize}
+\item Skeptic: $\theta\sim Be(1,100)$ 
+\item Agnostic: $\theta\sim Be(1,1)$
+\item Believer: $\theta\sim Be(100,1)$
+\end{itemize}
+\pause
+An experiment is run and the posterior under these different priors are compared. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Ten data points}
+
+<<>>=
+n = 10
+xx = seq(0,1,by=0.01)
+d = ddply(data.frame(a=c(1,1,100), b=c(100,1,1), 
+                     type=factor(c("skeptic","agnostic","believer"),
+                                 c("skeptic","agnostic","believer"))), 
+          .(type), function(x) {
+  data.frame(xx=xx, yy=dbeta(xx, x$a+.9*n, x$b+.1*n))
+})
+
+ggplot(d, aes(x=xx,y=yy,col=type)) + geom_line() +
+  labs(x=expression(theta), y=expression(paste("p(",theta,"|y)")))
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{A million data points}
+
+<<>>=
+n = 1000000
+xx = seq(0.89,.91,by=0.0001)
+d = ddply(data.frame(a=c(1,1,100), b=c(100,1,1), 
+                     type=factor(c("skeptic","agnostic","believer"),
+                                 c("skeptic","agnostic","believer"))), 
+          .(type), function(x) {
+  data.frame(xx=xx, yy=dbeta(xx, x$a+.9*n, x$b+.1*n))
+})
+
+ggplot(d, aes(x=xx,y=yy,col=type)) + geom_line() +
+  labs(x=expression(theta), y=expression(paste("p(",theta,"|y)")))
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Hierarchical variance prior}
+
+Recall the normal hierarchical model
+\[ y_i \stackrel{ind}{\sim} N(\theta_i,s_i^2), \quad \theta_i\stackrel{ind}{\sim} N(\mu,\tau^2) \]
+which results in the posterior distribution for $\tau^2$ of 
+\[ p(\tau|y) \propto p(\tau) V_\mu^{1/2} \prod_{i=1}^\I (s_i^2+\tau^2)^{-1/2} \exp\left( -\frac{(y_{i}-\hat{\mu})^2}{2(s_i^2+\tau^2)} \right) \]
+
+ \pause
+
+As an attempt to be non-informative, consider an $IG(\epsilon,\epsilon)$ prior for $\tau^2$. \pause As an alternative consider $\tau \sim Unif(0,C)$ or $\tau\sim Ca^+(0,C)$ where $C$ problem specific, but is chosen to be relatively large for the particular problem. 
+
+ \pause
+
+The 8-schools example has the following data:
+
+<<results='asis'>>=
+d = data.frame(y = c(28,  8, -3,  7, -1,  1, 18, 12),
+               s = c(15, 10, 16, 11,  9, 11, 10, 18))
+print(xtable(t(d)))
+@
+
+
+\end{frame}
+
+\begin{frame}
+<<analysis, echo=FALSE, fig.width=8, warning=FALSE>>=
+dinvgamma = function(x, a, b) dgamma(1/x,a,b)/x^2
+dsqrtinvgamma = function(x, a, b) dinvgamma(x^2, a, b)*2*x
+
+tau_log_posterior = function(tau, y, si2) 
+{
+  spt = si2+tau^2
+  Vmu = 1/sum(1/spt)
+  mu = sum(y/spt)*Vmu
+  0.5*log(Vmu)+sum(-0.5*log(spt)-(y-mu)^2/(2*spt))
+}
+
+V_tau_log_posterior = Vectorize(tau_log_posterior,"tau")
+
+
+
+h = .001
+tmp =data.frame(x = seq(0,30-2*h, by=2*h)+h)
+post = rbind(mutate(tmp, 
+                    prior = 1/30, 
+                    f = exp(V_tau_log_posterior(x, d$y, d$s^2)), 
+                    prior_type="uniform"),
+             mutate(tmp, 
+                    prior = dsqrtinvgamma(x, 1, 1), 
+                    f= exp(V_tau_log_posterior(x, d$y, d$s^2) + log(dsqrtinvgamma(x, 1, 1))), 
+                    prior_type="IG(1,1)"),
+             mutate(tmp, 
+                    prior = dsqrtinvgamma(x, .001, .001),
+                    f = exp(V_tau_log_posterior(x, d$y, d$s^2) + log(dsqrtinvgamma(x, .001, .001 ))), 
+                    prior_type="IG(.001,001)"))
+post2 = ddply(post, .(prior_type), function(d) 
+  data.frame(x=d$x, posterior = d$f/(sum(d$f)*2*h), prior=d$prior/(sum(d$prior)*2*h))
+)
+m = melt(post2, id.var=c("prior_type","x"))
+names(m) = c("prior","x","density","y")
+m$density = factor(m$density, c("prior","posterior"))
+ggplot(m, aes(x=x, y=y, color=prior)) + geom_line() + 
+  labs(x=expression(tau), y='density') + 
+  xlim(0,10) + facet_wrap(~density)
+@
+\end{frame}
+
+
+
+\section{Posterior predictive checks}
+\begin{frame}
+\frametitle{Posterior predictive checks}
   Let $y^{rep}$ be a replication of $y$, \pause then 
   \[ p(y^{rep}|y) = \int p(y^{rep}|\theta,y) p(\theta|y) d\theta \pause = \int p(y^{rep}|\theta) p(\theta|y) d\theta. \]
   \pause where $y$ is the observed data and $\theta$ are the model parameters.
@@ -91,7 +228,7 @@ set.seed(1)
 
 
 
-
+\subsection{Airline example{}}
 \begin{frame}[fragile]
 \frametitle{Airline accident data}
   Let 
@@ -218,6 +355,7 @@ g + aes(col=.n==id)
 
 
 
+\subsection{Posterior predictive pvalues}
 \begin{frame}
 \frametitle{Posterior predictive pvalues}
   To quantify the discrepancy between observed and replicated data: \pause
@@ -281,6 +419,7 @@ ggplot(rep, aes(x=beta1)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept
 \end{frame}
 
 
+\subsection{Update model}
 \begin{frame}
 \frametitle{Consider a linear model for the $\lambda_i$}
   Consider the model 
