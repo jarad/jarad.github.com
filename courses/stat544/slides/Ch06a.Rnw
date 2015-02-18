@@ -42,7 +42,6 @@ library(plyr)
 library(ggplot2)
 library(xtable)
 library(rstan)
-library(GGally)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -80,7 +79,7 @@ We assume $p(y|\theta)$ and $p(\theta)$, so it would be prudent to determine if 
 Since a prior specifies our prior belief, we may want to check to determine whether our conclusions would change it we held different prior beliefs. \pause Suppose a particular scientific question can be boiled down to 
 \[ Y_i \stackrel{ind}{\sim} Ber(\theta) \]
 \pause 
-and that there is wide disagreement about the value for $\theta$ such that following might actually characterize different individual beliefs before the experiment is run: \pause
+and that there is wide disagreement about the value for $\theta$ such that the following might reasonably characterize different individual beliefs before the experiment is run: \pause
 \begin{itemize}
 \item Skeptic: $\theta\sim Be(1,100)$ 
 \item Agnostic: $\theta\sim Be(1,1)$
@@ -137,16 +136,17 @@ ggplot(d, aes(x=xx,y=yy,col=type)) + geom_line() +
 
 Recall the normal hierarchical model
 \[ y_i \stackrel{ind}{\sim} N(\theta_i,s_i^2), \quad \theta_i\stackrel{ind}{\sim} N(\mu,\tau^2) \]
-which results in the posterior distribution for $\tau^2$ of 
+\pause 
+which results in the posterior distribution for $\tau$ of 
 \[ p(\tau|y) \propto p(\tau) V_\mu^{1/2} \prod_{i=1}^\I (s_i^2+\tau^2)^{-1/2} \exp\left( -\frac{(y_{i}-\hat{\mu})^2}{2(s_i^2+\tau^2)} \right) \]
 
  \pause
 
-As an attempt to be non-informative, consider an $IG(\epsilon,\epsilon)$ prior for $\tau^2$. \pause As an alternative consider $\tau \sim Unif(0,C)$ or $\tau\sim Ca^+(0,C)$ where $C$ problem specific, but is chosen to be relatively large for the particular problem. 
+As an attempt to be non-informative, consider an $IG(\epsilon,\epsilon)$ prior for $\tau^2$. \pause As an alternative, consider $\tau \sim Unif(0,C)$ or $\tau\sim Ca^+(0,C)$ \pause where $C$ problem specific, but is chosen to be relatively large for the particular problem. 
 
  \pause
 
-The 8-schools example has the following data:
+The \href{https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started}{8-schools example} has the following data:
 
 <<results='asis'>>=
 d = data.frame(y = c(28,  8, -3,  7, -1,  1, 18, 12),
@@ -158,6 +158,8 @@ print(xtable(t(d)))
 \end{frame}
 
 \begin{frame}
+\frametitle{Posterior for 8-schools example}
+Reproduction of \href{http://projecteuclid.org/euclid.ba/1340371048}{Gelman 2006}:
 <<analysis, echo=FALSE, fig.width=8, warning=FALSE>>=
 dinvgamma = function(x, a, b) dgamma(1/x,a,b)/x^2
 dsqrtinvgamma = function(x, a, b) dinvgamma(x^2, a, b)*2*x
@@ -236,10 +238,10 @@ ggplot(m, aes(x=x, y=y, color=prior)) + geom_line() +
   \item $y_i$ be the number of fatal accidents in year $i$
   \item $x_i$ be the number of 100 million miles flown in year $i$
   \end{itemize}
-  
+  \pause
   Consider the model 
   \[ Y_i \stackrel{ind}{\sim} Po(x_i\lambda) \qquad p(\lambda)\propto 1/\sqrt{\lambda}. \]
-  
+  \pause
 \footnotesize
 <<airline_accident_data, results='asis'>>=
 d = data.frame(year=1976:1985, 
@@ -257,9 +259,9 @@ print(xtable(d, digits=0, include.rownames=FALSE))
 \frametitle{Posterior replications of the data}
   Under Jeffreys prior, the posterior is 
   \[ \lambda|y \sim Ga(0.5+n\overline{y}, n\overline{x}). \]
-  So 
+  So to obtain a replication of the data, do the following \pause
   \begin{enumerate}
-  \item $\lambda^{(j)} \sim Ga(0.5+n\overline{y}, n\overline{x})$ and 
+  \item $\lambda^{(j)} \sim Ga(0.5+n\overline{y}, n\overline{x})$ \pause and 
   \item $y^{rep,j}_i \stackrel{ind}{\sim} Po(x_i\lambda^{(j)})$ for $i=1,\ldots,n$.
   \end{enumerate}
 
@@ -330,6 +332,14 @@ print(xtable(d, digits=0, include.rownames=FALSE))
 
 \begin{frame}[fragile]
 <<scatterplot>>=
+# change random data location
+old_id = id
+id = sample(20,1) # Choose a random spot to insert observed data set
+rep$.n[rep$.n==old_id] = 21
+rep$.n[rep$.n==id    ] = old_id
+rep$.n[rep$.n==21    ] = id
+
+
 g = ggplot(rep, aes(x=year, y=fatal_accidents, col=factor(1))) + 
   geom_point() + 
   facet_wrap(~.n) +
@@ -363,17 +373,17 @@ g + aes(col=.n==id)
   \item Define a test statistic $T(y,\theta)$. \pause
   \item Define the posterior predictive pvalue
   \[ p_B = P(T(y^{rep},\theta)\ge T(y,\theta)|y) \]
-  \pause where $y^{rep}$ and $\theta$ are treated as random. \pause Typically this pvalue is calculated via simulation, \pause i.e. 
+  \pause where $y^{rep}$ and $\theta$ are random. \pause Typically this pvalue is calculated via simulation, \pause i.e. 
   \[ \begin{array}{rl}
   p_B
-  &= E_{y^{rep},\theta}[\mathrm{I}(T(y^{rep},\theta)\ge T(y,\theta)) p(y^{rep}|\theta) p(\theta|y)|y] \pause \\
+  &= E_{y^{rep},\theta}[\mathrm{I}(T(y^{rep},\theta)\ge T(y,\theta))|y] \pause \\
   &= \int \int \mathrm{I}(T(y^{rep},\theta)\ge T(y,\theta)) p(y^{rep}|\theta) p(\theta|y) dy^{rep} d\theta \pause \\
   &\approx \frac{1}{J} \sum_{j=1}^J \mathrm{I}(T(y^{rep,j},\theta^{(j)})\ge T(y,\theta^{(j)})) 
   \end{array} \]
-  \pause where $\theta^{(j)} \sim p(\theta|y)$ and $y^{rep,j} \sim p(y|\theta^{(r)})$. 
+  \pause where $\theta^{(j)} \sim p(\theta|y)$ and $y^{rep,j} \sim p(y|\theta^{(j)})$. 
    
   \end{enumerate}
-  \pause Large or small pvalues are (possible) cause for concern. 
+  \pause Small \alert{or large} pvalues are (possible) cause for concern. 
 \end{frame}
 
 
@@ -384,7 +394,7 @@ g + aes(col=.n==id)
 \begin{frame}[fragile]
 \frametitle{Posterior predictive pvalue for slope}
   Let 
-  \[ Y_i^{obs} = \beta_0^{obs}+\beta_1^{obs} i \]
+  \[ Y_i^{obs} = \beta_0^{obs}+\beta_1^{obs}\, i \]
   where 
   \begin{itemize}
   \item $Y_i^{obs}$ is the observed number of fatal accidents in year $i$ \pause and 
@@ -412,8 +422,8 @@ observed_slope = coefficients(lm(fatal_accidents~year,d))[2]
 
 
 \begin{frame}[fragile]
-<<slope_plot, dependson="slope", fig.width=8>>=
-mean(rep$beta1<observed_slope) 
+<<slope_plot, dependson="slope", fig.width=8, echo=TRUE>>=
+mean(rep$beta1>observed_slope) 
 ggplot(rep, aes(x=beta1)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=observed_slope, color="red")
 @
 \end{frame}
@@ -452,18 +462,18 @@ data {
   vector<lower=0>[n] x;
 }
 transformed data {
-  vector[n] logx;
-  logx <- log(x); # both x and logx need to be vectors 
+  vector[n] log_x;
+  log_x <- log(x); # both x and logx need to be vectors 
 }
 parameters {
   real beta[2];
 }
 transformed parameters {
-  vector[n] lambda;
-  for (i in 1:n) lambda[i] <- beta[1] + beta[2]*i;
+  vector[n] log_lambda;
+  for (i in 1:n) log_lambda[i] <- beta[1] + beta[2]*i;
 }
 model {
-  y ~ poisson_log(logx + lambda); # _log indicates mean on log scale
+  y ~ poisson_log(log_x + log_lambda); # _log indicates mean on log scale
 }
 "
 
@@ -482,8 +492,8 @@ r
 \begin{frame}[fragile]
 \frametitle{Posterior predictive pvalue: slope}
 <<stan_rep, dependson='stan', cache=TRUE>>=
-lambda = extract(r, "lambda")[["lambda"]]
-reps = adply(lambda, 1, function(a) {
+log_lambda = extract(r, "log_lambda")[["log_lambda"]]
+reps = adply(log_lambda, 1, function(a) {
   d = data.frame(yrep = rpois(nrow(d), d$miles_flown * exp(a)),
              year = 1:10)
 })
