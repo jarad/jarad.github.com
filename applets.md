@@ -18,7 +18,7 @@ group: navigation
 
 ## Research
 
-- [CDC Weekly Case Counts](https://michaud.shinyapps.io/CDCPlot/)
+- [CDC Weekly Case Counts](https://michaud.shinyapps.io/CDCPlot/) (currently on the [Shiny User Showcase](http://www.rstudio.com/products/shiny/shiny-user-showcase/))
 
 ## For fun
 
