@@ -114,8 +114,8 @@ legend("topright", c('H0','H1'), lwd=2, lty=1:2, col=1:2)
 
 \section{Likelihood Ratio Tests}
 \frame{\frametitle{Likelihood Ratio Tests}
-  Consider a likelihood $L(\theta|y)= p(y|\theta)$, then the liklihood ratio test statistic for testing $H_0:\theta\in \Theta_0$ and $H_1: \theta\in \Theta_0^c$ \pause with $\Theta = \Theta_0\cup \Theta_0^c$ is 
-  \[ \lambda(y) = \frac{\mbox{sup}_{\Theta_0} L(\theta|y)}{\mbox{sup} _{\Theta} L(\theta|y)} \pause = \frac{L(\hat{\theta}_{0,MLE}|y)}{L(\hat{\theta}_{MLE}|y)} \]
+  Consider a likelihood $L(\theta)= p(y|\theta)$, then the liklihood ratio test statistic for testing $H_0:\theta\in \Theta_0$ and $H_1: \theta\in \Theta_0^c$ \pause with $\Theta = \Theta_0\cup \Theta_0^c$ is 
+  \[ \lambda(y) = \frac{\mbox{sup}_{\Theta_0} L(\theta)}{\mbox{sup} _{\Theta} L(\theta)} \pause = \frac{L(\hat{\theta}_{0,MLE})}{L(\hat{\theta}_{MLE})} \]
   \pause where $\hat{\theta}_{MLE}$ and $\hat{\theta}_{0,MLE}$ are the (restricted) MLEs. \pause The likelihood ratio test (LRT) is any test that has a rejection region of the form $\{ y: \lambda(y)\le c\}$. (Casella \& Berger Def 8.2.1)
   
   \vspace{0.2in} \pause 
@@ -131,7 +131,7 @@ legend("topright", c('H0','H1'), lwd=2, lty=1:2, col=1:2)
 \frame{\frametitle{Binomial example}
   Consider a coin flipping experiment so that $Y_i \stackrel{iid}{\sim} Ber(\theta)$ and the null hypothesis $H_0:\theta=0.5$ versus the alternative $H_1:\theta\ne 0.5$. \pause Then 
   \[  
-  \lambda(y) = \frac{\mbox{sup} _{\Theta_0} L(\theta|y)}{\mbox{sup} _{\Theta} L(\theta|y)}= \frac{0.5^n}{\hat{\theta}_{MLE}^{n\overline{y}}(1-\hat{\theta}_{MLE})^{n-n\overline{y}}}  = \frac{0.5^n}{\overline{y}^{n\overline{y}}(1-\overline{y})^{n-n\overline{y}}} 
+  \lambda(y) = \frac{\mbox{sup} _{\Theta_0} L(\theta)}{\mbox{sup} _{\Theta} L(\theta)}= \frac{0.5^n}{\hat{\theta}_{MLE}^{n\overline{y}}(1-\hat{\theta}_{MLE})^{n-n\overline{y}}}  = \frac{0.5^n}{\overline{y}^{n\overline{y}}(1-\overline{y})^{n-n\overline{y}}} 
    \]
    \pause and 
    $-2\log \lambda(y) \to \chi^2_1$ as $n\to\infty$ so 
@@ -141,6 +141,7 @@ legend("topright", c('H0','H1'), lwd=2, lty=1:2, col=1:2)
 
 \begin{frame}[fragile]
 \frametitle{Binomial example}
+$Y\sim Bin(n,\theta)$ and, for the Bayesian analysis, $\theta \sim Be(1,1)$ and $p(H_0)=p(H_1)=0.5$:
 <<lrt_binomial,fig.width=8, warning=FALSE>>=
 d = expand.grid(n=seq(10,30,by=10), ybar=seq(0,1,by=0.01))
 
@@ -282,37 +283,40 @@ Then \href{https://jaradniemi.shinyapps.io/pvalue/}{this pvalue app} will calcul
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Pvalue app approach}
 
-% \section{Summary}
-% \frame{\frametitle{Summary}
-%   \begin{itemize}[<+->] \small
-%   \item Bayesian hypothesis testing requires no asymptotics.
-%   \item Bayesian hypothesis testing can easily handle more than 2 hypotheses.
-%   \item The prior predictive distribution can often be hard to analytically evaluate.
-% 
-%   \vspace{0.2in} 
-%   
-%   \item From a Bayesian perspective, most point null hypotheses have probability zero.
-%   \item Bayesian hypothesis testing is really looking at (prior) predictive performance of the models.
-%   \item These predictions require reasonable proper priors.  
-%   
-%   \vspace{0.2in} 
-%   
-%   \item When all hypotheses are composite, prefer estimation.
-%   \item When all hypotheses are point null, prefer estimation with a discrete prior. 
-%   \end{itemize}
-% }
+The idea is that a scientist performs a series of experiments. \pause For each experiment, 
+\begin{itemize}[<+->]
+\item whether $H_0$ or $H_1$ is true is randomly determined,
+\item $\theta$ is sampled according to which hypothesis is true, and
+\item the pvalue is calculated. 
+\end{itemize}
 
+\vspace{0.2in} \pause
 
+This process is repeated until a pvalue of the desired value is achieved, e.g. pvalue=0.05, \pause and the true hypothesis is recorded. \pause Thus, 
+\[ P(H_0 \mbox{ true }|\mbox{ pvalue }=0.05) \approx \frac{1}{K} \sum_{k=1}^K \mathrm{I}(H_0 \mbox{ true }|\mbox{ pvalue }\approx 0.05).  \]
+
+\vspace{0.2in} \pause
+
+Thus, there is nothing Bayesian happening here except that the probability being calculated has the unknown quantity on the left and the known quantity on the right.
+
+\end{frame}
 
 
+\begin{frame}
+\frametitle{Prosecutor's Fallacy}
 
+It is common for those using statistics to equate the following 
+\[ \mbox{pvalue} = P(\mbox{data}|H_0\mbox{ true}) \pause \ne P(H_0\mbox{ true}|\mbox{data}). \]
+\pause 
+but we can use Bayes rule to show us that these probabilities cannot be equated
+\[ p(H_0|y) = \frac{p(y|H_0)p(H_0)}{p(y)} \pause = \frac{p(y|H_0)p(H_0)}{p(y|H_0)p(H_0)+p(y|H_0)p(H_0)} \]
+\pause
+This situation is common enough that it is called \href{http://en.wikipedia.org/wiki/Prosecutor's_fallacy}{The Prosecutor's Fallacy}.
 
-
-
-
-
-
+\end{frame}
 
 
 \end{document}
