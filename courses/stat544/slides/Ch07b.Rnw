@@ -1,0 +1,261 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Bayesian hypothesis testing (cont.)}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\I}{\mathrm{I}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE>>=
+library(reshape2)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(rstan)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(1)
+@
+
+
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Outline}
+
+
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Bayes tests = evaluate predictive models}
+\small
+  Consider a standard hypothesis test scenario:
+  \[ H_0: \theta=\theta_0, \qquad H_1:\theta \ne \theta_0 \]
+  \pause
+  A Bayesian measure of the support for the null hypothesis is the Bayes Factor:
+  \[ BF(H_0:H_1)  = \frac{p(y|H_0)}{p(y|H_1)} \pause = \frac{p(y|\theta_0)}{\int p(y|\theta)p(\theta|H_1) d\theta}   \]
+  \pause 
+  where $p(\theta|H_1)$ is the prior distribution for $\theta$ under the alternative hypothesis. \pause Thus the Bayes Factor measures the \alert{predictive ability} of the two Bayesian models. \pause Both models say $p(y|\theta)$ are the data model if we know $\theta$, but 
+  \begin{enumerate}
+  \item Model 0 says $\theta=\theta_0$ \pause and thus $p(y|\theta_0)$ is our predictive distribution for $y$ \pause while
+  \item Model 1 says $p(\theta|H_1)$ is our uncertainty about $\theta$ \pause and thus 
+  \[ p(y|H_1) = \int p(y|\theta)p(\theta|H_1) d\theta \]
+  is our predictive distribution for $y$. 
+  \end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Normal example}
+
+Consider $y\sim N(\theta,1)$ and 
+\[ H_0: \theta=0, \qquad H_1: \theta\ne 0 \]
+\pause and as a Bayesian, we assume $\theta\sim N(0,A)$. \pause Thus,
+  \[ BF(H_0:H_1)  = \frac{p(y|H_0)}{p(y|H_1)} \pause = \frac{p(y|\theta_0)}{\int p(y|\theta)p(\theta|H_1) d\theta} = \frac{N(y;0,1)}{N(y;0,1+A)}. \]
+  \pause 
+  Now, as $A\to\infty$, our predictions about $y$ become less sharp. 
+  
+\end{frame}
+
+
+
+\section{Likelihood Ratio Tests}
+\frame{\frametitle{Likelihood Ratio Tests}
+  Consider a likelihood $L(\theta|y)= p(y|\theta)$, then the liklihood ratio test statistic for testing $H_0:\theta\in \Theta_0$ and $H_1: \theta\in \Theta_0^c$ \pause with $\Theta = \Theta_0\cup \Theta_0^c$ is 
+  \[ \lambda(y) = \frac{\mbox{sup}_{\Theta_0} L(\theta|y)}{\mbox{sup} _{\Theta} L(\theta|y)} \pause = \frac{L(\hat{\theta}_{0,MLE}|y)}{L(\hat{\theta}_{MLE}|y)} \]
+  \pause where $\hat{\theta}_{MLE}$ and $\hat{\theta}_{0,MLE}$ are the (restricted) MLEs. \pause The likelihood ratio test (LRT) is any test that has a rejection region of the form $\{ y: \lambda(y)\le c\}$. (Casella \& Berger Def 8.2.1)
+  
+  \vspace{0.2in} \pause 
+  
+  Under certain conditions (see Casella \& Berger 10.3.3), as $n\to \infty$ 
+  \[ -2\log \lambda(y) \to \chi^2_{\nu} \]
+  \pause where $\nu$ us the difference between the number of free parameters specified by $\theta\in\theta_0$ and the number of free parameters specified by $\theta\in \Theta$. 
+}
+
+
+
+\subsection{Binomial example}
+\frame{\frametitle{Binomial example}
+  Consider a coin flipping experiment so that $Y_i \stackrel{iid}{\sim} Ber(\theta)$ and the null hypothesis $H_0:\theta=0.5$ versus the alternative $H_1:\theta\ne 0.5$. \pause Then 
+  \[  
+  \lambda(y) = \frac{\mbox{sup} _{\Theta_0} L(\theta|y)}{\mbox{sup} _{\Theta} L(\theta|y)}= \frac{0.5^n}{\hat{\theta}_{MLE}^{n\overline{y}}(1-\hat{\theta}_{MLE})^{n-n\overline{y}}}  = \frac{0.5^n}{\overline{y}^{n\overline{y}}(1-\overline{y})^{n-n\overline{y}}} 
+   \]
+   \pause and 
+   $-2\log \lambda(y) \to \chi^2_1$ as $n\to\infty$ so 
+   \[ pvalue \approx P(\chi^2_1>-2\log \lambda(y)). \]
+   \pause If $pvalue < \alpha$, then we reject $H_0$ at level $\alpha$. \pause Typically $\alpha=0.05$. 
+}
+
+\begin{frame}[fragile]
+\frametitle{Binomial example}
+<<lrt_binomial,fig.width=8, warning=FALSE>>=
+d = expand.grid(n=seq(10,30,by=10), ybar=seq(0,1,by=0.01))
+
+# Bayes Factors
+bf = function(n,ybar,a=1,b=1) exp(n*log(0.5)+lbeta(a,b)-lbeta(a+n*ybar,b+n-n*ybar))
+d2 = ddply(d, .(n,ybar), summarize, bf=bf(n,ybar))
+post_prob = function(bf, prior_odds=0.5) 1/(1+1/bf*prior_odds)
+d2$statistic = post_prob(d2$bf)
+d2$method = "Posterior probability"
+
+# Pvalues
+lrt = function(n,ybar) exp(n*log(0.5)-n*ybar*log(ybar)-n*(1-ybar)*log(1-ybar))
+pvalue = function(lrt,df=1) 1-pchisq(-2*log(lrt),df)
+d3 = ddply(d,.(n,ybar), summarize, lrt = lrt(n,ybar))
+d3$statistic = pvalue(d3$lrt,1)
+d3$method = "Likelihood ratio test pvalue"
+
+# Both plots
+ggplot(rbind(d2[,-3],d3[,-3]), aes(x=ybar, y=statistic, col=factor(n))) + 
+  geom_line() + 
+  facet_grid(~method)
+@
+\end{frame}
+
+
+
+
+
+
+
+
+\section{Jeffrey-Lindley paradox}
+\begin{frame}
+\frametitle{Do pvalues and posterior probabilities agree?}
+Suppose $n=10,000$ and $y=4,900$, \pause then the pvalue is 
+\[ pvalue \approx P(\chi^2_1>-2 \log(0.135)) = 0.045 \]
+\pause so we would reject $H_0$ at the 0.05 level. 
+
+\vspace{0.2in} \pause
+
+The posterior probability of $H_0$ is 
+\[ p(H_0|y) \approx \frac{1}{1+1/10.8} = 0.96, \]
+\pause so the probability of $H_0$ being true is 96\%. 
+
+\vspace{0.2in} \pause 
+
+It appears the Bayesian and LRT pvalue completely disagree!
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Binomial $\overline{y}=0.49$ with $n\to\infty$} 
+<<paradox,fig.width=8>>=
+paradox = expand.grid(n=10^(seq(0,5,by=0.1)), ybar=0.49)
+paradox = ddply(paradox, .(n,ybar), summarize, pvalue=pvalue(lrt(n,ybar)), post_prob=post_prob(bf(n,ybar)))
+m = melt(paradox, id=c("n","ybar"))
+p = ggplot(m, aes(log10(n),value,col=variable))+geom_line() 
+print(p)
+@
+\end{frame}
+
+\subsection{Jeffrey-Lindley Paradox}
+\frame{\frametitle{Jeffrey-Lindley Paradox}
+  \begin{definition}
+  The \alert{Jeffrey-Lindley Paradox} concerns a situation when comparing two hypotheses $H_0$ and $H_1$ given data $y$ \pause and find
+  \begin{itemize}[<+->]\small
+  \item a frequentist test result is significant leading to rejection of $H_0$, but
+  \item the posterior probability of $H_0$ is high. 
+  \end{itemize}
+  \end{definition}
+  
+  \vspace{0.2in} \pause
+  
+  This can happen when 
+  \begin{itemize}[<+->]\small
+  \item the effect size is small, 
+  \item $n$ is large, 
+  \item $H_0$ is relatively precise, 
+  \item $H_1$ is relative diffuse, and
+  \item the prior model odds is $\approx 1$. 
+  \end{itemize}
+}
+
+\frame{\frametitle{Comparison}
+  The test statistic with point null hypotheses:
+  \[ \begin{array}{rl}
+  \lambda(y) &= \frac{ p\left(y|\theta_0\right)}{p\left(y|\hat{\theta}_{MLE}\right)} \\ \\
+  BF(H_0:H_1) &= \frac{ p\left(y|\theta_0\right)}{\int p(y|\theta)p(\theta|H_1) d\theta} \uncover<6->{= \frac{p(y|H_0)}{p(y|H_1)}}
+  \end{array} \]
+  \pause 
+  
+  A few comments:
+  \begin{itemize}[<+->]\small
+  \item The LRT chooses the best possible alternative value. 
+  \item The Bayesian test penalizes for vagueness in the prior.
+  \item The LRT can be interpreted as a Bayesian point mass prior exactly at the MLE. 
+  \item Generally, pvalues provide a measure of lack-of-fit of the null model. 
+  \item Bayesian tests compare predictive performance of two Bayesian models (model+prior). 
+  \end{itemize}
+}
+
+
+% \section{Summary}
+% \frame{\frametitle{Summary}
+%   \begin{itemize}[<+->] \small
+%   \item Bayesian hypothesis testing requires no asymptotics.
+%   \item Bayesian hypothesis testing can easily handle more than 2 hypotheses.
+%   \item The prior predictive distribution can often be hard to analytically evaluate.
+% 
+%   \vspace{0.2in} 
+%   
+%   \item From a Bayesian perspective, most point null hypotheses have probability zero.
+%   \item Bayesian hypothesis testing is really looking at (prior) predictive performance of the models.
+%   \item These predictions require reasonable proper priors.  
+%   
+%   \vspace{0.2in} 
+%   
+%   \item When all hypotheses are composite, prefer estimation.
+%   \item When all hypotheses are point null, prefer estimation with a discrete prior. 
+%   \end{itemize}
+% }
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
