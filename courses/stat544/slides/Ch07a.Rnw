@@ -66,6 +66,11 @@ set.seed(1)
   \item All simple hypotheses
   \item All composite hypotheses
   \end{itemize}
+\item Propriety 
+  \begin{itemize}
+  \item Posterior 
+  \item Prior predictive distribution
+  \end{itemize}
 \item Bayesian hypothesis testing with mixed hypotheses (models)
   \begin{itemize}
   \item Prior model probability
@@ -101,8 +106,8 @@ A \alert{simple hypothesis} specifies the value for all parameters while a \aler
 
 Let $Y_i \stackrel{ind}{\sim} Ber(\theta)$ and 
 \begin{itemize}
-\item $H_0: \theta=0$ (simple)
-\item $H_1: \theta\ne 0$ (composite)
+\item $H_0: \theta=0.5$ (simple)
+\item $H_1: \theta\ne 0.5$ (composite)
 \end{itemize}
 
 \end{frame}
@@ -137,9 +142,9 @@ The posterior is then
 \vspace{0.2in} \pause
 
 For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $P(\theta=j/10) = 1/11$ \pause for $j=0,\ldots,10$. \pause The posterior is 
-\[ P(\theta=j/10|y) \propto \frac{1}{11} \prod_{i=1}^n (j/10)^{y_i}(1-j/10)^{1-y_i} = \frac{1}{11} (j/10)^{n\overline{y}}(1-j/10)^{n(1-\overline{y})} \]
+\[ P(\theta=j/10|y) \propto \frac{1}{11} \prod_{i=1}^n (j/10)^{y_i}(1-j/10)^{1-y_i} \pause = \frac{1}{11} (j/10)^{n\overline{y}}(1-j/10)^{n(1-\overline{y})} \]
 \pause
-If $j=0$ ($j=1$), any $y_i=1$ ($y_i=0$) will make the posterior probability zero.
+If $j=0$ ($j=10$), any $y_i=1$ ($y_i=0$) will make the posterior probability zero.
 
 \end{frame}
 
@@ -168,18 +173,19 @@ ggplot(melt(d, id.var="theta"), aes(x=theta, y=value, color=variable)) + geom_po
 \begin{frame}
 \frametitle{Bayesian hypothesis testing with all composite hypotheses}
 
-Let $Y\sim p(y|\theta)$ and $H_j: \theta = (E_{j-1},E_j]$ for $j=1,\ldots,J$. \pause Just calculate the area under the curve, i.e. 
+Let $Y\sim p(y|\theta)$ and $H_j: \theta \in (E_{j-1},E_j]$ for $j=1,\ldots,J$. \pause Just calculate the area under the curve, i.e. 
 \[ P(H_j|y) = \int_{E_{j-1}}^{E_j} p(\theta|y) d\theta \]
 
 \vspace{0.2in} \pause
 
 For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $E_j = j/10$ \pause for $j=0,\ldots,10$. \pause Now, assume 
-\[ \theta \sim Be(1,1) \pause \quad \mbox{and thus} \quad \theta|y \sim Be(1+n\overline{y},1+n(-y)1-\overline{y}). \]
+\[ \theta \sim Be(1,1) \pause \quad \mbox{and thus} \quad \theta|y \sim Be(1+n\overline{y},1+n[1-\overline{y}]). \]
 \end{frame}
 
 
 
 \begin{frame}[fragile]
+\frametitle{Beta example}
 <<fig.width=10>>=
 Ej = seq(0,1,by=0.1)
 vlines = data.frame(x=Ej, xend=Ej, y=0, yend = dbeta(Ej,1+sum(y), 1+n-sum(y)))
@@ -216,7 +222,7 @@ On the following slides, the use of this theorem will be indicated by TT.
 \frame{\frametitle{Proper priors with discrete data}
 \small
   \begin{theorem}
-  If the prior is proper and the data is discrete, then the posterior is always proper. 
+  If the prior is proper and the data are discrete, then the posterior is always proper. 
   \end{theorem}
   
   \vspace{0.2in} \pause 
@@ -226,35 +232,51 @@ On the following slides, the use of this theorem will be indicated by TT.
 	\[ p(y) = \int_{\Theta} p(y|\theta) p(\theta) d\theta < \infty \quad \forall y. \]
 	\pause For discrete $y$, we have 
 	\[ \begin{array}{ll} 
-	p(y) &\le \sum_{y\in \mathcal{Y}} p(y) \pause =  \sum_{y\in \mathcal{Y}} \int_{\Theta} p(y|\theta) p(\theta) d\theta \pause \stackrel{TT}{=}  \int_{\Theta} \sum_{y\in \mathcal{Y}} p(y|\theta) p(\theta) d\theta \pause \\ \\
+	p(y) &\le \sum_{z\in \mathcal{Y}} p(z) \pause =  \sum_{z\in \mathcal{Y}} \int_{\Theta} p(z|\theta) p(\theta) d\theta \pause \stackrel{TT}{=}  \int_{\Theta} \sum_{z\in \mathcal{Y}} p(z|\theta) p(\theta) d\theta \pause \\ \\
   &= \int_{\Theta} p(\theta) d\theta \pause = 1. 
 	\end{array} \]
-	\pause Thus the posterior is always proper if $y$ is discrete. 
+	\pause Thus the posterior is always proper if $y$ is discrete and the prior is proper. 
 	\end{proof}
 }
 
 \frame{\frametitle{Proper priors with continuous data}
 \small
 	\begin{theorem}
-	If the prior is proper and the data is continuous, then the posterior is almost always proper. 
+	If the prior is proper and the data are continuous, then the posterior is almost always proper. 
 	\end{theorem}
 	
 	\pause 
 	
 	\begin{proof}
 	Let $p(\theta)$ be the prior and $p(y|\theta)$ be the statistical model. Thus, we need to show that 
-	\[ p(y) = \int_{\Theta} p(y|\theta) p(\theta) d\theta < \infty \quad \forall y. \]
+	\[ p(y) = \int_{\Theta} p(y|\theta) p(\theta) d\theta < \infty \quad \mbox{for almost all } y. \]
 	\pause For continuous $y$, we have 
 	\[ \begin{array}{ll} 
-	\int_{\mathcal{Y}} p(y) dy \pause =  \int_{\mathcal{Y}} \int_{\Theta} p(y|\theta) p(\theta) d\theta dy \pause\stackrel{TT}{=}  \int_{\Theta} \int_{\mathcal{Y}} p(y|\theta) dy \, p(\theta) d\theta \pause= \int_{\Theta} p(\theta) d\theta \pause = 1 
+	\int_{\mathcal{Y}} p(z) dz \pause =  \int_{\mathcal{Y}} \int_{\Theta} p(z|\theta) p(\theta) d\theta dz \pause\stackrel{TT}{=}  \int_{\Theta} \int_{\mathcal{Y}} p(z|\theta) dz \, p(\theta) d\theta \pause= \int_{\Theta} p(\theta) d\theta \pause = 1 
 	\end{array} \]
 	\pause thus $p(y)$ is finite except on a set of measure zero, \pause i.e. $p(y)$ is almost always proper. 
 	\end{proof}
 }
 
 
-\subsection{Impropriety of prior predictive distributions}
-\frame{\frametitle{Impropriety of prior predictive distributions}
+
+\subsection{Propriety of prior predictive distributions}
+\begin{frame}
+\frametitle{Proper prior predictive distributions}
+
+In the previous derivations, we showed that 
+\[ \sum_{z\in \mathcal{Y}} p(z) = 1 \qquad \mbox{and} \qquad \int_\mathcal{Y} p(z) dz = 1 \]
+for discrete and continuous data, respectively. 
+
+\vspace{0.2in} \pause
+
+Thus, when the prior is proper, the prior predictive distribution is also proper. 
+
+\end{frame}
+
+
+
+\frame{\frametitle{Improper prior predictive distributions}
   \begin{theorem}
   If $p(\theta)$ is improper, then $p(y) = \int p(y|\theta) p(\theta) d\theta$ is improper. 
   \end{theorem}
@@ -277,7 +299,7 @@ On the following slides, the use of this theorem will be indicated by TT.
 \frametitle{Bayesian hypothesis testing}
 
 To evaluate the relative plausibility of a hypothesis (model)\pause, we use the posterior model probability: 
-\[ p(H_j|y) \pause = \frac{p(y|H_j)p(H_j)}{p(y)} \pause = \frac{p(y|H_j)p(H_j)}{\sum_{k=1}^J p(y|H_j)p(H_j)} \pause \propto p(y|H_j)p(H_j).  \]
+\[ p(H_j|y) \pause = \frac{p(y|H_j)p(H_j)}{p(y)} \pause = \frac{p(y|H_j)p(H_j)}{\sum_{k=1}^J p(y|H_k)p(H_k)} \pause \propto p(y|H_j)p(H_j).  \]
 \pause
 where $p(H_j)$ is the prior model probability \pause and 
 \[ p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta \]
@@ -289,7 +311,7 @@ where $p(H_j)$ is the prior model probability \pause and
 
 \frame{\frametitle{Two models}
   If we only have two models: $H_0$ and $H_1$, then 
-  \[ p(H_0|y) = \frac{p(y|H_0)p(H_0)}{p(y|H_0)p(H_0)+p(y|H_1)p(H_1)}\pause = \frac{1}{1+\frac{p(y|H_1)}{p(y|H_0)}\frac{p(H_1)}{p(H_0)}} \]
+  \[ p(H_0|y) = \frac{p(y|H_0)p(H_0)}{p(y|H_0)p(H_0)+p(y|H_1)p(H_1)} \pause = \frac{1}{1+\frac{p(y|H_1)}{p(y|H_0)}\frac{p(H_1)}{p(H_0)}} \]
   \pause 
   where 
   \[ \frac{p(H_1)}{p(H_0)} = \frac{p(H_1)}{1-p(H_1)} \]
@@ -300,12 +322,12 @@ where $p(H_j)$ is the prior model probability \pause and
 
 \subsection{Binomial model}
 \frame{\frametitle{Binomial model}
-  Consider a coin flipping experiment so that $Y_i \stackrel{ind}{\sim} Ber(\theta)$ and the null hypothesis $H_0:\theta=0.5$ versus the alternative $H_1:\theta\ne 0.5$ with prior $Be(a,b)$. 
+  Consider a coin flipping experiment so that $Y_i \stackrel{ind}{\sim} Ber(\theta)$ and the null hypothesis $H_0:\theta=0.5$ versus the alternative $H_1:\theta\ne 0.5$ \pause and $\theta|H_1\sim Be(a,b)$. \pause
   \[ \begin{array}{rl}
-  BF(H_0:H_1) &= \frac{0.5^n}{\int_0^1 \theta^{n\overline{y}}(1-\theta)^{n(1-\overline{y})} \frac{\theta^{a-1}(1-\theta)^{b-1}}{Be(a,b)} d\theta } \\
-  &= \frac{0.5^n}{\frac{1}{Be(a,b)} \int_0^1 \theta^{a+n\overline{y}-1}(1-\theta)^{b+n-n\overline{y}-1} \theta} \pause\\
-  &= \frac{0.5^n}{\frac{Be(a+n\overline{y},b+n-n\overline{y})}{Be(a,b)}} \pause \\
-  &= \frac{0.5^n Be(a,b)}{Be(a+n\overline{y},b+n-n\overline{y})}
+  BF(H_0:H_1) &= \frac{0.5^n}{\int_0^1 \theta^{n\overline{y}}(1-\theta)^{n(1-\overline{y})} \frac{\theta^{a-1}(1-\theta)^{b-1}}{Beta(a,b)} d\theta } \pause \\
+  &= \frac{0.5^n}{\frac{1}{Beta(a,b)} \int_0^1 \theta^{a+n\overline{y}-1}(1-\theta)^{b+n-n\overline{y}-1} \theta} \pause\\
+  &= \frac{0.5^n}{\frac{Beta(a+n\overline{y},b+n-n\overline{y})}{Beta(a,b)}} \pause \\
+  &= \frac{0.5^n Beta(a,b)}{Beta(a+n\overline{y},b+n-n\overline{y})}
   \end{array} \]
   \pause and with $p(H_0)=p(H_1)$ the posterior model probability is 
     \[ P(H_0|y) = \frac{1}{1+\frac{1}{BF(H_0:H_1)}}. \]
@@ -316,6 +338,7 @@ where $p(H_j)$ is the prior model probability \pause and
 
 \begin{frame}[fragile]
 \frametitle{Sample size and sample average}
+$P(H_0) = P(H_1) = 0.5$ and $\theta|H_1 \sim Be(1,1)$:
 <<fig.width=8>>=
 d = expand.grid(n=seq(10,30,by=10), ybar=seq(0,1,by=0.01))
 bf = function(n,ybar,a=1,b=1) exp(n*log(0.5)+lbeta(a,b)-lbeta(a+n*ybar,b+n-n*ybar))
@@ -323,8 +346,9 @@ d = ddply(d, .(n,ybar), summarize, bf=bf(n,ybar))
 post_prob = function(bf, prior_odds=0.5) 1/(1+1/bf*prior_odds)
 ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(n))) + 
   geom_line() +
-  labs(y="Bayes Factor, BF(H1:H0)") + 
-  ylim(0,1)
+  labs(y=expression(paste("p(",H[0],"|y)"))) + 
+  ylim(0,1) + 
+  scale_color_discrete(name="n")
 @
 \end{frame}
 
@@ -340,29 +364,31 @@ Recall that $\theta \sim Be(a,b)$ has
 
 \pause
 
-Thus, in some sense $\alpha,\beta \to 0$ puts minimal prior data into the analysis. 
+Thus, in some sense $a,b \to 0$ puts minimal prior data into the analysis. 
 
-\vspace{0.2in} \pause If $\theta \sim Be(e,e)$, then 
+\vspace{0.2in} \pause If $\theta|H_1 \sim Be(e,e)$, then 
 
 \pause 
 
-\[ BF(H_0:H_1) = \frac{0.5^n Be(e,e)}{Be(e+n\overline{y},b+n-n\overline{y})} \stackrel{e\to 0}{\longrightarrow} \infty \]
-since $Be(e,e) \stackrel{e\to\infty}{\longrightarrow} \infty$. 
+\[ BF(H_0:H_1) = \frac{0.5^n Be(e,e)}{Be(e+n\overline{y},b+n-n\overline{y})} \stackrel{e\to 0}{\longrightarrow} \infty \quad \mbox{for any } \overline{y}\in (0,1)\]
+since $Be(e,e) \stackrel{e\to 0}{\longrightarrow} \infty$.
 
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Limit of proper prior}
+$P(H_0) = P(H_1) = 0.5$ and $\theta|H_1 \sim Be(e,e)$:
 <<fig.width=8>>=
-d = expand.grid(e=10^(0:-4), ybar=seq(0,1,by=0.01), n=10)
+d = expand.grid(e=10^(0:-4), ybar=seq(0,1,by=0.01), n=20)
 bf = function(n,ybar,a=1,b=1) exp(n*log(0.5)+lbeta(a,b)-lbeta(a+n*ybar,b+n-n*ybar))
 d = ddply(d, .(n,ybar,e), summarize, bf=bf(n,ybar,e,e))
 post_prob = function(bf, prior_odds=0.5) 1/(1+1/bf*prior_odds)
 ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(e))) + 
   geom_line() +
-  labs(y="Bayes Factor, BF(H1:H0)") + 
-  ylim(0,1)
+  labs(y=expression(paste("p(",H[0],"|y)"))) + 
+  ylim(0,1) + 
+  scale_color_discrete(name="e")
 @
 \end{frame}
 
@@ -372,27 +398,28 @@ ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(e))) +
   Consider the model $Y\stackrel{ind}{\sim} N(\theta,1)$ and the hypothesis test
   \begin{itemize}[<+->]
   \item $H_0: \theta=0$ versus
-  \item $H_1: \theta\ne 0$ with prior $\theta|H_1 \sim N(0,A)$.
+  \item $H_1: \theta\ne 0$ with prior $\theta|H_1 \sim N(0,C)$.
   \end{itemize}
   
   \vspace{0.2in} \pause 
   
   The predictive distribution under $H_1$ is \pause
-  \[ p(y|H_1) = \int p(y|\theta) p(\theta|H_1) d\theta \pause = N(y;0,1+A) \]
+  \[ p(y|H_1) = \int p(y|\theta) p(\theta|H_1) d\theta \pause = N(y;0,1+C) \]
   \pause and the Bayes factor is 
   
-  \[ BF(H_0:H_1) = \frac{N(y;0,1)}{N(y;0,1+A)}. \]
-  \pause The Bayes factor will decrease as $A\to \infty$ for any $y$ \pause and this only gets worse if you use an improper prior.
+  \[ BF(H_0:H_1) = \frac{N(y;0,1)}{N(y;0,1+C)}. \]
+  \pause The Bayes factor will increase as $C\to \infty$ for any $y$ \pause and this only gets worse if you use an improper prior.
 }
 
 \begin{frame}[fragile]
 \frametitle{Normal example}
 <<normal_bayes_factor, fig.width=8>>=
-d = ddply(expand.grid(y=seq(0,5,by=.1), A=10^(0:4)), .(y,A), summarize,
-          post_prob_H0 = 1/(1+1/exp(dnorm(y,0,1,log=TRUE)-dnorm(y,0,1+A,log=TRUE))))
-ggplot(d, aes(y, post_prob_H0, color=factor(A))) + 
+d = ddply(expand.grid(y=seq(0,5,by=1), C=10^seq(0,4,by=0.1)), .(y,C), summarize,
+          post_prob_H0 = 1/(1+1/exp(dnorm(ybar,0,1,log=TRUE)-dnorm(y,0,1+C,log=TRUE))))
+ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) + 
   geom_line() + 
-  labs(y="Bayes Factor, BF(H0:H1)")
+  labs(x = expression(sqrt(C)), y = expression(paste("p(",H[0],"|y)"))) + 
+  scale_color_discrete(name="y")
 @
 \end{frame}
 
@@ -422,6 +449,20 @@ ggplot(d, aes(y, post_prob_H0, color=factor(A))) +
 
 \end{frame}
 
+
+\frame{\frametitle{Scientific method updated}
+\setkeys{Gin}{width=0.8\textwidth}
+  \begin{quote}
+  All models are wrong, but some are useful.
+  \end{quote}
+  George Box 1987 \pause 
+
+  \begin{center}
+  \includegraphics{Ch07a-scientific_method_updated}
+  \end{center}
+  
+{\tiny \url{http://www.wired.com/wiredscience/2013/04/whats-wrong-with-the-scientific-method/}}
+}
 
 
 
@@ -585,19 +626,7 @@ ggplot(d, aes(y, post_prob_H0, color=factor(A))) +
 % }
 % 
 % \section{Testing}
-% \frame{\frametitle{Scientific method updated}
-% \setkeys{Gin}{width=0.8\textwidth}
-%   \begin{quote}
-%   All models are wrong, but some are useful.
-%   \end{quote}
-%   George Box 1987 \pause 
-% 
-%   \begin{center}
-%   \includegraphics{Ch07a-scientific_method_updated}
-%   \end{center}
-%   
-% {\tiny \url{http://www.wired.com/wiredscience/2013/04/whats-wrong-with-the-scientific-method/}}
-% }
+
 
 
 
