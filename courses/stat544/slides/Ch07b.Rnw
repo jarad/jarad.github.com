@@ -41,7 +41,6 @@ library(reshape2)
 library(plyr)
 library(ggplot2)
 library(xtable)
-library(rstan)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -55,7 +54,11 @@ set.seed(1)
 \begin{frame}
 \frametitle{Outline}
 
-
+\begin{itemize}
+\item Review of formal Bayesian hypothesis testing
+\item Likelihood ratio tests
+\item Jeffrey-Lindley paradox
+\end{itemize}
 
 \end{frame}
 
@@ -82,7 +85,7 @@ set.seed(1)
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Normal example}
 
 Consider $y\sim N(\theta,1)$ and 
@@ -91,6 +94,19 @@ Consider $y\sim N(\theta,1)$ and
   \[ BF(H_0:H_1)  = \frac{p(y|H_0)}{p(y|H_1)} \pause = \frac{p(y|\theta_0)}{\int p(y|\theta)p(\theta|H_1) d\theta} = \frac{N(y;0,1)}{N(y;0,1+A)}. \]
   \pause 
   Now, as $A\to\infty$, our predictions about $y$ become less sharp. 
+  
+  \pause
+  
+<<fig.height=3>>=
+curve(dnorm, -4, 4, 
+      xlab = 'y', 
+      ylab = 'p(y)',
+      main = 'Predictive distributions', 
+      lwd=2)
+curve(dnorm(x, 0, 2), lwd=2, lty=2, col=2, add=TRUE)
+legend("topright", c('H0','H1'), lwd=2, lty=1:2, col=1:2)
+@
+  
   
 \end{frame}
 
@@ -224,6 +240,47 @@ print(p)
   \item Bayesian tests compare predictive performance of two Bayesian models (model+prior). 
   \end{itemize}
 }
+
+
+\begin{frame}
+\frametitle{Normal mean testing}
+
+Let $y\sim N(\theta,1)$ and we are testing
+\[ H_0:\theta=0 \qquad \mbox{vs} \qquad H_1:\theta\ne 0 \]
+\pause
+We can compute a two-sided pvalue via
+\[ \mbox{pvalue} = 2\mathrm{\Phi}(-|y|) \]
+where $\mathrm{\Phi}(\cdot)$ is the cumulative distribution function for a standard normal. 
+
+\vspace{0.2in} \pause
+
+Typically, we set our Type I error rate at level $\alpha$, i.e. 
+\[ P(\mbox{reject } H_0|H_0 \mbox{ true}) = \alpha. \]
+\pause
+But, if the pvalue is less than $\alpha$, we should be interested in 
+\[ P(H_0 \mbox{ true}|\mbox{reject } H_0). \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Pvalue interpretation}
+
+Let $y\sim N(\theta,1)$ and we are testing
+\[ H_0:\theta=0 \qquad \mbox{vs} \qquad H_1:\theta\ne 0 \]
+
+For the following activity, you need to tell me 
+\begin{enumerate}
+\item the observed pvalue, 
+\item the relative frequencies of null and alternative hypotheses, and
+\item the distribution for $\theta$ under the alternative.
+\end{enumerate}
+
+\vspace{0.2in} \pause
+
+Then \href{https://jaradniemi.shinyapps.io/pvalue/}{this pvalue app} will calculate (via simulation) the probability the null hypothesis is true.  
+
+\end{frame}
+
 
 
 % \section{Summary}

@@ -30,3 +30,4 @@ To extract the R code, run
 - [Chapter 05b](Ch05b.Rnw)
 - [Chapter 06a](Ch06a.Rnw)
 - [Chapter 07a](Ch07a.Rnw)
+- [Chapter 07b](Ch07b.Rnw)
