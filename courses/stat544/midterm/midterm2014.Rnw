@@ -1,0 +1,364 @@
+\documentclass[10pt,draft]{article}
+
+\usepackage{verbatim,multicol,color,amsmath,ifdraft, graphicx, wrapfig,setspace}
+
+%\usepackage[latin1]{inputenc}
+%\usepackage[T1]{fontenc}
+%\usepackage[dvips]{graphicx}
+
+\title{STAT 544 Mid-term Exam \\ Thursday 13 March 8:00-9:20}
+\author{Instructor: Jarad Niemi}
+\date{}
+
+\newenvironment{longitem}{
+\begin{itemize}
+  \setlength{\itemsep}{15pt}
+  \setlength{\parskip}{20pt}
+  \setlength{\parsep}{20pt}
+}{\end{itemize}}
+
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{-0.125in}
+\setlength{\oddsidemargin}{-.2in}
+\setlength{\evensidemargin}{-.2in}
+\setlength{\headsep}{0in}
+
+\newcommand{\bigbrk}{\vspace*{2in}}
+\newcommand{\smallbrk}{\vspace*{.3in}}
+
+\ifdraft{
+  \newcommand{\correct}[1]{{\color{red} #1}}
+  \newcommand{\shortcorrect}[1]{{\color{red} #1}}
+  \newcommand{\longcorrect}[2][\bigbrk]{{\color{red} #2}}
+}{
+  \newcommand{\correct}[1]{}
+  \newcommand{\shortcorrect}[1]{{\phantom{33.33}}}
+  \newcommand{\longcorrect}[2][\bigbrk]{#1}
+}
+
+\newcommand{\iid}{\stackrel{iid}{\sim}}
+\newcommand{\Yiid}{Y_1,\ldots,Y_n\stackrel{iid}{\sim}}
+
+\begin{document}
+
+\maketitle
+
+
+\bigskip
+
+
+\textbf{INSTRUCTIONS}
+
+\bigskip
+
+Please check to make sure you have 4 pages with writing on the front and back (some pages are marked `intentionally left blank'). Feel free to remove the last page, i.e. the one with R code.
+
+\bigskip
+
+On the following pages you will find short answer questions related to the topics we covered in class for a total of 50 points. Please read the directions carefully.
+
+\bigskip
+
+You are allowed to use a calculator and one $8\frac{1}{2}\times 11$ sheet of paper with writing on both front and back. A non-exhaustive list of items you are not allowed to use are {\bf cell phones, laptops, PDAs, and textbooks}. Cheating will not be tolerated. Anyone caught cheating will receive an automatic F on the exam. In addition the incident will be reported, and dealt with according to University's Academic Dishonesty regulations. Please refrain from talking to your peers, exchanging papers, writing utensils or other objects, or walking around the room. All of these activities can be considered cheating. {\bf If you have any questions, please raise your hand.}
+
+\bigskip
+
+You will be given only the time allotted for the course; no extra time will be given.
+
+\bigskip
+
+
+Good Luck!
+
+\smallbrk
+
+Please print your name below:
+
+\smallbrk
+
+
+Student Name: \underline{\phantom{XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}}  
+
+
+\newpage
+\noindent \begin{Large}Confidence vs credible intervals  (6 pts this page) \end{Large}
+
+When I was a child my mother used to occasionally surprise me by ordering a jar of chocolate-chip cookies to be delivered by mail. The delivery supplier stocked four different kinds of cookie jars -- type A, type B, type C, and type D, and they were all on the same truck and you were never sure what type you would get. Each jar had exactly 100 cookies, but the feature that distinguished the different cookie jars was their respective distributions of chocolate chips per cookie. If you reached into a jar and took out a single cookie uniformly at random, the table below provides the probability distribution for number of chips on a cookie by jar type. For example, a type-A cookie jar has 8 cookies with 0 chips, 72 cookies with two chips each, and 20 cookies with 3 chips. The goal of this problem is to construct confidence and credible sets for jar type when a single cookie is observed.
+
+<<echo=FALSE, results='asis'>>=
+library(xtable)
+d = read.csv("cookies.csv")
+print(xtable(d), include.rownames=FALSE,
+      add.to.row = list(pos     = list(-1), 
+                        command = "& \\multicolumn{4}{c}{Jar Type} \\\\"))
+@
+
+\begin{enumerate}
+\item The list below contains 80\% confidence sets in parentheses. For each jar type, calculate the coverage, i.e. the probability the true jar is in the set, conditional on the jar type. (4 pts)
+  \begin{itemize}
+  \item type A (0,2) \shortcorrect{80\%}
+  \item type B (0,2,3,4) \shortcorrect{80\%}
+  \item type C (0,4) \shortcorrect{80\%}
+  \item type D (0) \shortcorrect{80\%}
+  \end{itemize}
+\item If one cookie is observed and it has 1 chocolate chip, what is odd about this confidence set? (1 pt)
+
+\longcorrect{The confidence set contains no values.}
+
+\item If one cookie is observed and it has 3 chocolate chips, what is odd about this confidence set? (1 pt)
+
+\longcorrect{Only one of two jars with the same proportion of 3-chip cookies is in the set.}
+
+\newpage
+\noindent \begin{Large}Confidence vs credible intervals continued (14 pts this page) \end{Large}
+
+On this page, you will fill out Table \ref{tab:joint}. At minimum, show your work for the 0 chip row in the corresponding question number.
+
+
+\begin{table}[h]
+\centering
+\caption{Joint distribution for cookie and jar type.}
+\label{tab:joint}
+{\large
+\begin{tabular}{|c|cccc||c||c|}
+\hline
+& \multicolumn{4}{c||}{Jar} & marginal & \\
+Chips & A & B & C & D & probability & credibility \\
+\hline
+0 & \shortcorrect{2} & \shortcorrect{3}  & \shortcorrect{2}  & \shortcorrect{20} & \shortcorrect{27} & \shortcorrect{81} \\
+1 & \shortcorrect{0} & \shortcorrect{5} & \shortcorrect{5} & \shortcorrect{2} & \shortcorrect{12}  & \shortcorrect{83} \\
+2 & \shortcorrect{16} & \shortcorrect{6} & \shortcorrect{0} & \shortcorrect{1} & \shortcorrect{25}  & \shortcorrect{96} \\
+3 & \shortcorrect{5} & \shortcorrect{5} & \shortcorrect{0} & \shortcorrect{1} & \shortcorrect{11}  & \shortcorrect{91} \\
+4 & \shortcorrect{0} & \shortcorrect{6} & \shortcorrect{18} & \shortcorrect{1} & \shortcorrect{25}  & \shortcorrect{96} \\
+\hline
+total & \phantom{XX}25\%\phantom{XX} & \phantom{XX}25\%\phantom{XX} & \phantom{XX}25\%\phantom{XX} & \phantom{XX}25\%\phantom{XX} & &\\
+\hline
+\end{tabular}
+}
+\end{table}
+
+
+\item Assuming the delivery man picks jar types randomly and uniformly, fill in Table \ref{tab:joint} for the joint distribution of chips and jar types. A (5 pts)
+
+\longcorrect[\vspace{1in}]{Divide all cells in Table \ref{tab:cookies}}
+
+
+\item Fill in the table above with the marginal probability for each number of chips? (2 pts)
+
+\longcorrect[\vspace{1in}]{$\frac{20+2}{27} > 0.8$}
+
+\item In Table \ref{tab:joint}, circle the cells that create a 80\% credible sets, i.e. for any observed number of chips, the probability of the jars are at least 80\%.  (4 pts)
+
+\longcorrect[\vspace{1in}]{
+  Credible sets are 
+  \begin{itemize}
+  \item[0.] C,D
+  \item[1.] B,C
+  \item[2.] A,B
+  \item[3.] A,B
+  \item[4.] B,C
+  \end{itemize}
+}
+
+\item For each row, calculate the actual credibility, i.e. the probability of the set of jars conditional on the number of chips. At minimum, show your work for the 0 chip row. (3 pts)
+
+\longcorrect[\vspace{1in}]{
+  The actual credibility is  
+  \begin{itemize}
+  \item[0.] (20+2)/27 = 81\%
+  \item[1.] (5+5)/12 = 83\%
+  \item[2.] (18+6)/25 =  96\%
+  \item[3.] (5+5)/11 = 91\%
+  \item[4.] (6+18)/25 = 96\%
+  \end{itemize}
+}
+
+\end{enumerate}
+
+
+\newpage
+\noindent \begin{Large}Gamma model (10 pts total) \end{Large}
+
+Suppose $Y_i \stackrel{iid}{\sim} Ga(a,\beta)$ with $a$ known and $\beta$ unknown where the probability density function is \[ p(y|\beta) = \frac{\beta^a}{\Gamma(a)}y^{a-1}e^{-\beta y}. \]
+
+\begin{enumerate}
+\item Derive Jeffreys prior for $\beta$. (4 pts)
+
+\longcorrect{
+\begin{align*}
+\log L(\beta) &= a\log(\beta) -\log \Gamma(a) (a-1)\log(y) -\beta y \\
+\frac{\partial}{\partial \beta} \log L(\beta) &= a/\beta -y \\
+\frac{\partial^2}{\partial \beta^2} \log L(\beta) &= -a/\beta^2 \\
+\mathcal{I}(\beta) &= -E\left[\frac{\partial^2}{\partial \beta^2} \log L(\beta) \right] = a/\beta^2 \\
+p(\beta) &\propto \sqrt{|\mathcal{I}(\beta)|} = 1/\beta
+\end{align*}
+}
+
+\item Derive the posterior for $\beta$ under Jeffreys prior. Make sure to name the distribution. (2 pts)
+
+\longcorrect[\vspace{1.7in}]{
+\begin{align*}
+p(\beta|y) &\propto p(y|\beta)p(\beta) \\
+&= \left[ \prod_{i=1}^n \frac{\beta^a}{\Gamma(a)}y_i^{a-1}e^{-\beta y_i} \right] \frac{1}{\beta} \\
+&\propto \beta^{na-1} e^{-\beta n\overline{y}}
+\end{align*}
+where $\overline{y}$ is the sample mean of the $y_i$. This is the kernel of a $Ga(na,n\overline{y})$. 
+}
+
+\item Consider the conjugate prior $\beta \sim Ga(a_0,b_0)$, derive the posterior under this prior. (2 pts)
+
+\longcorrect[\vspace{1.7in}]{
+\begin{align*}
+p(\beta|y) &\propto p(y|\beta)p(\beta) \\
+&\propto \left[ \prod_{i=1}^n \frac{\beta^a}{\Gamma(a)}y_i^{a-1}e^{-\beta y_i} \right] \beta^{a_0-1} e^{-b_0 \beta} \\
+&\propto \beta^{a_0+na-1} e^{-\beta [b_0+n\overline{y}]}
+\end{align*}
+
+This is the kernel of a $Ga(a_0+na, b_0+n\overline{y})$.
+}
+
+\item What is the interpretation for $a_0$? (1 pt)
+
+\longcorrect[\vspace{0.8in}]{Prior number of observations times $a$.}
+
+\item What is the interpretation for $b_0$? (1 pt)
+
+\longcorrect[\vspace{0.8in}]{Prior sum of those observations.}
+
+\end{enumerate}
+
+\newpage
+\noindent \begin{Large}Failure times (10 pts total) \end{Large}
+
+A manufacturing facility utilizes a large number of identical O-rings. Due to the large number, the facility purchases these O-rings from a variety of suppliers. The company has recorded the failure time in {\bf months} for O-rings as well as the supplier and is interested in understanding which supplier makes longer lasting O-rings. The JAGS code on page \pageref{jags} provides an analysis of their data. Please use this code and output to answer the following questions.
+
+\begin{enumerate}
+\item Write down the model that was used to analyze the failure times including any priors used. Make sure to define any notation you introduce, e.g. if you use $Y_i$, then define what it means. (5 pts)
+
+\longcorrect[\vspace{2.5in}]{
+Let $Y_i$ be the failure time and $s[i]$ be the supplier id for the $i^{th}$ O-ring. The model is 
+\begin{align*}
+Y_i &\stackrel{ind}{\sim} Exp(\rho_{s[i]}) \\
+\rho_s &\stackrel{ind}{\sim} Ga(\mu^2/\sigma^2, \mu/\sigma^2) \\
+\mu &\sim Exp(1/100) \\
+\sigma & \sim Exp(1/100)
+\end{align*}
+with $\mu$ and $\sigma$ being independent and $Exp(\rho)$ is an exponential random variable with a mean of $1/\rho$.
+}
+
+\item Provide 95\% credible intervals (1 pt each) for 
+
+\shortcorrect{The answers given here are based on the attached output and differ from the actual exam given.}
+
+  \begin{enumerate}
+  \item $\mu$ \longcorrect[\vspace{0.3in}]{(0.60,1.46)}
+  \item $\rho_1$, the rate of failures for O-rings for company 1 \longcorrect[\vspace{0.3in}]{(0.46,1.76)}
+  \item the {\bf mean failure time} for O-rings from company 1 \longcorrect[\vspace{0.3in}]{(0.57,2.17)}
+  \end{enumerate}
+  
+\item Describe why the median for $\rho$ for the 2nd supplier is so low compared to the others. (1 pt)
+
+\longcorrect[\vspace{1in}]{This company has the longest lasting O-rings.}
+
+\item Describe why the 95\% credible interval for $\rho$ is so much shorter for supplier 10 compared to the others (excluding supplier 3). (1 pt)
+
+\longcorrect[\vspace{1in}]{This company had many more observations than the others.}
+
+\newpage
+\noindent \begin{Large}Failure times continued (10 pts total, 2 pts each) \end{Large}
+
+\item Why is this model more reasonable than a model that assumes a common failure rate for all suppliers? 
+
+\longcorrect[\vspace{0.5in}]{
+  There is no reason to believe that all suppliers have the same failure rate.
+}
+
+\item What is an advantage of this model over a non-hierarchical model that treats each supplier completely independently? 
+
+\longcorrect[\vspace{0.5in}]{
+  This model allows us to borrow information across suppliers.
+}
+
+\item Describe how to obtain samples from the posterior predictive distribution of O-ring failure times for supplier $s$. 
+
+\longcorrect[\vspace{1.7in}]{
+  Let $\rho_s^j$ be the $j$th Monte Carlo draw from JAGS, then $\tilde{Y}_s^j\stackrel{ind}{\sim} Exp(\rho_s^j)$ is a draw from the predictive distribution of O-ring failure times for supplier $s$. 
+}
+
+\item For a single machine needing a single O-ring, describe how to determine the expected cost for replacing O-rings over one year if the O-rings come from supplier $s$ at a cost of $C_s$. 
+
+\longcorrect{
+  Use draws from the predictive distribution, i.e. $\tilde{Y}_s^j$ from the previous problem, and sum them up until they are over 12 (since there are 12 months in a year). The number that are needed is a draw from the predictive distribution for how many O-rings will be needed over a year. Repeat this process a large number of times and take the average. Multiply this average by $C_s$ to obtain an estimate of the expected cost. 
+  
+  Alternatively (and preferably), the number of O-rings needed have a Poisson distribution with mean $12\rho_s$. Thus the expected cost is $E[12C_s\rho_s]=12C_s E[\rho_s]$ and we can use the estimated posterior mean from the JAGS output for each $\rho_s$. 
+}
+
+\item Describe how you would use the expected costs from the previous problem to determine which supplier you will buy O-rings from. 
+
+\longcorrect{
+  Take the estimated costs (and their Monte Carlo uncertainty) and choose the company with the lowest expected cost. 
+}
+
+
+\end{enumerate}
+
+
+\newpage
+(intentionally left blank- use for scratch paper)
+
+\newpage
+\noindent \begin{Large}JAGS code - failure time  \end{Large}
+\label{jags}
+
+The JAGS result is not reproducible and therefore the actual exam version differs from this version.
+
+{\footnotesize
+
+<<exponential_data, echo=FALSE, cache=TRUE>>=
+library(plyr)
+set.seed(3)
+n_suppliers = 10
+d = ddply(data.frame(n_per_supplier=c(rep(5,9),50), 
+                     supplier = 1:n_suppliers,
+                     rho = c(1,10,rep(1,8))), 
+          .(supplier, n_per_supplier, rho), 
+          function(x) {
+            data.frame(failure_time = rexp(x$n_per_supplier, 1/x$rho))
+          })
+#ddply(d, .(supplier), summarise, n=length(supplier), mean=mean(failure_time))
+@
+
+<<exponential_model, tidy=FALSE, message=FALSE, cache=TRUE>>=
+library(rjags)
+dat = list(n = nrow(d),
+           y = d$failure_time,
+           supplier = d$supplier,
+           n_suppliers = max(d$supplier))
+model = "
+model {
+  for (i in 1:n) {
+    y[i] ~ dexp(rho[supplier[i]])
+  }
+
+  for (s in 1:n_suppliers) {
+    rho[s] ~ dgamma(mu^2/sigma^2, mu/sigma^2)
+  }
+
+  sigma ~ dexp(0.01)
+  mu   ~ dexp(0.01)
+}"
+@
+
+<<run_mcmc, dependson=c("exponential_data","exponential_model"), cache=TRUE>>=
+m = jags.model(textConnection(model), dat, quiet=TRUE)
+r = coda.samples(m, c("rho","mu","sigma"), 10000, thin=10)
+
+summary(r)
+@
+}
+
+
+
+\end{document}
+
