@@ -1,0 +1,259 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Amazon Reviews}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\I}{\mathrm{I}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE>>=
+library(reshape2)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(rstan)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(1)
+@
+
+
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Amazon Reviews}
+
+<<>>=
+tmp = read.csv("reviews.csv",header=FALSE)[,c(3,4)]
+names(tmp) = c("product_id","stars")
+
+product_ids = read.csv("upright_bagless_cyclonic_vacuum_cleaners_amazon_ids.csv", 
+                       stringsAsFactors = FALSE)$ids
+
+d = tmp[tmp$product_id %in% product_ids & 
+            tmp$stars %in% c("1.0","2.0","3.0","4.0","5.0"),]
+d$product_id = factor(d$product_id)
+d$stars      = as.numeric(factor(d$stars))
+
+# summarize
+
+@
+
+\small
+<<results='asis'>>=
+for_table = ddply(d, .(product_id), summarise, 
+          n1 = sum(stars==1),
+          n2 = sum(stars==2),
+          n3 = sum(stars==3),
+          n4 = sum(stars==4),
+          n5 = sum(stars==5), 
+          n_total = length(stars),
+          mean = mean(stars), 
+          sd   = sd(stars),
+          .drop=FALSE)
+
+print(xtable(for_table, 
+             digits = c(NA,NA,1,1,1,1,1,1,2,2), 
+             align  = "c|r|rrrrr|rrr|"), 
+      include.rownames=FALSE,
+      add.to.row = list(pos = list(-1),
+                        command = "& \\multicolumn{5}{c|}{Number of ratings} &&& \\\\"))
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Model for Amazon Reviews}
+
+Let $y_{ij}$ be the $j$th review for the $i$th product. \pause Assume 
+\[ y_{ij} \stackrel{ind}{\sim} N(\theta_i, \sigma^2) \]
+\pause
+and
+\[ \theta_i \stackrel{ind}{\sim} N(\mu,\tau^2) \]
+\pause
+and a prior on $\mu$ and $\tau^2$. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{In Stan}
+
+<<>>=
+normal_model = "
+data {
+  int <lower=1> n;
+  int <lower=1> n_products;
+  int <lower=1,upper=5> stars[n];
+  int <lower=1,upper=n_products> id[n];
+}
+
+parameters {
+  real theta[n_products];
+  real sigma;
+  real mu;
+  real<lower=0> tau;
+}
+
+model {
+  tau ~ cauchy(0,1);
+  for (i in 1:n) stars[i] ~ normal(theta[id[i]], sigma);
+  for (p in 1:n_products) theta[p] ~ normal(mu,tau);
+}
+"
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{In Stan}
+
+<<normal_model, echo=TRUE, cache=TRUE>>=
+normal_model = "
+data {
+  int <lower=1> n;
+  int <lower=1> n_products;
+  int <lower=1,upper=5> stars[n];
+  int <lower=1,upper=n_products> id[n];
+}
+
+parameters {
+  real theta[n_products];
+  real sigma;
+  real mu;
+  real<lower=0> tau;
+}
+
+model {
+  tau ~ cauchy(0,1);
+  sigma ~ cauchy(0,1);
+  for (i in 1:n) stars[i] ~ normal(theta[id[i]], sigma);
+  for (p in 1:n_products) theta[p] ~ normal(mu,tau);
+}
+"
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Fit model}
+
+<<run_normal_model, echo=TRUE, cache=TRUE, dependson='normal_model'>>=
+m = stan_model(model_code = "normal_model")
+dat = list(n = nrow(d),
+           n_products = nlevels(d$product_id),
+           stars = d$stars,
+           id = as.numeric(d$product_id))
+r = sampling(m, dat)
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{In Stan}
+
+<<binomial_model, echo=TRUE, cache=TRUE>>=
+binomial_model = "
+data {
+  int <lower=1> n;
+  int <lower=1> n_products;
+  int <lower=0,upper=4> stars[n];
+  int <lower=1,upper=n_products> id[n];
+}
+
+parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+  real<lower=0,upper=1> theta[n_products];
+}
+
+model {
+  increment_log_prob(-5*log(alpha+beta)/2); # improper prior
+
+  for (i in 1:n) stars[i] ~ binomial(4, theta[id[i]]);
+  for (p in 1:n_products) theta[p] ~ beta(alpha,beta);
+}
+"
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Fit model}
+
+<<run_binomial_model, echo=TRUE, cache=TRUE, dependson='normal_model'>>=
+m = stan_model(model_code = "binomial_model")
+dat = list(n = nrow(d),
+           n_products = nlevels(d$product_id),
+           stars = d$stars-1,
+           id = as.numeric(d$product_id))
+r = sampling(m, dat)
+@
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{IMDB rating}
+
+\begin{quote}
+weighted rating (WR) = (v ÷ (v+m)) × R + (m ÷ (v+m)) × C
+
+Where:
+
+R = average for the movie (mean) = (Rating)
+v = number of votes for the movie = (votes)
+m = minimum votes required to be listed in the Top 250 (currently 25000)
+C = the mean vote across the whole report (currently 7.0)
+\end{quote}
+where 
+
+This is a weighted average
+
+\end{frame}
+
+
+
+\end{document}
