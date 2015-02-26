@@ -52,6 +52,8 @@ set.seed(1)
 
 \frame{\maketitle}
 
+
+\section{Amazon Reviews}
 \begin{frame}
 \frametitle{Amazon Reviews}
 
@@ -66,9 +68,6 @@ d = tmp[tmp$product_id %in% product_ids &
             tmp$stars %in% c("1.0","2.0","3.0","4.0","5.0"),]
 d$product_id = factor(d$product_id)
 d$stars      = as.numeric(factor(d$stars))
-
-# summarize
-
 @
 
 \small
@@ -95,7 +94,7 @@ print(xtable(for_table,
 \end{frame}
 
 
-
+\subsection{Normal model}
 \begin{frame}
 \frametitle{Model for Amazon Reviews}
 
@@ -105,14 +104,15 @@ Let $y_{ij}$ be the $j$th review for the $i$th product. \pause Assume
 and
 \[ \theta_i \stackrel{ind}{\sim} N(\mu,\tau^2) \]
 \pause
-and a prior on $\mu$ and $\tau^2$. 
+and 
+\[ p(\mu,\tau) \propto Ca^+(\tau;0,1) \]
 
 \end{frame}
 
 
 
 \begin{frame}
-\frametitle{In Stan}
+\frametitle{Normal hierarchical model in Stan}
 
 <<>>=
 normal_model = "
@@ -131,38 +131,8 @@ parameters {
 }
 
 model {
-  tau ~ cauchy(0,1);
-  for (i in 1:n) stars[i] ~ normal(theta[id[i]], sigma);
-  for (p in 1:n_products) theta[p] ~ normal(mu,tau);
-}
-"
-@
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{In Stan}
-
-<<normal_model, echo=TRUE, cache=TRUE>>=
-normal_model = "
-data {
-  int <lower=1> n;
-  int <lower=1> n_products;
-  int <lower=1,upper=5> stars[n];
-  int <lower=1,upper=n_products> id[n];
-}
-
-parameters {
-  real theta[n_products];
-  real sigma;
-  real mu;
-  real<lower=0> tau;
-}
-
-model {
-  tau ~ cauchy(0,1);
   sigma ~ cauchy(0,1);
+  tau ~ cauchy(0,1);
   for (i in 1:n) stars[i] ~ normal(theta[id[i]], sigma);
   for (p in 1:n_products) theta[p] ~ normal(mu,tau);
 }
@@ -170,6 +140,7 @@ model {
 @
 
 \end{frame}
+
 
 
 \begin{frame}[fragile]
@@ -186,11 +157,126 @@ r = sampling(m, dat)
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{Tabular summary}
+
+<<dependson='run_normal_model'>>=
+r
+@
+
+\end{frame}
 
 
 
 \begin{frame}[fragile]
-\frametitle{In Stan}
+\frametitle{Movie mean posteriors ($\theta_i$)}
+
+<<dependson='run_normal_model'>>=
+draws = extract(r)
+theta = draws$theta
+colnames(theta) = paste("theta_",1:ncol(theta), sep="")
+theta_m = melt(theta, varnames=c("iterations", "theta"))
+theta_m$product = levels(d$product_id)[theta_m$theta]
+ggplot(theta_m, aes(x=value, fill=product)) +  geom_density(alpha=0.5)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Other parameter posteriors}
+
+<<dependson='normal_model'>>=
+other = rbind(data.frame(parameter = "sigma", value = draws$sigma),
+              data.frame(parameter = "mu",    value = draws$mu   ),
+              data.frame(parameter = "tau",   value = draws$tau))
+prior = rbind(data.frame(x = seq(1.3,1.5,by=0.001), 
+                         parameter = "sigma", 
+                         y = 2*dcauchy(seq(1.3,1.5,by=0.001),0,1)),
+              data.frame(x = seq(0,3,by=0.01), 
+                         parameter = "tau",   
+                         y = 2*dcauchy(seq(0,3,by=0.01))))
+ggplot(other, aes(x=value)) +  
+  geom_histogram(aes(y=..density..)) + 
+  geom_line(data=prior, aes(x=x,y=y, color='red')) +
+  facet_wrap(~parameter, scales="free")  +
+  theme(legend.position="none")
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{A quick rating}
+
+Suppose a new vacuum cleaner comes on the market and there are two Amazon reviews both with 5 stars. \pause What do you think the averaging star rating will be (in the future) for this new product? 
+
+\vspace{0.2in} \pause 
+
+Note
+\[ \begin{array}{rl} 
+E[\theta^*|y,\overline{y}^*,n^*\sigma,\mu,\tau] &= \pause \frac{\frac{n^*}{\sigma^2}}{\frac{n^*}{\sigma^2} + \frac{1}{\tau^2}}\overline{y}^* + \frac{\frac{1}{\tau^2}}{\frac{n^*}{\sigma^2} + \frac{1}{\tau^2}} \mu \pause \\
+&= \frac{n^*}{n^* + \frac{\sigma^2}{\tau^2}}\overline{y}^* + \frac{\frac{\sigma^2}{\tau^2}}{n^* + \frac{\sigma^2}{\tau^2}} \mu \pause \\ 
+&= \frac{n^*}{n^* + m}\overline{y}^* + \frac{m}{n^* + m} \mu 
+\end{array} \]
+\pause
+where $m=\sigma^2/\tau^2$ is a measure of how many \emph{prior} samples there are.
+
+
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{IMDB rating}
+
+From \url{http://www.imdb.com/chart/top.html}:
+
+{\small
+\begin{verbatim}
+weighted rating (WR) = (v / (v+m)) × R + (m / (v+m)) × C
+
+Where:
+
+R = average for the movie (mean) = (Rating)
+v = number of votes for the movie = (votes)
+m = minimum votes required to be listed in the Top 250 
+    (currently 25000)
+C = the mean vote across the whole report (currently 7.1)
+\end{verbatim}
+}
+
+\vspace{0.2in} \pause
+
+Thus IMDB uses a Bayesian estimate for the rating for each movie where $m=\sigma^2/\tau^2 = 25,000$. \pause IMDB has enough data that the uncertainty in $\mu (C)$, $\sigma^2,$ and $\tau^2$ is pretty minimal.
+
+\end{frame}
+
+
+
+\subsection{Binomial model}
+\begin{frame}
+\frametitle{Clearly incorrect model}
+
+We assumed 
+\[ y_{ij} \stackrel{ind}{\sim} N(\theta_i,\sigma^2) \]
+for the $j$th star rating of product $i$. \pause Clearly this model is incorrect since $y_{ij} \in \{1,2,3,4,5\}$. 
+
+\vspace{0.2in} 
+
+An alternative model is 
+\[ y_{ij} \stackrel{ind}{\sim} Bin(4, \theta_i) \]
+where $y_{ij}$ is the $j$th star rating minus 1 of product $i$ \pause and 
+\[ \theta_i \sim Be(\alpha,\beta) \pause \qquad \mbox{and} \qquad p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}. \]
+\pause
+The idea behind this model would be that product $i$ has an independent, but common probability ($\theta_i$) of earning each star.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial hierarchical model in Stan}
 
 <<binomial_model, echo=TRUE, cache=TRUE>>=
 binomial_model = "
@@ -234,25 +320,96 @@ r = sampling(m, dat)
 
 
 
+\begin{frame}[fragile]
+\frametitle{Tabular summary}
 
-\begin{frame}
-\frametitle{IMDB rating}
-
-\begin{quote}
-weighted rating (WR) = (v ÷ (v+m)) × R + (m ÷ (v+m)) × C
-
-Where:
-
-R = average for the movie (mean) = (Rating)
-v = number of votes for the movie = (votes)
-m = minimum votes required to be listed in the Top 250 (currently 25000)
-C = the mean vote across the whole report (currently 7.0)
-\end{quote}
-where 
-
-This is a weighted average
+<<dependson='run_binomial_model'>>=
+r
+@
 
 \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Movie mean posteriors ($\theta_i$)}
+
+<<dependson='run_binomial_model'>>=
+draws = extract(r)
+theta = draws$theta
+colnames(theta) = paste("theta_",1:ncol(theta), sep="")
+theta_m = melt(theta, varnames=c("iterations", "theta"))
+theta_m$product = levels(d$product_id)[theta_m$theta]
+ggplot(theta_m, aes(x=value, fill=product)) +  geom_density(alpha=0.5)
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Other parameter posteriors}
+
+Recall that 
+\begin{itemize}
+\item $\alpha$ is the prior success
+\item $\beta$ is the prior failures
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+So 
+\begin{itemize}
+\item $\alpha+\beta$ is the prior sample size
+\item $E[\theta_i|\alpha,\beta] = \frac{\alpha}{\alpha+\beta}$ is the prior expectation for the probability
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+But we might want to show results on the original scale (stars), \pause so the expected number of stars for a new product is 
+\[  \begin{array}{rl}
+E[\mbox{stars}_{*j}|\alpha,\beta] &= E[\mbox{y}_{*j}+1|\alpha,\beta] \pause = E[\mbox{y}_{*j}|\alpha,\beta] + 1 \pause \\
+&= E[E[y_{*j}|\theta^*]|\alpha,\beta]+1 \pause = E[4\theta^*|\alpha,\beta]+1 \pause \\
+&= 4\frac{\alpha}{\alpha+\beta} + 1
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Other parameter posteriors}
+
+<<dependson='run_binomial_model', warning=FALSE, message=FALSE>>=
+other = rbind(data.frame(parameter = "alpha", value = as.numeric(draws$alpha)),
+              data.frame(parameter = "beta",    value = as.numeric(draws$beta)   ),
+              data.frame(parameter = "prior_sample_size",   value = as.numeric(draws$alpha+draws$beta)),
+              data.frame(parameter = "prior_mean",   value = as.numeric(draws$alpha/(draws$alpha+draws$beta))),
+              data.frame(parameter = "prior_stars",   value = 1+4*as.numeric(draws$alpha/(draws$alpha+draws$beta))))
+ggplot(other, aes(x=value)) +  
+  geom_histogram(aes(y=..density..)) + 
+  facet_wrap(~parameter, scales="free")  +
+  theme(legend.position="none")
+@
+
+\end{frame}
+
+
+
+\subsection{Posterior predictive pvalues}
+\begin{frame}
+\frametitle{}
+
+This binomial model has the proper support $\{0,1,2,3,4\}$ for stars minus 1, \pause but does it have the correct proportion of observations in each star category? 
+
+\vspace{0.2in} \pause
+
+As an example, $\hat{\theta_2} = 0.81$ (and a 95\% CI is (0.79, 0.83)). 
+
+
+\end{frame}
+
+
+
+
 
 
 
