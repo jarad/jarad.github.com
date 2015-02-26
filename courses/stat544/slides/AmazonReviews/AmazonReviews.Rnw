@@ -396,18 +396,94 @@ ggplot(other, aes(x=value)) +
 
 \subsection{Posterior predictive pvalues}
 \begin{frame}
-\frametitle{}
+\frametitle{Uniform use of star ratings}
 
 This binomial model has the proper support $\{0,1,2,3,4\}$ for stars minus 1, \pause but does it have the correct proportion of observations in each star category? 
 
 \vspace{0.2in} \pause
 
-As an example, $\hat{\theta_2} = 0.81$ (and a 95\% CI is (0.79, 0.83)). 
+As an example, $\hat{\theta}_2 = 0.81$ (and a 95\% CI is (0.79, 0.83)). \pause Thus, we would expect 
 
+<<results='asis'>>=
+tmp = data.frame(stars = 1:5,
+           theoretical = dbinom(0:4, 4, .81),
+           actual = as.numeric(for_table[2,2:6]/for_table[2,7]))
+print(xtable(tmp, digits=c(NA, 0, 3, 3)), include.rownames=FALSE)
+@
+
+\pause
+But this ignores the uncertainty in $\theta_2$, so perhaps this difference is due to this uncertainty. 
 
 \end{frame}
 
 
+
+
+
+\begin{frame}
+\frametitle{Posterior predictive pvalue}
+
+\small
+
+To assess this model fit, we will simulate posterior predictive star ratings for product 2 and compare to the observed ratings:
+<<results='asis'>>=
+print(xtable(for_table[2,1:7]), include.rownames=FALSE)
+@
+\pause
+Let $\tilde{y}_2$ be all the predictive data for product 2, i.e. $\tilde{y}_2 = (\tilde{y}_{21},\ldots,\tilde{y}_{2J})$ with $J=535$ where $\tilde{y}_{2j}$ is the $j$th predictive star rating minus 1 for review $j$ of product 2. \pause Then 
+
+\[ p(\tilde{y}_2|y) = \int \left[\prod_{j=1}^J p(\tilde{y}_{2j}|\theta_2)\right] p(\theta_2|y) d\theta_2 \]
+
+\pause Thus the following procedure will simulation from the joint distribution for the predictive ratings:
+\begin{enumerate}
+\item $\theta_2 \sim p(\theta_2|y)$, 
+\item For $j=1,\ldots,535$, $y_{2j} \stackrel{ind}{\sim} Bin(4,\theta_2)$, and
+\item star$_{2j} = y_{2j}+1$. 
+\end{enumerate}
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior predictive distribution in R}
+
+<<echo=TRUE>>=
+theta2 = as.numeric(draws$theta[,2])
+ytilde2 = adply(theta2, 1, function(x) {
+  ytilde = rbinom(535, 4, x) + 1
+  data.frame(n1 = sum(ytilde==1),
+             n2 = sum(ytilde==2),
+             n3 = sum(ytilde==3),
+             n4 = sum(ytilde==4),
+             n5 = sum(ytilde==5))
+})
+head(ytilde2)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior predictive distribution in R}
+
+<<>>=
+ytilde2_m = melt(ytilde2, id.vars="X1")
+truth = data.frame(variable = paste("n",1:5,sep=""),
+                   observed = as.numeric(for_table[2,2:6]))
+ggplot(ytilde2_m, aes(x=value)) + 
+  geom_histogram(aes(y=..density..), binwidth=1) + 
+  facet_wrap(~variable, scales="free") + 
+  geom_vline(data=truth, aes(xintercept=observed), color="red")
+  
+@
+
+\end{frame}
+
+
+
+\subsection{Ordinal data model}
 
 
 
