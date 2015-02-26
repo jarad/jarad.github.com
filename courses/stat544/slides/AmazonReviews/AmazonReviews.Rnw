@@ -105,16 +105,16 @@ and
 \[ \theta_i \stackrel{ind}{\sim} N(\mu,\tau^2) \]
 \pause
 and 
-\[ p(\mu,\tau) \propto Ca^+(\tau;0,1) \]
+\[ p(\mu,\tau, \sigma) \propto Ca^+(\sigma;0,1) Ca^+(\tau;0,1) \]
 
 \end{frame}
 
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Normal hierarchical model in Stan}
 
-<<>>=
+<<echo=TRUE>>=
 normal_model = "
 data {
   int <lower=1> n;
@@ -186,7 +186,7 @@ ggplot(theta_m, aes(x=value, fill=product)) +  geom_density(alpha=0.5)
 \begin{frame}[fragile]
 \frametitle{Other parameter posteriors}
 
-<<dependson='normal_model'>>=
+<<dependson='normal_model', message=FALSE>>=
 other = rbind(data.frame(parameter = "sigma", value = draws$sigma),
               data.frame(parameter = "mu",    value = draws$mu   ),
               data.frame(parameter = "tau",   value = draws$tau))
@@ -484,6 +484,50 @@ ggplot(ytilde2_m, aes(x=value)) +
 
 
 \subsection{Ordinal data model}
+\begin{frame}
+\frametitle{Ordinal data model}
+
+Let $y_i = (y_{i1},\ldots,y_{i5})$ be the vector of 1-star to 5-star ratings, \pause assume
+\begin{align*}
+Y_{i} \stackrel{ind}{\sim} Mult(n_i,\theta_i)
+\end{align*}
+where $\theta_i$ is a probability vector
+\[ \theta_{ik} = \int_{\alpha_{k-1}}^{\alpha_k} N(x|\mu_i,1) dx = \Phi(\alpha_k-\mu_i) - \Phi(\alpha_{k-1}-\mu_i) \]
+where $\alpha_0=-\infty$, $\alpha_1=0$, and $\alpha_5=\infty$, and $\Phi$ is the standard normal cumulative distribution function (cdf). 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Visualizing the model}
+
+<<cuts, echo=FALSE>>=
+mu = 1.7
+curve(dnorm(x,mu,1), -1, 5, lwd=2, xlab="", axes=F, frame=T, ylab="")
+abline(v=0:3,col="red")
+axis(1, at=0:3, 
+     labels=paste("alpha_",1:4,sep=""), 
+     col="red")
+
+abline(v=mu, lty=2, col="blue")
+axis(3, at=mu, labels=expression(mu[j]), col="blue")
+text((-1:3)+.5, 0, 1:5, col="seagreen")
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Hierarchical model}
+So each product has its own mean $\mu_i$. \pause The larger $\mu_i$ is the more 5-star ratings the product will receive and the fewer 1-star ratings the product will review. 
+
+\vspace{0.2in} \pause
+
+In order to borrow information across different products, we might assume a hierarchical model for the $\mu_i$\pause, e.g. 
+
+\[ \mu_i \stackrel{ind}{\sim} N(\eta,\tau^2) \]
+\pause 
+with a prior 
+\[ p(\eta,\tau) \propto Ca(\tau;0,1). \]
+\end{frame}
 
 
 
