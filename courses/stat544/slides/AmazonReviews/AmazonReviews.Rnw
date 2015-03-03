@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -138,7 +138,7 @@ data {
 
 parameters {
   real theta[n_products];
-  real sigma;
+  real<lower=0> sigma;
   real mu;
   real<lower=0> tau;
 }
@@ -345,7 +345,7 @@ r
 
 
 \begin{frame}[fragile]
-\frametitle{Movie mean posteriors ($\theta_i$)}
+\frametitle{Review mean posteriors ($\theta_i$)}
 
 <<dependson='run_binomial_model'>>=
 draws = extract(r)
@@ -524,7 +524,7 @@ axis(1, at=0:3,
      col="red")
 
 abline(v=mu, lty=2, col="blue")
-axis(3, at=mu, labels=expression(mu[j]), col="blue")
+axis(3, at=mu, labels=expression(mu[i]), col="blue")
 text((-1:3)+.5, 0, 1:5, col="seagreen")
 @
 \end{frame}
@@ -545,6 +545,121 @@ with a prior
 
 
 
+\begin{frame}[fragile]
+\frametitle{Ordinal hierarchical model in Stan}
+
+<<ordinal_model, echo=TRUE, cache=TRUE, eval=FALSE>>=
+ordinal_model = "
+data {
+  int <lower=1> n_products;
+  int <lower=0> y[n_products,5];
+}
+
+parameters {
+  real<lower=0,upper=1> alpha_diff[3];
+  real mu[n_products];
+  real eta;
+  real<lower=0> tau;
+}
+
+transformed parameters {
+  ordered[4] alpha;
+  simplex[5] theta[n_products];
+
+  alpha[1] <- 0;
+  for (i in 1:3) alpha[i+1] <- alpha[i] + alpha_diff[i];
+
+  for (p in 1:n_products) {
+    theta[p,1] <- Phi(-mu[p]);
+    for (j in 2:4) 
+      theta[p,j] <- Phi(alpha[j]-mu[p]) - Phi(alpha[j-1]-mu[p]);
+    theta[p,5] <- 1-Phi(alpha[4]-mu[p]);
+  }
+}
+
+model {
+  tau ~ cauchy(0,1);
+  mu ~ normal(eta, tau);
+  for (p in 1:n_products) y[p] ~ multinomial(theta[p]); # n_reviews[p] is implicit
+}
+"
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Fit model}
+
+<<run_ordinal_model, echo=TRUE, cache=TRUE, dependson='ordinal_model', eval=FALSE>>=
+m = stan_model(model_code = "ordinal_model")
+dat = list(n_products = nrow(for_table),
+           y = as.matrix(for_table[,2:6]))
+r = sampling(m, dat, pars = c("alpha","eta","tau","mu"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Fit model}
+
+<<echo=TRUE, cache=TRUE, dependson='run_ordinal_model', eval=FALSE>>=
+r
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Review mean posteriors ($\theta_i$)}
+
+<<dependson='run_ordinal_model'>>=
+draws = extract(r)
+mu = draws$mu
+colnames(mu) = paste("mu_",1:ncol(mu), sep="")
+mu_m = melt(mu, varnames=c("iterations", "mu"))
+mu_m$product = levels(d$product_id)[mu_m$mu]
+ggplot(mu_m, aes(x=value, fill=product)) +  geom_density(alpha=0.5)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Other parameter posteriors}
+
+<<dependson='run_ordinal_model', warning=FALSE, message=FALSE>>=
+other = data.frame("alpha" = as.matrix(draws$alpha),
+              "eta" = as.numeric(draws$eta),
+              "tau" = as.numeric(draws$tau))
+ggplot(melt(other), aes(x=value)) +  
+  geom_histogram(aes(y=..density..)) + 
+  facet_wrap(~variable, scales="free")  +
+  theme(legend.position="none")
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Visualizing the model}
+
+<<cuts, echo=FALSE>>=
+alpha = c(0,.36,.6,1.11)
+mu = c(1.49,-.38)
+curve(dnorm(x,mu[1],1), -3, 5, lwd=2, xlab="", axes=F, frame=T, ylab="")
+curve(dnorm(x,mu[2],1), lwd=2, add=TRUE)
+abline(v=alpha,col="red")
+axis(1, at=alpha, 
+     labels=parse(text=paste("alpha[",1:4,"]",sep='')), 
+     col="red")
+
+abline(v=mu, lty=2, col="blue")
+axis(3, at=mu, labels=expression(mu[2],mu[10]), col="blue")
+text((-1:3)+.5, 0, 1:5, col="seagreen")
+@
+\end{frame}
 
 
 \end{document}
