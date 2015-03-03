@@ -1,0 +1,323 @@
+\documentclass{beamer}
+
+
+\usecolortheme[RGB={0,0,144}]{structure}
+\usetheme{AnnArbor}\usecolortheme{beaver}
+%\usetheme{CambridgeUS}\usecolortheme{crane}
+
+\usepackage{verbatim,xmpmulti,color,multicol,multirow}
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+%\usepackage{beamerthemesplit}
+\setbeamertemplate{navigation symbols}{}
+%\setbeamercolor{alerted text}{fg=red}
+%\setbeamertemplate{block body theorem}{bg=orange}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Midterm review}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+
+\begin{document}
+
+\frame{\maketitle}
+
+\section{What we have covered}
+\frame{\frametitle{What we have covered}
+  Chapters
+  \begin{itemize}[<+->]
+  \item Probability and inference (Ch 1)
+  \item Single-parameter models (Ch 2)
+  \item Asymptotics and connections to non-Bayesian approaches (Ch 4)
+  \item Introduction to multiparameter models (Ch 3)
+  \item Hierarchical models (Ch 5)
+%  \item Introduction to regression models (Ch 14)
+  \item Model checking (Ch 6)
+  \item Bayesian hypothesis tests (Sec 7.4)
+  \item Stan
+  \end{itemize}
+}
+
+\subsection{Probability and inference}
+\frame{\frametitle{Probability and inference (Ch 1)}
+  \begin{itemize}[<+->]
+  \item Three steps of Bayesian data analysis (Sec 1.1)
+    \begin{itemize}
+    \item Set up a full probability model: $p(y|\theta)$ and $p(\theta)$
+    \item Condition on observed data: $p(\theta|y)$
+    \item Evaluate the fit of the model: $p(y^{rep}|y)$
+    \end{itemize}
+  \item Bayesian inference via Bayes' rule (Sec 1.3)
+    \begin{itemize}
+    \item Parameter posteriors: $p(\theta|y)\propto p(y|\theta)p(\theta)$
+    \item Predictions: $p(\tilde{y}|y) = \int p(\tilde{y}|\theta)p(\theta|y) d\theta$
+    \item Model probabilities $p(M|y) \propto p(y|M)p(M)$ where $p(y|M) = \int p(y|\theta,M)p(\theta|M) d\theta$.
+    \end{itemize}
+  \item Interpreting Bayesian probabilities (Sec 1.5)
+    \begin{itemize}
+    \item Epistemic probability: my belief
+    \item Frequency probability: long run percentage
+    \end{itemize}
+  \item Computation (Sec 1.9)
+    \begin{itemize}
+    \item Inference via simulations
+    \end{itemize}
+  \end{itemize}
+}
+
+\subsection{Single-parameter models}
+\frame{\frametitle{Single-parameter models (Ch 2)}
+  \begin{multicols}{2}
+  General
+  \begin{itemize}
+  \item Priors (L2)
+    \begin{itemize}
+    \item Conjugate (Sec 2.4)
+    \item Default - Jeffreys (Sec 2.8)
+    \item Weakly informative (Sec 2.9)
+    \end{itemize}
+  \item Posteriors
+    \begin{itemize}
+    \item Compromise between data and prior (2.2)
+    \item Point estimation 
+    \item Credible intervals (Sec 2.3)
+    \end{itemize}
+  \end{itemize}
+  
+  \columnbreak
+  
+  Specific models
+  \begin{itemize}
+  \item Binomial (Sec 2.1--2.4)
+  \item Normal, unknown mean (Sec 2.5)
+  \item Normal, unknown variance (Sec 2.6)
+  \item Poisson (Sec 2.6)
+  \item Exponential (Sec 2.6)
+  \item Poisson with exposure (Sec 2.7)
+  \end{itemize}
+  
+  \end{multicols}
+}
+
+\frame{\frametitle{Single-parameter models (Ch 2)}
+  Additional comments:
+  \begin{itemize}[<+->]
+  \item Deriving posteriors using the \alert{kernel}
+  \item Discrete priors are conjugate
+  \item Mixtures of conjugate priors are conjugate
+  \item Point estimation  depends on utility function
+    \begin{itemize}
+    \item Mean minimizes squared error
+    \item Median minimizes absolute error
+    \item Mode minimizes 0-1 error
+    \end{itemize}
+  \item Computation, $E[h(\theta)|y]$ 
+    \begin{itemize}
+    \item SLLN
+    \item CLT
+    \end{itemize}
+  \end{itemize}
+}
+
+\subsection{Introduction to multiparameter models}
+\frame{\frametitle{Introduction to multiparameter models}
+\small
+
+\vspace{-0.1in}
+
+\begin{itemize}[<+->]
+\item Joint posterior
+\[ p(\theta_1,\ldots,\theta_n|y) \propto p(y|\theta_1,\ldots,\theta_n) p(\theta_1,\ldots,\theta_n) \]
+\item Marginal posterior
+\[ p(\theta_1|y) = \int \cdots \int p(\theta_1,\ldots,\theta_n|y) d\theta_2 \cdots d\theta_n \]
+\item Conditional posteriors
+\[ p(\theta_2,\ldots,\theta_n|\theta_1,y) \propto p(\theta_1,\ldots,\theta_n|y) \]
+\item Posterior decomposition, e.g.
+\[ p(\theta_1,\ldots,\theta_n|y) = p(\theta_1|y) \prod_{i=2}^n p(\theta_i|\theta_{1:i-1},y) \]
+where $1:i-1=1,2,\ldots,i-1$. 
+\item Conditional independence, e.g.
+\[ p(\theta_i|\theta_{1:i-1},y) = p(\theta_i|\theta_{i-1},y) \]
+
+\end{itemize}
+}
+
+
+
+\frame{\frametitle{Normal model}
+  \begin{itemize}
+  \item Normal model with default prior (Sec 3.2)
+  \[ y\stackrel{iid}{\sim} N(\mu,\sigma^2) \quad p(\mu,\sigma^2) \propto 1/\sigma^2 \]
+  \pause results in 
+  \[ p(\mu,\sigma^2|y) = N(\overline{y}, \sigma^2/n) \mbox{Inv-}\chi^2(n-1,s^2)\]
+  \pause where $s^2 = \frac{1}{n} \sum_{i=1}^n (y_i-\overline{y})^2$. \pause
+  \item Normal model with conjugate prior (Sec 3.3)
+
+  \[ y\stackrel{iid}{\sim} N(\mu,\sigma^2) \quad \mu|\sigma^2 \sim N(\mu_0, \sigma^2/\kappa_0) \quad \sigma^2 \sim \mbox{Inv-}\chi^2(\nu_0,\sigma_0^2) \]
+  results in 
+
+  \[ p(\mu,\sigma^2|y) = N\left(\frac{\kappa_0\mu_0+n\overline{y}}{\kappa_0+n}, \frac{\sigma^2}{\kappa_0+n}\right) \mbox{Inv-}\chi^2(\nu_0+n,\sigma_n^2)\]
+  \pause where $\sigma_n^2 = \left[\mu_0\sigma_0^2+(n-1)s^2+\frac{\kappa_0n}{\kappa_0+n}(\overline{y}-\mu_0)^2 \right]/(\nu_0+n)$. \pause 
+%  \item Multinomial model (Sec 3.4)*
+%  \item Multivariate normal model (Sec 3.5--3.6)
+  \end{itemize}
+}
+
+
+
+\begin{frame}
+\frametitle{Data asymptotics}
+
+Consider a model $y_i\stackrel{iid}{\sim} p(y|\theta_0)$ for some true value $\theta_0$.
+
+\vspace{0.2in} \pause
+
+\begin{itemize}[<+->]
+\item Posterior convergence: 
+
+If $A$ is a neighborhood of $\theta_0$, then $Pr(\theta\in A|y)\to 1$.
+\item Point estimation: 
+\[ \hat{\theta}_{Bayes} \to \hat{\theta}_{MLE}\stackrel{p}{\to} \theta_0 \]
+\item Limiting distribution:
+\[ \theta|y \stackrel{d}{\to} N\left(\hat{\theta}, \frac{1}{n}\I(\hat{\theta})^{-1}\right) \]
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Asymptotics - What can go wrong?}
+\begin{itemize}
+\item Not unique to Bayesian statistics
+  \begin{itemize}
+  \item Unidentified parameters
+  \item Number of parameters increase with sample size
+  \item Aliasing
+  \item Unbounded likelihoods
+  \item Tails of the distribution
+  \item True sampling distribution is not $p(y|\theta)$
+  \end{itemize} \pause
+\item Unique to Bayesian statistics
+  \begin{itemize}[<+->]
+  \item Improper posterior 
+  \item Prior distributions that exclude the point of convergence
+  \item Convergence to the edge of the parameter space
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+
+\subsection{Hierarchical models}
+\frame{\frametitle{Hierarchical models (Ch 5)}
+  \begin{itemize}[<+->]
+  \item Hierarchical model (Ch 5):
+  \[ p(\theta,\phi|y) \propto p(y|\theta)p(\theta|\phi)p(\phi) \]
+  \item Exchangeability (Sec 5.2)
+  \[ p(y_1,\ldots,y_n) = p(y_{\pi_1},\ldots,y_{\pi_n}) \]
+  \item Hierarchical binomial model (Sec 5.3):
+  \[ y_i \stackrel{iid}{\sim} Bin(n_i,\theta_i) \quad \theta_i \stackrel{iid}{\sim} Be(\alpha,\beta) %\quad p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2} 
+  \]
+  \item Hierarchical Poisson (with exposure) model 
+  \[ y_i \stackrel{iid}{\sim} Po(x_i\lambda_i) \quad \lambda_i\stackrel{iid}{\sim} Ga(\mu\beta,\beta) \]
+  \item Hierarchical normal model (Sec 5.4)
+  \[ y_{ij} \stackrel{iid}{\sim} N(\mu_j,\sigma_j^2) \quad \mu_j\stackrel{iid}{\sim} N(\eta,\tau^2) \quad \sigma_j^2 \stackrel{iid}{\sim} Ga(\alpha,\beta) \]
+  \end{itemize}
+}
+
+
+
+\frame{\frametitle{Hypothesis testing (Section 7.4)}
+  From a Bayesian perspective, 
+  \[ \mbox{Simple: } H_i: \theta=\theta_i \qquad \mbox{Composite: } H_i: \theta \in (\theta_i,\theta_{i+1}]\]
+  Treat all simple (or all composite) hypotheses as formal Bayesian parameter estimation. Treat a mix of simple and composite hypotheses as formal Bayesian tests.
+  
+  \vspace{0.2in} \pause
+  
+  Formal Bayesian tests 
+  \begin{itemize}[<+->]
+  \item require prior probabilities for each hypothesis, $p(H_i)$, 
+  \item require priors for parameters in non-point hypotheses, $p(\theta|H_i)$, and
+  \item calculate posterior probabilities $p(H_i|y)$ which depend on 
+  \item the marginal likelihood, $p(y|H_i)$.
+  \end{itemize}
+}
+
+% \subsection{Introduction to regression models}
+% \frame{\frametitle{Introduction to regression models (Ch 14)}
+%   \begin{itemize}
+%   \item Default (classical) regression (Sec 14.2)
+%   \[ y|\beta,\sigma^2 \sim N(X\beta,\sigma^2\mathrm{I}) \quad p(\beta,\sigma^2) \propto 1/\sigma^2  \]
+%   \pause results in 
+%   \[ p(\beta,\sigma^2|y) \sim N(\beta|\hat{\beta}, \sigma^2 [X^\top X]^{-1})\mbox{Inv-}\chi^2(n-k,s^2) \]
+% 
+%   where $\hat{\beta} = [X^\top X]^{-1} X^\top y$ and $s^2 = \frac{1}{n-k} (y-X\hat{\beta})^\top (y-X\hat{\beta})$.
+% 
+%   
+%   \item Regression with known covariance matrix (Sec 14.7) \pause 
+%   \item Regression with conjugate informative prior (Sec 14.8)
+% 
+%   \[ y|\beta,\sigma^2 \sim N(X\beta,\sigma^2\mathrm{I}) \quad \beta|\sigma^2 \sim N(\beta_0,\sigma^2 \Sigma_\beta) \quad \sigma^2\sim \mbox{Inv}-\chi^2(\nu_0,\sigma_0^2) \]
+%   \pause can be thought of as addition data directly on $\beta$ and $\sigma^2$.
+% 
+%   \end{itemize}
+% }
+
+\subsection{Model checking}
+\frame{\frametitle{Model checking (Ch 6)}
+  \begin{itemize}[<+->]
+  \item Data replications
+  \[ p(y^{rep}|y) = \int p(y^{rep}|\theta)p(\theta|y) d\theta \]
+  \item Graphical posterior predictive checks (Sec 6.4)
+  \item Posterior predictive pvalues (Sec 6.3)
+  \[ p_B = P(T(y^{rep},\theta)\ge T(y,\theta)|y) \]
+  for a test statistic $T(y,\theta)$. 
+  \end{itemize}
+}
+
+
+\subsection{Stan}
+\begin{frame}[fragile]
+\frametitle{Stan}
+<<Stan_example, eval=FALSE, tidy=FALSE, size='tiny'>>=
+model = "
+data {
+  int<lower=0> N;
+  int<lower=0> n[N];
+  int<lower=0> y[N];
+  real s;
+}
+parameters {
+  real<lower=0,upper=1> mu;
+  real<lower=0> eta;
+}  
+transformed parameters {
+  real<lower=0> alpha;
+  real<lower=0> beta;
+  alpha <- eta *    mu;
+  beta  <- eta * (1-mu);
+}
+model {
+  mu  ~ beta(20,30);
+  eta ~ lognormal(0,s);
+  y   ~ beta_binomial(n,alpha,beta);
+}
+generated quantities {
+  real<lower=0,upper=1> theta[N];
+  for (i in 1:N) theta[i] <- beta_rng(alpha+y[i], beta+n[i]-y[i]);
+}
+"
+@
+\end{frame}
+
+
+
+
+
+\end{document}
