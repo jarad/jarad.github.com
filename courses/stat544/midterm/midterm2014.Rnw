@@ -1,4 +1,4 @@
-\documentclass[10pt,draft]{article}
+\documentclass[10pt]{article}
 
 \usepackage{verbatim,multicol,color,amsmath,ifdraft, graphicx, wrapfig,setspace}
 
@@ -128,7 +128,7 @@ Chips & A & B & C & D & probability & credibility \\
 \hline
 0 & \shortcorrect{2} & \shortcorrect{3}  & \shortcorrect{2}  & \shortcorrect{20} & \shortcorrect{27} & \shortcorrect{81} \\
 1 & \shortcorrect{0} & \shortcorrect{5} & \shortcorrect{5} & \shortcorrect{2} & \shortcorrect{12}  & \shortcorrect{83} \\
-2 & \shortcorrect{16} & \shortcorrect{6} & \shortcorrect{0} & \shortcorrect{1} & \shortcorrect{25}  & \shortcorrect{96} \\
+2 & \shortcorrect{18} & \shortcorrect{6} & \shortcorrect{0} & \shortcorrect{1} & \shortcorrect{25}  & \shortcorrect{96} \\
 3 & \shortcorrect{5} & \shortcorrect{5} & \shortcorrect{0} & \shortcorrect{1} & \shortcorrect{11}  & \shortcorrect{91} \\
 4 & \shortcorrect{0} & \shortcorrect{6} & \shortcorrect{18} & \shortcorrect{1} & \shortcorrect{25}  & \shortcorrect{96} \\
 \hline
@@ -141,7 +141,7 @@ total & \phantom{XX}25\%\phantom{XX} & \phantom{XX}25\%\phantom{XX} & \phantom{X
 
 \item Assuming the delivery man picks jar types randomly and uniformly, fill in Table \ref{tab:joint} for the joint distribution of chips and jar types. A (5 pts)
 
-\longcorrect[\vspace{1in}]{Divide all cells in Table \ref{tab:cookies}}
+\longcorrect[\vspace{1in}]{Divide all cells in Table \ref{tab:joint} by 100.}
 
 
 \item Fill in the table above with the marginal probability for each number of chips? (2 pts)
@@ -253,8 +253,8 @@ with $\mu$ and $\sigma$ being independent and $Exp(\rho)$ is an exponential rand
 
   \begin{enumerate}
   \item $\mu$ \longcorrect[\vspace{0.3in}]{(0.60,1.46)}
-  \item $\rho_1$, the rate of failures for O-rings for company 1 \longcorrect[\vspace{0.3in}]{(0.46,1.76)}
-  \item the {\bf mean failure time} for O-rings from company 1 \longcorrect[\vspace{0.3in}]{(0.57,2.17)}
+  \item $\rho_1$, the rate of failures for O-rings for company 1 \longcorrect[\vspace{0.3in}]{(0.46,1.73)}
+  \item the {\bf mean failure time} for O-rings from company 1 \longcorrect[\vspace{0.3in}]{This is just the inverse of the previous, i.e.(1/1.73,1/0.46)= (0.58,2.17).}
   \end{enumerate}
   
 \item Describe why the median for $\rho$ for the 2nd supplier is so low compared to the others. (1 pt)
@@ -351,7 +351,8 @@ model {
 @
 
 <<run_mcmc, dependson=c("exponential_data","exponential_model"), cache=TRUE>>=
-m = jags.model(textConnection(model), dat, quiet=TRUE)
+m = jags.model(textConnection(model), dat, quiet=TRUE, 
+               inits=list(.RNG.name="base::Wichmann-Hill",.RNG.seed=1))
 r = coda.samples(m, c("rho","mu","sigma"), 10000, thin=10)
 
 summary(r)
