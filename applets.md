@@ -35,4 +35,4 @@ group: navigation
   - [Central limit theorem for means](http://spark.rstudio.com/minebocek/CLT_mean/)
   - [Central limit theorem for proportions](http://spark.rstudio.com/minebocek/CLT_prop/)
   - [Regression diagnostics](http://spark.rstudio.com/minebocek/slr_diag/)
-
+- [Missouri disease surveillance](http://spark.rstudio.com/ejahanpour/SampleData/)
