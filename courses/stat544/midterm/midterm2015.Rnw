@@ -1,0 +1,360 @@
+\documentclass[12pt]{article}
+
+\usepackage{verbatim,color,amsmath, graphicx,setspace,enumerate}
+
+\usepackage{fullpage}
+
+%\usepackage[latin1]{inputenc}
+%\usepackage[T1]{fontenc}
+%\usepackage[dvips]{graphicx}
+
+
+\newcommand{\answer}[1]{{\color{red} #1}}
+%\renewcommand{\answer}[1]{} % comment to show answers
+
+\title{STAT 544 Mid-term Exam \\ Thursday 5 March 8:00-9:20}
+\author{Instructor: Jarad Niemi}
+\date{}
+
+\begin{document}
+
+\begin{center}
+{\textbf {Spring 2015}}\hfill  \textbf{\large Statistics 544\hfill
+  Midterm Exam}\\
+ \hfill  \textbf{(100 points)}
+\end{center}
+\vspace*{1in}
+
+\noindent {\large Please write your first and last name here:} \\[.2in]
+{\textbf{Name} \rule{5in}{.01in}}\\[1in]
+
+\vfill 
+
+\textbf{Instructions:}\\[.1in]
+
+\begin{itemize}
+\item Do NOT open the exam until instructed to do so!
+\item Please check to make sure you have 3 pages with writing on the front and back (pages may be marked 'intentionally left blank'). Feel free to remove (and keep) pages after number 6. 
+\item On the following pages you will find short answer questions related to the topics we covered in class for a total of 100 points. Please read the directions carefully.
+\item You are allowed to use a calculator and one $8\frac{1}{2}\times 11$ sheet of paper with writing on both front and back. 
+\item You will be given only the time allotted for the course; no extra time will be given.
+\end{itemize}
+
+\vfill
+
+
+
+
+
+
+\begin{enumerate}
+\newpage
+
+\item A hit-and-run taxi accident occurs at dusk in a city that has 90\% black taxis, 5\% green taxis, and 5\% red taxis. The only eyewitness has told investigators that he believes the taxi was red. Investigators test the eyewitness's vision in this low light scenario and find the following identification probabilities, e.g. if the taxi was actually green, the eyewitness identified it as being black 20\% of the time. 
+
+<<echo=FALSE, results='asis'>>=
+library(xtable)
+d = data.frame("Identification" = c("Black","Green","Red"),
+               "Black" = c(.8,.1,.1),
+               "Green" = c(.2,.7,.1),
+               "Red"   = c(.1,.4,.5))
+print(xtable(d, align="cc|ccc|", digits=1), include.rownames=FALSE,
+      add.to.row = list(pos = list(-1),
+                        command = "& \\multicolumn{3}{c|}{Truth} \\\\"))
+@
+
+\begin{enumerate}
+\item Calculate the probability the car was black. (5 pts)
+
+\answer{
+Let $B,G,R$ indicate the car was truly blue, green, or red, respectively. Then let $I_R$ indicate that the eyewitness identified the car as red. First calculate 
+
+\[ P(I_R) = P(I_R|B)P(B)+P(I_R|G)P(G)+P(I_R|R)P(R) = .1\times.9 + .1\times .05 + .5\times .05 = 0.12 \]
+
+\[ 
+P(B|I_R) = \frac{P(I_R|B)P(B)}{P(I_R)} = .1\times .9/.12 \approx 0.75
+\]
+} \vfill
+
+\item Calculate the probability the car was green. (5 pts)
+
+\answer{
+\[ 
+P(G|I_R) = \frac{P(I_R|G)P(G)}{P(I_R)} = .1\times.05/.12 \approx 0.04
+\]
+} \vfill
+
+\item Calculate the probability the car was red. (5 pts)
+
+\answer{
+\[ 
+P(R|I_R) = \frac{P(I_R|R)P(R)}{P(I_R)} = .5\times .05/.135 \approx 0.21
+\]
+} \vfill
+
+\item Suppose there was a different eyewitness, fill in their identification probabilities so that, if they said the taxi was red, the probability that the car was red is greater than the probabilities that the car was green or black.  (5 pts)
+
+<<echo=FALSE, results='asis'>>=
+library(xtable)
+d = data.frame("Identification" = c("Black","Green","Red"),
+               "Black" = c(NA,NA,NA),
+               "Green" = c(NA,NA,NA),
+               "Red"   = c(NA,NA,NA))
+print(xtable(d, align="cc|ccc|"), include.rownames=FALSE,
+      add.to.row = list(pos = list(-1),
+                        command = "& \\multicolumn{3}{c|}{Truth} \\\\"))
+@
+
+\answer{
+The easiest way is to make the eyewitness perfect, i.e. $P(I_B|B) = P(I_G|G) = P(I_R|R)=1$. 
+}
+
+\end{enumerate}
+
+
+\newpage
+
+\item Let $Y\sim Geo(\theta)$, i.e. a geometric random variable with probability of success $\theta$ and $E[y] = \frac{1}{\theta}$. The geometric probability mass function is 
+\[ p(y|\theta) = (1-\theta)^{y-1} \theta, \quad y\in\{1,2,3,\ldots\}, \, 0<\theta<1 \]
+\begin{enumerate}
+\item Derive Jeffreys prior for $\theta$ and determine whether this prior is proper. (10 pts)
+%\item Show that Jeffreys prior for $\theta$ is $p(\theta) \propto \theta^{-1}(1-\theta)^{-1/2}$. (8 pts)
+
+\answer{
+The geometric is an exponential family, thus we have 
+\begin{align*}
+\log p(y|\theta) &= (y-1)\log(1-\theta) +\log(\theta) \\
+\frac{d}{d\theta} \log p(y|\theta) &= -\frac{y-1}{1-\theta} + \frac{1}{\theta} \\
+\frac{d^2}{d\theta^2} \log p(y|\theta) &= -\frac{y-1}{(1-\theta)^2} - \frac{1}{\theta^2} \\
+\mathcal{I}(\theta) = &
+-E_y\left[\frac{d^2}{d\theta^2} \log p(y|\theta)\right] \\
+&= -\frac{E_y[y]-1}{(1-\theta)^2} - \frac{1}{\theta^2} \\
+&= \frac{\frac{1}{\theta}-1}{(1-\theta)^2} +\frac{1}{\theta^2} \\
+&= \theta^{-2}(1-\theta)^{-1} \\
+p(\theta) &\propto \sqrt{\mathcal{I}(\theta)} = \theta^{-1}(1-\theta)^{-1/2}
+\end{align*} 
+as this would be a $Be(0,1/2)$ it is not proper.
+} \vfill \vfill \vfill \vfill
+
+% \item Determine whether Jeffreys prior is proper. (2 pts)
+% 
+% \answer{
+% $\theta^{-1}(1-\theta)^{-1/2}$ is the kernel of a Be(0,1/2) and is thus Jeffreys prior is improper.
+% } \vfill 
+
+% \item Derive the posterior under Jeffreys prior with a single observation $y$ and determine when it is proper. (10 pts)
+% 
+% \answer{
+% \begin{align*}
+% p(\theta|y) &\propto p(y|\theta)p(\theta) \\
+% &= (1-\theta)^{y-1} \theta \theta^{-1}(1-\theta)^{-1/2} \\
+% &= \theta^{1-1} (1-\theta)^{y-\frac{1}{2}-1} 
+% \end{align*}
+% This is the kernel of a Be(1,y-1/2) and is thus always proper since $y\ge 1$. 
+% } \vfill
+
+\item Derive the posterior under Jeffreys prior with $n$ independent observations $(y_1,\ldots,y_n)$ and determine when it is proper. (10 pts)
+
+\answer{
+\begin{align*}
+p(\theta|y) &\propto p(y|\theta)p(\theta) \\
+&= \left[ \prod_{i=1}^n (1-\theta)^{y-1} \theta \right] \theta^{-1}(1-\theta)^{-1/2} \\
+&= \theta^{n-1} (1-\theta)^{n(\overline{y}-1)+\frac{1}{2}-1} 
+\end{align*}
+This is the kernel of a $Be(n,n(\overline{y}-1)+1/2)$ which is proper so long as $n>0$ since $\overline{y}\ge 1$. 
+} \vfill \vfill \vfill
+
+\newpage
+\item Derive the posterior predictive mass function for a new single observation $\tilde{y}\sim Geo(\theta)$, conditionally independent of the previous observations. Make sure to indicate the support. (10 pts)
+
+\answer{
+The support is $\tilde{y}\in\{1,2,3,\ldots\}$. 
+\begin{align*}
+p(\tilde{y}|y) & \int p(\tilde{y}|\theta)p(\theta|y) d\theta\\
+&=\int (1-\theta)^{\tilde{y}-1} \theta \frac{\theta^{n-1} (1-\theta)^{n(\overline{y}-1)+\frac{1}{2}-1}}{B(n,n(\overline{y}-1)+1/2)} d\theta \\
+&= \frac{1}{B(n,n(\overline{y}-1)+1/2)}  \int \theta^{n+1-1} (1-\theta)^{n(\overline{y}-1)+\tilde{y}-\frac{1}{2}-1} d\theta \\
+&= \frac{B(n+1,n(\overline{y}-1)+\tilde{y}-1/2)}{B(n,n(\overline{y}-1)+1/2)} 
+\end{align*}
+where 
+\[ \frac{1}{B(\alpha,\beta)} = \frac{\mathrm{\Gamma}(\alpha+\beta)}{\mathrm{\Gamma}(\alpha)\mathrm{\Gamma}(\beta)}\]
+This is the beta negative binomial distribution.
+} \vfill
+
+\item Based on the data $y=(y_1,\ldots,y_n)$, describe a procedure to simulate $K$ replicate data sets %$y^{rep,k}=(y_1^{rep,k},\ldots,y_n^{rep,k})$ 
+to be used in a posterior predictive check. (10 pts)
+
+\answer{
+Note that 
+\[ p(y^{rep}|y) = \int \left[ \prod_{i=1}^n p(y_i^{rep}|\theta) \right] p(\theta|y) d\theta \]
+
+So the following is a an appropriate procedure:
+\begin{enumerate}[1.]
+\item For $k=1,\ldots,K$, 
+  \begin{enumerate}[a.]
+  \item Simulate $\theta^{(k)} \sim p(\theta|y)$, if we use Jeffreys prior, it is $Be(n,n(\overline{y}-1)+1/2)$. 
+  \item For $i=1,\ldots,n$, simulate $\tilde{y}_i^{(k)} \sim Geo\left(\theta^{(k)}\right)$. 
+  \end{enumerate}
+\end{enumerate}
+} \vfill
+
+\end{enumerate}
+
+
+
+\newpage
+\item For the following questions, please refer to the two pages on ``Stan''. 
+
+\begin{enumerate}
+\item Using statistical notation, write down model 1. (5 pts)
+
+\answer{
+\[ Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2), \, i=1,\ldots,n  \qquad p(\mu,\sigma^2) \propto IG(\sigma^2;1,1)  \]
+} \vfill \vfill
+
+\item Using statistical notation, write down model 2. (5 pts)
+
+\answer{
+\[ Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2), \, i=1,\ldots,n \qquad p(\mu,\sigma) \propto Ca^+(\sigma;0,1)  \]
+} \vfill \vfill
+
+\item Provide a 95\% credible interval for the data mean and standard deviation from model 1. (5 pts)
+
+\begin{itemize}
+\item mean \answer{ (0.69, 1.29)  } \vfill
+\item standard deviation \answer{ (0.31,0.71)  } \vfill
+\end{itemize}
+
+\item Provide a 95\% credible interval for the data mean and standard deviation from model 2. (5 pts)
+
+\begin{itemize}
+\item mean \answer{ (0.93,1.04)  } \vfill
+\item standard deviation \answer{ (0.05,0.14)   } \vfill
+\end{itemize}
+
+
+\newpage
+\item Which prior for the standard deviation is more reasonable and why? (5 pts)
+
+\answer{
+The inverse gamma distribution has a region near zero that has extremely low density. This is causing severe bias in estimation for $\sigma$ in model 1 and thus model 2 is preferred. 
+} \vfill
+
+\item Derive the conditional posterior for the mean given the standard deviation, i.e. $p(\mu|\sigma,y)$ where $y=(y_1,\ldots,y_n)$. Name the distribution family and its parameters. (10 pts)
+
+\answer{
+This is just normal data with an unknown mean but known variance.
+\begin{align*}
+p(\mu|\sigma,y) &= \left[ \prod_{i=1}^n N(y_i|\mu,\sigma^2) \right] \times 1 \\
+&\propto \exp\left( -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-\mu)^2 \right) \\
+&= \exp\left( -\frac{1}{2\sigma^2} \left[n\mu^2-2\mu n\overline{y} \right] \right) \\
+&= \exp\left( -\frac{1}{2\sigma^2/n} \left[\mu^2-2\mu \overline{y} \right] \right) 
+\end{align*}
+This is the kernel of a normal distribution with mean $\overline{y}$ and variance $\sigma^2/n$, thus $\mu|\sigma^2,y \sim N(\overline{y},\sigma^2/n)$. 
+} \vfill \vfill
+
+\item Based on this conditional posterior, explain why the credible interval for the mean in model 1 is so much wider than in model 2. (5 pts)
+
+\answer{
+In model 1, $\sigma$ is estimated to be much larger than in model 2. Thus the credible interval for $\mu$, which is $\overline{y} \pm 1.96 \sigma^2/n$ (if $\sigma^2$ were known), will be wider. (Of course, the marginal uncertainty for $\mu$ will incorporate the uncertainty in $\sigma$. But the uncertainty in $\sigma$ is small compared with the estimation bias.)
+} \vfill
+
+\end{enumerate}
+
+
+\end{enumerate}
+
+\newpage
+\appendix
+\section{Stan}
+
+<<stan setup, cache=TRUE, echo=FALSE, message=FALSE>>=
+library(rstan)
+n = 10
+mu = 1
+sigma = .1
+y = rnorm(n, mu, sigma)
+@
+
+<<stan models, cache=TRUE, results='hide', size='small'>>=
+model1 = "
+data {
+  int<lower=1> n;
+  real y[n];
+}
+parameters {
+  real mu;
+  real<lower=0> tau;
+}
+transformed parameters {
+  real<lower=0> sigma;
+  sigma <- 1/sqrt(tau);
+}
+model {
+  tau ~ gamma(1,1);
+  y ~ normal(mu,sigma);
+}
+"
+
+model2 = "
+data {
+  int<lower=1> n;
+  real y[n];
+}
+parameters {
+  real mu;
+  real<lower=0> sigma;
+}
+model {
+  sigma ~ cauchy(0,1);
+  y ~ normal(mu,sigma);
+}
+"
+
+m1 = stan_model(model_code="model1")
+m2 = stan_model(model_code="model2")
+@
+
+\newpage
+Stan (continued)
+
+<<stan runs, cache=TRUE, dependson=c("stan setup", "stan models"), results='hide'>>=
+dat = list(n=length(y), y=y)
+
+r1 = sampling(m1, dat, c("mu","sigma"), seed=1)
+r2 = sampling(m2, dat, c("mu","sigma"), seed=1)
+@
+
+<<dependson="stan runs">>=
+r1
+r2
+@
+
+\newpage
+\section{Distributions}
+
+The table below provides the details of some common distributions. In all cases, the random variable is $\theta$. 
+
+\[ \begin{array}{l|l|l}
+\mbox{Distribution} & \mbox{Density or mass function} & \mbox{Moments} \\
+\hline
+\theta \sim N(\mu,\sigma^2) & \frac{1}{\sqrt{2\pi\sigma^2}}\exp\left( -\frac{1}{2\sigma^2}(\theta-\mu)^2 \right) & E[\theta] = \mu\\
+&& V[\theta]=\sigma^2 \\
+\theta \sim Ga(\alpha,\beta) & \frac{\beta^\alpha}{\mathrm{\Gamma}(\alpha)} \theta^{\alpha-1} e^{-\beta\theta}, \theta>0 & E[\theta] = \alpha/\beta \\
+&&V[\theta] = \alpha/\beta^2 \\
+\theta \sim IG(\alpha,\beta) & \frac{\beta^\alpha}{\mathrm{\Gamma}(\alpha)} \theta^{-(\alpha+1)} e^{-\beta/\theta}, \theta>0 & E[\theta] = \beta/(\alpha-1), \alpha>1 \\
+&& V[\theta] = \beta^2/[(\alpha-1)^2(\alpha-2)], \alpha>2 \\
+\theta \sim Be(\alpha,\beta) & \frac{\mathrm{\Gamma}(\alpha+\beta)}{\mathrm{\Gamma}(\alpha)\mathrm{\Gamma}(\beta)} \theta^{\alpha-1}(1-\theta)^{\beta-1}, 0<\theta<1 & E[\theta] = \alpha/(\alpha+\beta) \\
+&& V[\theta] = \alpha\beta/[(\alpha+\beta)^2(\alpha+\beta+1)]   \\
+\theta \sim t_\nu(\mu,\sigma^2) & \frac{\mathrm{\Gamma}([\nu+1]/2)}{\mathrm{\Gamma}(\nu/2)} \left( 1+ \frac{1}{\nu}\left[ \frac{\theta-\mu}{\sigma} \right]^2\right)^{-(\nu+1)/2} & E[\theta]=\mu, \nu>1 \\
+&& V[\theta] = \frac{\nu}{\nu-2}\sigma^2, \nu>2 \\
+\hline
+\theta \sim Geo(\pi) & (1-\pi)^{\theta-1}\pi,\theta\in\{1,2,3,\ldots\} & E[\theta] = 1/\pi\\
+&&V[\theta] = (1-\pi)/\pi^2 \\
+\hline
+\end{array} \]
+
+\newpage
+(intentionally left blank)
+
+\end{document}
+
