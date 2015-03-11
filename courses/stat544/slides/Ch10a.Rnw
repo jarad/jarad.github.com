@@ -231,67 +231,103 @@ post_expectation(1)
 
 
 
-% \subsection{Inverse CDF method}
-% \frame{\frametitle{Inverse cumulative distribution function}
-%   \begin{definition}
-% 	The \alert{cumulative distribution function} of a random variable $X$ is defined by 
-% 	\[ F_X(x) = P_X(X\le x) \qquad\mbox{for all }x. \]
-% 	\end{definition}
-% 	\pause e.g. $X\sim Exp(1)$, then $F_X(x) = \int_0^x e^{-a} da = 1-e^{-x}$.
-% 	
-% 	\vspace{0.2in} \pause
-% 	
-% 	\begin{definition}
-% 	For any non-decreasing function F on $\mathbb{R}$, \pause the \alert{generalized inverse of $F$}, $F^{-}$, is the function defined by 
-% 	\[ F^-(u) = \inf\{x: F(x)\ge u\}. \]
-% 	\end{definition}
-% 	\pause e.g. $F^-(u) = -\log(1-u)$ for the exponential example.
-% }
-% 
-% \frame{\frametitle{Inverse CDF method}
-% 	Suppose you want to sample $X\sim f(x)$ and you have access to the inverse cdf of X, $F^-$, then 
-% 	\begin{lemma}
-% 	If $U\sim Unif(0,1)$, then $X=F^-(U)$ is a simulation from $f(x)$. 
-% 	\end{lemma}
-% 	
-% 	\vspace{0.2in} \pause
-% 	
-% 	For example, to sample $X\sim Exp(1)$, 
-% 	\begin{enumerate}[\,1.]
-% 	\item Sample $U\sim Unif(0,1)$.
-% 	\item Set $X = -\log(1-U)$, or $X=-\log(U)$.  
-% 	\end{enumerate}
-% }
-% 
-% \begin{frame}[fragile]
-% $X \sim Exp(1)$
-% <<exponential, message=FALSE, fig.width=8>>=
-% n.reps = 1e4
-% d = data.frame(x = -log(runif(n.reps)))
-% ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dexp, color="red")
-% @
-% \end{frame}
-% 
-% \frame{\frametitle{Sampling from a univariate truncated normal}
-% 	Suppose you wish to sample from $X\sim N(\mu,\sigma^2)\mathrm{I}(a<X<b)$, i.e. a normal random variable with (untruncated) mean $\mu$ and variance $\sigma^2$, but truncated to the interval $(a,b)$. \pause Let $\mathrm{\Phi}$ be the standard normal cdf. \pause 
-% 	
-% 	\begin{enumerate}[\,1.]
-% 	\item Calculate endpoints $p_a = \mathrm{\Phi}([a-\mu]/\sigma)$ and $p_b = \mathrm{\Phi}([b-\mu]/\sigma)$. \pause
-% 	\item Sample $U\sim Unif(p_a,p_b)$. \pause
-% 	\item Set $X=\sigma \mathrm{\Phi}^{-}(U) + \mu$. \pause
-% 	\end{enumerate}	
-% }
-% 
-% \begin{frame}[fragile]
-% $X\sim N(5,9)\mathrm{I}(1\le X \le 6)$
-% <<truncated_normal, message=FALSE, fig.width=8>>=
-% d = data.frame(x= 5+3*qnorm(runif(n.reps, pnorm((1-5)/3), pnorm((6-5)/3))))
-% dtnorm = function(x,mu=5,sigma=3,a=1,b=6) {
-%   dnorm(x,mu,sigma)/diff(pnorm(c(a,b),mu,sigma))
-% } 
-% ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dtnorm, color="red")
-% @
-% \end{frame}
+\subsection{Inverse CDF method}
+\frame{\frametitle{Inverse cumulative distribution function}
+  \begin{definition}
+	The \alert{cumulative distribution function} of a random variable $X$ is defined by 
+	\[ F_X(x) = P_X(X\le x) \qquad\mbox{for all }x. \]
+	\end{definition}
+	
+	\vspace{0.2in} \pause
+	
+  Suppose you want to sample $X\sim f(x)$ and you have access to the inverse cdf of X, $F^{-1}(x)$, then 
+	\begin{lemma}
+	If $U\sim Unif(0,1)$, then $X=F^{-1}(U)$ is a simulation from $f(x)$. 	\end{lemma}
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Inverse CDF}
+<<>>=
+curve(pnorm, -3, 3, lwd=2, main="Standard normal CDF")
+
+plot_arrows = function(u, ...) {
+  arrows(-100, u, qnorm(u,...), u, col='blue')
+  arrows(qnorm(u,...), u, qnorm(u,...), 0, col='blue') 
+}
+
+for (u in c(.1,.95)) plot_arrows(u)
+
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Exponential example}
+	For example, to sample $X\sim Exp(1)$, 
+	\begin{enumerate}
+	\item Sample $U\sim Unif(0,1)$. \pause
+	\item Set $X = -\log(1-U)$, \pause or $X=-\log(U)$.  
+	\end{enumerate}
+
+\pause
+
+<<exponential, message=FALSE, fig.width=8>>=
+n.reps = 1e4
+d = data.frame(x = -log(runif(n.reps)))
+ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dexp, color="red")
+@
+\end{frame}
+
+
+
+\frame{\frametitle{Sampling from a univariate truncated distribution}
+	Suppose you wish to sample from $X\sim N(\mu,\sigma^2)\mathrm{I}(a<X<b)$, i.e. a normal random variable with untruncated mean $\mu$ and variance $\sigma^2$, but truncated to the interval $(a,b)$. \pause Suppose the untruncated cdf is $F$ and inverse cdf is $F^{-1}$.  \pause 
+	
+	\begin{enumerate}[\,1.]
+	\item Calculate endpoints $p_a = F(a)$ and $p_b = F(b)$. \pause
+	\item Sample $U\sim Unif(p_a,p_b)$. \pause
+	\item Set $X=\mathrm{F}^{-1}(U)$. \pause
+	\end{enumerate}	
+  
+  \vspace{0.2in} \pause
+  
+  This just avoids having to recalculate the normalizing constant for the pdf, i.e. $1/(F^{-1}(b)-F^{-1}(a))$, which rescales 
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Normal}
+$X\sim N(5,9)\mathrm{I}(1\le X \le 6)$
+<<>>=
+mean = 5; sd = 9
+curve(pnorm(x,mean,sd), mean-2*sd, mean+2*sd, lwd=2, main="N(5,9^2) cdf")
+
+plot_segments = function(e) {
+  pe = pnorm(e, mean, sd)
+  segments(-100, pe, e, pe, col='red')
+  segments(e, pe, e, 0, col='red') 
+}
+
+for (endpoint in c(1,6)) plot_segments(endpoint)
+plot_arrows(.5, mean=mean, sd=sd)
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+$X\sim N(5,9)\mathrm{I}(1\le X \le 6)$
+<<truncated_normal, message=FALSE, fig.width=8>>=
+d = data.frame(x= 5+3*qnorm(runif(n.reps, pnorm((1-5)/3), pnorm((6-5)/3))))
+dtnorm = function(x,mu=5,sigma=3,a=1,b=6) {
+  dnorm(x,mu,sigma)/diff(pnorm(c(a,b),mu,sigma))
+} 
+ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dtnorm, color="red")
+@
+\end{frame}
 
 
 
@@ -395,239 +431,5 @@ cat("Acceptance rate was",mean(d$accept))
   Bottom line: the condition $M\, g(\theta)\ge p(\theta|y)$ requires the proposal to have tails at least as thick (heavy) as the target.
 }
 
-
-\subsection{Importance sampling}
-\frame{\frametitle{Importance sampling}
-  Notice that 
-  \[ E[h(\theta)|y] = \int h(\theta) p(\theta|y) d\theta \pause = \int h(\theta) \frac{p(\theta|y)}{g(\theta)} g(\theta) d\theta \]
-  \pause where $g(\theta)$ is a proposal distribution\pause, so that we approximate the expectation via 
-  \[ E[h(\theta)|y] \approx \frac{1}{S} \sum_{s=1}^S w\left(\theta^{(s)}\right) h\left(\theta^{(s)}\right) \]
-  \pause where $\theta^{(s)} \stackrel{iid}{\sim} g(\theta)$ \pause and 
-  \[ w\left(\theta^{(s)}\right) = \frac{p\left(\left.\theta^{(s)}\right|y\right)}{g(\theta^{(s)})} \]
-  \pause is known as the importance weight. 
-}
-
-\frame{\frametitle{Importance sampling}
-  If the target distribution is known only up to a proportionality constant, then 
-  \[ E[h(\theta)|y] = \frac{\int h(\theta) q(\theta|y) d\theta}{\int q(\theta|y) d\theta} \pause = \frac{\int h(\theta) \frac{q(\theta|y)}{g(\theta)} g(\theta) d\theta}{\int \frac{q(\theta|y)}{g(\theta)} g(\theta) d\theta} \]
-  \pause where $g(\theta)$ is a proposal distribution\pause, so that we approximate the expectation via 
-  \[ E[h(\theta)|y] \approx \frac{\frac{1}{S} \sum_{s=1}^S w\left(\theta^{(s)}\right) h\left(\theta^{(s)}\right)}{\frac{1}{S} \sum_{s=1}^S w\left(\theta^{(s)}\right)} = \sum_{s=1}^S \tilde{w}\left(\theta^{(s)}\right) h\left(\theta^{(s)}\right) \]
-  \pause where $\theta^{(s)} \stackrel{iid}{\sim} g(\theta)$ and 
-  \[ \tilde{w}\left(\theta^{(s)}\right) = \frac{w\left(\theta^{(s)}\right)}{\sum_{j=1}^S w(\theta^j)} \]
-  \pause is the \alert{normalized} importance weight. 
-}
-
-\begin{frame}
-\frametitle{Example: Normal-Cauchy model}
-  If $Y \sim N(\theta,1)$ and $\theta\sim Ca(0,1)$, then 
-  \[ p(\theta|y) \propto e^{-(y-\theta)^2/2} \frac{1}{(1+\theta^2)} \]
-  for all $\theta$. 
-  
-  \vspace{0.2in} \pause 
-  
-  If we choose a $N(y,1)$ proposal, we have
-  \[ g(\theta)=\frac{1}{\sqrt{2\pi}}  e^{-(\theta-y)^2/2} \]
-  \pause with 
-  \[ w(\theta) = \frac{q(\theta|y)}{g(\theta)} = \frac{\sqrt{2\pi}}{(1+\theta^2)} \]
-
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Normalized importance weights}
-<<importance_sampling, fig.width=8>>=
-y = 1
-n = 1000
-theta = rnorm(n, y)
-weight = exp(q(theta,y,log=TRUE)-g(theta,y,log=TRUE))
-qplot(x=theta,y=weight/sum(weight)) +
-  geom_point() +
-  labs(y="Normalized importance weight", x = expression(theta))
-@
-\end{frame}
-
-\begin{frame}[fragile]
-<<importance_sampling_mean, message=FALSE, fig.width=8, echo=TRUE>>=
-library(weights)
-sum(weight*theta/sum(weight)) # Estimate mean
-wtd.hist(theta, 100, prob=TRUE, weight=weight)
-curve(q(x,y)/py(y), add=TRUE, col="red", lwd=2)
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Resampling}
-If an unweighted sample is desired, sample $\theta^{(s)}$ with replacement with probability equal to the normalized weights, $\tilde{w}\left(\theta^{(s)}\right)$.
-
-<<resampling, warning=FALSE, echo=TRUE, fig.width=8>>=
-# resampling
-new_theta = sample(theta, replace=TRUE, prob=weight) # internally normalized
-hist(new_theta, 100, prob=TRUE, main="Unweighted histogram of resampled draws"); curve(q(x,y)/py(y), add=TRUE, col="red", lwd=2)
-@
-
-
-
-\end{frame}
-
-
-\frame{\frametitle{Heavy-tailed proposals}
-  Although any proposal can be used for importance sampling, only proposals with heavy tails relative to the target will be efficient. 
-  
-  \vspace{0.2in} \pause
-  
-  For example, suppose our target is a standard Cauchy and our proposal is a standard normal, the weights are 
-  \[ w\left(\theta^{(s)}\right) = \frac{p\left(\left.\theta^{(s)}\right|y\right)}{g(\theta^{(s)})} = \frac{\frac{1}{\pi(1+\theta^2)}}{\frac{1}{\sqrt{2\pi}}e^{-\theta^2/2}} \]
-  For $\theta^{(s)}\stackrel{iid}{\sim} N(0,1)$, the weights for the largest $|\theta^{(s)}|$ will dominate the others.
-}
-
-\begin{frame}[fragile]
-\frametitle{Importance weights for proposal with thin tails}
-<<importance_sampling_weights, fig.width=8>>=
-set.seed(16)
-theta = rnorm(1000)
-weight = dcauchy(theta)/dnorm(theta)
-weight = weight/sum(weight)
-whmax = which.max(weight)
-qplot(theta,weight/sum(weight),geom="point") + 
-  ylim(0,max(weight)) + 
-  xlim(-theta[whmax],theta[whmax]) + 
-  labs(x=expression(theta), y="Normalized importance weight")
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Effective sample size}
-We can get a measure of how efficient the sample is by computing the effective sample size, i.e. how many independent unweighted draws do we effectively have:
-\[ S_{eff} = \frac{1}{\sum_{s=1}^S (\tilde{w}\left(\theta^{(s)}\right))^2} \]
-<<effective_size, echo=TRUE>>=
-length(weight)
-1/sum(weight^2)
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Effective sample size}
-<<cumulative_effective_size, fig.width=12, cache=TRUE, echo=TRUE>>=
-set.seed(5)
-theta = rnorm(1e4)
-lweight = dcauchy(theta,log=TRUE)-dnorm(theta,log=TRUE)
-cumulative_ess = length(lweight)
-for (i in 1:length(lweight)) {
-  lw = lweight[1:i]
-  w = exp(lw-max(lw))
-  w = w/sum(w)
-  cumulative_ess[i] = 1/sum(w^2)
-}
-qplot(x=1:length(cumulative_ess), y=cumulative_ess, geom="line") + 
-  labs(x="Number of samples", y="Effective sample size")
-@
-\end{frame}
-
-
-
-% \begin{frame}[fragile]
-% \frametitle{The idea}
-% <<accept_reject, eval=FALSE>>=
-% f = function(x) dnorm(x)/(1-pnorm(5))
-% q = function(x) dexp(x-5)
-% M = f(5)/q(5)
-% 
-% plot.pt = function(x) {
-%   u = runif(length(x))
-%   points(x,u*M*q(x), 
-%          pch=ifelse(M*q(x)*u<f(x), 19, 4),
-%          col=ifelse(M*q(x)*u<f(x), "red", "blue"))
-% }
-% 
-% par(mfrow=c(1,2), mar=c(5,4,4,2)+0.1)
-% curve(M*dexp(x-5), 5, 6, col="blue", lwd=2, xlab="x", ylab="u*M*q(x)", ylim=c(0,M), main=paste("M=",round(M,2)))
-% curve(f, col="red",lwd=2, add=T)
-% legend("topright",c("f(x)","M*q(x)"), col=c("red","blue"), lwd=2)
-% plot.pt(5+qexp(runif(1e2,0,pexp(1))))
-% 
-% 
-% 
-% M = f(5)/q(5)*10
-% 
-% plot.pt = function(x) {
-%   u = runif(length(x))
-%   points(x,u*M*q(x), 
-%          pch=ifelse(M*q(x)*u<f(x), 19, 4),
-%          col=ifelse(M*q(x)*u<f(x), "red", "blue"))
-% }
-% 
-% curve(M*dexp(x-5), 5, 6, col="blue", lwd=2, xlab="x", ylab="u*M*q(x)", ylim=c(0,M), main=paste("M=",round(M,2)))
-% curve(f, col="red",lwd=2, add=T)
-% legend("topright",c("f(x)","M*q(x)"), col=c("red","blue"), lwd=2)
-% plot.pt(5+qexp(runif(1e2,0,pexp(1))))
-% @
-% \end{frame}
-% 
-% \begin{frame}[fragile]
-% \frametitle{The idea}
-% <<accept_reject_plot, echo=FALSE>>=
-% <<accept_reject>>
-% @
-% \end{frame}
-% 
-% \frame{\frametitle{Simulating extreme events}
-% 	Suppose you are interested in simulating $X\sim N(0,1)\mathrm{I}(X>5)$. \pause We know that 
-%  	\[ f(x) = \frac{\frac{1}{\sqrt{2\pi}} \exp(-x^2/2)}{1-\mathrm{\Phi}(5)}. \]
-% 	\pause We can use a shifted exponential distribution as a proposal, i.e. $X^* = 5+Y$ where $Y\sim Exp(1)$. \pause We calculate
-% 	{\small
-% 	\[ M = \sup_x \frac{f(x)}{q(x)} \pause = \frac{\frac{1}{\sqrt{2\pi}}}{1-\mathrm{\Phi}(5)} \sup_x \frac{\exp(-x^2/2)}{\exp(-[x-5])} \pause = \frac{\frac{1}{\sqrt{2\pi}}}{1-\mathrm{\Phi}(5)} \exp(-5^2/2) \pause \approx 5.19 \]
-% 	}
-% }
-% 
-% \begin{frame}[fragile]
-% <<accept_reject2, eval=FALSE>>=
-% M = f(5)/q(5)
-% ar = function() {
-%   x = 0
-%   while(x<5) {
-%     u = runif(1)
-%     x = rexp(1)
-%     x = ifelse(u<f(x)/(M*q(x)), x, 0)
-%   }
-%   return(x)
-% }
-% 
-% r = rdply(1e3, ar)
-% ggplot(r, aes(x=V1))+
-%   geom_histogram(aes(y=..density..), binwidth=.05)+
-%   stat_function(fun=f, col="red")+
-%   stat_function(fun=function(x) M*dexp(x-5), col="blue")
-% @
-% \end{frame}
-% 
-% \begin{frame}[fragile]
-% <<accept_reject2_plot, echo=FALSE, cache=TRUE>>=
-% <<accept_reject2>>
-% @
-% \end{frame}
-% 
-% \frame{\frametitle{Unknown normalizing constant}
-% 	Suppose you are interested in simulating $X\sim N(0,1)\mathrm{I}(X>5)$. \pause We know that 
-% 	\[ f(x)\propto f_2(x) = \exp(-x^2/2). \]
-% 	\pause We calculate
-% 	\[ M_2 = \sup_x \frac{f_2(x)}{q(x)} \pause = \sup_x \frac{\exp(-x^2/2)}{\exp(-[x-5])} \pause= \exp(-5^2/2) \pause \approx 3.73\times 10^{-6}  \]
-%   \pause We can still draw $X^*\sim q(x)$ and accept with probability $f_2(x)/M_2 q(x)$ \pause since
-% 	\[ M = \frac{\frac{1}{\sqrt{2\pi}}}{1-\mathrm{\Phi}(5)} M_2 \pause \implies \frac{f_2(x)}{M_2} = \frac{f(x)}{M}  \] 
-% 	for all $x$. \pause But $M_2$ does not relate to the acceptance probability.
-% }
-% 
-% \section{Summary}
-% \frame{\frametitle{Summary}
-% 	The accept-reject method is a way of obtaining samples from $f(x)$ \pause when
-% 	\begin{itemize}
-% 	\item the inverse cdf cannot be computed \pause or is expensive to compute \pause and
-% 	\item when $f(x)$ can be evaluated at least up to a normalizing constant. \pause 
-% 	\end{itemize}
-% 	Based on 
-% 	\begin{itemize}
-% 	\item a draw from a proposal $q(x)$, \pause 
-% 	\item a constant $M$ such that $f(x) \le M q(x)$\pause, and
-% 	\item a uniform draw.
-% 	\end{itemize}
-% }
 
 \end{document}
