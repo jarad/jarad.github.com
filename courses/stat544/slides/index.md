@@ -33,3 +33,5 @@ To extract the R code, run
 - [Chapter 07b](Ch07b.Rnw)
 - [Chapter AmazonReviews](AmazonReviews.Rnw)
 - [Midterm Review](midterm_review.Rnw)
+- [Chapter 10a](Ch10a.Rnw)
+- [Chapter 10b](Ch10b.Rnw)
