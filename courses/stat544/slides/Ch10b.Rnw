@@ -1,21 +1,18 @@
 \documentclass[handout]{beamer}
 
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
 
-\usecolortheme[RGB={0,0,144}]{structure}
-\usetheme{AnnArbor}\usecolortheme{beaver}
-%\usetheme{CambridgeUS}\usecolortheme{crane}
-
-\usepackage{verbatim,xmpmulti,color,multicol,multirow}
 \setlength{\unitlength}{\textwidth}  % measure in textwidths
 \usepackage[normalem]{ulem}
 
-%\usepackage{beamerthemesplit}
 \setbeamertemplate{navigation symbols}{}
-%\setbeamercolor{alerted text}{fg=red}
-%\setbeamertemplate{block body theorem}{bg=orange}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
 \setkeys{Gin}{width=0.6\textwidth}
 
-\title{Introduction to Bayesian computation}
+\title{Bayesian hypothesis testing (cont.)}
 \author[Jarad Niemi]{Dr. Jarad Niemi}
 \institute[Iowa State]{Iowa State University}
 \date{\today}
@@ -58,7 +55,6 @@ set.seed(1)
 
 Bayesian computation
 \begin{itemize}
-\item Goal: $p(y) = \int p(y|\theta)p(\theta) d\theta$ or $E[h(\theta)|y] = \int h(\theta) p(\theta|y) d\theta$. 
 \item Adaptive rejection sampling
 \item Importance sampling
 \end{itemize}
@@ -116,24 +112,61 @@ Adaptive rejection sampling can be used for distributions with log-concave densi
 \vspace{0.2in}
 
 <<fig.width=10>>=
-opar = par(mar=rep(0,4)+.1)
-curve(dnorm(x, log=T), -4, 4, lwd=2, axes=F, frame=T, ylim=c(-10,0))
+opar = par(mar=c(0,0,4,0)+.1, mfrow=c(1,2))
+curve(dnorm(x, log=T), -4, 4, lwd=2, axes=F, frame=T, ylim=c(-10,0),
+      main="log density")
 deriv = function(x) -x
 
 points = c(-2,.1,1.5)
-for (p in points) abline(dnorm(p,log=T)-deriv(p)*p, deriv(p), lty=2)
+xx = seq(-4, 4, by=.1)
+for (p in points) {
+  yy = deriv(p)*xx + dnorm(p,log=T)-deriv(p)*p
+  lines(xx, yy, lty=2)
+  #abline(dnorm(p,log=T)-deriv(p)*p, deriv(p), lty=2)
+}
+
+curve(dnorm(x), -4, 4, lwd=2, axes=F, frame=T, main="density", ylim=c(0,.5))
+for (p in points) {
+  yy = deriv(p)*xx + dnorm(p,log=T)-deriv(p)*p
+  lines(xx, exp(yy), lty=2)
+  #abline(dnorm(p,log=T)-deriv(p)*p, deriv(p), lty=2)
+}
 par(opar)
 @
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Adaptive rejection sampling}
 
+Pseudo-algorithm for adaptive rejection sampling:
+\begin{enumerate}[<+->]
+\item Choose starting locations $\theta$, call the set $\mathcal{\Theta}$
+\item Construct piece-wise linear envelope $\log g(\theta)$ to the log-density
+  \begin{enumerate}
+  \item Calculate $\log q(\theta|y)$ and $(\log q(\theta|y))'$.
+  \item Find line intersections
+  \end{enumerate}
+\item Sample a proposed value $\theta^*$ from the envelope $g(\theta)$
+  \begin{enumerate}
+  \item Sample an interval
+  \item Sample a truncated (and possibly negative of an) exponential r.v.
+  \end{enumerate}
+\item Perform rejection sampling
+  \begin{enumerate}
+  \item Sample $u \sim Unif(0,1)$
+  \item Accept if $u\le q(\theta^*|y)/g(\theta^*)$.
+  \end{enumerate}
+\item If rejected, add $\theta^*$ to $\Theta$ and return to 2. 
+\end{enumerate}
+
+\end{frame}
 
 
 \begin{frame}
 \frametitle{Updating the envelope}
 
-As values are propose and rejected, the envelop gets updated:
+As values are proposed and rejected, the envelope gets updated:
 
 \vspace{0.2in}
 
@@ -169,16 +202,29 @@ curve(dnorm, type='l', add=T)
 
 
 
-% \begin{frame}
-% \frametitle{Adaptive rejection sampling summary}
-% 
-% 
-% 
-% \end{frame}
+\begin{frame}
+\frametitle{Adaptive rejection sampling summary}
+
+\begin{itemize}
+\item Can be used with log-concave densities
+\item Makes rejection sampling efficient by updating the envelope
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+There is a vast literature on adaptive rejection sampling. \pause To improve upon the basic idea presented here you can 
+\begin{itemize}
+\item include a lower bound 
+\item avoid calculating derivatives
+\item incorporate a Metropolis step to deal with non-log-concave densitis
+\end{itemize}
+
+\end{frame}
 
 
 
 \subsection{Importance sampling}
+
 \frame{\frametitle{Importance sampling}
   Notice that 
   \[ E[h(\theta)|y] = \int h(\theta) p(\theta|y) d\theta \pause = \int h(\theta) \frac{p(\theta|y)}{g(\theta)} g(\theta) d\theta \]
@@ -217,6 +263,14 @@ curve(dnorm, type='l', add=T)
 \begin{frame}[fragile]
 \frametitle{Normalized importance weights}
 <<importance_sampling, fig.width=8>>=
+# Taken from Ch10a
+q = function(theta,y,log=FALSE) {
+  out = -(y-theta)^2/2-log(1+theta^2)
+  if (log) return(out)
+  return(exp(out))
+}
+g = function(theta,y,log=FALSE) dnorm(theta,y,log=log)
+
 y = 1
 n = 1000
 theta = rnorm(n, y)
