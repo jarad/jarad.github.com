@@ -35,3 +35,5 @@ To extract the R code, run
 - [Midterm Review](midterm_review.Rnw)
 - [Chapter 10a](Ch10a.Rnw)
 - [Chapter 10b](Ch10b.Rnw)
+- [Chapter 11a](Ch11a.Rnw)
+
