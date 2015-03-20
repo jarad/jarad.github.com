@@ -57,7 +57,9 @@ set.seed(1)
 \item Independence proposal
 \item Random-walk proposal
   \begin{itemize}
-  \item Adapting
+  \item Optimal tuning parameter
+  \item Binomial example
+  \item Normal example
   \end{itemize}
 \end{itemize}
 
@@ -487,14 +489,129 @@ length(unique(theta))/n # acceptance rate
 
 \end{frame}
 
+
+
+
 \begin{frame}[fragile]
 \frametitle{Beta-binomial}
-
 <<beta_binomial_traceplot, fig.width=10>>=
 par(mfrow=c(1,2))
 plot(theta, type="l")
 hist(theta, prob=TRUE)
 curve(dbeta(x, 3.5,7.5), add=TRUE, col="red", lwd=2)
+@
+\end{frame}
+
+
+
+
+
+\subsection{Normal example}
+\begin{frame}
+\frametitle{Normal example}
+
+Assume
+\[ Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2) \qquad \mbox{and} \qquad p(\mu,\sigma) \propto Ca^+(\sigma; 0, 1) \]
+\pause and thus 
+\[ \begin{array}{rl}
+p(\mu,\sigma|y) &\propto 
+\left[ \prod_{i=1}^n \sigma^{-1} \exp\left( -\frac{1}{2\sigma^2} (y_i-\mu)^2 \right)\right] \frac{1}{1+\sigma^2} \mathrm{I}(\sigma>0)
+\pause \\
+&= \sigma^{-n} \exp\left( -\frac{1}{2\sigma^2} \left[ \sum_{i=1}^n y_i^2 -2\mu n\overline{y} + \mu^2 \right] \right) \frac{1}{1+\sigma^2} \mathrm{I}(\sigma>0)
+\end{array} \]
+
+\vspace{0.2in} \pause
+
+Perform a random-walk Metropolis using a normal proposal, i.e. if $\mu^t$ and $\sigma^t$ are the current values for $\mu$ and $\sigma$, then 
+\[ \left( \begin{array}{c} \mu^* \\ \sigma^*
+\end{array} \right) \sim N\left( \left[ \begin{array}{c} \mu^t \\ \sigma^t \end{array} \right], \mathrm\Sigma \right)
+\]
+where $\mathrm\Sigma$ is the tuning parameter.
+
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Adapting the tuning parameter}
+
+Recall that the optimal random-walk tuning parameter (if the posterior is normal) is $2.4^2 Var(\theta|y)/d$ \pause where $Var(\theta|y)$ is the unknown posterior covariance matrix. \pause We can estimate $Var(\theta|y)$ using the sample covariance matrix of draws from the posterior. 
+
+\vspace{0.2in} \pause 
+
+Proposed automatic adapting of the Metropolis-Hastings tuning parameter:
+\begin{enumerate}
+\item Start with $\mathrm\Sigma_0$. Set $b=0$.
+\item Run $M$ iterations of the MCMC using $2.4^2\mathrm\Sigma_b/d$. 
+\item Estimate $\mathrm\Sigma_{b+1}$ using the sample covariance matrix of all previous draws. 
+\item If $b<B$, set $b=b+1$ and return to step 2. 
+\item Run $K$ iterations of the MCMC using $2.4^2\mathrm\Sigma_B/d$ and throw away all previous draws.
+\end{enumerate}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code for adapting}
+
+<<echo=TRUE>>=
+n = 20
+y = rnorm(n)
+sum_y2 = sum(y^2)
+nybar  = mean(y)
+log_q = function(x) {
+  if (x[2]<0) return(-Inf)
+  -n*log(x[2])-(sum_y2-2*nybar*x[1]+x[1]^2)/(2*x[2]^2)-log(1+x[2]^2)
+}
+
+B = 10
+M = 100
+K = 10000
+
+samps = matrix(NA, nrow=B*M, ncol=2)
+a_rate = rep(NA, B)
+
+# Initialize
+Sigma = diag(2)
+current = c(0,1)
+
+# Adapt
+for (b in 1:B) {
+  for (m in 1:M) {
+    i = (b-1)*M+m
+    
+    proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
+    
+    logr = log_q(proposed) - log_q(current)
+    if (log(runif(1)) < logr) current = proposed
+    samps[i,] = current    
+  }
+  a_rate[b] = length(unique(samps[1:i,1]))/length(samps[1:i,1])
+  Sigma = var(samps[1:i,])
+}
+a_rate
+opar = par(mfrow=c(1,2))
+plot(samps[,1], type='l')
+plot(samps[,2], type='l')
+
+
+# Final run
+samps = matrix(NA, nrow=K, ncol=2)
+for (k in 1:K) {
+  proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
+    
+  logr = log_q(proposed) - log_q(current)
+  if (log(runif(1)) < logr) current = proposed
+  samps[k,] = current   
+}
+length(unique(na.omit(samps[,1])))/length(na.omit(samps[,1])) # acceptance rate
+
+
+opar = par(mfrow=c(1,2))
+plot(samps[,1], type='l')
+plot(samps[,2], type='l')
 @
 
 \end{frame}
