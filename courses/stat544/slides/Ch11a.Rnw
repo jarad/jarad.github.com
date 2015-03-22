@@ -36,11 +36,13 @@ opts_chunk$set(fig.width=6,
 options(width=100)
 @
 
-<<libraries, echo=FALSE, message=FALSE>>=
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
 library(reshape2)
 library(plyr)
 library(ggplot2)
 library(xtable)
+library(MASS)
+library(GGally)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -60,6 +62,7 @@ set.seed(1)
   \item Optimal tuning parameter
   \item Binomial example
   \item Normal example
+  \item Binomial hierarchical example
   \end{itemize}
 \end{itemize}
 
@@ -94,25 +97,23 @@ The Metropolis-Hastings algorithm performs the following \pause
 
 
 
-\begin{frame}
-\frametitle{Example}
-\footnotesize
-Let the state space be $\{0,1\}$ with target distribution $(2/3\,\,1/3)$ \pause and 
-\[ g = \bordermatrix{ & 0 & 1 \cr 0 & 0.5 & 0.5 \cr 1 & 0.3 & 0.7 } \]
-\pause and acceptance probability is $\min\{1,r\}$ \pause where 
-\[ r = \bordermatrix{ & 0 & 1 \cr 0 & 1 & \frac{1/3}{2/3} \frac{0.3}{0.5} \cr 1 & \frac{2/3}{1/3} \frac{0.5}{0.3} & 1 } \pause = \bordermatrix{ & 0 & 1 \cr 0 & 1 & 0.3 \cr 1 & 3.33 & 1 }  \]
-\pause Thus, the transition distribution is 
-\[\begin{array}{rlll}
-p &= p(\theta^{t+1}=1|\theta^t=0) \pause = p(\theta^*=1|\theta^t=0)p(\theta^*\mbox{ accepted}) &\pause= 0.5\times 0.3 &= 0.15 \pause \\
-q &= p(\theta^{t+1}=0|\theta^t=1) \pause = p(\theta^*=0|\theta^t=1)p(\theta^*\mbox{ accepted}) &\pause = 0.3\times 1 &\pause = 0.3
-\end{array} \]
-and the stationary distribution is $(0.3,0.15)/(0.3+0.15)=(2/3\,\,1/3)$. 
-\end{frame}
-
-
-
-
-
+% \begin{frame}
+% \frametitle{Example}
+% \footnotesize
+% Let the state space be $\{0,1\}$ with target distribution $(2/3\,\,1/3)$ \pause and 
+% \[ g = \bordermatrix{ & 0 & 1 \cr 0 & 0.5 & 0.5 \cr 1 & 0.3 & 0.7 } \]
+% \pause and acceptance probability is $\min\{1,r\}$ \pause where 
+% \[ r = \bordermatrix{ & 0 & 1 \cr 0 & 1 & \frac{1/3}{2/3} \frac{0.3}{0.5} \cr 1 & \frac{2/3}{1/3} \frac{0.5}{0.3} & 1 } \pause = \bordermatrix{ & 0 & 1 \cr 0 & 1 & 0.3 \cr 1 & 3.33 & 1 }  \]
+% \pause Thus, the transition distribution is 
+% \[\begin{array}{rlll}
+% p &= p(\theta^{t+1}=1|\theta^t=0) \pause = p(\theta^*=1|\theta^t=0)p(\theta^*\mbox{ accepted}) &\pause= 0.5\times 0.3 &= 0.15 \pause \\
+% q &= p(\theta^{t+1}=0|\theta^t=1) \pause = p(\theta^*=0|\theta^t=1)p(\theta^*\mbox{ accepted}) &\pause = 0.3\times 1 &\pause = 0.3
+% \end{array} \]
+% and the stationary distribution is $(0.3,0.15)/(0.3+0.15)=(2/3\,\,1/3)$. 
+% \end{frame}
+% 
+% 
+%
 % \begin{frame}[fragile]
 % \frametitle{Discrete example}
 % 
@@ -123,9 +124,9 @@ and the stationary distribution is $(0.3,0.15)/(0.3+0.15)=(2/3\,\,1/3)$.
 % J = rbind(c(.5,.5), c(.3,.7))
 % theta = rep(1,n)
 % for (i in 2:n) {
-%   theta_star = sample(2, 1, prob=J[theta[i-1],])
-%   r = q[theta_star]/q[theta[i-1]] * J[theta_star,theta[i-1]]/J[theta[i-1],theta_star]
-%   theta[i] = ifelse(runif(1)<r, theta_star, theta[i-1])
+%   proposed = sample(2, 1, prob=J[theta[i-1],])
+%   r = q[proposed]/q[theta[i-1]] * J[proposed,theta[i-1]]/J[theta[i-1],proposed]
+%   theta[i] = ifelse(runif(1)<r, proposed, theta[i-1])
 % }
 % table(theta-1)/n
 % qplot(1:n, theta-1)+labs(x="Time",y=expression(theta))
@@ -258,9 +259,9 @@ n = 100
 theta = rep(NA, n)
 theta[1] = rnorm(1,y)
 for (i in 2:n) {
-  theta_star = rnorm(1,y)
-  logr = log(1+theta[i-1]^2)-log(1+theta_star^2)
-  theta[i] = ifelse(log(runif(1))<logr, theta_star, theta[i-1])
+  proposed = rnorm(1,y)
+  logr = log(1+theta[i-1]^2)-log(1+proposed^2)
+  theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 qplot(1:n, theta) +
   labs(x="Iteration", y=expression(theta), title="Independence Metropolis-Hastings")
@@ -273,9 +274,9 @@ qplot(1:n, theta) +
 <<normal_cauchy_independence2, fig.width=10>>=
 theta[1] = 10 # This line changed
 for (i in 2:n) {
-  theta_star = rnorm(1,y)
-  logr = log(1+theta[i-1]^2)-log(1+theta_star^2)
-  theta[i] = ifelse(log(runif(1))<logr, theta_star, theta[i-1])
+  proposed = rnorm(1,y)
+  logr = log(1+theta[i-1]^2)-log(1+proposed^2)
+  theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 qplot(1:n, theta) +
   labs(x="Time", y=expression(theta), title="Independence Metropolis-Hastings")
@@ -313,10 +314,10 @@ will result in
 n=1000
 theta = rep(0,n)
 for (i in 2:n) {
-  theta_star = rnorm(1)
-  logr = dcauchy(theta_star,log=TRUE)-dcauchy(theta[i-1],log=TRUE)+
-         dnorm(theta[i-1],log=TRUE)-dnorm(theta_star,log=TRUE)
-  theta[i] = ifelse(log(runif(1))<logr, theta_star, theta[i-1])
+  proposed = rnorm(1)
+  logr = dcauchy(proposed,log=TRUE)-dcauchy(theta[i-1],log=TRUE)+
+         dnorm(theta[i-1],log=TRUE)-dnorm(proposed,log=TRUE)
+  theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 qplot(1:n, theta)+labs(x="Time",y=expression(theta))
 @
@@ -381,30 +382,33 @@ Use $N(\theta^t,\tau^2)$ as the proposal\pause, then the acceptance probability 
 
 
 \begin{frame}[fragile]
-\frametitle{Example: Normal-Cauchy model}
+\frametitle{Example: Normal-Cauchy model }
 <<normal_cauchy_random_walk, fig.width=10>>=
 n = 100
-p = function(theta,y) exp(dnorm(y,theta,log=TRUE)+dcauchy(theta,log=TRUE)) 
-theta = rep(rnorm(1,y),n)
-for (i in 2:n) {
-  theta_star = rnorm(1,theta[i-1])
-  logr = log(p(theta_star,y))-log(p(theta[i-1],y))
-  theta[i] = ifelse(log(runif(1))<logr, theta_star, theta[i-1])
+log_q = function(theta,y) dnorm(y,theta,log=TRUE)+dcauchy(theta,log=TRUE)
+current = rnorm(1,y)
+samps = rep(NA, n)
+for (i in 1:n) {
+  proposed = rnorm(1,current)
+  logr = log_q(proposed,y)-log_q(current,y)
+  current = ifelse(log(runif(1))<logr, proposed, current)
+  samps[i] = current
 }
-qplot(1:n, theta)+labs(x="Time", y=expression(theta), title="Random-walk Metropolis")
+qplot(1:n, samps)+labs(x="Time", y=expression(theta), title="Random-walk Metropolis")
 @
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Example: Normal-Cauchy model}
+\frametitle{Example: Normal-Cauchy model with poor initial value}
 <<normal_cauchy_random_walk2, fig.width=10>>=
-theta[1] = 10 # This line changed
-for (i in 2:n) {
-  theta_star = rnorm(1,theta[i-1])
-  logr = log(p(theta_star,y))-log(p(theta[i-1],y))
-  theta[i] = ifelse(log(runif(1))<logr, theta_star, theta[i-1])
+current = 10 # This line changed
+for (i in 1:n) {
+  proposed = rnorm(1,current)
+  logr = log_q(proposed,y)-log_q(current,y)
+  current = ifelse(log(runif(1))<logr, proposed, current)
+  samps[i] = current
 }
-qplot(1:n, theta)+labs(x="Time", y=expression(theta), title="Random-walk Metropolis")
+qplot(1:n, samps)+labs(x="Time", y=expression(theta), title="Random-walk Metropolis")
 @
 \end{frame}
 
@@ -429,14 +433,15 @@ So there is an optimal $\tau^2$ somewhere. \pause For normal targets, the optima
 
 
 \begin{frame}[fragile]
+\frametitle{Random-walk with tuning parameter that is too big and too small}
 
 <<tuning_parameter, fig.width=10>>=
 random_walk = function(n, tau, theta0, target) {
   theta = rep(theta0,n)
   for (i in 2:n) {
-    theta_star = rnorm(1, theta[i-1], tau)
-    logr = log(target(theta_star,y))-log(target(theta[i-1],y))
-    theta[i] = ifelse(log(runif(1))<logr, theta_star, theta[i-1])
+    proposed = rnorm(1, theta[i-1], tau)
+    logr = log(target(proposed,y))-log(target(theta[i-1],y))
+    theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
   }
   return(data.frame(iteration=1:n, theta=theta))
 }
@@ -452,9 +457,9 @@ ggplot(r, aes(x=iteration, y=theta, color=as.factor(tau)))+geom_point()
 
 
 
-\subsection{A real example}
+\subsection{Binomial model}
 \begin{frame}
-\frametitle{Beta-binomial example}
+\frametitle{Binomial model}
 
 Let $Y \sim Bin(n,\theta)$ and $\theta \sim Be(1/2,1/2)$\pause, thus the posterior is \pause 
 \[ p(\theta|y)\propto \theta^{y-0.5}(1-\theta)^{n-y-0.5}\mathrm{I}(0<\theta<1). \] 
@@ -469,22 +474,25 @@ To construct a random-walk Metropolis algorithm, we choose the proposal
 
 
 \begin{frame}[fragile]
-\frametitle{Beta-binomial}
+\frametitle{Binomial model}
 
-<<beta_binomial>>=
+<<binomial, echo=TRUE>>=
 n = 10000
-logp = function(theta, y=3, n=10) (y-0.5)*log(theta)+(n-y-0.5)*log(1-theta)
-theta = rep(0.5,n) # initial draw is 0.5
-for (i in 2:n) {
-  theta_star = rnorm(1,theta[i-1],0.4)
-  if (theta_star > 1 | theta_star < 0) {
-    theta[i] = theta[i-1]
-  } else {
-    logr = logp(theta_star)-logp(theta[i-1])
-    theta[i] = ifelse(log(runif(1))<logr, theta_star, theta[i-1])
-  }
+log_q = function(theta, y=3, n=10) {
+  if (theta<0 | theta>1) return(-Inf)
+  (y-0.5)*log(theta)+(n-y-0.5)*log(1-theta)
 }
-length(unique(theta))/n # acceptance rate
+current = 0.5     # Initial value
+samps = rep(NA,n) 
+for (i in 1:n) {
+  proposed = rnorm(1, current, 0.4) # tuning parameter is 0.4
+  
+  logr = log_q(proposed)-log_q(current)
+  if (log(runif(1)) < logr) current = proposed
+  
+  samps[i] = current
+}
+length(unique(samps))/n # acceptance rate
 @
 
 \end{frame}
@@ -493,11 +501,11 @@ length(unique(theta))/n # acceptance rate
 
 
 \begin{frame}[fragile]
-\frametitle{Beta-binomial}
-<<beta_binomial_traceplot, fig.width=10>>=
+\frametitle{Binomial}
+<<binomial_traceplot, fig.width=10>>=
 par(mfrow=c(1,2))
-plot(theta, type="l")
-hist(theta, prob=TRUE)
+plot(samps, type="l")
+hist(samps, prob=TRUE)
 curve(dbeta(x, 3.5,7.5), add=TRUE, col="red", lwd=2)
 @
 \end{frame}
@@ -506,9 +514,9 @@ curve(dbeta(x, 3.5,7.5), add=TRUE, col="red", lwd=2)
 
 
 
-\subsection{Normal example}
+\subsection{Normal model}
 \begin{frame}
-\frametitle{Normal example}
+\frametitle{Normal model}
 
 Assume
 \[ Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2) \qquad \mbox{and} \qquad p(\mu,\sigma) \propto Ca^+(\sigma; 0, 1) \]
@@ -554,7 +562,7 @@ Proposed automatic adapting of the Metropolis-Hastings tuning parameter:
 
 
 \begin{frame}[fragile]
-\frametitle{R code for adapting}
+\frametitle{R code for Metropolis-Hastings}
 
 <<echo=TRUE>>=
 n = 20
@@ -563,12 +571,11 @@ sum_y2 = sum(y^2)
 nybar  = mean(y)
 log_q = function(x) {
   if (x[2]<0) return(-Inf)
-  -n*log(x[2])-(sum_y2-2*nybar*x[1]+x[1]^2)/(2*x[2]^2)-log(1+x[2]^2)
+  -n*log(x[2])-(sum_y2-2*nybar*x[1]+n*x[1]^2)/(2*x[2]^2)-log(1+x[2]^2)
 }
 
 B = 10
 M = 100
-K = 10000
 
 samps = matrix(NA, nrow=B*M, ncol=2)
 a_rate = rep(NA, B)
@@ -576,7 +583,15 @@ a_rate = rep(NA, B)
 # Initialize
 Sigma = diag(2)
 current = c(0,1)
+@
 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R code for Metropolis-Hastings - Adapting}
+
+<<echo=TRUE>>=
 # Adapt
 for (b in 1:B) {
   for (m in 1:M) {
@@ -592,12 +607,34 @@ for (b in 1:B) {
   Sigma = var(samps[1:i,])
 }
 a_rate
-opar = par(mfrow=c(1,2))
-plot(samps[,1], type='l')
-plot(samps[,2], type='l')
+var(samps)
+@
+
+\end{frame}
 
 
+
+\begin{frame}[fragile]
+\frametitle{R code for Metropolis-Hastings - Adapting}
+
+<<echo=TRUE, fig.width=10>>=
+samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
+ggplot(melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iteration, y=value)) + 
+  geom_line() +
+  facet_wrap(~parameter, scales='free')
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code for Metropolis-Hastings - Inference}
+
+<<echo=TRUE>>=
 # Final run
+K = 10000
 samps = matrix(NA, nrow=K, ncol=2)
 for (k in 1:K) {
   proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
@@ -607,14 +644,136 @@ for (k in 1:K) {
   samps[k,] = current   
 }
 length(unique(na.omit(samps[,1])))/length(na.omit(samps[,1])) # acceptance rate
-
-
-opar = par(mfrow=c(1,2))
-plot(samps[,1], type='l')
-plot(samps[,2], type='l')
 @
 
 \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code for Metropolis-Hastings - Inference}
+
+<<fig.width=13>>=
+samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
+m = melt(samps, id.var='iteration', variable.name='parameter')
+ggplot(m, aes(x=iteration, y=value)) + 
+  geom_line() +
+  facet_wrap(~parameter, scales='free')
+
+ggplot(m, aes(x=value, y=..density..)) + 
+  geom_histogram(binwidth=0.1) +
+  facet_wrap(~parameter, scales='free')
+@
+
+\end{frame}
+
+
+
+
+\subsection{Hierarchical binomial model}
+\begin{frame}
+\frametitle{Hierarchical binomial model}
+
+Recall the hierarchical binomial model
+\[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i), \quad 
+\theta_i \stackrel{ind}{\sim} Be(\alpha,\beta), \quad 
+p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2} \]
+\pause 
+and after marginalizing out the $\theta_i$
+\[ Y_i \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\beta), \quad
+p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2} \]
+\pause
+Thus the posterior is 
+\[ p(\alpha,\beta|y) \propto \left[ \prod_{i=1}^n \frac{B(\alpha+y_i, \beta+n_i-y_i)}{B(\alpha,\beta)} \right] (\alpha+\beta)^{-5/2} \]
+where $B(\cdot)$ is the beta function.
+
+\vspace{0.2in} \pause
+
+We can perform exactly the same adapting procedure, but now using this posterior as the target distribution. 
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Beta-binomial hyperparameter posterior}
+
+<<beta_binomial, cache=TRUE>>=
+d = read.csv('Ch05a-dawkins.csv')
+y = d$made
+n = d$attempt
+log_q = function(x) {
+  if (any(x<0)) return(-Inf)
+  sum(lbeta(x[1]+y, x[2]+n-y)-lbeta(x[1],x[2]))-5/2*log(x[1]+x[2])
+}
+
+B = 10
+M = 1000
+
+samps = matrix(NA, nrow=B*M, ncol=2)
+a_rate = rep(NA, B)
+
+# Initialize
+Sigma = diag(2)
+current = c(1,1)
+
+# Adapt
+for (b in 1:B) {
+  for (m in 1:M) {
+    i = (b-1)*M+m
+    
+    proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
+    
+    logr = log_q(proposed) - log_q(current)
+    if (log(runif(1)) < logr) current = proposed
+    samps[i,] = current    
+  }
+  a_rate[b] = length(unique(samps[1:i,1]))/length(samps[1:i,1])
+  Sigma = var(samps[1:i,])
+}
+
+# Final run
+K = 10000
+samps = matrix(NA, nrow=K, ncol=2)
+for (k in 1:K) {
+  proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
+    
+  logr = log_q(proposed) - log_q(current)
+  if (log(runif(1)) < logr) current = proposed
+  samps[k,] = current   
+}
+
+samps = as.data.frame(samps); names(samps) = c("alpha","beta")
+@
+
+<<dependson='beta_binomial',message=FALSE, warning=FALSE>>=
+ggpairs(samps, 
+        lower = list(continuous='points'), 
+        diag  = list(continuous='bar'))
+@
+
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Metropolis-Hastings summary}
+
+\begin{itemize}[<+->]
+\item The Metropolis-Hastings algorithm, samples $\theta^*\sim g(\cdot|\theta^t)$ and sets $\theta^{t+1}=\theta^*$ with probability equal to $\min\{1,r\}$ where 
+\[ r = \frac{q(\theta^*|y)}{q(\theta^t|y)} \frac{g(\theta^t|\theta^*)}{g(\theta^*|\theta^t)} \]
+and otherwise sets $\theta^{t+1}=\theta^t$.
+\item There are two main Metropolis-Hastings proposals
+\begin{itemize}
+\item independent proposal: $g(\theta^*|\theta^t) = g(\theta^*)$
+\item random-walk proposal: $g(\theta^*|\theta^t) = g(\theta^t|\theta^*)$
+\end{itemize}
+\item Independent proposals suffer from the same heavy-tail problems as rejection sampling proposals.
+\item Random-walk proposals require tuning of the random walk parameter. 
+\end{itemize}
+
+\end{frame}
+
 
 
 \end{document}
