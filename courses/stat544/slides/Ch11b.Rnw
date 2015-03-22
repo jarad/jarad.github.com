@@ -1,5 +1,7 @@
 \documentclass[handout]{beamer}
 
+\usepackage{tikz, animate}
+
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
 
@@ -43,6 +45,7 @@ library(ggplot2)
 library(xtable)
 library(MASS)
 library(GGally)
+library(mvtnorm)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -85,24 +88,24 @@ Construct a Markov chain with stationary distributon $p(\theta|y)$ and run it lo
 }
 
 
-\begin{frame}
-\frametitle{}
-\begin{theorem}
-If $K(\theta,\theta')= p(\theta_2'|\theta_1',y)p(\theta_1'|\theta_2,y)$ \pause then $p(\theta|y)$ is the stationary distribution, \pause i.e.
-\[ p(\theta'|y) = \int K(\theta,\theta') p(\theta|y) d\theta. \]
-\end{theorem}
-\pause 
-\begin{proof}
-\[ \begin{array}{rl}
-p(\theta'|y) &= p(\theta_2'|\theta_1',y)p(\theta_1'|y) \pause \\
-&= p(\theta_2'|\theta_1',y) \int p(\theta_1'|\theta_2,y) p(\theta_2|y) d\theta_2 \pause \\
-&= p(\theta_2'|\theta_1',y)\int p(\theta_1'|\theta_2,y) \int p(\theta_2,\theta_1|y) d\theta_1 d\theta_2 \pause \\
-&= \int \int p(\theta_2'|\theta_1',y) p(\theta_1'|\theta_2,y) p(\theta_2,\theta_1|y) d\theta_1 d\theta_2 \pause \\
-&= \int K(\theta,\theta') p(\theta|y) d\theta 
-\end{array} \]
-\end{proof}
-
-\end{frame}
+% \begin{frame}
+% \frametitle{}
+% \begin{theorem}
+% If $K(\theta,\theta')= p(\theta_2'|\theta_1',y)p(\theta_1'|\theta_2,y)$ \pause then $p(\theta|y)$ is the stationary distribution, \pause i.e.
+% \[ p(\theta'|y) = \int K(\theta,\theta') p(\theta|y) d\theta. \]
+% \end{theorem}
+% \pause 
+% \begin{proof}
+% \[ \begin{array}{rl}
+% p(\theta'|y) &= p(\theta_2'|\theta_1',y)p(\theta_1'|y) \pause \\
+% &= p(\theta_2'|\theta_1',y) \int p(\theta_1'|\theta_2,y) p(\theta_2|y) d\theta_2 \pause \\
+% &= p(\theta_2'|\theta_1',y)\int p(\theta_1'|\theta_2,y) \int p(\theta_2,\theta_1|y) d\theta_1 d\theta_2 \pause \\
+% &= \int \int p(\theta_2'|\theta_1',y) p(\theta_1'|\theta_2,y) p(\theta_2,\theta_1|y) d\theta_1 d\theta_2 \pause \\
+% &= \int K(\theta,\theta') p(\theta|y) d\theta 
+% \end{array} \]
+% \end{proof}
+% 
+% \end{frame}
 
 
 \subsection{Bivariate normal example}
@@ -131,8 +134,8 @@ p(\theta'|y) &= p(\theta_2'|\theta_1',y)p(\theta_1'|y) \pause \\
 }
 
 \begin{frame}[fragile]
-\frametitle{Bivariate normal with $\rho=0.9$}
-<<bivariate_normal_mcmc>>=
+\frametitle{R code for bivariate normal Gibbs sampler}
+<<bivariate_normal_mcmc, echo=TRUE>>=
 gibbs_bivariate_normal = function(x0, n_points, rho) {
   x = matrix(x0, nrow=n_points, ncol=2, byrow=TRUE)
   v = sqrt(1-rho^2)
@@ -143,7 +146,6 @@ gibbs_bivariate_normal = function(x0, n_points, rho) {
   return(x)
 }
 
-set.seed(1)
 x = gibbs_bivariate_normal(c(-3,3), n<-20, rho=rho<-0.9)
 @
 \end{frame}
@@ -155,7 +157,7 @@ bivariate_normal_animation = function(x, rho, ask=interactive()) {
   xx <- seq(-3, 3, length=n.out)
   grid <- expand.grid(x=xx, y=xx)
   Sigma = diag(rep(.1,2))+rho
-  like <- matrix(apply(grid, 1, function(x) dmvnorm(x,sigma=Sigma)),n.out,n.out)
+  like <- matrix(apply(grid, 1, function(x) mvtnorm::dmvnorm(x,sigma=Sigma)),n.out,n.out)
   
   for (i in 2:nrow(x)) {
     jj = (2:i)[-(i-1)] # vector from 2:(i-1) and NULL if i=2
@@ -221,13 +223,13 @@ bivariate_normal_animation(x, rho)
 	
 	\vspace{0.2in} \pause
 	
-	Gibbs sampling assumed we can sample from $p(\theta_k|\theta_{-k})$ for all $k$\pause, but what if we cannot sample from all of these full conditional distributions? \pause For those $p(\theta_k|\theta_{-k})$ that cannot be sampled directly, a Metropolis-Hastings step can be substituted. \pause All the convergence results for Gibbs sampling and Metropolis-Hastings algorithm still hold. 
+	Gibbs sampling assumed we can sample from $p(\theta_k|\theta_{-k})$ for all $k$\pause, but what if we cannot sample from all of these full conditional distributions? \pause For those $p(\theta_k|\theta_{-k})$ that cannot be sampled directly, a Metropolis-Hastings step can be substituted. 
 }
 
 
 \begin{frame}[fragile]
 \frametitle{Bivariate normal with $\rho=0.9$}
-<<gibbs_and_metropolis_mcmc>>=
+<<gibbs_and_metropolis_mcmc, echo=TRUE>>=
 gibbs_and_metropolis = function(x0, n_points, rho) {
   x = matrix(x0, nrow=n_points, ncol=2, byrow=TRUE)
   v = sqrt(1-rho^2)
@@ -295,10 +297,9 @@ segments(0,0,x,0,lwd=3, col="red")
 \end{frame}
 
 
-
-
 \begin{frame}[fragile]
-<<slice_sampler>>=
+\frametitle{Slice sampling in R}
+<<slice_sampler, echo=TRUE>>=
 # Slice sampler 
 slice = function(n,init_theta,target,A) {
   u = theta = rep(NA,n)
@@ -368,9 +369,9 @@ curve(dexp, add=TRUE)
 \end{frame}
 
 
-\section{Extended example}
+\section{Hierarchical binomial model}
 \begin{frame}
-\frametitle{Beta-binomial example}
+\frametitle{Hierarchical binomial model}
 
 Let 
 \[ \begin{array}{rl}
@@ -438,7 +439,7 @@ which is not a known density.
 }
 
 
-<<full_conditionals>>=
+<<full_conditionals, echo=TRUE>>=
 log_fc_alpha = function(theta, alpha, beta) {
   if (alpha<0) return(-Inf)
   n = length(theta)
@@ -455,7 +456,7 @@ log_fc_beta = function(theta, alpha, beta) {
 
 
 \begin{frame}[fragile]
-<<mcmc>>=
+<<mcmc, echo=TRUE>>=
 mcmc = function(n_sims, dat, inits, tune) {
   n_groups = nrow(dat)
   alpha = inits$alpha
@@ -496,27 +497,15 @@ mcmc = function(n_sims, dat, inits, tune) {
  
  
 \begin{frame}[fragile]
-<<run_mcmc>>=
-d = read.csv("dawkins.csv")
+<<run_mcmc, echo=TRUE>>=
+d = read.csv("Ch05a-dawkins.csv")
 dat=data.frame(y=d$made, n=d$attempt)
-
-# Find reasonable starting values by matching moments
-theta = (dat$y+0.5)/(dat$n+1)
-mean(theta) # ~= 0.5, so alpha~=beta
-
-# Force alpha=beta, and then use moment matching with the variance
-# which is vr = 1/4(2*alpha+1) implying 
-# alpha = (4/v-1)/2
-vr = var(theta) 
-inits = list(alpha=(4/vr-1)/2, beta=(4/vr-1)/2)
+inits = list(alpha=1, beta=1)
 
 # Run the MCMC
 r = mcmc(2000, dat=dat, inits=inits, tune=list(alpha=1,beta=1))
 @
-\end{frame}
- 
- 
-\begin{frame}[fragile]
+
 <<mcmc_summary, fig.width=10>>=
 r_subset = r[r$parameter %in% c("alpha","beta"),]
 ddply(r_subset, .(parameter), summarize, acceptance_rate = length(unique(value))/max(iteration))
@@ -524,16 +513,20 @@ ggplot(r_subset, aes(x=iteration, y=value))+geom_line()+facet_wrap(~parameter)
 @
 \end{frame}
  
+ 
+ 
+ 
+ 
 \begin{frame}
 \frametitle{Block Gibbs sampler}
 \scriptsize
 It appears that the Gibbs sampler we have constructed \pause iteratively samples from
 \begin{enumerate}[<+->]
-\item $\theta_1\sim p(\theta_1|\theta_{-1},\alpha,\beta,y)$.
+\item $\theta_1\sim p(\theta_1|\theta_{-1},\alpha,\beta,y)$
 \item $\vdots$
-\item $\theta_n\sim p(\theta_n|\theta_{-n},\alpha,\beta,y)$.
-\item $\alpha\sim p(\alpha|\theta,\beta,y)$.
-\item $\beta\sim p(\beta|\theta,\alpha,y)$.
+\item $\theta_n\sim p(\theta_n|\theta_{-n},\alpha,\beta,y)$
+\item $\alpha\sim p(\alpha|\theta,\beta,y)$
+\item $\beta\sim p(\beta|\theta,\alpha,y)$
 \end{enumerate}
 where $\theta=(\theta_1,\ldots,\theta_n)$ and $\theta_{-i}$ is $\theta$ without element $i$.
 
@@ -541,11 +534,11 @@ where $\theta=(\theta_1,\ldots,\theta_n)$ and $\theta_{-i}$ is $\theta$ without 
 
 But notice that 
 \[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_i|\alpha,\beta,y_i) \]
-since the $\theta_i$ are conditionally independent. \pause Thus, the we actually ran the following block Gibbs sampler:
+and thus the $\theta_i$ are conditionally independent. \pause Thus, we actually ran the following block Gibbs sampler:
 \begin{enumerate}[<+->]
-\item $\theta\sim p(\theta|\alpha,\beta,y)$.
-\item $\alpha\sim p(\alpha|\theta,\beta,y)$.
-\item $\beta\sim p(\beta|\theta,\alpha,y)$.
+\item $\theta\sim p(\theta|\alpha,\beta,y)$
+\item $\alpha\sim p(\alpha|\theta,\beta,y)$
+\item $\beta\sim p(\beta|\theta,\alpha,y)$
 \end{enumerate}
 \end{frame}
  
