@@ -1,0 +1,555 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Gibbs sampling}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\I}{\mathrm{I}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(reshape2)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(MASS)
+library(GGally)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(1)
+@
+
+\frame{\maketitle}
+
+\section{Markov chain Monte Carlo}
+\begin{frame}
+\frametitle{Markov chain construction}
+
+Suppose we wish to simulate from $p(\theta|y)$, but cannot do so directly. 
+
+\vspace{0.2in} 
+
+Construct a Markov chain with stationary distributon $p(\theta|y)$ and run it long enough that the samples are approximately from $p(\theta|y)$. 
+
+\end{frame}
+
+
+\section{Gibbs sampling}
+\frame{\frametitle{Gibbs sampling}
+  Suppose our target distribution is $p(\theta|y)$ with $\theta=(\theta_1,\theta_2)$  \pause and we can sample from $p\left(\theta_1|\theta_2,y\right)$ and $p\left(\theta_2|\theta_1, y\right)$\pause. Beginning with an initial value $\left(\theta_1^0, \theta_2^0\right)$\pause, the \alert{Gibbs sampler} is 
+	\begin{enumerate}[\quad1.]
+	\item sample $\theta_1^{t}\sim p\left(\theta_1|\theta_2^{t-1},y\right)$ \pause and then 
+	\item sample $\theta_2^{t}\sim p\left(\theta_2|\theta_1^{t},y\right)$. 
+	\end{enumerate}
+	
+	\vspace{0.2in} \pause
+	
+	Notes:
+	\begin{itemize}[<+->]
+  \item The sequence $\{\theta^0,\theta^1,\ldots,\}$ is a Markov chain with transition distribution 
+  \[ p(\theta^{t}|\theta^{t-1},y) = p(\theta_2^{t}|\theta_1^{t},y)p(\theta_1^{t}|\theta_2^{t-1,y}). \]
+	\item $\theta^{t} \stackrel{d}{\rightarrow} \theta$ where $\theta \sim p\left(\theta|y\right)$.  
+%	\item 
+%	\[  \frac{1}{J} \sum_{j=1}^J h\left(\theta^{t}\right) \rightarrow E_p[h(\theta)] = \int_{\Theta} h(\theta) f(\theta) d\theta  \]
+	\end{itemize}
+}
+
+
+\begin{frame}
+\frametitle{}
+\begin{theorem}
+If $K(\theta,\theta')= p(\theta_2'|\theta_1',y)p(\theta_1'|\theta_2,y)$ \pause then $p(\theta|y)$ is the stationary distribution, \pause i.e.
+\[ p(\theta'|y) = \int K(\theta,\theta') p(\theta|y) d\theta. \]
+\end{theorem}
+\pause 
+\begin{proof}
+\[ \begin{array}{rl}
+p(\theta'|y) &= p(\theta_2'|\theta_1',y)p(\theta_1'|y) \pause \\
+&= p(\theta_2'|\theta_1',y) \int p(\theta_1'|\theta_2,y) p(\theta_2|y) d\theta_2 \pause \\
+&= p(\theta_2'|\theta_1',y)\int p(\theta_1'|\theta_2,y) \int p(\theta_2,\theta_1|y) d\theta_1 d\theta_2 \pause \\
+&= \int \int p(\theta_2'|\theta_1',y) p(\theta_1'|\theta_2,y) p(\theta_2,\theta_1|y) d\theta_1 d\theta_2 \pause \\
+&= \int K(\theta,\theta') p(\theta|y) d\theta 
+\end{array} \]
+\end{proof}
+
+\end{frame}
+
+
+\subsection{Bivariate normal example}
+\frame{\frametitle{Bivariate normal example}
+\small
+	Let our target be 
+	\[ \theta \sim N_2(0,\mathrm\Sigma) \pause \qquad \mathrm{\Sigma} = \left[ \begin{array}{cc} 1 & \rho \\ \rho & 1 \end{array} \right].\]
+	\pause Then 
+	\[ \begin{array}{rl}
+	\theta_1|\theta_2 &\sim \pause N\left(\rho\theta_2, [1-\rho^2]\right) \pause \\
+	\theta_2|\theta_1 &\sim \pause N\left(\rho\theta_1, [1-\rho^2]\right) 
+	\end{array} \]
+	are the conditional distributions. 
+	
+	\vspace{0.2in} \pause
+	
+	Assuming initial value $\left(\theta_1^{0}, \theta_2^{0}\right)$, the Gibbs sampler proceeds as follows:
+	\[ \begin{array}{ccc}
+	\mbox{Iteration} & \mbox{Sample }\theta_1 & \mbox{Sample }\theta_2 \pause \\
+	\hline 
+	1 & \theta_1^1\sim N\left(\rho\theta_2^{0}, [1-\rho^2]\right) &\theta_2^1 \sim N\left(\rho\theta_1^{1}, [1-\rho^2]\right) \pause \\
+	& \vdots & \\
+	t & \theta_1^t\sim N\left(\rho\theta_2^{t-1}, [1-\rho^2]\right) &\theta_2^t \sim N\left(\rho\theta_1^{t}, [1-\rho^2]\right) \pause \\
+	& \vdots &
+	\end{array} \]	
+}
+
+\begin{frame}[fragile]
+\frametitle{Bivariate normal with $\rho=0.9$}
+<<bivariate_normal_mcmc>>=
+gibbs_bivariate_normal = function(x0, n_points, rho) {
+  x = matrix(x0, nrow=n_points, ncol=2, byrow=TRUE)
+  v = sqrt(1-rho^2)
+  for (i in 2:n_points) {
+    x[i,1] = rnorm(1, rho*x[i-1,2], v)
+    x[i,2] = rnorm(1, rho*x[i  ,1], v)
+  }
+  return(x)
+}
+
+set.seed(1)
+x = gibbs_bivariate_normal(c(-3,3), n<-20, rho=rho<-0.9)
+@
+\end{frame}
+
+<<bivariate_normal, echo=FALSE>>=
+bivariate_normal_animation = function(x, rho, ask=interactive()) {
+  # Create contour plot
+  n.out = 101
+  xx <- seq(-3, 3, length=n.out)
+  grid <- expand.grid(x=xx, y=xx)
+  Sigma = diag(rep(.1,2))+rho
+  like <- matrix(apply(grid, 1, function(x) dmvnorm(x,sigma=Sigma)),n.out,n.out)
+  
+  for (i in 2:nrow(x)) {
+    jj = (2:i)[-(i-1)] # vector from 2:(i-1) and NULL if i=2
+    for (j in 1:6) {
+      plot.new()
+      
+      # All previous plotting
+      contour(xx, xx, like, drawlabels=F, nlevels=10, xlim=c(-3,3), ylim=c(-3,3), 
+              xlab=expression(theta[1]), ylab=expression(theta[2]))  
+      segments(x[jj-1,1], x[jj-1,2], x[jj,1], x[jj-1,2], col="gray")
+      segments(x[jj  ,1], x[jj-1,2], x[jj,1], x[jj  ,2], col="gray")
+      points(x[(1:(i-1)),1], x[(1:(i-1)),2], col="red", pch=19)
+      
+      # New plotting
+      if (j>1 & j<4) abline(h=x[i-1,2], lty=2)
+      if (j>2) arrows(x[i-1,1], x[i-1,2], x[i,1], x[i-1,2], length=0.1)
+      if (j>3 & j<6) abline(v=x[i,1], lty=2)
+      if (j>4) arrows(x[i,1], x[i-1,2], x[i,1], x[i,2], length=0.1)
+      if (j>5) points(x[i,1], x[i,2], col="red", pch=19)
+      
+      if (ask) readline("hit <enter>:")
+    }
+  }
+  
+  jj=2:nrow(x)
+  contour(xx, xx, like, drawlabels=F, nlevels=10, xlim=c(-3,3), ylim=c(-3,3), 
+          xlab=expression(theta[1]), ylab=expression(theta[2]))  
+  segments(x[jj-1,1], x[jj-1,2], x[jj,1], x[jj-1,2], col="gray")
+  segments(x[jj  ,1], x[jj-1,2], x[jj,1], x[jj  ,2], col="gray")
+  points(x[,1], x[,2], col="red", pch=19)
+}
+@
+
+\begin{frame}[fragile]
+<<bivariate_normal_animation, fig.show='animate', echo=FALSE, cache=TRUE>>=
+bivariate_normal_animation(x, rho)
+@
+\end{frame}
+
+
+\subsection{Extending the Gibbs sampler}
+\frame{\frametitle{$K$-component Gibbs sampler}
+	Suppose $\theta = (\theta_1,\ldots,\theta_K)$\pause, then the following Gibbs sampler can be constructed \pause
+	\[ \begin{array}{rl}
+	\theta_1^{t} &\sim p\left(\theta_1|\theta_2^{t-1},\ldots, \theta_K^{t-1},y\right) \pause \\ \\
+	\theta_2^{t} &\sim p\left(\theta_2|\theta_1^{t}, \theta_3^{t-1},\ldots, \theta_K^{t-1},y\right) \pause\\
+	&\vdots \\
+	\theta_k^{t} &\sim p\left(\theta_k|\theta_1^{t}\ldots,\theta_{k-1}^{t}, \theta_{k+1}^{t-1},\ldots, \theta_K^{t-1},y\right) \\
+	&\vdots \pause\\
+	\theta_K^{t} &\sim p\left(\theta_K|\theta_1^{t},\ldots, \theta_{K-1}^{t},y\right) \pause
+	\end{array} \]
+	The distributions above are called the \alert{full conditional distributions}. \pause If some of the $\theta_k$ are vectors, then this is called a \alert{block} Gibbs sampler.
+}
+
+
+\section{Metropolis-within-Gibbs}
+\frame{\frametitle{Metropolis-within-Gibbs}
+  We have discussed two Markov chain approaches to sampling from target distributions:
+	\begin{itemize}
+	\item Metropolis-Hastings algorithm
+	\item Gibbs sampling
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	Gibbs sampling assumed we can sample from $p(\theta_k|\theta_{-k})$ for all $k$\pause, but what if we cannot sample from all of these full conditional distributions? \pause For those $p(\theta_k|\theta_{-k})$ that cannot be sampled directly, a Metropolis-Hastings step can be substituted. \pause All the convergence results for Gibbs sampling and Metropolis-Hastings algorithm still hold. 
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Bivariate normal with $\rho=0.9$}
+<<gibbs_and_metropolis_mcmc>>=
+gibbs_and_metropolis = function(x0, n_points, rho) {
+  x = matrix(x0, nrow=n_points, ncol=2, byrow=TRUE)
+  v = sqrt(1-rho^2)
+  for (i in 2:n_points) {
+    x[i,1] = rnorm(1, rho*x[i-1,2], v)
+    
+    # Now do a random-walk Metropolis step
+    x_prop = rnorm(1, x[i-1,2], 2.4*v) # optimal proposal variance
+    logr   = dnorm(x_prop,   rho*x[i,1], v, log=TRUE) - 
+             dnorm(x[i-1,2], rho*x[i,1], v, log=TRUE)
+    x[i,2] = ifelse(log(runif(1))<logr, x_prop, x[i-1,2])
+  }
+  return(x)
+}
+
+x = gibbs_and_metropolis(c(-3,3), n, rho)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<gibbs_and_metropolis_animation, fig.show='animate', echo=FALSE, warning=FALSE>>=
+bivariate_normal_animation(x, rho)
+@
+\end{frame}
+
+
+
+\section{Slice sampling}
+\begin{frame}
+\frametitle{Slice sampling}
+Suppose the target distribution is $p(\theta|y)$ with scalar $\theta$. \pause Then,
+\[ p(\theta|y) = \int_0^{p(\theta|y)} du \]
+\pause Thus, $p(\theta|y)$ can be thought of as the marginal distribution of 
+\[ (\theta,U) \sim \mbox{Unif}\{(\theta,u):0<u<p(\theta|y)\} \]
+where $u$ is an \alert{auxiliary variable}.
+
+\vspace{0.2in} \pause 
+
+\alert{Slice sampling} performs the following Gibbs sampler: \pause 
+\begin{enumerate}
+\item $u^t|\theta^{t-1} \sim \mbox{Unif}\{u:0<u<p(\theta^{t-1}|y)\}$ \pause and
+\item $\theta^t|u^t \sim \mbox{Unif}\{\theta: u^t<p(\theta|y) \}$.
+\end{enumerate}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Slice sampler for exponential distribution}
+Consider the target $\theta|y \sim Exp(1)$,\pause  then 
+\[ \{\theta: u<p(\theta|y) \} = (0,-\log(u)). \]
+
+\pause 
+
+<<uniform_region, fig.width=10, fig.height=4>>=
+u = 0.5; x = -log(u)
+curve(dexp, 0, 1.5, ylab="u", xlab=expression(theta), main="Target disribution", ylim=c(0,1))
+curve(dexp, 0, x, add=TRUE, lwd=3, col="red")
+segments(0,u,x,u,col="gray")
+segments(x,0,x,u,col="gray")
+segments(0,0,x,0,lwd=3, col="red")
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+<<slice_sampler>>=
+# Slice sampler 
+slice = function(n,init_theta,target,A) {
+  u = theta = rep(NA,n)
+  theta[1] = init_theta
+  u[1] = runif(1,0,target(theta[1])) # This never actually gets used
+
+  for (i in 2:n) {
+    u[i] = runif(1,0,target(theta[i-1]))
+    endpoints = A(u[i],theta[i-1]) # The second argument is used in the second example
+    theta[i] = runif(1, endpoints[1],endpoints[2])
+  }
+  return(list(theta=theta,u=u))
+}
+# Exponential example
+set.seed(6)
+A = function(u,theta=NA) c(0,-log(u))
+res = slice(10, 0.1, dexp, A)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{}
+<<slice_sampling_plot, fig.show='animate', warning=FALSE, echo=FALSE>>=
+slice_sampling_animation = function(theta, u, ask=interactive()) {
+  x = cbind(theta,u)
+  for (i in 2:nrow(x)) {
+    jj = (2:i)[-(i-1)] # vector from 2:(i-1) and NULL if i=2
+    for (j in 1:6) {
+      plot.new()
+      
+      # All previous plotting
+      curve(dexp, 0, 3, xlab=expression(theta), ylab="u", main="Slice sampling an Exp(1) distribution")
+      segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
+      segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
+      points(x[(1:(i-1)),1], x[(1:(i-1)),2], col="red", pch=19)
+      
+      # New plotting
+      if (j>1 & j<4) abline(v=x[i-1,1], lty=2)
+      if (j>2) arrows(x[i-1,1], x[i-1,2], x[i-1,1], x[i,2], length=0.1)
+      if (j>3 & j<6) abline(h=x[i,2], lty=2)
+      if (j>4) arrows(x[i-1,1], x[i,2], x[i,1], x[i,2], length=0.1)
+      if (j>5) points(x[i,1], x[i,2], col="red", pch=19)
+      
+      if (ask) readline("hit <enter>:")
+    }
+  }
+  
+  # Final plot
+  jj=2:nrow(x)
+  curve(dexp, 0, 3, xlab=expression(theta), ylab="u", 
+        main="Slice sampling an Exp(1) distribution")
+  segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
+  segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
+  points(x[,1], x[,2], col="red", pch=19)
+}
+with(res, slice_sampling_animation(theta,u))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<slice_sampling_histogram>>=
+hist(slice(1e4, 0.1, dexp, A)$theta, freq=F, 100, main="Slice sampling approximation to Exp(1) distribution", xlab=expression(theta))
+curve(dexp, add=TRUE)
+@
+\end{frame}
+
+
+\section{Extended example}
+\begin{frame}
+\frametitle{Beta-binomial example}
+
+Let 
+\[ \begin{array}{rl}
+Y_i&\stackrel{ind}{\sim} Bin(n_i,\theta_i) \pause \\
+\theta_i &\stackrel{iid}{\sim} Be(\alpha,\beta) \pause \\
+p(\alpha,\beta) &\propto (\alpha+\beta)^{-5/2} \pause
+\end{array} \]
+
+We will use a Gibbs sampler to sample from $\theta_1,\ldots,\theta_n,\alpha,\beta$\pause, so we need to derive the following conditional distributions:\pause
+\begin{itemize}
+\item $\theta_i|\theta_1,\ldots,\theta_{i-1},\theta_{i+1},\ldots,\theta_n,\alpha,\beta,y$ \pause
+\item $\alpha|\theta_1,\ldots,\theta_n,\beta,y$ \pause 
+\item $\beta|\theta_1,\ldots,\theta_n,\alpha,y$ \pause
+\end{itemize}
+For shorthand, we often use $\theta_i|\ldots$ where $\ldots$ indicates \emph{everything else}.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Full conditional for $\theta_i$}
+The full conditional for $\theta_i$ is 
+\[ \begin{array}{rl}
+p(\theta_i|\ldots)
+&\propto p(y|\theta)p(\theta|\alpha,\beta)p(\alpha,\beta) \pause \\
+&\propto \left[ \prod_{i=1}^n p(y_i|\theta_i) \right] \left[ \prod_{i=1}^n  p(\theta_i|\alpha,\beta) \right] \pause \\
+&\propto \prod_{j=1}^n \theta_j^{y_j}(1-\theta_j)^{n_j-y_j} \theta_j^{\alpha-1}(1-\theta_j)^{\beta-1}  \pause \\
+&\propto \theta_i^{\alpha+y_i-1}(1-\theta_i)^{\beta+n_i-y_i-1} \pause
+\end{array} \]
+Thus $\theta_i|\ldots\sim Be(\alpha+y_i,\beta+n_i-y_i)$.
+\end{frame}
+
+\begin{frame}
+\frametitle{Full conditional for $\alpha$ and $\beta$}
+The full conditional for $\alpha$ \pause is 
+\[ \begin{array}{rl}
+p(\alpha|\ldots) &\propto p(y|\theta)p(\theta|\alpha,\beta)p(\alpha,\beta) \pause \\
+&\propto \left[ \prod_{i=1}^n  p(\theta_i|\alpha,\beta) \right] p(\alpha,\beta) \pause \\
+&\propto \frac{\left(\prod_{i=1}^n \theta_i\right)^{\alpha-1}}{Beta(\alpha,\beta)^n}(\alpha+\beta)^{-5/2}
+\end{array} \]
+which is not a known density. 
+
+\vspace{0.2in} \pause
+
+The full conditional for $\beta$ is 
+\[ \begin{array}{rl}
+p(\beta|\ldots) &\propto p(y|\theta)p(\theta|\alpha,\beta)p(\alpha,\beta) \pause \\
+&\propto \left[ \prod_{i=1}^n  p(\theta_i|\alpha,\beta) \right] p(\alpha,\beta) \pause \\
+&\propto \frac{\left(\prod_{i=1}^n [1-\theta_i]\right)^{\beta-1}}{Beta(\alpha,\beta)^n}(\alpha+\beta)^{-5/2}
+\end{array} \]
+which is not a known density.
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Full conditional functions}
+{\small 
+\[ \begin{array}{rl}
+\log p(\alpha|\ldots) &\propto (\alpha-1) \sum_{i=1}^n \log\left(  \phantom{1-}\theta_i \right) +n\log(Beta(\alpha,\beta))-5/2 \log(\alpha+\beta) \\
+\log p(\beta|\ldots) &\propto (\beta-1) \sum_{i=1}^n \log\left(  1-\theta_i \right) +n\log(Beta(\alpha,\beta))-5/2 \log(\alpha+\beta) 
+\end{array} \]
+}
+
+
+<<full_conditionals>>=
+log_fc_alpha = function(theta, alpha, beta) {
+  if (alpha<0) return(-Inf)
+  n = length(theta)
+  (alpha-1)*sum(log(theta))-n*lbeta(alpha,beta)-5/2*(alpha+beta)
+}
+
+log_fc_beta = function(theta, alpha, beta) {
+  if (beta<0) return(-Inf)
+  n = length(theta)
+  (beta-1)*sum(log(1-theta))-n*lbeta(alpha,beta)-5/2*(alpha+beta)
+}
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<mcmc>>=
+mcmc = function(n_sims, dat, inits, tune) {
+  n_groups = nrow(dat)
+  alpha = inits$alpha
+  beta  = inits$beta
+  
+  # Recording structure
+  theta_keep = matrix(NA, nrow=n_sims, ncol=n_groups)
+  alpha_keep = rep(alpha, n_sims)
+  beta_keep  = rep(beta , n_sims)
+  
+  for (i in 1:n_sims) {
+    # Sample thetas
+    theta = with(dat, rbeta(length(y), alpha+y, beta+n-y))
+    
+    # Sample alpha
+    alpha_prop = rnorm(1, alpha, tune$alpha)
+    logr = log_fc_alpha(theta, alpha_prop, beta)-log_fc_alpha(theta, alpha, beta)
+    alpha = ifelse(log(runif(1))<logr, alpha_prop, alpha)
+    
+    # Sample beta
+    beta_prop = rnorm(1, beta, tune$beta)
+    logr = log_fc_beta(theta, alpha, beta_prop)-log_fc_beta(theta, alpha, beta)
+    beta = ifelse(log(runif(1))<logr, beta_prop, beta)
+    
+    # Record parameter values
+    theta_keep[i,] = theta
+    alpha_keep[i]  = alpha
+    beta_keep[ i]  = beta
+  }
+  
+  return(data.frame(iteration=1:n_sims, 
+                    parameter=rep(c("alpha","beta",paste("theta[",1:n_groups,"]",sep="")),each=n_sims),
+                    value=c(alpha_keep,beta_keep,as.numeric(theta_keep))))
+}
+@
+\end{frame}
+ 
+ 
+ 
+\begin{frame}[fragile]
+<<run_mcmc>>=
+d = read.csv("dawkins.csv")
+dat=data.frame(y=d$made, n=d$attempt)
+
+# Find reasonable starting values by matching moments
+theta = (dat$y+0.5)/(dat$n+1)
+mean(theta) # ~= 0.5, so alpha~=beta
+
+# Force alpha=beta, and then use moment matching with the variance
+# which is vr = 1/4(2*alpha+1) implying 
+# alpha = (4/v-1)/2
+vr = var(theta) 
+inits = list(alpha=(4/vr-1)/2, beta=(4/vr-1)/2)
+
+# Run the MCMC
+r = mcmc(2000, dat=dat, inits=inits, tune=list(alpha=1,beta=1))
+@
+\end{frame}
+ 
+ 
+\begin{frame}[fragile]
+<<mcmc_summary, fig.width=10>>=
+r_subset = r[r$parameter %in% c("alpha","beta"),]
+ddply(r_subset, .(parameter), summarize, acceptance_rate = length(unique(value))/max(iteration))
+ggplot(r_subset, aes(x=iteration, y=value))+geom_line()+facet_wrap(~parameter)
+@
+\end{frame}
+ 
+\begin{frame}
+\frametitle{Block Gibbs sampler}
+\scriptsize
+It appears that the Gibbs sampler we have constructed \pause iteratively samples from
+\begin{enumerate}[<+->]
+\item $\theta_1\sim p(\theta_1|\theta_{-1},\alpha,\beta,y)$.
+\item $\vdots$
+\item $\theta_n\sim p(\theta_n|\theta_{-n},\alpha,\beta,y)$.
+\item $\alpha\sim p(\alpha|\theta,\beta,y)$.
+\item $\beta\sim p(\beta|\theta,\alpha,y)$.
+\end{enumerate}
+where $\theta=(\theta_1,\ldots,\theta_n)$ and $\theta_{-i}$ is $\theta$ without element $i$.
+
+\vspace{0.2in} \pause
+
+But notice that 
+\[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_i|\alpha,\beta,y_i) \]
+since the $\theta_i$ are conditionally independent. \pause Thus, the we actually ran the following block Gibbs sampler:
+\begin{enumerate}[<+->]
+\item $\theta\sim p(\theta|\alpha,\beta,y)$.
+\item $\alpha\sim p(\alpha|\theta,\beta,y)$.
+\item $\beta\sim p(\beta|\theta,\alpha,y)$.
+\end{enumerate}
+\end{frame}
+ 
+
+ 
+ 
+\end{document}
