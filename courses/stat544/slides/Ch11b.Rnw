@@ -44,7 +44,6 @@ library(plyr)
 library(ggplot2)
 library(xtable)
 library(MASS)
-library(GGally)
 library(mvtnorm)
 @
 
@@ -54,20 +53,41 @@ set.seed(1)
 
 \frame{\maketitle}
 
-\section{Markov chain Monte Carlo}
 \begin{frame}
-\frametitle{Markov chain construction}
+\frametitle{Outline}
 
-Suppose we wish to simulate from $p(\theta|y)$, but cannot do so directly. 
-
-\vspace{0.2in} 
-
-Construct a Markov chain with stationary distributon $p(\theta|y)$ and run it long enough that the samples are approximately from $p(\theta|y)$. 
+\begin{itemize}
+\item Two-component Gibbs sampler
+  \begin{itemize}
+  \item Full conditional distribution
+  \end{itemize}
+\item $K$-component Gibbs sampler
+  \begin{itemize}
+  \item Blocked Gibbs sampler
+  \end{itemize}
+\item Metropolis-within-Gibbs
+\item Slice sampler
+  \begin{itemize}
+  \item Latent variable augmentation
+  \end{itemize}
+\end{itemize}
 
 \end{frame}
 
+% \section{Markov chain Monte Carlo}
+% \begin{frame}
+% \frametitle{Markov chain construction}
+% 
+% Suppose we wish to simulate from $p(\theta|y)$, but cannot do so directly. 
+% 
+% \vspace{0.2in} 
+% 
+% Construct a Markov chain with stationary distributon $p(\theta|y)$ and run it long enough that the samples are approximately from $p(\theta|y)$. 
+% 
+% \end{frame}
 
-\section{Gibbs sampling}
+
+\section{Two-component Gibbs sampling}
 \frame{\frametitle{Gibbs sampling}
   Suppose our target distribution is $p(\theta|y)$ with $\theta=(\theta_1,\theta_2)$  \pause and we can sample from $p\left(\theta_1|\theta_2,y\right)$ and $p\left(\theta_2|\theta_1, y\right)$\pause. Beginning with an initial value $\left(\theta_1^0, \theta_2^0\right)$\pause, the \alert{Gibbs sampler} is 
 	\begin{enumerate}[\quad1.]
@@ -80,7 +100,7 @@ Construct a Markov chain with stationary distributon $p(\theta|y)$ and run it lo
 	Notes:
 	\begin{itemize}[<+->]
   \item The sequence $\{\theta^0,\theta^1,\ldots,\}$ is a Markov chain with transition distribution 
-  \[ p(\theta^{t}|\theta^{t-1},y) = p(\theta_2^{t}|\theta_1^{t},y)p(\theta_1^{t}|\theta_2^{t-1,y}). \]
+  \[ p(\theta^{t}|\theta^{t-1},y) = p(\theta_2^{t}|\theta_1^{t},y)p(\theta_1^{t}|\theta_2^{t-1},y). \]
 	\item $\theta^{t} \stackrel{d}{\rightarrow} \theta$ where $\theta \sim p\left(\theta|y\right)$.  
 %	\item 
 %	\[  \frac{1}{J} \sum_{j=1}^J h\left(\theta^{t}\right) \rightarrow E_p[h(\theta)] = \int_{\Theta} h(\theta) f(\theta) d\theta  \]
@@ -198,7 +218,154 @@ bivariate_normal_animation(x, rho)
 \end{frame}
 
 
-\subsection{Extending the Gibbs sampler}
+
+\subsection{Normal model}
+\begin{frame}
+\frametitle{Normal model}
+\footnotesize
+
+Suppose $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$ and we assume the prior
+\[ \mu \sim N(m,C) \qquad \mbox{and} \qquad \sigma^2 \sim \mbox{Inv-}\chi^2(v,s^2). \]
+\pause
+Note: this is NOT the conjugate prior. \pause 
+
+\vspace{0.2in} \pause
+
+The full posterior we are interested in is 
+\[ \begin{array}{rl}
+p(\mu,\sigma^2|y) \propto& (\sigma^2)^{-n/2} \exp\left( -\frac{1}{2\sigma^2}(\sum_{i=1}^n (y_i-\mu)^2 \right) \exp\left( -\frac{1}{2C} (\mu-m)^2 \right) \\
+&\times(\sigma^2)^{-(v/2+1)} \exp\left( -\frac{vs^2}{2\sigma^2} \right) 
+\end{array} \]
+
+To run the Gibbs sampler, we need to derive
+\begin{itemize}
+\item $\mu|\sigma^2,y$ and 
+\item $\sigma^2|\mu,y$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Derive $\mu|\sigma^2,y$.}
+Recall
+\[ \begin{array}{rl}
+p(\mu,\sigma^2|y) \propto& (\sigma^2)^{-n/2} \exp\left( -\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-\mu)^2 \right) \exp\left( -\frac{1}{2C} (\mu-m)^2 \right) \\
+&\times(\sigma^2)^{-(v/2+1)} \exp\left( -\frac{vs^2}{2\sigma^2} \right) 
+\end{array} \]
+
+Now find $\mu|\sigma^2,y$:
+\[\begin{array}{rl}
+p(\mu|\sigma^2,y) &\propto p(\mu,\sigma^2|y) \\
+&\propto \exp\left( -\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-\mu)^2 \right) \exp\left( -\frac{1}{2C} (\mu-m)^2 \right) \\
+&\propto \exp\left( -\frac{1}{2} \left[ \left( \frac{1}{\sigma^2/n} + \frac{1}{C} \right)\mu^2 - 2\mu\left( \frac{\overline{y}}{\sigma^2/n} + \frac{m}{C} \right) \right] \right)
+\end{array} \]
+thus $\mu|\sigma^2,y \sim N(m',C')$ where 
+\[ 
+\begin{array}{rl} 
+m' &= C'\left( \frac{\overline{y}}{\sigma^2/n} + \frac{m}{C} \right) \\
+C' &= \left( \frac{1}{\sigma^2/n} + \frac{1}{C} \right)^{-1}
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Derive $\sigma^2|\mu,y$.}
+Recall
+\[ \begin{array}{rl}
+p(\mu,\sigma^2|y) \propto& (\sigma^2)^{-n/2} \exp\left( -\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-\mu)^2 \right) \exp\left( -\frac{1}{2C} (\mu-m)^2 \right) \\
+&\times(\sigma^2)^{-(v/2+1)} \exp\left( -\frac{vs^2}{2\sigma^2} \right) 
+\end{array} \]
+
+Now find $\sigma^2|\mu,y$:
+\[\begin{array}{rl}
+p(\sigma^2|\mu,y) &\propto p(\mu,\sigma^2|y) \\
+&\propto (\sigma^2)^{-([v+n]/2+1)}\exp\left( -\frac{1}{2\sigma^2} \left[ vs^2 + \sum_{i=1}^n (y_i-\mu)^2 \right]\right)
+\end{array} \]
+and thus $\sigma^2|\mu,y \sim \mbox{Inv-}(v', (s')^2)$ where
+\[ \begin{array}{rl}
+v' & = v+n \\
+v'(s')^2 &= vs^2 + \sum_{i=1}^n (y_i-\mu)^2 
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code for Gibbs sampler}
+
+<<echo=TRUE>>=
+# Data and prior
+y = rnorm(10)
+m = 0; C = 10
+v = 1; s = 1
+
+# Initial values
+mu = 0
+sigma = 1
+
+# Save structures
+n_iter = 1000
+mu_keep = rep(NA, n_iter)
+sigma_keep = rep(NA, n_iter)
+
+# Pre-calculate 
+n = length(y)
+sum_y = sum(y)
+vp = v+n
+vs2 = v*s^2
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code for Gibbs sampler}
+
+<<echo=TRUE>>=
+# Gibbs sampler
+for (i in 1:n_iter) {
+  # Sample mu
+  Cp = 1/(n/sigma^2+1/C)
+  mp = Cp*(sum_y/sigma^2+m/C)
+  mu = rnorm(1, mp, Cp)
+  
+  # Sample sigma
+  vpsp2 = vs2 + sum((y-mu)^2)
+  sigma = 1/sqrt(rgamma(1, vp/2, vpsp2/2))
+  
+  # Save iterations
+  mu_keep[i] = mu
+  sigma_keep[i] = sigma
+}
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Posteriors}
+
+<<fig.width=15, warning=FALSE>>=
+d = data.frame(mu=mu_keep, sigma=sigma_keep, t = 1:length(mu_keep))
+m = melt(d, id.vars='t', variable.name='parameter')
+ggplot(m, aes(x=t, y=value)) + 
+  geom_line() + 
+  facet_wrap(~parameter, scales='free')
+
+ggplot(m, aes(x=value, y=..density..)) + 
+  geom_histogram(binwidth=0.02) + 
+  facet_wrap(~parameter, scales='free')
+@
+
+\end{frame}
+
+
+\section{$K$-component Gibbs sampler}
 \frame{\frametitle{$K$-component Gibbs sampler}
 	Suppose $\theta = (\theta_1,\ldots,\theta_K)$\pause, then the following Gibbs sampler can be constructed \pause
 	\[ \begin{array}{rl}
@@ -211,6 +378,31 @@ bivariate_normal_animation(x, rho)
 	\end{array} \]
 	The distributions above are called the \alert{full conditional distributions}. \pause If some of the $\theta_k$ are vectors, then this is called a \alert{block} Gibbs sampler.
 }
+
+
+\begin{frame}
+\frametitle{Hierarchical normal model}
+
+Let 
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2), \qquad \mu_i \stackrel{ind}{\sim} N(\eta,\tau^2)\]
+\pause
+for $i=1,\ldots,\mathrm{I}$, $j=1,\ldots,n_i$, $n = \sum_{i=1}^\mathrm{I} n_i$ and \pause prior 
+\[ p(\eta,\tau^2,\sigma) \propto IG(\tau^2; a_\tau, b_\tau) IG(\sigma^2; a_\sigma, b_\sigma). \]
+
+\vspace{0.2in} \pause
+
+The full conditionals are 
+\[ \begin{array}{rl}
+p(\mu|\eta,\sigma^2,\tau^2,y) &= \prod_{i=1}^n p(\mu_i|\sigma^2,\tau^2,y_i) \\
+p(\mu_i|\eta,\sigma^2,\tau^2,y_i) &= N\left(\left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right] \left[ \frac{\overline{y}_i}{\sigma^2/n_i} + \frac{\eta}{\tau^2} \right] , \left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right]^{-1} \right) \\
+p(\eta|\mu,\sigma^2,\tau^2,y) &= N\left( \overline{\mu}, \tau^2/\mathrm{I}\right) \\
+p(\sigma^2|\mu,\eta,\tau^2,y) &= IG(a_\sigma+n/2, b_\sigma + \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2) \\
+p(\tau^2|\mu,\eta,\sigma^2,y) &= IG(a_\tau+\mathrm{I}/2, b_\tau + \sum_{i=1}^\mathrm{I} (\mu_i-\eta)^2/2) 
+\end{array} \]
+where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\mu} = \sum_{i=1}^\mathrm{I} \mu_i$. 
+
+\end{frame}
+
 
 
 \section{Metropolis-within-Gibbs}
@@ -227,8 +419,13 @@ bivariate_normal_animation(x, rho)
 }
 
 
+
+
 \begin{frame}[fragile]
 \frametitle{Bivariate normal with $\rho=0.9$}
+
+Reconsider the bivariate normal example substituting a Metropolis step in place of a Gibbs step:
+
 <<gibbs_and_metropolis_mcmc, echo=TRUE>>=
 gibbs_and_metropolis = function(x0, n_points, rho) {
   x = matrix(x0, nrow=n_points, ncol=2, byrow=TRUE)
@@ -256,117 +453,46 @@ bivariate_normal_animation(x, rho)
 \end{frame}
 
 
-
-\section{Slice sampling}
 \begin{frame}
-\frametitle{Slice sampling}
-Suppose the target distribution is $p(\theta|y)$ with scalar $\theta$. \pause Then,
-\[ p(\theta|y) = \int_0^{p(\theta|y)} du \]
-\pause Thus, $p(\theta|y)$ can be thought of as the marginal distribution of 
-\[ (\theta,U) \sim \mbox{Unif}\{(\theta,u):0<u<p(\theta|y)\} \]
-where $u$ is an \alert{auxiliary variable}.
+\frametitle{Hierarchical normal model}
 
-\vspace{0.2in} \pause 
+Let 
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2), \qquad \mu_i \stackrel{ind}{\sim} N(\eta,\tau^2)\]
+\pause
+for $i=1,\ldots,\mathrm{I}$, $j=1,\ldots,n_i$, $n = \sum_{i=1}^\mathrm{I} n_i$ and \pause prior 
+\[ p(\eta,\tau^2,\sigma) \propto Ca^+(\tau^2; 0, b_\tau) Ca^+(\sigma^2; 0, b_\sigma). \]
 
-\alert{Slice sampling} performs the following Gibbs sampler: \pause 
-\begin{enumerate}
-\item $u^t|\theta^{t-1} \sim \mbox{Unif}\{u:0<u<p(\theta^{t-1}|y)\}$ \pause and
-\item $\theta^t|u^t \sim \mbox{Unif}\{\theta: u^t<p(\theta|y) \}$.
+\vspace{0.2in} \pause
+
+The full conditionals are 
+\[ \begin{array}{rl}
+p(\mu|\eta,\sigma^2,\tau^2,y) &= \prod_{i=1}^n p(\mu_i|\sigma^2,\tau^2,y_i) \\
+p(\mu_i|\eta,\sigma^2,\tau^2,y_i) &= N\left(\left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right] \left[ \frac{\overline{y}_i}{\sigma^2/n_i} + \frac{\eta}{\tau^2} \right] , \left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right]^{-1} \right) \\
+p(\eta|\mu,\sigma^2,\tau^2,y) &= N\left( \overline{\mu}, \tau^2/\mathrm{I}\right) \\
+p(\sigma^2|\mu,\eta,\tau^2,y) &\propto IG(n/2, \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2)Ca^+(0,b_\sigma) \\
+p(\tau^2|\mu,\eta,\sigma^2,y) &\propto IG(\mathrm{I}/2, \sum_{i=1}^\mathrm{I} (\mu_i-\eta)^2/2) Ca^+(0,b_\tau)
+\end{array} \]
+where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\mu} = \sum_{i=1}^\mathrm{I} \mu_i$. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Hierarchical normal model}
+
+To sample from $p(\theta|y) \propto IG(a,b) Ca^+(0,b_\theta)$, we have a variety of possibilities. \pause Here are three:
+\begin{enumerate}[<+->]
+\item Rejection sampling with $\theta^*\sim IG(a,b)$ and thus $M^*_{opt} = Ca^+(0;0,b_\theta)$ and the acceptance probability is $Ca^+(\theta^*;0,b_\theta) / M^*_{opt}$.
+\item Independence Metropolis-Hastings with $\theta^*\sim IG(a,b)$ and thus the acceptance probability is $Ca^+(\theta^*;0,b_\theta)/Ca^+(\theta^t;0,b_\theta)$.
+\item Random-walk Metroplis-Hastings with $\theta^* \sim g(\cdot|\theta^t)$ and acceptance probability is $q(\theta^*|y)/q(\theta^t|y)$. 
 \end{enumerate}
+
 \end{frame}
 
 
 
 
-
-\begin{frame}[fragile]
-\frametitle{Slice sampler for exponential distribution}
-Consider the target $\theta|y \sim Exp(1)$,\pause  then 
-\[ \{\theta: u<p(\theta|y) \} = (0,-\log(u)). \]
-
-\pause 
-
-<<uniform_region, fig.width=10, fig.height=4>>=
-u = 0.5; x = -log(u)
-curve(dexp, 0, 1.5, ylab="u", xlab=expression(theta), main="Target disribution", ylim=c(0,1))
-curve(dexp, 0, x, add=TRUE, lwd=3, col="red")
-segments(0,u,x,u,col="gray")
-segments(x,0,x,u,col="gray")
-segments(0,0,x,0,lwd=3, col="red")
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Slice sampling in R}
-<<slice_sampler, echo=TRUE>>=
-# Slice sampler 
-slice = function(n,init_theta,target,A) {
-  u = theta = rep(NA,n)
-  theta[1] = init_theta
-  u[1] = runif(1,0,target(theta[1])) # This never actually gets used
-
-  for (i in 2:n) {
-    u[i] = runif(1,0,target(theta[i-1]))
-    endpoints = A(u[i],theta[i-1]) # The second argument is used in the second example
-    theta[i] = runif(1, endpoints[1],endpoints[2])
-  }
-  return(list(theta=theta,u=u))
-}
-# Exponential example
-set.seed(6)
-A = function(u,theta=NA) c(0,-log(u))
-res = slice(10, 0.1, dexp, A)
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{}
-<<slice_sampling_plot, fig.show='animate', warning=FALSE, echo=FALSE>>=
-slice_sampling_animation = function(theta, u, ask=interactive()) {
-  x = cbind(theta,u)
-  for (i in 2:nrow(x)) {
-    jj = (2:i)[-(i-1)] # vector from 2:(i-1) and NULL if i=2
-    for (j in 1:6) {
-      plot.new()
-      
-      # All previous plotting
-      curve(dexp, 0, 3, xlab=expression(theta), ylab="u", main="Slice sampling an Exp(1) distribution")
-      segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
-      segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
-      points(x[(1:(i-1)),1], x[(1:(i-1)),2], col="red", pch=19)
-      
-      # New plotting
-      if (j>1 & j<4) abline(v=x[i-1,1], lty=2)
-      if (j>2) arrows(x[i-1,1], x[i-1,2], x[i-1,1], x[i,2], length=0.1)
-      if (j>3 & j<6) abline(h=x[i,2], lty=2)
-      if (j>4) arrows(x[i-1,1], x[i,2], x[i,1], x[i,2], length=0.1)
-      if (j>5) points(x[i,1], x[i,2], col="red", pch=19)
-      
-      if (ask) readline("hit <enter>:")
-    }
-  }
-  
-  # Final plot
-  jj=2:nrow(x)
-  curve(dexp, 0, 3, xlab=expression(theta), ylab="u", 
-        main="Slice sampling an Exp(1) distribution")
-  segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
-  segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
-  points(x[,1], x[,2], col="red", pch=19)
-}
-with(res, slice_sampling_animation(theta,u))
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-<<slice_sampling_histogram>>=
-hist(slice(1e4, 0.1, dexp, A)$theta, freq=F, 100, main="Slice sampling approximation to Exp(1) distribution", xlab=expression(theta))
-curve(dexp, add=TRUE)
-@
-\end{frame}
 
 
 \section{Hierarchical binomial model}
@@ -543,6 +669,132 @@ and thus the $\theta_i$ are conditionally independent. \pause Thus, we actually 
 \end{frame}
  
 
+ 
+ \section{Slice sampling}
+\begin{frame}
+\frametitle{Slice sampling}
+Suppose the target distribution is $p(\theta|y)$ with scalar $\theta$. \pause Then,
+\[ p(\theta|y) = \int_0^{p(\theta|y)} du \]
+\pause Thus, $p(\theta|y)$ can be thought of as the marginal distribution of 
+\[ (\theta,U) \sim \mbox{Unif}\{(\theta,u):0<u<p(\theta|y)\} \]
+where $u$ is an \alert{auxiliary variable}.
+
+\vspace{0.2in} \pause 
+
+\alert{Slice sampling} performs the following Gibbs sampler: \pause 
+\begin{enumerate}
+\item $u^t|\theta^{t-1} \sim \mbox{Unif}\{u:0<u<p(\theta^{t-1}|y)\}$ \pause and
+\item $\theta^t|u^t \sim \mbox{Unif}\{\theta: u^t<p(\theta|y) \}$.
+\end{enumerate}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Slice sampler for exponential distribution}
+Consider the target $\theta|y \sim Exp(1)$,\pause  then 
+\[ \{\theta: u<p(\theta|y) \} = (0,-\log(u)). \]
+
+\pause 
+
+<<uniform_region, fig.width=10, fig.height=4>>=
+u = 0.5; x = -log(u)
+curve(dexp, 0, 1.5, ylab="u", xlab=expression(theta), main="Target disribution", ylim=c(0,1))
+curve(dexp, 0, x, add=TRUE, lwd=3, col="red")
+segments(0,u,x,u,col="gray")
+segments(x,0,x,u,col="gray")
+segments(0,0,x,0,lwd=3, col="red")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Slice sampling in R}
+<<slice_sampler, echo=TRUE>>=
+# Slice sampler 
+slice = function(n,init_theta,target,A) {
+  u = theta = rep(NA,n)
+  theta[1] = init_theta
+  u[1] = runif(1,0,target(theta[1])) # This never actually gets used
+
+  for (i in 2:n) {
+    u[i] = runif(1,0,target(theta[i-1]))
+    endpoints = A(u[i],theta[i-1]) # The second argument is used in the second example
+    theta[i] = runif(1, endpoints[1],endpoints[2])
+  }
+  return(list(theta=theta,u=u))
+}
+# Exponential example
+set.seed(6)
+A = function(u,theta=NA) c(0,-log(u))
+res = slice(10, 0.1, dexp, A)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{}
+<<slice_sampling_plot, fig.show='animate', warning=FALSE, echo=FALSE>>=
+slice_sampling_animation = function(theta, u, ask=interactive()) {
+  x = cbind(theta,u)
+  for (i in 2:nrow(x)) {
+    jj = (2:i)[-(i-1)] # vector from 2:(i-1) and NULL if i=2
+    for (j in 1:6) {
+      plot.new()
+      
+      # All previous plotting
+      curve(dexp, 0, 3, xlab=expression(theta), ylab="u", main="Slice sampling an Exp(1) distribution")
+      segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
+      segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
+      points(x[(1:(i-1)),1], x[(1:(i-1)),2], col="red", pch=19)
+      
+      # New plotting
+      if (j>1 & j<4) abline(v=x[i-1,1], lty=2)
+      if (j>2) arrows(x[i-1,1], x[i-1,2], x[i-1,1], x[i,2], length=0.1)
+      if (j>3 & j<6) abline(h=x[i,2], lty=2)
+      if (j>4) arrows(x[i-1,1], x[i,2], x[i,1], x[i,2], length=0.1)
+      if (j>5) points(x[i,1], x[i,2], col="red", pch=19)
+      
+      if (ask) readline("hit <enter>:")
+    }
+  }
+  
+  # Final plot
+  jj=2:nrow(x)
+  curve(dexp, 0, 3, xlab=expression(theta), ylab="u", 
+        main="Slice sampling an Exp(1) distribution")
+  segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
+  segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
+  points(x[,1], x[,2], col="red", pch=19)
+}
+with(res, slice_sampling_animation(theta,u))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<slice_sampling_histogram>>=
+hist(slice(1e4, 0.1, dexp, A)$theta, freq=F, 100, main="Slice sampling approximation to Exp(1) distribution", xlab=expression(theta))
+curve(dexp, add=TRUE, col='red')
+@
+\end{frame}
+
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+\begin{itemize}
+\item Gibbs sampling breaks down a hard problem of sampling from a high dimensional distribution to a set of easier problems sampling from low dimensional full conditional distributions.
+\item If the low dimensional distributions have an unknown form, then alternative methods can be used, e.g. (adaptive) rejection sampling, Metropolis-Hastings, etc.
+\item A Gibbs sampler can always be constructed by introducing an auxiliary variable that horizontally slices the target density. 
+\end{itemize}
+
+\end{frame}
+ 
  
  
 \end{document}
