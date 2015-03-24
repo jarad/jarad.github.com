@@ -369,6 +369,10 @@ The \alert{Metropolis algorithm} performs the following \pause
 \begin{frame}[fragile]
 \frametitle{Stochastic hill climbing}
 
+Notice that $r = q(\theta^*|y)/q(\theta^t|y)$ and thus will accept whenever the target density is larger when evaluated at the proposed value than it is when evaluated at the current value. 
+
+\vspace{.2in} \pause
+
 Suppose $\theta|y \sim N(0,1)$, $\theta^t = 1$, and $\theta^* \sim N(\theta^t,1)$. \pause 
 
 <<hill_climbing, fig.width=10>>=
@@ -559,7 +563,7 @@ where $\mathrm\Sigma$ is the tuning parameter.
 \begin{frame}
 \frametitle{Adapting the tuning parameter}
 
-Recall that the optimal random-walk tuning parameter (if the posterior is normal) is $2.4^2 Var(\theta|y)/d$ \pause where $Var(\theta|y)$ is the unknown posterior covariance matrix. \pause We can estimate $Var(\theta|y)$ using the sample covariance matrix of draws from the posterior. 
+Recall that the optimal random-walk tuning parameter (if the target is normal) is $2.4^2 Var(\theta|y)/d$ \pause where $Var(\theta|y)$ is the unknown posterior covariance matrix. \pause We can estimate $Var(\theta|y)$ using the sample covariance matrix of draws from the posterior. 
 
 \vspace{0.2in} \pause 
 
@@ -568,8 +572,8 @@ Proposed automatic adapting of the Metropolis-Hastings tuning parameter: \pause
 \item Start with $\mathrm\Sigma_0$. Set $b=0$.
 \item Run $M$ iterations of the MCMC using $2.4^2\mathrm\Sigma_b/d$. 
 \item Set $\mathrm\Sigma_{b+1}$ to the sample covariance matrix of all previous draws. 
-\item If $b<B$, set $b=b+1$ and return to step 2. Otherwise, go to step 5.
-\item Run $K$ iterations of the MCMC using $2.4^2\mathrm\Sigma_B/d$ and throw away all previous draws.
+\item If $b<B$, set $b=b+1$ and return to step 2. Otherwise, throw away all previous draws and go to step 5.
+\item Run $K$ iterations of the MCMC using $2.4^2\mathrm\Sigma_B/d$.
 \end{enumerate}
 
 \end{frame}
@@ -596,7 +600,7 @@ samps = matrix(NA, nrow=B*M, ncol=2)
 a_rate = rep(NA, B)
 
 # Initialize
-Sigma = diag(2)
+Sigma = diag(2)  # Sigma_0
 current = c(0,1)
 @
 
@@ -761,7 +765,7 @@ for (k in 1:K) {
 samps = as.data.frame(samps); names(samps) = c("alpha","beta")
 @
 
-<<dependson='beta_binomial',message=FALSE, warning=FALSE>>=
+<<dependson='beta_binomial',message=FALSE, warning=FALSE, fig.width=10>>=
 ggpairs(samps, 
         lower = list(continuous='points'), 
         diag  = list(continuous='bar'))
@@ -778,7 +782,7 @@ ggpairs(samps,
 \item The Metropolis-Hastings algorithm, samples $\theta^*\sim g(\cdot|\theta^t)$ and sets $\theta^{t+1}=\theta^*$ with probability equal to $\min\{1,r\}$ where 
 \[ r = \frac{q(\theta^*|y)}{q(\theta^t|y)} \frac{g(\theta^t|\theta^*)}{g(\theta^*|\theta^t)} \]
 and otherwise sets $\theta^{t+1}=\theta^t$.
-\item There are two main Metropolis-Hastings proposals
+\item There are two common Metropolis-Hastings proposals
 \begin{itemize}
 \item independent proposal: $g(\theta^*|\theta^t) = g(\theta^*)$
 \item random-walk proposal: $g(\theta^*|\theta^t) = g(\theta^t|\theta^*)$
