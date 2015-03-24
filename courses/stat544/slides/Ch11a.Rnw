@@ -79,7 +79,7 @@ set.seed(1)
 Let 
 \begin{itemize}
 \item $p(\theta|y)\propto q(\theta|y)$ be the target distribution and
-\item $\theta^t$ be the current value of the chain.
+\item $\theta^t$ be the current draw from $p(\theta|y)$.
 \end{itemize}
 
 \vspace{0.2in} \pause
@@ -129,7 +129,7 @@ The Metropolis-Hastings algorithm performs the following \pause
 %   theta[i] = ifelse(runif(1)<r, proposed, theta[i-1])
 % }
 % table(theta-1)/n
-% qplot(1:n, theta-1)+labs(x="Time",y=expression(theta))
+% qplot(1:n, theta-1)+labs(x="t",y=expression(theta))
 % @
 % \end{frame}
 % 
@@ -189,14 +189,14 @@ The Metropolis-Hastings algorithm performs the following \pause
 % \end{frame}
 
 
-\subsection{Independence Metropolis-Hastings}
+\section{Independence Metropolis-Hastings}
 \begin{frame}
 \frametitle{Independence Metropolis-Hastings}
 
 Let 
 \begin{itemize}
 \item $p(\theta|y)\propto q(\theta|y)$ be the target distribution, 
-\item $\theta^t$ be the current value of the chain, \pause and
+\item $\theta^t$ be the current draw from $p(\theta|y)$, \pause and
 \item $g(\theta|\theta^t) = g(\theta)$, i.e. the proposal is \alert{independent} of the current value.
 \end{itemize}
 
@@ -252,7 +252,7 @@ ggplot(melt(d, id.vars='x', variable.name='density'),
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
-<<normal_cauchy_independence, fig.width=10>>=
+<<normal_cauchy_independence, fig.width=15>>=
 set.seed(1)
 y = 0 
 n = 100
@@ -265,13 +265,7 @@ for (i in 2:n) {
 }
 qplot(1:n, theta) +
   labs(x="Iteration", y=expression(theta), title="Independence Metropolis-Hastings")
-@
-\end{frame}
 
-
-\begin{frame}[fragile]
-\frametitle{Example: Normal-Cauchy model (bad starting value)}
-<<normal_cauchy_independence2, fig.width=10>>=
 theta[1] = 10 # This line changed
 for (i in 2:n) {
   proposed = rnorm(1,y)
@@ -279,7 +273,7 @@ for (i in 2:n) {
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 qplot(1:n, theta) +
-  labs(x="Time", y=expression(theta), title="Independence Metropolis-Hastings")
+  labs(x="t", y=expression(theta), title="Independence Metropolis-Hastings (poor starting value)")
 @
 \end{frame}
 
@@ -290,22 +284,42 @@ qplot(1:n, theta) +
 
 Recall that 
 \begin{itemize}[<+->]
-\item rejection sampling required the proposal to have heavy tails
-\item importance sampling was efficient only when the proposal has heavy tails
+\item rejection sampling requires the proposal to have heavy tails and
+\item importance sampling is efficient only when the proposal has heavy tails.
 \end{itemize}
 
 \vspace{0.2in} \pause
 
 Independence Metropolis-Hastings also requires heavy tailed proposals \pause since if $\theta^t$ is 
 \begin{itemize}
-\item in a region where $q(\theta^t|y)>>g(\theta^t)$ \pause then
+\item in a region where $p(\theta^t|y)>>g(\theta^t)$ \pause then
 \item any proposal $\theta^*$ such that $p(\theta^*|y)\approx g(\theta^*)$ \pause 
 \end{itemize}
 will result in 
-\[ r = \frac{g(\theta^t)}{q(\theta^t|y)}\frac{q(\theta^*|y)}{g(\theta^*)} \pause \approx 0 \]
+\[ r = \frac{g(\theta^t)}{p(\theta^t|y)}\frac{p(\theta^*|y)}{g(\theta^*)} \pause \approx 0 \]
 \pause and few samples will be accepted.
 \end{frame}
 
+
+\begin{frame}[fragile]
+\frametitle{Need heavy tails - example}
+
+Suppose $\theta|y \sim Ca(0,1)$ and we use a standard normal as a proposal. \pause Then 
+
+<<fig.width=15>>=
+d = mutate(data.frame(x = seq(-4,4,by=.1)), 
+           target = dcauchy(x),
+           proposal = dnorm(x),
+           log_ratio = log(target)-log(proposal))
+ggplot(melt(d[,c('x','target','proposal')], 
+            id.var='x', variable.name='density'),
+       aes(x=x, y=value, color=density)) +
+  geom_line() + 
+  theme(legend.position="none")
+ggplot(d, aes(x=x,y=log_ratio)) + geom_line()
+@
+
+\end{frame}
 
 
 \begin{frame}[fragile]
@@ -319,21 +333,21 @@ for (i in 2:n) {
          dnorm(theta[i-1],log=TRUE)-dnorm(proposed,log=TRUE)
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
-qplot(1:n, theta)+labs(x="Time",y=expression(theta))
+qplot(1:n, theta)+labs(x="t",y=expression(theta))
 @
 
 \end{frame}
 
 
 
-\subsection{Random-walk Metropolis}
+\section{Random-walk Metropolis}
 \begin{frame}
 \frametitle{Random-walk Metropolis}
 
 Let 
 \begin{itemize}
 \item $p(\theta|y)\propto q(\theta|y)$ be the target distribution, 
-\item $\theta^t$ be the current value of the chain, \pause and
+\item $\theta^t$ be the current draw from $p(\theta|y)$, \pause and
 \item $g(\theta^*|\theta^t) = g(\theta^t|\theta^*)$, i.e. the proposal is \alert{symmetric}.
 \end{itemize}
 
@@ -354,6 +368,8 @@ The \alert{Metropolis algorithm} performs the following \pause
 
 \begin{frame}[fragile]
 \frametitle{Stochastic hill climbing}
+
+Suppose $\theta|y \sim N(0,1)$, $\theta^t = 1$, and $\theta^* \sim N(\theta^t,1)$. \pause 
 
 <<hill_climbing, fig.width=10>>=
 curve(dnorm, -3, 3, lwd=2)
@@ -376,14 +392,15 @@ legend("topright",c("Target","Proposal"), col=1:2, lwd=2)
 \vspace{0.2in} \pause 
 
 Use $N(\theta^t,\tau^2)$ as the proposal\pause, then the acceptance probability is the $\min\{1,r\}$ \pause with 
-\[ r = \frac{p(\theta^*|y)}{p(\theta^t|y)} \pause = \frac{p(y|\theta^*)p(\theta^*)}{p(y|\theta^t)p(\theta^t)}. \] 
+\[ r = \frac{q(\theta^*|y)}{q(\theta^t|y)} \pause = \frac{p(y|\theta^*)p(\theta^*)}{p(y|\theta^t)p(\theta^t)}. \] 
+For this example, let $\tau^2 = 1$. 
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model }
-<<normal_cauchy_random_walk, fig.width=10>>=
+<<normal_cauchy_random_walk, fig.width=15>>=
 n = 100
 log_q = function(theta,y) dnorm(y,theta,log=TRUE)+dcauchy(theta,log=TRUE)
 current = rnorm(1,y)
@@ -394,13 +411,9 @@ for (i in 1:n) {
   current = ifelse(log(runif(1))<logr, proposed, current)
   samps[i] = current
 }
-qplot(1:n, samps)+labs(x="Time", y=expression(theta), title="Random-walk Metropolis")
-@
-\end{frame}
+qplot(1:n, samps) + 
+  labs(x="t", y=expression(theta), title="Random-walk Metropolis")
 
-\begin{frame}[fragile]
-\frametitle{Example: Normal-Cauchy model with poor initial value}
-<<normal_cauchy_random_walk2, fig.width=10>>=
 current = 10 # This line changed
 for (i in 1:n) {
   proposed = rnorm(1,current)
@@ -408,16 +421,19 @@ for (i in 1:n) {
   current = ifelse(log(runif(1))<logr, proposed, current)
   samps[i] = current
 }
-qplot(1:n, samps)+labs(x="Time", y=expression(theta), title="Random-walk Metropolis")
+qplot(1:n, samps) + 
+  labs(x = "t", 
+       y = expression(theta), 
+       title = "Random-walk Metropolis (poor starting value)")
 @
 \end{frame}
 
 
-
+\subsection{Optimal tuning parameter}
 \begin{frame}
 \frametitle{Random-walk tuning parameter}
 \small 
-  Let $p(\theta|y)$ be the target distribution\pause, $N(\theta^t,\tau^2)$ is the proposal\pause, and $\theta^t$ is (approximately) distributed according to $p(\theta|y)$. \pause 
+  Let $p(\theta|y)$ be the target distribution\pause, the proposal is symmetric with scale $\tau^2$, \pause and $\theta^t$ is (approximately) distributed according to $p(\theta|y)$. \pause 
 
 \begin{itemize}
 \item If $\tau^2\approx 0$\pause, then $\theta^*\approx \theta^t$ \pause and
@@ -435,12 +451,14 @@ So there is an optimal $\tau^2$ somewhere. \pause For normal targets, the optima
 \begin{frame}[fragile]
 \frametitle{Random-walk with tuning parameter that is too big and too small}
 
+Let $y|\theta \sim N(\theta,1)$, $\theta\sim Ca(0,1)$, and $y=1$. 
+
 <<tuning_parameter, fig.width=10>>=
-random_walk = function(n, tau, theta0, target) {
+random_walk = function(n, tau, theta0, log_target) {
   theta = rep(theta0,n)
   for (i in 2:n) {
     proposed = rnorm(1, theta[i-1], tau)
-    logr = log(target(proposed,y))-log(target(theta[i-1],y))
+    logr = log_target(proposed,y)-log_target(theta[i-1],y)
     theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
   }
   return(data.frame(iteration=1:n, theta=theta))
@@ -448,13 +466,12 @@ random_walk = function(n, tau, theta0, target) {
 
 d = expand.grid(tau=c(1/10,10))
 r = ddply(d, .(tau), function(x) {
-  random_walk(100, x$tau, 0, p)
+  random_walk(100, x$tau, 0, log_q)
 })
 ggplot(r, aes(x=iteration, y=theta, color=as.factor(tau)))+geom_point()
 @
 
 \end{frame}
-
 
 
 \subsection{Binomial model}
@@ -467,7 +484,7 @@ Let $Y \sim Bin(n,\theta)$ and $\theta \sim Be(1/2,1/2)$\pause, thus the posteri
 \vspace{0.2in} \pause
 
 To construct a random-walk Metropolis algorithm, we choose the proposal 
-\[ \theta \sim N(\theta^t,\tau^2) \]
+\[ \theta^* \sim N(\theta^t,0.4^2) \]
 \pause and accept with probability $\min\{1,r\}$ \pause where 
 \[ r = \frac{p(\theta^*|y)}{p(\theta^t|y)} \pause = \frac{(\theta^*)^{y-0.5}(1-\theta^*)^{n-y-0.5}\mathrm{I}(0<\theta^*<1)}{(\theta^t)^{y-0.5}(1-\theta^t)^{n-y-0.5}\mathrm{I}(0<\theta^t<1)} \]
 \end{frame}
@@ -535,8 +552,6 @@ Perform a random-walk Metropolis using a normal proposal, i.e. if $\mu^t$ and $\
 \end{array} \right) \sim N\left( \left[ \begin{array}{c} \mu^t \\ \sigma^t \end{array} \right], \mathrm\Sigma \right)
 \]
 where $\mathrm\Sigma$ is the tuning parameter.
-
-
 \end{frame}
 
 
@@ -548,12 +563,12 @@ Recall that the optimal random-walk tuning parameter (if the posterior is normal
 
 \vspace{0.2in} \pause 
 
-Proposed automatic adapting of the Metropolis-Hastings tuning parameter:
-\begin{enumerate}
+Proposed automatic adapting of the Metropolis-Hastings tuning parameter: \pause
+\begin{enumerate}[<+->]
 \item Start with $\mathrm\Sigma_0$. Set $b=0$.
 \item Run $M$ iterations of the MCMC using $2.4^2\mathrm\Sigma_b/d$. 
-\item Estimate $\mathrm\Sigma_{b+1}$ using the sample covariance matrix of all previous draws. 
-\item If $b<B$, set $b=b+1$ and return to step 2. 
+\item Set $\mathrm\Sigma_{b+1}$ to the sample covariance matrix of all previous draws. 
+\item If $b<B$, set $b=b+1$ and return to step 2. Otherwise, go to step 5.
 \item Run $K$ iterations of the MCMC using $2.4^2\mathrm\Sigma_B/d$ and throw away all previous draws.
 \end{enumerate}
 
@@ -607,7 +622,7 @@ for (b in 1:B) {
   Sigma = var(samps[1:i,])
 }
 a_rate
-var(samps)
+var(samps) # Sigma_B
 @
 
 \end{frame}
@@ -681,10 +696,10 @@ p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2} \]
 \pause 
 and after marginalizing out the $\theta_i$
 \[ Y_i \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\beta), \quad
-p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2} \]
+p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}\mathrm{I}(a>0)\mathrm{I}(b>0) \]
 \pause
 Thus the posterior is 
-\[ p(\alpha,\beta|y) \propto \left[ \prod_{i=1}^n \frac{B(\alpha+y_i, \beta+n_i-y_i)}{B(\alpha,\beta)} \right] (\alpha+\beta)^{-5/2} \]
+\[ p(\alpha,\beta|y) \propto \left[ \prod_{i=1}^n \frac{B(\alpha+y_i, \beta+n_i-y_i)}{B(\alpha,\beta)} \right] (\alpha+\beta)^{-5/2}\mathrm{I}(a>0)\mathrm{I}(b>0) \]
 where $B(\cdot)$ is the beta function.
 
 \vspace{0.2in} \pause
