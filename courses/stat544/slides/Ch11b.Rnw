@@ -95,16 +95,20 @@ set.seed(1)
 	\item sample $\theta_2^{t}\sim p\left(\theta_2|\theta_1^{t},y\right)$. 
 	\end{enumerate}
 	
-	\vspace{0.2in} \pause
-	
-	Notes:
-	\begin{itemize}[<+->]
-  \item The sequence $\{\theta^0,\theta^1,\ldots,\}$ is a Markov chain with transition distribution 
-  \[ p(\theta^{t}|\theta^{t-1},y) = p(\theta_2^{t}|\theta_1^{t},y)p(\theta_1^{t}|\theta_2^{t-1},y). \]
-	\item $\theta^{t} \stackrel{d}{\rightarrow} \theta$ where $\theta \sim p\left(\theta|y\right)$.  
-%	\item 
-%	\[  \frac{1}{J} \sum_{j=1}^J h\left(\theta^{t}\right) \rightarrow E_p[h(\theta)] = \int_{\Theta} h(\theta) f(\theta) d\theta  \]
-	\end{itemize}
+  \vspace{0.2in} \pause
+  
+  Thus in order to run a Gibbs sampler, we need to derive the \alert{full conditional} for $\theta_1$ and $\theta_2$, i.e. the distribution for $\theta_1$ and $\theta_2$ conditional on everything else.
+  
+% 	\vspace{0.2in} \pause
+% 	
+% 	Notes:
+% 	\begin{itemize}[<+->]
+%   \item The sequence $\{\theta^0,\theta^1,\ldots,\}$ is a Markov chain with transition distribution 
+%   \[ p(\theta^{t}|\theta^{t-1},y) = p(\theta_2^{t}|\theta_1^{t},y)p(\theta_1^{t}|\theta_2^{t-1},y). \]
+% 	\item $\theta^{t} \stackrel{d}{\rightarrow} \theta$ where $\theta \sim p\left(\theta|y\right)$.  
+% %	\item 
+% %	\[  \frac{1}{J} \sum_{j=1}^J h\left(\theta^{t}\right) \rightarrow E_p[h(\theta)] = \int_{\Theta} h(\theta) f(\theta) d\theta  \]
+% 	\end{itemize}
 }
 
 
@@ -393,13 +397,13 @@ for $i=1,\ldots,\mathrm{I}$, $j=1,\ldots,n_i$, $n = \sum_{i=1}^\mathrm{I} n_i$ a
 
 The full conditionals are 
 \[ \begin{array}{rl}
-p(\mu|\eta,\sigma^2,\tau^2,y) &= \prod_{i=1}^n p(\mu_i|\sigma^2,\tau^2,y_i) \\
-p(\mu_i|\eta,\sigma^2,\tau^2,y_i) &= N\left(\left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right] \left[ \frac{\overline{y}_i}{\sigma^2/n_i} + \frac{\eta}{\tau^2} \right] , \left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right]^{-1} \right) \\
-p(\eta|\mu,\sigma^2,\tau^2,y) &= N\left( \overline{\mu}, \tau^2/\mathrm{I}\right) \\
-p(\sigma^2|\mu,\eta,\tau^2,y) &= IG(a_\sigma+n/2, b_\sigma + \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2) \\
-p(\tau^2|\mu,\eta,\sigma^2,y) &= IG(a_\tau+\mathrm{I}/2, b_\tau + \sum_{i=1}^\mathrm{I} (\mu_i-\eta)^2/2) 
+p(\mu|\eta,\sigma^2,\tau^2,y) \pause &= \prod_{i=1}^n p(\mu_i|\sigma^2,\tau^2,y_i) \pause \\
+p(\mu_i|\eta,\sigma^2,\tau^2,y_i) \pause &= N\left(\left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right] \left[ \frac{\overline{y}_i}{\sigma^2/n_i} + \frac{\eta}{\tau^2} \right] , \left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right]^{-1} \right) \pause \\
+p(\eta|\mu,\sigma^2,\tau^2,y) \pause &= N\left( \overline{\mu}, \tau^2/\mathrm{I}\right) \pause \\
+p(\sigma^2|\mu,\eta,\tau^2,y) \pause &= IG(a_\sigma+n/2, b_\sigma + \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2) \pause \\
+p(\tau^2|\mu,\eta,\sigma^2,y) \pause &= IG(a_\tau+\mathrm{I}/2, b_\tau + \sum_{i=1}^\mathrm{I} (\mu_i-\eta)^2/2) 
 \end{array} \]
-where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\mu} = \sum_{i=1}^\mathrm{I} \mu_i$. 
+\pause where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\mu} = \sum_{i=1}^\mathrm{I} \mu_i$. 
 
 \end{frame}
 
@@ -407,7 +411,7 @@ where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\
 
 \section{Metropolis-within-Gibbs}
 \frame{\frametitle{Metropolis-within-Gibbs}
-  We have discussed two Markov chain approaches to sampling from target distributions:
+  We have discussed two Markov chain approaches to sample from a target distribution:
 	\begin{itemize}
 	\item Metropolis-Hastings algorithm
 	\item Gibbs sampling
@@ -415,7 +419,7 @@ where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\
 	
 	\vspace{0.2in} \pause
 	
-	Gibbs sampling assumed we can sample from $p(\theta_k|\theta_{-k})$ for all $k$\pause, but what if we cannot sample from all of these full conditional distributions? \pause For those $p(\theta_k|\theta_{-k})$ that cannot be sampled directly, a Metropolis-Hastings step can be substituted. 
+	Gibbs sampling assumed we can sample from $p(\theta_k|\theta_{-k})$ for all $k$\pause, but what if we cannot sample from all of these full conditional distributions? \pause For those $p(\theta_k|\theta_{-k})$ that cannot be sampled directly, a single iteration of the Metropolis-Hastings algorithm can be substituted. 
 }
 
 
@@ -464,14 +468,12 @@ for $i=1,\ldots,\mathrm{I}$, $j=1,\ldots,n_i$, $n = \sum_{i=1}^\mathrm{I} n_i$ a
 
 \vspace{0.2in} \pause
 
-The full conditionals are 
+The full conditionals are \pause exactly the same except \pause
 \[ \begin{array}{rl}
-p(\mu|\eta,\sigma^2,\tau^2,y) &= \prod_{i=1}^n p(\mu_i|\sigma^2,\tau^2,y_i) \\
-p(\mu_i|\eta,\sigma^2,\tau^2,y_i) &= N\left(\left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right] \left[ \frac{\overline{y}_i}{\sigma^2/n_i} + \frac{\eta}{\tau^2} \right] , \left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right]^{-1} \right) \\
-p(\eta|\mu,\sigma^2,\tau^2,y) &= N\left( \overline{\mu}, \tau^2/\mathrm{I}\right) \\
-p(\sigma^2|\mu,\eta,\tau^2,y) &\propto IG(n/2, \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2)Ca^+(0,b_\sigma) \\
-p(\tau^2|\mu,\eta,\sigma^2,y) &\propto IG(\mathrm{I}/2, \sum_{i=1}^\mathrm{I} (\mu_i-\eta)^2/2) Ca^+(0,b_\tau)
+p(\sigma^2|\mu,\eta,\tau^2,y) \pause &\propto IG(n/2, \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2)Ca^+(0,b_\sigma) \pause \\
+p(\tau^2|\mu,\eta,\sigma^2,y) \pause &\propto IG(\mathrm{I}/2, \sum_{i=1}^\mathrm{I} (\mu_i-\eta)^2/2) Ca^+(0,b_\tau)
 \end{array} \]
+\pause 
 where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\mu} = \sum_{i=1}^\mathrm{I} \mu_i$. 
 
 \end{frame}
@@ -519,6 +521,15 @@ For shorthand, we often use $\theta_i|\ldots$ where $\ldots$ indicates \emph{eve
 
 \begin{frame}
 \frametitle{Full conditional for $\theta_i$}
+
+\[ 
+Y_i\stackrel{ind}{\sim} Bin(n_i,\theta_i), \quad
+\theta_i \stackrel{iid}{\sim} Be(\alpha,\beta), \quad
+p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}
+\]
+
+\vspace{0.2in} \pause
+
 The full conditional for $\theta_i$ is 
 \[ \begin{array}{rl}
 p(\theta_i|\ldots)
@@ -530,8 +541,21 @@ p(\theta_i|\ldots)
 Thus $\theta_i|\ldots\sim Be(\alpha+y_i,\beta+n_i-y_i)$.
 \end{frame}
 
+
+
+
 \begin{frame}
 \frametitle{Full conditional for $\alpha$ and $\beta$}
+
+{\scriptsize
+\[ 
+Y_i\stackrel{ind}{\sim} Bin(n_i,\theta_i), \quad
+\theta_i \stackrel{iid}{\sim} Be(\alpha,\beta), \quad
+p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}
+\] }
+
+\pause
+
 The full conditional for $\alpha$ \pause is 
 \[ \begin{array}{rl}
 p(\alpha|\ldots) &\propto p(y|\theta)p(\theta|\alpha,\beta)p(\alpha,\beta) \pause \\
@@ -634,7 +658,8 @@ r = mcmc(2000, dat=dat, inits=inits, tune=list(alpha=1,beta=1))
 
 <<mcmc_summary, fig.width=10>>=
 r_subset = r[r$parameter %in% c("alpha","beta"),]
-ddply(r_subset, .(parameter), summarize, acceptance_rate = length(unique(value))/max(iteration))
+ddply(r_subset, .(parameter), summarize, 
+      acceptance_rate = length(unique(value))/max(iteration))
 ggplot(r_subset, aes(x=iteration, y=value))+geom_line()+facet_wrap(~parameter)
 @
 \end{frame}
@@ -787,8 +812,8 @@ curve(dexp, add=TRUE, col='red')
 \begin{frame}
 \frametitle{Summary}
 
-\begin{itemize}
-\item Gibbs sampling breaks down a hard problem of sampling from a high dimensional distribution to a set of easier problems sampling from low dimensional full conditional distributions.
+\begin{itemize}[<+->]
+\item Gibbs sampling breaks down a hard problem of sampling from a high dimensional distribution to a set of easier problems, i.e. sampling from low dimensional full conditional distributions.
 \item If the low dimensional distributions have an unknown form, then alternative methods can be used, e.g. (adaptive) rejection sampling, Metropolis-Hastings, etc.
 \item A Gibbs sampler can always be constructed by introducing an auxiliary variable that horizontally slices the target density. 
 \end{itemize}
