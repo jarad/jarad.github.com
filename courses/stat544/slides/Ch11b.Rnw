@@ -286,7 +286,7 @@ Now find $\sigma^2|\mu,y$:
 p(\sigma^2|\mu,y) &\propto p(\mu,\sigma^2|y) \\
 &\propto (\sigma^2)^{-([v+n]/2+1)}\exp\left( -\frac{1}{2\sigma^2} \left[ vs^2 + \sum_{i=1}^n (y_i-\mu)^2 \right]\right)
 \end{array} \]
-and thus $\sigma^2|\mu,y \sim \mbox{Inv-}(v', (s')^2)$ where
+and thus $\sigma^2|\mu,y \sim \mbox{Inv-}\chi^2(v', (s')^2)$ where
 \[ \begin{array}{rl}
 v' & = v+n \\
 v'(s')^2 &= vs^2 + \sum_{i=1}^n (y_i-\mu)^2 
@@ -307,7 +307,7 @@ v = 1; s = 1
 
 # Initial values
 mu = 0
-sigma = 1
+sigma2 = 1
 
 # Save structures
 n_iter = 1000
@@ -332,17 +332,17 @@ vs2 = v*s^2
 # Gibbs sampler
 for (i in 1:n_iter) {
   # Sample mu
-  Cp = 1/(n/sigma^2+1/C)
-  mp = Cp*(sum_y/sigma^2+m/C)
-  mu = rnorm(1, mp, Cp)
+  Cp = 1/(n/sigma2+1/C)
+  mp = Cp*(sum_y/sigma2+m/C)
+  mu = rnorm(1, mp, sqrt(Cp))
   
   # Sample sigma
   vpsp2 = vs2 + sum((y-mu)^2)
-  sigma = 1/sqrt(rgamma(1, vp/2, vpsp2/2))
+  sigma2 = 1/rgamma(1, vp/2, vpsp2/2)
   
   # Save iterations
   mu_keep[i] = mu
-  sigma_keep[i] = sigma
+  sigma_keep[i] = sqrt(sigma2)
 }
 @
 
@@ -397,7 +397,7 @@ for $i=1,\ldots,\mathrm{I}$, $j=1,\ldots,n_i$, $n = \sum_{i=1}^\mathrm{I} n_i$ a
 
 The full conditionals are 
 \[ \begin{array}{rl}
-p(\mu|\eta,\sigma^2,\tau^2,y) \pause &= \prod_{i=1}^n p(\mu_i|\sigma^2,\tau^2,y_i) \pause \\
+p(\mu|\eta,\sigma^2,\tau^2,y) \pause &= \prod_{i=1}^n p(\mu_i|\eta,\sigma^2,\tau^2,y_i) \pause \\
 p(\mu_i|\eta,\sigma^2,\tau^2,y_i) \pause &= N\left(\left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right] \left[ \frac{\overline{y}_i}{\sigma^2/n_i} + \frac{\eta}{\tau^2} \right] , \left[ \frac{1}{\sigma^2/n_i} + \frac{1}{\tau^2} \right]^{-1} \right) \pause \\
 p(\eta|\mu,\sigma^2,\tau^2,y) \pause &= N\left( \overline{\mu}, \tau^2/\mathrm{I}\right) \pause \\
 p(\sigma^2|\mu,\eta,\tau^2,y) \pause &= IG(a_\sigma+n/2, b_\sigma + \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2) \pause \\
@@ -419,7 +419,7 @@ p(\tau^2|\mu,\eta,\sigma^2,y) \pause &= IG(a_\tau+\mathrm{I}/2, b_\tau + \sum_{i
 	
 	\vspace{0.2in} \pause
 	
-	Gibbs sampling assumed we can sample from $p(\theta_k|\theta_{-k})$ for all $k$\pause, but what if we cannot sample from all of these full conditional distributions? \pause For those $p(\theta_k|\theta_{-k})$ that cannot be sampled directly, a single iteration of the Metropolis-Hastings algorithm can be substituted. 
+	Gibbs sampling assumed we can sample from $p(\theta_k|\theta_{-k},y)$ for all $k$\pause, but what if we cannot sample from all of these full conditional distributions? \pause For those $p(\theta_k|\theta_{-k})$ that cannot be sampled directly, a single iteration of the Metropolis-Hastings algorithm can be substituted. 
 }
 
 
@@ -447,6 +447,7 @@ gibbs_and_metropolis = function(x0, n_points, rho) {
 }
 
 x = gibbs_and_metropolis(c(-3,3), n, rho)
+length(unique(x[,2]))/length(x[,2]) # acceptance rate
 @
 \end{frame}
 
@@ -708,8 +709,8 @@ where $u$ is an \alert{auxiliary variable}.
 
 \alert{Slice sampling} performs the following Gibbs sampler: \pause 
 \begin{enumerate}
-\item $u^t|\theta^{t-1} \sim \mbox{Unif}\{u:0<u<p(\theta^{t-1}|y)\}$ \pause and
-\item $\theta^t|u^t \sim \mbox{Unif}\{\theta: u^t<p(\theta|y) \}$.
+\item $u^t|\theta^{t-1},y \sim \mbox{Unif}\{u:0<u<p(\theta^{t-1}|y)\}$ \pause and
+\item $\theta^t|u^t,y \sim \mbox{Unif}\{\theta: u^t<p(\theta|y) \}$.
 \end{enumerate}
 \end{frame}
 
