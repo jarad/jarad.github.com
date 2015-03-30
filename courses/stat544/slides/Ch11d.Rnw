@@ -21,6 +21,10 @@
 
 \newcommand{\I}{\mathrm{I}}
 
+\newcommand*{\approxdist}{\mathrel{\vcenter{\offinterlineskip
+\vskip-.25ex\hbox{\hskip.55ex$\cdot$}\vskip-.25ex\hbox{$\sim$}
+\vskip-.5ex\hbox{\hskip.55ex$\cdot$}}}}
+
 \begin{document}
 
 %\section{Temp??} \begin{comment}
@@ -42,6 +46,8 @@ library(reshape2)
 library(plyr)
 library(ggplot2)
 library(xtable)
+library(coda)
+library(mcmcse)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -85,17 +91,17 @@ Today we look at some practical questions involving the use of MCMC:
 \begin{frame}
 \frametitle{Markov chain Monte Carlo}
 
-A generic ergodic MCMC algorithm with transition kernel $K(\theta,\theta')$ constructed to sample from $p(\theta|y)$ is the following: \pause
+An ergodic MCMC algorithm with transition kernel $K(\theta^{t-1},\theta^{t})$ constructed to sample from $p(\theta|y)$ is the following: \pause
 \begin{enumerate}[<+->]
-\item Sample $\theta^{0}~p(\theta^0)$.
-\item For $t=1,\ldots,T$, perform the kernel $K(\theta,\theta')$ to obtain a sequence $\theta^1,\ldots,\theta^T$. 
+\item Set $\theta^0$.
+\item For $t=1,\ldots,T$, perform the kernel $K(\theta^{t-1},\theta^{t})$ to obtain a sequence $\theta^1,\ldots,\theta^T$. 
 \end{enumerate}
 
 \vspace{0.2in} \pause
 
 The questions can then be rephrased as
 \begin{itemize}
-\item What should I use for $p(\theta^0)$?
+\item What should I use for $\theta^0$?
 \item What should $T$ be?
 \item What can I do with $\theta^1,\ldots,\theta^T$?
 \end{itemize}
@@ -108,22 +114,22 @@ The questions can then be rephrased as
 
 For ergodic Markov chains with stationary distribution $p(\theta|y)$, theory states that 
 \[ \theta^t \stackrel{d}{\to} \theta \mbox{ where } \theta\sim p(\theta|y) \]
-for \alert{any $p(\theta^0)$}. 
+for \alert{almost all $\theta^0$} (all with Harris recurrence). 
 
 \vspace{0.2in} \pause
 
-If $p(\theta^0)$ is very far from $p(\theta|y)$, then this can take a long time. \pause For example, let 
+If $p(\theta^0|y)<<p(\theta_{MAP}|y)$, then this can take a long time. \pause For example, let 
 \[ \theta^t = 0.99 \theta^{t-1} + \epsilon_t \qquad \epsilon_t \stackrel{iid}{\sim} N(0,1-.99^2) \]
 which has stationary distribution \pause $p(\theta|y) \stackrel{d}{=}  N(0,1)$. \pause If 
 \begin{itemize}
-\item $p(\theta^0) \stackrel{d}{\approx} p(\theta|y)$ then $\theta^t \approxdist p(\theta|y)$ for small $t$\pause, but if 
-\item $p(\theta^0)$ is very far from $p(\theta|y)$ then $\theta^t \approxdist p(\theta|y)$ only for $t$ very large. 
+\item $\theta^0\sim p(\theta|y)$ then $\theta^t \approxdist p(\theta|y)$ for all $t$\pause, but if 
+\item $\theta^0$ is very far from $p(\theta|y)$ then $\theta^t \approxdist p(\theta|y)$ only for $t$ very large. 
 \end{itemize}
 \end{frame}
 
 
 \begin{frame}[fragile]
-<<random_walk, eval=FALSE>>=
+<<random_walk>>=
 rwalk = function(n,theta0,rho=0.99) {
   theta = rep(theta0,n)
   v = sqrt(1-rho^2)
@@ -144,14 +150,6 @@ polygon(c(-100,-100,400,400),c(-100,200,200,-100), density=2)
 text(400,90, "burn-in", pos=2, bg="white")
 @
 \end{frame}
-
-\begin{frame}[fragile]
-<<random_walk_plot, echo=FALSE, fig.width=8, fig.show='animate', fig.keep='all'>>=
-<<random_walk>>
-@
-\end{frame}
-
-
 
 \begin{frame}[fragile]
 \frametitle{How many iterations do I need for burn-in?}
@@ -203,15 +201,12 @@ ggplot(dd, aes(x=x,y=y,color=rep))+geom_line()+ theme(legend.position="none")+fa
 
 
 \begin{frame}[fragile]
-\frametitle{}
+\frametitle{Example potential scale reduction factors}
 <<calculate_psrf>>=
-tmp = dlply(dd, .(text,rep), function(x) mcmc(x$y))
-names(tmp)
-
-gelman.diag(mcmc.list(tmp[[1]], tmp[[2]]))
-gelman.diag(mcmc.list(tmp[[3]], tmp[[4]]))
-gelman.diag(mcmc.list(tmp[[5]], tmp[[6]]))
-
+d_ply(dd, .(text), function(x) {
+  print(as.character(x$text[1]))
+  print(gelman.diag(mcmc.list(dlply(x, .(rep), function(x) as.mcmc(x$y)))))
+})
 @
 \end{frame}
 
@@ -245,14 +240,12 @@ Methods for finding good initial values:
 
 Compute the effective sample size, i.e. how many independent samples would we need to get the equivalent precision of our estimates?
 
-<<effective_sample_size>>=
-set.seed(2)
-effectiveSize(r1 <- rwalk(1000,0,0.99))
-effectiveSize(r2 <- rwalk(1000,0,0.9))
-effectiveSize(r3 <- rwalk(1000,0,0))
+<<effective_sample_size, echo=TRUE>>=
+d = ddply(data.frame(rho=c(0,.9,.99)), .(rho), function(x) data.frame(x=rwalk(1000,0,x$rho)))
+d_ply(d, .(rho), function(x) print(coda::effectiveSize(x$x)))
 @
 
-Gelman et. al. suggests 10-100 per chain for a total of 100-2000 effective samples.
+BDA3 suggests 10-100 per chain for a total of 100-2000 effective samples.
 
 \end{frame}
  
@@ -260,20 +253,18 @@ Gelman et. al. suggests 10-100 per chain for a total of 100-2000 effective sampl
 \begin{frame}[fragile]
 \frametitle{Autocorrelation function}
 <<autocorrelations, fig.width=10>>=
-par(mfrow=c(1,3))
-acf(r1,100)
-acf(r2,100)
-acf(r3,100)
+opar = par(mfrow=c(1,3))
+d_ply(d, .(rho), function(x) acf(x$x, 100))
+par(opar)
 @
 \end{frame}
 
 \section{What can I do with the samples?}
 \frame{\frametitle{Monte Carlo integration}
 \small
-  Consider evaluating the integral
-  \[ E_{p(\theta|y)}[h(\theta)|y] = \int_{\Theta} h(\theta) p(\theta|y) d\theta \]
-  \pause using the Markov chain Monte Carlo estimate
-	\[ \hat{h}_T = \frac{1}{T} \sum_{t=1}^T h\left(\theta^t\right) \]
+  Consider approximating the integral via it's Markov chain Monte Carlo (MCMC) estimate, i.e. 
+  \[ E_{\theta|y}[h(\theta)|y] = \int_{\Theta} h(\theta) p(\theta|y) d\theta \quad \mbox{and} \quad 
+  \hat{h}_T = \frac{1}{T} \sum_{t=1}^T h\left(\theta^t\right). \]
 	\pause where $\theta^t$ is the $t^{th}$ iteration from the MCMC.  \pause Under regularity conditions, 
 	\begin{itemize}
 	\item SLLN: $\hat{h}_T$ converges almost surely to $E[h(\theta)|y]$. \pause 
@@ -281,17 +272,19 @@ acf(r3,100)
 	\[ \hat{h}_T \stackrel{d}{\to} N(E[h(\theta)|y], \sigma^2/T) \pause \]
 	where 
 	\[ \sigma^2 = Var[h(\theta)|y]\left(1+ 2\sum_{k=1}^\infty \rho_k \right) \]
-  where $\rho_k$ is the $k^{th}$ autocorrelation.
+  where $\rho_k$ is the $k^{th}$ autocorrelation of the $h(\theta|y)$ values.
 	\end{itemize}
 }
  
  
 \begin{frame}[fragile]
-<<running_average, fig.width=10>>=
-par(mfrow=c(1,3))
-plot(cumsum(r1)/1:length(r1), type="l", ylim=c(-1,1))
-plot(cumsum(r2)/1:length(r2), type="l", ylim=c(-1,1))
-plot(cumsum(r3)/1:length(r3), type="l", ylim=c(-1,1))
+\frametitle{Sequential estimates}
+<<running_average, fig.width=10, echo=TRUE>>=
+opar = par(mfrow=c(1,3))
+d_ply(d, .(rho), function(x) 
+  plot(cumsum(x$x)/1:length(x$x), type="l", ylim=c(-1,1), ylab="Posterior mean", xlab="Iteration (t)")
+)
+par(opar)
 @
 \end{frame}
 
@@ -299,10 +292,14 @@ plot(cumsum(r3)/1:length(r3), type="l", ylim=c(-1,1))
 
 \begin{frame}[fragile]
 \frametitle{Treat the MCMC samples as samples from the posterior}
-<<summary_statistics, fig.width=10>>=
-mean(r2) # should be 0
-var(r2)  # should 1
-quantile(r2,c(.025,.975)) # should be -1.96,1.96
+Use {\tt mcmcse::mcse} to estimate the MCMC variance
+<<summary_statistics, fig.width=10, echo=TRUE>>=
+# Mean
+ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x)))
+
+# Quantiles (should be 0.025 and 0.975)
+ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x< -1.96)))
+ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x<  1.96)))
 @
 \end{frame}
 
@@ -310,11 +307,12 @@ quantile(r2,c(.025,.975)) # should be -1.96,1.96
 \begin{frame}[fragile]
 \frametitle{Treat the MCMC samples as samples from the posterior}
 <<summary_plots, fig.width=10>>=
-par(mfrow=c(1,2))
-hist(r2, prob=TRUE)
-curve(dnorm, col="red", add=TRUE, lwd=2)
-qqnorm(r2)
-qqline(r2, col="red")
+opar= par(mfrow=c(1,3))
+d_ply(d, .(rho), function(x) {
+  hist(x$x, seq(-4,4,by=0.2)+.1, xlim=c(-3,3), freq=F, main=paste("rho=", x$rho[1]))
+  curve(dnorm, col="red", add=TRUE, lwd=2)
+})
+par(opar)
 @
 \end{frame}
 
@@ -364,12 +362,11 @@ If you really want a convergence diagnostic, you can try Geweke's which tests fo
 
 
 \begin{frame}[fragile]
-<<geweke, fig.width=10>>=
+\frametitle{Geweke diagnostic}
+<<geweke, fig.width=10, echo=TRUE>>=
 # Z-score for test of equality of means
 par(mfrow=c(1,3))
-geweke.plot(mcmc(r1), auto=F)
-geweke.plot(mcmc(r2), auto=F)
-geweke.plot(mcmc(r3), auto=F)
+d_ply(d, .(rho), function(x) geweke.plot(mcmc(x$x), auto=F))
 @
 \end{frame}
  
@@ -392,13 +389,14 @@ But should only be used if memory or hard drive space is a limiting factor.
 
 \begin{frame}[fragile]
 \frametitle{Thinning}
-<<thinning>>=
-samps = data.frame(iteration=1:length(r1), 
-                   rho = rep(c(.99,.9,0), each=length(r1)),
-                   x=c(r1,r2,r3))
+<<thinning, echo=TRUE>>=
 sq = seq(10,1000,by=10)
-ddply(samps, .(rho), summarize, 
-      full=effectiveSize(x), thinned=effectiveSize(x[sq]))
+ddply(d, .(rho), summarize, full=effectiveSize(x), thinned=effectiveSize(x[sq]))
+
+# Calculate standard error
+ddply(d, .(rho), function(x) {
+  rbind(data.frame(s="full", mcmcse::mcse(x$x)),data.frame(s="thinned", mcmcse::mcse(x$x[sq])))
+})
 @
 \end{frame}
  
@@ -406,7 +404,7 @@ ddply(samps, .(rho), summarize,
 \begin{frame}
 \frametitle{Alternative use for burn-in}
 
-For MCMC that have tuning parameters, use burn-in (warm-up) to tune tuning parameters. 
+For MCMC algorithms that have tuning parameters, use burn-in (warm-up) to tune tuning parameters. 
 
 \vspace{0.2in} \pause
 
@@ -415,13 +413,12 @@ Suppose the target distribution is $N(0,1)$ and we are performing a random-walk 
 \item if a proposal is accepted, then likely our variance is too small and therefore we should increase it
 \item if a proposal is rejected, then likely our variance is too big and therefore we should decrease it
 \end{itemize}
-@
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Alternative use for burn-in}
-<<tune>>=
+<<tune, echo=TRUE>>=
 rw = function(n, theta0, tune=1, autotune=TRUE) {
   theta = rep(theta0, n)
   for (i in 2:n) {
@@ -453,13 +450,13 @@ inference = rw(1000, burnin$theta[1000], burnin$tune, autotune=FALSE)
 
 \begin{frame}[fragile]
 \frametitle{Alternative use for burn-in}
-<<tune_plot, fig.width=8>>=
-hist(inference$theta, prob=T)
+<<tune_plot, fig.width=8, echo=TRUE>>=
+hist(inference$theta, 20, prob=T)
 curve(dnorm, col="red", add=TRUE)
 @
 \end{frame}
 
- \section{Summary}
+\section{Summary}
 \begin{frame}
 \frametitle{Summary}
 
@@ -473,7 +470,7 @@ Since computing time/power is not very limited these days, my suggestion is
   \item Monitor the potential scale reduction factor until $<$ 1.1 for all quantities of interest
   \item Monitor traceplots and cumulative mean plots
   \item Discard burn-in (first half is probably overkill)
-  \item Run until effective sample size is around 1000 \pause 
+  \item Run until effective sample size is around 2000 \pause 
   \end{enumerate}
 \item Use all samples for posterior inference
 \end{enumerate}
