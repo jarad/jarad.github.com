@@ -36,5 +36,7 @@ To extract the R code, run
 - [Chapter 10a](Ch10a.Rnw)
 - [Chapter 10b](Ch10b.Rnw)
 - [Chapter 11a](Ch11a.Rnw)
-- [Chapter 11a](Ch11b.Rnw)
+- [Chapter 11b](Ch11b.Rnw)
+- [Chapter 11c](Ch11c.Rnw)
+- [Chapter 11d](Ch11d.Rnw)
 
