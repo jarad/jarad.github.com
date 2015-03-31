@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -206,7 +206,7 @@ qplot(0:n, rwalk(n, theta0=0))+labs(x="Time",y="State",title="Random walk on the
   \[ \pi_i^t = Pr(\theta^t=i). \]
   \pause Then 
   \[ \pi^t = \pi^{t-1} P. \]
-  \pause Thus, $\pi^0$ and $P$ completely characterize $\pi^t \pause =\pi^0 P^t$. \pause 
+  \pause Thus, $\pi^0$ and $P$ completely characterize $\pi^t \pause =\pi^0 P^t$ where $P^t = P^{t-1}P$ for $t>1$ and $P^1=P$. \pause 
   \begin{definition}
   A \alert{stationary distribution} is a distribution $\pi$ such that
   \[ \pi = \pi P. \]
@@ -607,8 +607,11 @@ Thus $\theta^t \sim N(\mu,\sigma^2/[1-\rho^2])$ is the stationary distribution f
 
 \begin{frame}[fragile]
 \frametitle{Approximate via simulation}
-<<ar1_stationary_distribution, fig.width=10>>=
+<<echo=TRUE>>=
 mu = 10; sigma = 4; rho = 0.9
+@
+
+<<ar1_stationary_distribution, fig.width=10>>=
 d = rdply(1000, function(x) {
   x = rcauchy(1) # initial draw (clearly not from stationary distribution)
   for (i in 1:100) x = rnorm(1,mu+rho*(x-mu),sigma)
@@ -626,6 +629,14 @@ Markov chains converge to their stationary distribution if the chain is ergodic,
 \item aperiodic,
 \item irreducible, and
 \item positive recurrent
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+MCMC algorithms, e.g. Gibbs sampling, Metropolis-Hastings, and Metropolis-within-Gibbs, by construction
+\begin{itemize}
+\item have a unique stationary distribution $p(\theta|y)$ and 
+\item converge to that stationary distribution.
 \end{itemize}
 
 \end{frame}
