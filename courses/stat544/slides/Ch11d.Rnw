@@ -50,7 +50,7 @@ library(rstan)
 @
 
 <<set_seed, echo=FALSE>>=
-set.seed(1)
+set.seed(2)
 @
 
 \frame{\maketitle}
@@ -136,7 +136,6 @@ rwalk = function(n,theta0,rho=0.99) {
   return(theta)
 }
 
-set.seed(1)
 n = 1000
 good = rwalk(n, rnorm(1   )) # Draw from the stationary distribution
 bad  = rwalk(n, rnorm(1,100)) # Draw from terrible initial distribution
@@ -442,7 +441,7 @@ burnin = rw(1000, 0)
 burnin$tune
 
 # Turn off tuning after burn-in for theory to hold
-inference = rw(1000, burnin$theta[1000], burnin$tune, autotune=FALSE)
+inference = rw(10000, burnin$theta[1000], burnin$tune, autotune=FALSE)
 @
 \end{frame}
 
@@ -451,7 +450,7 @@ inference = rw(1000, burnin$theta[1000], burnin$tune, autotune=FALSE)
 \begin{frame}[fragile]
 \frametitle{Alternative use for burn-in}
 <<tune_plot, fig.width=8, echo=TRUE>>=
-hist(inference$theta, 20, prob=T)
+hist(inference$theta, 100, prob=T)
 curve(dnorm, col="red", add=TRUE, lwd=2)
 @
 \end{frame}
@@ -533,11 +532,9 @@ laply(extract(r, c("mu","sigma")), function(x) length(unique(x))/length(x)) # Ac
 
 \begin{frame}[fragile]
 \frametitle{RStan plot}
-
 <<dependson='rstan'>>=
 traceplot(r)
 @
-
 \end{frame}
 
 \end{document}
