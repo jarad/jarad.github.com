@@ -240,10 +240,10 @@ Compute the effective sample size, i.e. how many independent samples would we ne
 
 <<effective_sample_size, echo=TRUE>>=
 d = ddply(data.frame(rho=c(0,.9,.99)), .(rho), function(x) data.frame(x=rwalk(1000,0,x$rho)))
-d_ply(d, .(rho), function(x) print(coda::effectiveSize(x$x)))
+ddply(d, .(rho), summarize, effective_size = coda::effectiveSize(x))
 @
 
-BDA3 suggests 10-100 per chain for a total of 100-2000 effective samples. \pause But this really depends on what you want to estimate. \pause If you are interested in estimating probabilities of rare events, i.e. tail probabilities, you may need many more samples.
+BDA3 a total of 100-2000 effective samples. \pause But this really depends on what you want to estimate. \pause If you are interested in estimating probabilities of rare events, i.e. tail probabilities, you may need many more samples.
 
 \end{frame}
  
@@ -252,7 +252,7 @@ BDA3 suggests 10-100 per chain for a total of 100-2000 effective samples. \pause
 \frametitle{Autocorrelation function}
 <<autocorrelations, fig.width=10>>=
 opar = par(mfrow=c(1,3))
-d_ply(d, .(rho), function(x) acf(x$x, 100))
+d_ply(d, .(rho), function(x) acf(x$x, 100, main=paste("rho=",x$rho[1])))
 par(opar)
 @
 \end{frame}
@@ -280,7 +280,8 @@ par(opar)
 <<running_average, fig.width=10, echo=TRUE>>=
 opar = par(mfrow=c(1,3))
 d_ply(d, .(rho), function(x) 
-  plot(cumsum(x$x)/1:length(x$x), type="l", ylim=c(-1,1), ylab="Posterior mean", xlab="Iteration (t)")
+  plot(cumsum(x$x)/1:length(x$x), type="l", ylim=c(-1,1), 
+       ylab="Posterior mean", xlab="Iteration (t)", main=paste("rho=", x$rho[1]))
 )
 par(opar)
 @
@@ -297,7 +298,7 @@ ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x)))
 
 # Quantiles 
 ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x< qnorm(0.025)))) 
-ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x< qnorm(0.755))))
+ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x< qnorm(0.975))))
 @
 \end{frame}
 
@@ -364,7 +365,8 @@ If you really want a convergence diagnostic, you can try Geweke's which tests fo
 <<geweke, fig.width=10, echo=TRUE>>=
 # Z-score for test of equality of means
 par(mfrow=c(1,3))
-d_ply(d, .(rho), function(x) geweke.plot(mcmc(x$x), auto=F))
+d_ply(d, .(rho), function(x) geweke.plot(mcmc(x$x), auto=F, main=paste("rho=", x$rho[1])))
+par(opar)
 @
 \end{frame}
  
@@ -488,7 +490,7 @@ If things are not going well,
 
 Let 
 \[ Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2) \qquad \mbox{and} \qquad 
-p(\mu,\sigma) \propto Ca^+(sigma;0,1)
+p(\mu,\sigma) \propto Ca^+(\sigma;0,1)
 \]
 
 \vspace{0.2in} \pause
