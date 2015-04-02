@@ -46,6 +46,7 @@ library(ggplot2)
 library(xtable)
 library(coda)
 library(mcmcse)
+library(rstan)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -481,5 +482,60 @@ If things are not going well,
 \end{frame}
  
 
+\section{Stan output}
+\begin{frame}[fragile]
+\frametitle{A simple model}
+
+Let 
+\[ Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2) \qquad \mbox{and} \qquad 
+p(\mu,\sigma) \propto Ca^+(sigma;0,1)
+\]
+
+\vspace{0.2in} \pause
+
+In RStan,
+<<echo=TRUE>>=
+model = "
+data {
+  int<lower=1> n;
+  real y[n];
+}
+parameters{
+  real mu;
+  real<lower=0> sigma;
+}
+model {
+  sigma ~ cauchy(0,1);
+  y ~ normal(mu,sigma);
+}
+"
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{RStan}
+
+<<rstan, cache=TRUE, results='hide', echo=TRUE>>=
+y = rnorm(10)
+m = stan_model(model_code = model)
+r = sampling(m, list(n=length(y), y=y))
+@
+
+<<rstan_summary, dependson='rstan', echo=TRUE>>=
+r
+laply(extract(r, c("mu","sigma")), function(x) length(unique(x))/length(x)) # Acceptance rate
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{RStan plot}
+
+<<dependson='rstan'>>=
+traceplot(r)
+@
+
+\end{frame}
 
 \end{document}
