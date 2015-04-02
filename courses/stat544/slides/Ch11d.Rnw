@@ -1,7 +1,5 @@
 \documentclass[handout]{beamer}
 
-\usepackage{tikz, animate}
-
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
 
@@ -56,7 +54,6 @@ set.seed(1)
 
 \frame{\maketitle}
 
-
 \section{Markov chain Monte Carlo}
 \begin{frame}
 \frametitle{Markov chain construction}
@@ -91,9 +88,9 @@ Today we look at some practical questions involving the use of MCMC:
 \begin{frame}
 \frametitle{Markov chain Monte Carlo}
 
-An ergodic MCMC algorithm with transition kernel $K(\theta^{t-1},\theta^{t})$ constructed to sample from $p(\theta|y)$ is the following: \pause
+An MCMC algorithm with transition kernel $K(\theta^{t-1},\theta^{t})$ constructed to sample from $p(\theta|y)$ is the following: \pause
 \begin{enumerate}[<+->]
-\item Set $\theta^0$.
+\item Sample $\theta^0\sim \pi^0$.
 \item For $t=1,\ldots,T$, perform the kernel $K(\theta^{t-1},\theta^{t})$ to obtain a sequence $\theta^1,\ldots,\theta^T$. 
 \end{enumerate}
 
@@ -101,7 +98,7 @@ An ergodic MCMC algorithm with transition kernel $K(\theta^{t-1},\theta^{t})$ co
 
 The questions can then be rephrased as
 \begin{itemize}
-\item What should I use for $\theta^0$?
+\item What should I use for $\pi^0$?
 \item What should $T$ be?
 \item What can I do with $\theta^1,\ldots,\theta^T$?
 \end{itemize}
@@ -245,7 +242,7 @@ d = ddply(data.frame(rho=c(0,.9,.99)), .(rho), function(x) data.frame(x=rwalk(10
 d_ply(d, .(rho), function(x) print(coda::effectiveSize(x$x)))
 @
 
-BDA3 suggests 10-100 per chain for a total of 100-2000 effective samples.
+BDA3 suggests 10-100 per chain for a total of 100-2000 effective samples. \pause But this really depends on what you want to estimate. \pause If you are interested in estimating probabilities of rare events, i.e. tail probabilities, you may need many more samples.
 
 \end{frame}
  
@@ -268,11 +265,11 @@ par(opar)
 	\pause where $\theta^t$ is the $t^{th}$ iteration from the MCMC.  \pause Under regularity conditions, 
 	\begin{itemize}
 	\item SLLN: $\hat{h}_T$ converges almost surely to $E[h(\theta)|y]$. \pause 
-	\item CLT: if $h^2$ has finite expectation under $p(\theta|y)$, \pause then 
+	\item CLT: \alert{under stronger regularity conditions}, \pause then 
 	\[ \hat{h}_T \stackrel{d}{\to} N(E[h(\theta)|y], \sigma^2/T) \pause \]
 	where 
 	\[ \sigma^2 = Var[h(\theta)|y]\left(1+ 2\sum_{k=1}^\infty \rho_k \right) \]
-  where $\rho_k$ is the $k^{th}$ autocorrelation of the $h(\theta|y)$ values.
+  where $\rho_k$ is the $k^{th}$ autocorrelation of the $h(\theta)$ values.
 	\end{itemize}
 }
  
@@ -297,9 +294,9 @@ Use {\tt mcmcse::mcse} to estimate the MCMC variance
 # Mean
 ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x)))
 
-# Quantiles (should be 0.025 and 0.975)
-ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x< -1.96)))
-ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x<  1.96)))
+# Quantiles 
+ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x< qnorm(0.025)))) 
+ddply(d, .(rho), function(x) as.data.frame(mcmcse::mcse(x$x< qnorm(0.755))))
 @
 \end{frame}
 
@@ -452,7 +449,7 @@ inference = rw(1000, burnin$theta[1000], burnin$tune, autotune=FALSE)
 \frametitle{Alternative use for burn-in}
 <<tune_plot, fig.width=8, echo=TRUE>>=
 hist(inference$theta, 20, prob=T)
-curve(dnorm, col="red", add=TRUE)
+curve(dnorm, col="red", add=TRUE, lwd=2)
 @
 \end{frame}
 
