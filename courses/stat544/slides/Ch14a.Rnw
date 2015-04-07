@@ -98,13 +98,13 @@ set.seed(2)
   \vspace{0.2in} \pause
   
   What is the MLE for $\beta$? \pause 
-  \[ \hat{\beta} = (X'X)^{-1}X'y \]
+  \[ \hat{\beta}=\hat{\beta}_{MLE} = (X'X)^{-1}X'y \]
   
   \vspace{0.2in} \pause
   
   What is the sampling distribution for $\hat{\beta}$?
   \[ \hat{\beta} \sim t_{n-k}(\beta, s^2(X'X)^{-1}) \]
-  where $s^2 = SSE/[n-k] = (Y-X\hat{\beta})'(Y-X\hat{\beta})$. 
+  where $s^2 = SSE/[n-k]$ and $SSE = (Y-X\hat{\beta})'(Y-X\hat{\beta})$. 
   
   \vspace{0.2in} \pause
   
@@ -122,7 +122,7 @@ set.seed(2)
 	p(\beta,\sigma^2|y) &= p(\beta|\sigma^2,y) p(\sigma^2|y) \pause \\
 	\beta|\sigma^2,y &\sim N(\hat{\beta}, \sigma^2 V_\beta) \pause \\
 	\sigma^2|y &\sim \mbox{Inv-}\chi^2(n-k,s^2) \pause \\
-	\beta|y &= t_{n-k}(\hat{\beta}, s^2V_{\beta}) \pause \\
+	\beta|y &\sim t_{n-k}(\hat{\beta}, s^2V_{\beta}) \pause \\
 	\\
 	\hat{\beta} &= (X'X)^{-1}X'y \pause \\
 	V_\beta &= (X'X)^{-1} \pause \\
@@ -135,17 +135,22 @@ set.seed(2)
 
 \begin{frame}
 \frametitle{Comparison to classical regression}
-From the previous slide, we have
-  \[ \beta|y \sim t_{n-k}(\hat{\beta}, s^2(X'X)^{-1}).  \]
-\pause From classical regression analysis, we have 
-  \[ \hat{\beta}|\beta \sim t_{n-k}(\beta, s^2(X'X)^{-1}).  \]
+For the regression coefficients, in a default Bayesian regression, we have
+  \[ \beta|y \sim t_{n-k}(\hat{\beta}, s^2(X'X)^{-1}),  \]
+and in classical regression analysis, we have 
+  \[ \hat{\beta} \sim t_{n-k}(\beta, s^2(X'X)^{-1}).  \]
 
 \vspace{0.2in} \pause
 
-From the previous slide, we have 
+For the error variance, in a default Bayesian regression, we have
   \[ \sigma^2|y \sim \mbox{Inv-}\chi^2(n-k,s^2) \]
-and thus 
+and in classical regression analysis, we have
   \[ s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2). \]
+  
+\vspace{0.2in} \pause
+
+In the Bayesian statements, $\beta$ is random and $Y$ is fixed while in the classical statements, $Y$ is random and $\beta$ is fixed.
+  
 \end{frame}
 
 
@@ -165,7 +170,31 @@ qplot(temp,chirps)
 
 <<lm, echo=TRUE>>=
 summary(m <- lm(chirps~temp))
-confint(m)
+confint(m) # Credible intervals
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Default Bayesian regression - Full posteriors}
+<<>>=
+beta_hat = m$coefficients
+sd       = summary(m)$coefficients[,2]
+df       = summary(m)$df[2]
+s2       = summary(m)$sigma^2
+
+opar = par(mfrow=c(1,3))
+for (i in 1:2) {
+  f = function(x) dt((x-beta_hat[i])/sd[i], df)/sd[i]
+  curve(f, 
+        beta_hat[i]-3*sd[i], 
+        beta_hat[i]+3*sd[i], 
+        lwd=2, 
+        main=paste("beta",i,sep=''))
+}       
+sigma = 1/sqrt(rgamma(10000,df/2, df*s2/2))
+hist(sigma,100)
+par(opar)
 @
 \end{frame}
 
@@ -174,16 +203,16 @@ confint(m)
 %\begin{comment}
 \subsection{Subjective Bayesian inference}
 \frame{\frametitle{Fully conjugate subjective Bayesian inference}
-	For ease of notation, let $\phi = 1/\sigma^2$\pause. If we assume the following normal-gamma prior,
-	\[ \beta|\phi \sim (\beta_0, \phi^{-1} C_0) \qquad \phi \sim Ga(a_0,b_0) \]
+	If we assume the following normal-gamma prior,
+	\[ \beta|\phi \sim (m_0, \sigma^2 C_0) \qquad \phi \sim IG(a_0,b_0) \]
 	\pause then the posterior is 
-	\[ \beta|\phi,y \sim (\beta_n, \phi^{-1} C_n) \qquad \phi|y \sim Ga(a_n,b_n) \]
+	\[ \beta|\phi,y \sim (m_n, \sigma^2 C_n) \qquad \phi|y \sim IG(a_n,b_n) \]
 	\pause with
 	\[ \begin{array}{rl}
-	\beta_n &= \beta_0 + C_0X'(XC_0X'+\I)^{-1}(y-X\beta_0) \\
+	m_n &= m_0 + C_0X'(XC_0X'+\I)^{-1}(y-X m_0) \\
 	C_n &= C_0-C_0X'(XC_0X'+\I)^{-1}XC_0 \\
 	a_n &= a_0+n/2 \\
-	b_n &= b_0+(y-X\beta_0)'(XC_0X'+\I)^{-1}(y-X\beta_0)/2
+	b_n &= b_0+(y-X m_0)'(XC_0X'+\I)^{-1}(y-X m_0)/2
 	\end{array} \]
 }
 %\end{comment}
@@ -207,7 +236,7 @@ then
 \item $\beta_0$ is the expected number of chirps at 0 degrees Fahrenheit
 \item $\beta_1$ is the expected increase in number of chirps (per 15 seconds) for each degree increase in Fahrenheit.
 \end{itemize}
-\pause
+\vspace{0.2in} \pause
 Based on prior experience the prior $\beta_1\sim N(0,1)$ might be reasonable. 
 
 \end{frame}
@@ -229,13 +258,13 @@ summary(m)
 
 
 \begin{frame}[fragile]
-\frametitle{Subjective Bayesian regression}
+\frametitle{Subjective vs Default}
 <<t-distribution, message=FALSE, echo=TRUE>>=
 # Subjective analysis
 m$coefficients
 confint(m)
 
-# compared to standard analysis
+# compared to default analysis
 tmp = lm(chirps~temp)
 tmp$coefficients
 confint(tmp)
@@ -243,7 +272,7 @@ confint(tmp)
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Subjective Bayesian regression}
+\frametitle{Subjective vs Default}
 <<t-distribution_fit, message=FALSE, fig.width=8>>=
 qplot(temp, chirps) +
   geom_smooth(method='lm',formula=y~x, se=FALSE) + 
@@ -369,7 +398,7 @@ ggplot(melt(data.frame(sigma=sigma, intercept=beta[,1], chirps=beta[,2])),
 
 
 \begin{frame}[fragile]
-\frametitle{Simulations vs exact}
+\frametitle{Monte Carlo error}
 <<quantiles, echo=TRUE>>=
 # sigma^2
 sqrt(df*s2/qchisq(c(.975,.025),df)) # Exact
