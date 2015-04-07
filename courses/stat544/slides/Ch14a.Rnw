@@ -109,7 +109,7 @@ set.seed(2)
   \vspace{0.2in} \pause
   
   What is the sampling distribution for $s^2$? 
-  \[ \frac{[n-k]s^2}{\sigma^2} \sim \chi^2_{n-k} \pause \implies s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2) \]
+  \[ \frac{[n-k]s^2}{\sigma^2} \sim \chi^2_{n-k} \pause \implies 1/s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2) \]
 
 \end{frame}
 
@@ -145,7 +145,7 @@ and in classical regression analysis, we have
 For the error variance, in a default Bayesian regression, we have
   \[ \sigma^2|y \sim \mbox{Inv-}\chi^2(n-k,s^2) \]
 and in classical regression analysis, we have
-  \[ s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2). \]
+  \[ 1/s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2). \]
   
 \vspace{0.2in} \pause
 
@@ -204,9 +204,9 @@ par(opar)
 \subsection{Subjective Bayesian inference}
 \frame{\frametitle{Fully conjugate subjective Bayesian inference}
 	If we assume the following normal-gamma prior,
-	\[ \beta|\phi \sim (m_0, \sigma^2 C_0) \qquad \phi \sim IG(a_0,b_0) \]
+	\[ \beta|\sigma^2 \sim N(m_0, \sigma^2 C_0) \qquad \sigma^2 \sim IG(a_0,b_0) \]
 	\pause then the posterior is 
-	\[ \beta|\phi,y \sim (m_n, \sigma^2 C_n) \qquad \phi|y \sim IG(a_n,b_n) \]
+	\[ \beta|\sigma^2,y \sim N(m_n, \sigma^2 C_n) \qquad \sigma^2|y \sim IG(a_n,b_n) \]
 	\pause with
 	\[ \begin{array}{rl}
 	m_n &= m_0 + C_0X'(XC_0X'+\I)^{-1}(y-X m_0) \\
@@ -275,8 +275,8 @@ confint(tmp)
 \frametitle{Subjective vs Default}
 <<t-distribution_fit, message=FALSE, fig.width=8>>=
 qplot(temp, chirps) +
-  geom_smooth(method='lm',formula=y~x, se=FALSE) + 
-  geom_abline(intercept=m$coefficients[1], slope=m$coefficients[2])
+  geom_smooth(method='lm',formula=y~x, se=FALSE, color='red', linetype=2, size=2) + 
+  geom_abline(intercept=m$coefficients[1], slope=m$coefficients[2], color='blue', linetype=3, size=2)
 @
 \end{frame}
 
@@ -324,9 +324,9 @@ ggplot(data.frame(chirps=chirps, temperature=temp), aes(temp, chirps)) +
   
   This also provides an approach to obtaining posteriors for any function $\gamma=f(\beta,\sigma^2)$ of the parameters \pause via
   \[ \begin{array}{rl}
-  p(\gamma,\beta,\sigma^2|y) &= p(\gamma|y,\beta,\sigma^2) p(\beta|\sigma^2,y) p(\sigma^2|y) \pause \\
-  &= p(\gamma|\beta,\sigma^2) p(\beta|\sigma^2,y) p(\sigma^2|y) \pause \\
-  &= \mathrm{I}(\gamma=f(\beta,\sigma^2)) p(\beta|\sigma^2,y) p(\sigma^2|y) \\
+  p(\gamma|y) &= \int \int p(\gamma|\beta,\sigma^2,y) p(\beta|\sigma^2,y) p(\sigma^2|y) d\beta d\sigma^2 \pause \\
+  &= \int \int p(\gamma|\beta,\sigma^2) p(\beta|\sigma^2,y) p(\sigma^2|y) d\beta d\sigma^2 \pause \\
+  &= \int \int \delta(\gamma-f(\beta,\sigma^2)) p(\beta|\sigma^2,y) p(\sigma^2|y) d\beta d\sigma^2 \\
   \end{array} \]
   \pause by adding the step  
   \begin{enumerate}
@@ -519,7 +519,6 @@ d = structure(list(site = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L,
 \frametitle{Posterior for global maximum}
 Consider this potato yield data set
 <<potato_plot, fig.width=9>>=
-
 ggplot(d, aes(x=N.rate, y=yield)) + 
   geom_point() + 
   geom_smooth(method='lm',formula=y~x+I(x^2))
@@ -539,16 +538,31 @@ Let
 We assume the model 
 \[  Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i + \beta_2 X_i^2, \sigma^2)  \]
 \pause
-Assuming this quadratic curve is correct, the maximum occurs at $\gamma=-\beta_1/[2\beta_2]$.
+Assuming this quadratic curve is correct, the maximum occurs at $\gamma=-\beta_1/[2\beta_2]$. \pause
 <<potato_max, fig.width=8, echo=TRUE>>=
 m = LearnBayes::blinreg(d$yield, cbind(1,d$N.rate, d$N.rate^2), 1e4)
-mx = -m$beta[,2]/(2*m$beta[,3])
-quantile(mx, c(.025,.5,.975))
+beta1 = m$beta[,2]; beta2 = m$beta[,3]; gamma = -beta1/(2*beta2)
+quantile(gamma, c(.025,.5,.975))
 @
-This does not require any asymptotics or approximations.
+This does not require any data asymptotics or approximations, e.g. delta method.
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Summary}
+
+\begin{itemize}
+\item Model: $y\sim N(X\beta,\sigma^2 \mathrm{I})$
+\item Default Bayesian analysis corresponds exactly to classical regression analysis
+\[ p(\beta,\sigma^2)\propto 1/\sigma^2 \implies \]
+\[ \beta|\sigma^2,y \sim N(\hat{\beta}, \sigma^2 [X'X]^{-1}), \sigma^2|y \sim \mbox{Inv-}\chi^2(n-k,s^2) \]
+\item Conjugate subjective Bayesian analysis:
+\[ \beta|\sigma^2 \sim N(m_0, \sigma^2 C_0), \sigma^2 \sim IG(a_0,b_0) \implies \]
+\[ \beta|\sigma^2,y \sim N(m_n, \sigma^2 C_n), \sigma^2|y \sim IG(a_n,b_n) \]
+\item Obtain functions of parameters and their uncertainty by simulating the parameters from their joint posterior, calculating the function, and taking posterior quantiles.
+\end{itemize}
+
+\end{frame}
 
 
 
