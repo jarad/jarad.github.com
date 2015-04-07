@@ -1,0 +1,497 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Bayesian linear regression (cont.)}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(reshape2)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(coda)
+library(LearnBayes)
+library(arm)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Linear regression
+  \begin{itemize}
+  \item Ridge regression
+  \item Zellner's g-prior
+  \end{itemize}
+\item Regression with known covariance matrix
+\item Regression when covariance is known up to a proportionality constant
+\item MCMC for parameterized covariance matrix
+  \begin{itemize}
+  \item Time series
+  \item Spatial analysis
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\section{Linear regression}
+\subsection{Ridge regression}
+\begin{frame}
+\frametitle{Ridge regression}
+
+Suppose 
+\[ y \sim N(X\beta,\sigma^2\I) \]
+\pause if $X$ is standardized (mean 0, unit variance) and $y$ is centered\pause, then ridge regression seeks to minimize 
+\[ (y-X\beta)'(y-X\beta) + p\beta'\beta  \]
+\pause where $p$ is a penalty for $\beta'\beta$ getting too large.
+
+\vspace{0.2in} \pause
+
+This looks like -2 times the log posterior when using independent normal priors centered at zero with a common variance ($c_0$) for $\beta$: \pause 
+\[ -2\log p(\beta,\sigma|y) = C + \frac{1}{\sigma^2} (y-X\beta)'(y-X\beta) + \frac{1}{c_0} \beta'\beta  \]
+where $p=\sigma^2/c_0$.
+
+\end{frame}
+
+
+\subsection{Zellner's g-prior}
+
+
+
+\section{Regression with known covariance matrix}
+\frame{\frametitle{Known covariance matrix}
+  Suppose $y\sim N(X\beta,S)$ where $S$ a known covariance matrix, then $p(\beta)\propto 1$ is a non-informative prior.
+  
+  \vspace{0.2in} \pause
+  
+  Let $L$ be a Cholesky factor of $S$, i.e. $LL^\top=S$\pause, then the model can be rewritten as 
+  \[ L^{-1}y \sim N(L^{-1}X\beta,\mathrm{I}). \]
+  \pause The posterior, $p(\beta|y)$, is the same as for ordinary linear regression replacing $y$ with $L^{-1}y$, $X$ with $L^{-1}X$ and $\sigma^2$ with 1 where $L^{-1}$ is inverse of $L$. \pause Thus 
+  \[ \begin{array}{rll}
+  \beta|y &\sim N(\hat{\beta}, V_\beta) \\
+  V_\beta &= ([L^{-1}X]^\top L^{-1}X)^{-1} &= (X^\top S^{-1}X)^{-1} \\
+  \hat{\beta} &= ([L^{-1}X]^\top L^{-1}X)^{-1} [L^{-1}X]^\top L^{-1}y &= V_\beta X^\top S^{-1}y
+  \end{array} \]
+  So rather than computing these, just transform your data using $L^{-1}y$ and $L^{-1}X$ and force $\sigma^2=1$.
+}
+
+
+\subsection{AR1}
+\frame{\frametitle{Autoregressive process of order 1}
+  A mean zero autoregressive process of order 1  assumes
+  \[ \epsilon_t = r \epsilon_{t-1} + \delta_t \]
+  \pause with $-1<r<1$ and $\delta_t \stackrel{iid}{\sim} N(0,t^2)$. 
+  
+  \vspace{0.2in} \pause 
+  
+  Assume the following model 
+  \[ y_i = X_i^\top \beta + \epsilon_t \]
+  \pause or, alternatively, 
+  \[ y = N(X\beta, S) \]
+  \pause where $S=s^2 R$ with 
+  \begin{itemize}[<+->]
+  \item stationary mean $s^2=t^2/[1-r^2]$ and 
+  \item correlation matrix $R$ with elements $R_{ij} = r^{|i-j|}$.
+  \end{itemize}
+}
+
+\begin{frame}[fragile]
+\frametitle{Example autoregressive processes}
+<<ar1, fig.width=8>>=
+ar1 = ddply(data.frame(rho=c(0.01,0.5,0.99)), .(rho), function(x) {
+  rho = x$rho
+  delta = rnorm(100) 
+  x = rep(NA,length(delta))
+  x[1] = delta[1]
+  for (i in 2:length(x)) x[i] = rho*x[i-1]+delta[i]
+  data.frame(t=1:length(x), x=x)
+})
+ggplot(ar1, aes(t,x,color=factor(rho))) +
+  geom_line()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Calculate posterior}
+<<known_covariance, echo=TRUE>>=
+ar1_covariance = function(n, r, s) {
+  V = diag(n)
+  s^2/(1-r^2) * r^(abs(row(V)-col(V)))
+}
+
+# Covariance 
+n = 100
+S = ar1_covariance(n,.9,2)
+
+# Simulate data
+set.seed(1)
+library(MASS)
+k = 50
+X = matrix(rnorm(n*k), n, k)
+beta = rnorm(k)
+y = mvrnorm(1,X%*%beta, S)
+
+# Estimate beta
+Linv = solve(t(chol(S)))
+Linvy = Linv%*%y
+LinvX = Linv%*%X
+m = lm(Linvy ~ 0+LinvX)
+
+# Force sigma=1
+Vb = vcov(m)/summary(m)$sigma^2
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+<<known_covariance_eval, echo=TRUE>>=
+# Credible intervals
+sigma = sqrt(diag(Vb))
+ci = data.frame(lcl=coefficients(m)-qnorm(.975)*sigma, 
+                ucl=coefficients(m)+qnorm(.975)*sigma, 
+                truth=beta)
+head(ci,10)
+@
+
+<<known_covariance2, echo=TRUE>>=
+all.equal(Vb[1:k^2], solve(t(X)%*%solve(S)%*%X)[1:k^2])
+all.equal(as.numeric(coefficients(m)), as.numeric(Vb%*%t(X)%*%solve(S)%*%y))
+@
+\end{frame}
+
+\section{Regression when covariance is known up to a proportionality constant}
+\begin{frame}
+\frametitle{Variance known up to a proportionality constant}
+  Consider the model 
+  \[ y\sim N(X\beta, \sigma^2 S)\] 
+  for a known $S$ with default prior $p(\beta,\sigma^2) \propto 1/\sigma^2$.
+  
+  \vspace{.2in} \pause
+  
+  The posterior is 
+{\small
+  \[ \begin{array}{rl}
+  p(\beta,\sigma^2|y) &= p(\beta|\sigma^2,y) p(\sigma^2|y) \pause \\
+	\beta|\sigma^2,y &\sim N(\hat{\beta}, \sigma^2 V_\beta) \pause \\
+	\sigma^2|y &\sim \mbox{Inv-}\chi^2(n-k,s^2) \pause \\
+	\beta|y &= t_{n-k}(\hat{\beta}, s^2V_{\beta}) \pause \\
+	\\
+	\hat{\beta} &= (X^\top S^{-1}X)^{-1}X^\top S^{-1}y \pause \\
+	V_\beta &= (X^\top S^{-1}X)^{-1} \pause \\
+	s^2 &= \frac{1}{n-k}(L^{-1}y-L^{-1}X\hat{\beta})^\top (L^{-1}y-L^{-1}X\hat{\beta}) \\&= \frac{1}{n-k}(y-X\hat{\beta})^\top S^{-1}(y-X\hat{\beta})
+	\end{array} \]
+}
+  \pause where $LL'=S$. 
+\end{frame}
+
+\subsection{AR1}
+\frame{\frametitle{AR1 process}
+  Consider the model 
+  \[ y\sim N(X\beta, \sigma^2 R)\] 
+  where $R$ is the correlation matrix from an AR1 process. 
+  
+  \vspace{0.2in} 
+  
+  This is exactly what we had before, except we do not assume $\sigma=1$. 
+}
+
+\begin{frame}[fragile]
+\frametitle{Posterior with unknown $\sigma^2$}
+<<ar1_unknown_variance, echo=TRUE>>=
+m    = lm(Linvy ~ 0+LinvX)
+Vb   = vcov(m)
+bhat = coefficients(m)
+df   = n-k
+s2   = sum(residuals(m)^2)/df
+
+# Credible intervals
+cbind(confint(m), Truth=beta)[1:10,]
+@
+\end{frame}
+
+
+
+
+
+
+
+\section{MCMC for parameterized covariance matrix}
+
+\begin{frame}
+\frametitle{Parameterized covariance matrix}
+
+Suppose 
+\[ y\sim N(X\beta, S(\theta)) \] 
+where $S(\theta)$ is now unknown\pause, but can be characterized by a low dimensional $\theta$\pause, e.g. 
+\begin{itemize}
+\item Autoregressive process of order 1:
+\[ \mySigma = \sigma^2 R(\rho), R_{ij}(\rho) = \rho^{|i-j|} \] 
+\item Gaussian process with exponential covariance function:
+\[ \mySigma = \tau^2 R(\rho) + \sigma^2 \mathrm{I}, R_{ij}(\rho) = \exp(-\rho d_{ij}) \]
+\item Conditionally autoregressive (CAR) model:
+\[ \mySigma = \sigma^2(D_w-\rho W)^{-1} \]
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{MCMC for parameterized covariance matrices}
+
+Suppose 
+\[ y\sim N(X\beta, S(\theta)) \] 
+then an MCMC strategy is 
+\begin{enumerate}
+\item Sample $\beta|\theta,y$, i.e. regression with a known covariance matrix.
+\item Sample $\theta|\beta,y$.
+\end{enumerate}
+
+\vspace{0.2in} \pause
+
+Alternatively, if 
+\[ y\sim N(X\beta, \sigma^2 R(\theta)) \] 
+then an MCMC strategy is 
+\begin{enumerate}
+\item Sample $\beta,\sigma^2|\theta,y$, i.e. regression when variance is known up to a proportionality constant..
+\item Sample $\theta|\beta,\sigma^2,y$.
+\end{enumerate}
+
+\vspace{0.2in} \pause
+
+Since $\theta$ exists in a low dimension, many of the methods we have learned can be used, e.g. ARS, MH, slice sampling, etc.
+
+\end{frame}
+
+
+
+% \section{Subjective Bayesian regression}
+% \frame{\frametitle{Informative prior for $\beta$}
+%   Consider the model 
+%   \[ y\sim N(X\beta,S) \]
+%   \pause with conjugate prior 
+%   \[ \beta \sim N(b,B). \]
+%   
+%   \vspace{0.2in} \pause
+%   
+%   so the posterior is 
+% {\small
+%   \[ \begin{array}{rl}
+%   p(\beta|y) &\propto p(y|\beta)p(\beta) \pause \\
+%   &\propto \exp\left( -\frac{1}{2}(y-X\beta)^\top S^{-1}(y-X\beta) \right)
+%            \exp\left( -\frac{1}{2}(\beta-b)^\top B^{-1}(\beta-b) \right) \pause \\
+%   &= \exp\left( -\frac{1}{2}(y-X\beta)^\top S^{-1}(y-X\beta) \right)
+%            \exp\left( -\frac{1}{2}(b-\mathrm{I}_k\beta)^\top B^{-1}(b-\mathrm{I}_k\beta) \right)
+%   \end{array} \]
+% }
+%   \pause so $p(\beta)$ can be thought of as additional independent data $b$ with model matrix $\mathrm{I}_k$ and known covariance $B$. 
+% }
+% 
+% \frame{\frametitle{Informative prior for $\beta$}
+%   Consider the model 
+%   \[ y\sim N(X\beta,S) \]
+%   \pause with conjugate prior 
+%   \[ \beta \sim N(b,B). \]
+%   
+%   \vspace{0.2in} \pause
+%   
+%   We can estimate $\beta$ via the regression 
+%   \[ y_* \sim N(X_*\beta, S_*) \]
+%   \pause where 
+%   \[ 
+%   y_* = \left( \begin{array}{c} y \\ b \end{array} \right) \pause \qquad
+%   X_* = \left( \begin{array}{c} X \\ I_k \end{array} \right) \pause \qquad
+%   S_* = \left( \begin{array}{cc} S & 0 \\ 0 & B \end{array} \right) \pause
+%   \]
+%   
+%   Namely, $\beta|y \sim N(\hat{\beta},V_\beta)$ with 
+%   \[ \begin{array}{rl}
+%   \hat{\beta} &= (X_*^\top S_*^{-1}X_*)^{-1}X_*^\top S_*^{-1}y_*  \\
+% 	V_\beta &= (X_*^\top S_*^{-1}X_*)^{-1}. 
+%   \end{array} \]
+% }
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{Independent standard normals for $\beta$}
+% <<prior_for_beta, message=FALSE>>=
+% # Independent standard normal priors for the betas
+% b = rep(0,k) 
+% B = diag(nrow=k)
+% ystar = c(y,b)
+% Xstar = rbind(X,diag(k))
+% 
+% library(dlm)
+% Sstar = bdiag(S,B)
+% Lstarinv = solve(t(chol(Sstar)))
+% Lsiy = Lstarinv%*%ystar
+% LsiX  = Lstarinv%*%Xstar
+% m = lm(Lsiy~-1+LsiX)
+% 
+% # Force sigma=1
+% Vb = vcov(m)/summary(m)$sigma^2
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% <<prior_for_beta_2>>=
+% # Credible intervals
+% sigma = sqrt(diag(Vb))
+% ci$prior = "default"
+% tmp = merge(ci, data.frame(lcl=coefficients(m)-qnorm(.975)*sigma,
+%                            ucl=coefficients(m)+qnorm(.975)*sigma,
+%                            truth=beta+0.01, prior="informative"), all=TRUE)
+% head(tmp[tmp$prior=="informative",],10)
+% 
+% # Mean interval widths
+% tmp$betahat = (tmp$ucl+tmp$lcl)/2
+% ddply(tmp, .(prior), summarize, 
+%       mean_length = mean(ucl-lcl),
+%       mse = mean((betahat-truth)^2))
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% \frametitle{Shrinkage}
+% <<shrinkage, fig.width=8>>=  
+% (p = ggplot(tmp, aes(x=truth, xend=truth, y=ucl, yend=lcl, col=prior))+geom_segment())
+% @
+% \end{frame}
+% 
+% \subsection{Information on $\sigma^2$}
+% \begin{frame}
+% \frametitle{Information on $\sigma^2$}
+%   Consider the model 
+%   \[ y\sim N(X\beta,\sigma^2 S) \]
+%   \pause with conjugate prior $p(\beta,\sigma^2) = p(\beta|\sigma^2)p(\sigma^2)$ with $p(\beta|\sigma^2)\propto 1$ \pause and 
+%   \[ \sigma^2 \sim \mbox{Inv-}\chi^2(n_0, s_0^2) \]
+%   \pause The posterior is 
+% {\small
+%   \[ \begin{array}{rl}
+%   p(\beta,\sigma^2|y)
+%   \propto &(\sigma^2)^{-n/2}\exp\left(-\frac{1}{2\sigma^2}[y-X\beta]^\top S^{-1}[y-X\beta]\right) (\sigma^2)^{-n_0/2-1}) \\
+%   & \times \exp\left(-\frac{1}{2\sigma^2}n_0 s_0^2 \right)
+%   \end{array} \]
+% }
+%   \pause Again, this can be thought of as $n_0$ previous observations with sample variance of $s_0^2$, \pause so that the posterior is 
+%   \[ \sigma^2|y \sim \mbox{Inv-}\chi^2\left(n_0+n, \frac{n_0 s_0^2+ns^2}{n_0+n} \right) \]
+%   \pause where 
+%   \[ \begin{array}{rl}
+%   s^2 &= \frac{1}{n-k}[y-X\hat{\beta}]^{\top}S^{-1}[y-X\hat{\beta}] \\
+%   \hat{\beta} &= (X^\top S^{-1}X)X^\top S^{-1} y
+%   \end{array} \]
+% \end{frame}
+% 
+% 
+% \subsection{Information on $\sigma^2$}
+% \begin{frame}
+% \frametitle{Information on $\sigma^2$ and $\beta$}
+%   Consider the model 
+%   \[ y\sim N(X\beta,\sigma^2 S) \]
+%   \pause with conjugate prior 
+%   \[ \begin{array}{rl}
+%   \beta|\sigma^2 &\sim N(b,\sigma^2 B) \\
+%   \sigma^2 &\sim \mbox{Inv-}\chi^2(n_0, s_0^2)
+%   \end{array} \]
+%   \pause The posterior is 
+%   \[ \begin{array}{rl}
+%   \beta|\sigma^2,y &\sim N(\hat{\beta},\sigma^2 V_\beta) \\
+%   \sigma^2|y &\sim \mbox{Inv-}\chi^2\left(n_0+n+k, \frac{n_0 s_0^2+[n+k]s^2}{n_0+n+k} \right)
+%   \end{array} \]
+%   \pause with 
+%   \[ \begin{array}{rl}
+%   V_\beta &= (X_*^\top S_*^{-1}X_*)^{-1} \\
+%   \hat{\beta} &= V_\beta X_*^\top S_*^{-1} y_* \\
+%   s^2 &= \frac{1}{n}[y_*-X_*\hat{\beta}]^{\top}S_*^{-1}[y_*-X_*\hat{\beta}]. 
+%   \end{array} \]
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{$p>>n$}
+% <<p_greater_than_n>>=
+% n = 100
+% p = 1000
+% X = matrix(rnorm(n*p), n, p)
+% beta = rnorm(p)
+% y = mvrnorm(1,X%*%beta, S)
+% 
+% # Estimate beta
+% Linv = solve(t(chol(S)))
+% Linvy = Linv%*%y
+% LinvX = Linv%*%X
+% m = lm(Linvy ~ -1+LinvX)
+% 
+% all(is.na(coefficients(m)[-c(1:n)])) 
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% \frametitle{$p>>n$}
+% <<with_informative_prior>>=
+% b = rep(0,p) 
+% B = diag(nrow=p)
+% ystar = c(y,b)
+% Xstar = rbind(X,diag(p))
+% 
+% Sstar = bdiag(S,B)
+% Lstarinv = solve(t(chol(Sstar)))
+% Lsiy = Lstarinv%*%ystar
+% LsiX  = Lstarinv%*%Xstar
+% m = lm(Lsiy~-1+LsiX)
+% 
+% any(is.na(coefficients(m)))
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{$p>>n$}
+% <<with_informative_prior_plot, fig.width=8>>=
+% (qplot(x=beta, y=coefficients(m))+geom_point()+geom_smooth(method="lm",formula=y~x)+geom_abline(intercept=0,slope=1))
+% @
+% \end{frame}
+
+
+
+
+\end{document}
