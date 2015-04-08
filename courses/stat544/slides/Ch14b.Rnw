@@ -74,6 +74,28 @@ set.seed(2)
 
 
 \section{Linear regression}
+\begin{frame}
+\frametitle{Subjective Bayesian regression}
+
+Suppose 
+\[ y \sim N(X\beta,\sigma^2\I) \]
+and we use a prior for $\beta$ of the form
+\[ \beta|\sigma^2 \sim N(b_0,\sigma^2 B_0) \]
+Then, the conditional posterior is 
+\[ \beta|\sigma^2,y \]
+\pause
+A few special cases are 
+\begin{itemize}
+\item $b_0$
+\item $B_0$ is diagonal
+\item $B_0= g\I$
+\item $B_0 = (X'X)^{-1}$
+\end{itemize}
+
+\end{frame}
+
+
+
 \subsection{Ridge regression}
 \begin{frame}
 \frametitle{Ridge regression}
@@ -81,8 +103,8 @@ set.seed(2)
 Suppose 
 \[ y \sim N(X\beta,\sigma^2\I) \]
 \pause if $X$ is standardized (mean 0, unit variance) and $y$ is centered\pause, then ridge regression seeks to minimize 
-\[ (y-X\beta)'(y-X\beta) + p\beta'\beta  \]
-\pause where $p$ is a penalty for $\beta'\beta$ getting too large.
+\[ (y-X\beta)'(y-X\beta) + g\beta'\beta  \]
+\pause where $g$ is a penalty for $\beta'\beta$ getting too large.
 
 \vspace{0.2in} \pause
 
@@ -94,7 +116,71 @@ where $p=\sigma^2/c_0$.
 
 
 \subsection{Zellner's g-prior}
+\begin{frame}
+\frametitle{Zellner's g-prior}
 
+Suppose 
+\[ y \sim N(X\beta,\sigma^2\I) \]
+and you use Zellner's g-prior
+\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}). \]
+
+\vspace{0.2in} \pause
+
+The posterior is then 
+\[ \begin{array}{rl}
+\beta|\sigma^2,y &\sim N\left(\frac{g}{g+1}\left(\frac{b_0}{g}+\hat{\beta}\right), \frac{\sigma^2 g}{g+1}(X'X)^{-1} \right) \\
+\sigma^2|y &\sim \mbox{Inv-}\chi^2\left(n, \frac{1}{n}\left[(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)\right]\right)
+\end{array} \]
+with 
+\[ \begin{array}{rl}
+E[\beta|y] &= \frac{g}{g+1}\left( \frac{b_0}{g}+\hat{\beta}\right) \\
+E[\sigma^2|y] &= \frac{(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)}{n-2}
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Setting $g$}
+
+In Zellner's g-prior, 
+\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}), \]
+we need to determine how to set g.
+
+\vspace{0.2in} \pause
+
+Here are some thoughts:
+\begin{itemize}
+\item $g=1$ puts equal weight to prior and likelihood
+\item $g=n$ means prior has the equivalent weight of 1 observation
+\item $g\to \infty$ recovers a uniform prior
+\item Empirical Bayes estimate of $g$, $\hat{g}_{EG} =\mbox{argmax}_g p(y|g)$ where 
+\[ 
+p(y|g)
+%= \int p(y|\beta,\sigma^2)p(\beta|g,\sigma^2)p(\sigma^2) d\sigma^2 d\beta 
+= \frac{\mathrm{\Gamma}\left(\frac{n-1}{2}\right)}{\pi^{(n+1)/2}n^{1/2}}||y-\overline{y}||^{-(n-1)} \frac{\left(1+g\right)^{(n-1-p)/2}}{\left(1+g(1+R^2))^{(n-1)/2} \right)}
+ \]
+ where $R^2$ is the usual coefficient of determination. 
+\item Put a prior on $g$ and perform a fully Bayesian analysis.
+\end{itemize}
+\end{frame}
+
+
+\frame{\frametitle{Housing prices in Ames}
+  Determine the fair market value of a house in Ames with asking price of \$240,000 with the following details: \pause
+  \begin{itemize}[<+->]
+	\item 2-story on 9201 ft$^2$ land
+	\item 4 bedroom
+	\item 2 bathroom
+	\item 2 car attached garage
+	\item built in 1975
+	\item 2199 ft$^2$ above grade plus 
+	\item basement: 780 ft$^2$ (75\% finished) with additional bath
+	\end{itemize}
+	\pause based on houses sold in Ames from June 2010 to August 2011. 
+	
+
+}
 
 
 \section{Regression with known covariance matrix}
