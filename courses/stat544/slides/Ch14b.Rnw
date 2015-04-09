@@ -44,6 +44,7 @@ library(xtable)
 library(coda)
 library(LearnBayes)
 library(arm)
+library(MASS)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -56,17 +57,21 @@ set.seed(2)
 \frametitle{Outline}
 
 \begin{itemize}
-\item Linear regression
+\item Subjective Bayesian regression
   \begin{itemize}
   \item Ridge regression
   \item Zellner's g-prior
+  \item Bayes' Factors for model comparison
   \end{itemize}
-\item Regression with known covariance matrix
-\item Regression when covariance is known up to a proportionality constant
-\item MCMC for parameterized covariance matrix
+\item Regression with a known covariance matrix
   \begin{itemize}
-  \item Time series
-  \item Spatial analysis
+  \item Known covariance matrix
+  \item Covariance matrix known up to a proportionality constant
+  \item MCMC for parameterized covariance matrix
+    \begin{itemize}
+    \item Time series
+    \item Spatial analysis
+    \end{itemize}
   \end{itemize}
 \end{itemize}
 \end{frame}
@@ -86,7 +91,7 @@ Then, the conditional posterior is
 \pause
 A few special cases are 
 \begin{itemize}
-\item $b_0$
+\item $b_0=0$
 \item $B_0$ is diagonal
 \item $B_0= g\I$
 \item $B_0 = (X'X)^{-1}$
@@ -102,17 +107,92 @@ A few special cases are
 
 Suppose 
 \[ y \sim N(X\beta,\sigma^2\I) \]
-\pause if $X$ is standardized (mean 0, unit variance) and $y$ is centered\pause, then ridge regression seeks to minimize 
+\pause then ridge regression seeks to minimize 
 \[ (y-X\beta)'(y-X\beta) + g\beta'\beta  \]
 \pause where $g$ is a penalty for $\beta'\beta$ getting too large.
 
 \vspace{0.2in} \pause
 
 This looks like -2 times the log posterior when using independent normal priors centered at zero with a common variance ($c_0$) for $\beta$: \pause 
-\[ -2\log p(\beta,\sigma|y) = C + \frac{1}{\sigma^2} (y-X\beta)'(y-X\beta) + \frac{1}{c_0} \beta'\beta  \]
-where $p=\sigma^2/c_0$.
+\[ -2\log p(\beta,\sigma|y) = C + \frac{1}{\sigma^2} (y-X\beta)'(y-X\beta) + \frac{1}{B_0} \beta'\beta  \]
+where $g=\sigma^2/B_0$.
 
 \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Longley data set}
+
+<<>>=
+data(longley) 
+plot(longley)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Default Bayesian regression (unscaled)}
+<<echo=TRUE>>=
+summary(lm(GNP.deflator~., longley))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Default Bayesian regression (scaled)}
+<<echo=TRUE>>=
+y = longley$GNP.deflator
+X = scale(longley[,-1])
+summary(lm(y~X))
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Ridge regression in MASS package}
+
+<<echo=TRUE>>=
+library(MASS)
+lambdas = seq(0,0.1, .0001)
+m = lm.ridge(GNP.deflator ~ ., longley, lambda = lambdas) 
+
+# Choose the ridge penalty
+select(m)
+
+# Estimates
+est = data.frame(lambda = lambdas, t(m$coef))
+est[round(est$lambda,4) %in% c(.0068,.0053,.0057),]
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Ridge regression in MASS package}
+<<>>=
+plot(m)
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Ridge regression in ridge package}
+
+<<message=FALSE, echo=TRUE>>=
+library(ridge)
+m = linearRidge(GNP.deflator ~ ., longley, lambda="automatic")
+summary(m)
+@
+\end{frame}
+
+
+
 
 
 \subsection{Zellner's g-prior}
@@ -158,7 +238,7 @@ Here are some thoughts:
 \[ 
 p(y|g)
 %= \int p(y|\beta,\sigma^2)p(\beta|g,\sigma^2)p(\sigma^2) d\sigma^2 d\beta 
-= \frac{\mathrm{\Gamma}\left(\frac{n-1}{2}\right)}{\pi^{(n+1)/2}n^{1/2}}||y-\overline{y}||^{-(n-1)} \frac{\left(1+g\right)^{(n-1-p)/2}}{\left(1+g(1+R^2))^{(n-1)/2} \right)}
+= \frac{\mathrm{\Gamma}\left(\frac{n-1}{2}\right)}{\pi^{(n+1)/2}n^{1/2}}||y-\overline{y}||^{-(n-1)} \frac{\left(1+g\right)^{(n-1-k)/2}}{\left(1+g(1+R^2))^{(n-1)/2} \right)}
  \]
  where $R^2$ is the usual coefficient of determination. 
 \item Put a prior on $g$ and perform a fully Bayesian analysis.
@@ -166,26 +246,70 @@ p(y|g)
 \end{frame}
 
 
-\frame{\frametitle{Housing prices in Ames}
-  Determine the fair market value of a house in Ames with asking price of \$240,000 with the following details: \pause
-  \begin{itemize}[<+->]
-	\item 2-story on 9201 ft$^2$ land
-	\item 4 bedroom
-	\item 2 bathroom
-	\item 2 car attached garage
-	\item built in 1975
-	\item 2199 ft$^2$ above grade plus 
-	\item basement: 780 ft$^2$ (75\% finished) with additional bath
-	\end{itemize}
-	\pause based on houses sold in Ames from June 2010 to August 2011. 
-	
 
+
+
+\begin{frame}
+\frametitle{Bayes Factors' for regression model comparison}
+
+Consider two models with design matrices $X^1$and $X^2$ (not including an intercept) and corresponding dimensions $(n,p_1)$ and $(n,p_2)$.  \pause Zellner's g-prior provides a relatively simple way to construct default (but not improper) priors for model comparison. \pause Formally, we compare
+
+\[ \begin{array}{rl}
+y &\sim N(\alpha 1_n + X^1 \beta^1, \sigma^2 \I) \\
+\beta &\sim N(b_1, g_1\sigma^2 [(X^1)'(X^1)]^{-1}) \\
+p(\alpha,\sigma^2) &\propto 1/\sigma^2
+\end{array} \]
+
+and 
+
+\[ \begin{array}{rl}
+y &\sim N(\alpha 1_n + X^2 \beta^2, \sigma^2 \I) \\
+\beta &\sim N(b_2, g_2\sigma^2 [(X^2)'(X^2)]^{-1}) \\
+p(\alpha,\sigma^2) &\propto 1/\sigma^2
+\end{array} \]
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Bayes Factors' for regression model comparison}
+
+The Bayes Factor for comparing these two models is 
+{\tiny
+\[ B_{12}(y) = \frac{(g_1+1)^{-p_1/2}\left[ (n-p_1-1)s_1^2 +\left(\hat{\beta}_1-b_1\right)'(X^1)'X^1\left(\hat{\beta}_1-b_1\right)/(g_1+1)\right]^{-(n-1)/2}}{(g_2+1)^{-p_2/2}\left[ (n-p_2-1)s_2^2 +\left(\hat{\beta}_2-b_2\right)'(X^2)'X^2\left(\hat{\beta}_2-b_2\right)/(g_2+1)\right]^{-(n-1)/2}} \]
 }
+Now, we can set $g_1=g_2$ and calculate Bayes Factors'. \pause 
+
+<<echo=TRUE, warning=FALSE, message=FALSE>>=
+library(bayess)
+m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Zellner's g-prior in R}
+<<echo=TRUE, warning=FALSE, message=FALSE>>=
+library(bayess)
+m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
+@
+\end{frame}
+
+
+
+
+
+
+
+
+
 
 
 \section{Regression with known covariance matrix}
 \frame{\frametitle{Known covariance matrix}
-  Suppose $y\sim N(X\beta,S)$ where $S$ a known covariance matrix, then $p(\beta)\propto 1$ is a non-informative prior.
+  Suppose $y\sim N(X\beta,S)$ where $S$ is a known covariance matrix, then $p(\beta)\propto 1$ is a non-informative prior.
   
   \vspace{0.2in} \pause
   
@@ -203,19 +327,17 @@ p(y|g)
 
 \subsection{AR1}
 \frame{\frametitle{Autoregressive process of order 1}
-  A mean zero autoregressive process of order 1  assumes
+  A mean zero, stationary autoregressive process of order 1  assumes
   \[ \epsilon_t = r \epsilon_{t-1} + \delta_t \]
-  \pause with $-1<r<1$ and $\delta_t \stackrel{iid}{\sim} N(0,t^2)$. 
+  \pause with $-1<r<1$ and $\delta_t \stackrel{ind}{\sim} N(0,t^2)$. 
   
   \vspace{0.2in} \pause 
   
-  Assume the following model 
-  \[ y_i = X_i^\top \beta + \epsilon_t \]
-  \pause or, alternatively, 
+  Equivalently, we have
   \[ y = N(X\beta, S) \]
   \pause where $S=s^2 R$ with 
   \begin{itemize}[<+->]
-  \item stationary mean $s^2=t^2/[1-r^2]$ and 
+  \item stationary variance $s^2=t^2/[1-r^2]$ and 
   \item correlation matrix $R$ with elements $R_{ij} = r^{|i-j|}$.
   \end{itemize}
 }
@@ -349,13 +471,13 @@ cbind(confint(m), Truth=beta)[1:10,]
 Suppose 
 \[ y\sim N(X\beta, S(\theta)) \] 
 where $S(\theta)$ is now unknown\pause, but can be characterized by a low dimensional $\theta$\pause, e.g. 
-\begin{itemize}
+\begin{itemize}[<+->]
 \item Autoregressive process of order 1:
-\[ \mySigma = \sigma^2 R(\rho), R_{ij}(\rho) = \rho^{|i-j|} \] 
+\[ S(\theta) = \sigma^2 R(\rho), R_{ij}(\rho) = \rho^{|i-j|} \] 
 \item Gaussian process with exponential covariance function:
-\[ \mySigma = \tau^2 R(\rho) + \sigma^2 \mathrm{I}, R_{ij}(\rho) = \exp(-\rho d_{ij}) \]
+\[ S(\theta) = \tau^2 R(\rho) + \sigma^2 \mathrm{I}, R_{ij}(\rho) = \exp(-\rho d_{ij}) \]
 \item Conditionally autoregressive (CAR) model:
-\[ \mySigma = \sigma^2(D_w-\rho W)^{-1} \]
+\[ S(\theta) = \sigma^2(D_w-\rho W)^{-1} \]
 \end{itemize}
 \end{frame}
 
@@ -385,6 +507,31 @@ then an MCMC strategy is
 
 Since $\theta$ exists in a low dimension, many of the methods we have learned can be used, e.g. ARS, MH, slice sampling, etc.
 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Summary}
+
+\begin{itemize}
+\item Subjective Bayesian regression
+  \begin{itemize}
+  \item Ridge regression 
+  \item Zellner's g-prior
+  \item Bayes' Factors for model comparison
+  \end{itemize}
+\item Regression with a known covariance matrix
+  \begin{itemize}
+  \item Known covariance matrix
+  \item Covariance matrix known up to a proportionality constant
+  \item MCMC for parameterized covariance matrix
+    \begin{itemize}
+    \item Time series
+    \item Spatial analysis
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
 \end{frame}
 
 
