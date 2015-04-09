@@ -85,16 +85,16 @@ set.seed(2)
 Suppose 
 \[ y \sim N(X\beta,\sigma^2\I) \]
 and we use a prior for $\beta$ of the form
-\[ \beta|\sigma^2 \sim N(b_0,\sigma^2 B_0) \]
-Then, the conditional posterior is 
-\[ \beta|\sigma^2,y \]
+\[ \beta|\sigma^2 \sim N(b,\sigma^2 B) \]
+% Then, the conditional posterior is 
+% \[ \beta|\sigma^2,y \]
 \pause
 A few special cases are 
 \begin{itemize}
-\item $b_0=0$
-\item $B_0$ is diagonal
-\item $B_0= g\I$
-\item $B_0 = (X'X)^{-1}$
+\item $b=0$
+\item $B$ is diagonal
+\item $B= g\I$
+\item $B = g(X'X)^{-1}$
 \end{itemize}
 
 \end{frame}
@@ -246,7 +246,14 @@ p(y|g)
 \end{frame}
 
 
-
+\begin{frame}[fragile]
+\frametitle{Zellner's g-prior in R}
+<<echo=TRUE, warning=FALSE, message=FALSE>>=
+library(BMS)
+m = zlm(GNP.deflator~., longley, g='UIP') # g=n
+summary(m)
+@
+\end{frame}
 
 
 \begin{frame}
@@ -267,8 +274,6 @@ y &\sim N(\alpha 1_n + X^2 \beta^2, \sigma^2 \I) \\
 \beta &\sim N(b_2, g_2\sigma^2 [(X^2)'(X^2)]^{-1}) \\
 p(\alpha,\sigma^2) &\propto 1/\sigma^2
 \end{array} \]
-
-
 \end{frame}
 
 
@@ -289,13 +294,7 @@ m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
 
 
 
-\begin{frame}[fragile]
-\frametitle{Zellner's g-prior in R}
-<<echo=TRUE, warning=FALSE, message=FALSE>>=
-library(bayess)
-m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
-@
-\end{frame}
+
 
 
 
@@ -333,7 +332,9 @@ m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
   
   \vspace{0.2in} \pause 
   
-  Equivalently, we have
+  Suppose 
+  \[ y_t = X_t'\beta + \epsilon_t \]
+  or, equivalently, 
   \[ y = N(X\beta, S) \]
   \pause where $S=s^2 R$ with 
   \begin{itemize}[<+->]
