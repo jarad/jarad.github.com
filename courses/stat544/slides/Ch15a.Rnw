@@ -490,9 +490,9 @@ ddply(dd <- data.frame(q=c(.025,.5,.975)), .(q), function(x) as.data.frame(mcse.
 \begin{frame}
 \frametitle{Prediction for a new comparison}
 
-The real question is whether this idea generalizes, i.e. is true for other representatives of these genotypes. \pause Let $\tilde{y}_A$ and $\tilde{y}_B$ be some future observation of seedling weight (on the same tray). \pause We might be interested in 
+The real question is whether this idea generalizes, i.e. is true for other representatives of these genotypes. \pause Let $\tilde{y}_A$ and $\tilde{y}_B$ be some future observation of seedling weight (on the same tray) for genotype A and B, respectively. \pause We might be interested in 
 \[  P(\tilde{y}_B>\tilde{y}_A|y) = P(\tilde{\delta}>0|y) = E[\I(\tilde{\delta}>0)|y] \]
-where $\tilde{\delta} - \tilde{y}_B-\tilde{y}_A$. \pause
+where $\tilde{\delta} = \tilde{y}_B-\tilde{y}_A$. \pause
 If $\tilde{\delta}^{(k)} = \tilde{y}^{(k)}_B-\tilde{y}^{(k)}_A$ is a sample from the posterior predictive distribution, \pause then we can estimate this probability via 
 \[ \frac{1}{K} \sum_{k=1}^K \I(\tilde{\delta}^{(k)}>0) \]
 and have a similar LLN and CLT (if regularity conditions hold). 
@@ -515,12 +515,29 @@ samps = extract(r, c("gamma","sigma_e"))
 gamma1 = samps['gamma']$gamma[,1]
 gamma2 = samps['gamma']$gamma[,2]
 sigmae = samps['sigma_e']$sigma_e
-delta = rnorm(length(gamma1), gamma2-gamma1, sqrt(2)*sigmae)
-as.data.frame(mcse(delta>0))
-ddply(data.frame(q=c(.052,.5,.975)), .(q), function(x) as.data.frame(mcse.q(delta, q=x$q)))
+tilde_delta = rnorm(length(gamma1), gamma2-gamma1, sqrt(2)*sigmae)
+as.data.frame(mcse(tilde_delta>0))
+ddply(data.frame(q=c(.025,.5,.975)), .(q), function(x) as.data.frame(mcse.q(tilde_delta, q=x$q)))
 @
 
 \end{frame}
+
+
+% \begin{frame}[fragile]
+% \frametitle{Prediction for a new comparison (reduced MC error)}
+% 
+% Notice that 
+% \[ P(\delta>0|\gamma_1,\gamma_2,\sigma_e) = 1-\Phi\left( \frac{\gamma_2-\gamma_1}{\sqrt{2}\sigma_e} \right) \]
+% where $\Phi$ is the cdf of a standard normal. 
+% 
+% \pause
+% 
+% <<predictive_probability2, dependson='analysis', echo=TRUE>>=
+% p = 1-pnorm(0,gamma2-gamma1,sqrt(2)*sigmae)
+% ddply(data.frame(q=c(.025,.5,.975)), .(q), function(x) as.data.frame(mcse.q(p, q=x$q)))
+% @
+% 
+% \end{frame}
 
 
 
