@@ -1,0 +1,553 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Hierarchical linear models}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(reshape2)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(lme4)
+library(rstan)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Mixed effect models
+\item Seedling weight example
+\item Non-Bayesian analysis (missing pvalues/CI method)
+\item Bayesian analysis in Stan
+\item Compute posterior probabilities and CIs
+\end{itemize}
+
+\end{frame}
+
+
+\section{Mixed-effect models}
+\subsection{Notation}
+\frame{\frametitle{Notation}
+  Standard notation for mixed-effect models:
+	\[ y = X\beta + Zu + e \]
+	\pause where 
+	\begin{itemize}[<+->]
+	\item $y$ is an $n\times 1$ response vector
+	\item $X$ is an $n\times p$ design matrix for fixed effects
+	\item $\beta$ is a $p\times 1$ unknown fixed effect parameter vector
+	\item $Z$ is an $n\times q$ binary design matrix for random effects
+	\item $u$ is a $q\times 1$ unknown random effect parameter vector
+	\item $e$ is an $n\times 1$ unknown error vector
+	\end{itemize}
+}
+
+\subsection{Assumptions}
+\frame{\frametitle{Assumptions}
+
+	\[ y = X\beta + Zu + e \]
+	Typically assume \pause 
+	\begin{itemize} 
+	\item $E[u] = E[e] = 0$ \pause 
+	\item $V[u] = \Omega$ \pause and $V[e] = \Lambda$ \pause 
+	\item $Cov[u,e] = 0$ \pause 
+	\end{itemize}
+	These assumptions imply
+	\begin{itemize}
+	\item $E[y|\beta,\Omega,\Lambda] = X\beta$ \pause 
+	\item $V[y|\beta,\Omega,\Lambda] = Z\Omega Z'+\Lambda = \mySigma_y$ \pause
+	\end{itemize}
+	
+	Common addition assumptions
+	\begin{itemize}
+	\item $V[e] = \Lambda = \sigma^2_e \I$, \pause 
+	\item $V[u] = \Omega = \mbox{diag}\{ \sigma^2_{u,\cdot} \}$, \pause (or $V[u] = \Omega = \sigma^2_u \I$ for single source), \pause and
+	\item $u$ and $e$ are normally distributed.
+	\end{itemize}
+}
+
+\frame{\frametitle{Rewrite as a standard linear regression model}
+	We can rewrite 
+	\[ y = X\beta + Zu + e \]
+	\pause as 
+	\[ y = \tilde{X} \tilde{\beta} + e \]
+	\pause where $\tilde{X}$ is $n\times (p+q)$ \pause with
+	\[ \tilde{X} = [X\,\, Z] \]
+	\pause and $\tilde{\beta}$ is a $(p+q) \times 1$ vector \pause with
+	\[ \tilde{\beta} = \left[ \begin{array}{cc} \beta \\ u \end{array} \right]. \]
+	\pause The fixed and random effects have been concatenated into the same vector.
+}
+
+\section{Hierarchical linear model}
+\frame{\frametitle{Hierarchical linear model}
+	Assume $y\sim N(\tilde{X} \tilde{\beta}, \Lambda)$. \pause A Bayesian analysis proceeds by assigning prior distributions to $\tilde{\beta}$ and $\Lambda$. \pause In constructing the prior for $\tilde{\beta}$, consider the components $\beta$ and $u$ separately. \pause Assume
+	 \[ \beta \sim N(\beta_0, \mySigma_\beta) \qquad \mbox{and} \qquad u \sim N(0,\Omega) \]
+	 independently. 
+	 
+	 \vspace{0.2in} \pause
+	 
+	 For the 
+	 \begin{itemize}
+	 \item {\bf fixed} effects $\beta$, we select $\beta_0$ and $\mySigma_\beta$ \pause while for the
+	 \item {\bf random} effects $u$, we assign a prior for $\Omega$.  \pause
+	 \end{itemize} 
+	 Therefore we have created a hierarchical model for the random effects and thus refer to this as a \emph{hierarchical linear model}.
+}
+
+\section{Summary}
+\frame{\frametitle{Summary}
+	These models are referred to as 
+	\begin{itemize}
+	\item mixed-effect models, \pause
+	\item hierarchical linear models, \pause or
+	\item multi-level models.
+	\end{itemize}
+	
+	\vspace{0.2in} \pause 
+	
+	The parameters for the prior distribution \pause for the
+	\begin{itemize}
+	\item  fixed effects are not learned \pause and
+	\item  random effects are learned.
+	\end{itemize}
+	
+	\vspace{0.2in} \pause  
+	
+	This corresponds to a non-Bayesian analysis learning a variance parameter for random effects. 
+}
+
+
+
+\section{Seedling weight example}
+\frame{\frametitle{Seedling weight example}
+  Example taken from Dan Nettleton:
+	\begin{quote}
+	Researchers were interested in comparing the dry
+weight of maize seedlings from two different genotypes (A and B).
+For each genotype, nine seeds were planted in each of
+four trays. The eight trays in total were randomly
+positioned in a growth chamber. Three weeks after the
+emergence of the first seedling, emerged seedlings were
+harvested from each tray and, after drying, weighed. 
+	\end{quote}
+  
+  \vspace{0.2in} \pause
+  
+	Assume the missing data (emergence) mechanism is ignorable. 
+  
+  \vspace{0.2in} \pause
+  
+  Data: {\tiny \url{http://www.public.iastate.edu/~dnett/S511/SeedlingDryWeight2.txt}}
+}
+
+\frame{\frametitle{A picture}
+\setkeys{Gin}{width=\textwidth}
+
+	\vspace{-0.2in}
+
+	\begin{center}
+	\includegraphics[page=4]{Ch15-19AitkenExample}
+	\end{center}
+}
+
+\subsection{Model}
+\frame{\frametitle{A mixed efect model for seedling weight}
+	Let $y_{ijk}$ be the seedling weight \pause of the 
+	\begin{itemize}
+	\item $i^{th}$ genotype with $i=1,2$, \pause
+	\item $j^{th}$ tray $j=1,2,3,4$ of the $i^{th}$ genotype, \pause and 
+	\item $k^{th}$ seedling with $k=1,\ldots,n_{ij}$.
+	\end{itemize}
+	Then, we assume 
+	\[ y_{ijk} = \gamma_i + \tau_{ij} + e_{ijk} \]
+	\pause where 
+	\begin{itemize}
+%  \item $\gamma_1=-\gamma_2$ for identifiability (sum-to-zero constraint)
+	\item $\tau_{ij} \stackrel{ind}{\sim} N(0,\sigma^2_\tau)$ \pause and, independently,
+	\item $e_{ijk} \stackrel{ind}{\sim} N(0,\sigma^2_e)$. 
+	\end{itemize}
+  
+  \pause
+  
+  The main quantity of interest is the difference in mean seedling weight: $\gamma_2-\gamma_1$. 
+}
+
+\frame{\frametitle{As a general mixed effects model}
+	Let $X$ have the following 2 columns \pause
+	\begin{itemize}
+	\item col1: all ones (intercept) [$\gamma_1$] \pause 
+%	\item col2: ones if genotype A and zeros otherwise [$\gamma_1$] \pause
+	\item col2: ones if genotype B and zeros otherwise [$\gamma_2-\gamma_1$] \pause
+	\end{itemize}
+	Let $Z$ have the following 8 columns \pause 
+	\begin{itemize}
+	\item col1: ones if genotype 1, tray 1 and zeros otherwise [$\tau_{11}$] \pause
+	\item col2: ones if genotype 1, tray 2 and zeros otherwise [$\tau_{12}$] \pause
+	\item $\vdots$ \pause
+	\item col8: ones if genotype 2, tray 4 and zeros otherwise [$\tau_{24}$] \pause
+	\end{itemize}
+	Then 
+	\[ y = X\beta + Zu + e \] 
+	\pause with $u\sim N(0,\sigma^2_\tau\I)$ and, independently, $e\sim N(0,\sigma^2_e\I)$. 
+}
+
+
+% \frame{\frametitle{Model construction for BUGS/JAGS/Stan}
+%   An alternative notation convenient for programming in Stan \pause is
+% 	\begin{itemize}
+% 	\item $y_i$ is the weight for seedling $i$ with $i=1,\ldots,n$ \pause 
+% 	\item $g[i]\in \{1,2\}$ is the genotype for seedling $i$  \pause
+% 	\item $t[i]\in\{1,2,\ldots,8\}$ is the {\bf unique} tray id for seedling $i$
+% 	\end{itemize}
+% 	
+% 	\vspace{0.2in} \pause 
+% 	
+% 	Then the model is 
+% 	\[ y_i = \gamma_{g[i]} + \tau_{t[i]} + e_i \] 
+% 	\pause with $e_i \stackrel{ind}{\sim} N(0,\sigma^2_e)$ and, independently, $\tau_t \stackrel{ind}{\sim} N(0,\sigma^2_\tau)$ for $t=1,\ldots,8$.
+% 	
+% 	\vspace{0.2in} \pause
+% 	
+% 	$\gamma_2-\gamma_1$ is the quantity of interet.
+% }
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Seedling weight data}
+<<data>>=
+d = structure(list(Genotype = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
+2L, 2L), .Label = c("A", "B"), class = "factor"), Tray = c(1L, 
+1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 
+3L, 3L, 3L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 5L, 5L, 5L, 5L, 
+5L, 5L, 6L, 6L, 6L, 6L, 6L, 6L, 6L, 7L, 7L, 7L, 7L, 7L, 7L, 8L, 
+8L, 8L, 8L, 8L, 8L, 8L, 8L), Seedling = c(1L, 2L, 3L, 4L, 5L, 
+1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 1L, 2L, 3L, 4L, 5L, 6L, 1L, 
+2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 
+3L, 4L, 5L, 6L, 7L, 1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, 4L, 5L, 
+6L, 7L, 8L), SeedlingWeight = c(8L, 9L, 11L, 12L, 10L, 17L, 17L, 
+16L, 15L, 19L, 18L, 18L, 18L, 24L, 12L, 12L, 16L, 15L, 15L, 14L, 
+17L, 20L, 20L, 19L, 19L, 18L, 20L, 19L, 19L, 9L, 12L, 13L, 16L, 
+14L, 14L, 10L, 10L, 9L, 8L, 13L, 9L, 11L, 12L, 16L, 17L, 15L, 
+15L, 15L, 9L, 6L, 8L, 8L, 13L, 9L, 9L, 10L)), .Names = c("Genotype", 
+"Tray", "Seedling", "SeedlingWeight"), class = "data.frame", row.names = c(NA, 
+-56L))
+d$Seedling = NULL 
+@
+
+<<echo=TRUE>>=
+head(d)
+summary(d)
+with(d, table(Genotype, Tray))
+@
+\end{frame}
+
+
+
+
+
+\subsection{lmer}
+\begin{frame}[fragile]
+\frametitle{Non-Bayesian analysis}
+<<non-Bayesian, message=FALSE, cache=TRUE, echo=TRUE>>=
+m1 = lmer(SeedlingWeight ~ Genotype + (1|Tray), d); summary(m1)
+@
+
+\pause 
+
+Why no pvalues? 
+\end{frame}
+
+
+
+\begin{frame}
+From {\tiny \url{https://stat.ethz.ch/pipermail/r-help/2006-May/094765.html}} (19 May 2006):
+{\small 
+\begin{quote}
+Users are often surprised and alarmed that the summary of a linear
+mixed model fit by lmer provides estimates of the fixed-effects
+parameters, standard errors for these parameters and a t-ratio but no
+p-values.  
+
+... \pause
+
+Most of the research on tests for the fixed-effects specification in a
+mixed model begin with the assumption that these statistics will have
+an F distribution with a known numerator degrees of freedom and the
+only purpose of the research is to decide how to obtain an approximate
+denominator degrees of freedom.  I don't agree.
+
+... \pause 
+
+For the time being, I would recommend using a Markov Chain Monte Carlo
+sample (function mcmcsamp) to evaluate the properties of individual
+coefficients (use HPDinterval or just summary from the "coda"
+package).  
+
+Dr. Douglas Bates
+\end{quote}}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<confidence_intervals, dependson="non-Bayesian", cache=TRUE, echo=TRUE>>=
+confint(m1, method="profile")
+confint(m1, method="Wald")
+confint(m1, method="boot")
+@
+\end{frame}
+
+
+
+\section{Bayesian analysis}
+\frame{\frametitle{Bayesian model}
+  An alternative notation convenient for programming in Stan \pause is
+  \begin{itemize}
+	\item $y_i$ is the weight for seedling $i$ with $i=1,\ldots,n$ \pause 
+	\item $g[i]\in \{1,2\}$ is the genotype for seedling $i$  \pause
+	\item $t[i]\in\{1,2,\ldots,8\}$ is the {\bf unique} tray id for seedling $i$
+	\end{itemize}
+	
+	\vspace{0.2in} \pause 
+	
+	Then the model is 
+	\[ y_i = \gamma_{g[i]} + \tau_{t[i]} + e_i \] 
+	\pause with $e_i \stackrel{ind}{\sim} N(0,\sigma^2_e)$ and, independently, $\tau_t \stackrel{ind}{\sim} N(0,\sigma^2_\tau)$ with $t=1,\ldots,8$.
+	
+	\vspace{0.2in} \pause
+	
+	Prior: $p(\gamma_1,\gamma_2,\sigma_e,\sigma_u) \propto Ca^+(\sigma_e;0,10)Ca^+(\sigma_u;0,10)$.
+}
+
+
+\subsection{Stan}
+\begin{frame}[fragile]
+<<stan_model, tidy=FALSE, cache=TRUE, echo=TRUE>>=
+stan_model = "
+data {
+  int<lower=1> n;
+  int<lower=1> n_genotypes;
+  int<lower=1> n_trays;
+
+  real y[n];
+  int genotype[n];
+  int tray[n];
+}
+parameters {
+  real gamma[n_genotypes]; // Implicit prior over whole real line
+  real tau[n_trays];
+  real<lower=0> sigma_e;   // Implicit prior over positive reals
+  real<lower=0> sigma_tau; // Implicit prior over positive reals
+}
+
+model {
+  sigma_e   ~ cauchy(0,10);
+  sigma_tau ~ cauchy(0,10);
+
+  tau ~ normal(0,sigma_tau);
+
+  for (i in 1:n) y[i] ~ normal(gamma[genotype[i]]+tau[tray[i]], sigma_e);
+}
+
+generated quantities {
+  real delta;
+  delta <- gamma[2] - gamma[1];
+}
+"
+@
+\end{frame}
+
+
+
+\subsection{Results}
+\begin{frame}[fragile]
+<<analysis, dependson="stan_model", cache=TRUE, message=FALSE, echo=TRUE>>=
+m = stan_model(model_code=stan_model)
+
+r = sampling(m, 
+             list(n = nrow(d),
+                  n_genotypes = nlevels(d$Genotype),
+                  n_trays     = max(d$Tray),
+                  genotype    = as.numeric(d$Genotype),
+                  tray        = d$Tray,
+                  y           = d$SeedlingWeight), 
+             c("gamma","tau","sigma_e","sigma_tau","delta"))
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+<<table, dependson="analysis">>=
+r
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<intervals, dependson="analysis">>=
+plot(r)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Probability that genotype B has greater \alert{mean} seedling weight than genotype A.}
+
+{\small
+
+Given our prior, i.e. 
+\[ p(\gamma_1,\gamma_2,\sigma_e,\sigma_u) \propto Ca^+(\sigma_e;0,10)Ca^+(\sigma_u;0,10),\]
+
+\pause
+Our posterior probability that genotype B has greater mean seedling weight than genotype A is 
+
+\[ P(\gamma_2>\gamma_1|y) = P(\delta>0|y) \pause = E[\I(\delta>0)|y] = E[\I(\gamma_2>\gamma_1)|y]. \] 
+\pause 
+If $\delta^{(k)}$ are MCMC samples from $p(\delta|y)$, then 
+\[ \frac{1}{K} \sum_{k=1}^K \I(\delta^{(k)}>0) \stackrel{a.s.}{\rightarrow} P(\gamma_2>\gamma_1|y) \]
+\pause 
+and (if the regularity conditions hold)
+\[ \frac{1}{K} \sum_{k=1}^K \I(\delta^{(k)}>0) \stackrel{d}{\rightarrow} N(P(\gamma_2>\gamma_1|y), \sigma^2/K). \]
+}
+\end{frame}
+
+
+
+\subsection{Comparing genotypes}
+\begin{frame}[fragile]
+\frametitle{Probability that genotype B has greater mean seedling weight than genotype A.}
+
+The probability is estimated to be
+<<probability, dependson='analysis', echo=TRUE, message=FALSE>>=
+library(mcmcse)
+delta = extract(r, "delta")$delta
+as.data.frame(mcse(delta>0))
+@
+
+\pause
+A point estimate (posterior median) and a 95\% credible interval are calculated below:
+
+<<>>=
+ddply(dd <- data.frame(q=c(.025,.5,.975)), .(q), function(x) as.data.frame(mcse.q(delta, x$q)))
+@
+\end{frame}
+
+
+
+\subsection{Prediction}
+\begin{frame}
+\frametitle{Prediction for a new comparison}
+
+The real question is whether this idea generalizes, i.e. is true for other representatives of these genotypes. \pause Let $\tilde{y}_A$ and $\tilde{y}_B$ be some future observation of seedling weight (on the same tray). \pause We might be interested in 
+\[  P(\tilde{y}_B>\tilde{y}_A|y) = P(\tilde{\delta}>0|y) = E[\I(\tilde{\delta}>0)|y] \]
+where $\tilde{\delta} - \tilde{y}_B-\tilde{y}_A$. \pause
+If $\tilde{\delta}^{(k)} = \tilde{y}^{(k)}_B-\tilde{y}^{(k)}_A$ is a sample from the posterior predictive distribution, \pause then we can estimate this probability via 
+\[ \frac{1}{K} \sum_{k=1}^K \I(\tilde{\delta}^{(k)}>0) \]
+and have a similar LLN and CLT (if regularity conditions hold). 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Prediction for a new comparison}
+
+Assuming $\tilde{y}^{(k)}_A$ and $\tilde{y}^{(k)}_B$ are independent conditional on $\gamma_1,\gamma_2,$ and $\sigma_e$, then 
+\[ \tilde{\delta} =\tilde{y}_B - \tilde{y}_A \sim N(\gamma_2-\gamma_1, 2\sigma_e^2) \]
+\pause
+and 
+\[ p(\tilde{\delta}|y) \int N(\tilde{\delta}; \gamma_2-\gamma_1, 2\sigma_e^2) p(\gamma_1,\gamma_2,\sigma_e|y) d\gamma_1 d\gamma_2 d\sigma_e \]
+
+\pause
+
+<<predictive_probability, dependson='analysis', echo=TRUE>>=
+samps = extract(r, c("gamma","sigma_e"))
+gamma1 = samps['gamma']$gamma[,1]
+gamma2 = samps['gamma']$gamma[,2]
+sigmae = samps['sigma_e']$sigma_e
+delta = rnorm(length(gamma1), gamma2-gamma1, sqrt(2)*sigmae)
+as.data.frame(mcse(delta>0))
+ddply(data.frame(q=c(.052,.5,.975)), .(q), function(x) as.data.frame(mcse.q(delta, q=x$q)))
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Extensions}
+
+Consider the model 
+  \[ y_i = \gamma_{g[i]} + \tau_{t[i]} + e_i \] 
+and the following modeling assumptions: 
+
+\vspace{0.2in} \pause
+
+\begin{itemize}[<+->]
+\item $\gamma_g \stackrel{ind}{\sim} N(\mu,\sigma_\gamma^2)$ and learn $\mu,\sigma_\gamma$
+\item $\tau_t \stackrel{ind}{\sim} La(0,\sigma_\tau^2)$
+\item $\gamma_g \stackrel{ind}{\sim} La(\mu,\sigma_\gamma^2)$
+\item $e_i \stackrel{ind}{\sim} La(0,\sigma_e^2)$
+\item $e_i \stackrel{ind}{\sim} t_\nu(0,\sigma_e^2)$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+From a Bayesian perspective these changes do not affect the approach to inference.
+
+\end{frame}
+
+
+
+
+\end{document}
