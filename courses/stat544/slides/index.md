@@ -42,4 +42,5 @@ To extract the R code, run
 - [Chapter 14a](Ch14a.Rnw)
 - [Chapter 14b](Ch14b.Rnw)
 - [Chapter 15a](Ch15a.Rnw)
+- [Chapter 15b](Ch15b.Rnw)
 
