@@ -1,23 +1,19 @@
-\documentclass[handout,xcolor=pdftex,dvipsnames,table]{beamer} % for handouts
-%\documentclass{beamer}
+\documentclass[handout]{beamer}
 
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
 
-\usecolortheme[RGB={0,0,144}]{structure}
-\usetheme{AnnArbor}\usecolortheme{beaver}
-%\usetheme{CambridgeUS}\usecolortheme{crane}
-
-\usepackage{verbatim,xmpmulti,color,multicol,multirow,tikz}
 \setlength{\unitlength}{\textwidth}  % measure in textwidths
 \usepackage[normalem]{ulem}
 
-%\usepackage{beamerthemesplit}
 \setbeamertemplate{navigation symbols}{}
-%\setbeamercolor{alerted text}{fg=red}
-%\setbeamertemplate{block body theorem}{bg=orange}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
 \setkeys{Gin}{width=0.6\textwidth}
 
 
-\title{Hierarchical linear models}
+\title{Hierarchical linear models (cont.)}
 \subtitle{Random intercept, random slope}
 \author[Jarad Niemi]{Dr. Jarad Niemi}
 \institute[Iowa State]{Iowa State University}
@@ -32,498 +28,775 @@
 
 %\section{Temp??} \begin{comment}
 
-<<chunk_options, echo=FALSE, message=FALSE>>=
-require(knitr) # only needed so the following command does not fail when sourcing R code
-opts_chunk$set(fig.width=6, fig.height=5, out.width='.8\\linewidth', fig.align='center', size='tiny')
-##############################################
-# Random intercept, random slope             #
-##############################################
-require(reshape2)
-require(plyr)
-require(ggplot2)
-require(MASS)
-#require(rjags)
-#require(rstan)
-require(lme4)
-require(blme)
-require(mcmcse)
-set.seed(20140422)
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
 @
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(reshape2)
+library(dplyr)
+library(ggplot2)
+library(xtable)
+library(lme4)
+library(rstan)
+library(blme)
+library(mcmcse)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
 
 \frame{\maketitle}
 
-\begin{frame}
-\frametitle{Random intercept, random slope model} 
-
-  Let $y_{ij}$ be the observation for individual $i$ of group $j$ with explanatory variable $x_{ij}$ where $i=1,\ldots,n_j$ and $j=1,\ldots,J$ . \pause Then a \alert{random intercept, random slope model} is 
-  \[ \begin{array}{rl}
-  y_{ij} &\sim N(\beta_{j,0}+x_{ij}\beta_{j,1} ,\sigma_y^2) \pause \\
-  \beta_j &\sim N(\mu_\beta,\mySigma_\beta) 
-  \end{array} \]
-  where $\beta_j=(\beta_{j,0},\beta_{j,1})^\top$ \pause and $\sigma_y^2$, $\mu_\beta$, and $\mySigma_\beta$ are parameters to be estimated. 
-  
-\end{frame}
-
-
 \begin{frame}[fragile]
-
-<<random_intercepts_and_slopes, fig.width=8>>=
-J = 20
-Sigma_beta = matrix(c(1,.5,.5,1), 2, 2)
-beta = mvrnorm(J, mu_beta <- rnorm(2), Sigma_beta)
-plot(beta)
-abline(lm(beta[,2]~beta[,1]))
-@
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-<<simulate_data>>=
-n = rpois(J, 5) + 1 # Make sure all group sizes are greater than zero
-group = rep(1:J, n)
-table(group)
-sigma_y = 1
-x = rnorm(sum(n))
-y = rnorm(sum(n), beta[group,1]+beta[group,2]*x, sigma_y)
-d = data.frame(y=y, group=factor(group), x=x)
+<<bird_data, cache=TRUE, fig.width=18, fig.height=15>>=
+d = read.csv("Ch15b-bird_yeartotal.csv") %>%
+  filter(forestN=='Chippewa') %>%
+  mutate(y=log(count+1)/samples) 
+ggplot(d, aes(year, y)) + 
+  geom_point() +
+  facet_wrap(~abbrev, scales='free')
 @
 \end{frame}
-
-\begin{frame}[fragile]
-<<plot_data, fig.width=8>>=
-(p = ggplot(d, aes(x=x,y=y))+geom_point()+stat_smooth(method="lm", se=FALSE))
-@
-\end{frame}
-
-\begin{frame}[fragile]
-<<plot_data2, fig.width=8>>=
-p + facet_wrap(~group)
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Non-Bayesian analysis}
-<<lmer>>=
-m = lmer(y~x+(x|group), d)
-summary(m)
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-<<lmer_plots, fig.width=8>>=
-par(mfrow=c(1,2))
-bhat = ranef(m)$group
-beta_hat = fixef(m)
-plot(beta[,1], bhat[,1]+beta_hat[1], main="Intercepts", xlab="Truth", ylab="Estimate")
-abline(0,1)
-plot(beta[,2], bhat[,2]+beta_hat[2], main="Intercepts", xlab="Truth", ylab="Estimate")
-abline(0,1)
-@
-\end{frame}
-
-
-\section{Bayesian analysis}
-
-\begin{frame}
-\frametitle{Random intercept, random slope model} 
-
-  Let $y_{ij}$ be the observation for individual $i$ of group $j$ with explanatory variable $x_{ij}$ where $i=1,\ldots,n_j$ and $j=1,\ldots,J$ . Then a \alert{random intercept, random slope model} is 
-  \[ \begin{array}{rl}
-  y_{ij} &\sim N(\beta_{j,0}+x_{ij}\beta_{j,1} ,\sigma_y^2) \\
-  \beta_j &\sim N(\mu_\beta,\mySigma_\beta) 
-  \end{array} \]
-  
-  \vspace{0.2in} \pause
-  
-  For a Bayesian analysis, we need to specify a prior on $(\sigma_y^2,\mu_\beta,\mySigma_\beta)$. \pause Typically, independently assume
-  \begin{itemize}
-  \item $p(\sigma_y^2) \propto 1/\sigma_y^2$ \pause
-  \item $p(\mu_\beta) \propto 1$ \pause
-  \end{itemize}
-  but what should we do for $\mySigma$?
-  
-\end{frame}
-
-
 
 
 \begin{frame}
-\frametitle{Conjugate prior for a covariance matrix}
+\frametitle{Independent regressions}
 
-The natural conjugate prior for a covariance matrix is the \alert{inverse-Wishart} distribution\pause, which has density
-\[ p(\mySigma) \propto |\mySigma|^{-(\nu+d+1)/2}\exp\left(-\frac{1}{2} \mbox{tr}\left(S\mySigma^{-1}\right) \right) \]
-\pause with $\nu>d-1$ and $S$ is a positive definite matrix. The expected value is  
-\[ E[\mySigma] = \frac{S}{\nu-d-1} \]
-for $\nu>d+1$. \pause We write $\mySigma \sim IW(\nu, S^{-1})$. 
-
-\vspace{0.2in} \pause 
-
-Special cases:
+Initially, we could consider the model
+\[ y_{st} \stackrel{ind}{\sim} N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_s^2)\]
+where 
 \begin{itemize}
-\item If $\nu=d+1$, then each of the correlations in $\mySigma$ has a marginal uniform prior.  \pause
-\item As $\nu\to-1$ and $|S|\to 0$, we have Jeffreys prior 
-\[ p(\mySigma) = |\mySigma|^{-(d+1)/2} \]
+\item $y_{st}$ is the mean log count (+1) for species $s$ at time $t$
+\item $x_{st}$ is the year (minus 2005) for species $s$ at time $t$
 \end{itemize}
 
-\end{frame}
+\vspace{0.2in} \pause
 
-
-\begin{frame}
-\frametitle{Full Bayesian model}
-
-Consider the random intercept, random slope model
-\[ \begin{array}{rl}
-  y_{ij} &\sim N(\beta_{j,0}+x_{ij}\beta_{j,1} ,\sigma_y^2) \\
-\beta_j &\sim N(\mu_\beta,\mySigma_\beta) 
-\end{array} \]
-with independent priors 
-\[ \begin{array}{rl}
-p(\sigma_y^2) &\propto 1/\sigma_y^2 \\
-p(\mu_\beta) &\propto 1 \\
-\mySigma_\beta &\sim \mbox{IW}(d+1,\mathrm{I})
-\end{array} \]
-\end{frame}
-
-
-\section{Gibbs sampling}
-\begin{frame}
-\frametitle{Block Gibbs sampler}
-
-Bayesian analysis revolves around the posterior:
-\[ \begin{array}{rl}
-p(\sigma_y^2,\beta,\mu_beta,\Sigma_\beta|y) &\propto p(y|\sigma_y^2,\beta,\mu_\beta,\Sigma_\beta) p(\sigma_y^2,\beta,\mu_\beta,\Sigma_\beta) \\
-&\propto p(y|\beta,\sigma_y^2) p(\beta|\mu_\beta,\Sigma_\beta) p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta)
-\end{array} \]
-
-Construct a Gibbs sampler with target distribution $p(\sigma_y^2,\beta,\mu_beta,\Sigma_\beta|y)$ by iterating through samples from the following full conditionals:
-\begin{enumerate}
-\item $p(\beta|\ldots)$
-\item $p(\sigma_y^2|\ldots)$
-\item $p(\mu_\beta|\ldots)$
-\item $p(\mySigma_\beta|\ldots)$
-\end{enumerate}
-by Markov chain theory, these samples will converge to the target distribution, i.e. the posterior.
+This model treats each species completely independently. 
 
 \end{frame}
-
-
-
-\begin{frame}
-\frametitle{Full conditional for $\beta$}
-
-\[ \begin{array}{rl}
-p(\beta|\ldots) \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
-\propto& \prod_{j=1}^J N(y_{j}|X_j\beta_j,\sigma_y^2\mathrm{I}) N(\beta_j|\mu_\beta,\mySigma_\beta) \pause 
-\end{array} \]
-So 
-\begin{itemize}
-\item the $\beta_j$ are conditionally independent \pause and
-\item each $\beta_j$ is a regression with \emph{informative} prior $N(\mu_\beta,\mySigma_\beta)$. \pause
-\end{itemize}
-Thus 
-\[ \beta_j \stackrel{ind}{\sim} N(\hat{\beta}_j, \hat{\mySigma}_{\beta_j}) \]
-where 
-\[ \begin{array}{rl}
-\hat{\mySigma}_{\beta_j} &= \left[ \mySigma_{\beta}^{-1} + \sigma_y^{-2} X_j'X_j \right]^{-1} \pause \\
-\hat{\beta}_{j} &= \hat{\mySigma}_{\beta_j}\left[ \mySigma_{\beta}^{-1}\mu_\beta + \sigma_y^{-2} X_j'y_j \right]
-\end{array} \]
-
-\end{frame}
-
-
-
-
-\begin{frame}
-\frametitle{Full conditional for $\sigma_y^2$} 
-
-\[ \begin{array}{rl}
-p(\sigma_y^2|\ldots) \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
-\propto& p(y|\beta,\sigma_y^2)p(\sigma_y^2) \pause \\
-\propto & (\sigma^2)^{-n/2} e^{-nv/2\sigma_y^2} \frac{1}{\sigma^2} \pause \\
-\propto & (\sigma^2)^{-(n/2+1)} e^{-nv/2\sigma_y^2} \pause
-\end{array} \]
-where 
-\[ n = \sum_{j=1}^J n_j \qquad nv = \sum_{j=1}^J \sum_{i=1}^{n_j} (y_{ij} - X_j\beta_j)^2 \]
-\pause
-Thus 
-\[ \sigma_y^2|\ldots \sim \mbox{Inv-}\chi^2(n, v) \]
-\pause or, equivalently, 
-\[ \sigma_y^{-2}|\ldots \sim Ga(n/2,nv/2). \]
-
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Full conditional for $\mySigma_\beta$}
-{\small
-Assume $\mySigma_\beta \sim IW(d+1,\mathrm{I})$\pause , then 
-\[ \begin{array}{rl}
-p(\mySigma_\beta|\ldots) 
-\propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
-\propto& p(\beta|\mu_\beta,\mySigma_\beta)p(\mySigma_\beta) \pause \\
-\propto& \left[ \prod_{j=1}^J |\mySigma|^{-1/2} e^{-\frac{1}{2}(\beta_j-\mu_\beta)\mySigma_\beta^{-1}(\beta_j-\mu_\beta)} \right] \pause \\
-&\times |\mySigma|^{-\frac{d+1+d+1}{2}}e^{-\frac{1}{2} \mbox{tr}\left(\mySigma_\beta^{-1}\right)} \pause \\
-\propto& |\mySigma|^{-\frac{d+1+J+d+1}{2}} e^{-\frac{1}{2} \mbox{tr}\left(S_n\mySigma_\beta^{-1}\right)} \pause 
-\end{array} \]
-where 
-\[ S_n = \left( \mathrm{I} + \sum_{j=1}^J (\beta_j-\mu_\beta)(\beta_j-\mu_\beta)^\top \right) \]
-}
-\pause 
-So 
-\[ \mySigma_\beta\phantom{^{-1}}|\ldots \sim IW(d+1+J, S_n^{-1}) \]
-\pause or, equivalently, 
-\[ \mySigma_\beta^{-1}|\ldots \sim W(d+1+J, S_n^{-1}).\]
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Full conditional for $\mu_\beta$}
-{\small
-\[ \begin{array}{rl}
-p(\mu_\beta|y,\sigma_y^2,\beta,\mu_\beta) 
-\propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
-\propto& p(\beta|\mu_\beta,\mySigma_\beta) p(\mu_\beta) \pause \\
-\propto& \prod_{j=1}^J e^{-(\beta_j-\mu_\beta)^\top \mySigma_\beta^{-1}(\beta_j-\mu_\beta)/2} \pause \\
-\propto& e^{-[\mu_\beta' (J \mySigma_{\beta}^{-1})\mu_\beta-2\mu_\beta \mySigma_\beta^{-1} \sum_{j=1}^J \beta_j  ]/2} \pause
-\end{array} \]
-Thus
-\[ \mu_\beta|\ldots ~ N(\hat{\mu}_\beta, \hat{\mySigma}_\mu) \]
-\pause with 
-\[ \begin{array}{rl}
-\hat{\mySigma}_\mu &= \mySigma_\beta/J \pause \\
-\hat{\mu}_\beta &= \frac{1}{J} \sum_{j=1}^J \beta_j
-\end{array} \]
-}
-
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Reconsider full conditionals from the model}
-
-Reconsider the model 
-\[ \begin{array}{rl}
-  y_{ij} &\sim N(\beta_{j,0}+x_{ij}\beta_{j,1} ,\sigma_y^2) \\
-\beta_j &\sim N(\mu_\beta,\mySigma_\beta) \\
-p(\sigma_y^2,\mu_\beta,\mySigma_\beta) &\propto \frac{1}{\sigma_y^2} IW(\mySigma_\beta|d+1,\mathrm{I}).
-\end{array} \]
-
-\vspace{0.2in}
-
-The full conditionals 
-\begin{enumerate}[<+->]
-\item $p(\beta|\ldots)$: regression with informative prior and known variance (Sec 14.8)
-\item $p(\sigma_y^2|\ldots)$: normal with known mean (Sec 2.6)
-\item $p(\mu_\beta|\ldots)$: multivariate normal with known covariance matrix (Sec 3.5)
-\item $p(\mySigma_\beta|\ldots)$: multivariate normal with known mean (Sec Sec 3.5-3.6)
-\end{enumerate}
-\end{frame}
-
-
-
-
-
 
 
 \begin{frame}[fragile]
-<<mcmc, cache=TRUE>>=
-mcmc = function(n_iter, y, X, group, v, S) {
-  J = max(group)
-  n = length(y)
-  
-  # Precalculate quantities
-  XX = array(NA, dim=c(J,2,2))
-  XY = array(NA, dim=c(J,2  ))
-  for (j in 1:J) {
-    gp = which(group==j)
-    Xj = X[gp,]
-    XX[j,,] = t(Xj)%*%Xj
-    XY[j, ] = t(Xj)%*%y[gp]
-  }
-  
-  # Saving structures
-  beta_keep       = array(NA, dim=c(n_iter, J, 2))
-  mu_beta_keep    = array(NA, dim=c(n_iter,2))
-  Sigma_beta_keep = array(NA, dim=c(n_iter, 2, 2))
-  sigma_y_keep    = array(NA, dim=c(n_iter,1))
-  
-  # Initial values
-  beta    = matrix(0, J, 2)
-  mu_beta = c(0,0)
-  Si      = diag(2) # Sigma_beta inverse
-  sigma_y = 1; sigma2_y = sigma_y^2
-  
-  for (i in 1:n_iter) {
-    # Sample beta's
-    Si_mu = Si%*%mu_beta
-    for (j in 1:J) {
-     Sigma_beta_hat = solve(Si + XX[j,,]/sigma2_y)
-     beta_hat       = Sigma_beta_hat%*%(Si_mu+XY[j,]/sigma2_y)
-     beta[j,] = mvrnorm(1, beta_hat, Sigma_beta_hat)
-    }
-    
-    # Sample mu_beta
-    mu_beta = mvrnorm(1, colSums(beta)/J, Sigma_beta/J)
-    
-    # Sample Sigma_beta
-    Sn = S
-    for (j in 1:J) Sn = Sn + (beta[j,]-mu_beta)%*%t(beta[j,]-mu_beta)
-    Si = rWishart(1, v+J, solve(Sn))[,,1]
-    Sigma_beta = solve(Si)
-    
-    # Sample sigma_y
-    nv = 0
-    for (k in 1:n) nv = nv + (y[k]-X[k,]%*%beta[group[k],])^2
-    sigma2_y = 1/rgamma(1, n/2, nv/2)
-    sigma_y = sqrt(sigma2_y)
-    
-    # Record values
-    beta_keep[i,,]       = beta
-    mu_beta_keep[i,]     = mu_beta
-    Sigma_beta_keep[i,,] = Sigma_beta
-    sigma_y_keep[i]      = sigma_y
-  }
-  
-  return(list(beta       = beta_keep, 
-              mu_beta    = mu_beta_keep,
-              Sigma_beta = Sigma_beta_keep, 
-              sigma_y    = sigma_y_keep))
-}
+<<dependson='bird_data', fig.width=18, fig.height=15>>=
+ggplot(d, aes(year, y)) + 
+  geom_point() +
+  facet_wrap(~abbrev, scales='free')  + 
+  geom_smooth(method='lm')
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-<<run_mcmc, cache=TRUE>>=
-out = mcmc(10000, y, cbind(1,x), group, 3, diag(2))
-@
-\end{frame}
+\frametitle{}
 
-
-\subsection{Diagnostics}
-\begin{frame}[fragile]
-<<traceplots, dependson='run_mcmc', echo=FALSE>>=
-par(mfrow=c(2,3))
-plot(out$sigma_y,type="l")
-plot(out$beta[,13,1],type="l")
-plot(out$beta[,3,2],type="l")
-plot(out$mu_beta[,2],type="l")
-plot(out$Sigma_beta[,1,1],type="l")
-plot(out$Sigma_beta[,1,2],type="l")
-@
-\end{frame}
-
-\begin{frame}[fragile]
-<<acfs, dependson='run_mcmc', echo=FALSE>>=
-par(mfrow=c(2,3))
-acf(out$sigma_y)
-acf(out$beta[,13,1])
-acf(out$beta[,3,2])
-acf(out$mu_beta[,2])
-acf(out$Sigma_beta[,1,1])
-acf(out$Sigma_beta[,1,2])
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-<<ess, dependson='run_mcmc', cache=TRUE>>=
-# effective sample sizes
-ess(out$sigma_y)
-ess(out$beta[,13,1])
-ess(out$beta[,3,2])
-ess(out$mu_beta[,2])
-ess(out$Sigma_beta[,1,1])
-ess(out$Sigma_beta[,1,2])
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-<<sigma_y, dependson='run_mcmc'>>=
-hist(out$sigma_y,100, prob=TRUE, main="Posterior for sigma_y")
-abline(v=1, col="red", lwd=2)
-abline(v=summary(m)$sigma, col="blue", lwd=2)
-legend("topright", c("Truth","REML"), lwd=2, col=c("red","blue"))
-@
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]
-<<sigma_beta, dependson='run_mcmc', echo=FALSE, cache=TRUE>>=
-rho = adply(out$Sigma_beta, 1, function(x) data.frame(rho=x[1,2]/sqrt(x[1,1]*x[2,2])))
-par(mfrow=c(1,3))
-hist(rho$rho, 100, prob=TRUE, main="Correlation")
-abline(v=0.5, col="red", lwd=2)
-abline(v=as.data.frame(VarCorr(m))[3,5], col="blue", lwd=2)
-
-hist(out$Sigma[,1,1], 100, prob=TRUE)
-abline(v=1, col="red", lwd=2)
-abline(v=as.data.frame(VarCorr(m))[1,4], col="blue", lwd=2)
-
-hist(out$Sigma[,2,2], 100, prob=TRUE)
-abline(v=1, col="red", lwd=2)
-abline(v=as.data.frame(VarCorr(m))[2,4], col="blue", lwd=2)
-legend("topright", c('Truth','REML'), lwd=2, col=c('red','blue'))
-@
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]
-<<mu_beta, dependson='run_mcmc', echo=FALSE, cache=TRUE>>=
-par(mfrow=c(1,2))
-
-hist(out$mu_beta[,1], 100, prob=TRUE)
-abline(v=mu_beta[1], col="red", lwd=2)
-abline(v=fixef(m)[1], col="blue", lwd=2)
-
-hist(out$mu_beta[,2], 100, prob=TRUE)
-abline(v=mu_beta[2], col="red", lwd=2)
-abline(v=fixef(m)[2], col="blue", lwd=2)
-legend("topright", c('Truth','REML'), lwd=2, col=c('red','blue'))
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-<<beta, dependson='run_mcmc', echo=FALSE, cache=TRUE>>=
-q = adply(out$beta, 2, function(x) {
-  data.frame(beta0_lb = quantile(x[,1],.025),
-             beta0_ub = quantile(x[,1],.975),
-             beta1_lb = quantile(x[,2],.025),
-             beta1_ub = quantile(x[,2],.975))
+<<dependson='bird_data', fig.width=12, fig.height=10>>=
+slopes = plyr::ddply(d, 'abbrev', function(x) {
+  m = lm(y~I(year-2005), x)
+  ci = confint(m)
+  data.frame(lower       = ci[2,1],
+             upper       = ci[2,2],
+             midpoint    = coef(m)[2])
 })
-par(mfrow=c(1,2))
-plot(0,0, type="n", xlim=range(q$beta0_lb, q$beta0_ub), ylim=c(0,J+1), main="Intercepts", ylab="Group", xlab="")
-segments(q$beta0_lb, 1:J, q$beta0_ub, 1:J)
-points(beta[,1], 1:J, col="red")
-points(ranef(m)$group[,1]+fixef(m)[1], 1:J, col="blue")
+slopes$abbrev = factor(slopes$abbrev,
+                       levels(slopes$abbrev)[order(slopes$upper)])
+ggplot(slopes, 
+       aes(x=abbrev, y=midpoint, ymin=lower, ymax=upper)) +
+  geom_pointrange() + 
+  coord_flip() +
+  labs(title='Estimated slopes and 95% confidence intervals',
+       y = 'Slopes', x='Species abbreviation')
+@
+\end{frame}
 
-plot(0,0, type="n", xlim=range(q$beta1_lb, q$beta1_ub), ylim=c(0,J+1), main="Slopes", ylab="Group", xlab="")
-segments(q$beta1_lb, 1:J, q$beta1_ub, 1:J)
-points(beta[,2], 1:J, col="red")
-points(ranef(m)$group[,2]+fixef(m)[2], 1:J, col="blue")
+
+
+\begin{frame}
+\frametitle{Random intercept, random slope model} 
+
+  A reasonable assumption is to treat these species exchangeably and put a distribution on the intercept and slope.
+  
+  \vspace{0.2in}
+  
+  \pause Then a \alert{random intercept, random slope model} is 
+  \[ \begin{array}{rl}
+  y_{st} &\stackrel{ind}{\sim} N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma^2) \pause \\
+  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\mySigma_\beta) 
+  \end{array} \]
+  where $\beta_s=(\beta_{s,0},\beta_{s,1})'$ \pause and $\sigma^2$, $\mu_\beta$, and $\mySigma_\beta$ are parameters to be estimated. 
+  
+\vspace{0.2in} \pause
+
+Notice that there is now a common variance for all species. 
+
+% Equivalently,
+% 
+% \[ y_j \stackrel{ind}{\sim} N(X_j\beta_j, \sigma_y^2\I_{n_j}), \quad \beta_j \stackrel{ind}{\sim} N(\mu_\beta,\mySigma_\beta) \]
+% where $y_j = (y_{1j},\ldots,y_{n_jj})'$ and the $i^{(th)}$ row of $X_j$ is $(1,x_{st})$.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Random intercept and random slope model in R}
+
+<<echo=TRUE>>=
+m2 = lmer(y~I(year-2005) + (I(year-2005)|abbrev), d)
+summary(m2)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-<<blme>>=
-b = blmer(y~x+(x|group), d, cov.prior=invwishart(df = 3, scale = diag(2)))
-summary(b)
+<<>>=
+# Individual analysis
+ind = plyr::ddply(d, 'abbrev', function(x) {
+  m = lm(log(count+1)/samples ~ I(year-2005), x)
+  data.frame(individual = c(coef(m)[1],coef(m)[2]),
+             parameter  = c("intercept","slope"))
+})
+
+# Random intercept-random slope
+joint = data.frame(abbrev    = rownames(ranef(m)$abbrev),
+                   joint = c(fixef(m)[1] + ranef(m)$abbrev[,1],
+                             fixef(m)[2] + ranef(m)$abbrev[,2]),
+                   parameter = rep(c("intercept","slope"), 
+                                   each=nrow(ranef(m)$abbrev)))
+
+ggplot(merge(ind,joint), aes(individual, joint)) + 
+  geom_point() + 
+  facet_wrap(~parameter, scales='free') + 
+  geom_abline(intercept=0, slope=1) + 
+  geom_hline(data=data.frame(parameter=c('intercept','slope'),
+                              value = fixef(m)),
+             aes(yintercept=value), color='gray') + 
+  geom_smooth(method="lm", se=FALSE) + 
+  coord_equal() + 
+  labs(title="Shrinkage of point estimates")
 @
 \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Which species have significant decline?}
+
+The quantities of interest here are $\beta_{s,1}$ and whether these quantities are negative, i.e. indicating an average decease in counts over time. But how can we calculate pvalues or confidence intervals for the random effects themselves?
+
+\vspace{0.2in} \pause
+
+<<>>=
+tmp = joint[joint$parameter=='slope',]
+tmp$abbrev = factor(tmp$abbrev, 
+                    levels(tmp$abbrev)[order(tmp$joint)])
+ggplot(tmp, aes(joint,abbrev)) + 
+  geom_point() + 
+  labs(x="Slope estimates", y='Species abbreviation',
+       title = 'Species slope estimates with no uncertainty')
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+
+<<stan_model, cache=TRUE>>=
+model = "
+data {
+  int<lower=1> n_species;
+  int<lower=1> n_years;
+  vector[n_years] y[n_species];
+  matrix[n_years,2] X;
+}
+parameters {
+  real<lower=0> sigma;
+  vector[2] beta[n_species];
+  vector[2] mu_beta;
+  vector<lower=0>[2] sigma_beta;
+  corr_matrix[2] L;
+}
+model {
+  sigma ~ cauchy(0,1);
+  sigma_beta ~ cauchy(0,1);
+  L ~ lkj_corr(1.0);
+  beta ~ multi_normal(mu_beta, diag_matrix(sigma_beta) * L * diag_matrix(sigma_beta));
+  for (s in 1:n_species) y[s] ~ normal(X*beta[s], sigma);
+}
+"
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+<<stan, cache=TRUE, dependson=c('bird_data','stan_model')>>=
+tmp = reshape2::dcast(d[,c('year','abbrev','y')], abbrev~year, value.var='y')
+dat = list(n_species = nrow(tmp),
+           n_years   = ncol(tmp)-1,
+           y         = tmp[,-1],
+           X         = cbind(1, as.numeric(names(tmp)[-1])-2005),
+           prior_scale = 0.01)
+m = stan_model(model_code=model)
+r = sampling(m, dat)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<dependson='stan'>>=
+beta = plyr::adply(extract(r,'beta')$beta, 2, function(x) {
+  data.frame(parameter = c("intercept","slope"),
+             median    = apply(x,2,median),
+             lower     = apply(x,2,quantile,prob=.025),
+             upper     = apply(x,2,quantile,prob=.975))
+})
+beta$abbrev = factor(beta$X1, labels=tmp$abbrev)
+beta$abbrev = factor(beta$abbrev,
+                     levels = levels(beta$abbrev)[order(beta$upper[beta$parameter=='slope'])])
+
+ggplot(subset(beta, parameter=='slope'), 
+       aes(abbrev, y=median, ymin=lower, ymax=upper)) +
+  geom_pointrange() + 
+  coord_flip()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+
+<<stan_model2, cache=TRUE>>=
+model2 = "
+data {
+  int<lower=1> n_species;
+  int<lower=1> n_years;
+  vector[n_years] y[n_species];
+  matrix[n_years,2] X;
+}
+parameters {
+  real<lower=0> sigma[n_species];
+  real mu;
+  real<lower=0> tau;
+  vector[2] beta[n_species];
+  vector[2] mu_beta;
+  vector<lower=0>[2] sigma_beta;
+  corr_matrix[2] L;
+}
+model {
+  tau ~ cauchy(0,1);
+  sigma ~ lognormal(mu,tau);
+  sigma_beta ~ cauchy(0,1);
+  L ~ lkj_corr(1.0);
+  beta ~ multi_normal(mu_beta, diag_matrix(sigma_beta) * L * diag_matrix(sigma_beta));
+  for (s in 1:n_species) y[s] ~ normal(X*beta[s], sigma[s]);
+}
+"
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+<<stan2, cache=TRUE, dependson=c('bird_data','stan_model2')>>=
+m2 = stan_model(model_code=model2)
+r2 = sampling(m2, dat)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<dependson='stan2'>>=
+beta2 = plyr::adply(extract(r2,'beta')$beta, 2, function(x) {
+  data.frame(parameter = c("intercept","slope"),
+             median    = apply(x,2,median),
+             lower     = apply(x,2,quantile,prob=.025),
+             upper     = apply(x,2,quantile,prob=.975))
+})
+beta2$abbrev = factor(beta2$X1, labels=tmp$abbrev)
+beta2$abbrev = factor(beta2$abbrev,
+                     levels = levels(beta2$abbrev)[order(beta2$upper[beta2$parameter=='slope'])])
+
+ggplot(subset(beta2, parameter=='slope'), 
+       aes(abbrev, y=median, ymin=lower, ymax=upper)) +
+  geom_pointrange() + 
+  coord_flip()
+@
+\end{frame}
+
+
+
+% 
+% 
+% \begin{frame}[fragile]
+% 
+% <<random_intercepts_and_slopes, fig.width=8>>=
+% J = 20
+% Sigma_beta = matrix(c(1,.5,.5,1), 2, 2)
+% beta = mvrnorm(J, mu_beta <- rnorm(2), Sigma_beta)
+% plot(beta)
+% abline(lm(beta[,2]~beta[,1]))
+% @
+% 
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% <<simulate_data>>=
+% n = rpois(J, 5) + 1 # Make sure all group sizes are greater than zero
+% group = rep(1:J, n)
+% table(group)
+% sigma_y = 1
+% x = rnorm(sum(n))
+% y = rnorm(sum(n), beta[group,1]+beta[group,2]*x, sigma_y)
+% d = data.frame(y=y, group=factor(group), x=x)
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% <<plot_data, fig.width=8>>=
+% (p = ggplot(d, aes(x=x,y=y))+geom_point()+stat_smooth(method="lm", se=FALSE))
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% <<plot_data2, fig.width=8>>=
+% p + facet_wrap(~group)
+% @
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{Non-Bayesian analysis}
+% <<lmer>>=
+% m = lmer(y~x+(x|group), d)
+% summary(m)
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% <<lmer_plots, fig.width=8>>=
+% par(mfrow=c(1,2))
+% bhat = ranef(m)$group
+% beta_hat = fixef(m)
+% plot(beta[,1], bhat[,1]+beta_hat[1], main="Intercepts", xlab="Truth", ylab="Estimate")
+% abline(0,1)
+% plot(beta[,2], bhat[,2]+beta_hat[2], main="Intercepts", xlab="Truth", ylab="Estimate")
+% abline(0,1)
+% @
+% \end{frame}
+% 
+% 
+% \section{Bayesian analysis}
+% 
+% \begin{frame}
+% \frametitle{Random intercept, random slope model} 
+% 
+%   Let $y_{st}$ be the observation for individual $i$ of group $j$ with explanatory variable $x_{st}$ where $i=1,\ldots,n_j$ and $j=1,\ldots,J$ . Then a \alert{random intercept, random slope model} is 
+%   \[ \begin{array}{rl}
+%   y_{st} &\sim N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_y^2) \\
+%   \beta_j &\sim N(\mu_\beta,\mySigma_\beta) 
+%   \end{array} \]
+%   
+%   \vspace{0.2in} \pause
+%   
+%   For a Bayesian analysis, we need to specify a prior on $(\sigma_y^2,\mu_\beta,\mySigma_\beta)$. \pause Typically, independently assume
+%   \begin{itemize}
+%   \item $p(\sigma_y^2) \propto 1/\sigma_y^2$ \pause
+%   \item $p(\mu_\beta) \propto 1$ \pause
+%   \end{itemize}
+%   but what should we do for $\mySigma$?
+%   
+% \end{frame}
+% 
+% 
+% 
+% 
+% \begin{frame}
+% \frametitle{Conjugate prior for a covariance matrix}
+% 
+% The natural conjugate prior for a covariance matrix is the \alert{inverse-Wishart} distribution\pause, which has density
+% \[ p(\mySigma) \propto |\mySigma|^{-(\nu+d+1)/2}\exp\left(-\frac{1}{2} \mbox{tr}\left(S\mySigma^{-1}\right) \right) \]
+% \pause with $\nu>d-1$ and $S$ is a positive definite matrix. The expected value is  
+% \[ E[\mySigma] = \frac{S}{\nu-d-1} \]
+% for $\nu>d+1$. \pause We write $\mySigma \sim IW(\nu, S^{-1})$. 
+% 
+% \vspace{0.2in} \pause 
+% 
+% Special cases:
+% \begin{itemize}
+% \item If $\nu=d+1$, then each of the correlations in $\mySigma$ has a marginal uniform prior.  \pause
+% \item As $\nu\to-1$ and $|S|\to 0$, we have Jeffreys prior 
+% \[ p(\mySigma) = |\mySigma|^{-(d+1)/2} \]
+% \end{itemize}
+% 
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{Full Bayesian model}
+% 
+% Consider the random intercept, random slope model
+% \[ \begin{array}{rl}
+%   y_{st} &\sim N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_y^2) \\
+% \beta_j &\sim N(\mu_\beta,\mySigma_\beta) 
+% \end{array} \]
+% with independent priors 
+% \[ \begin{array}{rl}
+% p(\sigma_y^2) &\propto 1/\sigma_y^2 \\
+% p(\mu_\beta) &\propto 1 \\
+% \mySigma_\beta &\sim \mbox{IW}(d+1,\mathrm{I})
+% \end{array} \]
+% \end{frame}
+% 
+% 
+% \section{Gibbs sampling}
+% \begin{frame}
+% \frametitle{Block Gibbs sampler}
+% 
+% Bayesian analysis revolves around the posterior:
+% \[ \begin{array}{rl}
+% p(\sigma_y^2,\beta,\mu_beta,\Sigma_\beta|y) &\propto p(y|\sigma_y^2,\beta,\mu_\beta,\Sigma_\beta) p(\sigma_y^2,\beta,\mu_\beta,\Sigma_\beta) \\
+% &\propto p(y|\beta,\sigma_y^2) p(\beta|\mu_\beta,\Sigma_\beta) p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta)
+% \end{array} \]
+% 
+% Construct a Gibbs sampler with target distribution $p(\sigma_y^2,\beta,\mu_beta,\Sigma_\beta|y)$ by iterating through samples from the following full conditionals:
+% \begin{enumerate}
+% \item $p(\beta|\ldots)$
+% \item $p(\sigma_y^2|\ldots)$
+% \item $p(\mu_\beta|\ldots)$
+% \item $p(\mySigma_\beta|\ldots)$
+% \end{enumerate}
+% by Markov chain theory, these samples will converge to the target distribution, i.e. the posterior.
+% 
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}
+% \frametitle{Full conditional for $\beta$}
+% 
+% \[ \begin{array}{rl}
+% p(\beta|\ldots) \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
+% \propto& \prod_{j=1}^J N(y_{j}|X_j\beta_j,\sigma_y^2\mathrm{I}) N(\beta_j|\mu_\beta,\mySigma_\beta) \pause 
+% \end{array} \]
+% So 
+% \begin{itemize}
+% \item the $\beta_j$ are conditionally independent \pause and
+% \item each $\beta_j$ is a regression with \emph{informative} prior $N(\mu_\beta,\mySigma_\beta)$. \pause
+% \end{itemize}
+% Thus 
+% \[ \beta_j \stackrel{ind}{\sim} N(\hat{\beta}_j, \hat{\mySigma}_{\beta_j}) \]
+% where 
+% \[ \begin{array}{rl}
+% \hat{\mySigma}_{\beta_j} &= \left[ \mySigma_{\beta}^{-1} + \sigma_y^{-2} X_j'X_j \right]^{-1} \pause \\
+% \hat{\beta}_{j} &= \hat{\mySigma}_{\beta_j}\left[ \mySigma_{\beta}^{-1}\mu_\beta + \sigma_y^{-2} X_j'y_j \right]
+% \end{array} \]
+% 
+% \end{frame}
+% 
+% 
+% 
+% 
+% \begin{frame}
+% \frametitle{Full conditional for $\sigma_y^2$} 
+% 
+% \[ \begin{array}{rl}
+% p(\sigma_y^2|\ldots) \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
+% \propto& p(y|\beta,\sigma_y^2)p(\sigma_y^2) \pause \\
+% \propto & (\sigma^2)^{-n/2} e^{-nv/2\sigma_y^2} \frac{1}{\sigma^2} \pause \\
+% \propto & (\sigma^2)^{-(n/2+1)} e^{-nv/2\sigma_y^2} \pause
+% \end{array} \]
+% where 
+% \[ n = \sum_{j=1}^J n_j \qquad nv = \sum_{j=1}^J \sum_{i=1}^{n_j} (y_{st} - X_j\beta_j)^2 \]
+% \pause
+% Thus 
+% \[ \sigma_y^2|\ldots \sim \mbox{Inv-}\chi^2(n, v) \]
+% \pause or, equivalently, 
+% \[ \sigma_y^{-2}|\ldots \sim Ga(n/2,nv/2). \]
+% 
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{Full conditional for $\mySigma_\beta$}
+% {\small
+% Assume $\mySigma_\beta \sim IW(d+1,\mathrm{I})$\pause , then 
+% \[ \begin{array}{rl}
+% p(\mySigma_\beta|\ldots) 
+% \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
+% \propto& p(\beta|\mu_\beta,\mySigma_\beta)p(\mySigma_\beta) \pause \\
+% \propto& \left[ \prod_{j=1}^J |\mySigma|^{-1/2} e^{-\frac{1}{2}(\beta_j-\mu_\beta)\mySigma_\beta^{-1}(\beta_j-\mu_\beta)} \right] \pause \\
+% &\times |\mySigma|^{-\frac{d+1+d+1}{2}}e^{-\frac{1}{2} \mbox{tr}\left(\mySigma_\beta^{-1}\right)} \pause \\
+% \propto& |\mySigma|^{-\frac{d+1+J+d+1}{2}} e^{-\frac{1}{2} \mbox{tr}\left(S_n\mySigma_\beta^{-1}\right)} \pause 
+% \end{array} \]
+% where 
+% \[ S_n = \left( \mathrm{I} + \sum_{j=1}^J (\beta_j-\mu_\beta)(\beta_j-\mu_\beta)^\top \right) \]
+% }
+% \pause 
+% So 
+% \[ \mySigma_\beta\phantom{^{-1}}|\ldots \sim IW(d+1+J, S_n^{-1}) \]
+% \pause or, equivalently, 
+% \[ \mySigma_\beta^{-1}|\ldots \sim W(d+1+J, S_n^{-1}).\]
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{Full conditional for $\mu_\beta$}
+% {\small
+% \[ \begin{array}{rl}
+% p(\mu_\beta|y,\sigma_y^2,\beta,\mu_\beta) 
+% \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
+% \propto& p(\beta|\mu_\beta,\mySigma_\beta) p(\mu_\beta) \pause \\
+% \propto& \prod_{j=1}^J e^{-(\beta_j-\mu_\beta)^\top \mySigma_\beta^{-1}(\beta_j-\mu_\beta)/2} \pause \\
+% \propto& e^{-[\mu_\beta' (J \mySigma_{\beta}^{-1})\mu_\beta-2\mu_\beta \mySigma_\beta^{-1} \sum_{j=1}^J \beta_j  ]/2} \pause
+% \end{array} \]
+% Thus
+% \[ \mu_\beta|\ldots ~ N(\hat{\mu}_\beta, \hat{\mySigma}_\mu) \]
+% \pause with 
+% \[ \begin{array}{rl}
+% \hat{\mySigma}_\mu &= \mySigma_\beta/J \pause \\
+% \hat{\mu}_\beta &= \frac{1}{J} \sum_{j=1}^J \beta_j
+% \end{array} \]
+% }
+% 
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{Reconsider full conditionals from the model}
+% 
+% Reconsider the model 
+% \[ \begin{array}{rl}
+%   y_{st} &\sim N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_y^2) \\
+% \beta_j &\sim N(\mu_\beta,\mySigma_\beta) \\
+% p(\sigma_y^2,\mu_\beta,\mySigma_\beta) &\propto \frac{1}{\sigma_y^2} IW(\mySigma_\beta|d+1,\mathrm{I}).
+% \end{array} \]
+% 
+% \vspace{0.2in}
+% 
+% The full conditionals 
+% \begin{enumerate}[<+->]
+% \item $p(\beta|\ldots)$: regression with informative prior and known variance (Sec 14.8)
+% \item $p(\sigma_y^2|\ldots)$: normal with known mean (Sec 2.6)
+% \item $p(\mu_\beta|\ldots)$: multivariate normal with known covariance matrix (Sec 3.5)
+% \item $p(\mySigma_\beta|\ldots)$: multivariate normal with known mean (Sec Sec 3.5-3.6)
+% \end{enumerate}
+% \end{frame}
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% <<mcmc, cache=TRUE>>=
+% mcmc = function(n_iter, y, X, group, v, S) {
+%   J = max(group)
+%   n = length(y)
+%   
+%   # Precalculate quantities
+%   XX = array(NA, dim=c(J,2,2))
+%   XY = array(NA, dim=c(J,2  ))
+%   for (j in 1:J) {
+%     gp = which(group==j)
+%     Xj = X[gp,]
+%     XX[j,,] = t(Xj)%*%Xj
+%     XY[j, ] = t(Xj)%*%y[gp]
+%   }
+%   
+%   # Saving structures
+%   beta_keep       = array(NA, dim=c(n_iter, J, 2))
+%   mu_beta_keep    = array(NA, dim=c(n_iter,2))
+%   Sigma_beta_keep = array(NA, dim=c(n_iter, 2, 2))
+%   sigma_y_keep    = array(NA, dim=c(n_iter,1))
+%   
+%   # Initial values
+%   beta    = matrix(0, J, 2)
+%   mu_beta = c(0,0)
+%   Si      = diag(2) # Sigma_beta inverse
+%   sigma_y = 1; sigma2_y = sigma_y^2
+%   
+%   for (i in 1:n_iter) {
+%     # Sample beta's
+%     Si_mu = Si%*%mu_beta
+%     for (j in 1:J) {
+%      Sigma_beta_hat = solve(Si + XX[j,,]/sigma2_y)
+%      beta_hat       = Sigma_beta_hat%*%(Si_mu+XY[j,]/sigma2_y)
+%      beta[j,] = mvrnorm(1, beta_hat, Sigma_beta_hat)
+%     }
+%     
+%     # Sample mu_beta
+%     mu_beta = mvrnorm(1, colSums(beta)/J, Sigma_beta/J)
+%     
+%     # Sample Sigma_beta
+%     Sn = S
+%     for (j in 1:J) Sn = Sn + (beta[j,]-mu_beta)%*%t(beta[j,]-mu_beta)
+%     Si = rWishart(1, v+J, solve(Sn))[,,1]
+%     Sigma_beta = solve(Si)
+%     
+%     # Sample sigma_y
+%     nv = 0
+%     for (k in 1:n) nv = nv + (y[k]-X[k,]%*%beta[group[k],])^2
+%     sigma2_y = 1/rgamma(1, n/2, nv/2)
+%     sigma_y = sqrt(sigma2_y)
+%     
+%     # Record values
+%     beta_keep[i,,]       = beta
+%     mu_beta_keep[i,]     = mu_beta
+%     Sigma_beta_keep[i,,] = Sigma_beta
+%     sigma_y_keep[i]      = sigma_y
+%   }
+%   
+%   return(list(beta       = beta_keep, 
+%               mu_beta    = mu_beta_keep,
+%               Sigma_beta = Sigma_beta_keep, 
+%               sigma_y    = sigma_y_keep))
+% }
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% <<run_mcmc, cache=TRUE>>=
+% out = mcmc(10000, y, cbind(1,x), group, 3, diag(2))
+% @
+% \end{frame}
+% 
+% 
+% \subsection{Diagnostics}
+% \begin{frame}[fragile]
+% <<traceplots, dependson='run_mcmc', echo=FALSE>>=
+% par(mfrow=c(2,3))
+% plot(out$sigma_y,type="l")
+% plot(out$beta[,13,1],type="l")
+% plot(out$beta[,3,2],type="l")
+% plot(out$mu_beta[,2],type="l")
+% plot(out$Sigma_beta[,1,1],type="l")
+% plot(out$Sigma_beta[,1,2],type="l")
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% <<acfs, dependson='run_mcmc', echo=FALSE>>=
+% par(mfrow=c(2,3))
+% acf(out$sigma_y)
+% acf(out$beta[,13,1])
+% acf(out$beta[,3,2])
+% acf(out$mu_beta[,2])
+% acf(out$Sigma_beta[,1,1])
+% acf(out$Sigma_beta[,1,2])
+% @
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% <<ess, dependson='run_mcmc', cache=TRUE>>=
+% # effective sample sizes
+% ess(out$sigma_y)
+% ess(out$beta[,13,1])
+% ess(out$beta[,3,2])
+% ess(out$mu_beta[,2])
+% ess(out$Sigma_beta[,1,1])
+% ess(out$Sigma_beta[,1,2])
+% @
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% <<sigma_y, dependson='run_mcmc'>>=
+% hist(out$sigma_y,100, prob=TRUE, main="Posterior for sigma_y")
+% abline(v=1, col="red", lwd=2)
+% abline(v=summary(m)$sigma, col="blue", lwd=2)
+% legend("topright", c("Truth","REML"), lwd=2, col=c("red","blue"))
+% @
+% \end{frame}
+% 
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% <<sigma_beta, dependson='run_mcmc', echo=FALSE, cache=TRUE>>=
+% rho = adply(out$Sigma_beta, 1, function(x) data.frame(rho=x[1,2]/sqrt(x[1,1]*x[2,2])))
+% par(mfrow=c(1,3))
+% hist(rho$rho, 100, prob=TRUE, main="Correlation")
+% abline(v=0.5, col="red", lwd=2)
+% abline(v=as.data.frame(VarCorr(m))[3,5], col="blue", lwd=2)
+% 
+% hist(out$Sigma[,1,1], 100, prob=TRUE)
+% abline(v=1, col="red", lwd=2)
+% abline(v=as.data.frame(VarCorr(m))[1,4], col="blue", lwd=2)
+% 
+% hist(out$Sigma[,2,2], 100, prob=TRUE)
+% abline(v=1, col="red", lwd=2)
+% abline(v=as.data.frame(VarCorr(m))[2,4], col="blue", lwd=2)
+% legend("topright", c('Truth','REML'), lwd=2, col=c('red','blue'))
+% @
+% \end{frame}
+% 
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% <<mu_beta, dependson='run_mcmc', echo=FALSE, cache=TRUE>>=
+% par(mfrow=c(1,2))
+% 
+% hist(out$mu_beta[,1], 100, prob=TRUE)
+% abline(v=mu_beta[1], col="red", lwd=2)
+% abline(v=fixef(m)[1], col="blue", lwd=2)
+% 
+% hist(out$mu_beta[,2], 100, prob=TRUE)
+% abline(v=mu_beta[2], col="red", lwd=2)
+% abline(v=fixef(m)[2], col="blue", lwd=2)
+% legend("topright", c('Truth','REML'), lwd=2, col=c('red','blue'))
+% @
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% <<beta, dependson='run_mcmc', echo=FALSE, cache=TRUE>>=
+% q = adply(out$beta, 2, function(x) {
+%   data.frame(beta0_lb = quantile(x[,1],.025),
+%              beta0_ub = quantile(x[,1],.975),
+%              beta1_lb = quantile(x[,2],.025),
+%              beta1_ub = quantile(x[,2],.975))
+% })
+% par(mfrow=c(1,2))
+% plot(0,0, type="n", xlim=range(q$beta0_lb, q$beta0_ub), ylim=c(0,J+1), main="Intercepts", ylab="Group", xlab="")
+% segments(q$beta0_lb, 1:J, q$beta0_ub, 1:J)
+% points(beta[,1], 1:J, col="red")
+% points(ranef(m)$group[,1]+fixef(m)[1], 1:J, col="blue")
+% 
+% plot(0,0, type="n", xlim=range(q$beta1_lb, q$beta1_ub), ylim=c(0,J+1), main="Slopes", ylab="Group", xlab="")
+% segments(q$beta1_lb, 1:J, q$beta1_ub, 1:J)
+% points(beta[,2], 1:J, col="red")
+% points(ranef(m)$group[,2]+fixef(m)[2], 1:J, col="blue")
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% <<blme>>=
+% b = blmer(y~x+(x|group), d, cov.prior=invwishart(df = 3, scale = diag(2)))
+% summary(b)
+% @
+% \end{frame}
 
 
 \end{document}
