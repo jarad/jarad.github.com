@@ -22,6 +22,7 @@
 \newcommand{\mG}{\mathrm{\Gamma}}
 \newcommand{\I}{\mathrm{I}}
 \newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\myOmega}{\mathrm{\Omega}}
 
 
 \begin{document}
@@ -167,18 +168,18 @@ ind = plyr::ddply(d, 'abbrev', function(x) {
 })
 
 # Random intercept-random slope
-joint = data.frame(abbrev    = rownames(ranef(m)$abbrev),
-                   joint = c(fixef(m)[1] + ranef(m)$abbrev[,1],
-                             fixef(m)[2] + ranef(m)$abbrev[,2]),
+joint = data.frame(abbrev    = rownames(ranef(m2)$abbrev),
+                   joint = c(fixef(m2)[1] + ranef(m2)$abbrev[,1],
+                             fixef(m2)[2] + ranef(m2)$abbrev[,2]),
                    parameter = rep(c("intercept","slope"), 
-                                   each=nrow(ranef(m)$abbrev)))
+                                   each=nrow(ranef(m2)$abbrev)))
 
 ggplot(merge(ind,joint), aes(individual, joint)) + 
   geom_point() + 
   facet_wrap(~parameter, scales='free') + 
   geom_abline(intercept=0, slope=1) + 
   geom_hline(data=data.frame(parameter=c('intercept','slope'),
-                              value = fixef(m)),
+                              value = fixef(m2)),
              aes(yintercept=value), color='gray') + 
   geom_smooth(method="lm", se=FALSE) + 
   coord_equal() + 
@@ -207,10 +208,107 @@ ggplot(tmp, aes(joint,abbrev)) +
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Bayesian random intercept, random slope model}
+
+The model
+  \[ \begin{array}{rl}
+  y_{st} &\stackrel{ind}{\sim} N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma^2) \pause \\
+  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\mySigma_\beta) 
+  \end{array} \]
+\pause 
+and a prior
+
+\[ p(\sigma, \mu_\beta, \mySigma_\beta) \propto p(\sigma)p(\mu_\beta)p(\mySigma_\beta) \]
+\pause 
+and 
+\begin{itemize}
+\item $\sigma \sim Ca^+(0,1)$,
+\item $p(\mu_\beta) \propto 1$\pause, and
+\item $\mySigma_\beta\sim$ ?
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Conjugate prior for a covariance matrix}
+
+The natural conjugate prior for a covariance matrix is the \alert{inverse-Wishart} distribution\pause, which has density
+\[ p(\mySigma) \propto |\mySigma|^{-(\nu+d+1)/2}\exp\left(-\frac{1}{2} \mbox{tr}\left(S\mySigma^{-1}\right) \right) \]
+\pause with $\nu>d-1$ and $S$ is a positive definite matrix. The expected value is  
+\[ E[\mySigma] = \frac{S}{\nu-d-1} \]
+for $\nu>d+1$. \pause We write $\mySigma \sim IW(\nu, S^{-1})$. 
+
+\vspace{0.2in} \pause 
+
+Special cases:
+\begin{itemize}
+\item If $\nu=d+1$ and $S$ is diagonal, then each of the correlations in $\mySigma$ has a marginal uniform prior.  \pause
+\item Jeffreys prior 
+\[ p(\mySigma) = |\mySigma|^{-(d+1)/2} \]
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Issues with the inverse-Wishart distribution}
+
+If $\mySigma \sim IW(\nu,S)$, then $\mySigma_{ii} \sim IG([\nu-(d-1)]/2, S_{ii}/2)$. \pause In particular, if $\nu=d+1$ and $S=\I$ (to ensure marginally uniform priors on the correlations), then $\mySigma_{ii} \sim IG(1,1/2)$. 
+
+\vspace{0.2in} \pause
+
+The problems
+\begin{itemize}[<+->]
+\item although the correlations are marginally uniform, they are not independent \emph{a priori} of the variances (diagonal elements of $\mySigma$),
+\item the inverse gamma distribution has a region near zero of extremely low density that can cause extreme bias toward larger values for truly small variances,
+\item this in turn causes the correlation to be shrunk toward zero.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Deconstructing the covariance matrix}
+
+Let 
+\[ \mySigma = \mbox{diag}(\sigma)\myOmega \mbox{diag}(\sigma) \]
+where 
+\begin{itemize}
+\item $\sigma$ is a vector of standard deviations
+\item $\myOmega$ is a correlation matrix
+\end{itemize}
+\pause
+which results in the standard deviations and correlations being independent \emph{a priori}. 
+
+\vspace{0.2in} \pause
+
+Now we can put whatever prior we want on $\sigma$ and $\myOmega$, e.g. $\sigma_i \stackrel{ind}{\sim} Ca^+(0,?)$. 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{LKJ correlation matrix prior}
+
+The LKJ (Lewandowski, Kurowicka, and Joe 2009) distribution is 
+\[ p(\myOmega) = |\myOmega|^{\eta-1} \]
+where $\myOmega$ is a correlation matrix with implicit dimension $d$ and $\eta>0$ is the shape parameter.
+
+\vspace{0.2in} \pause
+
+\begin{itemize}
+\item if $\eta=1$, then the density is uniform over correlation matrices of dimension $d$
+\item if $\eta>1$, the identity matrix is the modal correlation matrix with a sharper peak in the density for larger values of $\eta$
+\item if $\eta<1$, the density has a trough at the identity matrix. 
+\end{itemize}
+\end{frame}
+
+
+
 
 \begin{frame}[fragile]
-
-<<stan_model, cache=TRUE>>=
+<<stan_model, cache=TRUE, echo=TRUE>>=
 model = "
 data {
   int<lower=1> n_species;
@@ -234,8 +332,11 @@ model {
 }
 "
 @
-
 \end{frame}
+
+
+
+
 
 \begin{frame}[fragile]
 <<stan, cache=TRUE, dependson=c('bird_data','stan_model')>>=
@@ -252,7 +353,7 @@ r = sampling(m, dat)
 
 
 \begin{frame}[fragile]
-<<dependson='stan'>>=
+<<dependson='stan', fig.width=18, fig.height=15>>=
 beta = plyr::adply(extract(r,'beta')$beta, 2, function(x) {
   data.frame(parameter = c("intercept","slope"),
              median    = apply(x,2,median),
@@ -272,9 +373,32 @@ ggplot(subset(beta, parameter=='slope'),
 
 
 
-\begin{frame}[fragile]
+\begin{frame}
+\frametitle{Hierarchical model for the variances}
 
-<<stan_model2, cache=TRUE>>=
+The model
+  \[ \begin{array}{rl}
+  y_{st} &\stackrel{ind}{\sim} N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_s^2) \pause \\
+  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\mySigma_\beta) \pause \\
+  \sigma_s &\stackrel{ind}{\sim} LN(\mu_\sigma,\tau_\sigma)
+  \end{array} \]
+\pause 
+and a prior
+
+\[ p(\mu_\sigma, \tau_\sigma, \mu_\beta, \mySigma_\beta) \propto p(\mu_\sigma)p(\tau_\sigma)p(\mu_\beta)p(\mySigma_\beta) \]
+\pause 
+and 
+\begin{itemize}
+\item $p(\mu_\sigma) \propto 1$, \pause
+\item $\tau_\sigma \sim Ca^+(0,1)$,\pause
+\item $p(\mu_\beta) \propto 1$\pause, and
+\item $\mySigma_\beta$ as before 
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<stan_model2, cache=TRUE, echo=TRUE>>=
 model2 = "
 data {
   int<lower=1> n_species;
@@ -301,38 +425,37 @@ model {
 }
 "
 @
-
 \end{frame}
 
 
 
 
-\begin{frame}[fragile]
-<<stan2, cache=TRUE, dependson=c('bird_data','stan_model2')>>=
-m2 = stan_model(model_code=model2)
-r2 = sampling(m2, dat)
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-<<dependson='stan2'>>=
-beta2 = plyr::adply(extract(r2,'beta')$beta, 2, function(x) {
-  data.frame(parameter = c("intercept","slope"),
-             median    = apply(x,2,median),
-             lower     = apply(x,2,quantile,prob=.025),
-             upper     = apply(x,2,quantile,prob=.975))
-})
-beta2$abbrev = factor(beta2$X1, labels=tmp$abbrev)
-beta2$abbrev = factor(beta2$abbrev,
-                     levels = levels(beta2$abbrev)[order(beta2$upper[beta2$parameter=='slope'])])
-
-ggplot(subset(beta2, parameter=='slope'), 
-       aes(abbrev, y=median, ymin=lower, ymax=upper)) +
-  geom_pointrange() + 
-  coord_flip()
-@
-\end{frame}
+% \begin{frame}[fragile]
+% <<stan2, cache=TRUE, dependson=c('bird_data','stan_model2'), echo=TRUE>>=
+% m2 = stan_model(model_code=model2)
+% r2 = sampling(m2, dat)
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% <<dependson='stan2', fig.width=18, fig.height=15>>=
+% beta2 = plyr::adply(extract(r2,'beta')$beta, 2, function(x) {
+%   data.frame(parameter = c("intercept","slope"),
+%              median    = apply(x,2,median),
+%              lower     = apply(x,2,quantile,prob=.025),
+%              upper     = apply(x,2,quantile,prob=.975))
+% })
+% beta2$abbrev = factor(beta2$X1, labels=tmp$abbrev)
+% beta2$abbrev = factor(beta2$abbrev,
+%                      levels = levels(beta2$abbrev)[order(beta2$upper[beta2$parameter=='slope'])])
+% 
+% ggplot(subset(beta2, parameter=='slope'), 
+%        aes(abbrev, y=median, ymin=lower, ymax=upper)) +
+%   geom_pointrange() + 
+%   coord_flip()
+% @
+% \end{frame}
 
 
 
