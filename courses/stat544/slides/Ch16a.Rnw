@@ -1,0 +1,627 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+
+
+
+\title{Mixed effect probit regression}
+\subtitle{Genotypic fungal resistance}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\myPhi}{\mathrm{\Phi}}
+
+\begin{document}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(reshape2)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(xtable)
+library(rstan)
+library(mcmcse)
+library(coda)
+library(lme4)
+library(BayesLogit)
+library(MASS)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Probit regression
+\item Bayesian probit regression
+  \begin{itemize}
+  \item Data augmentation
+  \end{itemize}
+\item Bayesian mixed effect probit regression
+\item Extensions
+  \begin{itemize}
+  \item Ordinal categorical data
+  \item Nominal categorical data
+  \item Bayesian logistic regression
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Probit regression}
+Consider the model
+\[ Y_i \stackrel{ind}{\sim} Ber(\theta_i) \]
+\pause where, for the $i$th observation, 
+\begin{itemize}[<+->]
+\item $Y_i$ is binary indicating \emph{success} and
+\item $\theta_i$ is the probability of success.
+\end{itemize}
+
+\pause 
+
+A probit regression model assumes 
+\[ \theta_i = \myPhi(X_i^\top\beta) \]
+\pause where 
+\begin{itemize}[<+->]
+\item $X_i$ are the explanatory variables for the $i$th observation,
+\item $\myPhi$ is the standard normal cumulative distribution function, and 
+\item $\beta$ is the vector of parameters to be estimated.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Low birth weight}
+<<birthwt>>=
+birthwt$race = factor(birthwt$race)
+summary(birthwt)
+birthwt$age  = with(birthwt, (age-mean(age))/sd(age))
+birthwt$lwt  = with(birthwt, (lwt-mean(lwt))/sd(lwt))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<non-Bayesian>>=
+m = glm(low~., family=binomial(link=probit), data=birthwt[,-10])
+summary(m)
+@
+\end{frame}
+
+
+\section{Bayesian analysis}
+\begin{frame}
+\frametitle{Probit regression}
+Consider the model
+\[ \begin{array}{rl}
+Y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \\
+\theta_i &= \myPhi(X_i^\top\beta)
+\end{array}  \]
+
+ \pause
+
+with prior 
+\[ \beta \sim N(\beta_0,\mySigma_\beta) \]
+
+\pause
+
+The posterior distribution is 
+\[ \begin{array}{rl}
+p(\beta|y) &\propto p(y|\beta)p(\beta) \\
+&\propto \prod_{i=1}^n \myPhi(X_i'\beta)^{y_i}[1-\myPhi(X_i'\beta)]^{1-y_i} e^{-(\beta-\beta_0)^\top\mySigma_\beta^{-1}(\beta-\beta_0)/2} 
+\end{array} \]
+\pause But neither $p(\beta|y)$ nor $p(\beta_p|y,\beta_{-p})$ are a known distribution.
+\end{frame}
+
+
+
+
+\subsection{Data augmentation}
+\begin{frame}
+\frametitle{Data augmentation}
+An alternative construction of the model is 
+\[ \begin{array}{rl}
+Y_i &= \I(Z_i>0) \pause \\
+Z_i &\stackrel{ind}{\sim} N(X_i'\beta,1)
+\end{array} \]
+\pause Note that 
+\[ \begin{array}{rll}
+\theta_i 
+&= Pr(Y_i=1) \pause\\
+&= Pr(Z_i>0) \pause\\
+&= Pr(X_i'\beta+\epsilon>0) & \epsilon \sim N(0,1) \pause\\
+&= Pr(\epsilon>-X_i'\beta) \pause\\
+&= Pr(\epsilon<X_i'\beta) & \mbox{symmetry of standard normal} \pause\\
+&= \myPhi(X_i'\beta) 
+\end{array} \]
+\pause Thus, this is equivalent to the probit regression model.
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Posterior distribution}
+
+Now, the likelihood is 
+\[ p(y|Z) \propto \prod_{i=1}^n \left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] \]
+\pause and priors
+\[ Z_i \stackrel{ind}{\sim} N(X_i'\beta,1) \qquad \beta\sim N(\beta_0,\mySigma_\beta) \]
+and the \emph{complete data likelihood} is
+\[ p(y,Z|\beta) \propto \prod_{i=1}^n N(Z_i|X_i'\beta,1)\left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] \]
+
+\pause 
+
+Thus the posterior distribution is 
+\[ p(\beta,Z|y) \propto p(y|Z,\beta) p(\beta) = p(y|Z) p(Z|\beta) p(\beta) \]
+\pause and we will derive the full conditionals for $p(\beta|Z,y)$ and $p(Z|\beta,y)$. 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Full conditional for $\beta$}
+
+The full conditional for $\beta$ is 
+\[ \begin{array}{rl}
+p(\beta|\ldots) \propto& p(y|Z) p(Z|\beta) p(\beta) \pause \\
+\propto& p(Z|\beta)p(\beta) \\
+=& \prod_{i=1}^n N(Z_i|X_i'\beta,1) N(\beta|\beta_0,\mySigma_\beta) \pause \\
+\propto& N(Z|X\beta,\I) N(\beta|\beta_0,\mySigma_\beta)  
+\end{array} \]
+\pause and thus 
+$\beta|\ldots \sim N(\hat{\beta},\hat{\mySigma}_\beta)$ \pause with 
+
+\[ \begin{array}{rl}
+\hat{\mySigma}_\beta &= [\mySigma_\beta^{-1} + X^\top X]^{-1} \pause \\
+\hat{\beta} &= \hat{\mySigma}_\beta [\mySigma_\beta^{-1}\beta_0 + X^\top Z]
+\end{array} \]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Full conditional for $Z$}
+
+The full conditional for $Z$ is 
+\[ \begin{array}{rl}
+p(Z|\ldots) \propto& p(y|Z) p(Z|\beta) p(\beta) \pause \\
+\propto& p(y|Z)p(Z|\beta) \\
+=& \prod_{i=1}^n N(Z_i|X_i'\beta,1)\left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] 
+\end{array} \]
+\pause  Thus the $Z_i$ are conditionally independent with distribution 
+\[ p(Z_i|Y_i,\beta) = \left\{ \begin{array}{rl}
+N(Z_i|X_i'\beta,1)\I(Z_i>0) & \mbox{if } y_i=1 \\
+N(Z_i|X_i'\beta,1)\I(Z_i\le 0) & \mbox{if } y_i=0
+\end{array} \right. \]
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<mcmc, cache=TRUE, echo=TRUE>>=
+mcmc = function(n_iter, y, X, beta0, Sigma_beta) {
+  n = nrow(X)
+  p = ncol(X)
+  
+  # Precalculate quantities
+  y = (as.numeric(y)==1)
+  n1 = sum( y)
+  n0 = sum(!y)
+  XX = t(X)%*%X
+  Si = solve(Sigma_beta)
+  Sib = Si%*%beta0
+  
+  # Saving structures
+  beta_keep       = matrix(NA, n_iter, p)
+  Z_keep          = matrix(NA, n_iter, n)
+  
+  # Initial values
+  m = glm(y~X-1, family=binomial(probit))
+  beta = coef(m)
+  Z = rep(NA,n)
+  
+  for (i in 1:n_iter) {
+    # Sample Z
+    Xb = X%*%beta
+    cut = pnorm(0,Xb)
+    Z[ y] = qnorm(runif(n1, cut[ y], 1), Xb[ y], 1)
+    Z[!y] = qnorm(runif(n0, 0, cut[!y]), Xb[!y], 1)
+    
+    # Sample beta
+    S_hat = solve(Si+XX)
+    b_hat = S_hat %*% (Sib+t(X)%*%Z)
+    beta = mvrnorm(1, b_hat, S_hat)
+    
+    # Record values
+    beta_keep[i,] = beta
+    Z_keep[i,]    = Z
+  }
+  
+  return(data.frame(iteration = 1:n_iter,
+                    beta = beta_keep,
+                    Z    = Z_keep))
+}
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<run_mcmc, dependson="mcmc", cache=TRUE, echo=TRUE>>=
+X = model.matrix(m) # Constructs the design matrix
+p = ncol(X)
+n_iter = 10000
+system.time(out <- mcmc(n_iter, birthwt$low, X, rep(0,p), 3*diag(p)))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+
+<<traceplots, dependson="run_mcmc">>=
+thin = seq(to=10000, by=10, length=1000)
+betas = out[,c(1,grep("beta",names(out)))]
+names(betas)[-1] = colnames(X)
+
+ggplot(melt(betas[thin,], id.var='iteration'), 
+       aes(x=iteration, y=value)) + 
+  geom_line() + 
+  facet_wrap(~variable, scales='free')
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<acf, dependson="run_mcmc">>=
+opar = par(mfrow=c(3,4))
+a_ply(betas[,-1], 2, acf)
+par(opar)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+<<ess, dependson="run_mcmc">>=
+betas[,-1] %>%
+  melt() %>%
+  group_by(variable) %>%
+  summarize(ess = round(ess(value)),
+            lb = round(quantile(value, .025),2),
+            ub = round(quantile(value, .975),2))
+@
+\end{frame}
+
+
+
+
+\section{Probit regression with random effects}
+\begin{frame}
+\frametitle{Probit regression with random effects}
+Consider the probit regression model 
+\[ \begin{array}{rl}
+Y_i &= \I(Z_i>0) \\
+Z &\sim N(\tilde{X}\tilde{\beta}, 1)
+\end{array} \]
+\pause where 
+\[ \tilde{X} = [X\quad Zm] \qquad \tilde{\beta} = (\beta, u)^\top \]
+where $X$ is the design matrix for fixed effects and $Zm$ is the design matrix for the random effects. 
+\pause A common assumption is that the random effects are $u\sim N(0,\sigma^2 \I)$. \pause Thus the prior on $\tilde{\beta}$ is 
+\[ \tilde{\beta} = 
+\left( \begin{array}{c} \beta \\ u 
+\end{array} \right) \sim 
+N\left(\left[\begin{array}{c} \beta_0 \\ 0   \end{array} \right], \left[ \begin{array}{cc} \mySigma_\beta & 0 \\ 0 & \sigma^2 \I
+\end{array} \right] \right) \]
+
+\pause 
+
+where the precision of the prior is 
+\[ \left[ \begin{array}{cc} \mySigma_\beta & 0 \\ 0 & \sigma^2 \I
+\end{array} \right]^{-1} = \left[ \begin{array}{cc} \mySigma_\beta^{-1} & 0 \\ 0 & \frac{1}{\sigma^2} \I
+\end{array} \right] \]
+\end{frame}
+
+\begin{frame}
+\frametitle{Full posterior}
+
+The full posterior is 
+\[ 
+p(Z,\beta,u,y,\sigma^2|y) \propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) 
+\]
+
+\pause
+
+We have already derived the full conditionals 
+\begin{itemize}
+\item $p(\tilde{\beta}|\ldots)$
+\item $p(Z|\ldots)$
+\end{itemize}
+\pause 
+but we need the full conditional for $\sigma^2$ to implement a Gibbs sampler.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Full conditional for $\sigma^2$}
+
+If we choose $\sigma\sim Unif(0,10)$, then 
+\pause 
+
+\[ \begin{array}{rl}
+p(\sigma^2|\ldots) &\propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) \pause \\
+&= p(\tilde{\beta}|\sigma^2)p(\sigma^2) \pause \\
+%&= p(\tilde{\beta})p(u|\sigma^2)p(\sigma^2) \\
+&\propto p(u|\sigma^2)p(\sigma^2) \pause \\
+&\propto \prod_{u=1}^U N(u_i|0,\sigma^2) \frac{1}{\sigma}\I(0<\sigma^2<100) \pause \\
+&\propto (\sigma^2)^{-U/2} e^{-\frac{1}{2\sigma^2}u'u} (\sigma^2)^{-1/2}\I(0<\sigma^2<100)  \pause \\
+&= (\sigma^2)^{-\frac{U-1}{2}-1}e^{-\frac{u'u}{2\sigma^2}}\I(0<\sigma^2<100) 
+\end{array} \]
+\pause Thus $\sigma^2 \sim IG([U-1]/2, u'u/2)$ truncated to be smaller than 100. 
+
+\end{frame}
+
+
+
+\subsection{Data}
+\begin{frame}[fragile]
+\frametitle{Corn fungus data set}
+<<corn_fungus, fig.width=8, cache=TRUE>>=
+d = read.csv("Ch16a-cornFungus.csv")
+d = d[d$leaf==1,]
+d$block = factor(d$block)
+ggplot(d, aes(y=hypha/spore, x=block, col=genotype))+geom_point()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<corn_fungus_glmer>>=
+m = glmer(cbind(hypha,spore-hypha)~block+genotype+(1|pot), 
+          family=binomial(probit), d,
+          control=glmerControl(optimizer="bobyqa")) # Avoids convergence warning
+summary(m)
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+<<mcmc_random_effects, echo=TRUE>>=
+mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
+  require(Matrix)
+  n = nrow(X)
+  p = ncol(X)
+  q = ncol(Z)
+  
+  # Initial values
+  m = glm(y~0+X, family=binomial(probit))
+  beta = c(coef(m),rep(0,q))
+  Z = rep(NA,n)
+  
+  # Precalculate quantities
+  y = (as.numeric(y)==1)
+  n1 = sum( y)
+  n0 = sum(!y)
+  X  = cbind(X,Zm)
+  XX = t(X)%*%X
+  Si = solve(Sigma_beta)
+  Sib = Si%*%beta0
+  a = (q-1)/2
+  
+  # Saving structures
+  beta_keep  = matrix(NA, n_iter, p)
+  u_keep     = matrix(NA, n_iter, q)
+  sigma_keep = rep(NA, n_iter)
+  
+  for (i in 1:n_iter) {
+    # Sample Z
+    Xb = X%*%beta
+    cut = pnorm(0,as.numeric(Xb))
+    Z[ y] = qnorm(runif(n1, cut[ y], 1), Xb[ y], 1)
+    Z[!y] = qnorm(runif(n0, 0, cut[!y]), Xb[!y], 1)
+    
+    # Sample sigma
+    u = beta[p+1:q]
+    b = sum(u^2)/2
+    sigma2 = 1/qgamma(runif(1,0,pgamma(100,a,b)),a,b)
+    
+    # Sample beta
+    SSi = bdiag(Si,diag(q)/sigma2)
+    S_hat = solve(SSi+XX)
+    b_hat = S_hat %*% (rbind(Sib,matrix(0,q,1))+t(X)%*%Z)
+    beta = mvrnorm(1, b_hat, S_hat)
+    
+    # Record values
+    beta_keep[i,]  = beta[1:p]
+    u_keep[i,]     = u
+    sigma_keep[i] = sqrt(sigma2)
+  }
+  
+  return(data.frame(
+    iteration = 1:n_iter,
+    beta  = beta_keep,  
+    sigma = sigma_keep, 
+    u = u_keep))
+}
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<run_mcmc_random, cache=TRUE, echo=TRUE, dependson='corn_fungus'>>=
+# Turn into binary data
+dd = ddply(d, .(genotype,block,pot), function(x) {
+  data.frame(y=c(rep(1,x$hypha),rep(0,x$spore-x$hypha)))
+})
+
+m = glmer(y~genotype+block+(1|pot), family=binomial(probit), dd)
+
+X = model.matrix(m)
+Z = as.matrix(getME(m,"Z"))
+p = ncol(X)
+n_iter = 10000
+system.time(out <- mcmc(n_iter, dd$y, X, Z, rep(0,p), 10*diag(p)))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<traceplots2, dependson="run_mcmc_random">>=
+betas = out[,c(1,grep("beta",names(out)))]
+names(betas)[-1] = colnames(X)
+
+thin = seq(to=10000, by=10, length=1000)
+ggplot(melt(betas[thin,], id.var='iteration'), 
+       aes(x=iteration, y=value)) + 
+  geom_line() + 
+  facet_wrap(~variable, scales='free')
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<acf2, dependson="run_mcmc_random">>=
+opar = par(mfrow=c(2,3))
+a_ply(betas[,-1], 2, acf)
+par(opar)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+<<ess2, dependson="run_mcmc_random">>=
+betas[,-1] %>%
+  melt() %>%
+  group_by(variable) %>%
+  summarize(ess = round(ess(value)),
+            lb = round(quantile(value, .025),2),
+            ub = round(quantile(value, .975),2))
+@
+
+\vspace{0.2in} \pause
+
+Contrasts to compare other genotypes
+
+<<echo=TRUE>>=
+t(with(betas, data.frame("X-Y" = quantile(genotypeX-genotypeY, c(.025,.975)),
+                         "Y-Z" = quantile(genotypeY-genotypeZ, c(.025,.975)),
+                         "X-Z" = quantile(genotypeX-genotypeZ, c(.025,.975)), check.names=FALSE)))
+@
+\end{frame}
+
+\section{Extensions}
+\begin{frame}[fragile]
+\frametitle{Binary response}
+<<data_augmentation, fig.width=8, echo=FALSE>>=
+par(mfrow=c(1,1))
+curve(dnorm(x,1), -3, 3, main="Latent variable for binary response", 
+      xlab="Z", ylab="density")
+segments(1,0,1,dnorm(0), lty=2)
+text(1,0,expression(mu),pos=4)
+abline(v=0, lwd=2)
+text(-2,0.2, "0", cex=2)
+text(0.7,0.2, "1", cex=2)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Ordinal response with 3 categories}
+<<data_augmentation2, fig.width=8, echo=FALSE>>=
+par(mfrow=c(1,1))
+curve(dnorm(x,1), -3, 3, main="Latent variable for ordinal response", 
+      xlab="Z", ylab="density")
+segments(1,0,1,dnorm(0), lty=2)
+text(1,0,expression(mu),pos=4)
+abline(v=0, lwd=2)
+text(-2,0.2, "0", cex=2)
+text(0.7,0.2, "1", cex=2)
+abline(v=1.5, lwd=2)
+text(2.5,0.2, "2", cex=2)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Unordered categorical response}
+
+Suppose $Y_i$ is random variable with support $1,\ldots,K$ and 
+\[ Pr(Y_i=k) = \theta_{ik} \]
+\pause where $\theta_{ik}$ may depend on explanatory variables for both $i$ and $k$. \pause For example, an individual is shopping for fruit then perhaps the age of the individual and the price of the fruits will affect the shopper's choice. 
+
+\vspace{0.2in} \pause 
+
+We can model this using data augmentation by introducing a latent utility $Z_{ik}$ for each shopper-fruit combination. \pause Then the response is 
+\[ Y_i = \mbox{argmax}_k Z_{ik} \]
+\pause and there is great flexibility in how the $Z_{ik}$ are modeled. 
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Bayesian logistic regression}
+
+\[ \begin{array}{rl}
+Y_i &= \I(Z_i>0) \pause \\
+Z_i &\stackrel{ind}{\sim} Logistic(X_i'\beta,1)
+\end{array} \]
+
+\pause
+
+<<>>=
+m = glm(low~., family=binomial(link=probit), data=birthwt[,-10])
+r = BayesLogit::logit(m$y, X<-model.matrix(m))
+names(r$beta) = colnames(X)
+
+ci = adply(r$beta, 2, function(x) 
+  data.frame(
+    lb=round(quantile(x, c(.025)),2), 
+    ub=round(quantile(x, c(.975)),2)))
+ci$X1 = colnames(X)
+ci
+@
+
+\end{frame}
+
+
+\end{document}
