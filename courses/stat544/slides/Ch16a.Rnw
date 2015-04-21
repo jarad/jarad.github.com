@@ -119,33 +119,32 @@ birthwt$lwt  = with(birthwt, (lwt-mean(lwt))/sd(lwt))
 
 
 \begin{frame}[fragile]
-<<non-Bayesian>>=
-m = glm(low~., family=binomial(link=probit), data=birthwt[,-10])
-summary(m)
+<<non-Bayesian, echo=TRUE>>=
+m = glm(low~., family=binomial(link=probit), data=birthwt[,-10]); summary(m)
 @
 \end{frame}
 
 
 \section{Bayesian analysis}
 \begin{frame}
-\frametitle{Probit regression}
+\frametitle{Bayesian probit regression}
 Consider the model
 \[ \begin{array}{rl}
-Y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \\
+Y_i &\stackrel{ind}{\sim} Ber(\theta_i) \\
 \theta_i &= \myPhi(X_i^\top\beta)
 \end{array}  \]
 
  \pause
 
 with prior 
-\[ \beta \sim N(\beta_0,\mySigma_\beta) \]
+\[ \beta \sim N(b,B) \]
 
 \pause
 
 The posterior distribution is 
 \[ \begin{array}{rl}
 p(\beta|y) &\propto p(y|\beta)p(\beta) \\
-&\propto \prod_{i=1}^n \myPhi(X_i'\beta)^{y_i}[1-\myPhi(X_i'\beta)]^{1-y_i} e^{-(\beta-\beta_0)^\top\mySigma_\beta^{-1}(\beta-\beta_0)/2} 
+&\propto \left[\prod_{i=1}^n \myPhi(X_i'\beta)^{y_i}[1-\myPhi(X_i'\beta)]^{1-y_i}\right] e^{-(\beta-b)^\top B^{-1}(\beta-b)/2} 
 \end{array} \]
 \pause But neither $p(\beta|y)$ nor $p(\beta_p|y,\beta_{-p})$ are a known distribution.
 \end{frame}
@@ -164,11 +163,11 @@ Z_i &\stackrel{ind}{\sim} N(X_i'\beta,1)
 \pause Note that 
 \[ \begin{array}{rll}
 \theta_i 
-&= Pr(Y_i=1) \pause\\
-&= Pr(Z_i>0) \pause\\
-&= Pr(X_i'\beta+\epsilon>0) & \epsilon \sim N(0,1) \pause\\
-&= Pr(\epsilon>-X_i'\beta) \pause\\
-&= Pr(\epsilon<X_i'\beta) & \mbox{symmetry of standard normal} \pause\\
+&= P(Y_i=1) \pause\\
+&= P(Z_i>0) \pause\\
+&= P(X_i'\beta+\epsilon>0) & \epsilon \sim N(0,1) \pause\\
+&= P(\epsilon>-X_i'\beta) \pause\\
+&= P(\epsilon<X_i'\beta) & \mbox{symmetry of standard normal} \pause\\
 &= \myPhi(X_i'\beta) 
 \end{array} \]
 \pause Thus, this is equivalent to the probit regression model.
@@ -182,15 +181,15 @@ Z_i &\stackrel{ind}{\sim} N(X_i'\beta,1)
 
 Now, the likelihood is 
 \[ p(y|Z) \propto \prod_{i=1}^n \left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] \]
-\pause and priors
-\[ Z_i \stackrel{ind}{\sim} N(X_i'\beta,1) \qquad \beta\sim N(\beta_0,\mySigma_\beta) \]
-and the \emph{complete data likelihood} is
+\pause and 
+\[ Z_i \stackrel{ind}{\sim} N(X_i'\beta,1) \qquad \beta\sim N(b,B) \]
+Therefore the \emph{complete data likelihood} is
 \[ p(y,Z|\beta) \propto \prod_{i=1}^n N(Z_i|X_i'\beta,1)\left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] \]
 
 \pause 
 
 Thus the posterior distribution is 
-\[ p(\beta,Z|y) \propto p(y|Z,\beta) p(\beta) = p(y|Z) p(Z|\beta) p(\beta) \]
+\[ p(\beta,Z|y) \propto p(y|Z,\beta) p(Z,\beta) \pause = p(y|Z) p(Z|\beta) p(\beta) \pause = p(y,Z|\beta)p(\beta) \]
 \pause and we will derive the full conditionals for $p(\beta|Z,y)$ and $p(Z|\beta,y)$. 
 \end{frame}
 
@@ -202,15 +201,15 @@ The full conditional for $\beta$ is
 \[ \begin{array}{rl}
 p(\beta|\ldots) \propto& p(y|Z) p(Z|\beta) p(\beta) \pause \\
 \propto& p(Z|\beta)p(\beta) \\
-=& \prod_{i=1}^n N(Z_i|X_i'\beta,1) N(\beta|\beta_0,\mySigma_\beta) \pause \\
-\propto& N(Z|X\beta,\I) N(\beta|\beta_0,\mySigma_\beta)  
+=& \left[\prod_{i=1}^n N(Z_i|X_i'\beta,1)\right] N(\beta|b,B) \pause \\
+=& N(Z|X\beta,\I) N(\beta|b,B)  
 \end{array} \]
 \pause and thus 
 $\beta|\ldots \sim N(\hat{\beta},\hat{\mySigma}_\beta)$ \pause with 
 
 \[ \begin{array}{rl}
-\hat{\mySigma}_\beta &= [\mySigma_\beta^{-1} + X^\top X]^{-1} \pause \\
-\hat{\beta} &= \hat{\mySigma}_\beta [\mySigma_\beta^{-1}\beta_0 + X^\top Z]
+\hat{\mySigma}_\beta &= [B^{-1} + X^\top X]^{-1} \pause \\
+\hat{\beta} &= \hat{\mySigma}_\beta [B^{-1}b + X^\top Z]
 \end{array} \]
 
 \end{frame}
@@ -224,11 +223,13 @@ p(Z|\ldots) \propto& p(y|Z) p(Z|\beta) p(\beta) \pause \\
 \propto& p(y|Z)p(Z|\beta) \\
 =& \prod_{i=1}^n N(Z_i|X_i'\beta,1)\left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] 
 \end{array} \]
-\pause  Thus the $Z_i$ are conditionally independent with distribution 
-\[ p(Z_i|Y_i,\beta) = \left\{ \begin{array}{rl}
+\pause  Thus the $Z_i$ are conditionally independent \pause with distribution 
+\[ p(Z_i|y_i,\beta) = \left\{ \begin{array}{rl}
 N(Z_i|X_i'\beta,1)\I(Z_i>0) & \mbox{if } y_i=1 \\
 N(Z_i|X_i'\beta,1)\I(Z_i\le 0) & \mbox{if } y_i=0
 \end{array} \right. \]
+\pause
+These can be drawn using the modified inverse cdf method.
 
 \end{frame}
 
@@ -284,6 +285,7 @@ mcmc = function(n_iter, y, X, beta0, Sigma_beta) {
 
 
 \begin{frame}[fragile]
+\frametitle{Run the MCMC}
 <<run_mcmc, dependson="mcmc", cache=TRUE, echo=TRUE>>=
 X = model.matrix(m) # Constructs the design matrix
 p = ncol(X)
@@ -341,20 +343,20 @@ Y_i &= \I(Z_i>0) \\
 Z &\sim N(\tilde{X}\tilde{\beta}, 1)
 \end{array} \]
 \pause where 
-\[ \tilde{X} = [X\quad Zm] \qquad \tilde{\beta} = (\beta, u)^\top \]
+\[ \tilde{X} = [X\quad Zm] \qquad \tilde{\beta} = (\beta, \alpha)^\top \]
 where $X$ is the design matrix for fixed effects and $Zm$ is the design matrix for the random effects. 
-\pause A common assumption is that the random effects are $u\sim N(0,\sigma^2 \I)$. \pause Thus the prior on $\tilde{\beta}$ is 
+\pause A common assumption is that the random effects are $u\sim N(0,\sigma^2 \I)$. \pause Thus the distribution on $\tilde{\beta}$ is 
 \[ \tilde{\beta} = 
-\left( \begin{array}{c} \beta \\ u 
+\left( \begin{array}{c} \beta \\ \alpha 
 \end{array} \right) \sim 
-N\left(\left[\begin{array}{c} \beta_0 \\ 0   \end{array} \right], \left[ \begin{array}{cc} \mySigma_\beta & 0 \\ 0 & \sigma^2 \I
+N\left(\left[\begin{array}{c} b \\ 0   \end{array} \right], \left[ \begin{array}{cc} B & 0 \\ 0 & \sigma^2 \I
 \end{array} \right] \right) \]
 
 \pause 
 
-where the precision of the prior is 
-\[ \left[ \begin{array}{cc} \mySigma_\beta & 0 \\ 0 & \sigma^2 \I
-\end{array} \right]^{-1} = \left[ \begin{array}{cc} \mySigma_\beta^{-1} & 0 \\ 0 & \frac{1}{\sigma^2} \I
+where the precision is 
+\[ \left[ \begin{array}{cc} B & 0 \\ 0 & \sigma^2 \I
+\end{array} \right]^{-1} = \left[ \begin{array}{cc} B^{-1} & 0 \\ 0 & \frac{1}{\sigma^2} \I
 \end{array} \right] \]
 \end{frame}
 
@@ -363,7 +365,7 @@ where the precision of the prior is
 
 The full posterior is 
 \[ 
-p(Z,\beta,u,y,\sigma^2|y) \propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) 
+p(Z,\beta,\alpha,\sigma^2|y) \propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) 
 \]
 
 \pause
@@ -381,19 +383,19 @@ but we need the full conditional for $\sigma^2$ to implement a Gibbs sampler.
 \begin{frame}
 \frametitle{Full conditional for $\sigma^2$}
 
-If we choose $\sigma\sim Unif(0,10)$, then 
+If we choose $\sigma\sim Unif(0,10)$ and there are $U$ random effects, then 
 \pause 
 
 \[ \begin{array}{rl}
 p(\sigma^2|\ldots) &\propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) \pause \\
 &= p(\tilde{\beta}|\sigma^2)p(\sigma^2) \pause \\
 %&= p(\tilde{\beta})p(u|\sigma^2)p(\sigma^2) \\
-&\propto p(u|\sigma^2)p(\sigma^2) \pause \\
-&\propto \prod_{u=1}^U N(u_i|0,\sigma^2) \frac{1}{\sigma}\I(0<\sigma^2<100) \pause \\
-&\propto (\sigma^2)^{-U/2} e^{-\frac{1}{2\sigma^2}u'u} (\sigma^2)^{-1/2}\I(0<\sigma^2<100)  \pause \\
-&= (\sigma^2)^{-\frac{U-1}{2}-1}e^{-\frac{u'u}{2\sigma^2}}\I(0<\sigma^2<100) 
+&\propto p(\alpha|\sigma^2)p(\sigma^2) \pause \\
+&\propto \prod_{i=1}^U N(\alpha_i|0,\sigma^2) \frac{1}{\sigma}\I(0<\sigma^2<100) \pause \\
+&\propto (\sigma^2)^{-U/2} e^{-\frac{1}{2\sigma^2}\alpha'\alpha} (\sigma^2)^{-1/2}\I(0<\sigma^2<100)  \pause \\
+&= (\sigma^2)^{-\frac{U-1}{2}-1}e^{-\frac{\alpha'\alpha}{2\sigma^2}}\I(0<\sigma^2<100) 
 \end{array} \]
-\pause Thus $\sigma^2 \sim IG([U-1]/2, u'u/2)$ truncated to be smaller than 100. 
+\pause Thus $\sigma^2 \sim IG([U-1]/2, \alpha'\alpha/2)$ truncated to be smaller than 100. \pause This can be drawn using the modified inverse cdf method.
 
 \end{frame}
 
@@ -401,11 +403,19 @@ p(\sigma^2|\ldots) &\propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\
 
 \subsection{Data}
 \begin{frame}[fragile]
-\frametitle{Corn fungus data set}
+\frametitle{Genotypic resistance to corn fungus}
 <<corn_fungus, fig.width=8, cache=TRUE>>=
-d = read.csv("Ch16a-cornFungus.csv")
-d = d[d$leaf==1,]
+d = read.csv("Ch16a-cornFungus.csv"); d = d[d$leaf==1,]; d$leaf = NULL
 d$block = factor(d$block)
+d
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Corn fungus data set}
+<<>>=
 ggplot(d, aes(y=hypha/spore, x=block, col=genotype))+geom_point()
 @
 \end{frame}
@@ -428,12 +438,12 @@ summary(m)
 mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
   require(Matrix)
   n = nrow(X)
-  p = ncol(X)
+  p = ncol(X) 
   q = ncol(Z)
   
   # Initial values
   m = glm(y~0+X, family=binomial(probit))
-  beta = c(coef(m),rep(0,q))
+  beta = c(coef(m),rnorm(q))
   Z = rep(NA,n)
   
   # Precalculate quantities
@@ -448,7 +458,7 @@ mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
   
   # Saving structures
   beta_keep  = matrix(NA, n_iter, p)
-  u_keep     = matrix(NA, n_iter, q)
+  alpha_keep = matrix(NA, n_iter, q)
   sigma_keep = rep(NA, n_iter)
   
   for (i in 1:n_iter) {
@@ -459,8 +469,8 @@ mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
     Z[!y] = qnorm(runif(n0, 0, cut[!y]), Xb[!y], 1)
     
     # Sample sigma
-    u = beta[p+1:q]
-    b = sum(u^2)/2
+    alpha = beta[p+1:q]
+    b = sum(alpha^2)/2
     sigma2 = 1/qgamma(runif(1,0,pgamma(100,a,b)),a,b)
     
     # Sample beta
@@ -471,15 +481,15 @@ mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
     
     # Record values
     beta_keep[i,]  = beta[1:p]
-    u_keep[i,]     = u
-    sigma_keep[i] = sqrt(sigma2)
+    alpha_keep[i,] = alpha
+    sigma_keep[i]  = sqrt(sigma2)
   }
   
   return(data.frame(
     iteration = 1:n_iter,
     beta  = beta_keep,  
     sigma = sigma_keep, 
-    u = u_keep))
+    alpha = alpha_keep))
 }
 @
 \end{frame}
@@ -506,8 +516,8 @@ system.time(out <- mcmc(n_iter, dd$y, X, Z, rep(0,p), 10*diag(p)))
 
 \begin{frame}[fragile]
 <<traceplots2, dependson="run_mcmc_random">>=
-betas = out[,c(1,grep("beta",names(out)))]
-names(betas)[-1] = colnames(X)
+betas = out[,c(1,grep("beta",names(out)),grep("sigma",names(out)))]
+names(betas)[1+(1:ncol(X))] = colnames(X)
 
 thin = seq(to=10000, by=10, length=1000)
 ggplot(melt(betas[thin,], id.var='iteration'), 
@@ -520,7 +530,7 @@ ggplot(melt(betas[thin,], id.var='iteration'),
 
 \begin{frame}[fragile]
 <<acf2, dependson="run_mcmc_random">>=
-opar = par(mfrow=c(2,3))
+opar = par(mfrow=c(2,4))
 a_ply(betas[,-1], 2, acf)
 par(opar)
 @
@@ -550,6 +560,18 @@ t(with(betas, data.frame("X-Y" = quantile(genotypeX-genotypeY, c(.025,.975)),
 \end{frame}
 
 \section{Extensions}
+\begin{frame}
+\frametitle{$t$ priors}
+
+Suppose we want $\beta_j \stackrel{ind}{\sim} t_{v_j}(b_j,B_j)$. \pause We can write this prior hierarchically via 
+\[ \beta_j|\tau_j^2 \stackrel{ind}{\sim} N(b_j,\tau_j^2), \qquad \tau_j^2\sim \mbox{Inv}(v_j,B_j). \]
+\pause
+Now the MCMC can proceed exactly as before, but with the additional full conditional for $(\tau_1^2,\ldots,\tau_J^2)$ which will be independent inverse $\chi^2$ distributions.
+
+\end{frame}
+
+
+
 \begin{frame}[fragile]
 \frametitle{Binary response}
 <<data_augmentation, fig.width=8, echo=FALSE>>=
