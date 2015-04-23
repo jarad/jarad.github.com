@@ -54,6 +54,25 @@ set.seed(2)
 
 \frame{\maketitle}
 
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Mixed effect Poisson regression
+  \begin{itemize}
+  \item Modeling
+  \item Estimation via Stan
+  \item Posterior
+  \end{itemize}
+\item Decision making
+  \begin{itemize}
+  \item Maximize utility
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
 % This analysis is incorrect. It assumes the sire is the sire for the litter, but the sire is actually the sire of the sow that produced the litter. So, the sire effect shown here is actually the grandsire effect rather than the father effect. 
 
 \section{Sow culling time}
@@ -155,7 +174,6 @@ model {
   sigma_alpha ~ cauchy(0,10);
   sigma_beta  ~ cauchy(0,10);
 }"
-
 @
 \end{frame}
 
@@ -210,17 +228,69 @@ points(erho[wr,2],1:dat$np, pch=19, cex=.5)
 
 \begin{frame}[fragile]
 <<dam, dependson="run_mcmc">>=
-wd = grep("alpha",rownames(s))
-alpha = s[wd,c(4,6,8)]
-n.dam = nrow(alpha)
-ordr = order(alpha[,2])
-alpha = alpha[ordr,]
 
-plot(alpha[,2], 1:n.dam, xlim=range(alpha), ylim=c(0,n.dam+1), ylab="Dam (ordered by posterior median)", 
-     xlab="Effect (log-scale)",type="n")
-segments(alpha[,1], 1:n.dam, alpha[,3], 1:n.dam, col="gray")
-lines(alpha[,2], 1:n.dam)
+
+wd = grep("alpha\\[",rownames(s))
+alpha = as.data.frame(s[wd,c(4,6,8)])
+
+names(alpha) = c("lb","median","ub")
+alpha$sowid = levels(d$sowid)
+
+sow_max_parity = ddply(d, .(sowid), summarize, parity=max(parity))
+
+alpha_plot = merge(alpha, sow_max_parity)
+
+# ggplot(merge(alpha,sow_max_parity), 
+#        aes(x=sowid, y=median, ymin=lb, ymax=ub)) +
+#   geom_pointrange() + 
+#   facet_wrap(~parity, scales='free_x') 
+
+ordr = order(alpha_plot$median)
+alpha_plot = alpha_plot[ordr,]
+
+opar = par(mfrow=c(2,3))
+for (i in 1:6) {
+  tmp = alpha_plot[alpha_plot$parity==i,]
+  n.dam = nrow(tmp)
+  plot(tmp$median, 1:n.dam, 
+       xlim=range(alpha_plot$lb, alpha_plot$ub), 
+       ylim=c(0,n.dam+1), 
+       ylab="Ordered dams", 
+       xlab="Effect (log-scale)",
+       main=paste("Max parity",i),
+       type="n", yaxt='n')
+  abline(v=c(-.1,.1), lty=2)
+  segments(tmp$lb, 1:n.dam, tmp$ub, 1:n.dam, col="gray")
+  lines(tmp$median, 1:n.dam)
+}
+par(opar)
 @
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Best and worst performing sows with max parity 4 and 5}
+
+NBA for best and worst performing sows with max parity of 4
+
+<<>>=
+tmp = alpha_plot[alpha_plot$parity==4,]
+sows = tmp$sowid[c(which.min(tmp$median), which.max(tmp$median))]
+dcast(d[d$sowid %in% sows,c("sowid","nba","parity")], sowid~parity, value.var='nba')
+@
+
+
+\vspace{0.2in} \pause
+
+NBA for best and worst performing sows with max parity of 5
+
+<<>>=
+tmp = alpha_plot[alpha_plot$parity==5,]
+sows = tmp$sowid[c(which.min(tmp$median), which.max(tmp$median))]
+dcast(d[d$sowid %in% sows,c("sowid","nba","parity")], sowid~parity, value.var='nba')
+@
+
+
 \end{frame}
 
 
@@ -245,8 +315,10 @@ lines(beta[,2], 1:n.sire)
 <<standard_deviations, dependson="run_mcmc", cache=TRUE>>=
 sigmas = extract(r, c("sigma_alpha","sigma_beta"))
 par(mfrow=c(1,2))
-hist(sigmas$sigma_alpha, prob=TRUE, xlim=c(0,0.1), main="Standard deviation of Dam effects")
-hist(sigmas$sigma_beta,  prob=TRUE, xlim=c(0,0.1), main="Standard deviation of Grandsire effects")
+hist(sigmas$sigma_alpha, prob=TRUE, xlim=c(0,0.1), 
+     main="Dam sd")
+hist(sigmas$sigma_beta,  prob=TRUE, xlim=c(0,0.1), 
+     main="Grandsire sd")
 @
 \end{frame}
 
@@ -360,9 +432,9 @@ rbind(as.data.frame(mcse(exp_nba_old2>exp_nba_new)),
 @
 \end{frame}
 
-\subsection{Cost function}
-\frame{\frametitle{Cost functions}
-Suppose the only cost difference is in the number of progeny, \pause then $U(\tilde{y}_i) = c_1 \tilde{y}_i$ \pause and want 
+\subsection{Utility function}
+\frame{\frametitle{Utility functions}
+Suppose the only cost difference is in the number of progeny, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i$ \pause and want 
 \[ \max_{i\in \{d, new\}} E[U(\tilde{y}_i)|y] \]
 \pause or, equivalently, if
 \[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] > 0 \] 
@@ -370,43 +442,43 @@ Suppose the only cost difference is in the number of progeny, \pause then $U(\ti
 But, since expectation is a linear operator,
 \[ \begin{array}{ll} 
 E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] &= E[U(\tilde{y}_{new})-U(\tilde{y}_d)|y] \pause \\
-&= E[c_1 \tilde{y}_{new} - c_1 \tilde{y}_d|y] \pause \\
-&= c_1 E[\tilde{y}_{new} - \tilde{y}_d|y] \pause \\
-&= c_1 E[\delta|y] \\
+&= E[u_1 \tilde{y}_{new} - u_1 \tilde{y}_d|y] \pause \\
+&= u_1 E[\tilde{y}_{new} - \tilde{y}_d|y] \pause \\
+&= u_1 E[\delta|y] \\
 \end{array} \]
 
-\pause So $c_1$ just scales our posterior expectation for the difference. 
+\pause So $u_1$ just scales our posterior expectation for the difference. 
 }
 
 
-\frame{\frametitle{Cost functions}
-Suppose the cost also involves moving a new sow in, \pause then $U(\tilde{y}_i) = c_1 \tilde{y}_i - c_2\I(i=new)$ \pause and want 
-\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] = c_1 E[\delta|y] -c_2 > 0 \] 
+\frame{\frametitle{Utility functions}
+Suppose the utility function also involves moving a new sow in, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i - u_2\I(i=new)$ \pause and want 
+\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] = u_1 E[\delta|y] -u_2 > 0 \] 
 to pick $new$. 
 
 \vspace{0.2in} \pause 
 
-Alternatively, perhaps an older sow (or this particular sow) needs more medications, \pause then $U(\tilde{y}_i) = c_1 \tilde{y}_i - c_2\I(i=d)$ \pause and want 
-\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] = c_1 E[\delta|y] +c_2 > 0 \] 
+Now suppose an older sow (or this particular sow) needs more medications, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i - u_2\I(i=new) - u_3\I(i=d)$ \pause and want 
+\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] = u_1 E[\delta|y] - u_2 + u_3 > 0 \] 
 to pick $new$.  
 
 \vspace{0.2in} \pause
 
-The decision will depend on $c_1$ and $c_2$. 
+Now, the decision will depend on the individual utilities $u_1$, $u_2$, and $u_3$. 
 }
 
 \frame{\frametitle{Cost functions}
 So far, all cost functions have been linear in $\tilde{y}$\pause, but suppose $U(\tilde{y}_i)$ is a complicated function of $\tilde{y}_i$. \pause Then to pick $new$, we want
-\[ E[U(\tilde{y}_{new})-U(\tilde{y}_d)|y] > 0 \]
+\[ E[U(\tilde{y}_{new})|y]-E[U(\tilde{y}_d)|y] > 0 \]
 \pause This may be analytically intractable, but we can easily simulate from it. \pause Suppose 
-\[ U(\tilde{y}_i) = \tilde{y}_i + 0.1(\tilde{y}_i-10) \I(\tilde{y}_i>10) - 0.2\I(i=new), \]
-\pause then
+\[ U(\tilde{y}_i) = \tilde{y}_i + 0.1(\tilde{y}_i-10) \I(\tilde{y}_i>10) - 0.2\I(i=new). \]
+
 }
 
 \begin{frame}
 \frametitle{New data realizations}
 
-To estimate these cost functions, we will need predictive simulations $\tilde{y}$ for the old sow and the new sow. 
+To estimate these utility functions, we will need predictive simulations $\tilde{y}$ for the old sow and the new sow. 
 
 \vspace{0.2in} \pause
 
@@ -414,9 +486,9 @@ We can obtain these simulations via
 
 \begin{itemize}
 \item Old sow (progeny $p$ and average grand-sire):
-\[ \tilde{y}_d^{(k)} \sim Po(e^{\rho_p^{(k)}+\alpha_d^{(k)}}) \]
+\[ \tilde{y}_d^{(k)} \sim Po\left(e^{\rho_p^{(k)}+\alpha_d^{(k)}}\right) \]
 \item New sow (average grand-sire):
-\[ \tilde{y}_{new}^{(k)} \sim Po(e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}) \]
+\[ \tilde{y}_{new}^{(k)} \sim Po\left(e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}\right) \]
 \end{itemize}
 where $e^{\rho_p^{(k)}+\alpha_d^{(k)}}$ and $e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}$ are simulations previously drawn.
 \end{frame}
