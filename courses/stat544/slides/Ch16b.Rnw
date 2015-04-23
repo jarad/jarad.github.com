@@ -73,7 +73,7 @@ set.seed(2)
 
 \end{frame}
 
-% This analysis is incorrect. It assumes the sire is the sire for the litter, but the sire is actually the sire of the sow that produced the litter. So, the sire effect shown here is actually the grandsire effect rather than the father effect. 
+% Probably should model both the dam and sire (which are the granddam and grandsire for the litter)
 
 \section{Sow culling time}
 \frame{\frametitle{Sow culling time}
@@ -97,12 +97,13 @@ Primary question of interest: when should a sow be removed from breeding?
 <<data, cache=TRUE, echo=TRUE>>=
 d = read.table("Ch16b-farm62.txt", header=T)
 d$cg = d$farm = d$yearmo = d$nbd = d$dam = NULL
+d = plyr::rename(d, c("sire"="grandsire"))
 @
 
 <<data_summary, dependson="data", echo=TRUE>>=
 head(d)
 summary(d)
-dim(d); nlevels(d$sowid); nlevels(d$sire)
+dim(d); nlevels(d$sowid); nlevels(d$grandsire)
 @
 \end{frame}
 
@@ -120,22 +121,24 @@ ggplot(d, aes(x=nba,y=..density..)) +
 
 
 \frame{\frametitle{Model}
-Let 
-\begin{itemize}
-\item $y_i$ be the number born alive for the $i^{th}$ litter \pause
-\item $p[i]$ is the parity for the $i^{th}$ litter \pause
-\item $d[i]$ is the sow for the $i^{th}$ litter \pause
-\item $s[i]$ is the grandsire for the $i^{th}$ litter \pause
-\end{itemize}	
-Assume
+Let $y_i$ be the number born alive for the $i^{th}$ litter.\pause Assume
 \[ \begin{array}{ll@{\qquad}l}
 y_i &\stackrel{ind}{\sim} Po( e^{\mu_i} ) & i=1,\ldots,n \pause \\
-\mu_i &= \rho_{p[i]} + \alpha_{d[i]} + \beta_{s[i]} \pause \\
-\alpha_d &\stackrel{iid}{\sim} N(0, \sigma^2_\alpha) & d=1,\ldots,n_{sows} \pause \\
-\beta_s &\stackrel{iid}{\sim} N(0, \sigma^2_\beta) & s=1,\ldots,n_{grandsires} \pause
+\mu_i &= \rho_{p[i]} + \alpha_{s[i]} + \beta_{g[i]} \pause \\
 \end{array} \]
-and prior
-\[ p(\rho_1,\ldots,\rho_6, \sigma_\alpha,\sigma_\beta) \propto Ca^+(\sigma_\alpha;0,10) Ca^+(\sigma_\beta;0,10) \]
+where
+\begin{itemize}
+\item $p[i]$ is the parity for the $i^{th}$ litter, \pause
+\item $s[i]$ is the sow for the $i^{th}$ litter, \pause and
+\item $g[i]$ is the grandsire for the $i^{th}$ litter. \pause
+\end{itemize}  
+The hierarchical structure treats $\alpha$ and $\beta$ as random effects, i.e.
+\[ \begin{array}{ll@{\qquad}l}
+\alpha_s &\stackrel{iid}{\sim} N(0, \sigma^2_\alpha) & s=1,\ldots,n_{sows} \pause \\
+\beta_g &\stackrel{iid}{\sim} N(0, \sigma^2_\beta) & g=1,\ldots,n_{grandsires}. \pause
+\end{array} \]
+The prior is 
+\[ p(\rho_1,\ldots,\rho_6, \sigma_\alpha,\sigma_\beta) \propto Ca^+(\sigma_\alpha;0,1) Ca^+(\sigma_\beta;0,1) \]
 }
 
 
@@ -146,33 +149,33 @@ model = "
 data {
   int<lower=1> n;
   int<lower=1> np;
-  int<lower=1> nd;
   int<lower=1> ns;
+  int<lower=1> ng;
   int<lower=0> y[n];
   int<lower=1, upper=np> parity[n];
-  int<lower=1, upper=nd> dam[n];
-  int<lower=1, upper=ns> sire[n];
+  int<lower=1, upper=ns> sow[n];
+  int<lower=1, upper=ng> grandsire[n];
 }
 
 parameters {
   real rho[np];     // implicit prior over whole real line
-  real alpha[nd];
-  real beta[ns];
+  real alpha[ns];
+  real beta[ng];
   real<lower=0> sigma_alpha;
   real<lower=0> sigma_beta;
 }
 
 model {
   for (i in 1:n) {
-    y[i] ~ poisson(exp(rho[parity[i]]+alpha[dam[i]]+beta[sire[i]]));
+    y[i] ~ poisson(exp(rho[parity[i]]+alpha[sow[i]]+beta[grandsire[i]]));
   }
 
   # Random effects
-  for (d in 1:nd) { alpha[d]  ~ normal(0, sigma_alpha); }
-  for (s in 1:ns) { beta[s]   ~ normal(0, sigma_beta); }
+  alpha ~ normal(0, sigma_alpha);
+  beta ~ normal(0, sigma_beta);
 
-  sigma_alpha ~ cauchy(0,10);
-  sigma_beta  ~ cauchy(0,10);
+  sigma_alpha ~ cauchy(0,1);
+  sigma_beta  ~ cauchy(0,1);
 }"
 @
 \end{frame}
@@ -186,27 +189,38 @@ m = stan_model(model_code=model)
 d = d[d$parity!=7,]
 dat = list(y = d$nba, 
            parity = d$parity,
-           dam = as.numeric(d$sowid),
-           sire = as.numeric(d$sire))
+           sow = as.numeric(d$sowid),
+           grandsire = as.numeric(d$grandsire))
 dat$n  = length(dat$y)
 dat$np = max(dat$parity)
-dat$nd = max(dat$dam)
-dat$ns = max(dat$sire)
+dat$ns = max(dat$sow)
+dat$ng = max(dat$grandsire)
 
-time = system.time(r <- sampling(m, dat, c("rho","alpha","beta","sigma_alpha","sigma_beta")))
+time = system.time(r <- sampling(object = m, 
+                                 data = dat, 
+                                 pars = c("rho","alpha","beta","sigma_alpha","sigma_beta"), 
+                                 iter = 10000,
+                                 thin = 5))
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Run time and summary}
-<<dependson="run_mcmc", echo=TRUE>>=
+<<stan_summary, cache=TRUE, dependson="run_mcmc", echo=TRUE>>=
 time
 s = summary(r)$summary
 @
+
+<<dependson="stan_summary", eval=FALSE>>=
+summary(r, pars=c("rho","sigma_alpha","sigma_beta","lp__"))$summary
+@
+
 \end{frame}
 
+
+
 \begin{frame}[fragile]
-<<>>=
+<<dependson='run_mcmc'>>=
 plot(r)
 @
 \end{frame}
@@ -214,7 +228,7 @@ plot(r)
 
 
 \begin{frame}[fragile]
-<<parity, dependson="run_mcmc">>=
+<<parity, dependson="stan_summary">>=
 wr = grep("rho",rownames(s))
 erho = exp(s[wr,c(4,6,8)])
 
@@ -227,9 +241,7 @@ points(erho[wr,2],1:dat$np, pch=19, cex=.5)
 
 
 \begin{frame}[fragile]
-<<dam, dependson="run_mcmc">>=
-
-
+<<sow, dependson="stan_summary", cache=TRUE>>=
 wd = grep("alpha\\[",rownames(s))
 alpha = as.data.frame(s[wd,c(4,6,8)])
 
@@ -273,7 +285,7 @@ par(opar)
 
 NBA for best and worst performing sows with max parity of 4
 
-<<>>=
+<<dependson='sow'>>=
 tmp = alpha_plot[alpha_plot$parity==4,]
 sows = tmp$sowid[c(which.min(tmp$median), which.max(tmp$median))]
 dcast(d[d$sowid %in% sows,c("sowid","nba","parity")], sowid~parity, value.var='nba')
@@ -284,7 +296,7 @@ dcast(d[d$sowid %in% sows,c("sowid","nba","parity")], sowid~parity, value.var='n
 
 NBA for best and worst performing sows with max parity of 5
 
-<<>>=
+<<dependson='sow'>>=
 tmp = alpha_plot[alpha_plot$parity==5,]
 sows = tmp$sowid[c(which.min(tmp$median), which.max(tmp$median))]
 dcast(d[d$sowid %in% sows,c("sowid","nba","parity")], sowid~parity, value.var='nba')
@@ -295,7 +307,7 @@ dcast(d[d$sowid %in% sows,c("sowid","nba","parity")], sowid~parity, value.var='n
 
 
 \begin{frame}[fragile]
-<<sire, dependson="run_mcmc">>=
+<<sire, dependson="stan_summary">>=
 ws = grep("beta",rownames(s))
 beta = s[ws,c(4,6,8)]
 n.sire = nrow(beta)
@@ -316,9 +328,11 @@ lines(beta[,2], 1:n.sire)
 sigmas = extract(r, c("sigma_alpha","sigma_beta"))
 par(mfrow=c(1,2))
 hist(sigmas$sigma_alpha, prob=TRUE, xlim=c(0,0.1), 
-     main="Dam sd")
+     main="Sow sd")
+curve(dcauchy(x,0,10)/2, col='red', add=TRUE, lwd=2)
 hist(sigmas$sigma_beta,  prob=TRUE, xlim=c(0,0.1), 
      main="Grandsire sd")
+curve(dcauchy(x,0,10)/2, col='red', add=TRUE, lwd=2)
 @
 \end{frame}
 
@@ -334,33 +348,38 @@ Primary question of interest: when should a sow be removed from breeding?
 
 Who is expected to have more progeny: \pause
 \begin{itemize}
-\item a current sow $d$ \pause
+\item a current sow $s$ \pause
 \item a new sow
 \end{itemize}
 
 \pause
 
 {\small
-Current sow (for $p^{th}$ progeny and average grandsire):
+Current sow (for progeny $p$ and grandsire $g$):
 \[ \begin{array}{rl}
-E[\tilde{y}_d|y] &= E\large[E[\tilde{y}_d|\rho,\alpha,\beta]|y \large] \pause \\
-&= E\left[ \left. e^{\rho_p+\alpha_d+0}\right|y\right] \pause \\
-&\approx \frac{1}{T} \sum_{k=1}^K e^{\rho_p^{(k)}+\alpha_d^{(k)}}
+E[\tilde{y}_s|y] &= E\large[E[\tilde{y}_s|\rho,\alpha,\beta]|y \large] \pause \\
+&= E\left[ \left. e^{\rho_p+\alpha_s+\beta_g}\right|y\right] \pause \\
+&\approx \frac{1}{K} \sum_{k=1}^K e^{\rho_p^{(k)}+\alpha_s^{(k)}+\beta_g^{(k)}}
 \end{array} \]
-\pause New sow (for $1^{st}$ progeny and average grandsire):
+\pause New sow (for progeny 1 and random grandsire):
 \[ \begin{array}{rl}
-E[\tilde{y}_{new}|y] &= \approx \frac{1}{K} \sum_{k=1}^K e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}
+E[\tilde{y}_{new}|y] &= \approx \frac{1}{K} \sum_{k=1}^K e^{\rho_1^{(k)}+\alpha_{new}^{(k)}+\beta_{new}^{(k)}}
 \end{array} \]
-where $\alpha_{new}^{(k)} \sim N(0,[\sigma_{\alpha}^{(k)}]^2)$.
+where $\alpha_{new}^{(k)} \sim N(0,[\sigma_{\alpha}^{(k)}]^2)$ and $\beta_{new}^{(k)} \sim N(0,[\sigma_{\beta}^{(k)}]^2)$.
 }
 }
 
 \frame{\frametitle{Simulated answer}
 For MCMC iterations $k=1,\ldots,K$, \pause 
 \begin{enumerate}
-\item Calculate $\mu^{(k)}_{d} = e^{\rho_p^{(k)}+\alpha_d^{(k)}}$. \pause 
-\item Calculate $\mu^{(k)}_{new} = e^{\rho_p^{(k)}+\alpha_{new}^{(k)}}$ where $\alpha_{new}^{(k)} \sim N\left(0,[\sigma_{\alpha}^{(k)}]^2\right)$. \pause 
-\item Calculate $\delta^{(k)} = \mu_{new}^{(k)} - \mu_d^{(k)}$.
+\item Obtain the $k^{th}$ \emph{joint draw} from the posterior for $\rho_p^{(k)}$, $\rho_1^{(k)}$, $\alpha_s^{(k)}$, $\beta_g^{(k)}$, $\sigma^{(k)}_\alpha$, and $\sigma^{(k)}_\beta$. 
+\item Calculate $\mu^{(k)}_{d} = e^{\rho_p^{(k)}+\alpha_s^{(k)}+\beta_g^{(k)}}$. \pause 
+\item Calculate $\mu^{(k)}_{new} = e^{\rho_p^{(k)}+\alpha_{new}^{(k)}+\beta_{new}^{(k)}}$ where 
+  \begin{enumerate}
+  \item $\alpha_{new}^{(k)} \sim N\left(0,\left[\sigma_{\alpha}^{(k)}\right]^2\right)$ and
+  \item $\beta_{new}^{(k)} \sim N\left(0,\left[\sigma_{\beta}^{(k)}\right]^2\right)$.
+  \end{enumerate} \pause 
+\item Calculate $\delta^{(k)} = \mu_{new}^{(k)} - \mu_s^{(k)}$.
 \end{enumerate}
 
 \vspace{0.2in} \pause
@@ -377,24 +396,27 @@ sow_summary = ddply(d, .(sowid), summarize,
                     sum_nba    = sum(nba),
                     mean_nba   = sum_nba/max_parity)
 
-# Should we replace a sow after 0 born alive in first parity
-wh = which(sow_summary$max_parity==1 & sow_summary$sum_nba==0)
+# Find a sow with 0 born alive in parity 1 (and no other data)
+sow = which(sow_summary$max_parity==1 & sow_summary$sum_nba==0)[1]
+grandsire = as.numeric(d$sire[d$sowid==sow_summary$sowid[sow]])
 
 # Expected nba in parity 2 for sow with 0 born alive in first parity
 alphas = extract(r, "alpha")$alpha
+betas  = extract(r, "beta")$beta
 rhos = extract(r, "rho")$rho
-exp_nba_old2 = exp(rhos[,2]+alphas[,wh[1]])
+exp_nba_old2 = exp(rhos[,2]+alphas[,sow]+betas[,grandsire])
 
 # Expected nba in parity 1 for random sow
 alpha_new = rnorm(nrow(rhos), 0, sigmas$sigma_alpha)
-exp_nba_new = exp(rhos[,1]+alpha_new)
+beta_new  = rnorm(nrow(rhos), 0, sigmas$sigma_beta)
+exp_nba_new = exp(rhos[,1]+alpha_new+beta_new)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 <<zero_nba_run, dependson="run_mcmc", echo=TRUE>>=
-hist(exp_nba_old2-exp_nba_new, 100, main="Expected difference (Old-New)")
+hist(exp_nba_new-exp_nba_old2, 100, main=expression(paste(delta," (new-old)")))
 @
 \end{frame}
 
@@ -403,13 +425,14 @@ hist(exp_nba_old2-exp_nba_new, 100, main="Expected difference (Old-New)")
 \begin{frame}[fragile]
 <<parity_four, dependson="run_mcmc", fig.width=8, echo=TRUE>>=
 # Replace sow with 23 born alive after 4 parities?
-wh = which(sow_summary$max_parity==4 & sow_summary$sum_nba==23)
+sow = which(sow_summary$max_parity==4 & sow_summary$sum_nba==23)[1]
+grandsire = as.numeric(d$sire[d$sowid==sow_summary$sowid[sow]])
 
 # Expected nba in parity 3 for sow with 0 born alive in first parity
-exp_nba_old5 = exp(rhos[,5]+alphas[,wh])
+exp_nba_old5 = exp(rhos[,5]+alphas[,sow]+betas[,grandsire])
 
 # Difference in expected nba
-hist(exp_nba_old5-exp_nba_new, 100, main="Expected difference (Old-New)")
+hist(exp_nba_new-exp_nba_old5, 100, main=expression(paste(delta," (new-old)")))
 @
 \end{frame}
 
@@ -417,18 +440,23 @@ hist(exp_nba_old5-exp_nba_new, 100, main="Expected difference (Old-New)")
 \begin{frame}[fragile]
 \frametitle{Estimated number born alive}
 
+Estimates of the number born alive for each sow with Monte Carlo uncertainty:
+
 <<est_nba>>=
 exp_nba = data.frame(new = exp_nba_new, old2 = exp_nba_old2, old5 = exp_nba_old5)
 ddply(melt(exp_nba), .(variable), function(x) as.data.frame(mcse(x$value)))
 @
 
 \pause
-Here we estimate the probability that one sow is expected to have larger number born alive
+
+Estimates of the expected difference with Monte Carlo uncertainty:
 
 <<difference_expected progeny, echo=TRUE>>=
-rbind(as.data.frame(mcse(exp_nba_old2>exp_nba_new)),
-      as.data.frame(mcse(exp_nba_old5>exp_nba_new)),
-      as.data.frame(mcse(exp_nba_old5>exp_nba_old2)))
+delta = rbind(as.data.frame(mcse(exp_nba_old2-exp_nba_new)),
+              as.data.frame(mcse(exp_nba_old5-exp_nba_new)),
+              as.data.frame(mcse(exp_nba_old5-exp_nba_old2)))
+rownames(delta) = c("parity2-new","parity5-new","parity5-parity2")
+delta
 @
 \end{frame}
 
@@ -436,14 +464,14 @@ rbind(as.data.frame(mcse(exp_nba_old2>exp_nba_new)),
 \frame{\frametitle{Utility functions}
 Suppose the only cost difference is in the number of progeny, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i$ \pause and want 
 \[ \max_{i\in \{d, new\}} E[U(\tilde{y}_i)|y] \]
-\pause or, equivalently, if
-\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] > 0 \] 
-\pause pick $new$. \pause 
+\pause or, equivalently, pick $new$ if
+\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_s)|y] > 0 \] 
+\pause 
 But, since expectation is a linear operator,
 \[ \begin{array}{ll} 
-E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] &= E[U(\tilde{y}_{new})-U(\tilde{y}_d)|y] \pause \\
-&= E[u_1 \tilde{y}_{new} - u_1 \tilde{y}_d|y] \pause \\
-&= u_1 E[\tilde{y}_{new} - \tilde{y}_d|y] \pause \\
+E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_s)|y] &= E[U(\tilde{y}_{new})-U(\tilde{y}_s)|y] \pause \\
+&= E[u_1 \tilde{y}_{new} - u_1 \tilde{y}_s|y] \pause \\
+&= u_1 E[\tilde{y}_{new}|y] - u_1 E[\tilde{y}_s|y] \pause \\
 &= u_1 E[\delta|y] \\
 \end{array} \]
 
@@ -452,15 +480,14 @@ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] &= E[U(\tilde{y}_{new})-U(\tilde{y
 
 
 \frame{\frametitle{Utility functions}
-Suppose the utility function also involves moving a new sow in, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i - u_2\I(i=new)$ \pause and want 
-\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] = u_1 E[\delta|y] -u_2 > 0 \] 
-to pick $new$. 
+Suppose the utility function also involves moving a new sow in, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i - u_2\I(i=new)$ \pause and you should pick $new$ if 
+\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_s)|y] = u_1 E[\delta|y] -u_2 > 0. \] 
 
 \vspace{0.2in} \pause 
 
-Now suppose an older sow (or this particular sow) needs more medications, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i - u_2\I(i=new) - u_3\I(i=d)$ \pause and want 
-\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_d)|y] = u_1 E[\delta|y] - u_2 + u_3 > 0 \] 
-to pick $new$.  
+Now suppose an older sow (or this particular sow) needs more medications, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i - u_2\I(i=new) - u_3\I(i=d)$ \pause and you should pick $new$ if 
+\[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_s)|y] = u_1 E[\delta|y] - u_2 + u_3 > 0. \] 
+
 
 \vspace{0.2in} \pause
 
@@ -469,7 +496,7 @@ Now, the decision will depend on the individual utilities $u_1$, $u_2$, and $u_3
 
 \frame{\frametitle{Cost functions}
 So far, all cost functions have been linear in $\tilde{y}$\pause, but suppose $U(\tilde{y}_i)$ is a complicated function of $\tilde{y}_i$. \pause Then to pick $new$, we want
-\[ E[U(\tilde{y}_{new})|y]-E[U(\tilde{y}_d)|y] > 0 \]
+\[ E[U(\tilde{y}_{new})|y]-E[U(\tilde{y}_s)|y] > 0 \]
 \pause This may be analytically intractable, but we can easily simulate from it. \pause Suppose 
 \[ U(\tilde{y}_i) = \tilde{y}_i + 0.1(\tilde{y}_i-10) \I(\tilde{y}_i>10) - 0.2\I(i=new). \]
 
@@ -486,11 +513,11 @@ We can obtain these simulations via
 
 \begin{itemize}
 \item Old sow (progeny $p$ and average grand-sire):
-\[ \tilde{y}_d^{(k)} \sim Po\left(e^{\rho_p^{(k)}+\alpha_d^{(k)}}\right) \]
+\[ \tilde{y}_s^{(k)} \sim Po\left(e^{\rho_p^{(k)}+\alpha_s^{(k)}}\right) \]
 \item New sow (average grand-sire):
 \[ \tilde{y}_{new}^{(k)} \sim Po\left(e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}\right) \]
 \end{itemize}
-where $e^{\rho_p^{(k)}+\alpha_d^{(k)}}$ and $e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}$ are simulations previously drawn.
+where $e^{\rho_p^{(k)}+\alpha_s^{(k)}}$ and $e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}$ are simulations previously drawn.
 \end{frame}
 
 \subsection{Summary}
