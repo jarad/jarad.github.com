@@ -42,7 +42,7 @@ Specification of probability models; subjective, conjugate, and noninformative p
 
 ## Prerequisite
 
-The prerequisite for the course is previous or concurrent enrollement in [STAT 543](http://catalog.iastate.edu/showcourse/?code=STAT-543&edition=2014-15) or equivalent (Econ 672). 
+The prerequisite for the course is previous or concurrent enrollement in [STAT 543](http://catalog.iastate.edu/showcourse/?code=STAT-543&edition=2014-15) or equivalent, e.g. Econ 672. 
 
 
 ## Q&A
