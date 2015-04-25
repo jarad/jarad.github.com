@@ -1,0 +1,150 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+
+\title{Bayesian model averaging}
+\subtitle{Sow culling time}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+
+\begin{document}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=6, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(reshape2)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(xtable)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Posterior model probability
+  \begin{itemize}
+  \item 
+  \end{itemize}
+\item 
+\end{itemize}
+
+\end{frame}
+
+\section{Posterior model probability}
+\begin{frame}
+\frametitle{Posterior model probability}
+
+Consider a set of models 
+\[ M_1,\ldots,M_K \] 
+where we believe on of these models to be true \pause and that each $M_k$ correspond to a prior predictive distribution 
+\[ p(y|M_k). \]
+\pause
+The uncertainty here is which model is true \pause and thus we assign a \alert{prior model probability}
+\[ p(M_k) \quad \mbox{s.t.} \quad \sum_{k=1}^K p(M_k)= 1. \]
+\pause 
+Thenwe obtain the \alert{posterior model probability} via Bayes' rule
+\[ p(M_k|y) = \frac{p(y|M_k)p(M_k)}{p(y)} \pause = \frac{p(y|M_k)p(M_k)}{\sum_{j=1}^K p(y|M_j)p(M_j)} \pause \propto p(y|M_k)p(M_k).\]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Binomial model example}
+
+Suppose $Y\sim Bin(n,\theta)$ and we have models $M_k: \theta = (k-1)/10$ for $k=1,\ldots,K=11$. \pause We assume the prior model probability is 
+\[ p(M_k) = p_k. \]
+\pause 
+If we observe $y$ successes out of $n$ attempts, then our posterior model probability is 
+\[ p(M_k|y) \propto {n\choose y} \left( \frac{k-1}{10} \right)^y \left( 1 - \frac{k-1}{10} \right)^{n-y} p_k. \]
+and the normalizing constant is 
+\[ p(y) = \sum_{k=1}^K {n\choose y} \left( \frac{k-1}{10} \right)^y \left( 1 - \frac{k-1}{10} \right)^{n-y} p_k. \]
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+y = 3; n = 10
+theta = seq(0,1,by=0.1)
+prior = rep(1/length(theta),length(theta)) # uniform over the models
+posterior = dbinom(y,n,theta)*prior
+posterior = posterior/sum(posterior)
+ggplot(rbind(data.frame(belief = "prior", probability=prior, theta=theta),
+             data.frame(belief = "posterior", probability=posterior, theta=theta)),
+       aes(x=theta, y=probability, color=belief)) + 
+  geom_point() + 
+  labs(title=paste(y,"successes out of",n,"attempts with uniform prior."))
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Prior predictive distributions}
+Recall that a prior predictive distribution is the statistical model integrated over the prior distribution, i.e. 
+\[ p(y|M_k) = \int p(y|\theta)p(\theta|M_k) d\theta \]
+\pause
+Thus, we can write the posterior model probability as 
+\[ p(M_k|y) \propto p(y|M_k) p(M_k) = \left[ \int p(y|\theta)p(\theta|M_k) d\theta \right] p(M_k). \]
+\pause
+Recall that making $p(\theta|M_k)$ too diffuse will cause $p(y|\theta)$ to decrease.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Binomial model example}
+Suppose $Y\sim Bin(n,\theta)$ and $\theta \sim Be(\alpha,\beta)$, then 
+\[ p(y) = \int p(y|\theta) p(\theta) d\theta  = {n\choose y}\frac{B(\alpha+y,\beta+n-y)}{B(\alpha,\beta)},\]
+\pause
+i.e. a \href{http://en.wikipedia.org/wiki/Beta-binomial_distribution}{beta-binomial distributio}n.
+
+\pause
+If we take $\alpha=\beta\to 0$, we have $p(y)\to 0$.
+<<>>=
+beta_binomial = function(y,n,a,b) 
+@
+\end{frame}
+
+
+\begin{frame}
+<<>>=
+y = 0:n
+
+@
+\end{frame}
+
+
+
+\end{document}
