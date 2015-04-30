@@ -6,6 +6,8 @@ group: navigation
 ---
 {% include JB/setup %}
 
+- Fall 2015
+  - [STAT 615](stat615)
 - Spring 2015
   - [STAT 544](stat544)
 - Fall 2014
@@ -14,7 +16,7 @@ group: navigation
 - Spring 2014
   - STAT 544
 - Fall 2013
-  - [STAT 401A](stat401A)
+  - STAT 401A
   - STAT 615
 - Spring 2013
   - STAT 544
