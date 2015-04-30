@@ -46,10 +46,25 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 
 The course aims to provide an overview of Bayesian methods in a variety of ares including
 
-- ``Penalized'' regression
+- Sparse signals
+  - Ridge regression
+  - LASSO
+  - Horseshoe
 - Time series
+  - Dynamic linear models
+  - State-space models
 - Spatial
+  - Gaussian process models
+  - Conditional autogressive models
 - Nonparametrics
+  - Finite mixture models
+  - Dirichlet process
+- Advanced computing
+  - Slice sampling
+  - Adaptive rejection Metropolis sampling
+  - Hamiltonian Monte Carlo
+  - Sequential Monte Carlo
+  - Integrated nested Laplace approximation
 
 ## Faculty Senate Recommendations
 
