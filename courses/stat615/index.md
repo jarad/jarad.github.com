@@ -13,7 +13,7 @@ This website is designed to host course material for [STAT 615 - Advanced Bayesi
 
 This course meets
 
-- TBD
+- TR 8-9:20
 
 ## Textbook
 
