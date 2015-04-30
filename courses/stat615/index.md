@@ -6,7 +6,7 @@ tagline: Advanced Bayesian Methods
 {% include JB/setup %}
 
 <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Bayes_icon.svg/200px-Bayes_icon.svg.png" align="right" />
-This website is designed to host course material for [STAT 544 - Statistical Methods for Research Workers](http://catalog.iastate.edu/showcourse/?code=STAT-615&edition=2015-16) at [Iowa State University](http://www.iastate.edu).
+This website is designed to host course material for [STAT 615](http://catalog.iastate.edu/showcourse/?code=STAT-615&edition=2015-16) at [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@NiemiSTAT](https://twitter.com/NiemiSTAT))
 - Office hours: TBD

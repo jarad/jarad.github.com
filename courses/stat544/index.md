@@ -6,7 +6,7 @@ tagline: Bayesian Statistics
 {% include JB/setup %}
 
 <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Bayes_icon.svg/200px-Bayes_icon.svg.png" align="right" />
-This website is designed to host course material for [STAT 544 - Statistical Methods for Research Workers](http://catalog.iastate.edu/showcourse/?code=STAT-544&edition=2014-15) at [Iowa State University](http://www.iastate.edu).
+This website is designed to host course material for [STAT 544 - Bayesian Statistics](http://catalog.iastate.edu/showcourse/?code=STAT-544&edition=2014-15) at [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@NiemiSTAT](https://twitter.com/NiemiSTAT))
 - TA: [Ian Mouzon](https://twitter.com/imouzon) (<imouzon@iastate.edu>, [@imouzon](https://twitter.com/imouzon))
