@@ -6,7 +6,7 @@ tagline: Advanced Bayesian Methods
 {% include JB/setup %}
 
 <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Bayes_icon.svg/200px-Bayes_icon.svg.png" align="right" />
-This website is designed to host course material for [STAT 615](http://catalog.iastate.edu/showcourse/?code=STAT-615&edition=2015-16) at [Iowa State University](http://www.iastate.edu).
+This website is designed to host course material for [STAT 615 - Advanced Bayesian Methods](http://catalog.iastate.edu/showcourse/?code=STAT-615&edition=2015-16) at [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@NiemiSTAT](https://twitter.com/NiemiSTAT))
 - Office hours: TBD
@@ -68,5 +68,5 @@ The course aims to provide an overview of Bayesian methods in a variety of ares 
 
 ## Faculty Senate Recommendations
 
-This course abides by the Faculty Senate Recommendations provided at >http://www.celt.iastate.edu/teaching/syllabus_inclusion.html>.
+This course abides by the Faculty Senate Recommendations provided at <http://www.celt.iastate.edu/teaching/syllabus_inclusion.html>.
 

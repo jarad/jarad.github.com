@@ -55,5 +55,5 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 
 ## Faculty Senate Recommendations
 
-This course abides by the Faculty Senate Recommendations provided at >http://www.celt.iastate.edu/teaching/syllabus_inclusion.html>.
+This course abides by the Faculty Senate Recommendations provided at <http://www.celt.iastate.edu/teaching/syllabus_inclusion.html>.
 
