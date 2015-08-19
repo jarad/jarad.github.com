@@ -6,7 +6,7 @@ group: navigation
 ---
 {% include JB/setup %}
 
-## Preparing future faculty mentees
+## Preparing future faculty (PFF) mentees
 
 - Natalia da Silva
 - [Will Landau](http://will-landau.com/)
@@ -14,7 +14,7 @@ group: navigation
 ![](student_figs/ndasilva.jpg)
 ![](student_figs/landau.jpg)
 
-## Current students
+## Current advisees
 
 - Ignacio Alvarez-Castro 
 - Adam Martin-Schwarze
@@ -28,7 +28,7 @@ group: navigation
 ![](student_figs/michaud.jpg)
 ![](student_figs/mittman.jpg)
 
-## Former students
+## Former advisees
 
 - [Matt Simpson](http://www.themattsimpson.com/) (PhD, ISU)
 - Casey Oliver (MS, ISU)
