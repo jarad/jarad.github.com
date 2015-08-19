@@ -32,7 +32,7 @@ group: navigation
 
 - [Matt Simpson](http://www.themattsimpson.com/) (PhD, ISU)
 - Casey Oliver (MS, ISU)
-- Danny Sheinson (MS PhD, UCSB)
+- Danny Sheinson (MS & PhD, UCSB)
 - Matt Wheeler (MS, UCSB)
 
 ![](student_figs/simpsonm.jpg)
