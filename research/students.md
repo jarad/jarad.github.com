@@ -8,14 +8,15 @@ group: navigation
 
 ## Current students
 
-- Ignacio Alvarez
+- Ignacio Alvarez-Castro
 - Adam Martin-Schwarze
 - [Will Landau](http://will-landau.com/)
-- Nick Michaud
-- Eric Mittman
+- Nick Michaud 
+- Eric Mittman 
 
 ## Former students
 
-- [Matt Simpson](http://www.themattsimpson.com/)
-- Danny Sheinson
-- Matt Wheeler
+- [Matt Simpson](http://www.themattsimpson.com/) (PhD, ISU)
+- Casey Oliver (MS, ISU)
+- Danny Sheinson (MS PhD, UCSB)
+- Matt Wheeler (MS, UCSB)
