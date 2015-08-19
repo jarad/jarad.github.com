@@ -6,13 +6,17 @@ group: navigation
 ---
 {% include JB/setup %}
 
+* Indicates my advisee
 
 ## Submitted Articles
 
-- Ignacio Alvarez, Jarad Niemi, and Matt Simpson. ``Bayesian inference for a covariance matrix.'' submitted to the Proceedings for the Conference on Applied Statistics in Agriculture
+1. Jarad Niemi, Eric Mittman, Will Landau, and Dan Nettleton ``Empirical Bayes analysis of RNA-seq data for detection of gene expression heterosis.''
+1. Matt Simpson*, Vivek Roy, and Jarad Niemi ``Interweving Markov chain Monte Carlo strategies fo refficient estimation of dynamic linear models.''
+1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.''
 
 ## Refereed Journal Articles
 
+1. David M. Brenner, Jack Dekker, Jarad Niemi, and Lisa Pfiffner. (2015) ``Medical Oxygen Concentrators for Releasing Seed Dormancy.'' Crop Science 55:2291-2293
 1. Robert B. Gramacy, Jarad Niemi, Robin Weiss. (2014) ``Massively parallel approximate Gaussian process regression.'' SIAM/ASA Journal on Uncertainty Quantification [arXiv](http://arxiv.org/abs/1310.5182)
 1. Daniel Sheinson, Jarad Niemi, and Wendy Meiring. (2014) ``Estimation of a disease epidemic using particle filtering.'' Journal of Mathematical Biosciences
 1. Jonathan Dess, Jennifer L. Momsen, Jarad Niemi, Lisa Montplaisir. (2014) ``Student interpretations of phylogenetic trees in an introductory biology course.'' CBE - Life Sciences Education
@@ -42,6 +46,7 @@ group: navigation
 
 ##  Refereed Abstracts
 
+1. Ignacio Alvarez*, Jarad Niemi, and Matt Simpson*. ``Bayesian inference for a covariance matrix.'' submitted to the Proceedings for the Conference on Applied Statistics in Agriculture
 1. Jarad Niemi. (2013) ``A Tool for Interactive Disease Outbreak Visualization, Detection, and Forecasting'' Online Journal of Public Health Informatics
 1. Jarad Niemi and Michael Ludkovski. (2013) ``Tau-leaped particle learning.'' Online Journal of Public Health Informatics 5:1 [url](http://dx.doi.org/10.5210%2Fojphi.v5i1.4575)
 1. Jarad Niemi and Michael Ludkovski. (2011) ``Optimal sequential management decisions for measles outbreaks.'' Emerging Health Threats Journal 4 [url](http://dx.doi.org/10.3402/ehtj.v4i0.11907)
@@ -57,7 +62,7 @@ group: navigation
 
 1. Jarad Niemi  and Andrew Gelman. (2011) ``Statistical graphics: making information clear -- and beautiful.’’ Significance 8, 135--137
 1. Jarad B. Niemi. (2010) ``Evaluating individual player contributions to team offense and defense: a model based approach.'' JSM Proceedings, Section on Statistics in Sports. Vancouver, BC, Canada: American Statistical Association. 4914--4923.
-1. Jarad B. Niemi and Matthew Wheeler. ``Efficient Bayesian inference in stochastic chemical kinetic models using graphical processing units.'' [arXiv](http://arxiv.org/abs/1101.4242)
+1. Jarad B. Niemi and Matthew Wheeler*. ``Efficient Bayesian inference in stochastic chemical kinetic models using graphical processing units.'' [arXiv](http://arxiv.org/abs/1101.4242)
 1. Tim W. Dake, Jarad B. Niemi, Don L. Hughes, Jeff J. Kester, Don B. Compton, Jon J. Calderas, Rich G. Schafermeyer, Kevin P. Christmas. ``Compositions having enhanced aqueous solubility and methods of their preparation.'' PCT/US2002/014505 filed
 
 
