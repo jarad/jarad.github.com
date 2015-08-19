@@ -33,6 +33,7 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
   - [Skype](skype:jaradniemi?add "Jarad Niemi's Skype account")
   - [Twitter](https://twitter.com/#NiemiSTAT "Jarad Niemi's twitter account")
   - [LinkedIn](http://www.linkedin.com/in/jaradniemi "Jarad Niemi's LinkedIn account")
+  - [GitHub](https://github.com/jarad/ "Jarad Niemi's GitHub account")
 - Phone
   - (515) 294-8679
   - (515) 294-4040 (fax)
