@@ -8,7 +8,7 @@ group: navigation
 
 ## Preparing future faculty (PFF) mentees
 
-- Natalia da Silva
+- [Natalia da Silva](http://ndasilva.public.iastate.edu/)
 - [Will Landau](http://will-landau.com/)
 
 ![](student_figs/ndasilva.jpg)
