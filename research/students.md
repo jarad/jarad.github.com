@@ -6,6 +6,14 @@ group: navigation
 ---
 {% include JB/setup %}
 
+## Preparing future faculty mentees
+
+- Natalia da Silva
+- [Will Landau](http://will-landau.com/)
+
+![](student_figs/ndasilva.jpg)
+![](student_figs/landau.jpg)
+
 ## Current students
 
 - Ignacio Alvarez-Castro 
@@ -26,3 +34,8 @@ group: navigation
 - Casey Oliver (MS, ISU)
 - Danny Sheinson (MS PhD, UCSB)
 - Matt Wheeler (MS, UCSB)
+
+![](student_figs/simpsonm.jpg)
+![](student_figs/oliver.jpg)
+![](student_figs/sheinson.jpg)
+![](student_figs/wheeler.jpg)
