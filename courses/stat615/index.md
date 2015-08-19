@@ -30,7 +30,7 @@ Complex hierarchical and multilevel models, dynamic linear and generalized linea
 
 ## Course Objectives
 
-- Be verse in the variety of Bayesian methods used for time series, spatial analysis, shrinkage, and nonparametrics. 
+- Understand the common Bayesian methods used for time series analysis, spatial analysis, shrinkage, and nonparametrics. 
 - Read, comprehend, and implement methods in the primary literature. 
 - Apply these methods within your own research agenda. 
 
