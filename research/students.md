@@ -8,7 +8,7 @@ group: navigation
 
 ## Current students
 
-- ![Ignacio Alvarez-Castro](student_figs/ialvarez.jpg)
+- Ignacio Alvarez-Castro ![](student_figs/ialvarez.jpg)
 - Adam Martin-Schwarze
 - [Will Landau](http://will-landau.com/)
 - Nick Michaud 
