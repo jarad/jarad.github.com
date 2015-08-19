@@ -6,12 +6,12 @@ group: navigation
 ---
 {% include JB/setup %}
 
-* Indicates my advisee
+^ Indicates my advisee
 
 ## Submitted Articles
 
 1. Jarad Niemi, Eric Mittman, Will Landau, and Dan Nettleton ``Empirical Bayes analysis of RNA-seq data for detection of gene expression heterosis.''
-1. Matt Simpson*, Vivek Roy, and Jarad Niemi ``Interweving Markov chain Monte Carlo strategies fo refficient estimation of dynamic linear models.''
+1. Matt Simpson^, Vivek Roy, and Jarad Niemi ``Interweving Markov chain Monte Carlo strategies fo refficient estimation of dynamic linear models.''
 1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.''
 
 ## Refereed Journal Articles
