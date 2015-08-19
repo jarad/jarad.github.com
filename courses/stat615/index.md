@@ -13,7 +13,7 @@ This website is designed to host course material for [STAT 615 - Advanced Bayesi
 
 This course meets
 
-- TR 8-9:20
+- TR 11-12:20 @ Heady 0274
 
 ## Textbook
 
@@ -30,7 +30,9 @@ Complex hierarchical and multilevel models, dynamic linear and generalized linea
 
 ## Course Objectives
 
-
+- Be verse in the variety of Bayesian methods used for time series, spatial analysis, shrinkage, and nonparametrics. 
+- Read, comprehend, and implement methods in the primary literature. 
+- Apply these methods within your own research agenda. 
 
 ## Prerequisite
 
