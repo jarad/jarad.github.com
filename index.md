@@ -21,8 +21,8 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
   {% endfor %}
 </ul>
 
-## Spring 2015 Courses ([all courses](courses))
-- [STAT 544](courses/stat544)
+## Fall 2015 Courses ([all courses](courses))
+- [STAT 615](courses/stat615)
 
 ## Contact
 
