@@ -6,5 +6,5 @@ group:
 ---
 {% include JB/setup %}
 
-
-
+- [Publications](publications.html)
+- [Students](students.html)
