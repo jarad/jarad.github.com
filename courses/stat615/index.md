@@ -28,7 +28,7 @@ The required textbook for the course is [Bayesian Data Analysis (3rd edition)](h
 
 Complex hierarchical and multilevel models, dynamic linear and generalized linear models, spatial models. Bayesian nonparametric methods. Specialized Markov chain Monte Carlo algorithms and practical approaches to increasing mixing and speed convergence. Summarizing posterior distributions, and issues in inference. Model assessment, model selection, and model averaging.
 
-## Course Objectives
+## Student Learning Outcomes
 
 - Understand the common Bayesian methods used for time series analysis, spatial analysis, shrinkage, and nonparametrics. 
 - Read, comprehend, and implement methods in the primary literature. 
