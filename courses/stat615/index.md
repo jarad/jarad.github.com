@@ -21,7 +21,7 @@ The required textbook for the course is [Bayesian Data Analysis (3rd edition)](h
 
 ## Relevant course pages
 
-- [Slides](slides)
+- [Slides](slides.html)
 - [Textbook](textbook.html)
 
 ## Course Description
@@ -43,11 +43,11 @@ The prerequisites for the course are [STAT 544](http://catalog.iastate.edu/showc
 
 Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum. 
 
-## Course topics
+## (Possible) course topics
 
-The course aims to provide an overview of Bayesian methods in a variety of ares including
+The course aims to provide an overview of Bayesian methods in a variety of areas including some of the following:
 
-- Sparse signals
+- Hierarchical (linear) models
   - Ridge regression
   - LASSO
   - Horseshoe
