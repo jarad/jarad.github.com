@@ -43,7 +43,7 @@ The prerequisites for the course are [STAT 544](http://catalog.iastate.edu/showc
 
 Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum. 
 
-## (Possible) course topics
+## Course topics 
 
 The course aims to provide an overview of Bayesian methods in a variety of areas including some of the following:
 
@@ -51,20 +51,20 @@ The course aims to provide an overview of Bayesian methods in a variety of areas
   - Ridge regression
   - LASSO
   - Horseshoe
-- Time series
+  - Hamiltonian Monte Carlo
+- Dynamic models
   - Dynamic linear models
   - State-space models
+  - Sequential Monte Carlo
 - Spatial
   - Gaussian process models
   - Conditional autogressive models
+  - Slice sampling
 - Nonparametrics
   - Finite mixture models
   - Dirichlet process
-- Advanced computing
-  - Slice sampling
+- Advanced computing (?)
   - Adaptive rejection Metropolis sampling
-  - Hamiltonian Monte Carlo
-  - Sequential Monte Carlo
   - Integrated nested Laplace approximation
 
 ## Faculty Senate Recommendations
