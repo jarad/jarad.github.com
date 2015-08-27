@@ -146,9 +146,9 @@ Assume $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$ (which is equivalent to Un
 \vspace{0.5in} \pause
 
 \begin{remark}
-Note that a $Be(1,1)$ is equivalent to $p(\theta)=\mathrm{I}(0<\theta<1)$\pause, i.e. 
+Note that a $Be(1,1)$ is equivalent to $p(\theta)=\I(0<\theta<1)$\pause, i.e. 
 
-\[ p(\theta|y) \propto p(y|\theta)p(\theta) = p(y|\theta)\mathrm{I}(0<\theta<1) \]
+\[ p(\theta|y) \propto p(y|\theta)p(\theta) = p(y|\theta)\I(0<\theta<1) \]
 \pause
 so it may seem that a reasonable approach to a default prior is to replace $p(\theta)$ by a 1 (times the parameter constraint). \pause We will see later that this depends on the parameterization.
 \end{remark}
@@ -211,7 +211,7 @@ par(opar)
 	\begin{itemize}
 	\item Mean: $\hat{\theta}_{Bayes} = E[\theta|y]$ minimizes $L\!\left(\theta,\hat{\theta}\right) = \left(\theta-\hat{\theta}\right)^2$ \pause
 	\item Median: $\int_{\hat{\theta}_{Bayes}}^\infty p(\theta|y) d\theta = \frac{1}{2}$ minimizes $L\!\left(\theta,\hat{\theta}\right) = \left|\theta-\hat{\theta}\right|$ \pause
-	\item Mode: $\hat{\theta}_{Bayes} = \mbox{argmax}_\theta \, p(\theta|y)$ minimizes $L\!\left(\theta,\hat{\theta}\right) = -\mathrm{I}\left(\theta = \hat{\theta}\right)$  \pause also called \alert{maximum a posterior (MAP)}
+	\item Mode: $\hat{\theta}_{Bayes} = \mbox{argmax}_\theta \, p(\theta|y)$ minimizes $L\!\left(\theta,\hat{\theta}\right) = -\I\left(\theta = \hat{\theta}\right)$  \pause also called \alert{maximum a posterior (MAP)}
 	\end{itemize}
 }
 
@@ -381,10 +381,10 @@ quantile(samples, .95) # Lower
 	
 	\begin{proof}
 	Suppose $p(\theta)$ is discrete, \pause i.e. 
-	\[ P(\theta=\theta_i) = p_i \pause \qquad \sum_{i=1}^\mathrm{I} p_i = 1 \]
+	\[ P(\theta=\theta_i) = p_i \pause \qquad \sum_{i=1}^\I p_i = 1 \]
 	\pause and $p(y|\theta)$ is the model. \pause Then, $P(\theta=\theta_i) = p_i'$ 
 	is the posterior \pause with 
-	\[ p_i' = \frac{p_i p(y|\theta_i)}{\sum_{j=1}^\mathrm{I} p_j p(y|\theta_j)} \propto p_i p(y|\theta_i). \]
+	\[ p_i' = \frac{p_i p(y|\theta_i)}{\sum_{j=1}^\I p_j p(y|\theta_j)} \propto p_i p(y|\theta_i). \]
 	\end{proof}
 }
 
@@ -411,12 +411,29 @@ legend("topleft", c("Prior","Posterior"), col=c("blue","red"), pch=19)
 	\end{theorem}
 	
 	\begin{proof}
-	Let 
-	\[ \theta\sim \sum_{i=1}^\mathrm{I} p_i p_i(\theta) \pause \qquad \sum_{i=1}^\mathrm{I} p_i=1\] \pause and $p_i(y) = \int p(y|\theta) p_i(\theta) d\theta$, \pause then 
-	\[ \theta|y \sim \sum_{i=1}^\mathrm{I} p_i' p_i(\theta|y) \pause \qquad p_i' \propto p_i p_i(y) \]
-	\pause where $p_i(\theta|y)=p(y|\theta) p_i(\theta) / p_i(y)$. 
+	Let $p_i = P(H_i)$ and $p_i(\theta) = p(\theta|H_i)$, 
+	\[ \theta\sim \sum_{i=1}^\I p_i p_i(\theta) \pause \qquad \sum_{i=1}^\I p_i=1, \] \pause and $p_i(y) = \int p(y|\theta) p_i(\theta) d\theta$, \pause then 
+  \[ \begin{array}{rl}
+  p(\theta|y) 
+  &= \frac{1}{p(y)} p(y|\theta)p(\theta) \pause
+   = \frac{1}{p(y)} p(y|\theta) \sum_{i=1}^\I p_i p_i(\theta) \pause \\
+  &= \frac{1}{p(y)} \sum_{i=1}^\I p_i p(y|\theta) p_i(\theta) \pause
+   = \frac{1}{p(y)} \sum_{i=1}^\I p_i p_i(y) p_i(\theta|y) \pause \\
+  &= \sum_{i=1}^\I \frac{p_i p_i(y)}{p(y)}p_i(\theta|y) \pause 
+   = \sum_{i=1}^\I \frac{p_i p_i(y)}{\sum_{j=1}^\I p_j p_j(y)} p_i(\theta|y)
+  \end{array} \]
+  where $p_i(\theta|y) = p(y|\theta)p_i(\theta)/p_i(y)$. 
 	\end{proof}
 }
+
+
+\frame{\frametitle{Mixtures of conjugate priors are conjugate}
+	Bottom line: if
+	\[ \theta\sim \sum_{i=1}^\I p_i p_i(\theta) \pause \qquad \sum_{i=1}^\I p_i=1\] \pause and $p_i(y) = \int p(y|\theta) p_i(\theta) d\theta$, \pause then 
+	\[ \theta|y \sim \sum_{i=1}^\I p_i' p_i(\theta|y) \pause \qquad p_i' \propto p_i p_i(y) \]
+	\pause where $p_i(\theta|y)=p(y|\theta) p_i(\theta) / p_i(y)$. 
+}
+
 
 \frame{\frametitle{Mixture of beta distributions}
   Recall, if $Y\sim Bin(n,\theta)$ and $\theta\sim \mbox{Be}(a,b)$, then 
