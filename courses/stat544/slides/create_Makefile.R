@@ -8,7 +8,8 @@ lectures = c('Ch01',
              'Ch06a','Ch07a','Ch07b','Ch10a','Ch10b',
              'Ch11a','Ch11b','Ch11c','Ch11d',
              'Ch14a','Ch14b','Ch15a','Ch15b',
-             'Ch16a','Ch16b')
+             'Ch16a','Ch16b',
+             'AmazonReviews')
 
 #######################################################################
 
@@ -22,11 +23,19 @@ cat(rep('#', screen_width), '\n', sep='', file=makefile, append=FALSE)
 catf('#     DO NOT TOUCH: Automatically created using create_Makefile.R')
 catf(rep('#', screen_width),'\n')
 
+#################################################
 
-cat('lectures:', paste0(lectures,'.pdf'), '\n\n', file=makefile, append=TRUE)
+pdfs = paste0(lectures,'.pdf', collapse=' ')
+
+catf('lectures: ', pdfs, '\n')
 
 catf('clean:')
 catf('\trm -f *.aux *.dvi *.fdb_latexmk *.fls *.log *.nav *.out *.snm *.synctex.gz *.tex *.toc *.vrb')
+
+catf('zip: lectures\n\tzip stat544.zip ', pdfs)
+
+
+#################################################
 
 catf(rep('#', screen_width),'\n')
 

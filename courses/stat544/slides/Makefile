@@ -2,10 +2,12 @@
 #     DO NOT TOUCH: Automatically created using create_Makefile.R
 ######################################################################
 
-lectures: Ch01.pdf Ch02a.pdf Ch02b.pdf Ch03a.pdf Ch04.pdf Ch05a.pdf Ch05b.pdf Ch06a.pdf Ch07a.pdf Ch07b.pdf Ch10a.pdf Ch10b.pdf Ch11a.pdf Ch11b.pdf Ch11c.pdf Ch11d.pdf Ch14a.pdf Ch14b.pdf Ch15a.pdf Ch15b.pdf Ch16a.pdf Ch16b.pdf 
+lectures: Ch01.pdf Ch02a.pdf Ch02b.pdf Ch03a.pdf Ch04.pdf Ch05a.pdf Ch05b.pdf Ch06a.pdf Ch07a.pdf Ch07b.pdf Ch10a.pdf Ch10b.pdf Ch11a.pdf Ch11b.pdf Ch11c.pdf Ch11d.pdf Ch14a.pdf Ch14b.pdf Ch15a.pdf Ch15b.pdf Ch16a.pdf Ch16b.pdf AmazonReviews.pdf
 
 clean:
 	rm -f *.aux *.dvi *.fdb_latexmk *.fls *.log *.nav *.out *.snm *.synctex.gz *.tex *.toc *.vrb
+zip: lectures
+	zip stat544.zip Ch01.pdf Ch02a.pdf Ch02b.pdf Ch03a.pdf Ch04.pdf Ch05a.pdf Ch05b.pdf Ch06a.pdf Ch07a.pdf Ch07b.pdf Ch10a.pdf Ch10b.pdf Ch11a.pdf Ch11b.pdf Ch11c.pdf Ch11d.pdf Ch14a.pdf Ch14b.pdf Ch15a.pdf Ch15b.pdf Ch16a.pdf Ch16b.pdf AmazonReviews.pdf
 ######################################################################
 
 Ch01: Ch01.pdf
@@ -139,4 +141,10 @@ Ch16b.pdf: Ch16b.Rnw
 	Rscript -e "library(knitr); knit('Ch16b.Rnw')"
 	pdflatex Ch16b.tex
 	pdflatex Ch16b.tex
+
+AmazonReviews: AmazonReviews.pdf
+AmazonReviews.pdf: AmazonReviews.Rnw
+	Rscript -e "library(knitr); knit('AmazonReviews.Rnw')"
+	pdflatex AmazonReviews.tex
+	pdflatex AmazonReviews.tex
 
