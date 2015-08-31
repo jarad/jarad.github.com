@@ -116,7 +116,7 @@ ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
 
 
 \begin{frame}
-\frame{Summary - normal model with normal prior}
+\frametitle{Summary - normal model with normal prior}
 
 \begin{itemize}
 \item If the prior and the likelihood agree, then posterior seems reasonable.
@@ -385,5 +385,121 @@ ggplot(rbind(map, d), aes(y, theta, color=model)) +
 @
 
 \end{frame}
+
+
+
+
+\subsection{Point-mass prior}
+\begin{frame}
+\frametitle{Dirac $\delta$ function }
+
+Let $\delta_c(x)$ be the Dirac $\delta$ function, i.e. heuristically
+
+\[ 
+\delta_c(x) = \left\{ \begin{array}{ll}
+\infty & x=c \\
+0 & x\ne c
+\end{array} \right.
+\]
+and 
+\[ \int_{-\infty}^\infty \delta_c(x) dx = 1. \]
+
+\vspace{0.2in} \pause
+
+Thus $\theta\sim \delta_c(\theta) = \delta_c$ indicate that the random variable $\theta$ is a degenerate random variable with $P(\theta=c)=1$. 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Point-mass distribution}
+
+Let 
+\[ \theta \sim p\delta_0 + (1-p) N(m,C) \]
+be a distribution such that the random variable $\theta$
+\begin{itemize}
+\item is $0$ with probability $p$ and 
+\item a normal random variable with mean $m$ and variance $C$ with probability $(1-p)$. 
+\end{itemize}
+
+\pause
+
+If $p=0.5$, $m=0$, and $C=1$, it's cumulative distribution function is 
+
+\vspace{-0.2in} 
+
+<<fig.width=10>>=
+cdf = Vectorize(function(x) {
+  if (x<0) return(pnorm(x)/2)
+  if (x==0) return(.75)
+  return(.75+pnorm(x)/2)
+})
+curve(cdf(x), -2,2, xlab='theta', ylab='CDF', lwd=2)
+@
+
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Point-mass prior}
+
+Suppose 
+\[ Y\sim N(\theta,V) \]
+and 
+\[ \theta \sim p\delta_0 + (1-p) N(m,C). \]
+
+\vspace{0.2in} \pause
+
+Then 
+\[ 
+\theta|y \sim p'\delta_0 + (1-p') N(m',C')
+\]
+where
+\[ \begin{array}{rl}
+p' &\pause= \frac{p N(y;0,V)}{p N(y;0,V) + (1-p) N(y;m,C+V)} \\
+C' &\pause= 1/(1/V+1/C) \\
+m' &\pause= C'(y/V+m/C)
+\end{array} \]
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Point-mass prior (cont.)}
+
+For simplicity, let $V=C=1$, $p=0.5$, and $m=0$. \pause Suppose we observe $y=1$. 
+
+<<normal_model_point_mass_prior>>=
+y = 1
+p = 0.5
+V = C = 1
+m = 0
+
+pp = 1/(1+dnorm(y,m,sqrt(C+V))/dnorm(y,0,sqrt(V)))
+d = data.frame(theta=seq(-2,3,by=.01)) %>%
+  mutate(prior = dnorm(theta)/2,
+         likelihood = dnorm(theta,y),
+         posterior = dnorm(theta,y/2,sqrt(1/2))*(1-pp)) %>%
+  melt(id.var='theta', variable.name='distribution', value.name='density') 
+
+e = .05
+d2 = data.frame(distribution = c('prior','posterior'),
+                x = c(-e,e),
+                xend = c(-e,e),
+                y = c(0,0),
+                yend = c(p,pp))
+
+ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
+  geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
+  geom_line() +
+  theme_bw()
+@
+
+\end{frame}
+
 
 \end{document}
