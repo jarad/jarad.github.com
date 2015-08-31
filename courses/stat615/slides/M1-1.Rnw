@@ -458,7 +458,7 @@ Then
 \]
 where
 \[ \begin{array}{rl}
-p' &\pause= \frac{p N(y;0,V)}{p N(y;0,V) + (1-p) N(y;m,C+V)} \\
+p' &\pause= \frac{p N(y;0,V)}{p N(y;0,V) + (1-p) N(y;m,C+V)} \pause = \left(1 + \frac{(1-p) N(y;m,C+V)}{p N(y;0,V)} \right)^{-1}\\
 C' &\pause= 1/(1/V+1/C) \\
 m' &\pause= C'(y/V+m/C)
 \end{array} \]
@@ -500,6 +500,178 @@ ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
 @
 
 \end{frame}
+
+
+
+\begin{frame}
+\frametitle{Point-mass prior (cont.)}
+
+For simplicity, let $V=C=1$, $p=0.5$, and $m=0$. \pause Suppose we observe $y=1$. 
+
+<<normal_model_point_mass_prior2>>=
+y = 10
+p = 0.5
+V = C = 1
+m = 0
+
+pp = 1/(1+dnorm(y,m,sqrt(C+V))/dnorm(y,0,sqrt(V)))
+d = data.frame(theta=seq(-2,y+2,by=.01)) %>%
+  mutate(prior = dnorm(theta)*p,
+         likelihood = dnorm(theta,y),
+         posterior = dnorm(theta,y/2,sqrt(1/2))*(1-pp)) %>%
+  melt(id.var='theta', variable.name='distribution', value.name='density') 
+
+e = .05
+d2 = data.frame(distribution = c('prior','posterior'),
+                x = c(-e,e),
+                xend = c(-e,e),
+                y = c(0,0),
+                yend = c(p,pp))
+
+ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
+  geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
+  geom_line() +
+  theme_bw()
+@
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Point-mass prior with $t$ distribution}
+
+Suppose 
+\[ Y\sim N(\theta,V) \]
+and 
+\[ \theta \sim p\delta_0 + (1-p) t_v(m,C). \]
+
+\vspace{0.2in} \pause
+
+Then 
+\[ 
+\theta|y \sim p'\delta_0 + (1-p') \, ?
+\]
+where
+\[ 
+p' = \left( 1 + \frac{(1-p) \int N(y;\theta,V) t_v(\theta;m,C) d\theta}{p N(y;0,V)} \right)^{-1}
+\]
+and 
+\[ 
+? \propto N(y;\theta,V) t_v(\theta;m,C).
+\]
+But we already calculated this posterior earlier in the lecture, i.e. normal model with $t$ prior. 
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Point-mass prior with $t$ distribution (cont.)}
+
+Suppose $v=V=C=1$, $p=0.5$, and $m=0$. \pause And we observe $y=1$. 
+
+\vspace{0.2in} \pause
+
+Then, we can calculate the following integral (marginal likelihood) numerically
+
+\[ 
+\int N(y;\theta,V) t_v(\theta;m,C) d\theta
+\]
+
+
+<<normal_model_point_mass_t, echo=TRUE>>=
+v = C = V = 1; p = 0.5; m = 0; y=1
+(int = integrate(function(x) dnorm(y,x,sqrt(V))*my_dt(x), -Inf, Inf))
+(int0 = dnorm(y,0,sqrt(V)))
+(pp = 1/(1+(1-p)*int$value/(p*int0)))
+@
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Point-mass prior with $t$ distribution (cont.)}
+
+Suppose $v=V=C=1$, $p=0.5$, and $m=0$. \pause And we observe $y=1$. 
+
+<<normal_model_point_mass_t2>>=
+y = 1
+
+# This is a function to calculate p(y|\theta)p(\theta).
+f = Vectorize(function(theta, y=1, V=1, v=1, m=0, C=1, log=FALSE) {
+  logf = dnorm(y, theta, sqrt(V), log=TRUE) + my_dt(theta, v, m, C, log=TRUE)
+  return(ifelse(log, logf, exp(logf)))
+})
+
+# Now we can integrate it
+(py = integrate(f, -Inf, Inf))
+
+# Find posterior
+d = data.frame(theta=seq(-2,y+2,by=.01)) %>%
+  mutate(prior = (1-p)*my_dt(theta, 1),
+         likelihood = dnorm(y,theta),
+         posterior = (1-pp)*f(theta,y=y)/py$value) %>%
+  melt(id.var='theta', variable.name='distribution', value.name='density') 
+
+e = .05
+d2 = data.frame(distribution = c('prior','posterior'),
+                x = c(-e,e),
+                xend = c(-e,e),
+                y = c(0,0),
+                yend = c(p,pp))
+
+ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
+  geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
+  geom_line() +
+  theme_bw() 
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Point-mass prior with $t$ distribution (cont.)}
+
+Suppose $v=V=C=1$, $p=0.5$, and $m=0$. \pause And we observe $y=10$. 
+
+<<normal_model_point_mass_t2>>=
+y = 10
+(int = integrate(function(x) dnorm(y,x,sqrt(V))*my_dt(x), -Inf, Inf))
+(int0 = dnorm(y,0,sqrt(V)))
+(pp = 1/(1+(1-p)*int$value/(p*int0)))
+
+# Now we can integrate it
+(py = integrate(function(x) f(x,10), -Inf, Inf))
+
+# Find posterior
+d = data.frame(theta=seq(-2,y+2,by=.01)) %>%
+  mutate(prior = (1-p)*my_dt(theta, 1),
+         likelihood = dnorm(y,theta),
+         posterior = (1-pp)*f(theta,y=y)/py$value) %>%
+  melt(id.var='theta', variable.name='distribution', value.name='density') 
+
+e = .05
+d2 = data.frame(distribution = c('prior','posterior'),
+                x = c(-e,e),
+                xend = c(-e,e),
+                y = c(0,0),
+                yend = c(p,pp))
+
+ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
+  geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
+  geom_line() +
+  theme_bw() 
+@
+
+\end{frame}
+
 
 
 \end{document}
