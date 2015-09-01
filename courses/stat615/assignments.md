@@ -7,6 +7,11 @@ tagline: Assignments
 
 I will post lecture slides here. 
 
+# Readings
+
+- Week 2: Ch 2 & 5 of BDA3
+- Week 3: Ch 14 & 15 of BDA3
+
 # Article summary
 
 - [Horseshoe prior](http://machinelearning.wustl.edu/mlpapers/paper_files/AISTATS09_CarvalhoPS.pdf) due 17 Sep
