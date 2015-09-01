@@ -8,3 +8,5 @@ tagline: Slides
 I will post lecture slides here. 
 
 # Slides
+
+- [M1-1: Shrinkage priors](slides/M1-1.Rnw)
