@@ -22,9 +22,7 @@ I will post lecture slides here.
 ### Homework 1 (due 24 Sep)
 
 1. For the regularized regression problems, we assume the data are of the form y=Xb+e where e~N(0,s^2 ).
-  1. Show that independent normal priors on regression components lead to the ridge estimator on page 5 of [Ridge Regression in Practice](http://www.tandfonline.com/doi/abs/10.1080/00031305.1975.10479105).
-  1. Show that independent [Laplace](http://en.wikipedia.org/wiki/Laplace_distribution) priors on regression coefficients lead to the LASSO estimator on page 1 of [Bayesian LASSO](http://www.stat.ufl.edu/~casella/Papers/Lasso.pdf).
-  1. Derive the form of the prior distribution for the [elastic net estimator](http://en.wikipedia.org/wiki/Elastic_net_regularization). 
+  1. 
   
 2. For the following problems, we asume the data are of the form y_{ij} ~ N(\mu_i,\sigma^2).
   a. Construct an MCMC algorithm for the Horseshoe prior for $\mu_i$.
