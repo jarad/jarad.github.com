@@ -1,0 +1,82 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Shrinkage priors}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Model}
+
+\[ Y_{ij} \ind N(\theta_i, \sigma^2) \mbox{ and } \theta_i \ind N(\mu,\varsigma_i) \]
+
+\[ \begin{array}
+\varsigma_i &= \tau \\
+\varsigma_i &\sim Exp(1/2\tau^2) \\
+\varsigma_i &\sim IG(v/2,\tau^2/2)
+\end{array} \]
+
+\end{frame}
+
+<<>>=
+
+sample_theta = function(ybar, n, sigma2, mu, varsigma) {
+  Cp = 1/(1/varsigma + n/sigma2)
+  mp = Cp*(mu/varsigma + ybar*n/sigma2)
+  rnorm(length(Cp), mp, sqrt(Cp))
+}
+
+sample_mu = function(theta, varsigma) {
+  
+}
+
+@
+
+
+\end{document}
