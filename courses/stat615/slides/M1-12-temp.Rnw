@@ -56,7 +56,7 @@ set.seed(2)
 
 \[ Y_{ij} \ind N(\theta_i, \sigma^2) \mbox{ and } \theta_i \ind N(\mu,\varsigma_i) \]
 
-\[ \begin{array}
+\[ \begin{array}{rl}
 \varsigma_i &= \tau \\
 \varsigma_i &\sim Exp(1/2\tau^2) \\
 \varsigma_i &\sim IG(v/2,\tau^2/2)
@@ -64,41 +64,79 @@ set.seed(2)
 
 \end{frame}
 
-<<>>=
-
-sample_theta = function(ybar, n, sigma2, mu, varsigma) {
-  Cp = 1/(1/varsigma + n/sigma2)
-  mp = Cp*(mu/varsigma + ybar*n/sigma2)
-  rnorm(length(Cp), mp, sqrt(Cp))
-}
-
-sample_mu = function(theta, varsigma) {
-  Cp = 1/sum(1/varsigma)
-  mp = Cp*sum(theta/varsigma)
-  rnorm(1, mp, Cp)
-}
-
-sample_varsigma = function(theta, mu, model) {
-  require(mgcv)
-  switch(model, 
-         laplace = {
-           # inverse gaussian
-           return(rig(1, 0, 1))
-         }, 
-         t = {
-           # inverse gamma
-           ap = (v+1)/2
-           bp = (tau2 + sum((theta-mu)^2))/2
-           return(1/rgamma(1, ap, bp))
-         })
-}
-
-sample_tau = function(varsigma, mu, model) {
-  
-}
 
 
-@
 
+\begin{frame}
+\frametitle{Sample $\tau$ for normal model}
+
+Let 
+\[ \theta_i \ind N(\mu,\tau^2) \mbox{ and } \tau \sim Ca^+(0,c). \]
+so the full conditional is 
+\[ p(\eta|\ldots) \propto (\eta)^{-\I/2} e^{-\sum_{i=1}^\I (\theta_i-\mu)^2/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2} \]
+where we performed the transformation $\eta = \tau^2$ on the prior.
+
+\vspace{0.1in} \pause
+
+Let's us Metropolis-Hastings with proposal distribution 
+\[  IG\left(\frac{\I}{2}-1, \sum_{i=1}^\I \frac{(\theta_i-\mu)^2}{2}\right) \]
+and acceptance probability $\min\{1,\rho\}$ where
+\[ \rho = \frac{\left( 1+\eta^*/c^2\right)^{-1} (\eta^*)^{-1/2}}{\left( 1+\eta^{(i)}/c^2\right)^{-1} (\eta^{(i)})^{-1/2}} = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} \sqrt{\frac{\eta^{(i)}}{\eta^*}}\]
+where $\eta^{(i)}$ and $\eta^*$ are the current and proposed value respective. 
+
+\vspace{0.1in} \pause
+
+Then we calculate $\tau = \sqrt{\eta}$.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sample $\tau$ for Laplace model}
+Let 
+\[ \varsigma_i \sim Exp(1/2\tau^2) \mbox{ and } \tau \sim Ca^+(0,c) \]
+so the full conditional is 
+\[ p(\eta|\ldots) \propto \eta^{-\I} e^{-\sum_{i=1}^\I \varsigma_i/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2} \]
+where we performed the transformation $\eta = \tau^2$ on the prior.
+
+\vspace{0.1in} \pause
+
+Let's us Metropolis-Hastings with proposal distribution 
+\[ IG\left(\I-1, \sum_{i=1}^\I \frac{\varsigma_i}{2}\right) \]
+and acceptance probability $\min\{1,\rho\}$ where again
+\[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} \sqrt{\frac{\eta^{(i)}}{\eta^*}}\]
+where $\eta^{(i)}$ and $\eta^*$ are the current and proposed value respective. 
+
+\vspace{0.1in} \pause
+
+Then we calculate $\tau = \sqrt{\eta}$.
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Sample $\tau$ for $t$ model}
+Let 
+\[ \varsigma_i \sim IG(v/2, \tau^2/2) \mbox{ and } \tau \sim Ca^+(0,c) \]
+so the full conditional is 
+\[ p(\eta|\ldots) \propto \eta^{\I v/2} e^{-\eta \sum_{i=1}^\I 1/\varsigma_i} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2} \]
+where we performed the transformation $\eta = \tau^2$ on the prior.
+
+\vspace{0.1in} \pause
+
+Let's us Metropolis-Hastings with proposal distribution 
+\[ Ga\left(\I v/2+1, \sum_{i=1}^\I \frac{1}{\varsigma_i}\right) \]
+and acceptance probability $\min\{1,\rho\}$ where again
+\[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} \sqrt{\frac{\eta^{(i)}}{\eta^*}}\]
+where $\eta^{(i)}$ and $\eta^*$ are the current and proposed value respective. 
+
+\vspace{0.1in} \pause
+
+Then we calculate $\tau = \sqrt{\eta}$.
+
+\end{frame}
 
 \end{document}
