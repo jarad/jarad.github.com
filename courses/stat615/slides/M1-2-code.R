@@ -52,7 +52,7 @@ sample_tau = function(varsigma, theta, mu, tau_current, model, prior) {
          },
          t = {
            ap = length(varsigma)*prior$v/2+1
-           bp = sum(1/varsigma)
+           bp = sum(1/varsigma)/2
            rgamma(1,ap,bp)
          })
   
@@ -65,4 +65,39 @@ sample_tau = function(varsigma, theta, mu, tau_current, model, prior) {
 
 
 
-
+mcmc = function(n_reps, d, initial, prior, model) {
+  I = length(initial$theta)
+  ss = ddply(d, .(group), summarize, n = length(y), mean=mean(y))
+  
+  # Saving structures
+  keep = list(sigma    = rep(NA, n_reps),
+              mu       = rep(NA, n_reps),
+              tau      = rep(NA, nreps),
+              theta    = matrix(NA, nrow=n_reps, ncol=I),
+              varsigma = matrix(NA, nrow=n_reps, ncol=I))
+  
+  # Initialize
+  sigma = initial$sigma
+  mu = initial$mu
+  tau = initial$tau
+  theta = initial$theta
+  
+  # Run MCMC
+  for (i in 1:n_reps) {
+    
+    varsigma = sample_varsigma(theta, mu, tau, model)
+    sigma2   = sample_sigma2(d$y, d$group, theta, prior)
+    theta    = sample_theta(ss$mean, ss$n, mu, varsigma)
+    mu       = sample_mu(theta, varsigma, prior)
+    tau      = sample_tau(varsigma, theta, mu, tau, model, prior)
+    
+    # Save values
+    keep$sigma[i] = sqrt(sigma2)
+    keep$mu[i] = mu
+    keep$tau[i] = tau
+    keep$theta[i,] = theta
+    keep$varsigma[i,] = varsigma
+  }
+  
+  return(keep)
+}

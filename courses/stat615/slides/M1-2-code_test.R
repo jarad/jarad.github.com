@@ -73,15 +73,15 @@ curve(deta(x, varsigma, cc)/py$value, add=TRUE, col='red')
 # Test tau for t
 
 deta = Vectorize(function(x, varsigma, vv, cc, log=FALSE) {
-  logf = length(varsigma)*vv/2*log(x) - x*sum(1/varsigma) -log(1+x/cc^2) - log(x)/2
+  logf = length(varsigma)*vv/2*log(x) - x*sum(1/varsigma)/2 -log(1+x/cc^2) - log(x)/2
                                               
   if (log) return(logf)
   return(exp(logf))
 }, vectorize.args = 'x')
 
 varsigma = rnorm(10)^2
-vv = 1
-cc = 1
+vv = 5
+cc = .1
 py = integrate(function(x) deta(x,varsigma,vv,cc), 0, Inf)
 
 n_samps = 1e5
