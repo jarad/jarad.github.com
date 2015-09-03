@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -107,17 +107,17 @@ Let
 \pause 
 then 
 \[ \begin{array}{rl}
-p(y) &= \int p(y|\phi)p(\phi) d\phi \pause \\
-&= (2\pi\sqrt{C})^{-1/2} \frac{b^a}{\mG(a)} \int \phi^{-1/2} e^{-(y-m)^2/2\phi C} \phi^{-(a+1)} e^{-b/\phi} d\phi \pause\\
-&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \int \phi^{-(a+1/2+1)} e^{-[b+(y-m)^2/2C]/\phi} d\phi \pause\\
-&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \frac{\mG(a+1/2)}{[b+(y-m)^2/2C]^{a+1/2}} \pause\\
-&= \frac{\mG([2a+1]/2)}{\mG(2a/2)\sqrt{2a \pi bC/a}} \left[ 1+\frac{1}{2a}\frac{(y-m)^2}{bC/a} \right]^{-[2a+1]/2} 
+p(\theta) &= \int p(\theta|\phi)p(\phi) d\phi \pause \\
+&= (2\pi\sqrt{C})^{-1/2} \frac{b^a}{\mG(a)} \int \phi^{-1/2} e^{-(\theta-m)^2/2\phi C} \phi^{-(a+1)} e^{-b/\phi} d\phi \pause\\
+&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \int \phi^{-(a+1/2+1)} e^{-[b+(\theta-m)^2/2C]/\phi} d\phi \pause\\
+&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \frac{\mG(a+1/2)}{[b+(\theta-m)^2/2C]^{a+1/2}} \pause\\
+&= \frac{\mG([2a+1]/2)}{\mG(2a/2)\sqrt{2a \pi bC/a}} \left[ 1+\frac{1}{2a}\frac{(\theta-m)^2}{bC/a} \right]^{-[2a+1]/2} 
 \end{array} \]
 \pause
 Thus 
 \[ \theta \sim t_{2a}(m,bC/a) \]
 \pause
-i.e. $\theta$ has a $t$ distribution with $2a$ degrees of freedom, location $m$, and scale (variance) $bC/a$. 
+i.e. $\theta$ has a $t$ distribution with $2a$ degrees of freedom, location $m$, and scale (variance) $bC/a$. \pause Thus if $C=1$, $a=v/2$, and $b=v\tau^2/2$, we have a $t$ distribution with $v$ degrees of freedom, location $m$, and scale $\tau^2$. 
 \end{frame}
 
 
@@ -130,7 +130,7 @@ Let
 then, by equation (4) in Park and Casella (2008),
 \[ \theta \sim La(m,b/\sqrt{C}) \]
 \pause
-where $z=(y-m)/\sqrt{C}$ and $a=1/b$ \pause and thus $\theta$ has a Laplace distribution with location $m$ and scale $b/\sqrt{C}$. 
+where $z=(\theta-m)/\sqrt{C}$ and $a=1/b$ \pause and thus $\theta$ has a Laplace distribution with location $m$ and scale $b/\sqrt{C}$. 
 
 \end{frame}
 
@@ -227,8 +227,8 @@ This is just a normal data model with an unknown variance that has the conjugate
 \[ \sigma^2|\ldots \sim IG(a',b') \]
 where 
 \[ \begin{array}{rl}
-a' &= \sum_{i=1}^\I n_i /2 = n/2\\
-b' &= \sum_{i=1}^\I \sum_{j=1}^{n_i} (y_{ij}-\theta_i)^2/2. 
+a' &= a + \sum_{i=1}^\I n_i /2 = a + n/2\\
+b' &= b + \sum_{i=1}^\I \sum_{j=1}^{n_i} (y_{ij}-\theta_i)^2/2. 
 \end{array} \]
 \end{frame}
 
@@ -241,7 +241,7 @@ b' &= \sum_{i=1}^\I \sum_{j=1}^{n_i} (y_{ij}-\theta_i)^2/2.
 \[ \begin{array}{rl}
 \phi_i &= \tau \\
 \phi_i &\sim Exp(1/2\tau^2) \\
-\phi_i &\sim IG(v/2,\tau^2/2)
+\phi_i &\sim IG(v/2,v\tau^2/2)
 \end{array} \]
 
 The steps that are left are 1) sample $\phi$ and 2) sample $\tau^2$,
@@ -289,10 +289,10 @@ which is the kernel of an inverse Gaussian distribution with mean $\sqrt{1/\tau^
 \begin{frame}
 \frametitle{Sample $\phi$ for $t$ model}
 For the $t$ model, 
-\[ \theta_i \ind N(\mu,\phi_i) \mbox{ and } \phi_i \ind IG(v/2,\tau^2/2), \]
+\[ \theta_i \ind N(\mu,\phi_i) \mbox{ and } \phi_i \ind IG(v/2,v\tau^2/2), \]
 \pause
 so we have 
-\[ \phi_i|\ldots \ind IG([v+1]/2, [\tau^2+(\theta_i-\mu)^2]/2). \]
+\[ \phi_i|\ldots \ind IG([v+1]/2, [v\tau^2+(\theta_i-\mu)^2]/2). \]
 Since this is just $\I$ independent normal data models with a known mean and independent conjugate inverse gamma priors on the variance.
 \end{frame}
 
@@ -352,7 +352,7 @@ Then we calculate $\tau = \sqrt{\eta}$.
 \begin{frame}
 \frametitle{Sample $\tau$ for $t$ model}
 Let 
-\[ \phi_i \sim IG(v/2, \tau^2/2) \mbox{ and } \tau \sim Ca^+(0,c) \]
+\[ \phi_i \sim IG(v/2, v\tau^2/2) \mbox{ and } \tau \sim Ca^+(0,c) \]
 so the full conditional is 
 \[ p(\eta|\ldots) \propto \eta^{\I v/2} e^{-\frac{\eta}{2} \sum_{i=1}^\I \frac{1}{\phi_i}} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2}. \]
 
@@ -380,7 +380,7 @@ Then we calculate $\tau = \sqrt{\eta}$.
 We would also like to consider models with 
 \[ \theta_i \ind \pi \delta_0 + (1-\pi) N(\mu,\phi_i) \]
 where $\phi_i = \tau^2$ corresponds to a normal and 
-\[ \phi_i \ind IG(v/2,\tau^2/2) \]
+\[ \phi_i \ind IG(v/2,v\tau^2/2) \]
 corresponds to a $t$ distribution for the non-zero $\theta_i$. 
 
 \vspace{0.2in} \pause
@@ -399,7 +399,7 @@ To sample $\theta_i$, we calculate
 \frametitle{Dealing with point-mass distributions (cont.)}
 Let 
 \[ \theta_i \ind \pi \delta_0 + (1-\pi) N(\mu,\phi_i) \]
-and independently $\pi \sim Beta(s,f)$, $\mu \sim N(m,C)$, and $\phi_i=\tau^2$ for normal model or $\phi_i \ind IG(v/2,\tau^2/2)$ for the $t$ model. 
+and independently $\pi \sim Beta(s,f)$, $\mu \sim N(m,C)$, and $\phi_i=\tau^2$ for normal model or $\phi_i \ind IG(v/2,v\tau^2/2)$ for the $t$ model. 
 
 \vspace{0.2in} \pause
 
