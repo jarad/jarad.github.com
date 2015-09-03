@@ -1,0 +1,264 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Hierarchical models}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+%\section{Normal hierarchical model}
+\begin{frame}
+\frametitle{Normal hierarchical model}
+
+Let 
+\[ Y_{ij} \ind N(\theta_i, \sigma^2) \]
+for $i=1,\ldots,\I$, $j=1,\ldots,n_i$, and $\sum_{i=1}^\I n_i = n$. \pause Now consider the following model assumptions:
+\begin{itemize}[<+->]
+\item $\theta_i\ind N(\mu,\tau^2)$
+\item $\theta_i\ind La(\mu,\tau)$
+\item $\theta_i\ind t_v(\mu,\tau^2)$
+\item $\theta_i\ind \pi \delta_0 + (1- \pi) N(\mu,\tau^2)$
+\item $\theta_i\ind \pi \delta_0 + (1- \pi) t_v(\mu,\tau^2)$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+To perform a Bayesian analysis, we need a prior on $\mu$, $\tau^2$, and (possibly) $\pi$. 
+
+\end{frame}
+
+
+\section{Scale mixtures of normals}
+\begin{frame}
+\frametitle{Scale mixtures of normals}
+
+Recall that if 
+\[ \theta|\theta \sim N(\theta,V) \mbox{ and } \theta \sim N(m,C) \]
+\pause
+then 
+\[ \theta \pause\sim N(m,V+C).  \]
+\pause
+This is called a location mixture.
+
+\vspace{0.2in} 
+
+Now, if 
+\[ \theta|\theta \sim N(m,C\theta) \]
+\pause
+and we assume a mixing distribution for $\theta$, \pause we have a scale mixture. 
+\pause
+Since the top level distributional assumption is normal, we refer to this as a \alert{scale mixture of normals}. 
+
+\end{frame}
+
+
+
+\subsection{$t$ distribution}
+\begin{frame}
+\frametitle{$t$ distribution}
+
+Let 
+\[ \theta|\varsigma \sim N(m,\varsigma C) \mbox{ and } \varsigma \sim IG(a,b) \]
+\pause 
+then 
+\[ \begin{array}{rl}
+p(y) &= \int p(y|\varsigma)p(\varsigma) d\varsigma \\
+&= (2\pi\sqrt{C})^{-1/2} \frac{b^a}{\mG(a)} \int (\varsigma)^{-1/2} e^{-(y-m)^2/2\varsigma C} (\varsigma)^{-(a+1)} e^{-b/\varsigma} \varsigma \\
+&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \int (\varsigma)^{-(a+1/2+1)} e^{-[b+(y-m)^2/2C]/\varsigma} d\varsigma \\
+&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \frac{\mG(a+1/2)}{[b+(y-m)^2/2C]^{a+1/2}} \\
+&= \frac{\mG([2a+1]/2)}{\mG(2a/2)\sqrt{2a \pi bC/a}} \left[ 1+\frac{1}{2a}\frac{(y-m)^2}{bC/a} \right]^{-[2a+1]/2} 
+\end{array} \]
+\pause
+Thus 
+\[ \theta \sim t_{2a}(m,bC/a) \]
+\pause
+i.e. $\theta$ has a $t$ distribution with $2a$ degrees of freedom, location $m$, and scale (variance) $bC/a$. 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Laplace distribution}
+
+Let 
+\[ \theta|\varsigma \sim N(m,\varsigma C) \mbox{ and } \varsigma \sim Exp(1/2b^2) \]
+\pause 
+then, by equation (4) in Park and Casella (2008),
+\[ \theta \sim La(m,b/\sqrt{C}) \]
+where $z=(y-m)/\sqrt{C}$ and $a=1/b$ and thus $\theta$ has a Laplace distribution with location $m$ and scale $b/\sqrt{C}$. 
+
+\end{frame}
+
+\section{Normal hierarchical model}
+\begin{frame}
+\frametitle{Normal hierarchical model}
+
+Recall our hierarchical model
+\[ Y_{ij} \ind N(\theta_i, \sigma^2) \]
+for $i=1,\ldots,\I$ and $j=1,\ldots,n_i$. \pause Now consider the following model assumptions: \pause
+\begin{itemize}[<+->]
+\item $\theta_i\ind N(\mu,\varsigma_i), \varsigma_i = \tau^2 \pause \implies N(\mu,\tau^2)$ \pause
+\item $\theta_i|\varsigma_i\ind N(\mu,\varsigma_i), \varsigma_i\ind Exp(1/2\tau^2) \pause \implies \theta_i \ind La(\mu,\tau)$ \pause
+\item $\theta_i|\varsigma_i\ind N(\mu,\varsigma_i), \varsigma_i\ind IG(v/2,\tau^2/2) \pause \implies \theta_i \ind t_v(\mu,\tau^2)$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+For simplicity, let's assume $\sigma^2 \sim IG(a,b)$, $p(\mu)\propto 1$, and $\tau \sim Ca^+(0,c)$. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Gibbs sampling}
+
+The following Gibbs sampler will converge to the posterior $p(\theta,\sigma,\mu,\tau|y)$:
+
+\begin{itemize}
+\item Independently, sample $\theta_i \sim p(\theta_i|\ldots)$.
+\item Sample $\sigma \sim p(\sigma|\ldots)$.
+\item Independently, sample $\varsigma_i \sim p(\varsigma_i|\ldots)$.
+\item Sample $\tau \sim p(\tau|\ldots)$.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The first two steps will be common to all models while the last two steps will be unique to the model.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sample $\theta$.}
+
+\[ Y_{ij} \ind N(\theta_i,\sigma^2) \mbox{ and } \theta_i \sim N(\mu,\varsigma_i) \]
+
+\vspace{0.2in} \pause
+
+\[ \begin{array}{rl}
+p(\theta|\ldots) 
+&\propto \left[\prod_{i=1}^\I \prod_{j=1}^{n_i} e^{-(y_{ij}-\theta_i)^2/2\sigma^2} \right] \left[ \prod_{i=1}^\I e^{-(\theta_i-\mu)^2/2\varsigma_i} \right] \\
+&\propto \prod_{i=1}^\I \left[\prod_{j=1}^{n_i} e^{-(y_{ij}-\theta_i)^2/2\sigma^2} \prod_{i=1}^\I e^{-(\theta_i-\mu)^2/2\varsigma_i} \right] 
+\end{array} \]
+\pause
+Thus $\theta_i$ are conditionally independent given everything else. \pause It should be obvious that 
+\[ \theta_i|\ldots \sim \pause N\left(\left[ \frac{\mu}{\varsigma_i} + \frac{n_i}{\sigma^2}\overline{y}_i  \right], \left[\frac{1}{\varsigma_i} + \frac{n_i}{\sigma^2} \right]^{-1} \right) \]
+where $\overline{y}_i = \sum_{j=1}^{n_i} y_{ij} / n_i$.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sample $\sigma^2$.}
+
+\[ Y_{ij} \ind N(\theta_i,\sigma^2) \mbox{ and } \sigma^2 \sim IG(a,b) \]
+
+\vspace{0.2in} \pause
+
+This is just a normal data model with an unknown variance that has the conjugate prior. \pause The only difficulty is that we have several groups here. \pause But very quickly you should be able to determine that 
+\[ \sigma^2|\ldots \sim IG(a',b') \]
+where 
+\[ \begin{array}{rl}
+a' &= \sum_{i=1}^I n_i /2 = n/2\\
+b' &= \sum_{i=1}^I \sum_{j=1}^{n_i} (y_{ij}-\theta_i)^2/2 = SSE/2
+\end{array} \]
+where $SSE$ is the sum of squared errors within each group.
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Sample $\varsigma$ for normal model}
+For normal model, $\varsigma_i = \tau$ and we have $\tau \sim Ca^+(0,c)$, so the full conditional is 
+\[ \begin{array}{rl}
+p(\tau^2|\ldots) &\propto \left[ \prod_{i=1}^\I N(\theta_i; \mu, \tau^2) \right] Ca^+(\tau;0,c) \\
+&\propto (\tau^2)^{-\I/2} e^{-\sum_{i=1}^\I (\theta_i-\mu)^2/2\tau^2} \left[ 1 + \frac{\tau^2}{c^2} \right]^{-1} 
+\end{array} \] 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sample $\varsigma$ for Laplace model}
+For Laplace model, 
+\[ \theta_i \ind N(\mu,\varsigma_i) \mbox{ and } \varsigma_i \ind Exp(1/2\tau^2), \]
+so the full conditional is 
+\[ 
+p(\varsigma|\ldots) \propto \left[ \prod_{i=1}^\I N(\theta_i; \mu, \varsigma_i) Exp(\varsigma_i;1/2\tau^2) \right] 
+\]
+\pause
+So the individual $\varsigma_i$ are conditionally independent. \pause
+\[ \begin{array}{rl}
+p(\varsigma_i|\ldots) &\propto N(\theta_i; \mu, \varsigma_i) Exp(\varsigma_i;1/2\tau^2) \\
+&\propto \varsigma_i^{-1/2} e^{-(\theta_i-\mu)^2/2\varsigma_i} e^{-\varsigma_i/2\tau^2}
+\end{array} \]
+If we perform the transformation $\eta_i = 1/\varsigma_i$, we have 
+\[
+p(\eta_i|\ldots) \propto 
+\]
+ 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sample $\varsigma$ for $t$ model}
+For the $t$ model, 
+\[ \theta_i \ind N(\mu,\varsigma_i) \mbox{ and } \varsigma_i \ind IG(v/2,\tau^2/2), \]
+\pause
+so we have 
+\[ \varsigma_i|\ldots \ind IG([v+1]/2, [\tau^2+(\theta_i-\u)^2]/2). \]
+Since this is just $\I$ independent normal data models with a known mean and independent conjugate inverse gamma priors on the variance.
+\end{frame}
+
+
+\end{document}
