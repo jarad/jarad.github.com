@@ -78,7 +78,7 @@ To perform a Bayesian analysis, we need a prior on $\mu$, $\tau^2$, and (possibl
 \frametitle{Scale mixtures of normals}
 
 Recall that if 
-\[ \theta|\theta \sim N(\theta,V) \mbox{ and } \theta \sim N(m,C) \]
+\[ \theta|\phi \sim N(\phi,V) \mbox{ and } \phi \sim N(m,C) \]
 \pause
 then 
 \[ \theta \pause\sim N(m,V+C).  \]
@@ -88,9 +88,9 @@ This is called a location mixture.
 \vspace{0.2in} 
 
 Now, if 
-\[ \theta|\theta \sim N(m,C\theta) \]
+\[ \theta|\phi \sim N(m,C\phi) \]
 \pause
-and we assume a mixing distribution for $\theta$, \pause we have a scale mixture. 
+and we assume a mixing distribution for $\phi$, \pause we have a scale mixture. 
 \pause
 Since the top level distributional assumption is normal, we refer to this as a \alert{scale mixture of normals}. 
 
@@ -107,10 +107,10 @@ Let
 \pause 
 then 
 \[ \begin{array}{rl}
-p(y) &= \int p(y|\phi)p(\phi) d\phi \\
-&= (2\pi\sqrt{C})^{-1/2} \frac{b^a}{\mG(a)} \int (\phi)^{-1/2} e^{-(y-m)^2/2\phi C} (\phi)^{-(a+1)} e^{-b/\phi} \phi \\
-&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \int (\phi)^{-(a+1/2+1)} e^{-[b+(y-m)^2/2C]/\phi} d\phi \\
-&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \frac{\mG(a+1/2)}{[b+(y-m)^2/2C]^{a+1/2}} \\
+p(y) &= \int p(y|\phi)p(\phi) d\phi \pause \\
+&= (2\pi\sqrt{C})^{-1/2} \frac{b^a}{\mG(a)} \int \phi^{-1/2} e^{-(y-m)^2/2\phi C} \phi^{-(a+1)} e^{-b/\phi} d\phi \pause\\
+&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \int \phi^{-(a+1/2+1)} e^{-[b+(y-m)^2/2C]/\phi} d\phi \pause\\
+&= (2\pi C)^{-1/2} \frac{b^a}{\mG(a)} \frac{\mG(a+1/2)}{[b+(y-m)^2/2C]^{a+1/2}} \pause\\
 &= \frac{\mG([2a+1]/2)}{\mG(2a/2)\sqrt{2a \pi bC/a}} \left[ 1+\frac{1}{2a}\frac{(y-m)^2}{bC/a} \right]^{-[2a+1]/2} 
 \end{array} \]
 \pause
@@ -129,7 +129,8 @@ Let
 \pause 
 then, by equation (4) in Park and Casella (2008),
 \[ \theta \sim La(m,b/\sqrt{C}) \]
-where $z=(y-m)/\sqrt{C}$ and $a=1/b$ and thus $\theta$ has a Laplace distribution with location $m$ and scale $b/\sqrt{C}$. 
+\pause
+where $z=(y-m)/\sqrt{C}$ and $a=1/b$ \pause and thus $\theta$ has a Laplace distribution with location $m$ and scale $b/\sqrt{C}$. 
 
 \end{frame}
 
@@ -141,14 +142,14 @@ Recall our hierarchical model
 \[ Y_{ij} \ind N(\theta_i, \sigma^2) \]
 for $i=1,\ldots,\I$ and $j=1,\ldots,n_i$. \pause Now consider the following model assumptions: \pause
 \begin{itemize}[<+->]
-\item $\theta_i\ind N(\mu,\phi_i), \phi_i = \tau^2 \pause \implies N(\mu,\tau^2)$ \pause
+\item $\theta_i\ind N(\mu,\phi_i), \phi_i = \tau^2 \pause \implies \theta_i \ind N(\mu,\tau^2)$ \pause
 \item $\theta_i|\phi_i\ind N(\mu,\phi_i), \phi_i\ind Exp(1/2\tau^2) \pause \implies \theta_i \ind La(\mu,\tau)$ \pause
-\item $\theta_i|\phi_i\ind N(\mu,\phi_i), \phi_i\ind IG(v/2,\tau^2/2) \pause \implies \theta_i \ind t_v(\mu,\tau^2)$
+\item $\theta_i|\phi_i\ind N(\mu,\phi_i), \phi_i\ind IG(v/2,v\tau^2/2) \pause \implies \theta_i \ind t_v(\mu,\tau^2)$
 \end{itemize}
 
 \vspace{0.2in} \pause
 
-For simplicity, let's assume $\sigma^2 \sim IG(a,b)$, $\mu \sim N(m,C)$, and $\tau \sim Ca^+(0,c)$ and that $\sigma^2$, $\mu$, and $\tau$ are \emph{a priori} independent.. 
+For simplicity, let's assume $\sigma^2 \sim IG(a,b)$, $\mu \sim N(m,C)$, and $\tau \sim Ca^+(0,c)$ and that $\sigma^2$, $\mu$, and $\tau$ are \emph{a priori} independent.
 
 \end{frame}
 
@@ -159,13 +160,13 @@ For simplicity, let's assume $\sigma^2 \sim IG(a,b)$, $\mu \sim N(m,C)$, and $\t
 
 The following Gibbs sampler will converge to the posterior $p(\theta,\sigma,\mu,\phi,\tau|y)$:
 
-\begin{itemize}
+\begin{enumerate}
 \item Sample $\mu\sim p(\mu|\ldots)$.
 \item Independently, sample $\theta_i \sim p(\theta_i|\ldots)$.
 \item Sample $\sigma \sim p(\sigma|\ldots)$.
 \item Independently, sample $\phi_i \sim p(\phi_i|\ldots)$.
 \item Sample $\tau \sim p(\tau|\ldots)$.
-\end{itemize}
+\end{enumerate}
 
 \vspace{0.2in} \pause
 
@@ -188,7 +189,7 @@ Immediately, we should know that
 with 
 \[ \begin{array}{rl}
 C' &= \left(\frac{1}{C} + \sum_{i=1}^\I \frac{1}{\phi_i} \right)^{-1} \\
-m' &= C'\left(\frac{m}{C} + \theta_i\sum_{i=1}^\I \frac{1}{\phi_i} \right)
+m' &= C'\left(\frac{m}{C} + \sum_{i=1}^\I \frac{\theta_i}{\phi_i} \right)
 \end{array} \]
 
 \end{frame}
@@ -205,7 +206,7 @@ m' &= C'\left(\frac{m}{C} + \theta_i\sum_{i=1}^\I \frac{1}{\phi_i} \right)
 \[ \begin{array}{rl}
 p(\theta|\ldots) 
 &\propto \left[\prod_{i=1}^\I \prod_{j=1}^{n_i} e^{-(y_{ij}-\theta_i)^2/2\sigma^2} \right] \left[ \prod_{i=1}^\I e^{-(\theta_i-\mu)^2/2\phi_i} \right] \\
-&\propto \prod_{i=1}^\I \left[\prod_{j=1}^{n_i} e^{-(y_{ij}-\theta_i)^2/2\sigma^2} \prod_{i=1}^\I e^{-(\theta_i-\mu)^2/2\phi_i} \right] 
+&\propto \prod_{i=1}^\I \left[\prod_{j=1}^{n_i} e^{-(y_{ij}-\theta_i)^2/2\sigma^2} e^{-(\theta_i-\mu)^2/2\phi_i} \right] 
 \end{array} \]
 \pause
 Thus $\theta_i$ are conditionally independent given everything else. \pause It should be obvious that 
@@ -226,11 +227,9 @@ This is just a normal data model with an unknown variance that has the conjugate
 \[ \sigma^2|\ldots \sim IG(a',b') \]
 where 
 \[ \begin{array}{rl}
-a' &= \sum_{i=1}^I n_i /2 = n/2\\
-b' &= \sum_{i=1}^I \sum_{j=1}^{n_i} (y_{ij}-\theta_i)^2/2 = SSE/2
+a' &= \sum_{i=1}^\I n_i /2 = n/2\\
+b' &= \sum_{i=1}^\I \sum_{j=1}^{n_i} (y_{ij}-\theta_i)^2/2. 
 \end{array} \]
-where $SSE$ is the sum of squared errors within each group.
-
 \end{frame}
 
 \subsection{Distributional assumption for $\theta_i$}
@@ -262,19 +261,22 @@ For normal model, $\phi_i = \tau$, so we will adress this when we sample $\tau$.
 \frametitle{Sample $\phi$ for Laplace model}
 For Laplace model, 
 \[ \theta_i \ind N(\mu,\phi_i) \mbox{ and } \phi_i \ind Exp(1/2\tau^2), \]
+\pause 
 so the full conditional is 
 \[ 
-p(\phi|\ldots) \propto \left[ \prod_{i=1}^\I N(\theta_i; \mu, \phi_i) Exp(\phi_i;1/2\tau^2) \right] 
+p(\phi|\ldots) \propto \left[ \prod_{i=1}^\I N(\theta_i; \mu, \phi_i) Exp(\phi_i;1/2\tau^2) \right].
 \]
 \pause
 So the individual $\phi_i$ are conditionally independent \pause with
 \[ 
 p(\phi_i|\ldots) \propto N(\theta_i; \mu, \phi_i) Exp(\phi_i;1/2\tau^2) \propto \phi_i^{-1/2} e^{-(\theta_i-\mu)^2/2\phi_i} e^{-\phi_i/2\tau^2}
  \]
-If we perform the transformation $\eta_i = 1/\phi_i$, we have 
+\pause
+If we perform the transformation $\eta_i = 1/\phi_i$, \pause we have 
 \[
 p(\eta_i|\ldots) \propto \eta_i^{-3/2} e^{-\frac{(\theta_i-\mu)^2}{2}\eta_i - \frac{1}{2\tau^2\eta_i}}
 \] 
+\pause
 which is the kernel of an inverse Gaussian distribution with mean $\sqrt{1/\tau^2(\theta_i-\mu)^2}$ and scale $1/\tau^2$ where the parameterization is such that the variance is $\mu^3/\lambda$ (different from the {\tt mgcv::rig} parameterization).
 
 \end{frame}
@@ -303,16 +305,17 @@ Since this is just $\I$ independent normal data models with a known mean and ind
 
 Let 
 \[ \theta_i \ind N(\mu,\tau^2) \mbox{ and } \tau \sim Ca^+(0,c). \]
+\pause
 so the full conditional is 
-\[ p(\eta|\ldots) \propto (\eta)^{-\I/2} e^{-\sum_{i=1}^\I (\theta_i-\mu)^2/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2} \]
+\[ p(\eta|\ldots) \propto \eta^{-\I/2} e^{-\sum_{i=1}^\I (\theta_i-\mu)^2/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2} \]
 where we performed the transformation $\eta = \tau^2$ on the prior.
 
 \vspace{0.1in} \pause
 
-Let's us Metropolis-Hastings with proposal distribution 
-\[  IG\left(\frac{\I}{2}-1, \sum_{i=1}^\I \frac{(\theta_i-\mu)^2}{2}\right) \]
+Let's use Metropolis-Hastings with proposal distribution 
+\[  IG\left(\frac{\I-1}{2}, \sum_{i=1}^\I \frac{(\theta_i-\mu)^2}{2}\right) \]
 and acceptance probability $\min\{1,\rho\}$ where
-\[ \rho = \frac{\left( 1+\eta^*/c^2\right)^{-1} (\eta^*)^{-1/2}}{\left( 1+\eta^{(i)}/c^2\right)^{-1} (\eta^{(i)})^{-1/2}} = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} \sqrt{\frac{\eta^{(i)}}{\eta^*}}\]
+\[ \rho = \frac{\left( 1+\eta^*/c^2\right)^{-1}}{\left( 1+\eta^{(i)}/c^2\right)^{-1}} = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} \]
 where $\eta^{(i)}$ and $\eta^*$ are the current and proposed value respective. 
 
 \vspace{0.1in} \pause
@@ -332,10 +335,10 @@ so the full conditional is
 
 \vspace{0.1in} \pause
 
-Let's us Metropolis-Hastings with proposal distribution 
-\[ IG\left(\I-1, \sum_{i=1}^\I \frac{\phi_i}{2}\right) \]
+Let's use Metropolis-Hastings with proposal distribution 
+\[ IG\left(\I-\frac{1}{2}, \sum_{i=1}^\I \frac{\phi_i}{2}\right) \]
 and acceptance probability $\min\{1,\rho\}$ where again
-\[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} \sqrt{\frac{\eta^{(i)}}{\eta^*}}.\]
+\[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2}.\]
 
 \vspace{0.1in} \pause
 
@@ -355,10 +358,10 @@ so the full conditional is
 
 \vspace{0.1in} \pause
 
-Let's us Metropolis-Hastings with proposal distribution 
-\[ Ga\left(\frac{\I v}{2}+1, \frac{1}{2}\sum_{i=1}^\I \frac{1}{\phi_i}\right) \]
+Let's use Metropolis-Hastings with proposal distribution 
+\[ Ga\left(\frac{\I v + 1}{2}, \frac{1}{2}\sum_{i=1}^\I \frac{1}{\phi_i}\right) \]
 and acceptance probability $\min\{1,\rho\}$ where again
-\[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} \sqrt{\frac{\eta^{(i)}}{\eta^*}}.\]
+\[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} .\]
 
 \vspace{0.1in} \pause
 
@@ -369,6 +372,9 @@ Then we calculate $\tau = \sqrt{\eta}$.
 
 
 \subsection{Point-mass distributions}
+
+
+
 \begin{frame}
 \frametitle{Dealing with point-mass distributions}
 We would also like to consider models with 
@@ -399,7 +405,7 @@ and independently $\pi \sim Beta(s,f)$, $\mu \sim N(m,C)$, and $\phi_i=\tau^2$ f
 
 The full conditional for $\pi$ is
 \[ \pi|\ldots \sim Beta\left(s+\sum_{i=1}^\I \I(\theta_i=0), f+\sum_{i=1}^\I \I(\theta_i\ne 0)\right)\]
-and $\mu$, $\phi_i$, and $\tau^2$ get updated using only those $\theta_i$ that are non-zero. 
+and $\mu$ and $\phi_i$ get updated using only those $\theta_i$ that are non-zero. 
 
 \end{frame}
 
