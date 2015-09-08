@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -60,13 +60,13 @@ set.seed(2)
 	\pause then the posterior is 
 	\[ \begin{array}{rl}
 	p(\beta,\sigma^2|y) &= p(\beta|\sigma^2,y) p(\sigma^2|y) \pause \\
-	\beta|\sigma^2,y &\sim N(\hat{\beta}, \sigma^2 V_\beta) \pause \\
-	\sigma^2|y &\sim \mbox{Inv-}\chi^2(n-k,s^2) \pause \\
-	\beta|y &\sim t_{n-k}(\hat{\beta}, s^2V_{\beta}) \pause \\
+	\beta|\sigma^2,y &\sim N(\hat{\beta}_{MLE}, \sigma^2 V_\beta) \pause \\
+	\sigma^2|y &\sim IG\left(\frac{n-k}{2}, \frac{[n-k]s^2}{2}\right) \pause \\
+	\beta|y &\sim t_{n-k}(\hat{\beta}_{MLE}, s^2V_{\beta}) \pause \\
 	\\
-	\hat{\beta} &= (X'X)^{-1}X^\top y \pause \\
-	V_\beta &= (X^\top X)^{-1} \pause \\
-	s^2 &= \frac{1}{n-k}(y-X\hat{\beta})^\top(y-X\hat{\beta})
+  V_\beta &= (X^\top X)^{-1} \pause \\
+	\hat{\beta}_{MLE} &= V_\beta X^\top y \pause \\
+	s^2 &= \frac{1}{n-k}(y-X\hat{\beta}_{MLE})^\top(y-X\hat{\beta}_{MLE})
 	\end{array} \]
 	\pause The posterior is proper if $n>k$ and rank$(X)=k$. 
 }
@@ -95,16 +95,16 @@ confint(m) # Credible intervals
 
 \subsection{Subjective Bayesian inference}
 \frame{\frametitle{Fully conjugate subjective Bayesian inference}
-	If we assume the following normal-gamma prior,
-	\[ \beta|\sigma^2 \sim N(b_0, \sigma^2 B_0) \qquad \sigma^2 \sim \mbox{Inv-}\chi^2(v_0,s_0^2) \]
+	If we assume the following normal-inverse-gamma prior,
+	\[ \beta|\sigma^2 \sim N(b_0, \sigma^2 B_0) \qquad \sigma^2 \sim IG(a,b) \]
 	\pause then the posterior is 
-	\[ \beta|\sigma^2,y \sim N(b_n, \sigma^2 B_n) \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v_n,s_n^2) \]
+	\[ \beta|\sigma^2,y \sim N(b_n, \sigma^2 B_n) \qquad \sigma^2|y \sim IG(a',b') \]
 	\pause with
 	\[ \begin{array}{rl}
 	B_n^{-1} &= \frac{1}{g}B_0^{-1} + \frac{1}{\sigma^2}X^\top X \\
 	b_n &= B_n^{-1}\left[ \frac{1}{g}B_0^{-1}b_0 + \frac{1}{\sigma^2}X^\top y \right] \\
-	v_n &= v_0+n \\
-	v_ns_n^2 &= v_0s_0^2+(y-X b_0)^\top (XB_0X^\top+\I)^{-1}(y-X b_0) 
+	a' &= a + \frac{n}{2} \\
+	b' &= b + \frac{1}{2}(y-X b_0)^\top (XB_0X^\top+\I)^{-1}(y-X b_0) 
 	\end{array} \]
 }
 
@@ -129,7 +129,7 @@ then
 \item $\beta_1$ is the expected increase in number of chirps (per 15 seconds) for each degree increase in Fahrenheit.
 \end{itemize}
 \vspace{0.2in} \pause
-Based on prior experience the prior $\beta_1\sim N(0,1)$ might be reasonable. 
+Based on prior experience, the prior $\beta_1\sim N(0,1)$ might be reasonable. 
 
 \end{frame}
 
@@ -205,6 +205,9 @@ ggplot(tmp, aes(V, estimate)) +
 @
 \end{frame}
 
+
+
+
 \begin{frame}[fragile]
 \frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
 <<shrinkage2>>=
@@ -223,19 +226,12 @@ ggplot(data.frame(chirps=chirps, temperature=temp), aes(temp, chirps)) +
 \frametitle{Zellner's g-prior}
 
 Let 
-\[ y = \alpha + X\beta + \epsilon, \quad \epsilon \sim N(\sigma^2 \I) \]
-and we assume 
-\[ \beta \sim N\left(b, \sigma^2 g [X^\top X]^{-1}\right) \]
-and independently $p(\alpha,\sigma^2) \propto 1/\sigma^2$. \pause This is known as \alert{Zellner's $g$-prior}. 
+\[ y = X\beta + \epsilon, \quad \epsilon \sim N(\sigma^2 \I). \]
+If we choose the conjugate prior $\beta \sim N(b_0, \sigma^2 B_0)$, we still need to choose $b_0$ and $B_0$. \pause It seems natural to set $b_0=0$ which will shrink the estimates for $\beta$ toward zero, i.e. toward no effect. \pause But how should we choose $B_0$?
 
-\vspace{0.2in} \pause
+\vspace{0.2in} \pause 
 
-Appealling aspects of Zellner's g-prior
-\begin{itemize}
-\item Closed-form posterior
-\item Closed-form marginal likelihood
-\item Automatically scales the prior 
-\end{itemize}
+One option is \alert{Zellner's $g$-prior} where $B_0 = g[X^\top X]^{-1}$ \pause where $g$ is either set or learned.
 
 \end{frame}
 
@@ -246,6 +242,7 @@ Appealling aspects of Zellner's g-prior
 
 Suppose 
 \[ y \sim N(X\beta,\sigma^2\I) \]
+where $X$ is $n\times p$ \pause 
 and you use Zellner's g-prior
 \[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}). \]
 
@@ -259,16 +256,51 @@ The posterior is then
 \end{frame}
 
 
-
+\subsection{Marginal likelihood}
 \begin{frame}
 \frametitle{Marginal likelihood}
 
 The marginal likelihood under Zellner's $g$-prior is 
 \[ \begin{array}{rl}
-p(y) = 
+p(y|g) = \frac{\mG\left(\frac{n-1}{2}\right)}{\pi^{\frac{n+1}{2}}n^{1/2}} ||y-\overline{y}||^{-(n-1)} \frac{(1+g)^{\frac{n-p-1}{2}}}{(1+g[1-R^2])^{\frac{n-1}{2}}}
 \end{array} \]
+where $R^2$ is the coefficient of determination.
+
+\vspace{0.2in} \pause
+
+And thus the Bayes Factor for comparing model 0 to model 1 is 
+\[ BF(M_0:M_1) = \frac{(1+g[1-R_1^2])^{\frac{n-1}{2}}}{(1+g[1-R_0^2])^{\frac{n-1}{2}}} \]
+\pause
+where we used a common $g$ for both models and 
+\begin{itemize}
+\item $R_0^2$ is the coefficient of determination for model 0
+\item $R_1^2$ is the coefficient of determination for model 1
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Why the marginal likelihood?}
+
+By Bayes' rule, we have 
+\[ p(\theta|y,M) = p(y|\theta,M)p(\theta|M)/p(y|M) \]
+\pause
+Rearranging yields
+\[ 
+p(y|M) = p(y|\theta,M)p(\theta|M)/p(\theta|y,M)
+\]
+\pause
+Taking logarithms yields
+\[ 
+\log p(y|M) = \log(y|\theta,M) + \log p(\theta|M) - \log p(\theta|y,M) 
+\]
+\pause
+where $\log(y|\theta,M)$ is the likelihood and $\log p(\theta|M) - \log p(\theta|y,M)$ is the penalty. 
 
 \end{frame}
+
+
 
 
 \begin{frame}
@@ -281,67 +313,133 @@ we need to determine how to set g.
 \vspace{0.2in} \pause
 
 Here are some thoughts:
-\begin{itemize}
-\item $g=1$ puts equal weight to prior and likelihood
-\item $g=n$ means prior has the equivalent weight of 1 observation
-\item $g\to \infty$ recovers a uniform prior
-\item Empirical Bayes estimate of $g$, $\hat{g}_{EB} =\mbox{argmax}_g p(y|g)$ where 
-\[ 
-p(y|g)
-%= \int p(y|\beta,\sigma^2)p(\beta|g,\sigma^2)p(\sigma^2) d\sigma^2 d\beta 
-= \frac{\mathrm{\Gamma}\left(\frac{n-1}{2}\right)}{\pi^{(n+1)/2}n^{1/2}}||y-\overline{y}||^{-(n-1)} \frac{\left(1+g\right)^{(n-1-k)/2}}{\left(1+g(1+R^2))^{(n-1)/2} \right)}
- \]
- where $R^2$ is the usual coefficient of determination. 
-\item Put a prior on $g$ and perform a fully Bayesian analysis.
+\begin{itemize}[<+->]
+\item $g\to 0$ makes posterior equal to the prior, \pause
+\item $g=1$ puts equal weight to prior and likelihood, \pause
+\item $g=n$ means prior has the equivalent weight of 1 observation, \pause
+\item $g\to \infty$ recovers a uniform prior,
+\item empirical Bayes estimate of $g$, $\hat{g}_{EB} =\mbox{argmax}_g p(y|g)$, or 
+\item put a prior on $g$ and perform a fully Bayesian analysis.
 \end{itemize}
 \end{frame}
+
+
+
+\subsection{Model selection}
+\begin{frame}
+\frametitle{Model selection}
+
+If $\beta$ is a vector of length $p$, let $\gamma$ be a vector with binary elements that indicate whether that component of $\beta$ is non-zero, i.e. that explanatory variable is included. \pause For example, 
+\[ \gamma = (1,0,1,1,0,0,0,1) \]
+indicates that $\beta$ is of length 8 and that the first, third, fourth, and eighth elements are non-zero. \pause
+Then we have $X_\gamma$ which indicates the design matrix that only has columns corresponding to those columns in $\gamma$ that are non-zero \pause and $\beta_\gamma$ is the subset of $\beta$ including elements of $\beta$ where $\gamma$ is 1. \pause
+
+\vspace{0.2in} \pause
+
+Now, we have $2^p$ models $M_\gamma$ of the form
+\[ y = X_\gamma \beta_\gamma + \epsilon \]
+where $\epsilon \sim N(0,\sigma^2\I)$. \pause Two special cases are 
+\[ \begin{array}{rl}
+\gamma_{null} &= (0,\ldots,0) \\
+\gamma_{full} &= (1,\ldots,1)
+\end{array} \]
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Model selection (cont.)}
+
+If we want to compare $M_\gamma$ to $M_{\gamma'}$, we can use the Bayes Factor 
+\[ 
+BF(M_\gamma:M_{\gamma'}) = \frac{p(y|M_\gamma)}{p(y|M_{\gamma'})} = \frac{(1+g[1-R_{\gamma'}^2])^{\frac{n-1}{2}}}{(1+g[1-R_\gamma^2])^{\frac{n-1}{2}}}
+\] 
+For some base model, $M_b$, we can calculate 
+\[ 
+BF(M_\gamma:M_b) = \frac{p(y|M_\gamma)}{p(y|M_b)}
+\]
+Then, for any two models, 
+\[
+BF(M_\gamma:M_{\gamma'}) = \frac{BF(M_\gamma:M_b) }{BF(M_{\gamma'}:M_b) }
+\]
+If the base model is the null model, then the common parameters amongst the models are $\sigma^2$ and possibly an intercept $\alpha$. \pause We can place an improper prior on these parameters, typically $p(\alpha,\sigma^2)\propto 1/\sigma^2$. 
+\end{frame}
+
 
 
 \begin{frame}[fragile]
 \frametitle{Zellner's g-prior in R}
 <<echo=TRUE, warning=FALSE, message=FALSE>>=
 library(BMS)
-m = zlm(chirps~temp, g='UIP') # g=n
-summary(m)
-@
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Bayes Factors' for regression model comparison}
-
-Consider two models with design matrices $X_0$and $X_1$ (not including an intercept) and corresponding dimensions $(n,p_0)$ and $(n,p_1)$.  \pause Zellner's g-prior provides a relatively simple way to construct default (but not improper) priors for model comparison. \pause Formally, we compare
-
-\[ \begin{array}{rl}
-y &\sim N(\alpha 1_n + X_0 \beta_0, \sigma^2 \I) \\
-\beta &\sim N(b_0, g_0\sigma^2 [(X_0)'(X_0)]^{-1}) \\
-p(\alpha,\sigma^2) &\propto 1/\sigma^2
-\end{array} \]
-
-and 
-
-\[ \begin{array}{rl}
-y &\sim N(\alpha 1_n + X_1 \beta_1, \sigma^2 \I) \\
-\beta &\sim N(b_1, g_1\sigma^2 [(X_1)'(X_1)]^{-1}) \\
-p(\alpha,\sigma^2) &\propto 1/\sigma^2
-\end{array} \]
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Bayes Factors' for regression model comparison}
-
-The Bayes Factor for comparing these two models is 
-{\tiny
-\[ B_{12}(y) = \frac{(g_1+1)^{-p_1/2}\left[ (n-p_1-1)s_1^2 +\left(\hat{\beta}_1-b_1\right)'(X^1)'X^1\left(\hat{\beta}_1-b_1\right)/(g_1+1)\right]^{-(n-1)/2}}{(g_2+1)^{-p_2/2}\left[ (n-p_2-1)s_2^2 +\left(\hat{\beta}_2-b_2\right)'(X^2)'X^2\left(\hat{\beta}_2-b_2\right)/(g_2+1)\right]^{-(n-1)/2}} \]
-}
-Now, we can set $g_1=g_2$ and calculate Bayes Factors'. \pause 
-
 <<echo=TRUE, warning=FALSE, message=FALSE>>=
 m0 = zlm(chirps~1   , g='UIP') # g=n
 m1 = zlm(chirps~temp, g='UIP') # g=n
 (bf = exp(m1$marg.lik-m0$marg.lik))
 @
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Limiting Bayes Factors}
+
+If the base model is the null model, then 
+\[ 
+BF(M_\gamma:M_{null}) = \frac{(1+g)^{(n-p_\gamma-1)/2}}{(1+g[1-R_\gamma^2])^{(n-1)/2}}
+\]
+where $p_\gamma$ is the number of non-zero elements in $\gamma$, i.e. the number of explanatory variables included in the model.
+
+\vspace{0.2in} \pause 
+
+\begin{itemize}
+\item If $g\to \infty$, then $BF(M_\gamma:M_{null}) \to 0$. \pause (Lindley's Paradox) \pause
+\item If $n\to\infty$, then $BF(M_\gamma:M_{null})\to \infty$. \pause
+\item If $R_\gamma^2$, then $BF(M_\gamma:M_{null}) \to (1+g)^{(n-p_\gamma-1)/2}$. \pause (information paradox)
+\end{itemize}
+
+\pause
+
+If $M_\lambda$ is the true model, we would like 
+\[ 
+BF(M_\lambda:M_\gamma) \stackrel{a.s.}{\longrightarrow} \infty
+\]
+for any other model $M_\gamma$. \pause This is called \alert{model selection consistency}.
+
+\end{frame}
+
+
+
+\subsection{Empirical Bayes}
+\begin{frame}
+\frametitle{Empirical Bayes}
+
+The empirical Bayes approach chooses $g$ such that it maximizes $p(y|M_\gamma,g)$. \pause It turns out that $g_\gamma^{EB} = \max(F_\gamma-1,0)$, where 
+\[ 
+F_\gamma = \frac{R_\gamma^2/p_\gamma}{(1-R_\gamma^2)/(n-p_\gamma-1)}.
+\]
+Plugging this back into the expression for the Bayes Factor, we find that 
+\[ 
+BF^{EB}(M_\gamma:M_{null}) \to \infty
+\]
+as $R_\gamma \to 1$ and thus the Empirical Bayes approach does not suffer from either paradox. \pause Unfortunately, this empirical Bayes approach is not consistent. 
+\end{frame}
+
+
+
+\subsection{Fully Bayesian}
+\begin{frame}
+\frametitle{Fully Bayesian}
+
+Alternatively, we can perform a fully Bayes analysis by putting a prior on $g$. \pause The \alert{Zellner-Siow} prior is 
+\[ g \sim IG\left( \frac{1}{2}, \frac{n}{2} \right) \]
+
+\vspace{0.2in} \pause
+
+For this prior, we have $BF^{EB}(M_\gamma:M_{null}) \to \infty$ as $R_\gamma^2 \to 1$ and thus do not suffer from any paradoxes \pause and we have model selection consistency, i.e. $BF(M_\lambda:M_\gamma) \stackrel{a.s.}{\longrightarrow} \infty$ for true model $M_\lambda$ compared to any other model $M_\gamma$. 
+
+\vspace{0.2in} \pause
+
+There are other priors for $g$ that have these properties.
+
 \end{frame}
 
 
