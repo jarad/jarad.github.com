@@ -64,9 +64,9 @@ set.seed(2)
 	\sigma^2|y &\sim \mbox{Inv-}\chi^2(n-k,s^2) \pause \\
 	\beta|y &\sim t_{n-k}(\hat{\beta}, s^2V_{\beta}) \pause \\
 	\\
-	\hat{\beta} &= (X'X)^{-1}X'y \pause \\
-	V_\beta &= (X'X)^{-1} \pause \\
-	s^2 &= \frac{1}{n-k}(y-X\hat{\beta})'(y-X\hat{\beta})
+	\hat{\beta} &= (X'X)^{-1}X^\top y \pause \\
+	V_\beta &= (X^\top X)^{-1} \pause \\
+	s^2 &= \frac{1}{n-k}(y-X\hat{\beta})^\top(y-X\hat{\beta})
 	\end{array} \]
 	\pause The posterior is proper if $n>k$ and rank$(X)=k$. 
 }
@@ -96,15 +96,15 @@ confint(m) # Credible intervals
 \subsection{Subjective Bayesian inference}
 \frame{\frametitle{Fully conjugate subjective Bayesian inference}
 	If we assume the following normal-gamma prior,
-	\[ \beta|\sigma^2 \sim N(m_0, \sigma^2 C_0) \qquad \sigma^2 \sim \mbox{Inv-}\chi^2(v_0,s_0^2) \]
+	\[ \beta|\sigma^2 \sim N(b_0, \sigma^2 B_0) \qquad \sigma^2 \sim \mbox{Inv-}\chi^2(v_0,s_0^2) \]
 	\pause then the posterior is 
-	\[ \beta|\sigma^2,y \sim N(m_n, \sigma^2 C_n) \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v_n,s_n^2) \]
+	\[ \beta|\sigma^2,y \sim N(b_n, \sigma^2 B_n) \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v_n,s_n^2) \]
 	\pause with
 	\[ \begin{array}{rl}
-	m_n &= m_0 + C_0X'(XC_0X'+\I)^{-1}(y-X m_0) \\
-	C_n &= C_0-C_0X'(XC_0X'+\I)^{-1}XC_0 \\
+	B_n^{-1} &= \frac{1}{g}B_0^{-1} + \frac{1}{\sigma^2}X^\top X \\
+	b_n &= B_n^{-1}\left[ \frac{1}{g}B_0^{-1}b_0 + \frac{1}{\sigma^2}X^\top y \right] \\
 	v_n &= v_0+n \\
-	v_ns_n^2 &= v_0s_0^2+(y-X m_0)'(XC_0X'+\I)^{-1}(y-X m_0) 
+	v_ns_n^2 &= v_0s_0^2+(y-X b_0)^\top (XB_0X^\top+\I)^{-1}(y-X b_0) 
 	\end{array} \]
 }
 
@@ -252,19 +252,23 @@ and you use Zellner's g-prior
 \vspace{0.2in} \pause
 
 The posterior is then 
-\[ \begin{array}{rl}
-\beta|\sigma^2,y &\sim N\left(\frac{g}{g+1}\left(\frac{b_0}{g}+\hat{\beta}\right), \frac{\sigma^2 g}{g+1}(X'X)^{-1} \right) \\
-\sigma^2|y &\sim \mbox{Inv-}\chi^2\left(n, \frac{1}{n}\left[(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)\right]\right)
-\end{array} \]
-with 
-\[ \begin{array}{rl}
-E[\beta|y] &= \frac{g}{g+1}\left( \frac{b_0}{g}+\hat{\beta}\right) \\
-E[\sigma^2|y] &= \frac{(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)}{n-2}
-\end{array} \]
+\[ 
+\beta|\sigma^2,y \sim N\left(\frac{1}{1+g}b_0 + \frac{g}{1+g}\hat{\beta}_{MLE}, \frac{\sigma^2 g}{g+1}(X'X)^{-1} \right) 
+ \]
 
 \end{frame}
 
 
+
+\begin{frame}
+\frametitle{Marginal likelihood}
+
+The marginal likelihood under Zellner's $g$-prior is 
+\[ \begin{array}{rl}
+p(y) = 
+\end{array} \]
+
+\end{frame}
 
 
 \begin{frame}
