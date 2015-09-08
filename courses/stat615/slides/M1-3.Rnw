@@ -1,0 +1,345 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Bayesian regression}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(arm)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\section{Bayesian regression}
+\subsection{Default Bayesian inference}
+\frame{\frametitle{Default Bayesian regression}
+	Assume the standard noninformative prior
+	\[ p(\beta,\sigma^2) \propto 1/\sigma^2 \]
+	\pause then the posterior is 
+	\[ \begin{array}{rl}
+	p(\beta,\sigma^2|y) &= p(\beta|\sigma^2,y) p(\sigma^2|y) \pause \\
+	\beta|\sigma^2,y &\sim N(\hat{\beta}, \sigma^2 V_\beta) \pause \\
+	\sigma^2|y &\sim \mbox{Inv-}\chi^2(n-k,s^2) \pause \\
+	\beta|y &\sim t_{n-k}(\hat{\beta}, s^2V_{\beta}) \pause \\
+	\\
+	\hat{\beta} &= (X'X)^{-1}X'y \pause \\
+	V_\beta &= (X'X)^{-1} \pause \\
+	s^2 &= \frac{1}{n-k}(y-X\hat{\beta})'(y-X\hat{\beta})
+	\end{array} \]
+	\pause The posterior is proper if $n>k$ and rank$(X)=k$. 
+}
+
+
+\subsection{Cricket chirps}
+\begin{frame}[fragile]
+\frametitle{Cricket chirps}
+	As an example, consider the relationship between the number of cricket chirps (in 15 seconds) and temperature (in Fahrenheit). From example in {\tt LearnBayes::blinreg}.
+<<chirps_data, fig.width=8>>=
+chirps=c(20,16.0,19.8,18.4,17.1,15.5,14.7,17.1,15.4,16.2,15,17.2,16,17,14.1)
+temp=c(88.6,71.6,93.3,84.3,80.6,75.2,69.7,82,69.4,83.3,78.6,82.6,80.6,83.5,76.3)
+qplot(temp,chirps)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Default Bayesian regression}
+
+<<lm, echo=TRUE>>=
+summary(m <- lm(chirps~temp))
+confint(m) # Credible intervals
+@
+\end{frame}
+
+
+\subsection{Subjective Bayesian inference}
+\frame{\frametitle{Fully conjugate subjective Bayesian inference}
+	If we assume the following normal-gamma prior,
+	\[ \beta|\sigma^2 \sim N(m_0, \sigma^2 C_0) \qquad \sigma^2 \sim \mbox{Inv-}\chi^2(v_0,s_0^2) \]
+	\pause then the posterior is 
+	\[ \beta|\sigma^2,y \sim N(m_n, \sigma^2 C_n) \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v_n,s_n^2) \]
+	\pause with
+	\[ \begin{array}{rl}
+	m_n &= m_0 + C_0X'(XC_0X'+\I)^{-1}(y-X m_0) \\
+	C_n &= C_0-C_0X'(XC_0X'+\I)^{-1}XC_0 \\
+	v_n &= v_0+n \\
+	v_ns_n^2 &= v_0s_0^2+(y-X m_0)'(XC_0X'+\I)^{-1}(y-X m_0) 
+	\end{array} \]
+}
+
+
+
+\begin{frame}
+\frametitle{Information about chirps per 15 seconds}
+
+Let
+\begin{itemize}
+\item $Y_i$ is the average number of chirps per 15 seconds and 
+\item $X_i$ is the temperature in Fahrenheit.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+And we assume 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+then 
+\begin{itemize}
+\item $\beta_0$ is the expected number of chirps at 0 degrees Fahrenheit
+\item $\beta_1$ is the expected increase in number of chirps (per 15 seconds) for each degree increase in Fahrenheit.
+\end{itemize}
+\vspace{0.2in} \pause
+Based on prior experience the prior $\beta_1\sim N(0,1)$ might be reasonable. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Subjective Bayesian regression}
+<<subjective, echo=TRUE, warning=FALSE>>=
+m = arm::bayesglm(chirps~temp, 
+                  prior.mean.for.intercept  = 0,   # E[\beta_0]
+                  prior.scale.for.intercept = 10,  # SD[\beta_0]
+                  prior.df.for.intercept    = Inf, # normal prior for \beta_0
+                  prior.mean  = 0,                 # E[\beta_1]
+                  prior.scale = 1,                 # SD[\beta_1]
+                  prior.df    = Inf,               # normal prior
+                  scaled = TRUE)                   # scale explanatory variables
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Subjective Bayesian regression}
+<<subjective2, echo=TRUE, warning=FALSE>>=
+summary(m)
+@
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Subjective vs Default}
+<<t-distribution, message=FALSE, echo=TRUE>>=
+# default analysis
+tmp = lm(chirps~temp)
+tmp$coefficients
+confint(tmp)
+
+# Subjective analysis
+m$coefficients
+confint(m)
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Subjective vs Default}
+<<t-distribution_fit, message=FALSE, fig.width=8>>=
+qplot(temp, chirps) +
+  geom_smooth(method='lm',formula=y~x, se=FALSE, color='red', linetype=2, size=2) + 
+  geom_abline(intercept=m$coefficients[1], slope=m$coefficients[2], color='blue', linetype=3, size=2)
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
+<<shrinkage, fig.width=8>>=
+d = ddply(data.frame(V=10^seq(-2,2,by=0.2)), .(V), function(x) {
+  m = bayesglm(chirps~temp, prior.mean=0, prior.scale=x$V, prior.df=Inf)
+  data.frame(beta0=m$coefficients[1], beta1=m$coefficients[2])
+})
+tmp = melt(d, id="V", value.name="estimate")
+ggplot(tmp, aes(V, estimate)) +
+  geom_line() +
+  scale_x_log10() + 
+  facet_wrap(~variable, scales='free')
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
+<<shrinkage2>>=
+ggplot(data.frame(chirps=chirps, temperature=temp), aes(temp, chirps)) + 
+  geom_point() + 
+  geom_abline(data=d, aes(intercept=beta0, slope=beta1, color=V)) + 
+  scale_colour_gradient(trans = "log10")
+@
+\end{frame}
+
+
+
+
+\section{Zellner's g-prior}
+\begin{frame}
+\frametitle{Zellner's g-prior}
+
+Let 
+\[ y = \alpha + X\beta + \epsilon, \quad \epsilon \sim N(\sigma^2 \I) \]
+and we assume 
+\[ \beta \sim N\left(b, \sigma^2 g [X^\top X]^{-1}\right) \]
+and independently $p(\alpha,\sigma^2) \propto 1/\sigma^2$. \pause This is known as \alert{Zellner's $g$-prior}. 
+
+\vspace{0.2in} \pause
+
+Appealling aspects of Zellner's g-prior
+\begin{itemize}
+\item Closed-form posterior
+\item Closed-form marginal likelihood
+\item Automatically scales the prior 
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Zellner's g-prior posterior}
+
+Suppose 
+\[ y \sim N(X\beta,\sigma^2\I) \]
+and you use Zellner's g-prior
+\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}). \]
+
+\vspace{0.2in} \pause
+
+The posterior is then 
+\[ \begin{array}{rl}
+\beta|\sigma^2,y &\sim N\left(\frac{g}{g+1}\left(\frac{b_0}{g}+\hat{\beta}\right), \frac{\sigma^2 g}{g+1}(X'X)^{-1} \right) \\
+\sigma^2|y &\sim \mbox{Inv-}\chi^2\left(n, \frac{1}{n}\left[(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)\right]\right)
+\end{array} \]
+with 
+\[ \begin{array}{rl}
+E[\beta|y] &= \frac{g}{g+1}\left( \frac{b_0}{g}+\hat{\beta}\right) \\
+E[\sigma^2|y] &= \frac{(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)}{n-2}
+\end{array} \]
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Setting $g$}
+
+In Zellner's g-prior, 
+\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}), \]
+we need to determine how to set g.
+
+\vspace{0.2in} \pause
+
+Here are some thoughts:
+\begin{itemize}
+\item $g=1$ puts equal weight to prior and likelihood
+\item $g=n$ means prior has the equivalent weight of 1 observation
+\item $g\to \infty$ recovers a uniform prior
+\item Empirical Bayes estimate of $g$, $\hat{g}_{EB} =\mbox{argmax}_g p(y|g)$ where 
+\[ 
+p(y|g)
+%= \int p(y|\beta,\sigma^2)p(\beta|g,\sigma^2)p(\sigma^2) d\sigma^2 d\beta 
+= \frac{\mathrm{\Gamma}\left(\frac{n-1}{2}\right)}{\pi^{(n+1)/2}n^{1/2}}||y-\overline{y}||^{-(n-1)} \frac{\left(1+g\right)^{(n-1-k)/2}}{\left(1+g(1+R^2))^{(n-1)/2} \right)}
+ \]
+ where $R^2$ is the usual coefficient of determination. 
+\item Put a prior on $g$ and perform a fully Bayesian analysis.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Zellner's g-prior in R}
+<<echo=TRUE, warning=FALSE, message=FALSE>>=
+library(BMS)
+m = zlm(chirps~temp, g='UIP') # g=n
+summary(m)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bayes Factors' for regression model comparison}
+
+Consider two models with design matrices $X_0$and $X_1$ (not including an intercept) and corresponding dimensions $(n,p_0)$ and $(n,p_1)$.  \pause Zellner's g-prior provides a relatively simple way to construct default (but not improper) priors for model comparison. \pause Formally, we compare
+
+\[ \begin{array}{rl}
+y &\sim N(\alpha 1_n + X_0 \beta_0, \sigma^2 \I) \\
+\beta &\sim N(b_0, g_0\sigma^2 [(X_0)'(X_0)]^{-1}) \\
+p(\alpha,\sigma^2) &\propto 1/\sigma^2
+\end{array} \]
+
+and 
+
+\[ \begin{array}{rl}
+y &\sim N(\alpha 1_n + X_1 \beta_1, \sigma^2 \I) \\
+\beta &\sim N(b_1, g_1\sigma^2 [(X_1)'(X_1)]^{-1}) \\
+p(\alpha,\sigma^2) &\propto 1/\sigma^2
+\end{array} \]
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Bayes Factors' for regression model comparison}
+
+The Bayes Factor for comparing these two models is 
+{\tiny
+\[ B_{12}(y) = \frac{(g_1+1)^{-p_1/2}\left[ (n-p_1-1)s_1^2 +\left(\hat{\beta}_1-b_1\right)'(X^1)'X^1\left(\hat{\beta}_1-b_1\right)/(g_1+1)\right]^{-(n-1)/2}}{(g_2+1)^{-p_2/2}\left[ (n-p_2-1)s_2^2 +\left(\hat{\beta}_2-b_2\right)'(X^2)'X^2\left(\hat{\beta}_2-b_2\right)/(g_2+1)\right]^{-(n-1)/2}} \]
+}
+Now, we can set $g_1=g_2$ and calculate Bayes Factors'. \pause 
+
+<<echo=TRUE, warning=FALSE, message=FALSE>>=
+m0 = zlm(chirps~1   , g='UIP') # g=n
+m1 = zlm(chirps~temp, g='UIP') # g=n
+(bf = exp(m1$marg.lik-m0$marg.lik))
+@
+\end{frame}
+
+
+
+\end{document}
