@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -53,6 +53,33 @@ set.seed(2)
 \frame{\maketitle}
 
 \section{Bayesian regression}
+\begin{frame}
+\frametitle{Bayesian regression}
+
+Consider the model 
+\[ y = X\beta + \epsilon \]
+with 
+\[ \epsilon \sim N(0,\sigma^2 \I) \]
+where 
+\begin{itemize}
+\item $y$ is a vector of length $n$
+\item $\beta$ is an unknown vector of length $p$
+\item $X$ is a known $n\times p$ design matrix 
+\item $\sigma^2$ is an unknown scalar
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+For a given design matrix $X$, we are interested in the posterior 
+\[ p(\beta,\sigma^2|y), \]
+\pause
+but we may also be interested in which columns of $X$ should be included, i.e. what explanatory variables should we keep in the model.
+
+\end{frame}
+
+
+
+
 \subsection{Default Bayesian inference}
 \frame{\frametitle{Default Bayesian regression}
 	Assume the standard noninformative prior
@@ -61,18 +88,42 @@ set.seed(2)
 	\[ \begin{array}{rl}
 	p(\beta,\sigma^2|y) &= p(\beta|\sigma^2,y) p(\sigma^2|y) \pause \\
 	\beta|\sigma^2,y &\sim N(\hat{\beta}_{MLE}, \sigma^2 V_\beta) \pause \\
-	\sigma^2|y &\sim IG\left(\frac{n-k}{2}, \frac{[n-k]s^2}{2}\right) \pause \\
-	\beta|y &\sim t_{n-k}(\hat{\beta}_{MLE}, s^2V_{\beta}) \pause \\
+	\sigma^2|y &\sim IG\left(\frac{n-p}{2}, \frac{[n-p]s^2}{2}\right) \pause \\
+	\beta|y &\sim t_{n-p}(\hat{\beta}_{MLE}, s^2V_{\beta}) \pause \\
 	\\
   V_\beta &= (X^\top X)^{-1} \pause \\
 	\hat{\beta}_{MLE} &= V_\beta X^\top y \pause \\
-	s^2 &= \frac{1}{n-k}(y-X\hat{\beta}_{MLE})^\top(y-X\hat{\beta}_{MLE})
+	s^2 &= \frac{1}{n-p}(y-X\hat{\beta}_{MLE})^\top(y-X\hat{\beta}_{MLE})
 	\end{array} \]
-	\pause The posterior is proper if $n>k$ and rank$(X)=k$. 
+	\pause The posterior is proper if $n>p$ and rank$(X)=p$. 
 }
 
 
+
+
 \subsection{Cricket chirps}
+\begin{frame}
+\frametitle{Information about chirps per 15 seconds}
+
+Let
+\begin{itemize}
+\item $Y_i$ is the average number of chirps per 15 seconds and 
+\item $X_i$ is the temperature in Fahrenheit.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+And we assume 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+then 
+\begin{itemize}
+\item $\beta_0$ is the expected number of chirps at 0 degrees Fahrenheit
+\item $\beta_1$ is the expected increase in number of chirps (per 15 seconds) for each degree increase in Fahrenheit.
+\end{itemize}
+
+\end{frame}
+
+
 \begin{frame}[fragile]
 \frametitle{Cricket chirps}
 	As an example, consider the relationship between the number of cricket chirps (in 15 seconds) and temperature (in Fahrenheit). From example in {\tt LearnBayes::blinreg}.
@@ -82,6 +133,9 @@ temp=c(88.6,71.6,93.3,84.3,80.6,75.2,69.7,82,69.4,83.3,78.6,82.6,80.6,83.5,76.3)
 qplot(temp,chirps)
 @
 \end{frame}
+
+
+
 
 \begin{frame}[fragile]
 \frametitle{Default Bayesian regression}
@@ -101,13 +155,12 @@ confint(m) # Credible intervals
 	\[ \beta|\sigma^2,y \sim N(b_n, \sigma^2 B_n) \qquad \sigma^2|y \sim IG(a',b') \]
 	\pause with
 	\[ \begin{array}{rl}
-	B_n^{-1} &= \frac{1}{g}B_0^{-1} + \frac{1}{\sigma^2}X^\top X \\
-	b_n &= B_n^{-1}\left[ \frac{1}{g}B_0^{-1}b_0 + \frac{1}{\sigma^2}X^\top y \right] \\
+	B_n^{-1} &= B_0^{-1} + \frac{1}{\sigma^2}X^\top X \\
+	b_n &= B_n^{-1}\left[ B_0^{-1}b_0 + \frac{1}{\sigma^2}X^\top y \right] \\
 	a' &= a + \frac{n}{2} \\
 	b' &= b + \frac{1}{2}(y-X b_0)^\top (XB_0X^\top+\I)^{-1}(y-X b_0) 
 	\end{array} \]
 }
-
 
 
 \begin{frame}
@@ -128,10 +181,11 @@ then
 \item $\beta_0$ is the expected number of chirps at 0 degrees Fahrenheit
 \item $\beta_1$ is the expected increase in number of chirps (per 15 seconds) for each degree increase in Fahrenheit.
 \end{itemize}
-\vspace{0.2in} \pause
-Based on prior experience, the prior $\beta_1\sim N(0,1)$ might be reasonable. 
+
+Perhaps a reasonable prior is $p(\beta_0,\beta_1,\sigma^2) \propto N(\beta_0;0,10^2) N(\beta_1;0,1^2) \frac{1}{\sigma^2}$.
 
 \end{frame}
+
 
 
 \begin{frame}[fragile]
@@ -144,7 +198,7 @@ m = arm::bayesglm(chirps~temp,
                   prior.mean  = 0,                 # E[\beta_1]
                   prior.scale = 1,                 # SD[\beta_1]
                   prior.df    = Inf,               # normal prior
-                  scaled = TRUE)                   # scale explanatory variables
+                  scaled = FALSE)                  # scale prior?
 @
 \end{frame}
 
@@ -244,7 +298,8 @@ Suppose
 \[ y \sim N(X\beta,\sigma^2\I) \]
 where $X$ is $n\times p$ \pause 
 and you use Zellner's g-prior
-\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}). \]
+\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}) \]
+and independently assume $p(\sigma^2) \propto 1/\sigma^2$. 
 
 \vspace{0.2in} \pause
 
@@ -256,27 +311,47 @@ The posterior is then
 \end{frame}
 
 
+
+\begin{frame}
+\frametitle{Setting $g$}
+
+In Zellner's g-prior, 
+\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}), p(\sigma^2)\propto 1/\sigma^2 \]
+we need to determine how to set g.
+
+\vspace{0.2in} \pause
+
+Here are some thoughts:
+\begin{itemize}[<+->]
+\item $g\to 0$ makes posterior equal to the prior, \pause
+\item $g=1$ puts equal weight to prior and likelihood, \pause
+\item $g=n$ means prior has the equivalent weight of 1 observation, \pause
+\item $g\to \infty$ recovers a uniform prior,
+\item empirical Bayes estimate of $g$, $\hat{g}_{EB} =\mbox{argmax}_g p(y|g)$, or 
+\item put a prior on $g$ and perform a fully Bayesian analysis.
+\end{itemize}
+\end{frame}
+
+
+
+
+
 \subsection{Marginal likelihood}
 \begin{frame}
 \frametitle{Marginal likelihood}
 
 The marginal likelihood under Zellner's $g$-prior is 
 \[ \begin{array}{rl}
-p(y|g) = \frac{\mG\left(\frac{n-1}{2}\right)}{\pi^{\frac{n+1}{2}}n^{1/2}} ||y-\overline{y}||^{-(n-1)} \frac{(1+g)^{\frac{n-p-1}{2}}}{(1+g[1-R^2])^{\frac{n-1}{2}}}
+p(y|g) = \frac{\mG\left(\frac{n-1}{2}\right)}{\pi^{\frac{n-1}{2}}n^{1/2}} ||y-\overline{y}||^{-(n-1)} \frac{(1+g)^{\frac{n-p-1}{2}}}{(1+g[1-R^2])^{\frac{n-1}{2}}}
 \end{array} \]
 where $R^2$ is the coefficient of determination.
 
 \vspace{0.2in} \pause
 
-And thus the Bayes Factor for comparing model 0 to model 1 is 
-\[ BF(M_0:M_1) = \frac{(1+g[1-R_1^2])^{\frac{n-1}{2}}}{(1+g[1-R_0^2])^{\frac{n-1}{2}}} \]
-\pause
-where we used a common $g$ for both models and 
-\begin{itemize}
-\item $R_0^2$ is the coefficient of determination for model 0
-\item $R_1^2$ is the coefficient of determination for model 1
-\end{itemize}
+We use the marginal likelihood as evidence in favor of the model, i.e. when comparing models those with higher marginal likelihoods should be prefered over the rest.
 \end{frame}
+
+
 
 
 
@@ -303,25 +378,6 @@ where $\log(y|\theta,M)$ is the likelihood and $\log p(\theta|M) - \log p(\theta
 
 
 
-\begin{frame}
-\frametitle{Setting $g$}
-
-In Zellner's g-prior, 
-\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}), \]
-we need to determine how to set g.
-
-\vspace{0.2in} \pause
-
-Here are some thoughts:
-\begin{itemize}[<+->]
-\item $g\to 0$ makes posterior equal to the prior, \pause
-\item $g=1$ puts equal weight to prior and likelihood, \pause
-\item $g=n$ means prior has the equivalent weight of 1 observation, \pause
-\item $g\to \infty$ recovers a uniform prior,
-\item empirical Bayes estimate of $g$, $\hat{g}_{EB} =\mbox{argmax}_g p(y|g)$, or 
-\item put a prior on $g$ and perform a fully Bayesian analysis.
-\end{itemize}
-\end{frame}
 
 
 
@@ -350,19 +406,19 @@ where $\epsilon \sim N(0,\sigma^2\I)$. \pause Two special cases are
 \begin{frame}
 \frametitle{Model selection (cont.)}
 
-If we want to compare $M_\gamma$ to $M_{\gamma'}$, we can use the Bayes Factor 
+If we want to compare $M_\gamma$ to $M_{null}$ using a common $g$, we can use the Bayes Factor 
 \[ 
-BF(M_\gamma:M_{\gamma'}) = \frac{p(y|M_\gamma)}{p(y|M_{\gamma'})} = \frac{(1+g[1-R_{\gamma'}^2])^{\frac{n-1}{2}}}{(1+g[1-R_\gamma^2])^{\frac{n-1}{2}}}
+BF(M_\gamma:M_{null}) = \frac{p(y|M_\gamma,g)}{p(y|M_{null},g)} = \frac{(1+g)^{\frac{n-p_{\gamma}-1}{2}}}{(1+g[1-R_\gamma^2])^{\frac{n-1}{2}}}
 \] 
-For some base model, $M_b$, we can calculate 
-\[ 
-BF(M_\gamma:M_b) = \frac{p(y|M_\gamma)}{p(y|M_b)}
-\]
-Then, for any two models, 
+
+Then, for any two models with a common $g$, we can compare these models using 
+{\small
 \[
-BF(M_\gamma:M_{\gamma'}) = \frac{BF(M_\gamma:M_b) }{BF(M_{\gamma'}:M_b) }
+BF(M_\gamma:M_{\gamma'}) = \frac{BF(M_\gamma:M_{null}) }{BF(M_{\gamma'}:M_{null})} = \frac{p(y|M_\gamma,g)/p(y|M_{null},g)}{p(y|M_{\gamma'},g)/p(y|M_{null},g)} = \frac{p(y|M_\gamma,g)}{p(y|M_{\gamma'},g)}
 \]
-If the base model is the null model, then the common parameters amongst the models are $\sigma^2$ and possibly an intercept $\alpha$. \pause We can place an improper prior on these parameters, typically $p(\alpha,\sigma^2)\propto 1/\sigma^2$. 
+}
+\pause
+If the base model is the null model, then the common parameters amongst the models are $\sigma^2$ and possibly an intercept $\alpha$. \pause We can place an improper prior on these parameters, typically $p(\alpha,\sigma^2)\propto 1/\sigma^2$, and not affect the Bayes Factors.
 \end{frame}
 
 
@@ -371,12 +427,23 @@ If the base model is the null model, then the common parameters amongst the mode
 \frametitle{Zellner's g-prior in R}
 <<echo=TRUE, warning=FALSE, message=FALSE>>=
 library(BMS)
-<<echo=TRUE, warning=FALSE, message=FALSE>>=
 m0 = zlm(chirps~1   , g='UIP') # g=n
-m1 = zlm(chirps~temp, g='UIP') # g=n
+m1 = zlm(chirps~scale(temp), g='UIP') # g=n
 (bf = exp(m1$marg.lik-m0$marg.lik))
+summary(m1)
 @
 \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Zellner's g-prior in R}
+<<echo=TRUE, warning=FALSE, message=FALSE>>=
+library(bayess)
+m = BayesReg(chirps, temp, g=length(chirps)) # explanatory variables are scaled
+@
+\end{frame}
+
 
 
 \begin{frame}
