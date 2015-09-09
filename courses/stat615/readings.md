@@ -19,5 +19,5 @@ I will put readings here that are relevant to the lectures.
 - [Hamiltonian Monte Carlo](http://www.cs.toronto.edu/~radford/ftp/ham-mcmc.pdf)
 - [Handling Sparsity via the Horseshoe](http://machinelearning.wustl.edu/mlpapers/paper_files/AISTATS09_CarvalhoPS.pdf)
 - [The Horseshoe Estimator for Sparse Signals](http://biomet.oxfordjournals.org/content/early/2010/04/28/biomet.asq017.abstract)
-
+- [Bayesian Model Averaging: A Tutorial](http://www.jstor.org/stable/2676803)
 
