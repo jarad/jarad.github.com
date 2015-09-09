@@ -1,0 +1,155 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Bayesian model averaging}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(arm)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\section{Bayesian model averaging}
+\begin{frame}
+\frametitle{Bayesian model averaging}
+
+Let $\{M_\gamma: \gamma \in \mG\}$ indicate a set of models for a particular data set $y$. \pause If $\Delta$ is a quantity of interest, e.g. effect size, a future observable, or the utility of a course of action, then its posterior distribution is 
+\[ 
+p(\Delta|y) = \sum_{\gamma\in\mG} p(\Delta|M_\gamma, y) p(M_\gamma|y)  
+\]
+where 
+\[ 
+p(M_\gamma|y) = \frac{p(y|M_\gamma)p(M_\gamma)}{\sum_{\lambda\in \mG} p(M_\lambda)}
+\]
+and 
+\[
+p(y|M_\gamma) = \int p(y|\theta_\gamma,M_\gamma) p(\theta_\gamma|M_\gamma) d\theta_\gamma
+\]
+where $\theta_\gamma$ is the set of parameters in model $M_\gamma$. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Difficulties with BMA}
+
+\begin{itemize}
+\item Evaluating the summation since the cardinality of $\mG$ might be huge.
+\item Calculating the marginal likelihood.
+\item Specifying the prior over models.
+\item Choosing the class of models to average over.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Reducing cardinality}
+\begin{frame}
+\frametitle{Reducing cardinality}
+
+Rather than summing over $\mG$, we can only include those models whose posterior probability is sufficiently large 
+\[
+\mathcal{A} = \left\{ M_\gamma: \frac{\max_\lambda p(M_\lambda|y)}{p(M_\gamma|y)} \le C\right\}
+\]
+\pause
+relative to other models where $C$ is chosen by the researcher. \pause Also, appealing to Occam's razor, we should exclude complex models which receive less support than sub-models of that complex model\pause, i.e. 
+\[ 
+\mathcal{B} = \left\{ M_\gamma: \forall M_\lambda \in \mathcal{A}, M_\lambda \subset M_\gamma, \frac{p(M_\lambda|y)}{p(M_\gamma|y)} < 1\right\}
+\]
+\pause 
+So, we typically sum over the smaller set of models $\mG' = \mathcal{A}\setminus \mathcal{B}$. 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Using MCMC to search through models}
+
+Construct a neighborhood around $M_\gamma$, call it $nbh(M_\gamma)$. \pause Now construct a transition matrix $q$ such that 
+\[ 
+q(M^*|M^{(i)}) = \left\{ \begin{array}{cl}
+0 & \forall M^* \notin nbh(M^{(i)}) \\
+\frac{1}{|nbh(M^{(i)})|} & \forall M^* \in nbh(M^{(i)})
+\end{array}\right.
+\]
+\pause
+Set $M^{(i+1)} = M^*$ with probability $\min\{1,\rho(M^{(i)},M^*)\}$ where 
+\[ 
+\rho(M^{(i)},M^*) = \frac{p(M^*|y)}{\rho(M^{(i)}|y)} \frac{|nbh(M^{(i)})|}{|nbh(M^*)|}
+\]
+and otherwise set $M^{(i+1)} = M^{(i)}$. \pause This Markov chain converges to draws from $p(M_\gamma|y)$ and therefore can estimate posterior model probabilities. 
+
+\end{frame}
+
+
+\subsection{Bayesian regression}
+\begin{frame}
+\frametitle{Bayesian regression}
+
+Consider the model $M_\gamma$:
+\[ y = X_\gamma\beta_\gamma + \epsilon \]
+with 
+\[ \epsilon \sim N(0,\sigma^2 \I) \]
+where 
+\begin{itemize}
+\item $y$ is a vector of length $n$
+\item $\gamma$ is a binary vector indicating which explanatory variables are included in model $M_\gamma$
+\item $\beta_\gamma$ is an unknown vector of length $p_\gamma$
+\item $X_\gamma$ is a known $n\times p_\gamma$ design matrix including those columns indicated by $\gamma$
+\item $\sigma^2$ is an unknown scalar
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{BMA in regression}
+
+
+
+\end{frame}
+
+
+
+\end{document}
