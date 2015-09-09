@@ -23,7 +23,7 @@ The required textbook for the course is [Bayesian Data Analysis (3rd edition)](h
 
 - [Slides](slides.html)
 - [Textbook](textbook.html)
-- [Assignments](assignments.html)
+- [Readings](readings.html)
 
 ## Course Description
 
