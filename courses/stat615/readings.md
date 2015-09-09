@@ -1,20 +1,23 @@
 ---
 layout: page
 title: STAT 615
-tagline: Assignments
+tagline: readings
 ---
 {% include JB/setup %}
 
-I will post lecture slides here. 
+# Relevant Readings
 
-# Readings
+I will put readings here that are relevant to the lectures.
 
-- Week 2: Ch 2 & 5 of BDA3
-- Week 3: Ch 14 & 15 of BDA3, [Ridge Regression in Practice](http://www.tandfonline.com/doi/abs/10.1080/00031305.1975.10479105), [Bayesian LASSO](http://www.stat.ufl.edu/~casella/Papers/Lasso.pdf), [g-prior](http://www.jstor.org/stable/2348164)
-- Week 4: Ch 12 of BDA3, [Hamiltonian Monte Carlo](http://www.cs.toronto.edu/~radford/ftp/ham-mcmc.pdf), [Horseshoe prior](http://machinelearning.wustl.edu/mlpapers/paper_files/AISTATS09_CarvalhoPS.pdf) 
+## Hierarchical (linear) models
 
-# Article summary
-
-- [Horseshoe prior](http://machinelearning.wustl.edu/mlpapers/paper_files/AISTATS09_CarvalhoPS.pdf) due 17 Sep
+- BDA3 Chapters 2,5,12,14,15
+- [Ridge Regression in Practice](http://www.tandfonline.com/doi/abs/10.1080/00031305.1975.10479105)
+- [Bayesian LASSO](http://www.stat.ufl.edu/~casella/Papers/Lasso.pdf)
+- [Zellner's g-prior](http://www.jstor.org/stable/2348164)
+- [Mixtures of g Priors for Bayesian Variable Selection](http://amstat.tandfonline.com/doi/abs/10.1198/016214507000001337)
+- [Hamiltonian Monte Carlo](http://www.cs.toronto.edu/~radford/ftp/ham-mcmc.pdf)
+- [Handling Sparsity via the Horseshoe](http://machinelearning.wustl.edu/mlpapers/paper_files/AISTATS09_CarvalhoPS.pdf)
+- [The Horseshoe Estimator for Sparse Signals](http://biomet.oxfordjournals.org/content/early/2010/04/28/biomet.asq017.abstract)
 
 
