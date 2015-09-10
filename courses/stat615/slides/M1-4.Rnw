@@ -43,7 +43,6 @@ library(ggplot2)
 library(plyr)
 library(dplyr)
 library(reshape2)
-library(arm)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -69,6 +68,28 @@ and
 p(y|M_\gamma) = \int p(y|\theta_\gamma,M_\gamma) p(\theta_\gamma|M_\gamma) d\theta_\gamma
 \]
 where $\theta_\gamma$ is the set of parameters in model $M_\gamma$. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bayesian model averaged moments}
+
+Since $p(\Delta|y)$ is a discrete mixture, we may be interested in simplifying inference concerning $\Delta$ to a couple of moments. 
+\pause
+Let $\hat{\Delta}_\gamma = E[\Delta|y,M_\gamma]$. 
+\pause 
+Then the expectation is 
+\[ 
+E[\Delta|y] = \sum_{\gamma\in\mG} \hat{\Delta}_\gamma p(M_\gamma|y) 
+\]
+\pause
+and the variance is 
+\[ 
+V[\Delta|y] = \left[ \sum_{\gamma\in\mG} (Var[\Delta|y,M_\gamma) + \hat{\Delta}_\gamma^2) p(M_\gamma|y) \right] - E[\Delta|y]^2
+\]
+\pause
+The appealing aspect here is that the moments only depend on the moments from each individual model.
 
 \end{frame}
 
@@ -104,6 +125,21 @@ So, we typically sum over the smaller set of models $\mG' = \mathcal{A}\setminus
 \end{frame}
 
 
+
+\begin{frame}
+\frametitle{Searching through models}
+
+One approach is to search through models and keep a list of the best models. \pause To speed up the search the following criteria can be used to decide what models should be kept in $\mG'$: \pause
+
+\begin{itemize}
+\item When comparing two nested models, if a simpler model is rejected, then all submodels of the simpler model are rejected. \pause
+\item When comparing two non-nested models, we calculate the ratio of posterior model probabilities 
+\[ \frac{p(M_\gamma|y)}{p(M_{\gamma'}|y)} \]
+if this quantity is less than $O_L$, we reject $M_\gamma$ and if it is greater than $O_R$ we reject $M_{\gamma'}$. 
+\end{itemize}
+\end{frame}
+
+
 \begin{frame}
 \frametitle{Using MCMC to search through models}
 
@@ -122,6 +158,64 @@ Set $M^{(i+1)} = M^*$ with probability $\min\{1,\rho(M^{(i)},M^*)\}$ where
 and otherwise set $M^{(i+1)} = M^{(i)}$. \pause This Markov chain converges to draws from $p(M_\gamma|y)$ and therefore can estimate posterior model probabilities. 
 
 \end{frame}
+
+
+\subsection{Evaluating integrals}
+\begin{frame}
+\frametitle{Evaluating the marginal likelihoods}
+
+\small
+
+Recall that as the sample size $n$ increases, the posterior converges to a normal distribution. \pause Let 
+\[ 
+g(\theta) = \log(p(y|\theta,M)+p(\theta|M))
+\]
+Let $\hat{\theta}_{MAP}$ be the MAP for $\theta$ in model $M_\gamma$. \pause Taking a Taylor series expansion of $g(\theta)$ around $\hat{\theta}_{MAP}$, we have 
+\[ 
+g(\theta) \approx g(\hat{\theta}_{MAP}) - \frac{1}{2}(\theta-\hat{\theta}_{MAP}) A (\theta-\hat{\theta}_{MAP})^\top
+\]
+where $A$ is the negative Hession of $g(\theta)$ evaluated at $\hat{\theta}_{MAP}$. \pause Combining this with the first equation and exponentiating, we have 
+\[ 
+p(y|\theta,M)p(\theta|M) \approx p(y|\hat{\theta}_{MAP},M)p(\hat{\theta}_{MAP}) \exp\left( - \frac{1}{2}(\theta-\hat{\theta}_{MAP}) A (\theta-\hat{\theta}_{MAP})^\top  \right)
+\]
+Hence, the approximation to $p(\theta|y,M) \propto p(y|\theta,M)p(\theta|M)$ is normal. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Evaluating the marginal likelihoods (cont.)}
+
+\small
+
+If we take the integral of both sides and take the logarithm, we have 
+\[ 
+\log p(y|M) \approx \log p(y|\hat{\theta}_{MAP},M) + \log p(\hat{\theta}_{MAP}|M) + \frac{p}{2} \log(2\pi) - \frac{1}{2} \log|A|
+\]
+where $p$ is the dimension of $\theta$, i.e. the number of parameters. \pause We call this approximation the \alert{Laplace approximation}. 
+
+\vspace{0.2in} \pause
+
+Another approximation that is more computationally efficient but less accurate is to only retain terms that increase with $n$: \pause
+\begin{itemize}
+\item $\log p(y|\hat{\theta},M)$ increases linearly with $n$ \pause
+\item $\log |A|$ increases as $d\log n$ \pause
+\end{itemize}
+As $n$ gets large $\hat{\theta}_{MAP} \to \hat{\theta}_{MLE}$. \pause Taking these two together we have 
+\[ 
+\log p(y|M) \approx \log p(y|\hat{\theta}_{MLE},M) - \frac{p}{2} \log n
+\]
+\pause
+Multiplying by -2, we obtain Schwarz's Bayesian Information Criterion (BIC)
+\[
+BIC = -2 \log p(y|\hat{\theta}_{MLE},M) + p \log n
+\]
+
+
+\end{frame}
+
+
 
 
 \subsection{Bayesian regression}
