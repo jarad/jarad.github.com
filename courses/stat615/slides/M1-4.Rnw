@@ -143,12 +143,12 @@ if this quantity is less than $O_L$, we reject $M_\gamma$ and if it is greater t
 \begin{frame}
 \frametitle{Using MCMC to search through models}
 
-Construct a neighborhood around $M_\gamma$, call it $nbh(M_\gamma)$. \pause Now construct a transition matrix $q$ such that 
+Construct a neighborhood around $M^{(i)}$ (the current model in the chain), call it $nbh(M^{(i)})$. \pause Now propose a draw $M^*$ from the following proposal distribution 
 \[ 
 q(M^*|M^{(i)}) = \left\{ \begin{array}{cl}
 0 & \forall M^* \notin nbh(M^{(i)}) \\
 \frac{1}{|nbh(M^{(i)})|} & \forall M^* \in nbh(M^{(i)})
-\end{array}\right.
+\end{array}\right. 
 \]
 \pause
 Set $M^{(i+1)} = M^*$ with probability $\min\{1,\rho(M^{(i)},M^*)\}$ where 
@@ -211,38 +211,302 @@ Multiplying by -2, we obtain Schwarz's Bayesian Information Criterion (BIC)
 \[
 BIC = -2 \log p(y|\hat{\theta}_{MLE},M) + p \log n
 \]
+\end{frame}
 
+
+\subsection{Priors over models}
+\begin{frame}
+\frametitle{Priors over models}
+
+For data-based comparisons of models, you can use Bayes Factors directly since 
+\[ 
+BF(M_\gamma:M_{\gamma'}) = \frac{p(y|M_\gamma)}{p(y|M_{\gamma'})} \pause = \frac{\int p(y|\theta_\gamma)p(\theta_\gamma|M_\gamma) d \theta_\gamma}{\int p(y|\theta_{\gamma'})p(\theta_{\gamma'}|M_{\gamma'}) d \theta_{\gamma'}}
+\]
+where the last equality is a reminder that priors over parameters still matter.
+
+\vspace{0.2in} \pause
+
+For model averaging, you need to calculate posterior model probabilities which require specification of the prior probabability of each model. \pause One possible prior is 
+\[
+p(M_\gamma) = \prod_{i=1}^p w_i^{1-\gamma_i} (1-w_i)^{\gamma_i}
+\]
+\pause
+Setting $w_i = 0.5$ corresponds to a uniform prior over the model space. 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{BMA output}
+
+The quantities of interest from BMA are typically
+\begin{itemize}
+\item Posterior model probabilities $p(M_\gamma|y)$ \pause
+\item Posterior inclusions probabilities 
+\[ 
+p(\theta_i\ne 0|y) = \sum_{\gamma\in\mG} p(M_\gamma|y) \I(\gamma_i==1) 
+\]
+\pause
+which provides an overall assessment of whether explanatory variable $j$ is important or not. \pause
+\item Posterior distributions, means, and variances for ``parameters'', e.g. 
+\[ 
+E(\theta_i|y) = \sum_{\gamma\in\mG} p(M_\gamma|y) E[\theta_{\gamma,i}|y] 
+\]
+\pause
+But does this make any sense? \pause
+\item Predictions:
+\[
+p(\tilde{y}|y) = \sum_{\gamma\in\mG} p(M_\gamma|y) p(\tilde{y}|M_\gamma,y) 
+\]
+\end{itemize}
 
 \end{frame}
 
 
-
-
-\subsection{Bayesian regression}
+\section{BMA in R}
 \begin{frame}
-\frametitle{Bayesian regression}
+\frametitle{R packages for BMA}
 
-Consider the model $M_\gamma$:
-\[ y = X_\gamma\beta_\gamma + \epsilon \]
-with 
-\[ \epsilon \sim N(0,\sigma^2 \I) \]
-where 
+There are two main packages for Bayesian model average in R
 \begin{itemize}
-\item $y$ is a vector of length $n$
-\item $\gamma$ is a binary vector indicating which explanatory variables are included in model $M_\gamma$
-\item $\beta_\gamma$ is an unknown vector of length $p_\gamma$
-\item $X_\gamma$ is a known $n\times p_\gamma$ design matrix including those columns indicated by $\gamma$
-\item $\sigma^2$ is an unknown scalar
+\item \href{https://cran.r-project.org/web/packages/BMA/index.html}{BMA}: glm model averaging using BIC
+\item \href{https://cran.r-project.org/web/packages/BMS/index.html}{BMS}: lm model averaging using g-priors and (possibly) MCMC
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Until recently there was another package
+\begin{itemize}
+\item \href{https://cran.r-project.org/web/packages/BAS/index.html}{BAS}: lm model averaging with a variety of priors and (possibly) MCMC (additionally performed sampling without replacement)
 \end{itemize}
 \end{frame}
 
 
+
+
+\subsection{BMA}
+\begin{frame}[fragile]
+\frametitle{BMA in R}
+
+<<BMA, message=FALSE, echo=TRUE>>=
+library(BMA)
+library(MASS); data(UScrime)
+x = UScrime[,-16]
+y = log(UScrime[,16])
+x[,-2] = log(x[,-2])
+lma = bicreg(x, y, 
+             strict = FALSE, # include models the more probability submodel?
+             OR = 20)        # cutoff for including models
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMA2, echo=TRUE>>= 
+summary(lma)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+Does this make any sense?
+
+<<BMA3, echo=TRUE>>=
+plot(lma)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMA4, echo=TRUE>>=
+imageplot.bma(lma)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{BMA in R}
+
+<<BMA_glm, message=FALSE, echo=TRUE>>=
+data(birthwt)
+y<- birthwt$lo # 1 indicates low birthweight
+x<- data.frame(birthwt[,-1])
+x$race<- as.factor(x$race)
+x$ht<- (x$ht>=1)+0
+x<- x[,-9]
+x$smoke <- as.factor(x$smoke)
+x$ptl<- as.factor(x$ptl)
+x$ht <- as.factor(x$ht) # history of hypertension
+x$ui <- as.factor(x$ui)
+
+lma <- bic.glm(x, y, strict = FALSE, OR = 20, 
+                      glm.family="binomial", 
+                      factor.type=TRUE) # remove all levels of a factor?
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<BMA_glm4>>=
+imageplot.bma(lma)
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Predictions}
+
+<<BMA_predictions, echo=TRUE>>=
+npkBMA = bicreg( x = npk[, c("block","N","K")], y=npk$yield)
+p = predict( npkBMA, newdata = npk)
+head(p$mean)
+head(p$sd)
+head(p$quantiles)
+@
+\end{frame}
+
+
+
+
+
+\subsection{BMS}
+\begin{frame}[fragile]
+\frametitle{BMS}
+<<BMS, echo=TRUE>>=
+library(BMS)
+data(datafls)
+dim(datafls)
+bma1 = bms(datafls,
+           burn=1000, 
+           iter=2000, 
+           g="EBL",          # Local empirical Bayes 
+           mprior="uniform", # model over priors (extremely flexible)
+           user.int = interactive()) 
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMS_print, echo=TRUE>>=
+print(bma1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMS_summary, echo=TRUE>>=
+summary(bma1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMS2a, echo=TRUE>>=
+plot(bma1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMS3, echo=TRUE>>=
+image(bma1)
+@
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+<<BMS5,echo=TRUE>>=
+p1 = predict(bma1) #fitted values based on MCM frequencies
+p2 = predict(bma1, exact=TRUE) #fitted values based on best models
+plot(p1,p2); abline(0,1)
+@
+\end{frame}
+
+
+\section{MCMC for sampling $\theta$ and $M$}
 \begin{frame}
-\frametitle{BMA in regression}
+\frametitle{MCMC for sampling $\theta$ and $M$}
+
+Suppose, you construct a Markov chain to sample jointly from $p(M_\gamma,\theta_\gamma|y)$. \pause An issue here is that when you move $M_\gamma \to M_{\gamma'}$, there is a chance that you change the dimension of $\theta$, i.e. $\sum_{i=1}^p \gamma_i \ne \sum_{i=1}^p \gamma_i'$. \pause This can be done via Metropolis-Hastings where the change of dimension is taken into account and this approach is called \alert{reversible jump MCMC}. 
+
+\vspace{0.2in} \pause
+
+An alternative is to fully incorporate $\gamma$ as a parameter in the model. \pause For example, 
+
+\[ \begin{array}{rl}
+y_{ij} &\ind N(\theta_i, \sigma^2) \\
+\theta_i &= \gamma_i \phi_i \\
+\phi_i &\ind N(\mu,\tau) \\
+\gamma_i &\ind Ber(w_i)
+\end{array} \]
+\pause
+This is essentially a way to implement the point-mass prior. 
+\end{frame}
 
 
+
+\begin{frame}
+\frametitle{MCMC for Model averaging for GLMs}
+
+\small
+
+We can implement a similar MCMC to perform model averaging in Bayesian GLMs. \pause Let $\theta_i = E[y_i|\theta_i]$and $\phi$ as a dispersion parameter, then we can define a GLM as 
+\[ \begin{array}{rl}
+y_i &\sim p(y_i|\theta_i, \psi) \\
+\theta_i &= g^{-1}(X_i'\beta) \\
+\beta_j &= \gamma_j \phi_j \\
+\phi_j &\ind N(\mu,\tau) \\
+\gamma_j &\ind Ber(w_j)
+\end{array} \]
+
+\vspace{0.2in} \pause
+
+For probit and ordinal regression, we can augment the model with parameters $\zeta_i$, e.g. for probit regression 
+\[ 
+y_i = \I(\zeta_i>0) \mbox{ and } \zeta_i \ind N(\theta_i,\psi).
+\]
+There is a similar augmentation for logistic regression, see the {\tt BayesLogit} and references therein. 
+\pause
+For these models and linear regression, we can construct an MCMC entirely using Gibbs steps. 
+\pause
+For other models, e.g. Poisson regression, sampling $\phi_j$ results in a non-Gibbs step.
 
 \end{frame}
+
+
+% \subsection{Bayesian regression}
+% \begin{frame}
+% \frametitle{Bayesian regression}
+% 
+% Consider the model $M_\gamma$:
+% \[ y = X_\gamma\beta_\gamma + \epsilon \]
+% with 
+% \[ \epsilon \sim N(0,\sigma^2 \I) \]
+% where 
+% \begin{itemize}
+% \item $y$ is a vector of length $n$
+% \item $\gamma$ is a binary vector indicating which explanatory variables are included in model $M_\gamma$
+% \item $\beta_\gamma$ is an unknown vector of length $p_\gamma$
+% \item $X_\gamma$ is a known $n\times p_\gamma$ design matrix including those columns indicated by $\gamma$
+% \item $\sigma^2$ is an unknown scalar
+% \end{itemize}
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{BMA in regression}
+% 
+% 
+% 
+% \end{frame}
 
 
 
