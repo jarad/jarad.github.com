@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -55,18 +55,21 @@ set.seed(2)
 \begin{frame}
 \frametitle{Bayesian model averaging}
 
-Let $\{M_\gamma: \gamma \in \mG\}$ indicate a set of models for a particular data set $y$. \pause If $\Delta$ is a quantity of interest, e.g. effect size, a future observable, or the utility of a course of action, then its posterior distribution is 
+Let $\{M_\gamma: \gamma \in \mG\}$ indicate a set of models for a particular data set $y$. \pause If $\Delta$ is a quantity of interest, e.g. effect size, a future observable, or the utility of a course of action, \pause then its posterior distribution is 
 \[ 
 p(\Delta|y) = \sum_{\gamma\in\mG} p(\Delta|M_\gamma, y) p(M_\gamma|y)  
 \]
+\pause
 where 
 \[ 
 p(M_\gamma|y) = \frac{p(y|M_\gamma)p(M_\gamma)}{\sum_{\lambda\in \mG} p(M_\lambda)}
 \]
+\pause
 and 
 \[
 p(y|M_\gamma) = \int p(y|\theta_\gamma,M_\gamma) p(\theta_\gamma|M_\gamma) d\theta_\gamma
 \]
+\pause
 where $\theta_\gamma$ is the set of parameters in model $M_\gamma$. 
 
 \end{frame}
@@ -81,12 +84,12 @@ Let $\hat{\Delta}_\gamma = E[\Delta|y,M_\gamma]$.
 \pause 
 Then the expectation is 
 \[ 
-E[\Delta|y] = \sum_{\gamma\in\mG} \hat{\Delta}_\gamma p(M_\gamma|y) 
+E[\Delta|y] \pause= \sum_{\gamma\in\mG} \hat{\Delta}_\gamma p(M_\gamma|y) 
 \]
 \pause
 and the variance is 
 \[ 
-V[\Delta|y] = \left[ \sum_{\gamma\in\mG} (Var[\Delta|y,M_\gamma) + \hat{\Delta}_\gamma^2) p(M_\gamma|y) \right] - E[\Delta|y]^2
+V[\Delta|y] \pause = \left[ \sum_{\gamma\in\mG} (Var[\Delta|y,M_\gamma) + \hat{\Delta}_\gamma^2) p(M_\gamma|y) \right] - E[\Delta|y]^2
 \]
 \pause
 The appealing aspect here is that the moments only depend on the moments from each individual model.
@@ -97,8 +100,8 @@ The appealing aspect here is that the moments only depend on the moments from ea
 \begin{frame}
 \frametitle{Difficulties with BMA}
 
-\begin{itemize}
-\item Evaluating the summation since the cardinality of $\mG$ might be huge.
+\begin{itemize}[<+->]
+\item Evaluating the summation can be difficult since $|\mG|$, the cardinality of $\mG$, might be huge.
 \item Calculating the marginal likelihood.
 \item Specifying the prior over models.
 \item Choosing the class of models to average over.
@@ -110,6 +113,10 @@ The appealing aspect here is that the moments only depend on the moments from ea
 \subsection{Reducing cardinality}
 \begin{frame}
 \frametitle{Reducing cardinality}
+
+If $|\mG|$ is small enough, we can enumerate all models and perform model averaging exactly. But if $|\mG|$ is too large, we will need some parsimony. 
+
+\vspace{0.2in} \pause
 
 Rather than summing over $\mG$, we can only include those models whose posterior probability is sufficiently large 
 \[
@@ -170,14 +177,16 @@ Recall that as the sample size $n$ increases, the posterior converges to a norma
 \[ 
 g(\theta) = \log(p(y|\theta,M)+p(\theta|M))
 \]
-Let $\hat{\theta}_{MAP}$ be the MAP for $\theta$ in model $M_\gamma$. \pause Taking a Taylor series expansion of $g(\theta)$ around $\hat{\theta}_{MAP}$, we have 
+\pause
+Let $\hat{\theta}_{MAP}$ be the MAP for $\theta$ in model $M$. \pause Taking a Taylor series expansion of $g(\theta)$ around $\hat{\theta}_{MAP}$, we have 
 \[ 
 g(\theta) \approx g(\hat{\theta}_{MAP}) - \frac{1}{2}(\theta-\hat{\theta}_{MAP}) A (\theta-\hat{\theta}_{MAP})^\top
 \]
-where $A$ is the negative Hession of $g(\theta)$ evaluated at $\hat{\theta}_{MAP}$. \pause Combining this with the first equation and exponentiating, we have 
+where $A$ is the negative Hession of $g(\theta)$ evaluated at $\hat{\theta}_{MAP}$. \pause Combining this with the first equation and exponentiating, \pause we have 
 \[ 
 p(y|\theta,M)p(\theta|M) \approx p(y|\hat{\theta}_{MAP},M)p(\hat{\theta}_{MAP}) \exp\left( - \frac{1}{2}(\theta-\hat{\theta}_{MAP}) A (\theta-\hat{\theta}_{MAP})^\top  \right)
 \]
+\pause
 Hence, the approximation to $p(\theta|y,M) \propto p(y|\theta,M)p(\theta|M)$ is normal. 
 
 \end{frame}
@@ -189,7 +198,7 @@ Hence, the approximation to $p(\theta|y,M) \propto p(y|\theta,M)p(\theta|M)$ is 
 
 \small
 
-If we take the integral of both sides and take the logarithm, we have 
+If we take the integral over $\theta$ of both sides and take the logarithm, we have 
 \[ 
 \log p(y|M) \approx \log p(y|\hat{\theta}_{MAP},M) + \log p(\hat{\theta}_{MAP}|M) + \frac{p}{2} \log(2\pi) - \frac{1}{2} \log|A|
 \]
@@ -220,7 +229,9 @@ BIC = -2 \log p(y|\hat{\theta}_{MLE},M) + p \log n
 
 For data-based comparisons of models, you can use Bayes Factors directly since 
 \[ 
-BF(M_\gamma:M_{\gamma'}) = \frac{p(y|M_\gamma)}{p(y|M_{\gamma'})} \pause = \frac{\int p(y|\theta_\gamma)p(\theta_\gamma|M_\gamma) d \theta_\gamma}{\int p(y|\theta_{\gamma'})p(\theta_{\gamma'}|M_{\gamma'}) d \theta_{\gamma'}}
+BF(M_\gamma:M_{\gamma'}) 
+= \frac{p(y|M_\gamma)}{p(y|M_{\gamma'})} \pause 
+= \frac{\int p(y|\theta_\gamma)p(\theta_\gamma|M_\gamma) d \theta_\gamma}{\int p(y|\theta_{\gamma'})p(\theta_{\gamma'}|M_{\gamma'}) d \theta_{\gamma'}}
 \]
 where the last equality is a reminder that priors over parameters still matter.
 
@@ -266,10 +277,10 @@ p(\tilde{y}|y) = \sum_{\gamma\in\mG} p(M_\gamma|y) p(\tilde{y}|M_\gamma,y)
 \begin{frame}
 \frametitle{R packages for BMA}
 
-There are two main packages for Bayesian model average in R
+There are two main packages for Bayesian model average in R \pause
 \begin{itemize}
-\item \href{https://cran.r-project.org/web/packages/BMA/index.html}{BMA}: glm model averaging using BIC
-\item \href{https://cran.r-project.org/web/packages/BMS/index.html}{BMS}: lm model averaging using g-priors and (possibly) MCMC
+\item \href{https://cran.r-project.org/web/packages/BMA/index.html}{BMA}: glm model averaging using BIC \pause
+\item \href{https://cran.r-project.org/web/packages/BMS/index.html}{BMS}: lm model averaging using g-priors and (possibly) MCMC \pause
 \end{itemize}
 
 \vspace{0.2in} \pause
