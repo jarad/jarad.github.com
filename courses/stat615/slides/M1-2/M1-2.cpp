@@ -89,7 +89,7 @@ List mcmc_normal(
 ) {
     
     
-  int i;
+  int i,j;
   int g = theta.length();
   
   // Allocate storage
@@ -113,16 +113,19 @@ List mcmc_normal(
   
   // quantities reused during MCMC
   NumericVector SSE(g);     // within group sum of squared errors (relative to theta)
-  
-  
+  NumericVector phi(g);
   
   // Run MCMC
   for (i=0; i<n_reps; i++) {
+    for (j=0; j<g; j++) phi[j] = tau;
+    
     // sample mu
     mu    = sample_normal_mean(std::accumulate(theta.begin(), theta.end(), 0.0), sigma2/g, m, C);
     
     // sample theta
-    theta = sample_theta(ysum, n, sigma2, mu, tau);
+    theta = sample_theta(ysum, n, sigma2, mu, phi);
+    
+    for (int j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
     
     // sample sigma2
     SSE      = calc_all_SSE(y, group, theta);
