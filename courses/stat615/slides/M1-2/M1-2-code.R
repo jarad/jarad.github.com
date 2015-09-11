@@ -1,3 +1,7 @@
+library(Rcpp)
+
+sourceCpp("M1-2.cpp")
+
 sample_mu = function(theta, varsigma, prior) {
   Cp = 1/(1/prior$C+sum(1/varsigma))
   mp = Cp*(prior$m/prior$C+sum(theta/varsigma))
