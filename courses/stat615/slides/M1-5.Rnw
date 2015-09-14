@@ -1,0 +1,174 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Hamiltonian Monte Carlo}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Parameter augmentation}
+
+Suppose we are interested in sampling from a posterior distribution for $\theta\in mathbb{R}^d$
+\[ 
+p(\theta|y) \propto p(y|\theta)p(\theta) . 
+\]
+\pause
+Let 
+\[ 
+U(\theta) = -log[p(y|\theta)p(\theta)] = -\log p(\theta|y) -\log p(\theta). 
+\]
+\pause
+Now augment $\theta$ with $\omega\sim N_d(0,D)$ with $D$ diagonal with elements $\{m_i\}$ such that 
+\[ 
+p(\theta|y) = \int p(\theta|\omega,y)p(\omega|y)d\omega
+\]
+which can be easily accomplished if $p(\theta|\omega,y) = p(\theta,y)$. 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Hamiltonian Monte Carlo algorithm}
+
+Set 
+\begin{itemize}
+\item $L$: the number of steps
+\item $e$: stepsize
+\end{itemize}
+\pause
+
+Let $\theta^{(i)}$ be the current value of the parameter $\theta$. 
+\pause 
+The leap-frog Hamiltonian Monte Carlo algorithm is 
+\begin{enumerate}
+\item $\omega \sim N_d(0,D)$
+\item Simulate Hamiltonian dynamics on location $\theta^{(i)}$ and momentum  $\omega$ via the leapfrog method (or any reversible method that preserves volume). Call these updated values $\theta^*$ and $\omega^*$. 
+\item Set $\theta^{(i+1)} = \theta^*$ with probability $\min\{1,\rho(\theta^{(i)},\theta^*)\}$ 
+\pause
+where 
+\[ 
+\rho(\theta^{(i)},\theta^*) = 
+\frac{p(\theta^*|y)p(\theta^*)}{p(\theta^{(i)}|y)p(\theta^{(i)})} 
+\frac{N_d(\omega^*;0,D)}{N_d(\omega^{(i)};0,D)} 
+\]
+\pause
+otherwise set $\theta^{(i+1)} = \theta^{(i)}$.
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Leap-frog simulation of Hamiltonian dynamics}
+Given a current location $\theta(t)$ and momentum $\omega(t)$ at time $t$, the leap-frog method can be used to approximate simulating Hamiltonian dynamics up to time $Le$ using a series of $L$ steps each of time $e$. 
+
+\vspace{0.2in} 
+
+\pause The algorithm is 
+\begin{enumerate}
+\item For $\ell = 1,\ldots,L$, 
+\begin{enumerate}
+\item $\theta_i(t+\ell e/2) = \theta_i(t+[\ell-1]e)-(e/2)\frac{\partial U}{\partial \theta_i} \omega(t+\ell e)$ \pause
+\item $\omega_i(t+\ell e) = \omega_i(t+[\ell-1]e) + e \frac{\theta_i(t+\ell e/2)}{m_i}$ \pause
+\item $\theta_i(t+\ell e) = \theta_i(t+\ell e/2)-(e/2)\frac{\partial U}{\partial \theta_i} \omega(t+\ell e)$ 
+\end{enumerate}
+\end{enumerate}
+\pause
+where $\theta_i$ and $\omega_i$ are the $i^{th}$ element of the location and moment, respectively. 
+
+\end{frame}
+
+
+
+<<>>=
+leap_frog = function(U, grad_U, e, L, theta, omega) {
+  omega = omega-e/2 * grad_U(theta) 
+    
+    for (l in 1:L) {
+      theta = theta+e*omega
+      if (l<L) omega = omega-e*grad_U(theta)
+    }
+    omega = omega-e/2*grad_U(theta)
+    omega = -omega
+  return(list(theta=theta,omega=omega))
+}
+
+HMC = function(n_reps, log_density, grad_log_density, e, L, initial) {
+  U = function(x) -log_density(x)
+  grad_U = function(x) -grad_log_density(x)
+  
+  theta = initial$theta
+  omega = initial$omega
+  
+  theta_keep = rep(NA, n_reps)
+  omega_keep = rep(NA, n_reps)
+  
+  for (i in 1:n_reps) {
+    proposed = leap_frog(U, grad_U, e, L, theta, rnorm(length(theta), 0, 1))
+    
+    rho = U(theta) - U(proposed$theta) + sum(omega^2)/2 - sum(proposed$omega^2)/2
+    if (log(runif(1)) < rho) {
+      theta = proposed$theta
+      omega = proposed$omega
+    } else {
+      theta = theta
+      omega = omega
+    }
+    theta_keep[i] = theta
+    omega_keep[i] = omega
+  }
+  return(list(theta=theta_keep, omega=omega_keep))
+}
+
+log_density = function(theta) -theta^2/2
+grad_log_density = function(theta) -theta
+n_reps = 1e4
+r = HMC(1e4, log_density, grad_log_density, 1, 1, list(theta=0, omega=0))
+hist(r$theta, freq=F, 100)
+curve(dnorm, add=TRUE, col='red', lwd=2)
+@
+
+
+\end{document}
