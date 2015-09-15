@@ -61,21 +61,21 @@ p(\theta|y) \propto p(y|\theta)p(\theta) .
 \]
 
 \pause
-Now augment $\theta$ with $\omega\sim N_d(0,D)$ independent of $\theta|y$ such that 
+Now augment $\theta$ with moment variable $\omega\sim N_d(0,D)$ independent of $\theta|y$ such that 
 \[ 
 p(\theta|y) 
 = \int p(\theta|\omega,y)p(\omega)d\omega \pause 
 = \int p(\theta|y) p(\omega) d\omega
 \]
 \pause
-Let 
+To compare with Neal (2010), we have $q=\theta$, $p=\omega$, 
 \[ 
-U(\theta) = -log[p(y|\theta)p(\theta)] = -\log p(\theta|y) -\log p(\theta)
+U(\theta) = -\log[p(y|\theta)p(\theta)] = -\log p(\theta|y) -\log p(\theta),
 \]
 \pause
 and 
 \[
-K(\omega) = -log p(\omega).
+K(\omega) = -\log p(\omega).
 \]
 
 \end{frame}
@@ -91,7 +91,7 @@ Set tuning parameters
 \begin{itemize}
 \item $L$: the number of steps
 \item $e$: stepsize
-\item $D$: covariance matrix for $\omega$
+\item $D=\{d_i\}$: covariance matrix for $\omega$
 \end{itemize}
 \pause
 
@@ -120,7 +120,7 @@ otherwise set $\theta^{(i+1)} = \theta^{(i)}$.
 
 \begin{frame}
 \frametitle{Leap-frog simulation of Hamiltonian dynamics}
-Given a current location $\theta(t)$ and momentum $\omega(t)$ at time $t$, the leap-frog method can be used to approximate simulating Hamiltonian dynamics up to time $Le$ using a series of $L$ steps each of time $e$. 
+Given a current location $\theta(0)$ and momentum $\omega(0)$ at time $0$, the leap-frog method can be used to approximate simulating Hamiltonian dynamics up to time $Le$ using a series of $L$ steps each of time $e$. 
 
 \vspace{0.2in} 
 
@@ -128,13 +128,13 @@ Given a current location $\theta(t)$ and momentum $\omega(t)$ at time $t$, the l
 \begin{enumerate}
 \item For $\ell = 1,\ldots,L$, 
 \begin{enumerate}
-\item $\theta_i(t+\ell e/2) = \theta_i(t+[\ell-1]e)-(e/2)\frac{\partial U}{\partial \theta_i} \omega(t+\ell e)$ \pause
-\item $\omega_i(t+\ell e) = \omega_i(t+[\ell-1]e) + e \frac{\theta_i(t+\ell e/2)}{m_i}$ \pause
-\item $\theta_i(t+\ell e) = \theta_i(t+\ell e/2)-(e/2)\frac{\partial U}{\partial \theta_i} \omega(t+\ell e)$ 
+\item For $i=1,\ldots, d$, $\omega_i\left(\left[\ell-\frac{1}{2}\right]e\right) = \omega_i([\ell-1]e)-\frac{e}{2}\frac{\partial U}{\partial \theta_i} (\theta([\ell-1]e))$ \pause
+\item For $i=1,\ldots, d$, $\theta_i(\ell e) = \theta_i([\ell-1]e) + e \frac{\omega_i\left(\left[\ell-\frac{1}{2}\right]e\right)}{d_i}$ \pause
+\item For $i=1,\ldots, d$, $\omega_i(\ell e) = \omega_i\left(\left[\ell-\frac{1}{2}\right]e\right)-\frac{e}{2}\frac{\partial U}{\partial \theta_i} (\theta(\ell e))$ 
 \end{enumerate}
 \end{enumerate}
 \pause
-where $\theta_i$ and $\omega_i$ are the $i^{th}$ element of the location and moment, respectively. 
+where $\theta_i$ and $\omega_i$ are the $i^{th}$ element of the location and momentum, respectively. 
 
 \end{frame}
 
@@ -203,6 +203,8 @@ q(\theta',\omega'|\theta,\omega) = q(\theta,\omega|\theta',\omega')
 \]
 \pause
 and thus in the Metropolis-Hastings calculation, the proposal is symmetric. 
+\pause
+In order to ensure reversibility of our proposal, we need to negate momentum after we complete the leap-frog simulation, but so long as $p(\omega) = p(-\omega)$ this will not affect our acceptance probability. 
 
 \end{frame}
 
@@ -249,8 +251,6 @@ This will only be the case if the simulation is perfect!
 But we have discretization error. 
 \pause
 The acceptance probability accounts for this error. 
-\pause
-In order to ensure reversibility of our proposal, we need to negate momentum after we complete the simulation.
 \end{frame}
 
 
