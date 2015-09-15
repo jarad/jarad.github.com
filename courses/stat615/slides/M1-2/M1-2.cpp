@@ -7,12 +7,12 @@ using namespace Rcpp;
 
 // For more on using Rcpp click the Help button on the editor toolbar
 
-
-double sample_normal_mean(double sum, double var, double m, double C) {
+// [[Rcpp::export]]
+double sample_normal_mean(int n, double ybar, double var, double m, double C) {
   // sum= n*ybar
   // var= sigma2/n
-  double Cp = 1/(1/C+1/var);
-  double mp = Cp*(m/C+sum/var);
+  double Cp = 1/(1/C+n/var);
+  double mp = Cp*(m/C+n*ybar/var);
   
   return mp + sqrt(Cp) * R::rnorm(0,1);
 }
@@ -21,7 +21,7 @@ double sample_normal_mean(double sum, double var, double m, double C) {
 NumericVector sample_theta(NumericVector sums, IntegerVector n, double sigma2, double mu, NumericVector phi) {
   NumericVector theta(n.length());
   for (int i=0; i<n.length(); i++) 
-    theta[i] = sample_normal_mean(sums[i], sigma2/n[i], mu, phi[i]);
+    theta[i] = sample_normal_mean(n[i], sums[i]/n[i], sigma2, mu, phi[i]);
   return theta;
 }
 
@@ -120,12 +120,12 @@ List mcmc_normal(
     for (j=0; j<g; j++) phi[j] = tau;
     
     // sample mu
-    mu    = sample_normal_mean(std::accumulate(theta.begin(), theta.end(), 0.0), sigma2/g, m, C);
+    mu    = sample_normal_mean(g, std::accumulate(theta.begin(), theta.end(), 0.0)/g, tau, m, C);
     
     // sample theta
     theta = sample_theta(ysum, n, sigma2, mu, phi);
     
-    for (int j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
+    // for (int j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
     
     // sample sigma2
     SSE      = calc_all_SSE(y, group, theta);

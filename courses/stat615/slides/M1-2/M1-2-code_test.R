@@ -1,8 +1,8 @@
 library(Rcpp)
 library(plyr)
+library(ggplot2)
+library(reshape2)
 sourceCpp("M1-2.cpp", verbose=TRUE)
-n = 3
-mcmc_normal(1, rep(1,n), rep(1,n))
 
 
 # calc_SSE
@@ -52,6 +52,34 @@ d = data.frame(group = rep(1:G, each=5))
 d$theta = theta[d$group]
 d$y = rnorm(nrow(d), d$theta)
 
-r = mcmc_normal(n_reps = 1e3, y = d$y, group = d$group, mu = 0, theta = rnorm(G), 
-                sigma2 = 1, tau = 1, m = 0, C = 1, a = 1, b = 1, c = 1)
 
+s = ddply(d, .(group), summarize, theta=mean(y), sigma2=var(y))
+
+
+Cp = 1/(nrow(s)/var(s$theta) + 1/1)
+mp = Cp*(sum(s$theta)/var(s$theta) + 0/1)
+
+sourceCpp("M1-2.cpp", verbose=TRUE)
+
+
+r = mcmc_normal(n_reps = 1e4, y = d$y, group = d$group, 
+                mu = mean(s$theta), 
+                theta = s$theta, 
+                sigma2 = 1, 
+                tau = var(s$theta), 
+                m = 0, C = 1, a = 1, b = 1, c = 1)
+hist(r$mu, freq=FALSE, 100)
+curve(dnorm(x, mp, sqrt(Cp)), add=TRUE, col='red', lty=2)
+abline(v=mean(s$theta), col='blue')
+
+ggplot(melt(r$theta, varnames=c('iteration','group')), aes(value)) +
+  geom_histogram() +
+  geom_vline(data=s, aes(xintercept=theta)) + 
+  facet_wrap(~group)
+
+hist(r$tau, freq=FALSE, 100)
+abline(v=var(s$theta), col='blue', lwd=2)
+mean(r$tau); var(s$theta)
+
+hist(r$sigma, freq=FALSE, 100)
+abline(v=sqrt(mean(s$sigma2)), col='blue', lwd=2)
