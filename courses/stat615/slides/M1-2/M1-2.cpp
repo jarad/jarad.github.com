@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // For more on using Rcpp click the Help button on the editor toolbar
 
-// [[Rcpp::export]]
+
 double sample_normal_mean(int n, double ybar, double var, double m, double C) {
   // sum= n*ybar
   // var= sigma2/n
@@ -26,7 +26,6 @@ NumericVector sample_theta(NumericVector sums, IntegerVector n, double sigma2, d
 }
 
 
-// [[Rcpp::export]]
 NumericVector sample_normal_variance(IntegerVector n, NumericVector SSE, double a, double b) {
   // y ~ N(theta, sigma2) 
   // sigma2 ~ IG(a,b)
@@ -53,7 +52,7 @@ double calc_SSE(NumericVector y, double theta) {
   return SSE;
 }
 
-// [[Rcpp::export]]
+
 NumericVector calc_all_SSE(NumericVector y, IntegerVector group, NumericVector theta) {
   int g = theta.length();
   NumericVector SSE(g);
