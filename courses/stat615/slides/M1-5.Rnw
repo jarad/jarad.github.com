@@ -39,6 +39,7 @@ options(width=100)
 @
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(animation)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -121,20 +122,66 @@ where $\theta_i$ and $\omega_i$ are the $i^{th}$ element of the location and mom
 \end{frame}
 
 
-
-<<>>=
+\begin{frame}[fragile]
+\frametitle{Leap-frog simulator}
+<<echo=TRUE>>=
 leap_frog = function(U, grad_U, e, L, theta, omega) {
-  omega = omega-e/2 * grad_U(theta) 
+  omega = omega - e/2 * grad_U(theta) 
     
     for (l in 1:L) {
-      theta = theta+e*omega
-      if (l<L) omega = omega-e*grad_U(theta)
+      theta = theta + e * omega
+      if (l<L) omega = omega - e * grad_U(theta)
     }
-    omega = omega-e/2*grad_U(theta)
-    omega = -omega
+    omega = omega - e/2 * grad_U(theta)
   return(list(theta=theta,omega=omega))
 }
+@
+\end{frame}
 
+
+
+\begin{frame}[fragile]
+<<leapfrog, fig.show='animate'>>=
+# Create the data
+set.seed(20150915)
+n_steps = 200
+theta = rep(2.5, n_steps)
+omega = rep(0, n_steps)
+for (i in 2:n_steps) {
+  tmp = leap_frog(function(x) x^2/2, function(x) x, .1, 1, theta[i-1], omega[i-1])
+  theta[i] = tmp$theta
+  omega[i] = tmp$omega
+}
+
+
+draw_step = function(i, e=.01) {
+  opar = par(mfrow=c(1,2))
+  curve(x^2/2, -3, 3, main='Location', ylab='')
+  points(theta[i], theta[i]^2/2+e, pch=19)
+  curve(x^2/2, -3, 3, main='Momentum', ylab='')
+  points(omega[i], omega[i]^2/2+e, pch=19)
+  par(opar)
+}
+
+draw_step(1)
+
+for (i in 1:n_steps) {
+  draw_step(i)
+  #readline('Press <enter> for next plot:')
+  Sys.sleep(.1)
+}
+
+
+
+for (i in 1:n_steps) {
+  plot(theta[i], omega[i], xlim=c(-3,3), ylim=c(-3,3), pch=19)
+  Sys.sleep(.1)
+}
+@
+\end{frame}
+
+
+<<>>=
 HMC = function(n_reps, log_density, grad_log_density, e, L, initial) {
   U = function(x) -log_density(x)
   grad_U = function(x) -grad_log_density(x)
@@ -147,6 +194,7 @@ HMC = function(n_reps, log_density, grad_log_density, e, L, initial) {
   
   for (i in 1:n_reps) {
     proposed = leap_frog(U, grad_U, e, L, theta, rnorm(length(theta), 0, 1))
+    proposed$omega = -proposed$omega
     
     rho = U(theta) - U(proposed$theta) + sum(omega^2)/2 - sum(proposed$omega^2)/2
     if (log(runif(1)) < rho) {
@@ -165,8 +213,45 @@ HMC = function(n_reps, log_density, grad_log_density, e, L, initial) {
 log_density = function(theta) -theta^2/2
 grad_log_density = function(theta) -theta
 n_reps = 1e4
-r = HMC(1e4, log_density, grad_log_density, 1, 1, list(theta=0, omega=0))
+r = HMC(n_reps, log_density, grad_log_density, 1, 1, list(theta=0, omega=0))
 hist(r$theta, freq=F, 100)
+curve(dnorm, add=TRUE, col='red', lwd=2)
+
+
+
+
+HMC_neal = function(U, grad_U, epsilon, L, current_q) {
+  q = current_q
+  p = rnorm(length(q),0,1)
+  current_p = p
+  
+  p = p-epsilon*grad_U(q)/2
+  
+  for (i in 1:L) {
+    q = q+epsilon*p
+    if (i!=L) p = p -epsilon * grad_U(q)
+  }
+  p = p-epsilon * grad_U(q)/2
+  
+  p = -p
+  
+  current_U = U(current_q)
+  current_K = sum(current_p^2)/2
+  proposed_U = U(q)
+  proposed_K = sum(p^2)/2
+  
+  if (runif(1) < exp(current_U-proposed_U+current_K-proposed_K))
+  {
+    return(q)
+  }
+  else {
+    return(current_q)
+  }
+}
+
+theta = rep(0,n_reps)
+for (i in 2:n_reps) theta[i] = HMC_neal(function(x) x^2/2, function(x) x, 1, 1, theta[i-1])
+hist(theta, freq=F, 100)
 curve(dnorm, add=TRUE, col='red', lwd=2)
 @
 
