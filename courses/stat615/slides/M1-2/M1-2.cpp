@@ -371,16 +371,16 @@ List mcmc_pointmass_t(
     sigma2   = 1/R::rgamma(sigma2_a,1/sigma2_b);
     
         
-    Rcout << std:: endl << i << std::endl;
-    Rcout << df << std::endl;
-    Rcout << tau2 << std::endl;
-    Rcout << sigma2 << std::endl;
-    Rcout << mu << std::endl;
-    Rcout << pi << std::endl;
-    for (j=0; j<g; j++) Rcout << phi[j] << ' '; Rcout << std::endl;
-    for (j=0; j<g; j++) Rcout << gamma[j] << ' '; Rcout << std::endl;
-    for (j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
-    for (j=0; j<g; j++) Rcout << psi[j] << ' '; Rcout << std::endl;
+//    Rcout << std:: endl << i << std::endl;
+//    Rcout << df << std::endl;
+//    Rcout << tau2 << std::endl;
+//    Rcout << sigma2 << std::endl;
+//    Rcout << mu << std::endl;
+//    Rcout << pi << std::endl;
+//    for (j=0; j<g; j++) Rcout << phi[j] << ' '; Rcout << std::endl;
+//    for (j=0; j<g; j++) Rcout << gamma[j] << ' '; Rcout << std::endl;
+//    for (j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
+//    for (j=0; j<g; j++) Rcout << psi[j] << ' '; Rcout << std::endl;
     
     
     // Sample phi

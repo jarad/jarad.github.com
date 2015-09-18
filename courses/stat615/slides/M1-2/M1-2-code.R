@@ -27,7 +27,7 @@ r = mcmc_pointmass_normal(n_reps = 10, y = d$y, group = d$group,
                           m = 0, C = 1, a = 1, b = 1, c = 1, a_pi=1, b_pi=1)
 
 # This isn't working yet
-r = mcmc_pointmass_t(n_reps = 1e2, y = d$y, group = d$group, 
+r = mcmc_pointmass_t(n_reps = 1e3, y = d$y, group = d$group, 
                      mu = mean(s$theta), 
                      theta = s$theta, 
                      sigma2 = 1, 
