@@ -1,12 +1,6 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// Below is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp 
-// function (or via the Source button on the editor toolbar)
-
-// For more on using Rcpp click the Help button on the editor toolbar
-
 
 double sample_normal_mean(int n, double ybar, double V, double m, double C) {
   double Cp = 1/(1/C+n/V);
@@ -23,6 +17,12 @@ NumericVector sample_theta(IntegerVector n, NumericVector ybars, double sigma2, 
   return theta;
 }
 
+double sample_mu(NumericVector psi, NumericVector phi, double m, double C) {
+  NumericVector phi2 = phi*phi;
+  Cp = 1/(1/C + sum(1  /phi2);
+  mp = Cp*(m/C + sum(psi/phi2);
+  return mp + sqrt(Cp) * R::norm(0,1);
+}
 
 NumericVector sample_normal_variance(IntegerVector n, NumericVector SSE, double a, double b) {
   // y ~ N(theta, sigma2) 
@@ -260,6 +260,113 @@ List mcmc_pointmass_normal(
     SSE      = calc_all_SSE(y, group, theta);
     sigma2_b = b + 0.5*std::accumulate(SSE.begin(), SSE.end(), 0.0);
     sigma2   = 1/rgamma(1,sigma2_a,1/sigma2_b)[0];
+    
+    // Sample tau
+    tau = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau, c);
+  
+    // Update storage
+    keep_mu[i]      = mu;
+    keep_theta(i,_) = theta;
+    keep_sigma[i]   = sqrt(sigma2);
+    keep_tau[i]     = tau;
+    keep_pi[i]      = pi;
+  }
+  
+  
+  
+  return List::create(
+    Named("mu")    = keep_mu,
+    Named("theta") = keep_theta,
+    Named("sigma") = keep_sigma,
+    Named("tau")   = keep_tau,
+    Named("pi")    = keep_pi);
+}
+
+
+
+
+// [[Rcpp::export]]
+List mcmc_pointmass_t(
+  int n_reps, 
+  NumericVector y, 
+  IntegerVector group, 
+  double mu,            // initial values
+  NumericVector theta, 
+  double sigma2,
+  double tau,
+  double m,             // Prior values
+  double C,
+  double a,
+  double b,
+  double c,
+  double a_pi,
+  double b_pi,
+  int df
+) {
+    
+    
+  int i, j, g = theta.length();
+  
+  // other initial values
+  double pi = 0.5, log_pi = log(pi);
+  IntegerVector gamma(g, 1); // gamma[i] ~ Ber(pi)
+  NumericVector psi(g);      // theta[i] = gamma[i]*psi[i]
+  for (i=0; i<g; i++) psi[i] = theta[i];
+  
+  // Allocate storage
+  NumericVector keep_mu(   n_reps);
+  NumericMatrix keep_theta(n_reps, g);
+  NumericVector keep_sigma(n_reps);
+  NumericVector keep_tau(  n_reps);
+  NumericVector keep_pi(   n_reps);
+  
+  // Calculate summary statistics
+  int N = y.length();            // total number of observations
+  IntegerVector n(   g,0);
+  NumericVector ybar(g,0.0);
+  for (i=0; i<N; i++) {
+    n[   group[i]-1]++;          // group size
+    ybar[group[i]-1] += y[i];
+  }
+  for (i=0; i<g; i++) ybar[i] /= n[i];
+  double sigma2_b, sigma2_a = a + N/2;  
+  double tau_a    = (g-1)/2;
+  
+  // quantities reused during MCMC
+  NumericVector SSE(g);     // within group sum of squared errors (relative to theta)
+  NumericVector phi(g,1.0); // parameters for hierarchical representation of a t distribution
+  
+  // Run MCMC
+  for (i=0; i<n_reps; i++) {
+    // sample mu
+    mu = sample_mu(psi, phi, m, C);
+    
+    // sample gamma
+    gamma = sample_gamma(pi, g, n, ybar, psi, sigma2);
+    
+    // sample psi
+    for (j=0; j<g; j++) {
+      if (gamma[j]==0) {
+        psi[j] = rnorm(1, mu, phi[j])[0]; 
+        theta[j] = 0.0;
+      } else {
+        psi[j] = sample_normal_mean(n[j], ybar[j], sigma2, mu, phi[j]*phi[j]);
+        theta[j] = psi[j];
+      }
+    }
+    
+    // sample pi
+    pi = sample_pi(gamma, a_pi, b_pi);
+    
+    // for (int j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
+    
+    // sample sigma2
+    SSE      = calc_all_SSE(y, group, theta);
+    sigma2_b = b + 0.5*std::accumulate(SSE.begin(), SSE.end(), 0.0);
+    sigma2   = 1/rgamma(1,sigma2_a,1/sigma2_b)[0];
+    
+    // Sampl phi
+    phi = sample_normal_variance(IntegerVector(g,1), (psi-mu)*(psi-mu), df/2, df*tau*tau/2);
     
     // Sample tau
     tau = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau, c);
