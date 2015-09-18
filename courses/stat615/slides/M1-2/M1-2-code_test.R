@@ -60,6 +60,25 @@ for (i in 1:n_reps) pi[i] = sample_pi(s,1,1)
 hist(pi, freq=F, 100)
 curve(dbeta(x,1+sum(s),1+n-sum(s)), add=TRUE, lwd=2)
 
+
+# Test sample mu
+n_reps = 1e4
+n = 10
+true_mu = 0
+phi = rgamma(n, 1, 1)
+psi = rnorm(n, true_mu, phi)
+phi2 = phi^2
+m = 0; C = 1
+Cp = 1/(1/C + sum(1/phi2))
+mp = Cp*(m/C + sum(psi/phi2))
+set.seed(1)
+mu = rnorm(n_reps, mp, sqrt(Cp))
+mus = rep(NA, n_reps)
+set.seed(1)
+for (i in 1:n_reps) mus[i] = sample_mu(psi,phi,m,C)
+all.equal(mu,mus)
+
+
 ##############################################################################
 
 G = 10

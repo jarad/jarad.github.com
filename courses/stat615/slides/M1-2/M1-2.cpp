@@ -17,13 +17,15 @@ NumericVector sample_theta(IntegerVector n, NumericVector ybars, double sigma2, 
   return theta;
 }
 
+
 double sample_mu(NumericVector psi, NumericVector phi, double m, double C) {
   NumericVector phi2 = phi*phi;
-  Cp = 1/(1/C + sum(1  /phi2);
-  mp = Cp*(m/C + sum(psi/phi2);
-  return mp + sqrt(Cp) * R::norm(0,1);
+  double Cp = 1/ (1/C + sum(1  /phi2));
+  double mp = Cp*(m/C + sum(psi/phi2));
+  return mp + sqrt(Cp) * R::rnorm(0,1);
 }
 
+// [[Rcpp::export]]
 NumericVector sample_normal_variance(IntegerVector n, NumericVector SSE, double a, double b) {
   // y ~ N(theta, sigma2) 
   // sigma2 ~ IG(a,b)
@@ -33,7 +35,7 @@ NumericVector sample_normal_variance(IntegerVector n, NumericVector SSE, double 
   int g = SSE.length();
   NumericVector out(g);
   for (int i=0; i<g; i++) {
-    out[i] = 1/rgamma(1, a+n[i]/2, 1/(b+SSE[i]/2))[0]; // temp fix
+    out[i] = 1/R::rgamma(a+n[i]/2, 1/(b+SSE[i]/2)); // temp fix
   }
   
   return out;
@@ -105,7 +107,7 @@ List mcmc_normal(
   double mu,            // initial values
   NumericVector theta, 
   double sigma2,
-  double tau,
+  double tau2,
   double m,             // Prior values
   double C,
   double a,
@@ -143,10 +145,10 @@ List mcmc_normal(
   
   // Run MCMC
   for (i=0; i<n_reps; i++) {
-    for (j=0; j<g; j++) phi[j] = tau;
+    for (j=0; j<g; j++) phi[j] = tau2;
     
     // sample mu
-    mu    = sample_normal_mean(g, std::accumulate(theta.begin(), theta.end(), 0.0)/g, tau, m, C);
+    mu    = sample_normal_mean(g, std::accumulate(theta.begin(), theta.end(), 0.0)/g, tau2, m, C);
     
     // sample theta
     theta = sample_theta(n, ybar, sigma2, mu, phi);
@@ -159,13 +161,13 @@ List mcmc_normal(
     sigma2   = 1/rgamma(1,sigma2_a,1/sigma2_b)[0];
     
     // Sample tau
-    tau = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau, c);
+    tau2 = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau2, c);
   
     // Update storage
     keep_mu[i]      = mu;
     keep_theta(i,_) = theta;
     keep_sigma[i]   = sqrt(sigma2);
-    keep_tau[i]     = tau;
+    keep_tau[i]     = sqrt(tau2);
   }
   
   
@@ -188,7 +190,7 @@ List mcmc_pointmass_normal(
   double mu,            // initial values
   NumericVector theta, 
   double sigma2,
-  double tau,
+  double tau2,
   double m,             // Prior values
   double C,
   double a,
@@ -235,7 +237,7 @@ List mcmc_pointmass_normal(
     // for (j=0; j<g; j++) phi[j] = tau;
     
     // sample mu
-    mu    = sample_normal_mean(g, std::accumulate(psi.begin(), psi.end(), 0.0)/g, tau, m, C);
+    mu    = sample_normal_mean(g, std::accumulate(psi.begin(), psi.end(), 0.0)/g, tau2, m, C);
     
     // sample gamma
     gamma = sample_gamma(pi, g, n, ybar, psi, sigma2);
@@ -243,10 +245,10 @@ List mcmc_pointmass_normal(
     // sample psi
     for (j=0; j<g; j++) {
       if (gamma[j]==0) {
-        psi[j] = rnorm(1, mu, sqrt(tau))[0]; 
+        psi[j] = rnorm(1, mu, sqrt(tau2))[0]; 
         theta[j] = 0.0;
       } else {
-        psi[j] = sample_normal_mean(n[j], ybar[j], sigma2, mu, tau);
+        psi[j] = sample_normal_mean(n[j], ybar[j], sigma2, mu, tau2);
         theta[j] = psi[j];
       }
     }
@@ -262,13 +264,13 @@ List mcmc_pointmass_normal(
     sigma2   = 1/rgamma(1,sigma2_a,1/sigma2_b)[0];
     
     // Sample tau
-    tau = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau, c);
+    tau2 = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau2, c);
   
     // Update storage
     keep_mu[i]      = mu;
     keep_theta(i,_) = theta;
     keep_sigma[i]   = sqrt(sigma2);
-    keep_tau[i]     = tau;
+    keep_tau[i]     = sqrt(tau2);
     keep_pi[i]      = pi;
   }
   
@@ -293,7 +295,7 @@ List mcmc_pointmass_t(
   double mu,            // initial values
   NumericVector theta, 
   double sigma2,
-  double tau,
+  double tau2,
   double m,             // Prior values
   double C,
   double a,
@@ -330,14 +332,17 @@ List mcmc_pointmass_t(
   }
   for (i=0; i<g; i++) ybar[i] /= n[i];
   double sigma2_b, sigma2_a = a + N/2;  
-  double tau_a    = (g-1)/2;
+  double tau_a    = (g*df+1)/2;
   
   // quantities reused during MCMC
   NumericVector SSE(g);     // within group sum of squared errors (relative to theta)
   NumericVector phi(g,1.0); // parameters for hierarchical representation of a t distribution
+  NumericVector phi_inverse(g);
   
   // Run MCMC
   for (i=0; i<n_reps; i++) {
+
+    
     // sample mu
     mu = sample_mu(psi, phi, m, C);
     
@@ -347,7 +352,7 @@ List mcmc_pointmass_t(
     // sample psi
     for (j=0; j<g; j++) {
       if (gamma[j]==0) {
-        psi[j] = rnorm(1, mu, phi[j])[0]; 
+        psi[j] = R::rnorm(mu, phi[j]); 
         theta[j] = 0.0;
       } else {
         psi[j] = sample_normal_mean(n[j], ybar[j], sigma2, mu, phi[j]*phi[j]);
@@ -363,19 +368,33 @@ List mcmc_pointmass_t(
     // sample sigma2
     SSE      = calc_all_SSE(y, group, theta);
     sigma2_b = b + 0.5*std::accumulate(SSE.begin(), SSE.end(), 0.0);
-    sigma2   = 1/rgamma(1,sigma2_a,1/sigma2_b)[0];
+    sigma2   = 1/R::rgamma(sigma2_a,1/sigma2_b);
     
-    // Sampl phi
-    phi = sample_normal_variance(IntegerVector(g,1), (psi-mu)*(psi-mu), df/2, df*tau*tau/2);
+        
+    Rcout << std:: endl << i << std::endl;
+    Rcout << df << std::endl;
+    Rcout << tau2 << std::endl;
+    Rcout << sigma2 << std::endl;
+    Rcout << mu << std::endl;
+    Rcout << pi << std::endl;
+    for (j=0; j<g; j++) Rcout << phi[j] << ' '; Rcout << std::endl;
+    for (j=0; j<g; j++) Rcout << gamma[j] << ' '; Rcout << std::endl;
+    for (j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
+    for (j=0; j<g; j++) Rcout << psi[j] << ' '; Rcout << std::endl;
+    
+    
+    // Sample phi
+    phi = sample_normal_variance(IntegerVector(g,1), (psi-mu)*(psi-mu), df/2.0, df*tau2/2.0);
     
     // Sample tau
-    tau = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau, c);
+    for (j=0; j<g; j++) phi_inverse[j] = 1.0/phi[j];
+    tau2 = tau_MH(rgamma(1, tau_a, std::accumulate(phi_inverse.begin(), phi_inverse.end(), 0.0)/2.0)[0], tau2, c);
   
     // Update storage
     keep_mu[i]      = mu;
     keep_theta(i,_) = theta;
     keep_sigma[i]   = sqrt(sigma2);
-    keep_tau[i]     = tau;
+    keep_tau[i]     = sqrt(tau2);
     keep_pi[i]      = pi;
   }
   
