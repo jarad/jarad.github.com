@@ -1,3 +1,9 @@
+# This file is really just for my personal use in debugging my code. 
+# I don't expect much of it to run at any given time. 
+
+
+setwd('courses/stat615/slides/M1-2')
+
 library(Rcpp)
 library(plyr)
 library(ggplot2)
