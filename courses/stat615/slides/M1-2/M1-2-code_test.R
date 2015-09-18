@@ -50,6 +50,16 @@ dvarsigma = Vectorize(function(x, theta, mu, tau, log=FALSE) {
   return(exp(logf))
 })
 
+
+# Test sample_pi
+n_reps = 1e4
+pi = rep(NA,n_reps)
+n = 100; true_pi = 0.8
+s = rbinom(n, 1, true_pi)
+for (i in 1:n_reps) pi[i] = sample_pi(s,1,1)
+hist(pi, freq=F, 100)
+curve(dbeta(x,1+sum(s),1+n-sum(s)), add=TRUE, lwd=2)
+
 ##############################################################################
 
 G = 10
@@ -89,3 +99,5 @@ mean(r$tau); var(s$theta)
 
 hist(r$sigma, freq=FALSE, 100)
 abline(v=sqrt(mean(s$sigma2)), col='blue', lwd=2)
+
+hist(r$pi, freq=FALSE, 100)

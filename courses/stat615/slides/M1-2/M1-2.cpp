@@ -8,20 +8,18 @@ using namespace Rcpp;
 // For more on using Rcpp click the Help button on the editor toolbar
 
 
-double sample_normal_mean(int n, double ybar, double var, double m, double C) {
-  // sum= n*ybar
-  // var= sigma2/n
-  double Cp = 1/(1/C+n/var);
-  double mp = Cp*(m/C+n*ybar/var);
+double sample_normal_mean(int n, double ybar, double V, double m, double C) {
+  double Cp = 1/(1/C+n/V);
+  double mp = Cp*(m/C+n*ybar/V);
   
   return mp + sqrt(Cp) * R::rnorm(0,1);
 }
 
 
-NumericVector sample_theta(NumericVector sums, IntegerVector n, double sigma2, double mu, NumericVector phi) {
+NumericVector sample_theta(IntegerVector n, NumericVector ybars, double sigma2, double mu, NumericVector phi) {
   NumericVector theta(n.length());
   for (int i=0; i<n.length(); i++) 
-    theta[i] = sample_normal_mean(n[i], sums[i]/n[i], sigma2, mu, phi[i]);
+    theta[i] = sample_normal_mean(n[i], ybars[i], sigma2, mu, phi[i]);
   return theta;
 }
 
@@ -71,6 +69,34 @@ double tau_MH(double tau_proposed, double tau_current, double c) {
 }
 
 
+
+IntegerVector sample_gamma(double pi, int g, IntegerVector n, NumericVector ybar, NumericVector psi, double sigma2) {
+  double new_pi, mx, log_pi=log(pi);
+  NumericVector log_pH(2);
+  IntegerVector gamma(g);
+  
+  for (int i=0; i<g; i++) {
+    // calculate marginal likelihoods
+    log_pH[0] =    log_pi  + R::dnorm(ybar[i],    0.0, sqrt(sigma2/n[i]), 1);
+    log_pH[1] = (1-log_pi) + R::dnorm(ybar[i], psi[i], sqrt(sigma2/n[i]), 1);
+    
+    // normalize
+    mx = max(log_pH); log_pH[0] = log_pH[0]-mx; log_pH[1] = log_pH[1]-mx;
+    new_pi = exp(log_pH[0]) / (exp(log_pH[0]) + exp(log_pH[1]));
+    
+    gamma[i] = R::rbinom(1, 1-new_pi); // since pi is probability of zero
+  }
+  
+  return gamma;
+}
+
+// [[Rcpp::export]]
+double sample_pi(IntegerVector gamma, double a, double b) {
+  int n = gamma.length(), s = std::accumulate(gamma.begin(), gamma.end(), 0);
+  return rbeta(1, a+s, b+n-s)[0];
+}
+
+
 // [[Rcpp::export]]
 List mcmc_normal(
   int n_reps, 
@@ -102,11 +128,12 @@ List mcmc_normal(
   // Calculate summary statistics
   int N = y.length();            // total number of observations
   IntegerVector n(   g,0);
-  NumericVector ysum(g,0.0);
+  NumericVector ybar(g,0.0);
   for (i=0; i<N; i++) {
     n[   group[i]-1]++;          // group size
-    ysum[group[i]-1] += y[i];
+    ybar[group[i]-1] += y[i];
   }
+  for (i=0; i<g; i++) ybar[i] /= n[i];
   double sigma2_b, sigma2_a = a + N/2;  
   double tau_a    = (g-1)/2;
   
@@ -122,7 +149,7 @@ List mcmc_normal(
     mu    = sample_normal_mean(g, std::accumulate(theta.begin(), theta.end(), 0.0)/g, tau, m, C);
     
     // sample theta
-    theta = sample_theta(ysum, n, sigma2, mu, phi);
+    theta = sample_theta(n, ybar, sigma2, mu, phi);
     
     // for (int j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
     
@@ -148,4 +175,109 @@ List mcmc_normal(
     Named("theta") = keep_theta,
     Named("sigma") = keep_sigma,
     Named("tau")   = keep_tau);
+}
+
+
+
+
+// [[Rcpp::export]]
+List mcmc_pointmass_normal(
+  int n_reps, 
+  NumericVector y, 
+  IntegerVector group, 
+  double mu,            // initial values
+  NumericVector theta, 
+  double sigma2,
+  double tau,
+  double m,             // Prior values
+  double C,
+  double a,
+  double b,
+  double c,
+  double a_pi,
+  double b_pi
+) {
+    
+    
+  int i, j, g = theta.length();
+  
+  // other initial values
+  double pi = 0.5, log_pi = log(pi);
+  IntegerVector gamma(g, 1); // gamma[i] ~ Ber(pi)
+  NumericVector psi(g);      // theta[i] = gamma[i]*psi[i]
+  for (i=0; i<g; i++) psi[i] = theta[i];
+  
+  // Allocate storage
+  NumericVector keep_mu(   n_reps);
+  NumericMatrix keep_theta(n_reps, g);
+  NumericVector keep_sigma(n_reps);
+  NumericVector keep_tau(  n_reps);
+  NumericVector keep_pi(   n_reps);
+  
+  // Calculate summary statistics
+  int N = y.length();            // total number of observations
+  IntegerVector n(   g,0);
+  NumericVector ybar(g,0.0);
+  for (i=0; i<N; i++) {
+    n[   group[i]-1]++;          // group size
+    ybar[group[i]-1] += y[i];
+  }
+  for (i=0; i<g; i++) ybar[i] /= n[i];
+  double sigma2_b, sigma2_a = a + N/2;  
+  double tau_a    = (g-1)/2;
+  
+  // quantities reused during MCMC
+  NumericVector SSE(g);     // within group sum of squared errors (relative to theta)
+  // NumericVector phi(g);
+  
+  // Run MCMC
+  for (i=0; i<n_reps; i++) {
+    // for (j=0; j<g; j++) phi[j] = tau;
+    
+    // sample mu
+    mu    = sample_normal_mean(g, std::accumulate(psi.begin(), psi.end(), 0.0)/g, tau, m, C);
+    
+    // sample gamma
+    gamma = sample_gamma(pi, g, n, ybar, psi, sigma2);
+    
+    // sample psi
+    for (j=0; j<g; j++) {
+      if (gamma[j]==0) {
+        psi[j] = rnorm(1, mu, sqrt(tau))[0]; 
+        theta[j] = 0.0;
+      } else {
+        psi[j] = sample_normal_mean(n[j], ybar[j], sigma2, mu, tau);
+        theta[j] = psi[j];
+      }
+    }
+    
+    // sample pi
+    pi = sample_pi(gamma, a_pi, b_pi);
+    
+    // for (int j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
+    
+    // sample sigma2
+    SSE      = calc_all_SSE(y, group, theta);
+    sigma2_b = b + 0.5*std::accumulate(SSE.begin(), SSE.end(), 0.0);
+    sigma2   = 1/rgamma(1,sigma2_a,1/sigma2_b)[0];
+    
+    // Sample tau
+    tau = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau, c);
+  
+    // Update storage
+    keep_mu[i]      = mu;
+    keep_theta(i,_) = theta;
+    keep_sigma[i]   = sqrt(sigma2);
+    keep_tau[i]     = tau;
+    keep_pi[i]      = pi;
+  }
+  
+  
+  
+  return List::create(
+    Named("mu")    = keep_mu,
+    Named("theta") = keep_theta,
+    Named("sigma") = keep_sigma,
+    Named("tau")   = keep_tau,
+    Named("pi")    = keep_pi);
 }
