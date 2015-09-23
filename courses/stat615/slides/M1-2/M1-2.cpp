@@ -186,14 +186,14 @@ void sample_psi_and_theta(IntegerVector gamma,
                           NumericVector theta, 
                           IntegerVector n, 
                           NumericVector ybar, 
-                          double sigma2, double mu, double tau2) 
+                          double sigma2, double mu, NumericVector phi) 
 {
   for (int g=0; g<gamma.length(); g++) {
     if (gamma[g]) {
-      psi[g] = sample_normal_mean(n[g], ybar[g], sigma2, mu, tau2);
+      psi[g] = sample_normal_mean(n[g], ybar[g], sigma2, mu, phi[g]);
       theta[g] = psi[g];
     } else {
-      psi[g] = rnorm(1, mu, sqrt(tau2))[0]; 
+      psi[g] = rnorm(1, mu, sqrt(phi[g]))[0]; 
       theta[g] = 0.0;
     }
   }                     
@@ -331,6 +331,7 @@ List mcmc_pointmass_normal(
   
   // Run MCMC
   for (int i=0; i<n_reps; i++) {
+    for (int g=0; g<G; g++) phi[g] = tau2;
     
     // sample mu
     sum = std::accumulate(psi.begin(), psi.end(), 0.0);
@@ -342,7 +343,7 @@ List mcmc_pointmass_normal(
     check(gamma, 0, 1);
     
     // sample psi and (set) theta
-    sample_psi_and_theta(gamma, psi, theta, n, ybar, sigma2, mu, tau2);
+    sample_psi_and_theta(gamma, psi, theta, n, ybar, sigma2, mu, phi);
     check(psi,   -1e5, 1e5);
     check(theta, -1e5, 1e5);
     
@@ -449,7 +450,7 @@ List mcmc_pointmass_t(
     check(gamma, 0, 1);
     
     // sample psi and (set) theta
-    sample_psi_and_theta(gamma, psi, theta, n, ybar, sigma2, mu, tau2);
+    sample_psi_and_theta(gamma, psi, theta, n, ybar, sigma2, mu, phi);
     check(psi,   -1e5, 1e5);
     check(theta, -1e5, 1e5);
     
