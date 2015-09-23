@@ -47,7 +47,7 @@ int check(int value, int min, int max) {
   return value;
 }
 
-IntegerVector check(IntegerVector value, int min, int max) {
+void check(IntegerVector value, int min, int max) {
   for (int i=0; i<value.length(); i++) value[i] = check(value[i], min, max);
 }
 
