@@ -24,6 +24,7 @@ r = mcmc_normal(n_reps = 1e5, y = d$y, group = d$group,
                 verbose = 0)
 
 # Additional initial and prior values
+# This is really to speed up convergence
 initial_values$gamma = abs(s$mean) > 2*sqrt(initial_values$sigma2)
 initial_values$pi = 1-mean(initial_values$gamma)
 initial_values$psi = with(initial_values, ifelse(gamma, theta, rnorm(G, mu, sqrt(tau2))))
@@ -37,11 +38,10 @@ r = mcmc_pointmass_normal(n_reps = 1e5, y = d$y, group = d$group,
                           prior = prior,
                           verbose = 0)
 
-# This isn't working yet
-r = mcmc_pointmass_t(n_reps = 1e2, y = d$y, group = d$group, 
-                     mu = mean(s$theta), 
-                     theta = s$theta, 
-                     sigma2 = 1, 
-                     tau2 = var(s$theta), 
-                     m = 0, C = 1, a = 1, b = 1, c = 1, a_pi=1, b_pi=1, df=5)
+
+prior$df = 3
+r = mcmc_pointmass_normal(n_reps = 1e5, y = d$y, group = d$group, 
+                          initial_values = initial_values,
+                          prior = prior,
+                          verbose = 0)
 

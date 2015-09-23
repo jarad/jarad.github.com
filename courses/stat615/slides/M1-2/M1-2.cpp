@@ -386,122 +386,114 @@ List mcmc_pointmass_normal(
 
 // [[Rcpp::export]]
 List mcmc_pointmass_t(
-  int n_reps, 
-  NumericVector y, 
-  IntegerVector group, 
-  double mu,            // initial values
-  NumericVector theta, 
-  double sigma2,
-  double tau2,
-  double m,             // Prior values
-  double C,
-  double a,
-  double b,
-  double c,
-  double a_pi,
-  double b_pi,
-  int df
+  const int n_reps, 
+  const NumericVector y, 
+  const IntegerVector group, 
+  const List initial_values,
+  const List prior,
+  const int verbose
 ) {
-    
-    
-  int i, j, g = theta.length();
   
-  // other initial values
-  double pi = 0.5, log_pi = log(pi);
-  IntegerVector gamma(g, 1); // gamma[i] ~ Ber(pi)
-  NumericVector psi(g);      // theta[i] = gamma[i]*psi[i]
-  for (i=0; i<g; i++) psi[i] = theta[i];
+  if (verbose) Rcout << "Setting initial values." << std::endl;
+  // Set initial values
+  double mu     = as<double>(initial_values["mu"]);
+  double sigma2 = as<double>(initial_values["sigma2"]);
+  double tau2   = as<double>(initial_values["tau2"]);
+  double pi     = as<double>(initial_values["pi"]);
+  NumericVector theta  = clone(as<NumericVector>(initial_values["theta"]));
+  NumericVector psi    = clone(as<NumericVector>(initial_values["psi"]));
+  NumericVector phi    = clone(as<NumericVector>(initial_values["phi"]));
+  IntegerVector gamma  = clone(as<IntegerVector>(initial_values["gamma"]));
   
   // Allocate storage
-  NumericVector keep_mu(   n_reps);
-  NumericMatrix keep_theta(n_reps, g);
-  NumericVector keep_sigma(n_reps);
-  NumericVector keep_tau(  n_reps);
-  NumericVector keep_pi(   n_reps);
+  int G = theta.length(); // number of groups
+  NumericVector keep_mu(    n_reps);
+  NumericVector keep_sigma2(n_reps);
+  NumericVector keep_tau2(  n_reps);
+  NumericVector keep_pi(    n_reps);
+  NumericMatrix keep_theta( n_reps, G);
+  NumericMatrix keep_psi(   n_reps, G);
+  NumericMatrix keep_phi(   n_reps, G);
+  IntegerMatrix keep_gamma( n_reps, G);
+  
+  // Set prior values
+  double m    = as<double>(prior["m"]   ); // mu ~ N(m,C)
+  double C    = as<double>(prior["C"]   );
+  double a    = as<double>(prior["a"]   ); // sigma2 ~ IG(a,b)
+  double b    = as<double>(prior["b"]   );
+  double c    = as<double>(prior["c"]   ); // tau ~ Ca+(0,c)
+  double a_pi = as<double>(prior["a_pi"]);
+  double b_pi = as<double>(prior["b_pi"]); // pi ~ Be(a_pi,b_pi)
+  double df   = as<double>(prior["df"]);   // phi_i ~ IG(df/2, df*tau2/2)
   
   // Calculate summary statistics
-  int N = y.length();            // total number of observations
-  IntegerVector n(   g,0);
-  NumericVector ybar(g,0.0);
-  for (i=0; i<N; i++) {
-    n[   group[i]-1]++;          // group size
-    ybar[group[i]-1] += y[i];
-  }
-  for (i=0; i<g; i++) ybar[i] /= n[i];
-  double sigma2_b, sigma2_a = a + N/2;  
-  double tau2_a    = (g*df+1)/2;
+  const IntegerVector n(   calc_group_size(  group)  );
+  const NumericVector ybar(calc_group_sum(y, group)/as<NumericVector>(n));
+  const double tau2_a    = (G*df+1)/2, sigma2_a = a + y.length()/2;
   
   // quantities reused during MCMC
-  NumericVector SSE(g);     // within group sum of squared errors (relative to theta)
-  NumericVector phi(g,1.0); // parameters for hierarchical representation of a t distribution
-  NumericVector phi_inverse(g);
+  double sigma2_b, sum;
+  NumericVector SSE(G);     // within group sum of squared errors (relative to theta)
+  NumericVector phi_inverse(G);
   
   // Run MCMC
-  for (i=0; i<n_reps; i++) {
-
-    // sample mu
-    mu = sample_mu(psi, phi, m, C);
+  for (int i=0; i<n_reps; i++) {
     
-
+    // sample mu
+    sum = std::accumulate(psi.begin(), psi.end(), 0.0);
+    mu  = sample_normal_mean(G, sum/G, tau2, m, C);
+    check(mu, -1e5, 1e5);
     
     // sample gamma
-    gamma = sample_gamma(pi, g, n, ybar, psi, sigma2);
+    gamma = sample_gamma(pi, G, n, ybar, psi, sigma2);
+    check(gamma, 0, 1);
     
-    // sample psi
-    for (j=0; j<g; j++) {
-      if (gamma[j]==0) {
-        psi[j] = R::rnorm(mu, phi[j]); 
-        theta[j] = 0.0;
-      } else {
-        psi[j] = sample_normal_mean(n[j], ybar[j], sigma2, mu, phi[j]*phi[j]);
-        theta[j] = psi[j];
-      }
-    }
+    // sample psi and (set) theta
+    sample_psi_and_theta(gamma, psi, theta, n, ybar, sigma2, mu, tau2);
+    check(psi,   -1e5, 1e5);
+    check(theta, -1e5, 1e5);
     
     // sample pi
     pi = sample_pi(gamma, a_pi, b_pi);
+    pi = check(pi, 0.0, 1.0);
     
     // sample sigma2
     SSE      = calc_all_SSE(y, group, theta);
-    sigma2_b = b + 0.5*std::accumulate(SSE.begin(), SSE.end(), 0.0);
-    sigma2   = 1/R::rgamma(sigma2_a,1/sigma2_b);
+    sum = std::accumulate(SSE.begin(), SSE.end(), 0.0);
+    sigma2_b = b + 0.5*sum;
+    sigma2   = 1/rgamma(1,sigma2_a,1/sigma2_b)[0];
+    sigma2 = check(sigma2, 0.0, 1e5);
     
     // Sample phi
-    phi = sample_normal_variance(IntegerVector(g,1), (psi-mu)*(psi-mu), df/2.0, df*tau2/2.0);
-    for (j=0; j<g; j++) if (phi[j]>1e5) phi[j] = 1e5;
-    
+    phi = sample_normal_variance(IntegerVector(G,1), (psi-mu)*(psi-mu), df/2.0, df*tau2/2.0);
+    check(phi, 0.0, 1e5);
     
     // Sample tau2
-    for (j=0; j<g; j++) phi_inverse[j] = 1.0/phi[j];
-    tau2 = tau2_MH(rgamma(1, tau2_a, std::accumulate(phi_inverse.begin(), phi_inverse.end(), 0.0)/2.0)[0], tau2, c);
-  
-    Rcout << std::endl << i << std::endl;
-    Rcout << "mu= " << mu << std::endl;
-    for (j=0; j<g; j++) Rcout << "gamma= " << gamma[j] << ' '; Rcout << std::endl;
-    for (j=0; j<g; j++) Rcout << "theta= " << theta[j] << ' '; Rcout << std::endl;
-    for (j=0; j<g; j++) Rcout << "psi= "   << psi[j]   << ' '; Rcout << std::endl;
-    Rcout << "pi= " << pi << std::endl;
-    Rcout << "sigma2= " << sigma2 << std::endl;
-    for (j=0; j<g; j++) Rcout << "phi= " << phi[j]   << ' '; Rcout << std::endl;
-    Rcout << "tau2= " << tau2 << std::endl;
-    
-    if (NumericVector::is_na(mu)) break;
-    // if (is_true(any(phi == R_PosInf))) break;
+    for (int g=0; g<G; g++) phi_inverse[g] = 1.0/phi[g];
+    sum = std::accumulate(phi_inverse.begin(), phi_inverse.end(), 0.0);
+    tau2 = tau2_MH(rgamma(1, tau2_a, 2.0/sum)[0], tau2, c);
+    tau2 = check(tau2, 0.0, 1e5);
   
     // Update storage
     keep_mu[i]      = mu;
     keep_theta(i,_) = theta;
-    keep_sigma[i]   = sqrt(sigma2);
-    keep_tau[i]     = sqrt(tau2);
+    keep_psi(  i,_) = psi;
+    keep_phi(  i,_) = phi;
+    keep_gamma(i,_) = gamma;
+    keep_sigma2[i]  = sigma2;
+    keep_tau2[i]    = tau2;
     keep_pi[i]      = pi;
   }
-  
-  
   
   return List::create(
     Named("mu")    = keep_mu,
     Named("theta") = keep_theta,
-    Named("sigma") = keep_sigma,
-    Named("tau")   = keep_tau,
+    Named("psi")   = keep_psi,
+    Named("phi")   = keep_phi,
+    Named("gamma") = keep_gamma,
+    Named("sigma2") = keep_sigma2,
+    Named("tau2")   = keep_tau2,
     Named("pi")    = keep_pi);
 }
+
+
