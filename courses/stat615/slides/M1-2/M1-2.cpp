@@ -2,13 +2,46 @@
 using namespace Rcpp;
 
 
+
+
+//////////////////////////////////////////////////////////////////////////
+// Some functions to restrict range of parameter values to avoid
+// numerical problems
+//////////////////////////////////////////////////////////////////////////
+
+double check(double value, double min, double max) {
+  if (value < min) value = min;
+  if (value > max) value = max;
+  return value;
+}
+
+NumericVector check(NumericVector value, double min, double max) {
+  for (int i=0; i<value.length(); i++) value[i] = check(value[i], min, max);
+  return value;
+}
+
+int check(int value, int min, int max) {
+  if (value < min) value = min;
+  if (value > max) value = max;
+  return value;
+}
+
+IntegerVector check(IntegerVector value, int min, int max) {
+  for (int i=0; i<value.length(); i++) value[i] = check(value[i], min, max);
+  return value;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Sampling functions
+//////////////////////////////////////////////////////////////////////
+
+
 double sample_normal_mean(int n, double ybar, double V, double m, double C) {
   double Cp = 1/(1/C+n/V);
   double mp = Cp*(m/C+n*ybar/V);
   
   return mp + sqrt(Cp) * R::rnorm(0,1);
 }
-
 
 NumericVector sample_theta(IntegerVector n, NumericVector ybars, double sigma2, double mu, NumericVector phi) {
   NumericVector theta(n.length());
@@ -32,10 +65,14 @@ NumericVector sample_normal_variance(IntegerVector n, NumericVector SSE, double 
   // sample sigma2|y ~ IG(a',b')
   // a' = a+n/2
   // b' = b+(y-theta)^2/2
-  int g = SSE.length();
+  int g = SSE.length(), count;
   NumericVector out(g);
   for (int i=0; i<g; i++) {
-    out[i] = 1/R::rgamma(a+n[i]/2, 1/(b+SSE[i]/2)); // temp fix
+    out[i] = R_PosInf; count = 0;
+    while ( (out[i] == R_PosInf) && (count<1000) ) {
+      out[i] = 1/R::rgamma(a+n[i]/2, 1/(b+SSE[i]/2)); // temp fix
+      count++;
+    }
   }
   
   return out;
@@ -70,11 +107,9 @@ double tau_MH(double tau_proposed, double tau_current, double c) {
   return ifelse( log(runif(1)) < log_rho, tau_proposed, tau_current)[0];
 }
 
-
-
 IntegerVector sample_gamma(double pi, int g, IntegerVector n, NumericVector ybar, NumericVector psi, double sigma2) {
-  double new_pi, mx, log_pi=log(pi);
-  NumericVector log_pH(2);
+  double log_pi=log(pi);
+  NumericVector log_pH(2), pH(2);
   IntegerVector gamma(g);
   
   for (int i=0; i<g; i++) {
@@ -83,19 +118,19 @@ IntegerVector sample_gamma(double pi, int g, IntegerVector n, NumericVector ybar
     log_pH[1] = (1-log_pi) + R::dnorm(ybar[i], psi[i], sqrt(sigma2/n[i]), 1);
     
     // normalize
-    mx = max(log_pH); log_pH[0] = log_pH[0]-mx; log_pH[1] = log_pH[1]-mx;
-    new_pi = exp(log_pH[0]) / (exp(log_pH[0]) + exp(log_pH[1]));
+    log_pH = log_pH - max(log_pH);
+    pH = exp(log_pH);
     
-    gamma[i] = R::rbinom(1, 1-new_pi); // since pi is probability of zero
+    gamma[i] = R::rbinom(1, pH[1]/sum(pH)); 
   }
   
   return gamma;
 }
 
-// [[Rcpp::export]]
 double sample_pi(IntegerVector gamma, double a, double b) {
-  int n = gamma.length(), s = std::accumulate(gamma.begin(), gamma.end(), 0);
-  return rbeta(1, a+s, b+n-s)[0];
+  // pi is the probability of gamma==0
+  int n = gamma.length(), f = std::accumulate(gamma.begin(), gamma.end(), 0);
+  return rbeta(1, a+n-f, b+f)[0];
 }
 
 
@@ -185,8 +220,8 @@ List mcmc_normal(
 // [[Rcpp::export]]
 List mcmc_pointmass_normal(
   int n_reps, 
-  NumericVector y, 
-  IntegerVector group, 
+  const NumericVector y, 
+  const IntegerVector group, 
   double mu,            // initial values
   NumericVector theta, 
   double sigma2,
@@ -200,12 +235,11 @@ List mcmc_pointmass_normal(
   double b_pi
 ) {
     
-    
   int i, j, g = theta.length();
   
   // other initial values
   double pi = 0.5, log_pi = log(pi);
-  IntegerVector gamma(g, 1); // gamma[i] ~ Ber(pi)
+  IntegerVector gamma(g, 0); // gamma[i] ~ Ber(pi)
   NumericVector psi(g);      // theta[i] = gamma[i]*psi[i]
   for (i=0; i<g; i++) psi[i] = theta[i];
   
@@ -244,12 +278,12 @@ List mcmc_pointmass_normal(
     
     // sample psi
     for (j=0; j<g; j++) {
-      if (gamma[j]==0) {
-        psi[j] = rnorm(1, mu, sqrt(tau2))[0]; 
-        theta[j] = 0.0;
-      } else {
+      if (gamma[j]) {
         psi[j] = sample_normal_mean(n[j], ybar[j], sigma2, mu, tau2);
         theta[j] = psi[j];
+      } else {
+        psi[j] = rnorm(1, mu, sqrt(tau2))[0]; 
+        theta[j] = 0.0;
       }
     }
     
@@ -264,7 +298,7 @@ List mcmc_pointmass_normal(
     sigma2   = 1/rgamma(1,sigma2_a,1/sigma2_b)[0];
     
     // Sample tau
-    tau2 = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(theta,mu))[0], tau2, c);
+    tau2 = tau_MH(1/rgamma(1, tau_a, 2/calc_SSE(psi,mu))[0], tau2, c);
   
     // Update storage
     keep_mu[i]      = mu;
@@ -273,8 +307,6 @@ List mcmc_pointmass_normal(
     keep_tau[i]     = sqrt(tau2);
     keep_pi[i]      = pi;
   }
-  
-  
   
   return List::create(
     Named("mu")    = keep_mu,
@@ -342,9 +374,10 @@ List mcmc_pointmass_t(
   // Run MCMC
   for (i=0; i<n_reps; i++) {
 
-    
     // sample mu
     mu = sample_mu(psi, phi, m, C);
+    
+
     
     // sample gamma
     gamma = sample_gamma(pi, g, n, ybar, psi, sigma2);
@@ -363,32 +396,32 @@ List mcmc_pointmass_t(
     // sample pi
     pi = sample_pi(gamma, a_pi, b_pi);
     
-    // for (int j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
-    
     // sample sigma2
     SSE      = calc_all_SSE(y, group, theta);
     sigma2_b = b + 0.5*std::accumulate(SSE.begin(), SSE.end(), 0.0);
     sigma2   = 1/R::rgamma(sigma2_a,1/sigma2_b);
     
-        
-//    Rcout << std:: endl << i << std::endl;
-//    Rcout << df << std::endl;
-//    Rcout << tau2 << std::endl;
-//    Rcout << sigma2 << std::endl;
-//    Rcout << mu << std::endl;
-//    Rcout << pi << std::endl;
-//    for (j=0; j<g; j++) Rcout << phi[j] << ' '; Rcout << std::endl;
-//    for (j=0; j<g; j++) Rcout << gamma[j] << ' '; Rcout << std::endl;
-//    for (j=0; j<g; j++) Rcout << theta[j] << ' '; Rcout << std::endl;
-//    for (j=0; j<g; j++) Rcout << psi[j] << ' '; Rcout << std::endl;
-    
-    
     // Sample phi
     phi = sample_normal_variance(IntegerVector(g,1), (psi-mu)*(psi-mu), df/2.0, df*tau2/2.0);
+    for (j=0; j<g; j++) if (phi[j]>1e5) phi[j] = 1e5;
+    
     
     // Sample tau
     for (j=0; j<g; j++) phi_inverse[j] = 1.0/phi[j];
     tau2 = tau_MH(rgamma(1, tau_a, std::accumulate(phi_inverse.begin(), phi_inverse.end(), 0.0)/2.0)[0], tau2, c);
+  
+    Rcout << std::endl << i << std::endl;
+    Rcout << "mu= " << mu << std::endl;
+    for (j=0; j<g; j++) Rcout << "gamma= " << gamma[j] << ' '; Rcout << std::endl;
+    for (j=0; j<g; j++) Rcout << "theta= " << theta[j] << ' '; Rcout << std::endl;
+    for (j=0; j<g; j++) Rcout << "psi= "   << psi[j]   << ' '; Rcout << std::endl;
+    Rcout << "pi= " << pi << std::endl;
+    Rcout << "sigma2= " << sigma2 << std::endl;
+    for (j=0; j<g; j++) Rcout << "phi= " << phi[j]   << ' '; Rcout << std::endl;
+    Rcout << "tau2= " << tau2 << std::endl;
+    
+    if (NumericVector::is_na(mu)) break;
+    // if (is_true(any(phi == R_PosInf))) break;
   
     // Update storage
     keep_mu[i]      = mu;
