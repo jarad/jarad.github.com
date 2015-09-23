@@ -55,10 +55,10 @@ dvarsigma = Vectorize(function(x, theta, mu, tau, log=FALSE) {
 n_reps = 1e4
 pi = rep(NA,n_reps)
 n = 100; true_pi = 0.8
-s = rbinom(n, 1, true_pi)
+s = rbinom(n, 1, 1-true_pi)
 for (i in 1:n_reps) pi[i] = sample_pi(s,1,1)
-hist(pi, freq=F, 100)
-curve(dbeta(x,1+sum(s),1+n-sum(s)), add=TRUE, lwd=2)
+hist(pi, freq=F, 100, xlim=c(0,1))
+curve(dbeta(x,1+n-sum(s),1+sum(s)), add=TRUE, lwd=2, col='red')
 
 
 # Test sample mu
@@ -78,6 +78,35 @@ set.seed(1)
 for (i in 1:n_reps) mus[i] = sample_mu(psi,phi,m,C)
 all.equal(mu,mus)
 
+
+# sample_gamma
+
+G = 10
+n = rpois(G,1)+1
+psi = rep(c(0,10), each=G/2)
+ybar = rnorm(G, psi)
+pi = .9
+sigma2 = 1
+set.seed(1); sample_gamma(pi, G, n, ybar, psi, sigma2)
+  
+# sample_tau2
+true_f = function(tau2, theta, mu, c) {
+  exp(sum(dnorm(theta,mu,sqrt(tau2), log=TRUE)) + dcauchy(tau2,0,c,log=TRUE))
+}
+mu = .5
+c = 1
+theta = rnorm(10,mu)
+Vf = Vectorize(function(x) true_f(x, theta=theta, mu=mu, c=c))
+ii = integrate(Vf, 0, Inf)
+
+n_reps = 1e5
+tau2 = rep(1, n_reps)
+I = length(theta)
+for (i in 2:n_reps) 
+  tau2[i] = tau2_MH(1/rgamma(1,(I-1)/2, sum((theta-mu)^2/2)), tau2[i-1], 1)
+hist(tau2, 100, freq=F)
+curve(dcauchy(x,0,1)*2, col='blue', lwd=2, add=TRUE)
+curve(Vf(x)/ii$value, col='red', lwd=2, add=TRUE)
 
 ##############################################################################
 

@@ -2,8 +2,8 @@ library(plyr)
 library(Rcpp)
 sourceCpp("M1-2.cpp")
 
-G = 10
-theta = rep(c(rep(0,9),10), each=G/10); theta_true = theta
+G = 100
+theta = c(rep(0,G-10), rnorm(10,10))
 d = data.frame(group = rep(1:G, each=5))
 d$theta = theta[d$group]
 d$y = rnorm(nrow(d), d$theta)
@@ -15,28 +15,27 @@ initial_values = list(
   theta = s$mean, 
   sigma2 = mean(s$var), 
   tau2 = var(s$mean))
-prior = list(m = 0, C = 1, a = 1, b = 1, c = 1)
+prior = list(m = 0, C = 100, a = 1, b = 1, c = 1)
 
 set.seed(1)
 r = mcmc_normal(n_reps = 1e5, y = d$y, group = d$group, 
                 initial_values = initial_values,
                 prior = prior,
-                verbose = 1)
+                verbose = 0)
 
-# Find initial values
-s = ddply(d, .(group), summarize, n=length(y), mean=mean(y), var=var(y))
-sigma2 = mean(s$var) # best guess for sigma2
-tau2   = var(s$mean) # best guess for tau
-
-
-
+# Additional initial and prior values
+initial_values$gamma = abs(s$mean) > 2*sqrt(initial_values$sigma2)
+initial_values$pi = 1-mean(initial_values$gamma)
+initial_values$psi = with(initial_values, ifelse(gamma, theta, rnorm(G, mu, sqrt(tau2))))
+initial_values$mu = mean(s$mean[initial_values$gamma])
+initial_values$tau2 = var(s$mean[initial_values$gamma])
+if (is.na(initial_values$tau2)) initial_values$tau2 = 1
+prior$a_pi = prior$b_pi = 1
 
 r = mcmc_pointmass_normal(n_reps = 1e5, y = d$y, group = d$group, 
-                          mu = mean(s$mean), 
-                          theta = rep(0,G), 
-                          sigma2 = mean(s$var), 
-                          tau2 = var(s$mean), 
-                          m = 0, C = 100, a = 1, b = 1, c = 1, a_pi=1, b_pi=1)
+                          initial_values = initial_values,
+                          prior = prior,
+                          verbose = 0)
 
 # This isn't working yet
 r = mcmc_pointmass_t(n_reps = 1e2, y = d$y, group = d$group, 
