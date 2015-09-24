@@ -39,6 +39,7 @@ r = mcmc_pointmass_normal(n_reps = 1e5, y = d$y, group = d$group,
                           verbose = 0)
 
 
+initial_values$phi = rep(1,G)
 prior$df = 3
 r = mcmc_pointmass_normal(n_reps = 1e5, y = d$y, group = d$group, 
                           initial_values = initial_values,
