@@ -2,6 +2,7 @@
 # I don't expect much of it to run at any given time. 
 
 
+
 setwd('courses/stat615/slides/M1-2')
 
 library(Rcpp)
