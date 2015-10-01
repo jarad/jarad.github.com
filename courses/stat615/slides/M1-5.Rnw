@@ -1,0 +1,413 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+\usepackage{animate}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Hamiltonian Monte Carlo}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(animation)
+library(plyr)
+library(ggplot2)
+library(reshape2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Parameter augmentation}
+
+Suppose we are interested in sampling from a posterior distribution for $\theta\in \mathbb{R}^d$
+\[ 
+p(\theta|y) \propto p(y|\theta)p(\theta) . 
+\]
+
+\pause
+Now augment $\theta$ with moment variable $\omega\sim N_d(0,D)$ independent of $\theta|y$ such that 
+\[ 
+p(\theta|y) 
+= \int p(\theta|\omega,y)p(\omega)d\omega \pause 
+= \int p(\theta|y) p(\omega) d\omega
+\]
+\pause
+To compare with Neal (2010), we have $q=\theta$, $p=\omega$, 
+\[ 
+U(\theta) = -\log[p(y|\theta)p(\theta)] = -\log p(\theta|y) -\log p(\theta),
+\]
+\pause
+and 
+\[
+K(\omega) = -\log p(\omega).
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Hamiltonian Monte Carlo algorithm}
+
+\small
+
+Set tuning parameters 
+\begin{itemize}
+\item $L$: the number of steps
+\item $e$: stepsize
+\item $D=\{d_i\}$: covariance matrix for $\omega$
+\end{itemize}
+\pause
+
+Let $\theta^{(i)}$ be the current value of the parameter $\theta$. 
+\pause 
+The leap-frog Hamiltonian Monte Carlo algorithm is 
+\begin{enumerate}
+\item Sample $\omega \sim N_d(0,D)$. \pause
+\item Simulate Hamiltonian dynamics on location $\theta^{(i)}$ and momentum  $\omega$ via the leapfrog method (or any reversible method that preserves volume). \pause Call these updated values $\theta^*$ and $-\omega^*$. \pause
+\item Set $\theta^{(i+1)} = \theta^*$ with probability $\min\{1,\rho(\theta^{(i)},\theta^*)\}$ 
+\pause
+where 
+\[ 
+\rho(\theta^{(i)},\theta^*) = 
+\frac{p(\theta^*|y)}{p(\theta^{(i)}|y)}
+\frac{p(\omega^*)}{p(\omega^{(i)})} \pause = 
+\frac{p(y|\theta^*)p(\theta^*)}{p(y|\theta^{(i)})p(\theta^{(i)})} 
+\frac{N_d(\omega^*;0,D)}{N_d(\omega^{(i)};0,D)} 
+\]
+\pause
+otherwise set $\theta^{(i+1)} = \theta^{(i)}$.
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Leap-frog simulation of Hamiltonian dynamics}
+Given a current location $\theta(0)$ and momentum $\omega(0)$ at time $0$, the leap-frog method can be used to approximate simulating Hamiltonian dynamics up to time $Le$ using a series of $L$ steps each of time $e$. 
+
+\vspace{0.2in} 
+
+\pause The algorithm is 
+\begin{enumerate}
+\item For $\ell = 1,\ldots,L$, 
+\begin{enumerate}
+\item For $i=1,\ldots, d$, $\omega_i\left(\left[\ell-\frac{1}{2}\right]e\right) = \omega_i([\ell-1]e)-\frac{e}{2}\frac{\partial U}{\partial \theta_i} (\theta([\ell-1]e))$ \pause
+\item For $i=1,\ldots, d$, $\theta_i(\ell e) = \theta_i([\ell-1]e) + e \frac{\omega_i\left(\left[\ell-\frac{1}{2}\right]e\right)}{d_i}$ \pause
+\item For $i=1,\ldots, d$, $\omega_i(\ell e) = \omega_i\left(\left[\ell-\frac{1}{2}\right]e\right)-\frac{e}{2}\frac{\partial U}{\partial \theta_i} (\theta(\ell e))$ 
+\end{enumerate}
+\end{enumerate}
+\pause
+where $\theta_i$ and $\omega_i$ are the $i^{th}$ element of the location and momentum, respectively. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Leap-frog simulator}
+<<echo=TRUE>>=
+leap_frog = function(U, grad_U, e, L, theta, omega) {
+  omega = omega - e/2 * grad_U(theta) 
+    
+    for (l in 1:L) {
+      theta = theta + e * omega
+      if (l<L) omega = omega - e * grad_U(theta)
+    }
+    omega = omega - e/2 * grad_U(theta)
+  return(list(theta=theta,omega=omega))
+}
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Leap-frog simulator}
+<<leapfrog-animation, fig.show='animate', interval=.1>>=
+  # Create the data
+  set.seed(20150915)
+n_steps = 63
+theta = rep(2.5, n_steps)
+omega = rep(0, n_steps)
+for (i in 2:n_steps) {
+  tmp = leap_frog(function(x) x^2/2, function(x) x, .1, 1, theta[i-1], omega[i-1])
+  theta[i] = tmp$theta
+  omega[i] = tmp$omega
+}
+
+draw_step = function(i, e=.01) {
+  opar = par(mfrow=c(1,2))
+  curve(x^2/2, -3, 3, main='Location', ylab='')
+  points(theta[i], theta[i]^2/2+e, pch=19)
+  curve(x^2/2, -3, 3, main='Momentum', ylab='')
+  points(omega[i], omega[i]^2/2+e, pch=19)
+  par(opar)
+}
+
+# 
+for (i in 1:n_steps) {
+  draw_step(i)
+}
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Reversibility}
+
+A reversible simulation means that 
+\begin{itemize}
+\item if you simulate from $(\theta,\omega)$ to $(\theta',\omega')$ for some step size $e$ and number of steps $L$ \pause then 
+\item if you simulate from $(\theta',\omega')$ for some step size $e$ and number of steps $L$, you will end up at $(\theta,\omega)$. 
+\end{itemize}
+\pause
+If we use $q$ to denote our simulation ``density'', then reversibility means 
+\[
+q(\theta',\omega'|\theta,\omega) = q(\theta,\omega|\theta',\omega')
+\]
+\pause
+and thus in the Metropolis-Hastings calculation, the proposal is symmetric. 
+\pause
+In order to ensure reversibility of our proposal, we need to negate momentum after we complete the leap-frog simulation, but so long as $p(\omega) = p(-\omega)$ this will not affect our acceptance probability. 
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Leap-frog simulator}
+<<leapfrog-volume, fig.show='animate', interval=.1>>=
+r = sqrt(theta[1]^2 + omega[1]^2)
+n = 1001
+d = data.frame(x = c(seq(-r,r,length=n), seq(r, -r, length=n)))
+d$y = sqrt(r^2-d$x^2)
+d$y[1:n] = -d$y[1:n]
+for (i in 1:length(theta)) {
+  plot(y~x, d, type='l', col='gray', xlab='Location', ylab='Momentum')
+  points(theta[i], omega[i], pch=19)
+}
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Volume preserving results in perfect acceptance}
+
+Recall that we accept with probability $\min\{1,\rho(\theta^{(i)},\theta^*)\}$ 
+\pause
+where 
+\[ 
+\rho(\theta^{(i)},\theta^*) = 
+\frac{p(\theta^*|y)}{p(\theta^{(i)}|y)} 
+\frac{p(\omega^*)}{p(\omega^{(i)})} 
+\]
+\pause
+Volume is preserved if 
+\[ 
+p(\theta^{(i)}|y)p(\omega^{(i)}) 
+= p(\theta^*|y)p(\omega^*) \pause 
+\implies \frac{p(\theta^*|y)}{p(\theta^{(i)}|y)} \frac{p(\omega^*)}{p(\omega^{(i)})} = 1
+\]
+\pause 
+This will only be the case if the simulation is perfect! 
+\pause 
+But we have discretization error. 
+\pause
+The acceptance probability accounts for this error. 
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+HMC_neal = function(U, grad_U, epsilon, L, current_q) {
+  q = current_q
+  p = rnorm(length(q),0,1)
+  current_p = p
+  
+  p = p-epsilon*grad_U(q)/2
+  
+  for (i in 1:L) {
+    q = q+epsilon*p
+    if (i!=L) p = p -epsilon * grad_U(q)
+  }
+  p = p-epsilon * grad_U(q)/2
+  
+  p = -p
+  
+  current_U = U(current_q)
+  current_K = sum(current_p^2)/2
+  proposed_U = U(q)
+  proposed_K = sum(p^2)/2
+  
+  if (runif(1) < exp(current_U-proposed_U+current_K-proposed_K))
+  {
+    return(q)
+  }
+  else {
+    return(current_q)
+  }
+}
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+HMC = function(n_reps, log_density, grad_log_density, tuning, initial) {
+  theta = rep(0, n_reps)
+  theta[1] = initial$theta
+  
+  for (i in 2:n_reps) theta[i] = HMC_neal(U = function(x) -log_density(x), 
+                                          grad_U = function(x) -grad_log_density(x),
+                                          e = tuning$e, 
+                                          L = tuning$L, 
+                                          theta[i-1])
+  theta
+}
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+theta = HMC(1e4, function(x) -x^2/2, function(x) -x, list(e=1,L=1), list(theta=0))
+hist(theta, freq=F, 100)
+curve(dnorm, add=TRUE, col='red', lwd=2)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Tuning parameters}
+There are three tuning parameters:
+\begin{itemize}
+\item $e$: step size
+\item $L$: number of steps
+\item $D$: covariance matrix for momentum
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Let $\Sigma=V(\theta|y)$, then an optimal normal distribution for $\omega$ is $N(0,\Sigma^{-1})$. 
+\pause
+Typically, we do not know $\Sigma$, but we can estimate it using posterior samples. 
+\pause
+We can update this estimate throughout burn-in (or warm-up). 
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Effect of }
+<<tuning, cache=TRUE, echo=TRUE>>=
+n_reps = 1e4
+d = expand.grid(e=10^seq(-3,0,by=1), L=10^seq(0,2))
+r = ddply(d, .(e,L), function(xx) {
+  data.frame(
+    iteration = 1:n_reps,
+    theta = HMC(n_reps, function(x) -x^2/2, function(x) -x, list(e=xx$e,L=xx$L), list(theta=0)))
+})
+@
+\end{frame}
+
+\begin{frame}
+<<dependson='tuning'>>=
+ggplot(r, aes(iteration,theta)) + 
+  geom_line() + 
+  facet_grid(L~e)
+@
+\end{frame}
+
+\begin{frame}
+<<dependson='tuning'>>=
+ggplot(r, aes(theta)) + 
+  geom_histogram(aes(y=..density..), binwidth=.1) + 
+  facet_grid(L~e, scales='free_y') + 
+  stat_function(fun = dnorm, colour = "red")
+@
+\end{frame}
+
+\begin{frame}
+<<e, dependson='tuning'>>=
+s = ddply(r, .(e,L), summarize, 
+          acceptance_rate = length(unique(theta))/length(theta),
+          autocorrelation = as.numeric(acf(theta, lag.max=1, plot=FALSE)[1]$acf))
+m = melt(s, id.var=c('e','L'), variable.name='statistic')
+ggplot(m, aes(e, value, color=L, shape=as.factor(L))) + 
+  geom_point() + 
+  facet_wrap(~statistic) +
+  scale_x_log10()
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Random-walk vs HMC}
+
+\url{https://www.youtube.com/watch?v=Vv3f0QNWvWQ}
+
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+Hamiltonian Monte Carlo (HMC) is a Metropolis-Hastings method using parameter augmentation and a sophisticated proposal distribution based on Hamiltonian dynamics such that 
+\begin{itemize}
+\item the acceptance probability can be kept near 1 \pause
+\item while still efficiently exploring the posterior. 
+\end{itemize}
+\pause
+HMC still requires us to set tuning parameters 
+\begin{itemize}
+\item $e$: step size
+\item $L$: number of steps
+\item $D$: covariance matrix for momentum
+\end{itemize}
+\pause
+and can only be run in models with continuous parameters in $\mathbb{R}^d$ (or transformed to $\mathbb{R}^d$).
+
+\end{frame}
+
+\end{document}
