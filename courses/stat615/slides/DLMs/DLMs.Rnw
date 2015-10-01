@@ -995,19 +995,31 @@ where $j=t \mbox{ mod } s$.
 
 \begin{frame}[fragile]
 \frametitle{Seasonal factor model in R}
-<<seasonal_factor_model, cache=TRUE>>=
-library(dlm)
+<<lm_model, cache=TRUE>>=
 y = as.numeric(nottem)
 months = c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
-x = as.factor(rep(months,length(y)/12))
-summary(lm(y-mean(y)~x-1))
-
-nottem.model = dlmModSeas(12,dV=2.315^2,dW=rep(0,11))
-nottem.filter = dlmFilter(y-mean(y),nottem.model)
-nottem.filter$m[241,]
--sum(nottem.filter$m[241,]) # Jan
+x = factor(rep(months,length(y)/12), levels=months)
+summary(m <- lm(y-mean(y)~x-1))
 @
 \end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Seasonal factor model in R}
+<<seasonal_factor_model, dependson='lm_model', cache=TRUE, echo=TRUE>>=
+library(dlm)
+nottem.model = dlmModSeas(12,dV=2.315^2,dW=rep(0,11))
+nottem.filter = dlmFilter(y-mean(y),nottem.model)
+n = length(y) + 1 # Due to theta_0
+data.frame(mean = c(-sum(nottem.filter$m[n,]), rev(nottem.filter$m[n,])),
+           lm_mean = m$coefficients)
+@
+
+<<>>=
+# V = unlist(dlmSvd2var(nottem.filter$U.C[[n]], nottem.filter$D.C[n,]))
+@
+\end{frame}
+
 
 
 \section{Fourier form seasonal models}
@@ -1021,52 +1033,58 @@ where $u_i$ is the $s$-dimensional vector having the $i$th component equal to on
 
 \begin{itemize}
 \item This representation lacks
- \begin{itemize}
- \item Parsimony
+ \begin{itemize}[<+->]
  \item Interpretation
  \item Smoothness differentiation
+ \item Parsimony
  \end{itemize}
 \end{itemize}
 }
 
 \frame{\frametitle{Fourier frequencies}
 Let
-\[ \omega_j = \frac{2\pi j}{s}, \quad j=0,1,\ldots,\frac{s}{2}.\]
+\[ \omega_j = 2\pi \frac{j}{s}, \quad j=0,1,\ldots,\frac{s}{2}.\]
 
 \vspace{0.1in} \pause
 
 Consider
 {\scriptsize
-\begin{align*}
-e_0 &= (1,1,\ldots,1)' \\
+\[ \begin{array}{rl}
+e_0 &= (1,1,\ldots,1)' \pause \\
 c_1 &= (\cos \omega_1, \cos 2\omega_1, \ldots \cos s\omega_1)' \\
-s_1 &= (\sin \omega_1, \sin 2\omega_1, \ldots \sin s\omega_1)' \\
+s_1 &= (\sin \omega_1, \sin 2\omega_1, \ldots \sin s\omega_1)' \pause \\
 &\vdots \\
 c_j &= (\cos \omega_j, \cos 2\omega_j, \ldots \cos s\omega_j)' \\
-s_j &= (\sin \omega_j, \sin 2\omega_j, \ldots \sin s\omega_j)' \\
+s_j &= (\sin \omega_j, \sin 2\omega_j, \ldots \sin s\omega_j)' \pause \\
 &\vdots \\
 c_{s/2} &= (\cos \omega_{s/2}, \cos 2\omega_{s/2}, \ldots \cos s\omega_{s/2})'
-\end{align*}
+\end{array} \]
 }
 
-\vspace{0.1in} \pause
+\pause
 
 $s_{s/2}$ is all zeros
 }
+
+
 
 \frame{\frametitle{Fourier basis}
 \begin{itemize}[<+->]
 \item Basis for $\mathbb{R}^s$
 
 \[ \alpha = a_0e_0+\sum_{j=1}^{s/2-1} (a_jc_j+b_js_j)+a_{s/2}c_{s/2}. \]
-Assume $a_0$ since the mean will be modeled separately.
+\pause
+Assume $a_0=0$ since the mean will be modeled separately.
 
-\vspace{0.2in}
+\vspace{0.2in} \pause
 
 \item Naturally periodic, e.g. $s_j(t+ks)=s_j(t)$ for $k=1,2,\ldots$ \pause since
-\[ \sin \frac{2\pi(t+ks)j}{s} = \sin\left( \frac{2\pi tj}{2} + 2\pi kj\right) = \sin \frac{2\pi tj}{s}.\]
+\[ \sin \frac{2\pi(t+ks)j}{s} = \sin\left( \frac{2\pi tj}{s} + 2\pi kj\right) = \sin \frac{2\pi tj}{s}.\]
 \end{itemize}
 }
+
+
+
 
 \frame{\frametitle{Plotting Fourier basis}
 
@@ -1078,15 +1096,44 @@ Assume $a_0$ since the mean will be modeled separately.
 \end{center}
 }
 
+
+
+
+
+
 \subsection{Building a DLM}
 \frame{\frametitle{Harmonics}
 For $j=1,2,\ldots,s/2$,
 \[ S_j(t) = a_j \cos(t \omega_j) + b_j \sin (t \omega_j).\]
-where $b_{s/2}=0$. \pause Then
-\[ g_t = \sum_{j=1}^{s/2} S_j(t).\]
-\pause The conjugate harmonic is
+where $b_{s/2}=0$. \pause 
+% Then
+% \[ g_t = \sum_{j=1}^{s/2} S_j(t).\]
+% \pause 
+The conjugate harmonic is
 \[ S_j^*(t) = -a_j \sin(t \omega_j) + b_j \cos (t \omega_j).\]
+\pause
+And the $j$ th harmonic evolves in sime according to 
+\[ 
+\left[ \begin{array}{c} S_j(t+1) \\ S_j^*(t+1) \end{array}\right] =
+\left[ \begin{array}{cc} \phantom{-}\cos \omega_j & \phantom{-}\sin \omega_j \\ -\sin \omega_j & \phantom{-}\cos \omega_j \end{array} \right]
+\left[ \begin{array}{c} S_j(t) \\ S_j^*(t) \end{array}\right]
+\]
+and 
+\[ S_{s/2}(t+1) = -S_{s/2}(t) \]
 }
+
+
+
+\frame{\frametitle{Plotting Harmonics for Nottingham data}
+
+\vspace{-0.1in}
+
+\setkeys{Gin}{width=0.6\textwidth}
+\begin{center}
+\includegraphics{nottemHarmonics}
+\end{center}
+}
+
 
 \frame{\frametitle{Period $j$ DLMs}
 Consider simpler DLMs containing only seasonality of frequency $j<s/2$.
@@ -1112,6 +1159,79 @@ and observation matrix
 and initial vector
 \[ \theta_0 = (a_1,b_1,\ldots,a_{\frac{s}{2}-1},b_{\frac{s}{2}-1},a_{\frac{s}{2}})'. \]
 }
+
+
+\begin{frame}[fragile]
+\frametitle{Nottingham data}
+<<>>=
+nottem.model = dlmModTrig(12,dV=2.315^2,dW=rep(0,11))
+nottem.filter = dlmFilter(y-mean(y),nottem.model)
+forecast = dlmForecast(nottem.filter, 12)
+data.frame(mean = as.numeric(forecast$f),
+           lm_mean = m$coefficients)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Nottingham data}
+<<>>=
+plot(f1 <- forecast$f, type='l')
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Nottingham data - fewer harmonics}
+<<>>=
+nottem.model = dlmModTrig(12, 2, dV=2.315^2,dW=rep(0,11))
+nottem.filter = dlmFilter(y-mean(y),nottem.model)
+forecast = dlmForecast(nottem.filter, 12)
+data.frame(mean = as.numeric(forecast$f),
+           lm_mean = m$coefficients)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Nottingham data}
+<<>>=
+plot(f1, type='l', lwd=2, lty=2)
+lines(forecast$f, col='red', lwd=2, lty=2)
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Sunspots}
+<<sunspots, cache=TRUE, echo=TRUE>>=
+mod <- dlmModTrig(q = 2, tau = 130.51, dV = 0,
+                  dW = rep(c(1765e-2, 3102e-4), each = 2)) +
+        dlmModPoly(1, dV = 0.7452, dW = 0.1606)
+
+sspots <- sqrt(sunspots)
+sspots.smooth <- dlmSmooth(sspots, mod)
+y <- cbind(sspots,
+           tcrossprod(dropFirst(sspots.smooth$s[, c(1, 3, 5)]),
+                      matrix(c(0, 0, 1, 1, 1, 0), nr = 2,
+                             byrow = TRUE)))
+colnames(y) <- c("Sunspots", "Level", "Periodic")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Sunspots}
+<<sunspots_plot, dependson='sunspots', echo=TRUE>>=
+plot(y, yax.flip = TRUE, oma.multi = c(2, 0, 1, 0))
+@
+\end{frame}
+
+
 
 
 \section{ARMA models}
