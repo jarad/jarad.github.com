@@ -1165,11 +1165,13 @@ and initial vector
 \begin{frame}[fragile]
 \frametitle{Nottingham data}
 <<echo=TRUE>>=
-nottem.model = dlmModTrig(12,dV=2.315^2,dW=rep(0,11))
-nottem.filter = dlmFilter(y-mean(y),nottem.model)
-forecast = dlmForecast(nottem.filter, 12)
-data.frame(mean = as.numeric(forecast$f),
-           lm_mean = m$coefficients)
+d = ddply(data.frame(harmonics=1:6), .(harmonics), function(x) {
+  nottem.model = dlmModTrig(12,x$harmonics,dV=2.315^2,dW=rep(0,11))
+  nottem.filter = dlmFilter(y-mean(y),nottem.model)
+  forecast = dlmForecast(nottem.filter, 12)
+  data.frame(month = factor(months, levels=months),
+             effect = forecast$f)
+})
 @
 \end{frame}
 
@@ -1178,29 +1180,17 @@ data.frame(mean = as.numeric(forecast$f),
 \begin{frame}[fragile]
 \frametitle{Nottingham data}
 <<echo=TRUE>>=
-plot(f1 <- forecast$f, type='l')
+ggplot(subset(d, harmonics==6), aes(month, effect, group=1)) + geom_line()
 @
 \end{frame}
 
-
-
-\begin{frame}[fragile]
-\frametitle{Nottingham data - fewer harmonics}
-<<echo=TRUE>>=
-nottem.model = dlmModTrig(12, 2, dV=2.315^2,dW=rep(0,11))
-nottem.filter = dlmFilter(y-mean(y),nottem.model)
-forecast = dlmForecast(nottem.filter, 12)
-data.frame(mean = as.numeric(forecast$f),
-           lm_mean = m$coefficients)
-@
-\end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Nottingham data}
 <<echo=TRUE>>=
-plot(f1, type='l', lwd=2)
-lines(forecast$f, col='red', lwd=2, lty=2)
+d$harmonics_f = factor(d$harmonics)
+ggplot(d, aes(month, effect, color=harmonics_f, shape=harmonics_f, group=harmonics_f)) + geom_point() + geom_line()
 @
 \end{frame}
 
