@@ -1,0 +1,1395 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim}
+
+\graphicspath{{figures/}}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Sequential Monte Carlo}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(maps)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+\section{Overview}
+\subsection{Outline}
+\frame{\frametitle{}
+    \begin{multicols}{2}
+    \begin{enumerate}
+    \item State-space models $p(y|x,\theta)p(x|\theta)$ \pause
+        \begin{itemize}
+        \item Definition
+        \item Terminology
+        \item Notation \pause
+        \end{itemize}
+    \item State inference $p(x|y,\theta)$ \pause
+        \begin{itemize}
+        \item Exact inference
+        \item Importance sampling
+        \item Sequential importance sampling
+        \item Bootstrap filter - resampling
+        \item Auxiliary particle filter \pause
+        \end{itemize}
+    \item State and parameter inference $p(x,\theta|y)$ \pause
+        \begin{itemize}
+        \item Bootstrap filter
+        \item Kernel density
+        \item Sufficient statistics \pause
+        \end{itemize}
+    \item Advanced SMC \pause
+        \begin{itemize}
+        \item SMC-MCMC
+        \item Fixed parameter
+        \item SMC for marginal likelihood calculations
+        \end{itemize}
+
+    \vspace{0.1in}
+
+    \end{enumerate}
+    \end{multicols}
+}
+
+\subsection{Bayesian inference}
+\frame{
+    \begin{definition}
+    \alert{Bayes' rule} is
+    \[ P(A|B) = \frac{P(B|A)P(A)}{P(B)}. \] \pause
+    \end{definition}
+    In this rule, $B$ represents what we know about the world and $A$ represents what we don't.
+
+    \vspace{0.2in} \pause
+
+    Suppose $p(x_t,\theta|y_{1:t-1})$ is our current knowledge about the state of the world. \pause We observe datum $y_t$ then
+    \[ p(x_t,\theta|y_{1:t}) = \frac{p(y_t|x_t,\theta)p(x_t,\theta|y_{1:t-1})}{p(y_t|y_{1:t-1})}.\]
+    where $y_{1:t} = (y_1,y_2,\ldots,y_t)$.
+}
+
+\section{State-space models}
+\subsection{Definition}
+\frame{
+    \begin{definition}
+    A \alert{state-space model} can be described by these conditional distributions:
+    \begin{itemize}
+    \item an observation equation: $p_o(y_t|x_t,\theta)$, \pause
+    \item an evolution equation: $p_e(x_t|x_{t-1},\theta)$, \pause and
+    \item a prior $p(x_0,\theta)$.
+    \end{itemize}
+    \end{definition}
+
+    \vspace{0.2in} \pause
+
+    where
+
+    \vspace{0.2in}
+
+    \begin{itemize}
+    \item $y_t$: an observation vector of length $m$ \pause
+    \item $x_t$: a latent state vector of length $p$ \pause
+    \item $\theta$: a fixed parameter vector of length $q$
+    \end{itemize}
+}
+
+
+
+\subsection{Graphical representation}
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+
+    \vspace{-1in}
+
+    \begin{center}
+    \multiinclude[<+>][format=pdf]{stateSpaceModel}
+    %\only<1-| handout:0>{\multiinclude[<+>][format=pdf]{stateSpaceModel}}
+%    \only<beamer:0| handout:1>{\includegraphics{stateSpaceModel-0}}
+    \end{center}
+
+    \vspace{-1.5in}
+
+    \begin{itemize}
+    \item<2-> $p(x_t|x_{t-1},\theta)$
+    \item<3-> $p(y_t|x_{t},\theta)$
+    \end{itemize}
+}
+
+\subsection{Interpretation}
+\frame{
+    \begin{center}
+    \begin{tabular}{ll}
+    Model & State interpretation \\
+    \hline
+    Local level model & True level \\
+    Linear growth model & True level and slope \\
+    Seasonal factor model & Seasonal effect \\
+    Dynamic regression & Time-varying regression coefficients \\
+    Stochastic volatility & Underlying volatility in the market \\
+    Markov switching model & Influenza epidemic on/off \\
+    \hline
+    \end{tabular}
+    \end{center}
+}
+
+\subsection{Examples}
+\frame{\frametitle{}
+    \begin{eqnarray*}
+    y_t &\sim& N(0,\sigma_t^2) \\
+    \log \sigma_t &\sim& N(\mu + \phi (\log \sigma_{t-1} - \mu),W) \pause
+    \end{eqnarray*}
+
+    \begin{center}
+    \only<1-| handout:0>{\multiinclude[<+>][format=pdf]{volatility}}
+    \only<beamer:0| handout:1>{\includegraphics{volatility-0}}
+    %\multiinclude[<+>][format=pdf]{volatility}
+    \end{center}
+}
+
+
+\frame{\frametitle{}
+     \begin{eqnarray*}
+     y_t &\sim& N(\theta_t,\sigma^2) \\
+     \theta_t &\sim & p\delta_{\theta_{t-1}} +(1-p) \delta_{1-\theta_{t-1}} \\
+     \theta_0 &=& 0 \pause
+     \end{eqnarray*}
+
+    \begin{center}
+    \only<1-| handout:0>{\multiinclude[<+>][format=pdf]{switching}}
+    \only<beamer:0| handout:1>{\includegraphics{switching-0}}
+    %\multiinclude[<+>][format=pdf]{switching}
+    \end{center}
+}
+
+\subsection{Inference}
+\frame{\frametitle{}
+    {\footnotesize
+    \begin{definition}
+    The \alert{state filtering distribution} is the distribution for the state conditional on all observations up to and including time $t$, i.e.
+    \[ p(x_t|y_{1:t},\theta)=p(x_t|y_1,y_2,\ldots,y_t,\theta).\]
+    \end{definition}
+    \pause
+    \begin{definition}
+    The \alert{state smoothing distribution} is the distribution for the state conditional on all observed data, i.e.
+    \[ p(x_{t}|y_{1:T},\theta)=p(x_t|y_1,y_2,\ldots,y_T,\theta) \]
+    where $t<T$.
+    \end{definition}
+    \pause
+    \begin{definition}
+    The \alert{state forecasting distribution} is the distribution for future states conditional on all observed data, i.e.
+    \[ p(x_{T+k}|y_{1:T},\theta)=p(x_{T+k}|y_1,y_2,\ldots,y_T,\theta) \]
+    where $k>0$.
+    \end{definition}
+    }
+}
+
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+
+    \vspace{-1in}
+
+    \begin{center}
+    \only<1-| handout:0>{\multiinclude[<+>][format=pdf]{ssm}}
+    \only<beamer:0| handout:1>{\includegraphics{ssm-0}}
+    \end{center}
+
+    \vspace{-1.5in}
+
+    \begin{itemize}
+    \item<2-> Filtering
+    \item<3-> Smoothing
+    \item<4-> Forecasting
+    \end{itemize}
+}
+
+\subsection{Filtering}
+\frame{\frametitle{}
+    {\tiny
+     Goal: $ p(x_t|y_{1:t})$  (filtered distribution) \pause
+
+     \vspace{0.1in}
+
+     Recursive procedure: \pause
+     \begin{itemize}
+     \item Assume $p(x_{t-1}|y_{1:t-1})$ \pause
+     \item Prior for $x_t$ \pause
+     \begin{eqnarray*} p(x_t|y_{1:t-1}) \pause &=& \int p(x_t,x_{t-1}|y_{1:t-1}) dx_{t-1} \\
+     \pause &=& \int p(x_t|x_{t-1},y_{1:t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1} \\
+     \pause &=& \int p(x_t|x_{t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1}
+     \end{eqnarray*} \pause
+     \item One-step ahead predictive distribution for $y_t$ \pause
+     \begin{eqnarray*} p(y_t|y_{1:t-1}) \pause &=& \pause \int p(y_t,x_t|y_{1:t-1}) dx_t \\
+     \pause &=& \int p(y_t|x_t,y_{1:t-1})p(x_t|y_{1:t-1})dx_t \\
+     \pause &=& \int p(y_t|x_t)p(x_t|y_{1:t-1})dx_t
+     \end{eqnarray*} \pause
+     \item Filtered distribution for $x_t$ \pause
+     \[ p(x_t|y_{1:t}) \pause = \frac{p(y_t|x_t,y_{1:t-1})p(x_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause = \frac{p(y_t|x_t)p(x_t|y_{1:t-1})}{p(y_t|y_{1:t-1})}\] \pause
+     \end{itemize}
+     }
+     Start from $p(x_0)$.
+}
+
+\subsection{Smoothing}
+\frame{\frametitle{}
+    {\footnotesize
+     Goal: $p(x_{t}|y_{1:T})$ for $t<T$
+
+     \vspace{0.1in} \pause
+
+
+     \begin{itemize}
+     \item Backward transition probability $p(x_t|x_{t+1},y_{1:T})$ \pause
+     \begin{eqnarray*}
+     p(x_t|x_{t+1},y_{1:T}) \pause &=& p(x_t|x_{t+1},y_{1:t}) \\ \pause
+     &=& \frac{p(x_{t+1}|x_t,y_{1:t})p(x_t|y_{1:t})}{p(x_{t+1}|y_{1:t})} \\ \pause
+     &=& \frac{p(x_{t+1}|x_t)p(x_t|y_{1:t})}{p(x_{t+1}|y_{1:t})} \pause
+     \end{eqnarray*}
+
+     \item Recursive smoothing distributions $p(x_t|y_{1:T})$ assuming we know $p(x_{t+1}|y_{1:T})$ \pause
+     \begin{eqnarray*}
+     p(x_t|y_{1:T}) \pause &=& \int p(x_t,x_{t+1}|y_{1:T}) dx_{t+1} \\ \pause
+     &=& \int p(x_{t+1}|y_{1:T})p(x_t|x_{t+1},y_{1:T})dx_{t+1} \\ \pause
+       &=& \int p(x_{t+1}|y_{1:T}) \frac{p(x_{t+1}|x_t)p(x_t|y_{1:t})}{p(x_{t+1}|y_{1:t})} dx_{t+1} \\ \pause
+       &=& p(x_t|y_{1:t}) \int \frac{p(x_{t+1}|x_t)}{p(x_{t+1}|y_{1:t})} p(x_{t+1}|y_{1:T}) d x_{t+1}\pause
+       \end{eqnarray*}
+       Start from $p(x_T|y_{1:T})$.
+     \end{itemize}
+     }
+}
+
+\subsection{Forecasting}
+\frame{\frametitle{}
+     Goal: $p(y_{T+k},x_{T+k}|y_{1:T})$
+
+     {\footnotesize
+     \vspace{0.1in} \pause
+
+     \[ p(y_{T+k},x_{T+k}|y_{1:T}) \pause = p(y_{T+k}|x_{T+k}) p(x_{T+k}|y_{1:T}) \]
+
+     \vspace{0.1in} \pause
+
+    Recursively, given $p(x_{T+(k-1)}|y_{1:T})$ \pause
+     \begin{eqnarray*}
+     p(x_{T+k}|y_{1:T}) \pause &=& \int p(x_{T+k},x_{T+(k-1)}|y_{1:T})\, dx_{T+(k-1)} \\ \pause
+     &=& \int p(x_{T+k}|x_{T+(k-1)},y_{1:T})p(x_{T+(k-1)}|y_{1:T}) dx_{T+(k-1)} \\ \pause
+     &=& \int p(x_{T+k}|x_{T+(k-1)})p(x_{T+(k-1)}|y_{1:T}) dx_{T+(k-1)} \pause
+     \end{eqnarray*}
+     }
+     Start with $k=1$.
+}
+
+\section{State inference}
+\frame{\frametitle{}
+    \begin{multicols}{2}
+    \begin{enumerate}
+    \item State-space models $p(y|x,\theta)p(x|\theta)$
+        \begin{itemize}
+        \item Definition
+        \item Terminology
+        \item Notation
+        \end{itemize}
+    \alert{
+    \item State inference $p(x|y,\theta)$
+        \begin{itemize}
+        \item Exact inference
+        \item Importance sampling
+        \item Sequential importance sampling
+        \item Bootstrap filter - resampling
+        \item Auxiliary particle filter
+        \end{itemize}
+    }
+    \item State and parameter inference $p(x,\theta|y)$
+        \begin{itemize}
+        \item Bootstrap filter
+        \item Kernel density
+        \item Sufficient statistics
+        \end{itemize}
+    \item Advanced SMC
+        \begin{itemize}
+        \item SMC-MCMC
+        \item Fixed parameter
+        \item SMC for marginal likelihood calculations
+        \end{itemize}
+
+    \vspace{0.1in}
+
+    \end{enumerate}
+    \end{multicols}
+}
+
+\subsection{Exact inference}
+\frame{
+    Our goal for most of today is to find filtering methods.
+
+    \vspace{0.2in}\pause
+
+    \begin{itemize}
+    \item We assume $p(x_{t-1}|y_{1:t-1})$ is known \pause
+    \item and try to obtain $p(x_t|y_{1:t})$ using \pause
+    \item $p(x_t|x_{t-1})$ and $p(y_t|x_t)$.
+    \end{itemize}
+
+    \vspace{0.2in}\pause
+
+    Then, starting with $p(x_0|y_0)=p(x_0)$ we can find $p(x_t|y_{1:t})$ for all $t$.
+}
+
+\frame{
+    There are two important state-space models when the filtering updating is availably analytically: \pause
+    \begin{itemize}
+    \item Hidden Markov models
+    \item Dynamic linear models
+    \end{itemize}
+}
+
+\subsubsection{Hidden Markov models}
+\frame{\frametitle{}
+    \begin{definition}
+    A \alert{hidden Markov model} (HMM) is a state-space model with an arbitrary observation equation and an evolution equation that can be represented by a transition probability matrix, i.e.
+    \[  p(x_t=j|x_{t-1}=i) = p_{ij} . \]
+    \end{definition}
+
+    \vspace{0.1in} \pause
+
+    \begin{block}{Filtering in HMMs}
+    Suppose we have a HMM with $p$ states. \pause Let $q_i=p(x_{t-1}=i|y_{1:t-1})$, \pause then
+    \begin{eqnarray*}
+    p(x_t=j|y_{1:t-1}) &=& \sum_{i=1}^p q_i p_{ij} \pause \\
+    p(x_t=j|y_{1:t}) &\propto& p(y_t|x_t=j) p(x_t=j|y_{1:t-1}).
+    \end{eqnarray*}
+    \end{block}
+
+    \vspace{0.1in} \pause
+
+    If $p_i\propto a_i$ for $i \in\{1,2,\ldots,p\}$, then $p_i = \frac{a_i}{\sum_{i=1}^p a_i}$.
+}
+
+\subsubsection{Dynamic linear models}
+\frame{
+    \begin{definition}
+    A \alert{dynamic linear model} (DLM) is a state-space model where both the observation and evolution equations are linear in the states and have additive Gaussian errors and the prior is Gaussian, i.e.
+    \[ \begin{array}{rl@{\quad}l}
+    y_t &= F_tx_t + v_t & v_t \sim N(0,V_t) \\
+    x_t &= G_tx_{t-1} + w_t & w_t \sim N(0,W_t) \\
+    x_0 &\sim N(m_0,C_0)
+    \end{array} \]
+    where $v_t,w_t$, and $x_0$ are independent of each other and mutually independent through time.
+    \end{definition}
+
+    \vspace{0.2in} \pause
+
+    \begin{itemize}
+    \item Kalman filter
+    \item Kalman smoother
+    \end{itemize}
+}
+
+\subsubsection{Kalman filter}
+\frame{
+    Suppose $x_{t-1}|y_{1:t-1}\sim N(m_{t-1},C_{t-1})$ \pause , then
+    \begin{itemize}
+    \item The one-step-ahead prior distribution for $x_t$ is $x_t|y_{1:t-1} \sim N(a_t,R_t)$ \pause where
+    \begin{eqnarray*}
+    a_t &=& E(x_t|y_{1:t-1}) = G_tm_{t-1},\\ \pause
+    R_t &=& Var(x_t|y_{1:t-1}) = G_tC_{t-1}G_t'+W_t.\\ \pause
+    \end{eqnarray*}
+    \item The one-step-ahead predictive distribution for $y_t$ is $y_t|y_{1:t-1}\sim N(f_t,Q_t)$ \pause where
+    \begin{eqnarray*}
+    f_t &=& E(y_t|y_{1:t-1}) = F_ta_t, \\ \pause
+    Q_t &=& Var(y_t|y_{1:t-1}) = F_tR_tF_t'+V_t.\\ \pause
+    \end{eqnarray*}
+    \item The filtering distribution of $x_t$ is $x_t|y_{1:t}\sim N(m_t,C_t)$ \pause where
+    \begin{eqnarray*}
+    m_t &=& E(x_t|y_{1:t}) = a_t+R_tF_t'Q_t^{-1}e_t, \\ \pause
+    C_t &=& Var(x_t|y_{1:t})=R_t-R_tF_t'Q_t^{-1}F_tR_t, \pause
+    \end{eqnarray*}
+    where $e_t=y_t-f_t$ is the forecast error.
+    \end{itemize}
+}
+
+\subsection{The model}
+\frame{
+    Test model:
+
+    \vspace{0.2in} \pause
+
+    \begin{eqnarray*}
+    y_t &=& x_t + v_t \\
+    x_t &=& \alpha+\beta x_{t-1} + w_t \\
+    v_t &\stackrel{iid}{\sim}& N(0,V) \\
+    w_t &\stackrel{iid}{\sim}& N(0,W) \\
+    x_0 &\sim & N(m_0,C_0)
+    \end{eqnarray*}
+}
+
+\frame{\frametitle{}
+    {\small
+    Assume
+    \begin{eqnarray*}
+    x_{t-1}|y_{1:t-1} &\sim & N(m_{t-1},C_{t-1}) \\
+    \\ \pause
+    x_t|y_{1:t-1} &\sim & N(a_t,R_t) \\
+    a_t &=& \alpha+\beta m_{t-1} \\
+    R_t &=& \beta^2C_{t-1}+W \\
+    \\ \pause
+    y_t|y_{1:t-1} &\sim & N(f_t,Q_t) \\
+    f_t &=& a_t \\
+    Q_t &=& R_t+V \\
+    \\ \pause
+    x_t|y_{1:t} &\sim & N(m_t,C_t) \\
+    C_t &=& \left(\frac{1}{R_t}+\frac{1}{V}\right)^{-1} \\
+    m_t &=& C_t\left( \frac{a_t}{R_t} + \frac{y_t}{V} \right)
+    \end{eqnarray*}
+    }
+}
+
+\frame{
+    \setkeys{Gin}{width=0.7\textwidth}
+    Kalman filter updating
+    \begin{center}
+    \multiinclude[format=pdf]{kf}
+    \end{center}
+}
+
+\frame{
+    Dynamic linear models are a rich class of models:
+    \begin{itemize}
+    \item Trend
+    \item Seasonal
+    \item Dynamic regression
+    \item ARIMA
+    \item Seeming unrelated time series equations
+    \item Seemingly unrelated regression models
+    \item Hierarchical DLMs
+    \item Multivariate ARMA models
+    \end{itemize}
+
+    \vspace{0.2in} \pause
+
+    \begin{itemize}
+    \item Petris, Petrone, Campagnoli. (2009) \underline{Dynamic Linear Models with R}.
+    \item West and Harrison. (1997) \underline{Bayesian Forecasting and Dynamic Models}.
+    \end{itemize}
+}
+
+\subsection{Approximate inference}
+\frame{
+    HMMs and DLMs are the main classes of models with closed form updating of the filtering distributions.
+
+    \vspace{0.2in} \pause
+
+    Generally, no closed form expression exists and we must use an approximation. \pause
+    \begin{itemize}
+    \item Numerical approximations
+        \begin{itemize}
+        \item Extended Kalman filter
+        \item Bound optimal filter
+        \item Gaussian sum filter
+        \item Quadrature filter \pause
+        \end{itemize}
+    \item Monte Carlo approximations
+        \begin{itemize}
+        \item Markov chain Monte Carlo (MCMC)
+        \item Sequential Monte Carlo (SMC)
+            \begin{itemize}
+            \item Bootstrap filter
+            \item Auxiliary particle filter
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+}
+
+\subsection{Monte Carlo sampling}
+\frame{
+    \setkeys{Gin}{width=0.9\textwidth}
+    Suppose we want to approximate some density $f(x)$, e.g. $p(x_t|y_{1:t})$. \pause Draw samples from $f(x)$. \pause
+
+    \begin{center}
+    \includegraphics{mc}
+    \end{center}
+}
+
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+    Suppose $Z\sim N(0,1)$ \pause and we are trying to estimate $P(Z>1)\pause \approx 0.1586553$. \pause If $Z_i\stackrel{iid}{\sim} N(0,1)$, then
+    \[ P(Z>1) \approx \frac{1}{J} \sum_{i=1}^J \mathrm{I}(Z_i>1)\]
+    is a standard MC approach. \pause
+    \begin{columns}
+    \column{0.5\textwidth}
+    \begin{tabular}{ll}
+    \hline
+    \# Samples & $P(Z>1)$ \\
+    \hline
+    10 & 0.10 \\
+    100 & 0.15 \\
+    1000 & 0.158 \\
+    10000 & 0.1636 \\
+    100000 & 0.15846 \\
+    \hline
+    \end{tabular}
+    \column{0.5\textwidth}
+    \includegraphics{mc-tail}
+    \end{columns}
+}
+
+\subsection{MCMC}
+\frame{
+    Suppose we want to sample from
+    \[ p(x_{\alt<5-6>{\alert{t+1}}{t}}|y_{1:\alt<5-6>{\alert{t+1}}{t}}) \pause = \int p(x_{0:\alt<5-6>{\alert{t+1}}{t}}|y_{1:\alt<5-6>{\alert{t+1}}{t}}) dx_{0:\alt<5-6>{\alert{t}}{t-1}} .\]
+
+    \vspace{0.1in} \pause
+
+    A MCMC approach says to iterate through draws of full conditionals, e.g.
+    \[ x_{s} \sim p(x_{s}|y_{1:t},x_{-s})\pause =p(x_s|y_s,x_{s-1},x_{s+1}) \]
+    where $x_{-s}$ indicates $x_{0:t}$ with the $s$ component removed and $s=0,1,2,\ldots,t$.
+
+    \vspace{0.1in} \pause
+
+    Now, you just obtained $y_{t+1}$. \pause You need to redo the analysis, e.g.
+    \[ x_{s} \sim p(x_s|y_s,x_{s-1},x_{s+1}) \]
+    for $s=0,1,2,\ldots,t,t+1$.
+}
+
+\subsection{Importance sampling}
+\frame{
+    \setkeys{Gin}{width=0.8\textwidth}
+    Suppose we want to approximate some density $f(x)$, e.g. $p(x_t|y_{1:t})$, but we cannot simulate from $f(x)$. \pause Draw $x_i\stackrel{iid}{\sim}g(x)$ and give each draw a weight $w_i=\frac{f(x_i)}{g(x_i)}$. \pause
+
+    \begin{center}
+    \includegraphics{is}
+    \end{center}
+}
+
+\frame{
+    Suppose we are trying to estimate $E[X]$ when $X\sim t_2$. We draw samples from $x_i\sim N(0,0.5^2)$ and give a weight $w_i = \frac{t_2(x_i)}{N(x_i;0,0.5^2)}$ to each sample.
+    \begin{center}
+    \multiinclude[format=pdf]{is}
+    %\only<1-| handout:0>{\multiinclude[format=pdf]{is}}
+%    \only<beamer:0| handout:1>{\includegraphics{is-0}}
+    \end{center}
+}
+
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+    Suppose $Z\sim N(0,1)$ \pause and we are trying to estimate $P(Z>4.5)\pause \approx 3.398x10^{-6}$. \pause If $Z_i\sim N(0,1)$, then
+    \[ P(Z>4.5) \approx \frac{1}{J} \sum_{i=1}^J \mathrm{I}(Z_i>4.5)\]
+    is a standard MC approach. \pause If J=100,000 usually the indicator function is all zeros.
+    \phantom{
+    \begin{columns}
+    \column{0.5\textwidth}
+    \begin{tabular}{ll}
+    \hline
+    \# Samples & $P(Z>4.5)[\times 10^{-6}]$ \\
+    \hline
+    10 & 3.53 \\
+    100 & 2.95 \\
+    1000 & 3.32 \\
+    10000 & 3.41 \\
+    100000 & 3.41 \\
+    \hline
+    \end{tabular}
+    \column{0.5\textwidth}
+    \includegraphics{is-tail}
+    \end{columns}
+    }
+}
+
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+    Suppose $Z\sim N(0,1)$ and we are trying to estimate $P(Z>4.5) \approx 3.398x10^{-6}$. \pause If $X_i\sim Exp(1)+4.5$, then
+    \[ P(Z>4.5) \approx \frac{1}{J} \sum_{i=1}^J \frac{N(x_i;0,1)}{Exp(x_i-4.5;1)} \mathrm{I}(x_i>4.5)\]
+    is an importance sampling approach. \pause
+    \begin{columns}
+    \column{0.5\textwidth}
+    \begin{tabular}{lc}
+    \hline
+    \# Samples & $P(Z>4.5)[\times 10^{-6}]$ \\
+    \hline
+    10 & 3.53 \\
+    100 & 2.95 \\
+    1000 & 3.32 \\
+    10000 & 3.41 \\
+    100000 & 3.41 \\
+    \hline
+    \end{tabular}
+    \column{0.5\textwidth}
+    \includegraphics{is-tail}
+    \end{columns}
+}
+
+\frame{
+    Importance sampling summary:
+    \begin{itemize}[<+->]
+    \item Importance sampling can be vastly superior to Monte Carlo sampling.
+    \item When we are trying to estimate an entire density, we want the
+        \begin{itemize}
+        \item tails of our proposal density to be heavier than our target density and
+        \item the proposal density to be as close to the target density as possible.
+        \end{itemize}
+    \end{itemize}
+}
+
+\subsection{Sequential importance sampling}
+%\frame{\frametitle{}
+%    {\footnotesize
+%    Suppose we have a general state-space model
+%    \begin{eqnarray*}
+%    &&p(y_t|x_t) \\
+%    &&p(x_t|x_{t-1})
+%    \end{eqnarray*}
+%    and a current filtered distribution $p(x_{t-1}|y_{1:t-1})$. \pause Our goal is to approximate
+%    \begin{eqnarray*}
+%    p(x_t|y_{1:t}) \pause &=& \frac{p(y_t|x_t,y_{1:t-1})p(x_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause
+%    \propto  p(y_t|x_t,y_{1:t-1})p(x_t|y_{1:t-1}) \\ \pause
+%    &=& p(y_t|x_t) \int p(x_t,x_{t-1}|y_{1:t-1}) dx_{t-1} \\ \pause
+%    &=& p(y_t|x_t) \int p(x_t|x_{t-1},y_{1:t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1} \\ \pause
+%    &=& p(y_t|x_t) \int p(x_t|x_{t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1} \\ \pause
+%    &\approx&  p(y_t|x_t) \sum_{i=1}^J \delta_{x_t^{(i)}} \pause
+%    \approx  \sum_{i=1}^J p(y_t|x_t^{(i)}) \delta_{x_t^{(i)}}  \pause
+%    \approx  \sum_{i=1}^J w_i \delta_{x_t^{(i)}}
+%    \end{eqnarray*}
+%    }
+%    where $x_t^{(i)} \sim p(x_t|x_{t-1}^{(i)})$ and $x_{t-1}^{(i)}\sim p(x_{t-1}|y_{1:t-1})$.
+%
+%    \vspace{0.2in} \pause
+%
+%    The pair $\left\{w_i,x_t^{(i)}\right\}$ is called a \alert{particle}.
+%}
+
+\frame{\frametitle{}
+    {\footnotesize
+    Suppose we have a general state-space model
+    \begin{eqnarray*}
+    &&p(y_t|x_t) \\
+    &&p(x_t|x_{t-1})
+    \end{eqnarray*}
+    and a current filtered distribution $p(x_{t-1}|y_{1:t-1})$. \pause Our goal is to approximate $p(x_t|y_{1:t})$. \pause Let
+    \begin{eqnarray*}
+    f(x_t) &=& p(x_t|y_{1:t})  \pause
+    = \frac{p(y_t|x_t)p(x_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause
+    \propto  p(y_t|x_t)p(x_t|y_{1:t-1}) \\ \pause
+    g(x_t) &=& p(x_t|y_{1:t-1})  \pause
+    = \int p(x_t|x_{t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1} \\ \pause
+    \frac{f(x_t)}{g(x_t)} &\propto & \frac{p(y_t|x_t)p(x_t|y_{1:t-1})}{p(x_t|y_{1:t-1})}  \pause
+    =p(y_t|x_t) \\ \pause
+    x_{t-1}^{(i)} &\sim & p(x_{t-1}|y_{1:t-1}) \\ \pause
+    x_{t}^{(i)} &\sim & p(x_t|x_{t-1}^{(i)}) \\ \pause
+    w_t^{(i)} &\propto & p(y_t|x_t^{(i)}) \\ \pause
+    p(x_t|y_{1:t}) &\approx&  \sum_{i=1}^J w_t^{(i)} \delta_{x_t^{(i)}} \pause
+    \end{eqnarray*}
+
+    The pair $\left(w_t^{(i)},x_t^{(i)}\right)$ is called a \alert{particle}.
+    }
+}
+
+\frame{
+    Sequential importance sampling procedure: \pause
+    \begin{enumerate}
+    \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
+    \[ p(x_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{x_{t-1}^{(i)}}.\] \pause
+    \item For $i\in\{1,2,\ldots,J\}$ \pause
+        \begin{enumerate}
+        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(i)})$ \pause
+        \item Set $w_{t}^{(i)} \propto w_{t-1}^{(i)} p(y_t|x_t^{(i)})$ \pause
+        \end{enumerate}
+    \item We now have a particle approximation to our density at time $t$, i.e.
+    \[ p(x_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{x_{t}^{(i)}}.\]
+    \end{enumerate}
+}
+
+\frame{
+    \setkeys{Gin}{width=0.8\textwidth}
+
+    \vspace{-0.3in}
+
+    \begin{center}
+    \multiinclude[format=pdf]{sis}
+    %\only<1-| handout:0>{\multiinclude[format=pdf]{sis}}
+%    \only<beamer:0| handout:1>{\includegraphics{sis-0}}
+    \end{center}
+}
+
+\frame{
+    Sequential importance sampling (SIS) summary:
+    \begin{itemize}
+    \item Positives
+        \begin{itemize}
+        \item As the number of particles $J$ increases, the accuracy increases. \pause
+        \end{itemize}
+    \item Negatives
+        \begin{itemize}
+        \item Inference is dominated by a few particles with high weight \pause
+        \item Many particles are kept that are irrelevant \pause
+        \end{itemize}
+    \end{itemize}
+
+    \vspace{0.2in}
+
+    Why don't we eliminate particles with low weight in favor of particles with large weight?
+}
+
+\subsection{Sequential importance sampling with resampling}
+\frame{
+    Let's approximate $p(x_{t-1}|y_{1:t-1})$ by sampling with replacement proportional to the weights $w_{t-1}^{(i)}$:
+
+    \vspace{0.2in} \pause
+
+    \[ \begin{array}{c}
+    p(x_{t-1}|y_{1:t-1}) \approx \left\{
+    \begin{array}{c|cccr}
+    i & 1 & 2 & \cdots & J \\
+    \hline
+    w_{t-1}^{(i)} & 0.02 & 0.05 & \cdots & 0.03 \\
+    x_{t-1}^{(i)} & 1.91 & 0.63 & \cdots & -0.12
+    \end{array} \right. \\ \pause
+    \\
+    \Big\Downarrow \\
+    \\
+    p(x_{t-1}|y_{1:t-1}) \approx \left\{
+    \begin{array}{c|cccr}
+    i & 1 & 2 & \cdots & J \\
+    \hline
+    w_{t-1}^{(i)} & 1/J & 1/J & \cdots & 1/J \\
+    x_{t-1}^{(i)} & 0.63 & 0.63 & \cdots & -0.12
+    \end{array} \right. \\
+
+    \end{array} \]
+}
+
+\frame{\frametitle{}
+    {\scriptsize
+    \begin{flushright}
+    \alt<2>{\alert{(Gordon, Salmond, and Smith 1993)}}{\phantom{()}}
+    \end{flushright}
+    }
+
+    \vspace{0.1in}
+
+    Sequential importance sampling \alt<2>{\alert{with resampling }}{}procedure:
+    \begin{enumerate}
+    \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
+    \[ p(x_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{x_{t-1}^{(i)}}.\]
+    \item For $i\in\{1,2,\ldots,J\}$
+        \begin{enumerate}
+        \item \uncover<2->{\alert{Sample $j\in\{1,2,\ldots,J\}$ with probability $w_{t-1}^{(j)}$}}
+        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(\alt<2>{\alert{j}}{i})})$
+        \item Set $w_{t}^{(i)} \propto \alt<2>{\alert{1}}{w_{t-1}^{(i)}} p(y_t|x_t^{(i)})$
+        \end{enumerate}
+    \item We now have a particle approximation to our density at time $t$, i.e.
+    \[ p(x_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{x_{t}^{(i)}}.\]
+    \end{enumerate}
+}
+
+\frame{
+    \setkeys{Gin}{width=0.8\textwidth}
+
+    \vspace{-0.3in}
+
+    \begin{center}
+    %\multiinclude[<+>][format=pdf]{sir}
+    \only<1-| handout:0>{\multiinclude[format=pdf]{sir}}
+    \only<beamer:0| handout:1>{\includegraphics{sir-9}}
+    \end{center}
+}
+
+\subsection{Resampling}
+\frame{\frametitle{}
+    \begin{flushright}
+    {\tiny (Douc, Capp\'e, and Moulines 2005)}
+    \end{flushright}
+
+    Constraints on resampling:
+    \begin{itemize}
+    \item Number of resulting particles ($J$) is fixed
+    \item Resulting weights are uniform ($1/J$)
+    \item Number of repeats is unbiased ($E[N_j]=J w^{(j)}$)
+    \end{itemize}
+
+    \vspace{0.2in} \pause
+
+    Schemes that meet these requirements:
+    \begin{itemize}[<+->]
+    \item Multinomial sampling
+    \item Residual sampling
+    \item Stratified sampling
+    \item Systematic sampling
+    \end{itemize}
+}
+
+\subsubsection{Multinomial sampling}
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+    \begin{columns}
+    \column{0.5\textwidth}
+    Multinomial sampling
+    \begin{itemize}
+    \item Draw $U_1,\ldots,U_J \stackrel{iid}{\sim} Unif(0,1)$
+    \item Invert cumulative sum of weights
+    \end{itemize} \pause
+    \column{0.5\textwidth}
+    \multiinclude[format=pdf]{mult}
+    \end{columns}
+}
+
+\subsubsection{Residual sampling}
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+    \begin{columns}
+    \column{0.5\textwidth}
+    Residual sampling
+    \begin{itemize}
+        \item Keep $n_j=\lfloor J w^{(j)} \rfloor$ repeats of particle $j$
+        \item Update remaining probability $w^{(j)'} \propto J w^{(j)}-n_j$
+        \item Multinomial sampling on remaining $J-\sum_{j=1}^J n_j$ particles with probabilities $w^{(j)'}$
+        \end{itemize}
+    \column{0.5\textwidth} \pause
+    \multiinclude[format=pdf]{resi}
+    \end{columns}
+}
+
+\subsubsection{Stratified sampling}
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+    \begin{columns}
+    \column{0.5\textwidth}
+    Stratified sampling
+    \begin{itemize}
+    \item Draw $U_j \stackrel{ind}{\sim} Unif\left(\frac{j-1}{J},\frac{j}{J}\right)$ for $j=1,2,\ldots,J$
+    \item Invert cumulative sum of weights
+    \end{itemize} \pause
+    \column{0.5\textwidth}
+    \multiinclude[format=pdf]{strat}
+    \end{columns}
+}
+
+\subsubsection{Systematic sampling}
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+    \begin{columns}
+    \column{0.5\textwidth}
+    Systematic sampling
+    \begin{itemize}
+    \item Draw $U_1 \sim Unif(0,1)$
+    \item Set $U_j = U_{j-1}+\frac{1}{J}$ for $j=1,2,\ldots,J$
+    \item Invert cumulative sum of weights
+    \end{itemize} \pause
+    \column{0.5\textwidth}
+    \multiinclude[format=pdf]{syst}
+    \end{columns}
+    \pause
+    A counter example shows that this can be worse than stratified and residual sampling.
+}
+
+\subsection{When to resample}
+\frame{
+    \setkeys{Gin}{width=0.6\textwidth}
+    Resampling can add unnecessary variance, e.g.
+    \begin{center}
+    \multiinclude[format=pdf]{addvar}
+    \end{center}
+}
+
+\frame{
+    Methods for determining when to resample
+    \begin{itemize}
+    \item Effective sample size
+    \[ ESS = \left( \sum_{i=1}^J (w^{(j)})^2 \right)^{-1} \] \pause
+    \item Coefficient of variation
+    \[ CoV = \left( \frac{1}{J} \sum_{i=1}^J (Jw^{(j)}-1)^2 \right)^{1/2} \] \pause
+    \item Entropy
+    \[ Ent = -\sum_{j=1}^J w^{(j)} \log_2(w^{(j)}) \]
+    \end{itemize}
+}
+
+\frame{
+    \setkeys{Gin}{width=0.6\textwidth}
+    Dynamic resampling
+    \begin{center}
+    \multiinclude[format=pdf]{ess}
+    \end{center}
+}
+
+\subsection{Avoiding resampling}
+\frame{
+    Better than resampling would be to avoid the need altogether
+
+    \begin{itemize}
+    \item Resample-move (Gilks and Berzuini 2001)
+    \item Auxiliary particle filter (Pitt and Shepherd 1999)
+    \end{itemize}
+}
+
+\frame{
+    Resample-move procedure:
+    \begin{enumerate}
+    \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
+    \[ p(x_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J \frac{1}{J} \delta_{x_{t-1}^{(i)}}.\] \pause
+    \item For $i\in\{1,2,\ldots,J\}$
+        \begin{enumerate}
+        \item Sample $j\in\{1,2,\ldots,J\}$ with probability proportional to $\alert<5>{p(y_t|x_{t-1}^{(j)})}$ \pause
+        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(j)})$ \pause
+        \end{enumerate}
+    \item We now have a particle approximation to our density at time $t$, i.e.
+    \[ p(x_{t}|y_{1:t}) \approx \sum_{i=1}^J \frac{1}{J} \delta_{x_{t}^{(i)}}.\]
+    \end{enumerate} \pause\pause
+
+    \vspace{0.1in}
+
+    Evaluating $p(y_t|x_{t-1})$ requires solving the integral
+    \[ p(y_t|x_{t-1}) = \int p(y_t|x_t)p(x_t|x_{t-1})dx_t.\]
+}
+
+\frame{
+    Auxiliary particle filter (APF) procedure:
+    \begin{enumerate}
+    \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
+    \[ p(x_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)}\delta_{x_{t-1}^{(i)}}.\] \pause
+    \item For $i\in\{1,2,\ldots,J\}$
+        \begin{enumerate}
+        \item Sample $j\in\{1,2,\ldots,J\}$ with prob. proportional to $w_{t-1}^{(j)}p(y_t|\mu_t^{(j)})$ \pause
+        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(j)})$ \pause
+        \item Set $w_t^{(i)} = \frac{p(y_t|x_t^{(i)})}{p(y_t|\mu_t^{(j)})}$ \pause
+        \end{enumerate}
+    \item We now have a particle approximation to our density at time $t$, i.e.
+    \[ p(x_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{x_{t}^{(i)}}.\]
+    \end{enumerate}
+    \pause
+    where $\mu_t^{(j)}$ is a point estimate of $x_t^{(j)}$, usually $\mu_t^{(j)}=E[x_t^{(j)}]$.
+}
+
+\frame{
+    \setkeys{Gin}{width=0.8\textwidth}
+
+    \vspace{-0.3in}
+
+    \begin{center}
+    %\multiinclude[<+>][format=pdf]{apf}
+    \only<1-| handout:0>{\multiinclude[format=pdf]{apf}}
+    \only<beamer:0| handout:1>{\includegraphics{apf-9}}
+    \end{center}
+}
+
+\subsection{Summary}
+\frame{
+    Summary of $p(x_t|y_t,\theta)$:
+    \begin{itemize}
+    \item Avoid particle degeneracy if possible
+        \begin{itemize}
+        \item Resample-move
+        \item Auxiliary particle filter
+        \end{itemize}
+    \item When resampling
+        \begin{itemize}
+        \item Use either stratified or residual
+        \item and only resample when necessary, e.g. ESS
+        \end{itemize}
+    \end{itemize}
+}
+
+\section{State and parameter inference}
+\frame{\frametitle{}
+    \begin{multicols}{2}
+    \begin{enumerate}
+    \item State-space models $p(y|x,\theta)p(x|\theta)$
+        \begin{itemize}
+        \item Definition
+        \item Terminology
+        \item Notation
+        \end{itemize}
+    \item State inference $p(x|y,\theta)$
+        \begin{itemize}
+        \item Exact inference
+        \item Importance sampling
+        \item Sequential importance sampling
+        \item Bootstrap filter - resampling
+        \item Auxiliary particle filter
+        \end{itemize}
+    \alert{
+    \item State and parameter inference $p(x,\theta|y)$
+        \begin{itemize}
+        \item Bootstrap filter
+        \item Kernel density
+        \item Sufficient statistics
+        \end{itemize}
+    }
+    \item Advanced SMC
+        \begin{itemize}
+        \item SMC-MCMC
+        \item Fixed parameter
+        \item SMC for marginal likelihood calculations
+        \end{itemize}
+
+    \vspace{0.1in}
+
+    \end{enumerate}
+    \end{multicols}
+}
+
+\frame{
+    What if the fixed parameters are unknown? \pause
+    \begin{itemize}[<+->]
+    \item incorporate into state with degenerate evolutions, e.g. $\theta_t=\theta_{t-1}$
+    \item incorporate into state with evolutions, e.g. $\theta_t=\theta_{t-1}+\epsilon_t$
+    \item use kernel density approximation to regenerate parameter values
+    \item use sufficient statistics to regenerate parameter values
+    \item use Markov chain Monte Carlo to regenerate parameter values
+    \end{itemize}
+}
+
+\frame{
+    Our goal has changed slightly
+
+    \vspace{0.2in}\pause
+
+    \begin{itemize}
+    \item We assume $p(x_{t-1},\theta|y_{1:t-1})$ is known \pause
+    \item and try to obtain $p(x_t,\theta|y_{1:t})$ using \pause
+    \item $p(x_t|x_{t-1},\theta)$ and $p(y_t|x_t,\theta)$.
+    \end{itemize}
+
+    \vspace{0.2in}\pause
+
+    Then, starting with $p(x_0,\theta|y_0)=p(x_0,\theta)$ we can find $p(x_t,\theta|y_{1:t})$ for all $t$.
+}
+
+\subsection{Resampling with fixed parameters}
+\frame{
+    Modify SIR to include fixed parameters: \pause
+    \begin{enumerate}
+    \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
+    \[ p(x_{t-1},\theta|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{(x_{t-1},\theta)^{(i)}}.\] \pause
+    \item For $i\in\{1,2,\ldots,J\}$
+        \begin{enumerate}
+        \item Sample $j\in\{1,2,\ldots,J\}$ with probability $w_{t-1}^{(j)}$. \pause
+        \item Set $\theta^{(i)}=\theta^{(j)}$. \pause
+        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(j)},\theta^{(i)})$. \pause
+        \item Set $w_{t}^{(i)} \propto p(y_t|x_t^{(i)},\theta^{(i)})$. \pause
+        \end{enumerate}
+    \item We now have a particle approximation to our density at time $t$, i.e.
+    \[ p(x_{t},\theta|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{(x_{t},\theta)^{(i)}}.\]
+    \end{enumerate}
+}
+
+\frame{
+    Test model:
+
+    \vspace{0.2in} \pause
+
+    \begin{eqnarray*}
+    y_t &=& x_t + v_t \\
+    x_t &=& \alpha+\beta x_{t-1} + w_t \\
+    v_t &\stackrel{iid}{\sim}& N(0,V) \\
+    w_t &\stackrel{iid}{\sim}& N(0,W) \\
+    x_0 &\sim & N(m_0,C_0) \\
+    \\ \pause
+    \theta &=& (\alpha,\beta,V,W)
+    \end{eqnarray*}
+}
+
+\frame{
+    \setkeys{Gin}{width=0.8\textwidth}
+
+    \vspace{-0.3in}
+
+    \begin{center}
+    %\multiinclude[<+>][format=pdf]{MBF}
+    \only<1-| handout:0>{\multiinclude[format=pdf]{MBF}}
+    \only<beamer:0| handout:1>{\includegraphics{MBF-9}}
+    \end{center}
+}
+
+\subsection{Kernel density estimation}
+\frame{
+    Clearly we need to regenerate parameter values. \pause One idea:
+
+    \vspace{0.1in} \pause
+
+    \begin{itemize}
+    \item Approximate our particle approximation by a kernel density approximation \pause
+    \item Draw new parameter values from this kernel density approximation
+    \end{itemize} \pause
+
+    \begin{eqnarray*}
+    p(\theta|y_{1:t-1}) &\approx& \sum_{i=1}^J w_{t-1}^{(i)} \delta_{\theta^{(i)}} \\ \pause
+    &\approx & \sum_{i=1}^J w_{t-1}^{(i)} N(a\theta^{(i)}+(1-a)\overline{\theta}, h^2V)  \pause
+    \end{eqnarray*}
+    where
+    \[     h^2 = 1-a^2 = 1-\left( \frac{3\tau-1}{2\tau} \right)^2 \]
+    and $\overline{\theta}$ and $V$ are the Monte Carlo estimate of the mean and covariance.
+}
+
+\frame{
+    \setkeys{Gin}{width=\textwidth}
+    \begin{center}
+    \includegraphics{kd}
+    \end{center}
+}
+
+\subsection{Sufficient statistics}
+\frame{
+    Another idea:
+    \begin{itemize}
+    \item Rather than storing draws of parameters, store sufficient statistics for the parameters.
+    \end{itemize}
+
+    \vspace{0.1in}\pause
+
+    \begin{itemize}
+    \item Suppose the model admits a sufficient statistic representation, i.e.
+    \[ p(x_t,s_t,\theta|y_{1:t}) = p(\theta|s_t)p(x_t,s_t|y_{1:t}). \] \pause
+    \item Then, each particle stores a distribution for the parameters \pause
+    \item and the sufficient statistics can be updated deterministically via
+    \[ s_t = \mathcal{S}(s_{t-1},x_t,x_{t-1},y_t) .\]
+    \end{itemize}
+}
+
+\frame{
+    For example, in our model
+    \[ \begin{array}{ll@{\quad}l}
+    y_t &= x_t + v_t & v_t\sim N(0,V) \\
+    x_t &= \alpha+\beta x_{t-1} + w_t & w_t\sim N(0,W)
+    \end{array} \] \pause
+    if
+    \[ \begin{array}{rl@{\quad}l}
+    V|y_{1:t-1} &\sim  IG(\alpha_{V,t-1},\beta_{V,t-1}) \\
+    \alpha,\beta,W|y_{1:t-1} &\sim N-IG(\mu_{t-1},\Sigma_{t-1},\alpha_{W,t-1},\beta_{W,t-1}) \\ \pause
+    s_{t-1} &= (\alpha_{V,t-1},\beta_{V,t-1},\mu_{t-1},\Sigma_{t-1},\alpha_{W,t-1},\beta_{W,t-1})
+    \end{array} \] \pause
+    then
+    \[ \begin{array}{rl@{\quad}l}
+    V|y_{1:t} &\sim  IG(\alpha_{V,t},\beta_{V,t}) \\
+    \alpha,\beta,W|y_{1:t},x_t,x_{t-1} &\sim N-IG(\mu_{t},\Sigma_{t},\alpha_{W,t},\beta_{W,t}) \\ \pause
+    s_{t} &= (\alpha_{V,t},\beta_{V,t},\mu_{t},\Sigma_{t},\alpha_{W,t},\beta_{W,t})
+    \end{array} \]
+}
+
+\frame{
+    \setkeys{Gin}{width=0.7\textwidth}
+    \begin{center}
+    \includegraphics{LWvPL1e3}
+    \end{center}
+}
+
+\frame{
+    \setkeys{Gin}{width=0.7\textwidth}
+    \begin{center}
+    \includegraphics{LWvPL}
+    \end{center}
+}
+
+\subsection{MCMC kernels}
+\frame{
+    Final idea for fixed parameter regeneration: \pause
+
+    \vspace{0.1in}
+
+    \begin{itemize}
+    \item Stop the SMC algorithm \pause
+    \item Perform one (or more) iterations of MCMC on each particle \pause
+
+    \vspace{0.1in}
+
+    \item Pros
+        \begin{itemize}
+        \item Does not affect SMC theory
+        \item Will move fixed parameters around    \pause
+        \end{itemize}
+    \item Cons
+        \begin{itemize}
+        \item Requires entire data and state history
+        \item If not, introduces bias
+        \end{itemize}
+    \end{itemize}
+}
+
+
+\subsection{Summary}
+\frame{
+    Summary of $p(x_t,\theta|y_t)$:
+    \begin{itemize}
+    \item Regenerating fixed parameters is necessary
+        \begin{itemize}
+        \item When possible use sufficient statistics
+        \item Otherwise use kernel density or MCMC step
+        \end{itemize}
+    \end{itemize}
+}
+
+\section{Advanced SMC}
+\frame{\frametitle{}
+    \begin{multicols}{2}
+    \begin{enumerate}
+    \item State-space models $p(y|x,\theta)p(x|\theta)$
+        \begin{itemize}
+        \item Definition
+        \item Terminology
+        \item Notation
+        \end{itemize}
+    \item State inference $p(x|y,\theta)$
+        \begin{itemize}
+        \item Exact inference
+        \item Importance sampling
+        \item Sequential importance sampling
+        \item Bootstrap filter - resampling
+        \item Auxiliary particle filter
+        \end{itemize}
+    \item State and parameter inference $p(x,\theta|y)$
+        \begin{itemize}
+        \item Bootstrap filter
+        \item Kernel density
+        \item Sufficient statistics
+        \end{itemize}
+    \alert{
+    \item Advanced SMC
+        \begin{itemize}
+        \item SMC for marginal likelihood calculations
+        \item Theoretical results for fixed parameters
+        \item SMC to generate Metropolis proposals
+        \end{itemize}
+    }
+
+    \vspace{0.1in}
+
+    \end{enumerate}
+    \end{multicols}
+}
+
+\subsection{Marginal likelihood calculations}
+\frame{\frametitle{}
+    {\small
+    In Bayesian data analysis, model comparison and hypothesis testing involves the \alert{marginal likelihood}:
+    \[ p(y) = \int p(y|\theta)p(\theta)d\theta.\] \pause
+    For example, Bayes' factors depend on the marginal likelihood of for both models:
+    \[ BF(0:1) = \frac{p(y|H_0)}{p(y|H_1)} = \frac{\int p(y|\theta_0)p(\theta_0|H_0) d\theta_0}{\int p(y|\theta_1)p(\theta_1|H_1) d\theta_1}.\]
+
+    \vspace{0.2in} \pause
+
+    In state-space models,
+    \[ p(y_{1:T}) = \int \cdots \int \prod_{t=1}^T p(y_t|x_t)p(x_t|x_{t-1})p(x_0) dx_{0:T} d\theta .\] \pause
+    This can be approximated using SMC methods by
+    \[ p(y_{1:T}) \approx \frac{1}{J} \sum_{i=1}^J \tilde{w}_t^{(i)}\]
+    where $\tilde{w}_t^{(i)}$ are the \emph{unnormalized} weights.
+    }
+}
+
+\subsection{Theoretical results}
+\frame{
+    For $p(x_{1:t}|y_{1:t},\theta)$, we have
+    \[ E\left[ \left| \int h(x_{T:T-L})[\hat{p}(x_{T:T-L}|y_{1:T})-p(x_{T:T-L}|y_{1:T})]dx_{T:T-L}\right|^p\right]^{1/p} \pause \le \frac{c(L)}{\sqrt{J}}.\] \pause
+    As long as we are only interested in a fixed time into the past, we can use a constant number of particles and maintain accuracy.
+
+    \vspace{0.2in} \pause
+
+    While for $p(x_{1:t},\theta|y_{1:t})$, we have
+    \[ E\left[ \left| \int h(\theta)[\hat{p}(\theta|y_{1:T})-p(\theta|y_{1:T})]d\theta\right|^p\right]^{1/p} \pause \le \frac{c(T)}{\sqrt{J}}.\] \pause
+    So, as time increases, we need more and more particles to maintain accuracy.
+}
+
+\subsection{SMC-MCMC}
+\frame{
+    How about using SMC to generate proposal draws for the states within a Metropolis sampling scheme?
+
+    \vspace{0.2in} \pause
+
+    \begin{center}
+    \includegraphics{smc-mcmc}
+    \end{center}
+}
+
+\section{Summary}
+\subsection{of Summaries}
+\frame{
+    \begin{itemize}[<+->]
+    \item If your goal is $p(x_t|y_{1:t},\theta)$, then
+        \begin{itemize}
+        \item Analytically integrate anything you can
+        \item Use a point estimate to reduce particle degeneracy
+        \item Use stratified or residual resampling
+        \end{itemize}
+    \item If your goal is $p(x_t,\theta|y_{1:t})$, then
+        \begin{itemize}
+        \item Analytically integrate anything you can
+        \item Use kernel density approximation to regenerate particles
+        \item Use lots of particles
+        \item Stop every once in a while and run MCMC
+        \end{itemize}
+    \item Lots of areas for open research
+        \begin{itemize}
+        \item Marginal likelihood calculation
+        \item Theoretical results
+        \item SMC for Metropolis proposals
+        \end{itemize}
+    \end{itemize}
+}
+
+\subsection{References}
+\frame{\frametitle{}
+    {\tiny
+    References
+    \begin{itemize}
+    \item Gordon, N. J., Salmond, D. J., and Smith, A. F. M. (1993), ìNovel approach to nonlinear/non-Gaussian Bayesian state estimation,î IEEE Proceedings Part F: Communications, Radar and Signal Processing, 140, 107ñ113.
+    \item Pitt, M. K. and Shephard, N. (1999), ìFiltering via simulation: auxiliary particle filters,î Journal of the American Statistical Association, 94, 590ñ599.
+    \item Liu, J. and West, M. (2001), ìCombined parameter and state estimation in simulation-based filtering,î in Sequential Monte Carlo Methods in Practice, eds. A. Doucet, J. F. G. De Freitas, and N. J. Gordon, pp. 197ñ217, Springer-Verlag, New York.
+    \item Doucet, A., De Freitas, N., and Gordon, N. (2001), Sequential Monte Carlo Methods in Practice, Springer-Verlag, New York.
+    \item Gilks, W. R. and Berzuini, C. (2001) ``Following a Moving Target-Monte Carlo Inference for Dynamic Bayesian Models,'' Journal of the Royal Statistical Society. Series B (Statistical Methodology), Vol. 63, No. 1, 127-146
+    \item Fearnhead, P. (2002), ìMarkov chain Monte Carlo, sufficient statistics, and particle filters,î Journal of Computational and Graphical Statistics, 11, 848ñ862.
+    \item Storvik, G. (2002), ìParticle filters in state space models with the presence of unknown static parameters,î IEEE Transactions on Signal Processing, 50, 281ñ289.
+    \item R. Douc, O. CappÈ, and E. Moulines, (2005) ``Comparison of Resampling Schemes for Particle Filtering,'' In 4th International Symposium on Image and Signal Processing and Analysis (ISPA), Zagreb
+    \end{itemize}
+
+    Computation
+    \begin{itemize}
+    \item R::KFAS
+    \item R::dlm
+    \item R::SMC (not being updated?)
+    \item R::smcUtils (\url{http://www.pstat.ucsb.edu/faculty/niemi/software/})
+    \end{itemize}
+    }
+}
+
+
+\end{document}
+
