@@ -1,0 +1,417 @@
+library(plotrix)
+pdf("stateSpaceModel-0.pdf")
+par(mar=rep(0,4))
+plot(0,0, axes=F, xlim=c(0,4), ylim=c(-1,3), type='n', xlab='', ylab='')
+xs <- c(1,2,3,1,2,3)
+ys <- c(1,1,1,2,2,2)
+lbls <- expression(theta[t-1],theta[t],theta[t+1],y[t-1],y[t],y[t+1])
+for (i in 1:6) { draw.circle(xs[i],ys[i], 0.3,lwd=4) }
+text(1, 1, expression(x[t-1]), cex=2)
+text(2, 1, expression(x[t]), cex=2)
+text(3, 1, expression(x[t+1]), cex=2)
+text(1, 2, expression(y[t-1]), cex=2)
+text(2, 2, expression(y[t]), cex=2)
+text(3, 2, expression(y[t+1]), cex=2)
+arrows(xs-0.15-.5,1,xs+0.15-.5,1, lwd=2)
+arrows(xs-0.15+.5,1,xs+0.15+.5,1, lwd=2)
+arrows(xs,1+0.35,xs,2-0.35, lwd=2)
+dev.off()
+
+pdf("stateSpaceModel-1.pdf")
+par(mar=rep(0,4))
+plot(0,0, axes=F, xlim=c(0,4), ylim=c(-1,3), type='n', xlab='', ylab='')
+xs <- c(1,2,3,1,2,3)
+ys <- c(1,1,1,2,2,2)
+lbls <- expression(theta[t-1],theta[t],theta[t+1],y[t-1],y[t],y[t+1])
+for (i in 1:6) { draw.circle(xs[i],ys[i], 0.3,lwd=4) }
+text(1, 1, expression(x[t-1]), cex=2)
+text(2, 1, expression(x[t]), cex=2)
+text(3, 1, expression(x[t+1]), cex=2)
+text(1, 2, expression(y[t-1]), cex=2)
+text(2, 2, expression(y[t]), cex=2)
+text(3, 2, expression(y[t+1]), cex=2)
+arrows(xs-0.15-.5,1,xs+0.15-.5,1, lwd=2, col='red')
+arrows(xs-0.15+.5,1,xs+0.15+.5,1, lwd=2, col='red')
+arrows(xs,1+0.35,xs,2-0.35, lwd=2)
+dev.off()
+
+pdf("stateSpaceModel-2.pdf")
+par(mar=rep(0,4))
+plot(0,0, axes=F, xlim=c(0,4), ylim=c(-1,3), type='n', xlab='', ylab='')
+xs <- c(1,2,3,1,2,3)
+ys <- c(1,1,1,2,2,2)
+lbls <- expression(theta[t-1],theta[t],theta[t+1],y[t-1],y[t],y[t+1])
+for (i in 1:6) { draw.circle(xs[i],ys[i], 0.3,lwd=4) }
+text(1, 1, expression(x[t-1]), cex=2)
+text(2, 1, expression(x[t]), cex=2)
+text(3, 1, expression(x[t+1]), cex=2)
+text(1, 2, expression(y[t-1]), cex=2)
+text(2, 2, expression(y[t]), cex=2)
+text(3, 2, expression(y[t+1]), cex=2)
+arrows(xs-0.15-.5,1,xs+0.15-.5,1, lwd=2)
+arrows(xs-0.15+.5,1,xs+0.15+.5,1, lwd=2)
+arrows(xs,1+0.35,xs,2-0.35, lwd=2, col='red')
+dev.off()
+
+#########################################################
+
+pdf("ssm-0.pdf")
+par(mar=rep(0,4))
+plot(0,0, axes=F, xlim=c(0,4), ylim=c(-1,3), type='n', xlab='', ylab='')
+xs <- c(1,2,3,1,2,3)
+ys <- c(1,1,1,2,2,2)
+lbls <- expression(theta[t-1],theta[t],theta[t+1],y[t-1],y[t],y[t+1])
+for (i in 1:6) { 
+  draw.circle(xs[i],ys[i], 0.3,lwd=4, 
+  border=ifelse(any(i==c(4,5)), "blue","black" ))
+}
+text(1, 1, expression(x[t-1]), cex=2)
+text(2, 1, expression(x[t]), cex=2)
+text(3, 1, expression(x[t+1]), cex=2)
+text(1, 2, expression(y[t-1]), cex=2)
+text(2, 2, expression(y[t]), cex=2)
+text(3, 2, expression(y[t+1]), cex=2)
+arrows(xs-0.15-.5,1,xs+0.15-.5,1, lwd=2)
+arrows(xs-0.15+.5,1,xs+0.15+.5,1, lwd=2)
+arrows(xs,1+0.35,xs,2-0.35, lwd=2)
+dev.off()
+
+pdf("ssm-1.pdf")
+par(mar=rep(0,4))
+plot(0,0, axes=F, xlim=c(0,4), ylim=c(-1,3), type='n', xlab='', ylab='')
+xs <- c(1,2,3,1,2,3)
+ys <- c(1,1,1,2,2,2)
+lbls <- expression(theta[t-1],theta[t],theta[t+1],y[t-1],y[t],y[t+1])
+for (i in 1:6) { 
+  draw.circle(xs[i],ys[i], 0.3,lwd=4, 
+  border=ifelse(any(i==c(4,5)), "blue","black" ))
+}
+draw.circle(2,1, 0.3, lwd=4, border="red")
+text(1, 1, expression(x[t-1]), cex=2)
+text(2, 1, expression(x[t]), cex=2)
+text(3, 1, expression(x[t+1]), cex=2)
+text(1, 2, expression(y[t-1]), cex=2)
+text(2, 2, expression(y[t]), cex=2)
+text(3, 2, expression(y[t+1]), cex=2)
+arrows(xs-0.15-.5,1,xs+0.15-.5,1, lwd=2)
+arrows(xs-0.15+.5,1,xs+0.15+.5,1, lwd=2)
+arrows(xs,1+0.35,xs,2-0.35, lwd=2)
+dev.off()
+
+pdf("ssm-2.pdf")
+par(mar=rep(0,4))
+plot(0,0, axes=F, xlim=c(0,4), ylim=c(-1,3), type='n', xlab='', ylab='')
+xs <- c(1,2,3,1,2,3)
+ys <- c(1,1,1,2,2,2)
+lbls <- expression(theta[t-1],theta[t],theta[t+1],y[t-1],y[t],y[t+1])
+for (i in 1:6) { 
+  draw.circle(xs[i],ys[i], 0.3,lwd=4, 
+  border=ifelse(any(i==c(4,5)), "blue","black" ))
+}
+draw.circle(1,1, 0.3, lwd=4, border="red")
+text(1, 1, expression(x[t-1]), cex=2)
+text(2, 1, expression(x[t]), cex=2)
+text(3, 1, expression(x[t+1]), cex=2)
+text(1, 2, expression(y[t-1]), cex=2)
+text(2, 2, expression(y[t]), cex=2)
+text(3, 2, expression(y[t+1]), cex=2)
+arrows(xs-0.15-.5,1,xs+0.15-.5,1, lwd=2)
+arrows(xs-0.15+.5,1,xs+0.15+.5,1, lwd=2)
+arrows(xs,1+0.35,xs,2-0.35, lwd=2)
+dev.off()
+
+
+pdf("ssm-3.pdf")
+par(mar=rep(0,4))
+plot(0,0, axes=F, xlim=c(0,4), ylim=c(-1,3), type='n', xlab='', ylab='')
+xs <- c(1,2,3,1,2,3)
+ys <- c(1,1,1,2,2,2)
+lbls <- expression(theta[t-1],theta[t],theta[t+1],y[t-1],y[t],y[t+1])
+for (i in 1:6) { 
+  draw.circle(xs[i],ys[i], 0.3,lwd=4, 
+  border=ifelse(any(i==c(4,5)), "blue","black" ))
+}
+draw.circle(3,1, 0.3, lwd=4, border="red")
+text(1, 1, expression(x[t-1]), cex=2)
+text(2, 1, expression(x[t]), cex=2)
+text(3, 1, expression(x[t+1]), cex=2)
+text(1, 2, expression(y[t-1]), cex=2)
+text(2, 2, expression(y[t]), cex=2)
+text(3, 2, expression(y[t+1]), cex=2)
+arrows(xs-0.15-.5,1,xs+0.15-.5,1, lwd=2)
+arrows(xs-0.15+.5,1,xs+0.15+.5,1, lwd=2)
+arrows(xs,1+0.35,xs,2-0.35, lwd=2)
+dev.off()
+
+###################### Kalman filter ##############################3
+
+mn <- lKalmanFilter$vdPosteriorMean
+sd <- sqrt(lKalmanFilter$vdPosteriorVariance)
+
+plot(0,0,type='n',main='',xlab='t',ylab=expression(x[t]),xlim=c(0,10),
+  ylim=range(adY))
+points(0,mn[1],pch=23,bg='red',col=NA)
+points(0,mn[1]-2*sd[1],pch=23,bg='red',col=NA)
+points(0,mn[1]+2*sd[1],pch=23,bg='red',col=NA)
+legend("topright",inset=0.01, c("Data","Mean","95% Interval"), 
+       pch=c(23,NA,NA), lty=c(NA,2,1),pt.bg=c("green","red","red"), 
+       col=c("green","red","red"), lwd=2)
+dev.copy2pdf(file="kf-0.pdf")   
+for (i in 1:10) {
+  plot(0,0,type='n',main='',xlab='',ylab='',xlim=c(0,10), axes=F,
+       ylim=range(adY))
+  points(i,adY[i+1],pch=23,bg='green',col=NA) 
+  segments(i-1,mn[i],i,mn[i+1],col='red', lty=2, lwd=2)
+  segments(i-1,mn[i]-2*sd[i],i,mn[i+1]-2*sd[i+1],col='red', lwd=2)
+  segments(i-1,mn[i]+2*sd[i],i,mn[i+1]+2*sd[i+1],col='red', lwd=2)
+  dev.copy2pdf(file=paste("kf-",i,".pdf",sep=''))
+}
+
+
+########################## MC #####################################
+set.seed(1)
+xs <- rnorm(1e4)
+bks <- seq(min(xs), max(xs), length.out=100)
+pdf("mc.pdf",width=10)
+par(mfrow=c(1,3))
+hist(xs[1:100], bks, freq=F, main='n=100', xlab='', ylab='',
+     xlim=c(-3,3), ylim=c(0,0.5), col='blue', border=NA, cex.main=1.5)
+curve(dnorm(x), -3, 3, add=T, col='red', lwd=4)
+hist(xs[1:1e3], bks, freq=F, main='n=1,000', xlab='', ylab='',
+     xlim=c(-3,3), ylim=c(0,0.5), col='blue', border=NA, cex.main=1.5)
+curve(dnorm(x), -3, 3, add=T, col='red', lwd=4)
+hist(xs[1:1e4], bks, freq=F, main='n=10,000', xlab='', ylab='',
+     xlim=c(-3,3), ylim=c(0,0.5), col='blue', border=NA, cex.main=1.5)
+curve(dnorm(x), -3, 3, add=T, col='red', lwd=4)
+dev.off()
+
+set.seed(1)
+y <- rnorm(1e5)
+cs <- (cumsum(y>1)/(1:1e5))[10^(1:5)]
+pdf("mc-tail.pdf")
+plot(1:5,cs,log='x', type='b', cex=1.5, cex.lab=1.5, cex.axis=1.5,
+     xlab='Log_10 of number of samples', ylab='P(Z>1)', lwd=2)
+abline(h=1-pnorm(1),col='red', lwd=2)
+dev.off()
+
+
+########################## IS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+set.seed(1)
+xs <- rcauchy(1e4)
+pdf("is.pdf",width=10)
+par(mfrow=c(1,3), mar=c(2,2,0,2)+.1)
+curve(dnorm(x), -5, 5, ylim=c(0,2), lwd=2, ylab='', xlab='')
+curve(dcauchy(x), -5, 5, col='red', add=T, lwd=2)
+curve(dnorm(x)/dcauchy(x), -5, 5, col='blue', add=T, lwd=2)
+legend("topright", inset=0.01, lwd=2, col=c("black","red","blue"),cex=1.5,
+       c("N(x;0,1) density", "C(x;0,1) density", "N(x;0,1)/C(x;0,1)"))
+
+curve(dnorm(x), -5, 5, ylim=c(0,1), lwd=2, ylab='', xlab='')
+curve(dunif(x,-1,1), -5, 5, col='red', add=T, lwd=2)
+curve(dnorm(x)/dunif(x,-1,1), -5, 5, col='blue', add=T, lwd=2)
+legend("topright", inset=0.01, lwd=2, col=c("black","red","blue"),cex=1.5,
+       c("N(x;0,1) density", "U(x;-1,1) density", "U(x;-1,1)/N(x;0,1)"))
+
+curve(dnorm(x), -5, 5, ylim=c(0,2), lwd=2, col='red', ylab='', xlab='')
+curve(dcauchy(x), -5, 5, add=T, lwd=2)
+curve(dcauchy(x)/dnorm(x), -5, 5, col='blue', add=T, lwd=2)
+legend("topright", inset=0.01, lwd=2, col=c("black","red","blue"), cex=1.5,
+       c("C(x;0,1) density", "N(x;0,1) density", "C(x;0,1)/N(x;0,1)"))
+dev.off()
+
+set.seed(1)
+n <- 20
+xs <- rnorm(n)
+ws <- dt(xs,2)/dnorm(xs,0,0.5)
+ex <- numeric(n)
+for (i in 1:n) {
+  ex[i] <- sum(xs[1:i]*ws[1:i]/sum(ws[1:i]))
+}
+ws <- ws/sum(ws)
+
+pdf("is-0.pdf")
+plot(0,0, xlim=c(0,n), ylim=c(-3,3), xlab='i', ylab='E[X]', type='n')
+legend("topright",inset=.01,c(expression(x_i),"E[X]","weights"), pch=c(22,21,19))
+dev.off()
+for (i in 1:n) {
+  pdf(paste("is-",i,".pdf",sep=''))
+  plot(0,0, xlim=c(0,n), ylim=c(-3,3), xlab='', ylab='', type='n', axes=F)
+  points(i, xs[i], pch=22)
+  points(i, ex[i])
+  points(i, 6*ws[i]-3,pch=19)
+  #segments(i,-3,i,6*ws[i]-3)
+  dev.off()
+}
+
+set.seed(2)
+y <- rexp(1e5)+4.5
+pdf.y <- function(y) { dexp(y-4.5) }
+cs <- (cumsum(dnorm(y)/pdf.y(y))/(1:1e5))[10^(1:5)]
+pdf("is-tail.pdf")
+plot(1:5,cs*10^6,log='x', type='b', cex=1.5, cex.lab=1.5, cex.axis=1.5,
+     xlab='Log_10 of number of samples', ylab='P(Z>4.5) [x10^-6]', lwd=2)
+abline(h=10^6*(1-pnorm(4.5)),col='red', lwd=2)
+dev.off()
+
+######################### Multinomial resampling ###########################
+set.seed(1)
+n <- 10
+a <- runif(n)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(1:10,c(0,b[-n]),1:10,b, lwd=2)
+u <- runif(n)
+ind <- numeric(n)
+for (i in 1:n) {
+  ind[i] <- sum(u[i]>b)+1
+}
+dev.copy2pdf(file="mult-0.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+points(rep(0,n), u, col='red', pch=19)
+dev.copy2pdf(file="mult-1.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+segments(0, u, ind, u, col='red')
+dev.copy2pdf(file="mult-2.pdf")
+
+########################### Residual resampling #####################
+set.seed(1)
+n <- 10
+a <- runif(n)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(0.1+(1:10),c(0,b[-n]),0.1+(1:10),b, lwd=2)
+u <- runif(3)
+ind <- numeric(3)
+for (i in 1:3) {
+  ind[i] <- sum(u[i]>b)+1
+}
+dev.copy2pdf(file="resi-0.pdf")
+
+a <- n*a-floor(n*a)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(0, 0, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+segments(1:10,c(0,b[-n]),1:10,b, lwd=2, col='blue')
+u <- runif(3)
+ind <- numeric(3)
+for (i in 1:3) {
+  ind[i] <- sum(u[i]>b)+1
+}
+dev.copy2pdf(file="resi-1.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+points(rep(0,3), u, col='red', pch=19)
+dev.copy2pdf(file="resi-2.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+segments(0, u, ind, u, col='red')
+dev.copy2pdf(file="resi-3.pdf")
+
+########################### Stratified resampling #####################
+set.seed(1)
+n <- 10
+a <- runif(n)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(1:n,c(0,b[-n]),1:n,b, lwd=2)
+u <- runif(n,((1:n)-1)/n,(1:n)/n)
+ind <- numeric(n)
+for (i in 1:n) {
+  ind[i] <- sum(u[i]>b)+1
+}
+dev.copy2pdf(file="strat-0.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+points(rep(0,n), u, col='red', pch=19)
+dev.copy2pdf(file="strat-1.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+segments(0, u, ind, u, col='red')
+dev.copy2pdf(file="strat-2.pdf")
+
+
+########################### Systematic resampling #####################
+set.seed(1)
+n <- 10
+a <- runif(n)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(1:n,c(0,b[-n]),1:n,b, lwd=2)
+u <- runif(1)/n 
+for (i in 2:n) u[i]<-u[i-1]+1/n
+ind <- numeric(n)
+for (i in 1:n) {
+  ind[i] <- sum(u[i]>b)+1
+}
+dev.copy2pdf(file="syst-0.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+points(rep(0,n), u, col='red', pch=19)
+dev.copy2pdf(file="syst-1.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+segments(0, u, ind, u, col='red')
+dev.copy2pdf(file="syst-2.pdf")
+
+######################### add variance ############################
+set.seed(1)
+n <- 10
+a <- rep(1,n)/n
+b <- cumsum(a)
+
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(1:10,c(0,b[-n]),1:10,b, lwd=2)
+u <- runif(n)
+ind <- numeric(n)
+for (i in 1:n) {
+  ind[i] <- sum(u[i]>b)+1
+}
+dev.copy2pdf(file="addvar-0.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+points(rep(0,n), u, col='red', pch=19)
+dev.copy2pdf(file="addvar-1.pdf")
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+segments(0, u, ind, u, col='red')
+dev.copy2pdf(file="addvar-2.pdf")
+
+####################### ESS ############################3
+ess <- function(w) return(1/sum(w^2))
+
+n <- 100
+a <- rep(1,n)/n
+
+plot(0, 0, ylim=c(0,n), xlim=c(0,20), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='ESS')
+abline(h=n/2, col='red',lwd=2)
+points(0,ess(a),cex=1.5, pch=19)
+dev.copy2pdf(file="ess-0.pdf")
+
+set.seed(1)
+for (i in 1:20) {
+  b <- a*dnorm(rnorm(n))
+  b <- b/sum(b)
+  plot(0, 0, ylim=c(0,n), xlim=c(0,20), type='n', xlab='', ylab='', axes=F)
+  segments(i-1, ess(a), i, ess(b), lwd=2)
+  if (ess(b)<n/2) { a<-rep(1,n)/n } else { a <- b }
+  dev.copy2pdf(file=paste("ess-",i,".pdf",sep=''))
+}
+
+
+
+
+
+
