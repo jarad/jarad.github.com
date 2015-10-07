@@ -1,0 +1,243 @@
+\documentclass{beamer}
+
+\graphicspath{{figures/}}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Spatial - Areal models}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+\section{Areal data}
+\frame{\frametitle{Choropleth}
+	\begin{center}
+	\includegraphics{choropleth}
+	\end{center}
+}
+
+\frame{\frametitle{Modeling areal units}
+	Let $Y_i$ represent the SMR for lung cancer in MN county $i$. \pause Consider the model defined by conditional distributions:
+	\[ Y_i|y_{-i} \sim N\left(\sum_{j\in n_i} y_i/m_i, \tau^2/m_i\right) \]
+	where 
+	\begin{itemize}[<+->]
+	\item $n_i$ indicates the neighbors of $i$
+	\item $m_i$ indicates the number of neighbors for $i$
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	This defines a \emph{Markov Random Field}.
+}
+
+\subsection{Brook's Lemma}
+\frame{\frametitle{Brook's Lemma}
+	It is clear that given $p(y_1,\ldots,y_n)$, the \emph{full conditionals}, i.e. $p(y_i|y_{-i})$, are determined. \pause 
+	
+	\vspace{0.2in} \pause 
+	
+	\begin{definition}
+	\alert{Brook's Lemma} states that 
+	\[ \frac{p(y_1,\ldots,y_n)}{p(y_1',\ldots,y_n')} = \frac{p(y_1|y_2,\ldots,y_n)}{p(y_1'|y_2,\ldots,y_n)} \cdot \frac{p(y_2|y_1',y_3,\ldots,y_n)}{p(y_2'|y_1',y_3,\ldots,y_n)}\cdots \frac{p(y_n|y_1',\ldots,y_{n-1}')}{p(y_n'|y_1',\ldots,y_{n-1}')} \]
+	for all $(y_1',\ldots,y_n')$. 
+	\end{definition}
+	
+	\vspace{0.2in} \pause
+	
+	If 
+	{\tiny
+	\[ p(y_1',\ldots,y_n') = \int \frac{p(y_1|y_2,\ldots,y_n)}{p(y_1'|y_2,\ldots,y_n)} \cdot \frac{p(y_2|y_1',y_3,\ldots,y_n)}{p(y_2'|y_1',y_3,\ldots,y_n)}\cdots \frac{p(y_n|y_1',\ldots,y_{n-1}')}{p(y_n'|y_1',\ldots,y_{n-1}')} dy_1,\ldots,dy_n < \infty \]
+	}
+	then $p(y_1,\ldots,y_n)$ is a proper joint distribution.
+}
+
+\subsection{Conditionally autoregressive models}
+\frame{\frametitle{Conditionally autoregressive models}
+	More generally, we can consider 
+	\[ Y_i|y_{-i} \sim N\left(\sum_{j\ne i} b_{ij}y_j, \tau_i^2\right) \]
+	Through Brook's Lemma, we have 
+	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2} y^\top D^{-1}[\mathrm{I}-B]y \right) \]
+	where 
+	\begin{itemize}
+	\item $B$ has elements $b_{ij}$
+	\item $D$ is diagonal with elements $\tau_i^2$
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	In order for $D^{-1}[\mathrm{I}-B]$, we need $\frac{b_{ij}}{\tau_i^2} = \frac{b_{ji}}{\tau_j^2}$ for all $i,j$.
+}
+
+\subsection{Proximity matrix}
+\frame{\frametitle{Proximity matrix}
+	\begin{definition}
+	A \alert{proximity matrix} is a an $n\times n$ matrix, W, with elements 
+	\begin{itemize}[<+->]
+	\item $w_{ii}=0$ and 
+	\item $w_{ij}$ representing the ``distance'' between unit $i$ and unit $j$
+	\end{itemize}
+	\end{definition}
+	
+	\vspace{0.2in} \pause 
+	
+	Common choices for $w_{ij}$ are 
+	\begin{itemize}[<+->]
+	\item 1 if $i$ is a neighbor of $j$ and 0 otherwise
+		\begin{itemize}
+		\item neighbors defined by those who share an edge
+		\item neighbors defined by those who share a point
+		\item neighbors defined by those who are within distance $\delta$
+		\item $K$-nearest neighbors
+		\end{itemize}
+	\item ``distance'' 
+		\begin{itemize}
+		\item inverse intercentroidal distance
+		\item inverse minimum distance plus c
+		\end{itemize}
+	\end{itemize}
+}	
+
+\frame{\frametitle{Intrinsicially autoregressive model}
+	Recall 
+	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2} y^\top D^{-1}[\mathrm{I}-B]y \right) \]
+	\pause if we set $b_{ij} = w_{ij}/w_{i+}$ and $\tau_i^2=\tau^2/w_{i+}$, \pause we have 
+	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} y^\top [D_w-W]y \right) \]
+	\pause where 
+	\begin{itemize}[<+->]
+	\item $W$ is our proximity matrix and 
+	\item $D_w$ has diagonal elements $w_{i+}$
+	\end{itemize}
+	
+	\vspace{0.2in} \pause 
+	
+	This can be rewritten as 
+	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} \sum_{i\ne j} w_{ij}(y_i-y_j)^2 \right) \]
+	\pause This is called the \emph{intrinsically autoregressive} model.
+}
+
+
+\subsection{Proper CAR models}
+\frame{\frametitle{Proper CAR models}
+	To make this proper, 
+	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} y^\top [D_w-\rho W]y \right) \]
+	with 
+	\begin{itemize}[<+->]
+	\item $\rho \in (1/\lambda_{(1)}, 1/\lambda_{(n)})$ where
+	\item $\lambda_{(1)} < \cdots < \lambda_{(n)}$ are the ordered eigenvalues of $D_w^{-1/2}WD_w^{-1/2}$. 
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	The full conditionals are 
+	\[ Y_i|y_{-i} \sim N\left( \rho \sum_{j\ne i} w_{ij}y_j/w_{i+}, \tau^2/w_{i+}\right) \]
+	\pause a reasonable prior for $\rho$ should put most of its mass near 1. 
+}
+
+\frame{\frametitle{Dealing with $\rho$}
+	\begin{itemize}[<+->]
+	\item Choose $\rho$ so the CAR model is proper
+	\item Choose $\rho=1$ (improper IAR model) and constrain $\sum_{i=1}^n Y_i=0$
+	\item Choose $\rho=1$ and estimate a mean (remove mean from the fixed effect)
+	\item Let $\rho\sim Be(18,2)$ (Banerjee pg 164) and estimate it.
+	\end{itemize}
+}
+
+
+\subsection{Random effect model}
+\frame{\frametitle{CAR as a model for random effects}
+	Let 
+	\begin{itemize}[<+->]
+	\item $Y_i$ represent the (continuous) response for observation $i$
+	\item $X_i$ represent explanatory variables for observation $i$
+	\item $s[i]$ represent the areal unit for observation $i$
+	\end{itemize}
+	\pause then a possible model is 
+	\[ Y_i = X_i^\top \beta + \phi_{s[i]} + \epsilon_i \]
+	\pause  where 
+	\begin{itemize}[<+->]
+	\item $\epsilon_i\stackrel{ind}{\sim} N(0,\sigma^2)$ is noise
+	\item $\phi_s$ is the spatial random effect associated with areal unit $s$, e.g. 
+	\end{itemize}
+ \pause 
+	 
+	\[ p(\phi_1,\ldots,\phi_S) \propto \exp\left( -\frac{1}{2\tau^2} \phi^\top [D_w-\rho W]\phi \right) \]
+}
+
+
+\subsection{GLMs}
+\frame{\frametitle{GLMs with spatial random effects}\pause
+	Let 
+	\begin{itemize}[<+->]
+	\item $Y_i$ represent the response for observation $i$
+	\item $X_i$ represent explanatory variables for observation $i$
+	\item $s[i]$ represent the areal unit for observation $i$
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	Then a GLM model incorporating spatial random effects has a
+	\begin{itemize}[<+->]
+	\item probability distribution from an exponential family,
+	\item link function $g$ such that $E[Y_i]=\mu_i=g^{-1}(\eta_i)$, and
+	\item linear predictor $\eta_i=X_i^{\top} \beta+\phi_{s[i]}$.
+	\end{itemize}	
+
+	\vspace{0.2in} \pause
+	
+	For example,
+	\begin{itemize}[<+->]
+	\item $Y_i\stackrel{ind}{\sim} Ber(p_i)$ with $p_i=\mathrm{\Phi}^{-1}(X_i^\top \beta + \phi_{s[i]})$ 
+	\item $Y_i \stackrel{ind}{\sim} Po(\lambda_i)$ with $\lambda_i = \exp(X_i^\top\beta +\phi_{s[i]})$
+	\end{itemize}
+}
+
+
+
+\end{document}
+
