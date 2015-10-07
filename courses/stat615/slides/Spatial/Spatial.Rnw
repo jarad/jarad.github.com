@@ -1,0 +1,313 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim}
+
+\graphicspath{{figures/}}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Spatial - Areal models}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE>>=
+# These are only needed for the slides
+# No need to run if you are just running the R code
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(maps)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+
+\section{Spatial modeling}
+
+\frame{\frametitle{Spatial random effects}
+	Consider collecting data at spatial location $s$, model this data as 
+	\[ Y(s) = \mu(s)+w(s)+\epsilon(s) \]
+	\pause where 
+	\begin{itemize}[<+->]
+	\item $\mu(s)=x(s)^\top\beta$ models the mean 
+	\item $w(s)$ is the spatial random effect
+	\item $\epsilon(s)$ is the pure error
+	\end{itemize}
+}
+
+% \frame{\frametitle{}
+% \setkeys{Gin}{width=\textwidth}
+% 	\begin{columns}
+% 	\begin{column}{0.5\textwidth}
+% 	$w(s)$ - spatial process
+% 	\includegraphics{process}
+% 	\end{column} \pause
+% 	\begin{column}{0.5\textwidth}
+% 	$y(s)$ - observations
+% 	\includegraphics{data}
+% 	\end{column}
+% 	\end{columns}
+% }
+
+\begin{frame}
+\frametitle{}
+<<>>=
+set.seed(2)
+d <- 2e2
+x <- y <- seq(0,1,length=d)
+z <- matrix(NA,d,d)
+rho <- .9
+sigma <- .01
+z[1,1] <- rnorm(1,0,sigma)
+for (j in 2:d) z[1,j] <- rnorm(1,rho*z[1,j-1],sigma) # first row
+
+for (i in 2:(d-1)) {
+	z[i,1] <- rnorm(1,rho*z[i-1,1],sigma) 
+	for (j in 2:d) {
+		z[i,j] <- rnorm(1,rho*mean(c(z[i-1,j],z[i,j-1])),sigma)
+	}
+}
+z[d,1] <- rnorm(1,rho*z[d-1,1],sigma)
+for (j in 2:d) z[d,j] <- rnorm(1,rho*mean(c(z[d,j-1],z[d-1,j])),sigma)
+
+opar = par(mar=rep(0,4), mfrow=c(1,2))
+image(x,y,z, axes=F)
+
+n <- 1000
+x2 <- sample(d,n,replace=T)
+y2 <- sample(d,n,replace=T)
+z2 <- z*NA
+for (i in 1:n) z2[x2[i],y2[i]] <- z[x2[i],y2[i]]+rnorm(1)
+par(mar=rep(0,4))
+image(x,y,z2,axes=F)
+par(opar)
+@
+\end{frame}
+
+\subsection{Gaussian process}
+\frame{\frametitle{}
+	For the following, assume that our spatial process has a mean, $\mu(s)=E[Y(s)]$ associated with it and that the variance of $Y(s)$ exists for all $s\in D$.
+
+	\vspace{0.2in} \pause
+
+	\begin{definition}
+	 $Y(s)$ is a \emph{Gaussian process} if, for any $n\ge 1$ and any set of sites $\{s_1,\ldots,s_n\}$, $Y=(Y(s_1),\ldots,Y(s_n))^\top$ has a multivariate normal distribution.
+	\end{definition}
+}
+
+\subsection{Stationarity}
+\frame{\frametitle{}
+	\begin{definition}
+	A process $Y(s)$ is \emph{strictly stationary} if, for any given $n\ge 1$ any set of $n$ sites $\{s_1,\ldots,s_n\}$ and any $h\in \mathbb{R}^r$, the distribution of $(Y(s_1),\ldots,Y(s_n))^\top$ is the same as $(Y(s_1+h),\ldots,Y(s_n+h))^\top$. \pause $D=\mathbb{R}^r$.
+	\end{definition}
+	
+	\vspace{0.2in} \pause
+	
+	\begin{definition}
+	A process $Y(s)$ has \emph{weak stationarity} if $\mu(s)=\mu$ and 
+	$Cov[Y(s),Y(s+h)] = C(h)$
+	for all $h\in \mathbb{R}^r$ such that $s$ and $s+h$ both lie within $D$.
+	\end{definition}
+	
+	\vspace{0.2in} \pause
+	
+	\begin{definition}
+	A process $Y(s)$ is \emph{intrinsically stationary} if $E[Y(s+h)-Y(s)]=0$ and 
+	\[ E[(Y(s+h)-Y(s))^2] = Var[Y(s+h)-Y(s)] = 2\gamma(h) \]
+	where $2\gamma(h)$ is called the \emph{variogram} and $\gamma(h)$ is called the \emph{semivariogram}.
+	\end{definition}
+}
+
+\subsection{Isotropy}
+\frame{\frametitle{}\small
+	\begin{definition}
+	A process $Y(s)$ is \emph{isotropic} if the semivariogram function depends only on $||h||$, the length of the separation vector. Otherwise the process is \emph{anisotropic}.
+	\end{definition}
+	
+	\vspace{0.2in} \pause 
+	
+	Perhaps the most important isotropic process is the Mat\'{e}rn process with covariance
+	\[ C(t) = \left\{ \begin{array}{ll} 
+	\frac{\sigma^2}{2^{\nu-1}\mathrm\Gamma(\nu)} (2\sqrt{\nu}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi) & t>0 \\
+	\tau^2 + \sigma^2 & t=0
+	\end{array}\right. \]
+	and variogram
+	\[ \gamma(t) = \left\{ \begin{array}{cl} 
+	\tau^2 + \sigma^2\left[ 1-\frac{(2\sqrt{\nu}t\phi)^\nu}{2^{\nu-1}\mathrm\Gamma(\nu)} K_\nu(2\sqrt{\nu}t\phi)\right] & t>0 \\
+	0 & \mbox{otherwise} 
+	\end{array} \right. \]
+	\pause where $\nu$ controls the smoothness of the spatial process while $\phi$ is a spatial scale parameter. \pause Special cases are the exponential ($\nu=1/2$) and Gaussian ($\nu\to\infty$).
+}
+
+\subsection{Variogram}
+\begin{frame}
+\frametitle{}
+<<>>=
+ff <- function(t,tau2=.2,sigma2=1,phi=1) {
+	(t==0)*0+
+	(t>0 & t<1/phi)*(tau2+sigma2*(3*phi*t/2-(phi*t)^3/2))+
+	(t>=1/phi)*(tau2+sigma2)
+}
+
+curve(ff,0.0001,2, ylim=c(0,1.2), xlab="t", ylab=expression(gamma(t)), main="Spherical variogram", lwd=2)
+points(0,0, pch=16)
+segments(1.0,0,1.0,0.2, col="red", lwd=2); text(1.0,0.1,"nugget", col="red", pos=4, cex=1)
+segments(1.25,0.2,1.25,1.2, col="red", lwd=2); text(1.25,0.8,"partial sill", col="red", pos=2, cex=1)
+segments(1.5,0,1.5,1.2, col="red", lwd=2); text(1.5,0.6,"sill", col="red", pos=4, cex=1)
+segments(0,.6,1,.6, col="red", lwd=2); text(.5,.6,"range", col="red", pos=1, cex=1)
+@
+\end{frame}
+
+\subsection{Point-referenced data}
+\frame{\frametitle{}
+	Consider point-referenced data at spatial locations $s_1,\ldots,s_n$, model this data as 
+	\[ Y(s) = \mu(s)+w(s)+\epsilon(s) \]
+	If we constrain ourselves to isotropic models, the Mat\'{e}rn class is suggested as a general tool (Banerjee pg. 37). \pause If $w=(w(s_1),\ldots,w(s_n))^\top$ and $\epsilon=(\epsilon(s_1),\ldots,\epsilon(s_n))^\top$, then a general model is \pause
+	\[ Var[w] = \sigma^2 H(\phi) \qquad Var[\epsilon] = \tau^2 \mathrm{I} \]
+	\pause where $H$ is a correlation matrix with $H_{ij}=\rho(s_i-s_j;\phi)$ and $\rho$ is a valid isotropic correlation function on $\mathbb{R}^r$, i.e. Mat\'{e}rn:
+	\[ \rho(u;\nu,\phi) = \frac{(u/\phi)^\nu K_\nu(u/\phi)}{2^{\nu-1}\mathrm\Gamma(\nu)} \]
+	as defined in {\tt geoR:matern}. 
+	\pause The overall mean is modeled separately and uses covariates $x(s)$ via \[\mu(s)=x(s)^\top\beta.\] 
+}
+
+\frame{\frametitle{Estimation}
+	Let $\theta=(\beta,\sigma^2,\tau^2,\phi)$, then parameter estimates may be obtained from the posterior distribution:
+	\[ p(\theta|y) \propto p(y|\theta) p(\theta) \]
+	\pause where 
+	\[ Y|\theta \sim N(X\beta, \sigma^2 H(\phi)+\tau^2\mathrm{I}).\]
+	
+	\vspace{0.2in} \pause
+	
+	Typically, independent priors are chosen so that 
+	\[ p(\theta) = p(\beta)p(\sigma^2)p(\tau^2)p(\phi). \]
+	As a general rule, non-informative priors can be chosen for $\beta$, e.g. $p(\beta)\propto 1$. \pause However, improper (or vague proper) priors for the variance parameters can lead to improper (or computationally improper) posteriors.  
+}
+
+\frame{\frametitle{Spatial surface}
+	If interest resides in $w$, draws can be obtained using the following relationship
+	\[ p(w|y) = \int p(w|\sigma^2,\phi)p(\sigma^2,\phi|y) d\sigma^2 d\phi \]
+	which suggests the following strategy:
+	
+	\vspace{0.2in} \pause
+	
+	\begin{enumerate}
+	\item Run the MCMC sampler to obtain draws $(\sigma^2,\phi)^{(g)} \sim p(\sigma^2,\phi|y)$
+	\item After burn-in and for $g=1,\ldots,G$, sample $w^{(g)}\sim p(w|(\sigma^2,\phi)^{(g)})$. 
+	\end{enumerate}
+}
+
+\frame{\frametitle{Prediction}
+	For prediction at points $s_{01},\ldots,s_{0m}$ and denoting $Y_0=(Y(s_{01}),\ldots,Y(s_{0m}))^\top$ and design matrix $X_0$ having rows $x(s_{0j})^\top$, \pause the following relationship
+	\[ p(y_0|y,X,X_0) = \int p(y_0|y,\theta,X_0) p(\theta|y,X) d\theta \pause \approx \frac{1}{G} \sum_{g=1}^G p(y_0|y,\theta^{(g)},X_0). \]
+	\pause It is more common to take draws $y_0^{(g)} \sim p(y_0|y,\theta^{(g)},X_0)$ and estimate the predictive distribution using 
+	\[ p(y_0|y,X,X_0)  \approx \frac{1}{G}  \sum_{g=1}^G \delta_{y_0^{(g)}} \]
+	\pause where $p(y_0|y,\theta,X_0)$ has a conditional normal distribution.
+}
+
+
+\begin{comment}
+\subsection{Areal data}
+\frame{\frametitle{Areal data}
+	Let $y_i$ denote the observation for areal unit $i$, then we typically model this using 
+	\[ Y_i = \mu_i + \phi_i + \epsilon_i \quad \mbox{equivalently} \quad Y = \mu+\phi+\epsilon \]
+	\pause with a conditionally autoregressive (CAR) model 
+	\[ \mu = X\beta \qquad \phi \sim N(0,\tau^2[D_w-\rho W]^{-1}) \qquad \epsilon \sim N(0,\sigma^2\mathrm{I}) \]
+	\pause where $W$ is the proximity matrix and $D_w$ is a diagonal containing the row sums of $W$. \pause Alternatively for the CAR model, we can write 
+	\[ p(\phi_i|\phi_j,i\ne j) = N\left(\rho \sum_j w_{ij} \phi_j/w_{i+}, \tau^2/w_{i+}\right) \]
+	\pause which justifies the CAR name.
+}
+
+\frame{\frametitle{Choosing $W$}
+	$W$ is a proximity matrix with $w_{ii}=0$ by definition. \pause
+	Common choices for $w_{ij}$ are 
+	\begin{itemize}[<+->]
+	\item 1 if $i$ is a neighbor of $j$ and 0 otherwise
+		\begin{itemize}
+		\item neighbors defined by those who share an edge
+		\item neighbors defined by those who share a point
+		\item neighbors defined by those who are within distance $\delta$
+		\item $K$-nearest neighbors
+		\end{itemize}
+	\item ``distance'' 
+		\begin{itemize}
+		\item inverse intercentroidal distance
+		\item inverse minimum distance plus c
+		\end{itemize}
+	\end{itemize}
+}
+
+\frame{\frametitle{Dealing with $\rho$}
+	The CAR model is only proper if $\rho \in (1/\lambda_{(1)},1/\lambda_{(n)})$ where $\lambda_{(1)}<\cdots<\lambda_{(n)}$ are the ordered eigenvalues of $D_w^{-1/2}WD_w^{-1/2}$. \pause So
+	
+	\vspace{0.2in} 
+	
+	\begin{itemize}[<+->]
+	\item Choose $\rho$ so the CAR model is proper
+	\item Choose $\rho=1$ (improper IAR model) and constrain $\sum_{i=1}^n \phi_i=0$
+	\item Choose $\rho=1$ and estimate a mean (remove mean from the fixed effect)
+	\item Let $\rho\sim Be(18,2)$ (Banerjee pg 164) and estimate it.
+	\end{itemize}
+}
+
+\subsection{Generalized linear modeling}
+\frame{\frametitle{GLMs}\pause
+	\begin{itemize}[<+->]
+	\item Binary data
+		\begin{itemize}
+		\item Point-referenced data: 
+		\[ Y(s) \sim Ber(p(s)) \qquad \mbox{logit}(p(s)) = \mu(s)+w(s) \]
+		\item Areal data
+		\[ Y_i \sim Ber(p_i) \qquad \mbox{logit}(p_i) = \mu_i + \phi_i \]
+		\end{itemize}
+		
+		\vspace{0.2in}
+		
+	\item Count data
+		\begin{itemize}
+		\item Point-referenced data: 
+		\[ Y(s) \sim Po(\lambda(s)) \qquad \log(\lambda(s)) = \mu(s)+w(s) \]
+		\item Areal data
+		\[ Y_i \sim Po(\lambda_i) \qquad \log(\lambda_i) = \mu_i + \phi_i \]
+		\end{itemize}
+	\end{itemize}
+}
+
+\end{document}
+
