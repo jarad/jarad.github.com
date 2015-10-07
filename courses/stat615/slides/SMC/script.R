@@ -1,3 +1,5 @@
+source("functions.R")
+
 set.seed(2)
 
 # Parameters

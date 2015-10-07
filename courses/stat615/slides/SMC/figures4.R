@@ -1,3 +1,5 @@
+setwd("figs/")
+
 library(plotrix)
 pdf("stateSpaceModel-0.pdf")
 par(mar=rep(0,4))
@@ -410,7 +412,7 @@ for (i in 1:20) {
   dev.copy2pdf(file=paste("ess-",i,".pdf",sep=''))
 }
 
-
+setwd("../")
 
 
 

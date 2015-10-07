@@ -1,3 +1,5 @@
+setwd("figs/")
+
 xrng = c(-0.4,1.1)
 yrng = c(0,2)
 
@@ -161,36 +163,36 @@ for (i in 2:10) {
 }
 
 
-# ????????????
-for (i in 2:10) {
-  plot(0,0,type='n',main='',xlab='',ylab='',xlim=c(0,10),
-    ylim=range(lMultivariateBootstrapFilter$adParticles[1:10,]))
-    points(rep(1,nParticles),lMultivariateBootstrapFilter$adParticles[1,],pch=19,
-           cex=(lMultivariateBootstrapFilter$mdWeights[1,])^.5*2)
-    points(1-.2,adY[1],pch=23,bg='green',col=NA)  
-    points(1-.2,lKalmanFilter$vdPosteriorMean[1],pch=23,bg='red',col=NA)
-    adParticleIndices = 1:nParticles 
-    #dev.copy(pdf,filename=paste("MBF",1,".pdf",sep=''),bg="white",
-    #     width=480*dResolutionMultiple,height=480*dResolutionMultiple)
-    #dev.off()    
-  for (ii in i:2) {
-    points(rep(ii,nParticles),lMultivariateBootstrapFilter$mdParticles[ii,],pch=19,
-           cex=(lMultivariateBootstrapFilter$mdWeights[ii,])^.5*2)
-    for (j in adParticleIndices) {
-      segments(ii-1,lMultivariateBootstrapFilter$adParticles[ii-1,lMultivariateBootstrapFilter$mnResampledIndices[ii,j]],
-               ii  ,lMultivariateBootstrapFilter$adParticles[ii  ,j],
-               lwd=(lMultivariateBootstrapFilter$mdWeights[i,j])^.3*2)
-    }
-    points(ii-.2,adY[ii],pch=23,bg='green',col=NA)   
-    points(ii-.2,lKalmanFilter$vdPosteriorMean[ii],pch=23,bg='red',col=NA)
-    adParticleIndices = unique(lMultivariateBootstrapFilter$mnResampledIndices[ii,adParticleIndices])
-  }                   
-  #dev.copy(pdf,filename=paste("MBF",i,".pdf",sep=''),bg="white",
-  #       width=480*dResolutionMultiple,height=480*dResolutionMultiple)
-  #dev.off()    
-  readline("Hit enter:")
-  # dev.copy2pdf
-}
+# # ????????????
+# for (i in 2:10) {
+#   plot(0,0,type='n',main='',xlab='',ylab='',xlim=c(0,10),
+#     ylim=range(lMultivariateBootstrapFilter$adParticles[1:10,]))
+#     points(rep(1,nParticles),lMultivariateBootstrapFilter$adParticles[1,],pch=19,
+#            cex=(lMultivariateBootstrapFilter$mdWeights[1,])^.5*2)
+#     points(1-.2,adY[1],pch=23,bg='green',col=NA)  
+#     points(1-.2,lKalmanFilter$vdPosteriorMean[1],pch=23,bg='red',col=NA)
+#     adParticleIndices = 1:nParticles 
+#     #dev.copy(pdf,filename=paste("MBF",1,".pdf",sep=''),bg="white",
+#     #     width=480*dResolutionMultiple,height=480*dResolutionMultiple)
+#     #dev.off()    
+#   for (ii in i:2) {
+#     points(rep(ii,nParticles),lMultivariateBootstrapFilter$mdParticles[ii,],pch=19,
+#            cex=(lMultivariateBootstrapFilter$mdWeights[ii,])^.5*2)
+#     for (j in adParticleIndices) {
+#       segments(ii-1,lMultivariateBootstrapFilter$adParticles[ii-1,lMultivariateBootstrapFilter$mnResampledIndices[ii,j]],
+#                ii  ,lMultivariateBootstrapFilter$adParticles[ii  ,j],
+#                lwd=(lMultivariateBootstrapFilter$mdWeights[i,j])^.3*2)
+#     }
+#     points(ii-.2,adY[ii],pch=23,bg='green',col=NA)   
+#     points(ii-.2,lKalmanFilter$vdPosteriorMean[ii],pch=23,bg='red',col=NA)
+#     adParticleIndices = unique(lMultivariateBootstrapFilter$mnResampledIndices[ii,adParticleIndices])
+#   }                   
+#   #dev.copy(pdf,filename=paste("MBF",i,".pdf",sep=''),bg="white",
+#   #       width=480*dResolutionMultiple,height=480*dResolutionMultiple)
+#   #dev.off()    
+#   readline("Hit enter:")
+#   # dev.copy2pdf
+# }
 
 
 # SIR with fixed parameters
@@ -258,7 +260,7 @@ for (i in 1:10) {
   adDensity = adDensity+adThisDensity
 }
 lines(xx,adDensity,lwd=2,col='red')
-dev.copy(pdf,filename="KernelDensity1.pdf"); dev.off()
+dev.copy2pdf(file="KernelDensity1.pdf"); dev.off()
 
 
 dDelta = 0.85
@@ -282,8 +284,8 @@ for (i in 1:10) {
   adDensity = adDensity+adThisDensity
 }
 lines(xx,adDensity,lwd=2,col='red')
-dev.copy(pdf,filename="KernelDensity2.pdf"); dev.off()
+dev.copy2pdf(file="KernelDensity2.pdf"); dev.off()
 
 
 
-
+setwd("../")
