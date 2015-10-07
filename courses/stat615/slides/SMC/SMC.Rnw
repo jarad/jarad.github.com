@@ -1,8 +1,8 @@
 \documentclass[handout]{beamer}
 
-\usepackage{verbatim}
+\usepackage{verbatim,multicol,xmpmulti}
 
-\graphicspath{{figures/}}
+\graphicspath{{figs/}}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -176,33 +176,38 @@ set.seed(2)
 }
 
 \subsection{Examples}
-\frame{\frametitle{}
-    \begin{eqnarray*}
-    y_t &\sim& N(0,\sigma_t^2) \\
-    \log \sigma_t &\sim& N(\mu + \phi (\log \sigma_{t-1} - \mu),W) \pause
-    \end{eqnarray*}
+\begin{frame}
+\frametitle{Stochastic volatility}
+<<>>=
+n = 1000
+rho = .98
+log_sigma = rep(0,n)
+for (i in 2:n) log_sigma[i] = rho*log_sigma[i-1] + rnorm(1,0,.1)
+d = data.frame(time = 1:n, 
+               observation = rnorm(n, 0, exp(log_sigma)-.1), 
+               volatility = exp(log_sigma))
+ggplot(melt(d, id.var='time'), aes(time,value,group=1)) + 
+  geom_line() + 
+  facet_grid(variable~.)
+@
+\end{frame}
 
-    \begin{center}
-    \only<1-| handout:0>{\multiinclude[<+>][format=pdf]{volatility}}
-    \only<beamer:0| handout:1>{\includegraphics{volatility-0}}
-    %\multiinclude[<+>][format=pdf]{volatility}
-    \end{center}
-}
 
-
-\frame{\frametitle{}
-     \begin{eqnarray*}
-     y_t &\sim& N(\theta_t,\sigma^2) \\
-     \theta_t &\sim & p\delta_{\theta_{t-1}} +(1-p) \delta_{1-\theta_{t-1}} \\
-     \theta_0 &=& 0 \pause
-     \end{eqnarray*}
-
-    \begin{center}
-    \only<1-| handout:0>{\multiinclude[<+>][format=pdf]{switching}}
-    \only<beamer:0| handout:1>{\includegraphics{switching-0}}
-    %\multiinclude[<+>][format=pdf]{switching}
-    \end{center}
-}
+\begin{frame}
+\frametitle{Markov switching model}
+<<'Markov switching model'>>=
+n = 1000
+p = .99
+theta = rep(0,n)
+for (i in 2:n) theta[i] = ifelse(rbinom(1,1,p), theta[i-1], 1-theta[i-1])
+d = data.frame(time = 1:n,
+           observation = rnorm(n,theta,.5), 
+           state = theta)
+ggplot(melt(d, id.var='time'), aes(time,value,group=1)) + 
+  geom_line() + 
+  facet_grid(variable~.) 
+@
+\end{frame}
 
 \subsection{Inference}
 \frame{\frametitle{}
