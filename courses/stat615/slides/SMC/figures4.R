@@ -197,29 +197,6 @@ dev.off()
 
 ########################## IS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 set.seed(1)
-xs <- rcauchy(1e4)
-pdf("is.pdf",width=10)
-par(mfrow=c(1,3), mar=c(2,2,0,2)+.1)
-curve(dnorm(x), -5, 5, ylim=c(0,2), lwd=2, ylab='', xlab='')
-curve(dcauchy(x), -5, 5, col='red', add=T, lwd=2)
-curve(dnorm(x)/dcauchy(x), -5, 5, col='blue', add=T, lwd=2)
-legend("topright", inset=0.01, lwd=2, col=c("black","red","blue"),cex=1.5,
-       c("N(x;0,1) density", "C(x;0,1) density", "N(x;0,1)/C(x;0,1)"))
-
-curve(dunif(x,-1,1), -5, 5, ylim=c(0,2), lwd=2, ylab='', xlab='')
-curve(dnorm(x), -5, 5, col='red', add=T, lwd=2)
-curve(dunif(x,-1,1)/dnorm(x), -5, 5, col='blue', add=T, lwd=2)
-legend("topright", inset=0.01, lwd=2, col=c("black","red","blue"),cex=1.5,
-       c("U(x;-1,1) density", "N(x;0,1) density", "U(x;-1,1)/N(x;0,1)"))
-
-curve(dnorm(x), -5, 5, ylim=c(0,2), lwd=2, col='red', ylab='', xlab='')
-curve(dcauchy(x), -5, 5, add=T, lwd=2)
-curve(dcauchy(x)/dnorm(x), -5, 5, col='blue', add=T, lwd=2)
-legend("topright", inset=0.01, lwd=2, col=c("black","red","blue"), cex=1.5,
-       c("C(x;0,1) density", "N(x;0,1) density", "C(x;0,1)/N(x;0,1)"))
-dev.off()
-
-set.seed(1)
 n <- 20
 xs <- rnorm(n)
 ws <- dt(xs,2)/dnorm(xs,0,0.5)

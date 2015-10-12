@@ -599,14 +599,35 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 }
 
 \subsection{Importance sampling}
-\frame{
-    \setkeys{Gin}{width=0.8\textwidth}
-    Suppose we want to approximate some density $f(x)$, e.g. $p(x_t|y_{1:t})$, but we cannot simulate from $f(x)$. \pause Draw $x_i\stackrel{iid}{\sim}g(x)$ and give each draw a weight $w_i=\frac{f(x_i)}{g(x_i)}$. \pause
+\begin{frame}
+\frametitle{Importance sampling}
+Suppose we want to approximate some density $f(x)$, e.g. $p(x_t|y_{1:t})$, but we cannot simulate from $f(x)$. \pause Draw $x_i\stackrel{iid}{\sim}g(x)$ and give each draw a weight $w_i=\frac{f(x_i)}{g(x_i)}$. \pause
 
-    \begin{center}
-    \includegraphics{is}
-    \end{center}
-}
+<<importance_sampling, warning=FALSE, fig.height=4>>=
+x = seq(-5,5,by=.1)
+d = rbind(data.frame(x=x) %>%
+            mutate(example = 'Normal-Cauchy',
+                   target = dnorm(x),
+                   proposal = dcauchy(x),
+                   ratio = target/proposal),
+          data.frame(x=x) %>%
+            mutate(example = 'Cauchy-Normal',
+                   target = dcauchy(x),
+                   proposal = dnorm(x),
+                   ratio = target/proposal),
+          data.frame(x=x) %>%
+            mutate(example = 'Normal-t_15',
+                   target = dnorm(x),
+                   proposal = dt(x, 15),
+                   ratio = target/proposal))
+
+ggplot(melt(d, id.var=c('x','example'), value.name='density'), 
+       aes(x,density,color=variable,linetype=variable,group=variable)) +
+  geom_line() + 
+  facet_wrap(~example) + 
+  ylim(c(0,2))
+@
+\end{frame}
 
 \frame{
     Suppose we are trying to estimate $E[X]$ when $X\sim t_2$. We draw samples from $x_i\sim N(0,0.5^2)$ and give a weight $w_i = \frac{t_2(x_i)}{N(x_i;0,0.5^2)}$ to each sample.
@@ -866,7 +887,7 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 
 \subsubsection{Multinomial sampling}
 \begin{frame}
-\farmetitle{Multinomial sampling}
+\frametitle{Multinomial sampling}
 \begin{enumerate}
 \item Draw $U_1,\ldots,U_J \stackrel{iid}{\sim} Unif(0,1)$
 \item Invert cumulative sum of weights
