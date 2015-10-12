@@ -1,6 +1,6 @@
 \documentclass[handout]{beamer}
 
-\usepackage{verbatim,multicol,xmpmulti}
+\usepackage{verbatim,multicol,xmpmulti,animate}
 
 \graphicspath{{figs/}}
 
@@ -949,13 +949,43 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
     \end{itemize}
 }
 
-\frame{
-    \setkeys{Gin}{width=0.6\textwidth}
-    Dynamic resampling
-    \begin{center}
-    \multiinclude[format=pdf]{ess}
-    \end{center}
+\begin{frame}
+\frametitle{Dynamic resampling}
+<<ess, cache=TRUE>>=
+library(plyr)
+library(ggplot2)
+ess <- function(w) return(1/sum(w^2))
+
+n <- 100
+d_list = list()
+d_list[[1]] = data.frame(time = 1, weights = rep(1,n)/n)
+for (i in 2:20) {
+  weights = d_list[[i-1]]$weights*dnorm(rnorm(n))
+  weights = weights/sum(weights)
+  if (ess(weights) < n/2) {
+    d_list[[i]] = data.frame(time=i, weights=rep(1,n)/n)
+  } else {
+    d_list[[i]] = data.frame(time=i, weights=weights)
+  }
 }
+
+s = ddply(rbind.fill(d_list, by=c('time','weights')), .(time), function(x) {
+  data.frame(ess = ess(x$weights))
+})
+@
+
+<<dependson='ess', fig.show='animate'>>=
+for (i in 1:max(s$time)) {
+  g = ggplot(subset(s, time<=i), aes(time,ess)) + 
+    geom_point() +
+    xlim(0,max(s$time)) + 
+    ylim(0,max(s$ess)) +
+    geom_hline(yintercept=n/2, color='red')
+  print(g)
+}
+@
+\end{frame}
+
 
 \subsection{Avoiding resampling}
 \frame{
