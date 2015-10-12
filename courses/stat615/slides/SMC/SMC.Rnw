@@ -929,13 +929,29 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 }
 
 \subsection{When to resample}
-\frame{
-    \setkeys{Gin}{width=0.6\textwidth}
-    Resampling can add unnecessary variance, e.g.
-    \begin{center}
-    \multiinclude[format=pdf]{addvar}
-    \end{center}
+\begin{frame}
+\frametitle{Resampling adds variability}
+<<>>=
+set.seed(1)
+n <- 10
+a <- rep(1,n)/n
+b <- cumsum(a)
+
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(1:10,c(0,b[-n]),1:10,b, lwd=2)
+u <- runif(n)
+ind <- numeric(n)
+for (i in 1:n) {
+  ind[i] <- sum(u[i]>b)+1
 }
+points(rep(0,n), u, col='red', pch=19)
+segments(0, u, ind, u, col='red')
+@
+\end{frame}
+
+
+
 
 \frame{
     Methods for determining when to resample

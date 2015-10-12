@@ -363,52 +363,6 @@ dev.copy2pdf(file="syst-1.pdf")
 segments(0, u, ind, u, col='red')
 dev.copy2pdf(file="syst-2.pdf")
 
-######################### add variance ############################
-set.seed(1)
-n <- 10
-a <- rep(1,n)/n
-b <- cumsum(a)
-
-
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
-     xlab='Index', ylab='Cumulative sum of weights')
-segments(1:10,c(0,b[-n]),1:10,b, lwd=2)
-u <- runif(n)
-ind <- numeric(n)
-for (i in 1:n) {
-  ind[i] <- sum(u[i]>b)+1
-}
-dev.copy2pdf(file="addvar-0.pdf")
-
-#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
-points(rep(0,n), u, col='red', pch=19)
-dev.copy2pdf(file="addvar-1.pdf")
-
-#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
-segments(0, u, ind, u, col='red')
-dev.copy2pdf(file="addvar-2.pdf")
-
-####################### ESS ############################3
-ess <- function(w) return(1/sum(w^2))
-
-n <- 100
-a <- rep(1,n)/n
-
-plot(0, 0, ylim=c(0,n), xlim=c(0,20), type='n', cex.lab=1.5, cex.axis=1.5,
-     xlab='Index', ylab='ESS')
-abline(h=n/2, col='red',lwd=2)
-points(0,ess(a),cex=1.5, pch=19)
-dev.copy2pdf(file="ess-0.pdf")
-
-set.seed(1)
-for (i in 1:20) {
-  b <- a*dnorm(rnorm(n))
-  b <- b/sum(b)
-  #plot(0, 0, ylim=c(0,n), xlim=c(0,20), type='n', xlab='', ylab='', axes=F)
-  segments(i-1, ess(a), i, ess(b), lwd=2)
-  if (ess(b)<n/2) { a<-rep(1,n)/n } else { a <- b }
-  dev.copy2pdf(file=paste("ess-",i,".pdf",sep=''))
-}
 
 setwd("../")
 
