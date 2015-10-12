@@ -865,68 +865,134 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 }
 
 \subsubsection{Multinomial sampling}
-\frame{
-    \setkeys{Gin}{width=\textwidth}
-    \begin{columns}
-    \column{0.5\textwidth}
-    Multinomial sampling
-    \begin{itemize}
-    \item Draw $U_1,\ldots,U_J \stackrel{iid}{\sim} Unif(0,1)$
-    \item Invert cumulative sum of weights
-    \end{itemize} \pause
-    \column{0.5\textwidth}
-    \multiinclude[format=pdf]{mult}
-    \end{columns}
-}
+\begin{frame}
+\farmetitle{Multinomial sampling}
+\begin{enumerate}
+\item Draw $U_1,\ldots,U_J \stackrel{iid}{\sim} Unif(0,1)$
+\item Invert cumulative sum of weights
+\end{enumerate} 
+
+\pause
+
+<<multinomial_resampling>>=
+set.seed(1)
+n <- 10
+a <- runif(n)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(1:10,c(0,b[-n]),1:10,b, lwd=2)
+u <- runif(n)
+ind <- numeric(n)
+for (i in 1:n) 
+  ind[i] <- sum(u[i]>b)+1
+points(rep(0,n), u, col='red', pch=19)
+segments(0, u, ind, u, col='red')
+@
+
+\end{frame}
 
 \subsubsection{Residual sampling}
-\frame{
-    \setkeys{Gin}{width=\textwidth}
-    \begin{columns}
-    \column{0.5\textwidth}
-    Residual sampling
-    \begin{itemize}
+\begin{frame}
+\frametitle{Residual sampling}
+    \begin{enumerate}
         \item Keep $n_j=\lfloor J w^{(j)} \rfloor$ repeats of particle $j$
         \item Update remaining probability $w^{(j)'} \propto J w^{(j)}-n_j$
         \item Multinomial sampling on remaining $J-\sum_{j=1}^J n_j$ particles with probabilities $w^{(j)'}$
-        \end{itemize}
-    \column{0.5\textwidth} \pause
-    \multiinclude[format=pdf]{resi}
-    \end{columns}
+        \end{enumerate}
+\vspace{-0.2in} \pause
+<<residual_resampling, fig.height=5>>=
+set.seed(1)
+n <- 10
+a <- runif(n)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(0.1+(1:10),c(0,b[-n]),0.1+(1:10),b, lwd=2)
+u <- runif(3)
+ind <- numeric(3)
+for (i in 1:3) {
+  ind[i] <- sum(u[i]>b)+1
 }
 
-\subsubsection{Stratified sampling}
-\frame{
-    \setkeys{Gin}{width=\textwidth}
-    \begin{columns}
-    \column{0.5\textwidth}
-    Stratified sampling
-    \begin{itemize}
+a <- n*a-floor(n*a)
+a <- a/sum(a)
+b <- cumsum(a)
+#plot(0, 0, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+segments(1:10,c(0,b[-n]),1:10,b, lwd=2, col='blue')
+u <- runif(3)
+ind <- numeric(3)
+for (i in 1:3) {
+  ind[i] <- sum(u[i]>b)+1
+}
+points(rep(0,3), u, col='red', pch=19)
+segments(0, u, ind, u, col='red')
+@
+\end{frame}
+
+\subsection{Stratified sampling}
+\begin{frame}
+\frametitle{Stratified sampling}
+    \begin{enumerate}
     \item Draw $U_j \stackrel{ind}{\sim} Unif\left(\frac{j-1}{J},\frac{j}{J}\right)$ for $j=1,2,\ldots,J$
     \item Invert cumulative sum of weights
-    \end{itemize} \pause
-    \column{0.5\textwidth}
-    \multiinclude[format=pdf]{strat}
-    \end{columns}
+    \end{enumerate} \pause
+    
+<<stratified_sampling>>=
+set.seed(1)
+n <- 10
+a <- runif(n)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(1:n,c(0,b[-n]),1:n,b, lwd=2)
+u <- runif(n,((1:n)-1)/n,(1:n)/n)
+ind <- numeric(n)
+for (i in 1:n) {
+  ind[i] <- sum(u[i]>b)+1
 }
+points(rep(0,n), u, col='red', pch=19)
+segments(0, u, ind, u, col='red')
+@
+\end{frame}
 
-\subsubsection{Systematic sampling}
-\frame{
-    \setkeys{Gin}{width=\textwidth}
-    \begin{columns}
-    \column{0.5\textwidth}
-    Systematic sampling
-    \begin{itemize}
-    \item Draw $U_1 \sim Unif(0,1)$
+
+
+
+\subsection{Systematic sampling}
+\begin{frame}
+\frametitle{Systematic sampling}
+    \begin{enumerate}
+    \item Draw $U_1 \sim Unif(0,1/J)$
     \item Set $U_j = U_{j-1}+\frac{1}{J}$ for $j=1,2,\ldots,J$
     \item Invert cumulative sum of weights
-    \end{itemize} \pause
-    \column{0.5\textwidth}
-    \multiinclude[format=pdf]{syst}
-    \end{columns}
+    \end{enumerate} 
+    \vspace{-0.15in} \pause
+<<systematic_resampling, fig.height=4>>=
+set.seed(1)
+n <- 10
+a <- runif(n)
+a <- a/sum(a)
+b <- cumsum(a)
+plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', cex.lab=1.5, cex.axis=1.5,
+     xlab='Index', ylab='Cumulative sum of weights')
+segments(1:n,c(0,b[-n]),1:n,b, lwd=2)
+u <- runif(1)/n 
+for (i in 2:n) u[i]<-u[i-1]+1/n
+ind <- numeric(n)
+for (i in 1:n) {
+  ind[i] <- sum(u[i]>b)+1
+}
+
+points(rep(0,n), u, col='red', pch=19)
+segments(0, u, ind, u, col='red')
+@
     \pause
     A counter example shows that this can be worse than stratified and residual sampling.
-}
+\end{frame}
 
 \subsection{When to resample}
 \begin{frame}
