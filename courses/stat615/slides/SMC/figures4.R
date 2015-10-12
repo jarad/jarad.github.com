@@ -160,8 +160,6 @@ legend("topright",inset=0.01, c("Data","Mean","95% Interval"),
        col=c("green","red","red"), lwd=2)
 dev.copy2pdf(file="kf-0.pdf")   
 for (i in 1:10) {
-  plot(0,0,type='n',main='',xlab='',ylab='',xlim=c(0,10), axes=F,
-       ylim=range(adY))
   points(i,adY[i+1],pch=23,bg='green',col=NA) 
   segments(i-1,mn[i],i,mn[i+1],col='red', lty=2, lwd=2)
   segments(i-1,mn[i]-2*sd[i],i,mn[i+1]-2*sd[i+1],col='red', lwd=2)
@@ -208,11 +206,11 @@ curve(dnorm(x)/dcauchy(x), -5, 5, col='blue', add=T, lwd=2)
 legend("topright", inset=0.01, lwd=2, col=c("black","red","blue"),cex=1.5,
        c("N(x;0,1) density", "C(x;0,1) density", "N(x;0,1)/C(x;0,1)"))
 
-curve(dnorm(x), -5, 5, ylim=c(0,1), lwd=2, ylab='', xlab='')
-curve(dunif(x,-1,1), -5, 5, col='red', add=T, lwd=2)
-curve(dnorm(x)/dunif(x,-1,1), -5, 5, col='blue', add=T, lwd=2)
+curve(dunif(x,-1,1), -5, 5, ylim=c(0,2), lwd=2, ylab='', xlab='')
+curve(dnorm(x), -5, 5, col='red', add=T, lwd=2)
+curve(dunif(x,-1,1)/dnorm(x), -5, 5, col='blue', add=T, lwd=2)
 legend("topright", inset=0.01, lwd=2, col=c("black","red","blue"),cex=1.5,
-       c("N(x;0,1) density", "U(x;-1,1) density", "U(x;-1,1)/N(x;0,1)"))
+       c("U(x;-1,1) density", "N(x;0,1) density", "U(x;-1,1)/N(x;0,1)"))
 
 curve(dnorm(x), -5, 5, ylim=c(0,2), lwd=2, col='red', ylab='', xlab='')
 curve(dcauchy(x), -5, 5, add=T, lwd=2)
@@ -271,11 +269,11 @@ for (i in 1:n) {
 }
 dev.copy2pdf(file="mult-0.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 points(rep(0,n), u, col='red', pch=19)
 dev.copy2pdf(file="mult-1.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 segments(0, u, ind, u, col='red')
 dev.copy2pdf(file="mult-2.pdf")
 
@@ -298,7 +296,7 @@ dev.copy2pdf(file="resi-0.pdf")
 a <- n*a-floor(n*a)
 a <- a/sum(a)
 b <- cumsum(a)
-plot(0, 0, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(0, 0, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 segments(1:10,c(0,b[-n]),1:10,b, lwd=2, col='blue')
 u <- runif(3)
 ind <- numeric(3)
@@ -307,11 +305,11 @@ for (i in 1:3) {
 }
 dev.copy2pdf(file="resi-1.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 points(rep(0,3), u, col='red', pch=19)
 dev.copy2pdf(file="resi-2.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 segments(0, u, ind, u, col='red')
 dev.copy2pdf(file="resi-3.pdf")
 
@@ -331,11 +329,11 @@ for (i in 1:n) {
 }
 dev.copy2pdf(file="strat-0.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 points(rep(0,n), u, col='red', pch=19)
 dev.copy2pdf(file="strat-1.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 segments(0, u, ind, u, col='red')
 dev.copy2pdf(file="strat-2.pdf")
 
@@ -357,11 +355,11 @@ for (i in 1:n) {
 }
 dev.copy2pdf(file="syst-0.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 points(rep(0,n), u, col='red', pch=19)
 dev.copy2pdf(file="syst-1.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 segments(0, u, ind, u, col='red')
 dev.copy2pdf(file="syst-2.pdf")
 
@@ -382,11 +380,11 @@ for (i in 1:n) {
 }
 dev.copy2pdf(file="addvar-0.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 points(rep(0,n), u, col='red', pch=19)
 dev.copy2pdf(file="addvar-1.pdf")
 
-plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
+#plot(1:n, b, ylim=c(0,1), xlim=c(0,10), type='n', axes=F, xlab='', ylab='')
 segments(0, u, ind, u, col='red')
 dev.copy2pdf(file="addvar-2.pdf")
 
@@ -406,7 +404,7 @@ set.seed(1)
 for (i in 1:20) {
   b <- a*dnorm(rnorm(n))
   b <- b/sum(b)
-  plot(0, 0, ylim=c(0,n), xlim=c(0,20), type='n', xlab='', ylab='', axes=F)
+  #plot(0, 0, ylim=c(0,n), xlim=c(0,20), type='n', xlab='', ylab='', axes=F)
   segments(i-1, ess(a), i, ess(b), lwd=2)
   if (ess(b)<n/2) { a<-rep(1,n)/n } else { a <- b }
   dev.copy2pdf(file=paste("ess-",i,".pdf",sep=''))

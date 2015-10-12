@@ -55,11 +55,11 @@ points(1-.25,adY[1],pch=23,bg='green',col=NA)
 points(1-.2,lKalmanFilter$vdPosteriorMean[1],pch=23,bg='red',col=NA)
 legend("topright",inset=0.01, c("Data","Truth","Particles"), pch=c(23,23,19), pt.bg=c("green","red","black"), col=c("green","red","black"))
 dev.copy2pdf(file="sis-0.pdf")
-dev.off()      
+#dev.off()      
 #readline("Hit enter:")    
 for (i in 2:10) {
-  plot(0,0,type='n',main='',xlab='',ylab='',xlim=c(0,10), axes=F,
-       ylim=range(lSequentialImportanceSampling$mdParticles[1:10,]))
+  #plot(0,0,type='n',main='',xlab='',ylab='',xlim=c(0,10), axes=F,
+  #     ylim=range(lSequentialImportanceSampling$mdParticles[1:10,]))
   points(rep(i,nParticles),lSequentialImportanceSampling$mdParticles[i,],pch=19,
          cex=(lSequentialImportanceSampling$mdWeights[i,])^.5*2)
   for (j in 1:nParticles) {
@@ -70,7 +70,7 @@ for (i in 2:10) {
   points(i-.25,adY[i],pch=23,bg='green',col=NA)  
   points(i-.2,lKalmanFilter$vdPosteriorMean[i],pch=23,bg='red',col=NA)
   dev.copy2pdf(file=paste("sis-",i-1,".pdf",sep=''))
-  dev.off() 
+  #dev.off() 
   #readline("Hit enter:") 
 }
 
