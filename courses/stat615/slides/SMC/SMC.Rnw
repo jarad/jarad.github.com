@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \usepackage{verbatim,multicol,xmpmulti,animate}
 
@@ -1261,17 +1261,42 @@ for (i in 1:max(s$time)) {
     \end{eqnarray*}
 }
 
-\frame{
-    \setkeys{Gin}{width=0.8\textwidth}
 
-    \vspace{-0.3in}
 
-    \begin{center}
-    %\multiinclude[<+>][format=pdf]{MBF}
-    \only<1-| handout:0>{\multiinclude[format=pdf]{MBF}}
-    \only<beamer:0| handout:1>{\includegraphics{MBF-9}}
-    \end{center}
+
+\begin{frame}
+\frametitle{SIR with fixed parameters}
+<<fig.show='animate'>>=
+source("script.R")
+x = lMultivariateBootstrapFilter$adParticles
+w = lMultivariateBootstrapFilter$mdWeights
+ri = lMultivariateBootstrapFilter$mnResampledIndices
+
+par(mfrow=c(2,2))
+for (nParam in 2:5) {
+plot(0,0,type='n',main='',xlab='t',ylab='',xlim=c(0,10),
+    ylim=range(x[1:10,,nParam]))
+  if (nParam != 3) { abline(h=0.05,col='red') } else { abline(h=0.95,col='red') }
+  points(rep(1,nParticles),x[1,,nParam],pch=19,
+           cex=(w[1,])^.5*2)
+} 
+
+ind = 1:nParticles 
+for (i in 2:10) {
+  par(mfrow=c(2,2))
+  for (nParam in 2:5) {
+    plot(0,0,type='n',main='',xlab='t',ylab='',xlim=c(0,10), ylim=range(x[1:10,,nParam]))
+    if (nParam != 3) { abline(h=0.05,col='red') } else { abline(h=0.95,col='red') }
+    
+    for (ii in i:1) {
+      points(rep(ii,nParticles), x[ii,,nParam], pch=19, cex=(w[ii,])^.5*2)
+      ind = unique(ri[ii,ind])
+    }            
+  }        
 }
+@
+\end{frame}
+
 
 \subsection{Kernel density estimation}
 \frame{
@@ -1326,15 +1351,15 @@ for (i in 1:max(s$time)) {
     \end{array} \] \pause
     if
     \[ \begin{array}{rl@{\quad}l}
-    V|y_{1:t-1} &\sim  IG(\alpha_{V,t-1},\beta_{V,t-1}) \\
-    \alpha,\beta,W|y_{1:t-1} &\sim N-IG(\mu_{t-1},\Sigma_{t-1},\alpha_{W,t-1},\beta_{W,t-1}) \\ \pause
-    s_{t-1} &= (\alpha_{V,t-1},\beta_{V,t-1},\mu_{t-1},\Sigma_{t-1},\alpha_{W,t-1},\beta_{W,t-1})
+    V|y_{1:t-1} &\sim  IG(a_{V,t-1},b_{V,t-1}) \\
+    \alpha,\beta,W|y_{1:t-1} &\sim N-IG(m_{t-1},S_{t-1},a_{W,t-1},b_{W,t-1}) \\ \pause
+    s_{t-1} &= (a_{V,t-1},b_{V,t-1},m_{t-1},S_{t-1},a_{W,t-1},b_{W,t-1})
     \end{array} \] \pause
     then
     \[ \begin{array}{rl@{\quad}l}
-    V|y_{1:t} &\sim  IG(\alpha_{V,t},\beta_{V,t}) \\
-    \alpha,\beta,W|y_{1:t},x_t,x_{t-1} &\sim N-IG(\mu_{t},\Sigma_{t},\alpha_{W,t},\beta_{W,t}) \\ \pause
-    s_{t} &= (\alpha_{V,t},\beta_{V,t},\mu_{t},\Sigma_{t},\alpha_{W,t},\beta_{W,t})
+    V|y_{1:t} &\sim  IG(a_{V,t},b_{V,t}) \\
+    \alpha,\beta,W|y_{1:t},x_t,x_{t-1} &\sim N-IG(m_{t},S_{t},a_{W,t},b_{W,t}) \\ \pause
+    s_{t} &= (a_{V,t},b_{V,t},m_{t},S_{t},a_{W,t},b_{W,t})
     \end{array} \]
 }
 
@@ -1516,8 +1541,10 @@ for (i in 1:max(s$time)) {
     \begin{itemize}
     \item R::KFAS
     \item R::dlm
-    \item R::SMC (not being updated?)
-    \item R::smcUtils (\url{http://www.pstat.ucsb.edu/faculty/niemi/software/})
+    \item R::pomp
+    \item R::SMC (not updated sinced 2011-12-11)
+    \item R::smcUtils 
+    \item LiBbi \url{libbi.org/} (RBi \url{https://github.com/pierrejacob/RBi})
     \end{itemize}
     }
 }
