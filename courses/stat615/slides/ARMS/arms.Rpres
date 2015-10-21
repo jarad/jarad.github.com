@@ -1,0 +1,217 @@
+Adaptive rejection Metropolis sampling
+========================================================
+author: Jarad Niemi
+date: 21 Oct 2015
+width:1920
+height: 1080
+
+```{r setup, include=FALSE}
+opts_chunk$set(echo=FALSE,
+               fig.align='center',
+               fig.width=10,
+               fig.height=10,
+               cache=TRUE)
+```
+
+```{r}
+set.seed(20151021)
+```
+
+```{r packages, echo=FALSE, warnings=FALSE, message=FALSE}
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+```
+
+(Logarithmically) Concave Univariate Function
+========================================================
+incremental: true
+
+A function $p(\theta)$ is concave if 
+$$ p((1-t)x+t\, y) \ge (1-t) p(x) + t\, p(y) $$
+for any $0\le t\le 1$.
+
+```{r concave, fig.width=10}
+opar = par(mar=c(2,2,0,0)+.1)
+curve(dnorm(x, log=T), -2.1, 1.1, axes=F, frame=T, lwd=2,
+      xlab='', ylab='')
+axis(1, c(-2,1), labels=c('x','y'))
+axis(2, c(dnorm(c(-2,1), log=T)), labels=c('p(x)','p(y)'))
+segments(-2,dnorm(-2, log=T), 1, dnorm(1, log=T))
+```
+
+If $p(X)$ is twice differentiabe, then $p(x)$ is concave if and only if $p''(x) \le 0$.
+
+A function $p(x)$ is log-concave if $\log p(x)$ is concave.
+
+
+
+Examples
+========================================================
+incremental: true
+
+
+$X\sim N(0,1)$ has a log-concave density since 
+$$ \frac{d^2}{dx^2} \log\, e^{-x^2/2} = \frac{d^2}{dx^2} -x^2/2 = \frac{d}{dx} -x = -1. $$
+
+$X\sim Ca(0,1)$ has a non-log-concave density since 
+$$ \frac{d^2}{dx^2} \log \frac{1}{1+x^2} = \frac{d}{dx} \frac{-2x}{1+x^2} = \frac{2(x^2-1)}{(1+x^2)^2}. $$
+
+```{r cauchy, fig.width=12, fig.height=8}
+d = data.frame(x=seq(0,2,by=.01)) %>%
+  mutate(normal = dnorm(x, log=TRUE),
+         cauchy = dcauchy(x, log=TRUE))
+ggplot(melt(d, id.var='x', value.name='log density', variable.name='distribution'),
+       aes(x,`log density`,color=distribution, group=distribution, linetype=distribution)) + 
+  geom_line()
+```
+
+
+
+
+
+Log-concave distributions 
+========================================================
+Log-concave distributions
+- normal
+- exponential
+- Uniform
+- Laplace
+- Gamma (shape parameter is $\ge 1$)
+- Wishart ($n\ge p+1$)
+- Dirichlet (all parameters $\ge 1$)
+
+***
+
+Non-log-concave distributions
+- Log-normal
+- Student $t$
+- $F$-distribution
+
+
+
+Exponential distribution
+========================================================
+incremental:true
+
+An exponential distribution has pdf 
+$$
+p(\theta;b) = b e^{-b\theta}
+$$
+
+and thus has log-density
+$$
+\log p(\theta;b) = \log(b) - b\theta
+$$
+
+which is trivially log-concave since 
+$$
+\frac{d^2}{d\theta^2} \log(b) - b\theta = \frac{d}{d\theta} -b = 0 \le 0.
+$$
+
+The exponential distribution, or exponential function, is unique in that it matches the bound for the definition of log-concavity. 
+
+
+
+Prior-posterior example
+========================================================
+incremental:true
+
+The product of log-concave functions is also log-concave since 
+$$\log\left( \prod_{i=1}^n p_i(x)\right) = \sum_{i=1}^n \log p_i(x).$$
+
+Assume 
+$$ 
+Y_i \stackrel{ind}{\sim} N(\theta,1) 
+\quad \mbox{and} \quad 
+\theta \sim La(0,1) 
+$$
+then the posterior 
+$$
+p(\theta|y) \propto \left[ \prod_{i=1}^n N(y_i;\theta,1) \right] La(\theta;0,1) 
+$$
+is log-concave since
+- $N(y_i;\theta,1)$ is a log-concave function for $\theta$ for each $y_i$ and
+- $La(\theta;0,1)$ is a log-concave distribution.
+
+
+
+
+Rejection sampling
+========================================================
+incremental:true
+
+Suppose we are interested in sampling from a target distribution $p(\theta|y)$ using a proposal $q(\theta)$. 
+
+To use this algorithm, we must find 
+$$ 
+M \ge \frac{p(\theta|y)}{q(\theta)} \forall \theta
+$$
+where the optimal $M$ is $\mbox{sup}_\theta p(\theta|y)/q(\theta)$.
+
+Rejection sampling performs the following
+
+1. Sample $\theta \sim q(\theta)$.
+1. Accept $\theta$ as a draw from $p(\theta|y)$ with probability 
+$$
+\frac{1}{M} \frac{p(\theta|y)}{q(\theta)}
+$$
+otherwise return to step 1.
+
+
+
+Rejection sampling envelope
+========================================================
+incremental:true
+
+Target $N^+(0,1)$ and proposal $Exp(1)$. 
+
+Then 
+$$ 
+\frac{\sqrt{2/\pi} e^{-\theta^2/2}}{e^{-\theta}} \le 1.315489 = M
+$$
+
+```{r envelope, fig.width=14}
+o = optimize(function(x) 2*dnorm(x)/dexp(x), c(0,10), maximum=TRUE)
+M = o$objective
+
+d = data.frame(x=seq(0,3,by=.01)) %>%
+  mutate('N^+(0,1)' = 2*dnorm(x),
+         'Exp(1)' = dexp(x),
+         'M*Exp(1)' = M*dexp(x))
+
+g1 = ggplot(melt(d, 
+                 id.var='x', 
+                 variable.name='distribution', 
+                 value.name='density'),
+       aes(x, density, group=distribution, color=distribution, linetype=distribution)) + 
+  geom_line() + theme(legend.position='bottom')
+g2 = g1 + 
+  scale_y_log10() + 
+  theme(legend.position='none') +
+  labs(y='log density')
+grid.arrange(g1, g2, nrow=1)
+```
+
+
+
+Rejection sampling example
+========================================================
+```{r rejection_sampling_example, dependson='envelope'}
+n = 100
+s = data.frame(i = 1:n, x=rexp(n)) %>%
+  mutate(y=runif(n)*M*dexp(x),
+         accept=y<2*dnorm(x)) 
+ggplot(s, aes(x, y, color=accept, shape=accept)) + 
+  geom_point() + 
+  stat_function(fun=function(x) 2*dnorm(x) ) + 
+  labs(y='M*Exp(x;1)')
+```
+
+
+
+Adaptive rejection sampling 
+========================================================
+
