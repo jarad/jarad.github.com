@@ -1,0 +1,387 @@
+Adaptive rejection Metropolis sampling
+========================================================
+author: Jarad Niemi
+date: 21 Oct 2015
+width:1920
+height: 1080
+
+```{r setup, include=FALSE}
+opts_chunk$set(echo=FALSE,
+               fig.align='center',
+               fig.width=10,
+               fig.height=10,
+               cache=TRUE)
+```
+
+```{r}
+set.seed(20151021)
+```
+
+```{r packages, echo=FALSE, warnings=FALSE, message=FALSE}
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+```
+
+(Logarithmically) Concave Univariate Function
+========================================================
+incremental: true
+
+A function $p(\theta)$ is concave if 
+$$ p((1-t)x+t\, y) \ge (1-t) p(x) + t\, p(y) $$
+for any $0\le t\le 1$.
+
+```{r concave, fig.width=10, fig.height=7}
+opar = par(mar=c(2,2,0,0)+.1)
+curve(dnorm(x, log=T), -2.1, 1.1, axes=F, frame=T, lwd=2,
+      xlab='', ylab='')
+axis(1, c(-2,1), labels=c('x','y'))
+axis(2, c(dnorm(c(-2,1), log=T)), labels=c('p(x)','p(y)'))
+segments(-2,dnorm(-2, log=T), 1, dnorm(1, log=T))
+```
+
+If $p(x)$ is twice differentiabe, then $p(x)$ is concave if and only if $p''(x) \le 0$.
+
+A function $p(x)$ is log-concave if $\log p(x)$ is concave.
+
+
+
+Examples
+========================================================
+incremental: true
+
+
+$X\sim N(0,1)$ has a log-concave density since 
+$$ \frac{d^2}{dx^2} \log\, e^{-x^2/2} = \frac{d^2}{dx^2} -x^2/2 = \frac{d}{dx} -x = -1. $$
+
+$X\sim Ca(0,1)$ has a non-log-concave density since 
+$$ \frac{d^2}{dx^2} \log \frac{1}{1+x^2} = \frac{d}{dx} \frac{-2x}{1+x^2} = \frac{2(x^2-1)}{(1+x^2)^2}. $$
+
+```{r cauchy, fig.width=12, fig.height=8}
+d = data.frame(x=seq(0,2,by=.01)) %>%
+  mutate(normal = dnorm(x, log=TRUE),
+         cauchy = dcauchy(x, log=TRUE))
+ggplot(melt(d, id.var='x', value.name='log density', variable.name='distribution'),
+       aes(x,`log density`,color=distribution, group=distribution, linetype=distribution)) + 
+  geom_line()
+```
+
+
+
+
+
+Log-concave distributions 
+========================================================
+Log-concave distributions
+- normal
+- exponential
+- Uniform
+- Laplace
+- Gamma (shape parameter is $\ge 1$)
+- Wishart ($n\ge p+1$)
+- Dirichlet (all parameters $\ge 1$)
+
+***
+
+Non-log-concave distributions
+- Log-normal
+- Student $t$
+- $F$-distribution
+
+
+
+Exponential distribution
+========================================================
+incremental:true
+
+An exponential distribution has pdf 
+$$
+p(\theta;b) = b e^{-b\theta}
+$$
+
+and thus has log-density
+$$
+\log p(\theta;b) = \log(b) - b\theta
+$$
+
+which is trivially log-concave since 
+$$
+\frac{d^2}{d\theta^2} \log(b) - b\theta = \frac{d}{d\theta} -b = 0 \le 0.
+$$
+
+The exponential distribution, or exponential function, is unique in that it matches the bound for the definition of log-concavity. 
+
+
+
+Prior-posterior example
+========================================================
+incremental:true
+
+The product of log-concave functions is also log-concave since 
+$$\log\left( \prod_{i=1}^n p_i(x)\right) = \sum_{i=1}^n \log p_i(x).$$
+
+Assume 
+$$ 
+Y_i \stackrel{ind}{\sim} N(\theta,1) 
+\quad \mbox{and} \quad 
+\theta \sim La(0,1) 
+$$
+then the posterior 
+$$
+p(\theta|y) \propto \left[ \prod_{i=1}^n N(y_i;\theta,1) \right] La(\theta;0,1) 
+$$
+is log-concave since
+- $N(y_i;\theta,1)$ is a log-concave function for $\theta$ for each $y_i$ and
+- $La(\theta;0,1)$ is a log-concave distribution.
+
+
+
+
+Rejection sampling
+========================================================
+incremental:true
+
+Suppose we are interested in sampling from a target distribution $p(\theta|y)$ using a proposal $q(\theta)$. 
+
+To use this algorithm, we must find 
+$$ 
+M \ge \frac{p(\theta|y)}{q(\theta)} \forall \theta
+$$
+where the optimal $M$ is $\mbox{sup}_\theta p(\theta|y)/q(\theta)$.
+
+Rejection sampling performs the following
+
+1. Sample $\theta \sim q(\theta)$.
+1. Accept $\theta$ as a draw from $p(\theta|y)$ with probability 
+$$
+\frac{1}{M} \frac{p(\theta|y)}{q(\theta)}
+$$
+otherwise return to step 1.
+
+
+
+Rejection sampling envelope
+========================================================
+incremental:true
+
+Target $N^+(0,1)$ and proposal $Exp(1)$. 
+
+Then 
+$$ 
+\frac{\sqrt{2/\pi} e^{-\theta^2/2}}{e^{-\theta}} \le 1.315489 = M
+$$
+
+```{r envelope, fig.width=14}
+o = optimize(function(x) 2*dnorm(x)/dexp(x), c(0,10), maximum=TRUE)
+M = o$objective
+
+d = data.frame(x=seq(0,3,by=.01)) %>%
+  mutate('N^+(0,1)' = 2*dnorm(x),
+         'Exp(1)' = dexp(x),
+         'M*Exp(1)' = M*dexp(x))
+
+g1 = ggplot(melt(d, 
+                 id.var='x', 
+                 variable.name='distribution', 
+                 value.name='density'),
+       aes(x, density, group=distribution, color=distribution, linetype=distribution)) + 
+  geom_line() + theme(legend.position='bottom')
+g2 = g1 + 
+  scale_y_log10() + 
+  theme(legend.position='none') +
+  labs(y='log density')
+grid.arrange(g1, g2, nrow=1)
+```
+
+
+
+Rejection sampling example
+========================================================
+```{r rejection_sampling_example, dependson='envelope'}
+n = 100
+s = data.frame(i = 1:n, x=rexp(n)) %>%
+  mutate(y=runif(n)*M*dexp(x),
+         accept=y<2*dnorm(x)) 
+ggplot(s, aes(x, y, color=accept, shape=accept)) + 
+  geom_point() + 
+  stat_function(fun=function(x) 2*dnorm(x) ) + 
+  labs(y='M*Exp(x;1)')
+```
+
+
+
+
+
+Adaptive rejection sampling 
+========================================================
+
+Idea: build a piece-wise linear envelope to the log-density as a proposal distribution
+
+```{r}
+opar = par(mar=c(0,0,4,0)+.1, mfrow=c(1,2))
+curve(dnorm(x, log=T), -4, 4, lwd=2, axes=F, frame=T, ylim=c(-10,0),
+      main="log density")
+deriv = function(x) -x
+
+points = c(-2,.1,1.5)
+xx = seq(-4, 4, by=.1)
+for (p in points) {
+  yy = deriv(p)*xx + dnorm(p,log=T)-deriv(p)*p
+  lines(xx, yy, lty=2)
+  #abline(dnorm(p,log=T)-deriv(p)*p, deriv(p), lty=2)
+}
+
+curve(dnorm(x), -4, 4, lwd=2, axes=F, frame=T, main="density", ylim=c(0,.5))
+for (p in points) {
+  yy = deriv(p)*xx + dnorm(p,log=T)-deriv(p)*p
+  lines(xx, exp(yy), lty=2)
+  #abline(dnorm(p,log=T)-deriv(p)*p, deriv(p), lty=2)
+}
+par(opar)
+```
+
+
+Pseudo-algorithm for adaptive rejection sampling
+========================================================
+1. Choose starting locations $\theta$, call the set $\Theta$
+1. Construct piece-wise linear envelope $\log q(\theta)$ to the log-density
+  1. Calculate $\log f(\theta|y)$ and $(\log f(\theta|y))'$.
+  1. Find line intersections
+1. Sample a proposed value $\theta^*$ from the envelope $q(\theta)$
+  1. Sample an interval
+  1. Sample a truncated (and possibly negative of an) exponential r.v.
+1. Perform rejection sampling
+  1. Sample $u \sim Unif(0,1)$
+  1. Accept $\theta^*$ if $u\le f(\theta^*|y)/q(\theta^*)$.
+1. If rejected, add $\theta^*$ to $\Theta$ and return to 2. 
+
+
+
+
+
+Adaptive rejection sampling (ARS) in R
+========================================================
+```{r ars, echo=TRUE, message=FALSE}
+library(ars)
+f = function(x) -x^2/2 # log of standard normal density
+fp = function(x) -x    # derivative of log of standard normal density
+x = ars(1e4, f, fp)
+```
+
+```{r ars_plot, dependson='ars'}
+hist(x, 101, prob=TRUE, main='ARS samples')
+curve(dnorm, add=TRUE, col='red', lwd=2)
+```
+
+
+ARS in R - non-log-concave density
+========================================================
+```{r ars_non_log_concave_density, echo=TRUE}
+f = function(x) log(1/(1+x^2)) # log of standard cauchy density
+fp = function(x) -2*x/(1+x^2)  # derivative of log of cauchy density
+x = ars(1e4, f, fp)
+```
+
+
+
+ARS in R - prior-posterior example
+========================================================
+$$ 
+Y_i \stackrel{ind}{\sim} N(\theta,1) 
+\quad \mbox{and} \quad 
+\theta \sim La(0,1)
+$$
+
+```{r ars_prior_posterior, echo=TRUE}
+y = rnorm(10)
+f = Vectorize(function(theta) sum(-(y-theta)^2/2) - abs(theta))
+fp = Vectorize(function(theta) sum((y-theta)) - (theta>0) + (theta<0))
+x = ars(1e4, f, fp)
+```
+
+```{r ars_prior_posterior_plot, dependson='ars_prior_posterior'}
+hist(x, 101, prob=TRUE, main='Posterior for Normal data with Laplace prior on mean')
+abline(v=mean(y), col='red', lwd=2)
+```
+
+
+
+Comments on ARS
+========================================================
+incremental:true
+
+- Derivative free ARS
+- Checking for log-concavity 
+  - Decreasing derivatives
+- Initial points for unbounded support: 
+  - initial derivative must be positive
+  - final derivative must be negative
+- Lower bound for multiple samples
+  - Connect points
+- Probability of acceptance increases at subsequent steps
+
+
+
+Adaptive rejection Metropolis sampling (ARMS)
+========================================================
+incremental:true
+
+Adaptive rejection sampling is only suitable for log-concave densities. 
+
+For non-log-concave densities adaptive rejection Metropolis sampling can be used
+
+
+
+ARMS algorithm
+========================================================
+incremental:false
+
+1. Choose starting locations for $\theta$, call the set $\Theta$.
+1. Construct piece-wise linear pseudo-envelope $\log q(\theta)$ to $\log p(\theta|y)$.
+1. Sample $\theta^*\sim q(\theta)$ and $U\sim Unif(0,1)$ until $U \le p(\theta^*|y)/q(\theta^*).$
+1. Perform Metropolis step: 
+Set $\theta^{(i)} = \theta^*$ with probability 
+$$\min\left\{1,\frac{p(\theta^*|y)}{p(\theta^{(i)}|y)}
+\frac{\min\{p(\theta^{(i-1)}|y),q(\theta^{(i-1)})\}}{\min\{p(\theta^*|y),q(\theta^*)\}}\right\}$$ 
+otherwise set $\theta^{(i)} = \theta^{(i-1)}$.
+
+
+
+ARMS pseudo-envelope 
+========================================================
+standard $t$ distribution with 5 degrees of freedom
+```{r pseudo_envelope}
+f = function(x,v=30) -(v+1)/2 *log(1+x^2/v)
+fp = function(x,v=30) -(v+1)*x/(v+x^2)
+
+v = 5
+curve(f(x,v), -5, 5)
+for (x in c(-2,0,2)) {
+  slope = fp(x,v)
+  intercept = f(x,v)-slope*x
+  abline(intercept, slope, col='red')
+}
+```
+
+
+
+ARMS in R
+========================================================
+```{r arms, echo=TRUE}
+library(dlm)
+f = function(x,mean) -(x-mean)^2/2 
+x = arms(runif(1,3,17), f, function(x,mean) ((x-mean)>-7)*((x-mean)<7),
+          1e4, mean=10)
+hist(x,101,prob=TRUE,main="Gaussian(10,1)")
+curve(dnorm(x,10), add=TRUE, lwd=2, col='red')
+```
+
+
+Theoretical consideration of ARMS
+========================================================
+
+- ARMS is an independent Metropolis-Hastings algorithm
+  - Proposal changes, due to updating $q$ thus inhomogenous
+  - We need to stop updating $q$ at some point to enforce homogeneity

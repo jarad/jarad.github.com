@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Jarad Niemi" />
+
+<meta name="date" content="2015-10-19" />
+
+<title>Data Visualization I (ggplot2) - Activity Solutions</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<link href="data:text/css,body%20%7B%0A%20%20background%2Dcolor%3A%20%23fff%3B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20max%2Dwidth%3A%20700px%3B%0A%20%20overflow%3A%20visible%3B%0A%20%20padding%2Dleft%3A%202em%3B%0A%20%20padding%2Dright%3A%202em%3B%0A%20%20font%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0A%20%20font%2Dsize%3A%2014px%3B%0A%20%20line%2Dheight%3A%201%2E35%3B%0A%7D%0A%0A%23header%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0A%0A%23TOC%20%7B%0A%20%20clear%3A%20both%3B%0A%20%20margin%3A%200%200%2010px%2010px%3B%0A%20%20padding%3A%204px%3B%0A%20%20width%3A%20400px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20border%2Dradius%3A%205px%3B%0A%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20font%2Dsize%3A%2013px%3B%0A%20%20line%2Dheight%3A%201%2E3%3B%0A%7D%0A%20%20%23TOC%20%2Etoctitle%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%20%20font%2Dsize%3A%2015px%3B%0A%20%20%20%20margin%2Dleft%3A%205px%3B%0A%20%20%7D%0A%0A%20%20%23TOC%20ul%20%7B%0A%20%20%20%20padding%2Dleft%3A%2040px%3B%0A%20%20%20%20margin%2Dleft%3A%20%2D1%2E5em%3B%0A%20%20%20%20margin%2Dtop%3A%205px%3B%0A%20%20%20%20margin%2Dbottom%3A%205px%3B%0A%20%20%7D%0A%20%20%23TOC%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dleft%3A%20%2D2em%3B%0A%20%20%7D%0A%20%20%23TOC%20li%20%7B%0A%20%20%20%20line%2Dheight%3A%2016px%3B%0A%20%20%7D%0A%0Atable%20%7B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dcolor%3A%20%23DDDDDD%3B%0A%20%20border%2Dstyle%3A%20outset%3B%0A%20%20border%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0A%20%20border%2Dwidth%3A%202px%3B%0A%20%20padding%3A%205px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%20%20line%2Dheight%3A%2018px%3B%0A%20%20padding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0A%20%20border%2Dleft%2Dstyle%3A%20none%3B%0A%20%20border%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Ap%20%7B%0A%20%20margin%3A%200%2E5em%200%3B%0A%7D%0A%0Ablockquote%20%7B%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20padding%3A%200%2E25em%200%2E75em%3B%0A%7D%0A%0Ahr%20%7B%0A%20%20border%2Dstyle%3A%20solid%3B%0A%20%20border%3A%20none%3B%0A%20%20border%2Dtop%3A%201px%20solid%20%23777%3B%0A%20%20margin%3A%2028px%200%3B%0A%7D%0A%0Adl%20%7B%0A%20%20margin%2Dleft%3A%200%3B%0A%7D%0A%20%20dl%20dd%20%7B%0A%20%20%20%20margin%2Dbottom%3A%2013px%3B%0A%20%20%20%20margin%2Dleft%3A%2013px%3B%0A%20%20%7D%0A%20%20dl%20dt%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%7D%0A%0Aul%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%7D%0A%20%20ul%20li%20%7B%0A%20%20%20%20list%2Dstyle%3A%20circle%20outside%3B%0A%20%20%7D%0A%20%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dbottom%3A%200%3B%0A%20%20%7D%0A%0Apre%2C%20code%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20color%3A%20%23333%3B%0A%7D%0Apre%20%7B%0A%20%20white%2Dspace%3A%20pre%2Dwrap%3B%20%20%20%20%2F%2A%20Wrap%20long%20lines%20%2A%2F%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20margin%3A%205px%200px%2010px%200px%3B%0A%20%20padding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Acode%20%7B%0A%20%20font%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0A%20%20font%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0A%20%20padding%3A%202px%200px%3B%0A%7D%0A%0Adiv%2Efigure%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0A%20%20background%2Dcolor%3A%20%23FFFFFF%3B%0A%20%20padding%3A%202px%3B%0A%20%20border%3A%201px%20solid%20%23DDDDDD%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20margin%3A%200%205px%3B%0A%7D%0A%0Ah1%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%20%20font%2Dsize%3A%2035px%3B%0A%20%20line%2Dheight%3A%2040px%3B%0A%7D%0A%0Ah2%20%7B%0A%20%20border%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20padding%2Dbottom%3A%202px%3B%0A%20%20font%2Dsize%3A%20145%25%3B%0A%7D%0A%0Ah3%20%7B%0A%20%20border%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20font%2Dsize%3A%20120%25%3B%0A%7D%0A%0Ah4%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0A%20%20margin%2Dleft%3A%208px%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Ah5%2C%20h6%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23ccc%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Aa%20%7B%0A%20%20color%3A%20%230033dd%3B%0A%20%20text%2Ddecoration%3A%20none%3B%0A%7D%0A%20%20a%3Ahover%20%7B%0A%20%20%20%20color%3A%20%236666ff%3B%20%7D%0A%20%20a%3Avisited%20%7B%0A%20%20%20%20color%3A%20%23800080%3B%20%7D%0A%20%20a%3Avisited%3Ahover%20%7B%0A%20%20%20%20color%3A%20%23BB00BB%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%0A%2F%2A%20Class%20described%20in%20https%3A%2F%2Fbenjeffrey%2Ecom%2Fposts%2Fpandoc%2Dsyntax%2Dhighlighting%2Dcss%0A%20%20%20Colours%20from%20https%3A%2F%2Fgist%2Egithub%2Ecom%2Frobsimmons%2F1172277%20%2A%2F%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Keyword%20%2A%2F%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%2F%2A%20DataType%20%2A%2F%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%2F%2A%20DecVal%20%28decimal%20values%29%20%2A%2F%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20BaseN%20%2A%2F%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Float%20%2A%2F%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Char%20%2A%2F%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20String%20%2A%2F%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%2F%2A%20Comment%20%2A%2F%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%2F%2A%20OtherToken%20%2A%2F%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20AlertToken%20%2A%2F%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Function%20calls%20%2A%2F%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%2F%2A%20ErrorTok%20%2A%2F%0A%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+<div id="header">
+<h1 class="title">Data Visualization I (ggplot2) - Activity Solutions</h1>
+<h4 class="author"><em>Jarad Niemi</em></h4>
+<h4 class="date"><em>2015-10-19</em></h4>
+</div>
+
+
+<div id="matrix-activity" class="section level1">
+<h1><a name="matrix"></a> Matrix activity</h1>
+<pre class="sourceCode r"><code class="sourceCode r">m =<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">12</span>, <span class="dv">8</span>, <span class="dv">6</span>),
+          <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">10</span>, <span class="dv">2</span>, <span class="dv">9</span>),
+          <span class="kw">c</span>(<span class="dv">11</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span>))
+m</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4]
+## [1,]    1   12    8    6
+## [2,]    4   10    2    9
+## [3,]   11    3    5    7</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Reconstruct the matrix </span>
+n =<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">12</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">4</span>,<span class="dv">10</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">11</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">7</span>), <span class="dt">nrow=</span><span class="dv">3</span>, <span class="dt">ncol=</span><span class="dv">4</span>, <span class="dt">byrow=</span><span class="ot">TRUE</span>)
+n</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4]
+## [1,]    1   12    8    6
+## [2,]    4   10    2    9
+## [3,]   11    3    5    7</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(m,n)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Print the element in the 3rd-row and 4th column</span>
+n[<span class="dv">3</span>,<span class="dv">4</span>]</code></pre>
+<pre><code>## [1] 7</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Print the 2nd column</span>
+n[,<span class="dv">2</span>]</code></pre>
+<pre><code>## [1] 12 10  3</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Print all but the 3rd row</span>
+n[-<span class="dv">3</span>,]</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4]
+## [1,]    1   12    8    6
+## [2,]    4   10    2    9</code></pre>
+</div>
+<div id="factor-activity" class="section level1">
+<h1><a name="factor"></a> Factor activity</h1>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create icd9code</span>
+cuts =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">140</span>, <span class="dv">240</span>, <span class="dv">280</span>, <span class="dv">290</span>, <span class="dv">320</span>, <span class="dv">360</span>, <span class="dv">390</span>, <span class="dv">460</span>, <span class="dv">520</span>, <span class="dv">580</span>, <span class="dv">630</span>, <span class="dv">680</span>, <span class="dv">710</span>, <span class="dv">740</span>, <span class="dv">760</span>, <span class="dv">780</span>, <span class="dv">800</span>, <span class="dv">1000</span>, <span class="ot">Inf</span>)
+GI$icd9code =<span class="st"> </span><span class="kw">cut</span>(GI$icd9, cuts, <span class="dt">right=</span><span class="ot">FALSE</span>)
+
+<span class="co"># Find the icd9code that is most numerous</span>
+<span class="co"># There are many ways to do this</span>
+<span class="kw">table</span>(GI$icd9code)</code></pre>
+<pre><code>## 
+##     [0,140)   [140,240)   [240,280)   [280,290)   [290,320)   [320,360) 
+##        1611           0           0           0           0           0 
+##   [360,390)   [390,460)   [460,520)   [520,580)   [580,630)   [630,680) 
+##           0           0           0        7242           0           0 
+##   [680,710)   [710,740)   [740,760)   [760,780)   [780,800) [800,1e+03) 
+##           0           0           0           0       12229           0 
+## [1e+03,Inf) 
+##         162</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Eliminate zeros</span>
+GI$icd9code =<span class="st"> </span><span class="kw">factor</span>(GI$icd9code)
+<span class="kw">table</span>(GI$icd9code)</code></pre>
+<pre><code>## 
+##     [0,140)   [520,580)   [780,800) [1e+03,Inf) 
+##        1611        7242       12229         162</code></pre>
+</div>
+<div id="aggregate-activity" class="section level1">
+<h1><a name="aggregate"></a> Aggregate activity</h1>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Aggregate the GI data set by gender, ageC, and icd9code (the ones created in the last activity).</span>
+<span class="kw">ddply</span>(GI, .(gender, ageC, icd9code), summarize, <span class="dt">total =</span> <span class="kw">length</span>(id))</code></pre>
+<pre><code>##    gender      ageC    icd9code total
+## 1  Female  (-Inf,5]     [0,140)   150
+## 2  Female  (-Inf,5]   [520,580)   771
+## 3  Female  (-Inf,5]   [780,800)  1235
+## 4  Female  (-Inf,5] [1e+03,Inf)     5
+## 5  Female    (5,18]     [0,140)   140
+## 6  Female    (5,18]   [520,580)   677
+## 7  Female    (5,18]   [780,800)  1109
+## 8  Female    (5,18] [1e+03,Inf)    16
+## 9  Female   (18,45]     [0,140)   283
+## 10 Female   (18,45]   [520,580)  1289
+## 11 Female   (18,45]   [780,800)  2110
+## 12 Female   (18,45] [1e+03,Inf)    28
+## 13 Female   (45,60]     [0,140)   126
+## 14 Female   (45,60]   [520,580)   557
+## 15 Female   (45,60]   [780,800)   894
+## 16 Female   (45,60] [1e+03,Inf)    13
+## 17 Female (60, Inf]     [0,140)   102
+## 18 Female (60, Inf]   [520,580)   432
+## 19 Female (60, Inf]   [780,800)   700
+## 20 Female (60, Inf] [1e+03,Inf)    16
+## 21   Male  (-Inf,5]     [0,140)   169
+## 22   Male  (-Inf,5]   [520,580)   730
+## 23   Male  (-Inf,5]   [780,800)  1261
+## 24   Male  (-Inf,5] [1e+03,Inf)     3
+## 25   Male    (5,18]     [0,140)   143
+## 26   Male    (5,18]   [520,580)   641
+## 27   Male    (5,18]   [780,800)  1063
+## 28   Male    (5,18] [1e+03,Inf)    13
+## 29   Male   (18,45]     [0,140)   282
+## 30   Male   (18,45]   [520,580)  1210
+## 31   Male   (18,45]   [780,800)  2239
+## 32   Male   (18,45] [1e+03,Inf)    35
+## 33   Male   (45,60]     [0,140)   123
+## 34   Male   (45,60]   [520,580)   525
+## 35   Male   (45,60]   [780,800)   883
+## 36   Male   (45,60] [1e+03,Inf)    12
+## 37   Male (60, Inf]     [0,140)    93
+## 38   Male (60, Inf]   [520,580)   410
+## 39   Male (60, Inf]   [780,800)   735
+## 40   Male (60, Inf] [1e+03,Inf)    21</code></pre>
+</div>
+<div id="ggplot2-activity" class="section level1">
+<h1><a name="ggplot2"></a> ggplot2 activity</h1>
+<p>Construct a histogram and boxplot for age at facility 37 using ggplot2.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Construct a histogram for age at facility 37.</span>
+<span class="kw">ggplot</span>(<span class="kw">subset</span>(GI, facility==<span class="dv">37</span>), <span class="kw">aes</span>(<span class="dt">x=</span>age)) +<span class="st"> </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth=</span><span class="dv">1</span>)</code></pre>
+<p><img src="data:image/png;base64,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" /></p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Construct a boxplot for age at facility 37. </span>
+<span class="kw">ggplot</span>(<span class="kw">subset</span>(GI, facility==<span class="dv">37</span>), <span class="kw">aes</span>(<span class="dt">x=</span><span class="dv">1</span>, <span class="dt">y=</span>age)) +<span class="st"> </span><span class="kw">geom_boxplot</span>()</code></pre>
+<p><img src="data:image/png;base64,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" /></p>
+<p>Construct a bar chart for the zipcode at facility 37 using ggplot2</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Construct a bar chart for the zipcode at facility 37.</span>
+<span class="kw">ggplot</span>(<span class="kw">subset</span>(GI, <span class="dt">facility=</span><span class="dv">37</span>), <span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">trunc</span>(zipcode/<span class="dv">100</span>))) +<span class="st"> </span><span class="kw">geom_bar</span>(<span class="dt">binwidth=</span><span class="dv">1</span>)</code></pre>
+<p><img src="data:image/png;base64,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" /></p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

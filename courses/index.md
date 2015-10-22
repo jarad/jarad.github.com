@@ -6,6 +6,8 @@ group: navigation
 ---
 {% include JB/setup %}
 
+## Regular courses
+
 - Fall 2015
   - [STAT 615](stat615)
 - Spring 2015
@@ -22,4 +24,7 @@ group: navigation
   - STAT 544
 
 
+## Short courses
+
+- [Introduction to R for Biosurveillance](ISDSWorkshop/workshop.html)
 

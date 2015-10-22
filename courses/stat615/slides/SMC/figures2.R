@@ -215,20 +215,20 @@ adParticleIndices = 1:nParticles
 for (i in 2:10) {
   par(mfrow=c(2,2))
   for (nParam in 2:5) {
-  plot(0,0,type='n',main='',xlab='t',ylab='',xlim=c(0,10),
+    plot(0,0,type='n',main='',xlab='t',ylab='',xlim=c(0,10),
          ylim=range(lMultivariateBootstrapFilter$adParticles[1:10,,nParam]))
-  if (nParam != 3) { abline(h=0.05,col='red') } else { abline(h=0.95,col='red') }
-  for (ii in i:2) {
-    points(rep(ii,nParticles),lMultivariateBootstrapFilter$adParticles[ii,,nParam],pch=19,
-           cex=(lMultivariateBootstrapFilter$mdWeights[ii,])^.5*2)
-    for (j in adParticleIndices) {
-      segments(ii-1,lMultivariateBootstrapFilter$adParticles[ii-1,lMultivariateBootstrapFilter$mnResampledIndices[ii,j],nParam],
-               ii  ,lMultivariateBootstrapFilter$adParticles[ii  ,j,nParam],
-               lwd=(lMultivariateBootstrapFilter$mdWeights[i,j])^.3*2)
-    }
-    adParticleIndices = unique(lMultivariateBootstrapFilter$mnResampledIndices[ii,adParticleIndices])
-  }            
-  #readline("Hit enter:")
+    if (nParam != 3) { abline(h=0.05,col='red') } else { abline(h=0.95,col='red') }
+    for (ii in i:2) {
+      points(rep(ii,nParticles),lMultivariateBootstrapFilter$adParticles[ii,,nParam],pch=19,
+             cex=(lMultivariateBootstrapFilter$mdWeights[ii,])^.5*2)
+      for (j in adParticleIndices) {
+        segments(ii-1,lMultivariateBootstrapFilter$adParticles[ii-1,lMultivariateBootstrapFilter$mnResampledIndices[ii,j],nParam],
+                 ii  ,lMultivariateBootstrapFilter$adParticles[ii  ,j,nParam],
+                 lwd=(lMultivariateBootstrapFilter$mdWeights[i,j])^.3*2)
+      }
+      adParticleIndices = unique(lMultivariateBootstrapFilter$mnResampledIndices[ii,adParticleIndices])
+    }            
+    #readline("Hit enter:")
   }        
   dev.copy2pdf(file=paste("MBF-",i-1,".pdf",sep=''))
   dev.off()   
