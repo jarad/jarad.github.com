@@ -39,7 +39,8 @@ opts_chunk$set(fig.width=7,
                out.width='.8\\linewidth', 
                fig.align='center', 
                size='tiny',
-               echo=FALSE)
+               echo=FALSE, 
+               cache=TRUE)
 options(width=100)
 @
 
@@ -49,6 +50,8 @@ library(plyr)
 library(dplyr)
 library(reshape2)
 library(maps)
+library(spBayes)
+library(fields)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -60,53 +63,325 @@ set.seed(2)
 
 
 \section{Spatial modeling}
+\begin{frame}
+\frametitle{Spatial modeling}
 
-\frame{\frametitle{Spatial random effects}
-	Consider collecting data at spatial location $s$, model this data as 
-	\[ Y(s) = \mu(s)+w(s)+\epsilon(s) \]
-	\pause where 
-	\begin{itemize}[<+->]
-	\item $\mu(s)=x(s)^\top\beta$ models the mean 
-	\item $w(s)$ is the spatial random effect
-	\item $\epsilon(s)$ is the pure error
-	\end{itemize}
+Three main types of spatial data:
+\begin{itemize}
+\item Point-referenced (georeferenced)
+\item Areal-referenced
+\item Point process
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Point-referenced spatial data}
+Features
+\begin{itemize}
+\item Some spatial domain $\mathcal{D}$ is under study
+\item Measured spatial locations $s\in \mathcal{D}$ are pre-determined
+\item Some quantity, $Y(s)$, is measured at each location $s\in \mathcal{D}$
+\end{itemize}
+
+\vspace{0.2in} 
+
+Examples
+\begin{itemize}
+\item Air quality monitoring
+\item Bird point counts
+\item Coastal tide level monitoring
+\item Earthquake monitoring
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Areal-referenced spatial data}
+Features
+\begin{itemize}
+\item Some set of spatial regions $1,\ldots,S$ are pre-determined
+\item Some quantity, $Y_s$, is measured as an aggregate over that region
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Examples
+\begin{itemize}
+\item Disease occurrence per county
+\item Unemployment rate per state
+\item Inflation per country
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Point-process spatial data}
+Features
+\begin{itemize}
+\item Some spatial domain $\mathcal{D}$ is under study
+\item Spatial locations $s\in \mathcal{S}\subset \mathcal{D}$ are random
+\item $Y(s)=1$ indicates an occurence of the event
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Examples
+\begin{itemize}
+\item Locations of Mayan ruins
+\item Locations of invasive species
+\item Locations of caught Lingcod
+\end{itemize}
+\end{frame}
+
+
+
+
+\section{Point-referenced spatial data}
+\begin{frame}
+\frametitle{Point-referenced spatial data}
+
+Let $Y(s)$ for $s\in\mathcal{D}\subseteq \mathbb{R}^d$ be a spatial process. \pause Let $E[Y(s)]=0$ for all $s\in\mathcal{D}$ because we will model the mean separately.
+
+\vspace{0.2in} \pause
+
+Assumptions:
+\begin{itemize}
+\item Intrinsic stationarity
+\item Isotropy
+\item Weak stationarity
+\item Strong stationarity
+\item Gaussian process
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Example spatial process}
+\vspace{-0.3in}
+<<spatial_process,out.width='\\linewidth'>>=
+library(fields)
+fit<- Tps( BD[,1:4], BD$lnya)  # fit surface to data 
+
+glist<- list( KCL=29.77, MgCl2= seq(3,7,length.out=1e2), KPO4=32.13, 
+                     dNTP=seq( 250,1500,length.out=1e2))
+
+out.p<- predictSurface(fit, glist)
+surface(out.p, type="C")
+@
+\end{frame}
+
+
+
+
+\subsection{Assumptions}
+\begin{frame}
+\frametitle{Intrinsic stationarity}
+\begin{definition}
+A process $Y(s)$ is \alert{intrinsically stationary} if ($E[Y(s+h)-Y(s)]=0$ and)
+\[ E[(Y(s+h)-Y(s))^2] = Var[Y(s+h)-Y(s)] = 2\gamma(h) \]
+when $s,s+h\in\mathcal{D}$. \pause We call $2\gamma(h)$ the \alert{variogram} and $\gamma(h)$ the \alert{semivariogram}.
+\end{definition}
+  
+% \vspace{0.2in} \pause
+% 
+% Note that here we are only defining the first and second moments of the differences, but it says nothing about the joint distribution and thus provides no likelihood.
+
+\vspace{0.2in} \pause
+
+\begin{definition}
+A process $Y(s)$ is \alert{isotropic} if the semivariogram function depends only on $||h||$, the length of the separation vector. Otherwise the process is \alert{anisotropic}.
+  \end{definition}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Weak stationarity}
+\begin{definition}
+A process $Y(s)$ has \alert{weak stationarity} if ($E[Y(s)]=\mu$ and)
+$Cov[Y(s),Y(s+h)] = C(h)$
+when $s,s+h\in\mathcal{D}$. \pause We call $C(h)$ the covariance function or covariogram.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+Since $\gamma(h) = C(0)-C(h)$, a weakly stationary process is also intrinsicly stationary. 
+
+\vspace{0.2in} \pause
+
+If the spatial process is \alert{ergodic}, then $C(h)\to 0$ as $||h||\to\infty$ \pause and $\lim_{||h||\to\infty} \gamma(h) = C(0)$. \pause Thus 
+\[ 
+C(h) = C(0) - \gamma(h) = \lim_{||u||\to\infty} \gamma(u)-\gamma(h).
+\]
+\pause
+Thus, if the process is ergodic, an intrinsicly stationary process is also weakly stationary. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Covariance functions for isotropic models}
+\tiny
+\begin{tabular}{lll}
+Model & Covariance function, $C(t)$ & Variogram, $\gamma(t)$ \\
+\hline
+Linear & 
+$C(t)$ does not exist & 
+$\gamma(t) = \left\{ \begin{array}{ll} \tau^2 + \sigma^2 t & \mbox{if }t>0 \\ 0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Spherical & 
+$C(t) = \left\{ \begin{array}{l}
+0 \\
+\sigma^2\left[1-\frac{3}{2}\phi t + \frac{1}{2}(\phi t)^3 \right]  \\
+ \tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 & \mbox{if }t\ge 1/\phi \\
+\tau^2 + \sigma^2 \left[ \frac{3}{2}\phi t - \frac{1}{2}(\phi t)^3 \right] & 0<t\le 1/\phi \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+ 
+Exponential & 
+$C(t) = \left\{ \begin{array}{l}
+\sigma^2 \exp(-\phi t)  \\
+ \tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 \left[ 1-\exp(-\phi t) \right] & t>0 \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+ 
+Powered exponential & 
+$C(t) = \left\{ \begin{array}{l}
+\sigma^2 \exp(-|\phi t|^p)  \\
+ \tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 \left[ 1-\exp(-|\phi t|^p) \right] & t>0 \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+ 
+Gaussian & 
+$C(t) = \left\{ \begin{array}{l}
+\sigma^2 \exp(-\phi^2 t^2)  \\
+ \tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 \left[ 1-\exp(-\phi^2 t^2) \right] & t>0 \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+ 
+Rational quadratic & 
+$C(t) = \left\{ \begin{array}{l}
+\sigma^2 \left( 1- \frac{t^2}{(1+\phi^2)} \right)  \\
+ \tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 \frac{t^2}{(1+\phi^2)} & t>0 \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+ 
+Wave & 
+$C(t) = \left\{ \begin{array}{l}
+\sigma^2 \frac{\sin(\phi t)}{\phi t}  \\
+ \tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 \left[ 1-\frac{\sin(\phi t)}{\phi t} \right] & t>0 \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+ 
+Power law & 
+$C(t)$ does not exist  &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 t^\lambda & t>0 \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+  
+Mat\'{e}rn & 
+$C(t) = \left\{ \begin{array}{l}
+\frac{\sigma^2}{2^{\nu-1}\mG(\nu)}(2\sqrt{v}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi)  \\
+ \tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 \left[ 1-\frac{\left(2\sqrt{\nu}t\phi\right)^\nu}{2^{\nu-1}\mG(\nu)}(2\sqrt{v}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi) \right] & t>0 \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+  
+Mat\'{e}rn ($\nu=3/2$) & 
+$C(t) = \left\{ \begin{array}{l}
+\sigma^2(1+\phi t) \exp(-\phi t)  \\
+ \tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2 + \sigma^2 \left[ 1-(1+\phi t) \exp(-\phi t) \right] & t>0 \\
+ 0 & \mbox{otherwise} \end{array} \right.$ \\
+\hline
+\end{tabular}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Variogram}
+<<>>=
+ff <- function(t,tau2=.2,sigma2=1,phi=1) {
+  (t==0)*0+
+	(t>0 & t<1/phi)*(tau2+sigma2*(3*phi*t/2-(phi*t)^3/2))+
+	(t>=1/phi)*(tau2+sigma2)
 }
 
-% \frame{\frametitle{}
-% \setkeys{Gin}{width=\textwidth}
-% 	\begin{columns}
-% 	\begin{column}{0.5\textwidth}
-% 	$w(s)$ - spatial process
-% 	\includegraphics{process}
-% 	\end{column} \pause
-% 	\begin{column}{0.5\textwidth}
-% 	$y(s)$ - observations
-% 	\includegraphics{data}
-% 	\end{column}
-% 	\end{columns}
-% }
+curve(ff,0.0001,2, ylim=c(0,1.2), xlab="t", ylab=expression(gamma(t)), main="Spherical variogram", lwd=2)
+points(0,0, pch=16)
+segments(1.0,0,1.0,0.2, col="red", lwd=2);     text(1.0,0.1,"nugget", col="red", pos=4, cex=1)
+segments(1.25,0.2,1.25,1.2, col="red", lwd=2); text(1.25,0.8,"partial sill", col="red", pos=2, cex=1)
+segments(1.5,0,1.5,1.2, col="red", lwd=2);     text(1.5,0.6,"sill", col="red", pos=4, cex=1)
+segments(0,.6,1,.6, col="red", lwd=2);         text(.5,.6,"range", col="red", pos=1, cex=1)
+@
+\end{frame}
 
+
+
+\begin{frame}
+\frametitle{Strong stationarity}
+\begin{definition}
+A process $Y(s)$ is \alert{strongly (or strictly) stationary} if, for any set of $n\ge 1$ sites $\{s_1,\ldots,s_n\}$ and any $h\in \mathbb{R}^d$, 
+\[
+(Y(s_1),\ldots,Y(s_n))^\top \stackrel{d}{=} (Y(s_1+h),\ldots,Y(s_n+h))^\top
+\]
+where $\stackrel{d}{=}$ means equal in distribution.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+If we assume all variances exist, then strong stationarity implies weak stationarity.
+
+\vspace{0.2in} \pause
+
+The reverse is not necessarily true. 
+
+\end{frame}
+
+
+
+
+
+
+\subsection{Gaussian process}
+\begin{frame}
+\frametitle{Gaussian process}
+\begin{definition}
+$Y(s)$ is a \alert{Gaussian process} if, for any $n\ge 1$ and any set of sites $\{s_1,\ldots,s_n\}$, $Y=(Y(s_1),\ldots,Y(s_n))^\top$ has a multivariate normal distribution.
+\end{definition}
+
+\vspace{0.2in} \pause 
+
+For a Gaussian process, weak stationarity and strong stationarity are equivalent. 
+\end{frame}
+
+
+
+
+
+
+
+\subsection{Estimation}
 \begin{frame}
 \frametitle{}
 <<>>=
-set.seed(2)
-d <- 2e2
-x <- y <- seq(0,1,length=d)
-z <- matrix(NA,d,d)
-rho <- .98
-sigma <- .01
-z[1,1] <- rnorm(1,0,sigma)
-for (j in 2:d) z[1,j] <- rnorm(1,rho*z[1,j-1],sigma) # first row
-
-for (i in 2:(d-1)) {
-	z[i,1] <- rnorm(1,rho*z[i-1,1],sigma) 
-	for (j in 2:d) {
-		z[i,j] <- rnorm(1,rho*mean(c(z[i-1,j],z[i,j-1])),sigma)
-	}
-}
-z[d,1] <- rnorm(1,rho*z[d-1,1],sigma)
-for (j in 2:d) z[d,j] <- rnorm(1,rho*mean(c(z[d,j-1],z[d-1,j])),sigma)
-
 opar = par(mar=rep(0,4), mfrow=c(1,2))
 image(x,y,z, axes=F)
 
@@ -121,81 +396,39 @@ par(opar)
 @
 \end{frame}
 
-\subsection{Gaussian process}
-\frame{\frametitle{}
-	For the following, assume that our spatial process has a mean, $\mu(s)=E[Y(s)]$ associated with it and that the variance of $Y(s)$ exists for all $s\in D$.
 
-	\vspace{0.2in} \pause
-
-	\begin{definition}
-	 $Y(s)$ is a \emph{Gaussian process} if, for any $n\ge 1$ and any set of sites $\{s_1,\ldots,s_n\}$, $Y=(Y(s_1),\ldots,Y(s_n))^\top$ has a multivariate normal distribution.
-	\end{definition}
-}
-
-\subsection{Stationarity}
-\frame{\frametitle{}
-	\begin{definition}
-	A process $Y(s)$ is \emph{strictly stationary} if, for any given $n\ge 1$ any set of $n$ sites $\{s_1,\ldots,s_n\}$ and any $h\in \mathbb{R}^r$, the distribution of $(Y(s_1),\ldots,Y(s_n))^\top$ is the same as $(Y(s_1+h),\ldots,Y(s_n+h))^\top$. \pause $D=\mathbb{R}^r$.
-	\end{definition}
-	
-	\vspace{0.2in} \pause
-	
-	\begin{definition}
-	A process $Y(s)$ has \emph{weak stationarity} if $\mu(s)=\mu$ and 
-	$Cov[Y(s),Y(s+h)] = C(h)$
-	for all $h\in \mathbb{R}^r$ such that $s$ and $s+h$ both lie within $D$.
-	\end{definition}
-	
-	\vspace{0.2in} \pause
-	
-	\begin{definition}
-	A process $Y(s)$ is \emph{intrinsically stationary} if $E[Y(s+h)-Y(s)]=0$ and 
-	\[ E[(Y(s+h)-Y(s))^2] = Var[Y(s+h)-Y(s)] = 2\gamma(h) \]
-	where $2\gamma(h)$ is called the \emph{variogram} and $\gamma(h)$ is called the \emph{semivariogram}.
-	\end{definition}
-}
-
-\subsection{Isotropy}
-\frame{\frametitle{}\small
-	\begin{definition}
-	A process $Y(s)$ is \emph{isotropic} if the semivariogram function depends only on $||h||$, the length of the separation vector. Otherwise the process is \emph{anisotropic}.
-	\end{definition}
-	
-	\vspace{0.2in} \pause 
-	
-	Perhaps the most important isotropic process is the Mat\'{e}rn process with covariance
-	\[ C(t) = \left\{ \begin{array}{ll} 
-	\frac{\sigma^2}{2^{\nu-1}\mathrm\Gamma(\nu)} (2\sqrt{\nu}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi) & t>0 \\
-	\tau^2 + \sigma^2 & t=0
-	\end{array}\right. \]
-	and variogram
-	\[ \gamma(t) = \left\{ \begin{array}{cl} 
-	\tau^2 + \sigma^2\left[ 1-\frac{(2\sqrt{\nu}t\phi)^\nu}{2^{\nu-1}\mathrm\Gamma(\nu)} K_\nu(2\sqrt{\nu}t\phi)\right] & t>0 \\
-	0 & \mbox{otherwise} 
-	\end{array} \right. \]
-	\pause where $\nu$ controls the smoothness of the spatial process while $\phi$ is a spatial scale parameter. \pause Special cases are the exponential ($\nu=1/2$) and Gaussian ($\nu\to\infty$).
-}
-
-\subsection{Variogram}
-\begin{frame}
-\frametitle{}
-<<>>=
-ff <- function(t,tau2=.2,sigma2=1,phi=1) {
-	(t==0)*0+
-	(t>0 & t<1/phi)*(tau2+sigma2*(3*phi*t/2-(phi*t)^3/2))+
-	(t>=1/phi)*(tau2+sigma2)
-}
-
-curve(ff,0.0001,2, ylim=c(0,1.2), xlab="t", ylab=expression(gamma(t)), main="Spherical variogram", lwd=2)
-points(0,0, pch=16)
-segments(1.0,0,1.0,0.2, col="red", lwd=2);     text(1.0,0.1,"nugget", col="red", pos=4, cex=1)
-segments(1.25,0.2,1.25,1.2, col="red", lwd=2); text(1.25,0.8,"partial sill", col="red", pos=2, cex=1)
-segments(1.5,0,1.5,1.2, col="red", lwd=2);     text(1.5,0.6,"sill", col="red", pos=4, cex=1)
-segments(0,.6,1,.6, col="red", lwd=2);         text(.5,.6,"range", col="red", pos=1, cex=1)
-@
-\end{frame}
 
 \subsection{Point-referenced data}
+% \frame{\frametitle{Spatial random effects}
+%   Consider collecting data at spatial location $s$, model this data as 
+% 	\[ Y(s) = \mu(s)+w(s)+\epsilon(s) \]
+% 	\pause where 
+% 	\begin{itemize}[<+->]
+% 	\item $\mu(s)=x(s)^\top\beta$ models the mean 
+% 	\item $w(s)$ is the spatial random effect
+% 	\item $\epsilon(s)$ is the pure error
+% 	\end{itemize}
+% }
+
+
+\begin{frame}
+\frametitle{Mat\'{e}rn}
+Perhaps the most important isotropic process is the Mat\'{e}rn process with covariance
+\[ C(t) = \left\{ \begin{array}{ll} 
+\frac{\sigma^2}{2^{\nu-1}\mathrm\Gamma(\nu)} (2\sqrt{\nu}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi) & t>0 \\
+\tau^2 + \sigma^2 & t=0
+\end{array}\right. \]
+and variogram
+\[ \gamma(t) = \left\{ \begin{array}{cl} 
+\tau^2 + \sigma^2\left[ 1-\frac{(2\sqrt{\nu}t\phi)^\nu}{2^{\nu-1}\mathrm\Gamma(\nu)} K_\nu(2\sqrt{\nu}t\phi)\right] & t>0 \\
+0 & \mbox{otherwise} 
+\end{array} \right. \]
+\pause where $\nu$ controls the smoothness of the spatial process while $\phi$ is a spatial scale parameter. \pause Special cases are the exponential ($\nu=1/2$) and Gaussian ($\nu\to\infty$).
+\end{frame}
+
+
+
+
 \frame{\frametitle{}
 	Consider point-referenced data at spatial locations $s_1,\ldots,s_n$, model this data as 
 	\[ Y(s) = \mu(s)+w(s)+\epsilon(s) \]
