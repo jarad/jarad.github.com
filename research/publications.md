@@ -6,20 +6,20 @@ group: navigation
 ---
 {% include JB/setup %}
 
- * Indicates my advisee
+ \* Indicates my advisee
 
 ## Submitted Articles
 
-1. Jarad Niemi, Eric Mittman*, Will Landau*, and Dan Nettleton ``Empirical Bayes analysis of RNA-seq data for detection of gene expression heterosis.''
-1. Matt Simpson*, Vivek Roy, and Jarad Niemi ``Interweving Markov chain Monte Carlo strategies fo refficient estimation of dynamic linear models.''
-1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.''
+1. Jarad Niemi, Eric Mittman\*, Will Landau\*, and Dan Nettleton ``Empirical Bayes analysis of RNA-seq data for detection of gene expression heterosis.'' accepted for publication in the Journal of Agricultural, Biological, and Environmental Statistcs
+1. Matt Simpson\*, Vivek Roy, and Jarad Niemi ``Interweving Markov chain Monte Carlo strategies fo refficient estimation of dynamic linear models.'' accepted for publication in the Journal of Computational and Graphical Statistics
+1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.'' *under revision*
 
 ## Refereed Journal Articles
 
 1. David M. Brenner, Jack Dekker, Jarad Niemi, and Lisa Pfiffner. (2016) ``Medical Oxygen Concentrators for Releasing Seed Dormancy.'' Crop Science 55:2291-2293 [pdf](papers/brenner2015medical.pdf)
 1. Robert B. Gramacy, Jarad Niemi, Robin Weiss. (2014) ``Massively parallel approximate Gaussian process regression.'' SIAM/ASA Journal on Uncertainty Quantification [arXiv](http://arxiv.org/abs/1310.5182)
-1. Daniel Sheinson*, Jarad Niemi, and Wendy Meiring. (2014) ``Estimation of a disease epidemic using particle filtering.'' Journal of Mathematical Biosciences
-1. Jonathan Dess, Jennifer L. Momsen, Jarad Niemi, Lisa Montplaisir. (2014) ``Student interpretations of phylogenetic trees in an introductory biology course.'' CBE - Life Sciences Education
+1. Daniel Sheinson\*, Jarad Niemi, and Wendy Meiring. (2014) ``Comparison of the performance of particle filter algorithms applied to tracking of a disease epidemic.'' Journal of Mathematical Biosciences [url](http://www.sciencedirect.com/science/article/pii/S0025556414001242)
+1. Jonathan Dess, Jennifer L. Momsen, Jarad Niemi, Lisa Montplaisir. (2014) ``Student interpretations of phylogenetic trees in an introductory biology course.'' CBE - Life Sciences Education [url](http://www.lifescied.org/content/13/4/666.short)
 1. Jo Eidsvik, Benjamin A. Shaby, Brian J. Reich, Matthew Wheeler*, and Jarad Niemi. (2013) ``Estimation and prediction in spatial models with block composite likelihoods.'' Journal of Computational and Graphical Statistics
 1. Bernie J Daigle Jr, Min K Roh, Linda R Petzold and Jarad Niemi. (2012) ``Accelerated maximum likelihood parameter estimation for stochastic biochemical systems.'' BMC Bioinformatics 13:68.
 1. David Banks, Gauri Datta, Alan Karr, James Lynch, Jarad Niemi, and Francisco Vera. (2012) ``Bayesian CAR models for syndromic surveillance on multiple data streams: theory and practice.'' Information Fusion: 13(2): 105--116.
