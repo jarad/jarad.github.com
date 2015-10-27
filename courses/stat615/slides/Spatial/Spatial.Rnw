@@ -400,7 +400,24 @@ For a Gaussian process, weak stationarity and strong stationarity are equivalent
 
 
 \subsection{Estimation}
+\begin{frame}
+\frametitle{Bayesian estimation of Gaussian process parameters}
 
+Suppose we observe data at some locations $s_1,\ldots,s_n$. \pause Collectively, we have $y=(y(s_1),\ldots,y(s_n))$. \pause Let's assume the data arise from a Gaussian process \pause and according to a particular covariance function\pause. Collectively refer to the parameters as $\theta$, then our objective is
+\[ 
+p(\theta|y) \propto p(y|\theta)p(\theta).
+\]
+
+\vspace{0.2in} \pause
+
+Suppose we assume the Mat\'{e}rn covariance function and a common mean $\mu$ so that $\theta = (\mu,\nu, \phi, \tau^2, \sigma^2)$. \pause Then we have 
+\[ 
+p(\mu,\nu,\phi,\tau^2,\sigma^2|y) \propto N(y;\mu,\mySigma)p(\mu,\nu, \phi, \tau^2, \sigma^2)
+\]
+\pause
+where $\mySigma$ is constructed from the parameters $\nu$, $\phi$, $\tau^2$, and $\sigma^2$ and the distances between locations, e.g. $||s_1-s_2||$. 
+
+\end{frame}
 
 
 
@@ -416,7 +433,7 @@ For a Gaussian process, weak stationarity and strong stationarity are equivalent
 	\pause The overall mean is modeled separately and uses covariates $x(s)$ via \[\mu(s)=x(s)^\top\beta.\] 
 }
 
-\frame{\frametitle{Estimation}
+\frame{\frametitle{Bayesian estimation for spatial random effects}
 	Let $\theta=(\beta,\sigma^2,\tau^2,\phi)$, then parameter estimates may be obtained from the posterior distribution:
 	\[ p(\theta|y) \propto p(y|\theta) p(\theta) \]
 	\pause where 
@@ -428,6 +445,9 @@ For a Gaussian process, weak stationarity and strong stationarity are equivalent
 	\[ p(\theta) = p(\beta)p(\sigma^2)p(\tau^2)p(\phi). \]
 	As a general rule, non-informative priors can be chosen for $\beta$, e.g. $p(\beta)\propto 1$. \pause However, improper (or vague proper) priors for the variance parameters can lead to improper (or computationally improper) posteriors.  
 }
+
+
+
 
 \frame{\frametitle{Spatial surface}
 	If interest resides in $w$, draws can be obtained using the following relationship
@@ -442,13 +462,46 @@ For a Gaussian process, weak stationarity and strong stationarity are equivalent
 	\end{enumerate}
 }
 
+
+
+
 \frame{\frametitle{Prediction}
 	For prediction at points $s_{01},\ldots,s_{0m}$ and denoting $Y_0=(Y(s_{01}),\ldots,Y(s_{0m}))^\top$ and design matrix $X_0$ having rows $x(s_{0j})^\top$, \pause the following relationship
 	\[ p(y_0|y,X,X_0) = \int p(y_0|y,\theta,X_0) p(\theta|y,X) d\theta \pause \approx \frac{1}{G} \sum_{g=1}^G p(y_0|y,\theta^{(g)},X_0). \]
 	\pause It is more common to take draws $y_0^{(g)} \sim p(y_0|y,\theta^{(g)},X_0)$ and estimate the predictive distribution using 
-	\[ p(y_0|y,X,X_0)  \approx \frac{1}{G}  \sum_{g=1}^G \delta_{y_0^{(g)}} \]
+	\[ p(y_0|y,,X_0)  \approx \frac{1}{G}  \sum_{g=1}^G \delta_{y_0^{(g)}} \]
 	\pause where $p(y_0|y,\theta,X_0)$ has a conditional normal distribution.
 }
+
+
+\begin{frame}
+\frametitle{Predictions are not conditionally independent}
+
+Consider the joint distribution for $y$ and $y_0=y(s_0)$ (a scalar for simplicity), \pause then
+\[ 
+\left(\begin{array}{c} y \\ y_0 \end{array}\right) \sim N\left(\left[\begin{array}{c}X\beta \\ X_0\beta \end{array}\right],
+\left[ \begin{array}{cc} \Omega_{11} & \Omega_{12} \\ \Omega_{21} & \Omega_{22} \end{array} \right]\right)
+\]
+\pause
+where 
+\[ \begin{array}{rl}
+\Omega_{11} &= \sigma^2 H(\phi) + \tau^2 \I \\
+\Omega_{22} &= \sigma^2 + \tau^2 \\
+\Omega_{12}^\top &= \sigma^2(\rho(d_{01};\phi), \ldots, \rho(d_{0n};\phi))
+\end{array} \]
+and $d_{ij}=||s_i-s_j||$.
+
+\vspace{0.2in} \pause
+
+Thus $y_0|y,\theta,X,X_0$ is normal with 
+\[ \begin{array}{rl}
+E[Y(s_0)|y,\theta,X,X_0] &= x_0^\top \beta + \Omega_{12}^\top\Omega_{22}^{-1}(y-X\beta) \\
+V[Y(s_0)|y,\theta,X,X_0] &= \sigma^2+\tau^2 - \Omega_{12}^\top\Omega_{22}^{-1}\Omega_{12}
+\end{array} \]
+\end{frame}
+
+
+
 
 
 \begin{comment}
