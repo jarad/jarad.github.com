@@ -231,7 +231,7 @@ Thus, if the process is ergodic, an intrinsicly stationary process is also weakl
 \frametitle{Covariance functions for isotropic models}
 \tiny
 \begin{tabular}{lll}
-Model & Covariance function, $C(t)$ & Variogram, $\gamma(t)$ \\
+Model & Covariance function, $C(t)$ & Semivariogram, $\gamma(t)$ \\
 \hline
 Linear & 
 $C(t)$ does not exist & 
@@ -316,7 +316,7 @@ $\gamma(t) = \left\{ \begin{array}{ll}
 
 
 \begin{frame}
-\frametitle{Variogram}
+\frametitle{Spherical semivariogram}
 <<>>=
 ff <- function(t,tau2=.2,sigma2=1,phi=1) {
   (t==0)*0+
@@ -324,14 +324,37 @@ ff <- function(t,tau2=.2,sigma2=1,phi=1) {
 	(t>=1/phi)*(tau2+sigma2)
 }
 
-curve(ff,0.0001,2, ylim=c(0,1.2), xlab="t", ylab=expression(gamma(t)), main="Spherical variogram", lwd=2)
+curve(ff,0.0001,2, ylim=c(0,1.2), xlab="t", ylab=expression(gamma(t)), main="Spherical semivariogram", lwd=2)
 points(0,0, pch=16)
-segments(1.0,0,1.0,0.2, col="red", lwd=2);     text(1.0,0.1,"nugget", col="red", pos=4, cex=1)
-segments(1.25,0.2,1.25,1.2, col="red", lwd=2); text(1.25,0.8,"partial sill", col="red", pos=2, cex=1)
-segments(1.5,0,1.5,1.2, col="red", lwd=2);     text(1.5,0.6,"sill", col="red", pos=4, cex=1)
-segments(0,.6,1,.6, col="red", lwd=2);         text(.5,.6,"range", col="red", pos=1, cex=1)
+segments(1.0,0,1.0,0.2, col="red", lwd=2);     text(1.0,0.1,expression(paste("nugget (",tau^2,")")), col="red", pos=4, cex=1)
+segments(1.25,0.2,1.25,1.2, col="red", lwd=2); text(1.25,0.8,expression(paste("partial sill (",sigma^2,")")), col="red", pos=2, cex=1)
+segments(1.5,0,1.5,1.2, col="red", lwd=2);     text(1.5,0.6,expression(paste("sill (",tau^2+sigma^2,")")), col="red", pos=4, cex=1)
+segments(0,.6,1,.6, col="red", lwd=2);         text(.5,.6,expression(paste("range (",1/phi,")")), col="red", pos=1, cex=1)
 @
 \end{frame}
+
+
+
+\begin{frame}
+\frametitle{Mat\'{e}rn}
+Perhaps the most important isotropic process is the Mat\'{e}rn process with covariance
+\[ C(t) = \left\{ \begin{array}{ll} 
+\frac{\sigma^2}{2^{\nu-1}\mathrm\Gamma(\nu)} (2\sqrt{\nu}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi) & t>0 \\
+\tau^2 + \sigma^2 & t=0
+\end{array}\right. \]
+and variogram
+\[ \gamma(t) = \left\{ \begin{array}{cl} 
+\tau^2 + \sigma^2\left[ 1-\frac{(2\sqrt{\nu}t\phi)^\nu}{2^{\nu-1}\mathrm\Gamma(\nu)} K_\nu(2\sqrt{\nu}t\phi)\right] & t>0 \\
+0 & \mbox{otherwise} 
+\end{array} \right. \]
+\pause where 
+\begin{itemize}
+\item $\nu$ controls the smoothness of the spatial process ($\lfloor \nu \rfloor$ number of times process realizations are mean square differentiable) while 
+\item $\phi$ is a spatial scale parameter. 
+\end{itemize}
+\pause Special cases are the exponential ($\nu=1/2$) and Gaussian ($\nu\to\infty$).
+\end{frame}
+
 
 
 
@@ -376,55 +399,8 @@ For a Gaussian process, weak stationarity and strong stationarity are equivalent
 
 
 
-
-
 \subsection{Estimation}
-\begin{frame}
-\frametitle{}
-<<>>=
-opar = par(mar=rep(0,4), mfrow=c(1,2))
-image(x,y,z, axes=F)
 
-n <- 1000
-x2 <- sample(d,n,replace=T)
-y2 <- sample(d,n,replace=T)
-z2 <- z*NA
-for (i in 1:n) z2[x2[i],y2[i]] <- z[x2[i],y2[i]]+rnorm(1)
-par(mar=rep(0,4))
-image(x,y,z2,axes=F)
-par(opar)
-@
-\end{frame}
-
-
-
-\subsection{Point-referenced data}
-% \frame{\frametitle{Spatial random effects}
-%   Consider collecting data at spatial location $s$, model this data as 
-% 	\[ Y(s) = \mu(s)+w(s)+\epsilon(s) \]
-% 	\pause where 
-% 	\begin{itemize}[<+->]
-% 	\item $\mu(s)=x(s)^\top\beta$ models the mean 
-% 	\item $w(s)$ is the spatial random effect
-% 	\item $\epsilon(s)$ is the pure error
-% 	\end{itemize}
-% }
-
-
-\begin{frame}
-\frametitle{Mat\'{e}rn}
-Perhaps the most important isotropic process is the Mat\'{e}rn process with covariance
-\[ C(t) = \left\{ \begin{array}{ll} 
-\frac{\sigma^2}{2^{\nu-1}\mathrm\Gamma(\nu)} (2\sqrt{\nu}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi) & t>0 \\
-\tau^2 + \sigma^2 & t=0
-\end{array}\right. \]
-and variogram
-\[ \gamma(t) = \left\{ \begin{array}{cl} 
-\tau^2 + \sigma^2\left[ 1-\frac{(2\sqrt{\nu}t\phi)^\nu}{2^{\nu-1}\mathrm\Gamma(\nu)} K_\nu(2\sqrt{\nu}t\phi)\right] & t>0 \\
-0 & \mbox{otherwise} 
-\end{array} \right. \]
-\pause where $\nu$ controls the smoothness of the spatial process while $\phi$ is a spatial scale parameter. \pause Special cases are the exponential ($\nu=1/2$) and Gaussian ($\nu\to\infty$).
-\end{frame}
 
 
 
