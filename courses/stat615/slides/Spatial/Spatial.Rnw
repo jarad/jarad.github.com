@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \usepackage{verbatim}
 
@@ -447,6 +447,113 @@ where $\mySigma$ is constructed from the parameters $\nu$, $\phi$, $\tau^2$, and
 }
 
 
+
+\subsection{Example}
+\begin{frame}[fragile]
+\frametitle{Diameter at breast height (DBH) for an experimental forest}
+<<'DBH_data'>>=
+library(spBayes)
+
+## Load a dataset from spBayes. Remove rows with missing values
+data(WEF.dat)
+d <- WEF.dat[!apply(WEF.dat[,c("East_m","North_m", "DBH_cm","Tree_height_m","ELEV_m")], 1, function(x)any(is.na(x))),]
+
+# Best guess at common name based on species code
+d$Species = revalue(d$Species, c(DF = 'Douglas Fir', GF = 'Grand Fir', NF = 'Noble Fir', SF = 'Silver Fir', WH = 'Western Hemlock'))
+
+g = ggplot(d, aes(East_m, North_m, size=DBH_cm)) + theme_bw()
+g + geom_point(alpha=I(0.5))
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}
+<<DBH_interval, dependson='WEF.dat'>>=
+g + geom_point(alpha=I(0.5)) + 
+  facet_wrap(~Species) 
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpolation of DBH (ignoring species)}
+<<DBH_interpolation, message=FALSE>>=
+## Load the MBA and fields libraries for creating surface interpolation plots
+library(MBA)
+library(fields) ## For using the image.plot function
+x.res <- 100
+y.res <- 100
+
+col.br <- colorRampPalette(c("blue", "cyan", "yellow", "red"))
+col.pal <- col.br(5)
+
+surf <- mba.surf(d[c('East_m','North_m','DBH_cm')], no.X = x.res, no.Y = y.res, h = 5, m = 2, extend = FALSE)$xyz.est
+image.plot(surf, xaxs = "r", yaxs = "r", xlab = "Easting (m)", ylab = "Northing (m)", col = col.br(25))
+contour(surf, add=T) ## (Optional) Adds contour lines to the plot
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{OLS fit}
+<<DBH_OLS>>=
+## Load geoR library for computing variograms
+library(geoR)
+coords = d[c('North_m','East_m')]
+max.dist <- 0.25 * max(iDist(coords))
+bins <- 50
+
+vario.DBH <- variog(coords = coords, data = d$DBH_cm, uvec = (seq(0, max.dist, length = bins)))
+fit.DBH <- variofit(vario.DBH, ini.cov.pars = c(600,200/-log(0.05)), cov.model = "exponential", minimisation.function = "nls", weights = "equal")
+
+## Run an OLS regression and make variograms from the residuals.
+lm.DBH <- lm(DBH_cm ~ Species, data = d)
+summary(lm.DBH)
+DBH.resid <- resid(lm.DBH)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Variogram (exponential model)}
+<<DBH_variogram, dependson='DBH_OLS', message=FALSE>>=
+vario.DBH.resid <- variog(coords = coords, data = DBH.resid, uvec = (seq(0, max.dist, length = bins)), messages=FALSE)
+fit.DBH.resid <- variofit(vario.DBH.resid, ini.cov.pars = c(300, 200/-log(0.05)), cov.model = "exponential", minimisation.function = "nls", weights = "equal", messages=FALSE)
+
+opar = par(mfrow = c(1, 2))
+plot(vario.DBH, ylim = c(200, 1200), main = "DBH")
+lines(fit.DBH)
+abline(h = fit.DBH$nugget, col = "blue")
+abline(h = fit.DBH$cov.pars[1] + fit.DBH$nugget, col = "green")
+abline(v = -log(0.05) * fit.DBH$cov.pars[2], col = "red3")
+plot(vario.DBH.resid, ylim = c(200, 500), main = "DBH residuals")
+lines(fit.DBH.resid)
+abline(h = fit.DBH.resid$nugget, col = "blue")
+abline(h = fit.DBH.resid$cov.pars[1] + fit.DBH.resid$nugget, col = "green")
+abline(v = -log(0.05) * fit.DBH.resid$cov.pars[2], col = "red3")
+par(opar)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Isotropy?}
+<<DBH_directional_variograms>>=
+### Illustrate variograms using the gstat package
+library(gstat)
+ELEV_m <- WEF.dat$ELEV_m
+sp.dat <- as.data.frame(cbind(DBH, HT, coords, ELEV_m))
+coordinates(sp.dat) <- c("East_m", "North_m")
+vario.DBH <- variogram(DBH ~ ELEV_m, data = sp.dat,cutoff = max.dist, width = 5, alpha = (0:3) * 45)
+fit.DBH <- fit.variogram(vario.DBH, vgm(1000, "Exp", 200/-log(0.05), 600))
+print(plot(vario.DBH, fit.DBH))
+@
+\end{frame}
 
 
 \frame{\frametitle{Spatial surface}
