@@ -1030,7 +1030,7 @@ title(main="MN Lung Cancer SMR", cex.main=2)
 
 \section{Example}
 \begin{frame}[fragile]
-<<echo=TRUE>>=
+<<CARBayes>>=
 library(CARBayes)
 
 
@@ -1062,29 +1062,41 @@ phi <- mvrnorm(n=1, mu=rep(0,n), Sigma=0.4 * exp(-0.1 * distance))
 fitted <- -0.2 +  0.1 * x1 + 1*x2 + theta + phi
 Y <- rnorm(n=n, mean=fitted, sd=rep(.1,n))
 
-par(mfrow=c(2,2))
+opar = par(mfrow=c(1,2))
 image(x.easting, x.northing, matrix(Y,10,10), main="data")
 image(x.easting, x.northing, matrix(phi,10,10), main="random effect")
-
-#### Run the proper model
-#### Let the function randomly generate starting values for the parameters
-#### Use the default priors specified by the function (for details see the help files)
-formula <- Y ~ x1 + x2
-
-model_proper <- gaussian.properCAR(formula=formula, W=W, burnin=5000, n.sample=10000)
-
-dim(model_proper$samples.phi)
-phi_mean = aaply(model_proper$samples.phi,2, mean)
-phi_sd   = aaply(model_proper$samples.phi,2, sd)
-
-par(mfrow=c(2,2))
-image(x.easting, x.northing, matrix(Y,10,10), main="data")
-image(x.easting, x.northing, matrix(phi,10,10), main="random effect")
-image(x.easting, x.northing, matrix(phi_mean,10,10), main="E[random effect]")
-image(x.easting, x.northing, matrix(phi_sd,10,10), main="sd(random effect)")
+par(opar)
+@
+\end{frame}
 
 
-model_iar    <- gaussian.iarCAR(formula=formula, W=W, burnin=5000, n.sample=10000)
+% \begin{frame}
+% <<CARBayes2, dependson='CARBayes'>>=
+% #### Run the proper model
+% #### Let the function randomly generate starting values for the parameters
+% #### Use the default priors specified by the function (for details see the help files)
+% formula <- Y ~ x1 + x2
+% 
+% model_proper <- gaussian.properCAR(formula=formula, W=W, burnin=5000, n.sample=10000)
+% 
+% dim(model_proper$samples.phi)
+% phi_mean = aaply(model_proper$samples.phi,2, mean)
+% phi_sd   = aaply(model_proper$samples.phi,2, sd)
+% 
+% par(mfrow=c(2,2))
+% image(x.easting, x.northing, matrix(Y,10,10), main="data")
+% image(x.easting, x.northing, matrix(phi,10,10), main="random effect")
+% image(x.easting, x.northing, matrix(phi_mean,10,10), main="E[random effect]")
+% image(x.easting, x.northing, matrix(phi_sd,10,10), main="sd(random effect)")
+% @
+% \end{frame}
+
+
+
+\begin{frame}[fragile]
+<<CARBayes3, dependson='CARBayes', echo=TRUE>>=
+model_iar    <- S.CARiar(formula=Y ~ x1 + x2, family='gaussian', W=W, burnin=5000, n.sample=10000, verbose=FALSE)
+model_iar
 @
 \end{frame}
 
