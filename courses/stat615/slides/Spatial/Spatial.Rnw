@@ -31,9 +31,7 @@
 %\section{Temp??} \begin{comment}
 
 
-<<options, results='hide', echo=FALSE>>=
-# These are only needed for the slides
-# No need to run if you are just running the R code
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(fig.width=7, 
                fig.height=5, 
                out.width='.8\\linewidth', 
@@ -549,22 +547,23 @@ par(opar)
 \end{frame}
 
 
-% \begin{frame}[fragile]
-% \frametitle{Isotropy?}
-% <<DBH_directional_variograms, dependson='DBH_data'>>=
-% ### Illustrate variograms using the gstat package
-% library(sp)
-% library(gstat)
-% vario.DBH <- variogram(DBH_cm ~ Species, 
-%                        data = d,
-%                        locations = coords,
-%                        cutoff = max.dist, 
-%                        width = 5, 
-%                        alpha = (0:3) * 45)
-% # fit.DBH <- fit.variogram(vario.DBH, vgm(1000, "Exp", 200/-log(0.05), 600))
-% # print(plot(vario.DBH, fit.DBH))
-% @
-% \end{frame}
+\begin{frame}[fragile]
+\frametitle{Isotropy?}
+<<DBH_directional_variograms, dependson='DBH_data'>>=
+### Illustrate variograms using the gstat package
+library(sp)
+library(gstat)
+dd = d
+coordinates(dd) = coords
+vario.DBH <- variogram(DBH_cm ~ Species, 
+                       data = dd,
+                       cutoff = max.dist, 
+                       width = 5, 
+                       alpha = (0:3) * 45)
+fit.DBH <- fit.variogram(vario.DBH, vgm(1000, "Exp", 200/-log(0.05), 600))
+print(plot(vario.DBH, fit.DBH))
+@
+\end{frame}
 
 
 
@@ -1028,7 +1027,7 @@ title(main="MN Lung Cancer SMR", cex.main=2)
 }
 
 
-\section{Example}
+\subsection{Example}
 \begin{frame}[fragile]
 <<CARBayes>>=
 library(CARBayes)
