@@ -13,7 +13,8 @@ Other advanced textbooks are linked below and [some introductory textbooks are h
 
 Hierarchical Modeling:
 
-<a href="http://www.amazon.com/gp/product/052168689X/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=052168689X&linkCode=as2&tag=jarnieassprod-20&linkId=3YD6BUS7X6A3F3PK"><img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=052168689X&Format=_SL110_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=jarnieassprod-20" ></a><img src="http://ir-na.amazon-adsystem.com/e/ir?t=jarnieassprod-20&l=as2&o=1&a=052168689X" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+<a rel="nofollow" href="http://www.amazon.com/gp/product/1439819173/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=1439819173&linkCode=as2&tag=jarnieassprod-20&linkId=GSHCACNR66N45RKN"><img border="0" src="http://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=1439819173&Format=_SL110_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=jarnieassprod-20" ></a><img src="http://ir-na.amazon-adsystem.com/e/ir?t=jarnieassprod-20&l=as2&o=1&a=1439819173" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+
 
 
 Time series:
