@@ -36,7 +36,8 @@ The main goal with these tips are to simplify the raw data creation process in o
 
 - Provide a descriptive file name
 
-    The file name should provide details of the place, time, and theme of the data contained within. 
+    The file name should provide details of the place, time, and theme of the data contained within.
+    File names should not have any spaces.
 
 
 
@@ -45,11 +46,13 @@ The main goal with these tips are to simplify the raw data creation process in o
 
 - Write each piece of information only once
 
-    For example, you run an experiment at a bunch of sites that are visited repeatedly and each site has a set of explanatory variables that may be important. You should have one and only one place where all of this information is stored. 
+    For example, you run an experiment at a bunch of sites that are visited repeatedly. 
+    The treatment assignment should only be recorded once. 
 
-    Many times I receive data where this information has been cut-and-pasted to many spreadsheets. Instead you should use a script to combine the site information
+    Many times I receive data where this information has been cut-and-pasted to many spreadsheets. 
+    Instead you should use a script to combine the site treatment assignment with recorded data at each visit.
 
-- Include a header row that describes the variables in the first line
+- Include a single header row that describes the content in that column
 
     Use informative variable names as the first row in the data file. 
     Multiple files with similar content should have the **exact** same header rows. 
@@ -57,7 +60,7 @@ The main goal with these tips are to simplify the raw data creation process in o
 - Provide an identification to the original non-digital data
 
     In the raw data, you should have an identification that allows you to go back and check the original non-digital data. 
-    For example, you might have a column in the raw data that references the lab notebook number. 
+    For example, you might have a column in the raw data that references the lab notebook number or, perhaps, the filename refers to the original data.
     Including the identification allows you to go back and check the original source to verify that the raw data are correct. 
 
 - Use plain ASCII text
