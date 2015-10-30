@@ -39,6 +39,8 @@ The main goal with these tips are to simplify the raw data creation process in o
     The file name should provide details of the place, time, and theme of the data contained within. 
 
 
+
+
 ## Tips in preparing the raw data
 
 - Write each piece of information only once
@@ -50,10 +52,13 @@ The main goal with these tips are to simplify the raw data creation process in o
 - Include a header row that describes the variables in the first line
 
     Use informative variable names as the first row in the data file. 
+    Multiple files with similar content should have the **exact** same header rows. 
 
 - Provide an identification to the original non-digital data
 
-    In the raw data, you should have an identification that allows you to go back and check the original non-digital data. For example, you might have a column in the raw data that references the lab notebook number. Including the identification allows you to go back and check the original source to verify that the raw data are correct. 
+    In the raw data, you should have an identification that allows you to go back and check the original non-digital data. 
+    For example, you might have a column in the raw data that references the lab notebook number. 
+    Including the identification allows you to go back and check the original source to verify that the raw data are correct. 
 
 - Use plain ASCII text
 
