@@ -1,0 +1,173 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,animate}
+
+\graphicspath{{figs/}}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Slice sampling}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE,
+               cache=TRUE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+
+ \section{Slice sampling}
+\begin{frame}
+\frametitle{Slice sampling}
+Suppose the target distribution is $p(\theta|y)$ with scalar $\theta$. \pause Then,
+\[ p(\theta|y) = \int_0^{p(\theta|y)} du \]
+\pause Thus, $p(\theta|y)$ can be thought of as the marginal distribution of 
+\[ (\theta,U) \sim \mbox{Unif}\{(\theta,u):0<u<p(\theta|y)\} \]
+where $u$ is an \alert{auxiliary variable}.
+
+\vspace{0.2in} \pause 
+
+\alert{Slice sampling} performs the following Gibbs sampler: \pause 
+\begin{enumerate}
+\item $u^t|\theta^{t-1},y \sim \mbox{Unif}\{u:0<u<p(\theta^{t-1}|y)\}$ \pause and
+\item $\theta^t|u^t,y \sim \mbox{Unif}\{\theta: u^t<p(\theta|y) \}$.
+\end{enumerate}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Slice sampler for exponential distribution}
+Consider the target $\theta|y \sim Exp(1)$,\pause  then 
+\[ \{\theta: u<p(\theta|y) \} = (0,-\log(u)). \]
+
+\pause 
+
+<<uniform_region, fig.width=10, fig.height=4>>=
+u = 0.5; x = -log(u)
+curve(dexp, 0, 1.5, ylab="u", xlab=expression(theta), main="Target disribution", ylim=c(0,1))
+curve(dexp, 0, x, add=TRUE, lwd=3, col="red")
+segments(0,u,x,u,col="gray")
+segments(x,0,x,u,col="gray")
+segments(0,0,x,0,lwd=3, col="red")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Slice sampling in R}
+<<slice_sampler, echo=TRUE>>=
+# Slice sampler 
+slice = function(n,init_theta,target,A) {
+  u = theta = rep(NA,n)
+  theta[1] = init_theta
+  u[1] = runif(1,0,target(theta[1])) # This never actually gets used
+
+  for (i in 2:n) {
+    u[i] = runif(1,0,target(theta[i-1]))
+    endpoints = A(u[i],theta[i-1]) # The second argument is used in the second example
+    theta[i] = runif(1, endpoints[1],endpoints[2])
+  }
+  return(list(theta=theta,u=u))
+}
+# Exponential example
+set.seed(6)
+A = function(u,theta=NA) c(0,-log(u))
+res = slice(10, 0.1, dexp, A)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{}
+<<slice_sampling_plot, fig.show='animate', warning=FALSE, echo=FALSE>>=
+slice_sampling_animation = function(theta, u, ask=interactive()) {
+  x = cbind(theta,u)
+  for (i in 2:nrow(x)) {
+    jj = (2:i)[-(i-1)] # vector from 2:(i-1) and NULL if i=2
+    for (j in 1:6) {
+      plot.new()
+      
+      # All previous plotting
+      curve(dexp, 0, 3, xlab=expression(theta), ylab="u", main="Slice sampling an Exp(1) distribution")
+      segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
+      segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
+      points(x[(1:(i-1)),1], x[(1:(i-1)),2], col="red", pch=19)
+      
+      # New plotting
+      if (j>1 & j<4) abline(v=x[i-1,1], lty=2)
+      if (j>2) arrows(x[i-1,1], x[i-1,2], x[i-1,1], x[i,2], length=0.1)
+      if (j>3 & j<6) abline(h=x[i,2], lty=2)
+      if (j>4) arrows(x[i-1,1], x[i,2], x[i,1], x[i,2], length=0.1)
+      if (j>5) points(x[i,1], x[i,2], col="red", pch=19)
+      
+      if (ask) readline("hit <enter>:")
+    }
+  }
+  
+  # Final plot
+  jj=2:nrow(x)
+  curve(dexp, 0, 3, xlab=expression(theta), ylab="u", 
+        main="Slice sampling an Exp(1) distribution")
+  segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
+  segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
+  points(x[,1], x[,2], col="red", pch=19)
+}
+with(res, slice_sampling_animation(theta,u))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<slice_sampling_histogram>>=
+hist(slice(1e4, 0.1, dexp, A)$theta, freq=F, 100, main="Slice sampling approximation to Exp(1) distribution", xlab=expression(theta))
+curve(dexp, add=TRUE, col='red')
+@
+\end{frame}
+
+\end{document}
+
