@@ -284,7 +284,7 @@ for some bounds $\theta_L(u)$ and $\theta_U(u)$ which depend on $u$.
 One way to learn these is to sample from $p(\theta)$ and update the bounds\pause, e.g. if $\theta^{(i-1)}$ is our current value in the chain, we know $u<p(y|\theta^{(i-1)})$ or, equivalently, $\theta_L(u) < \theta^{(i-1)} < \theta_U(u)$. \pause Letting $u^{(i)}$ be the current value for the auxiliary variable and setting $\theta_L(u^{(i)})$ [$\theta_U(u^{(i)})$] to the lower [upper] bound of the support for $\theta$, we can 
 \begin{enumerate}[<+->]
 \item Sample $\theta^* \sim p(\theta)\I(\theta_L(u^{(i)}) < \theta < \theta_U(u^{(i)}))$.
-\item Set  $\theta^{(i)} = \theta^*$ if $\I(u^{(i)}<p(y|\theta^*))$, otherwise 
+\item Set  $\theta^{(i)} = \theta^*$ if $u^{(i)}<p(y|\theta^*)$, otherwise 
   \begin{enumerate}
   \item set $\theta_L(u^{(i)}) = \theta^*$ if $\theta^* <  \theta^{(i-1)}$ or
   \item set $\theta_U(u^{(i)}) = \theta^*$ if $\theta^* > \theta^{(i-1)}$ and
@@ -363,6 +363,358 @@ curve(f(x)/i$value,
       col='red')
 @
 \end{frame}
+
+
+
+\subsection{Stepping-out slice sampling}
+\begin{frame}
+\frametitle{Bimodal target distributions}
+
+Consider the posterior 
+\[ 
+p(\theta|y) = \frac{1}{2} N(\theta;-2,1) + \frac{1}{2} N(\theta;2,1) 
+\]
+\pause
+
+<<bimodal_target, fig.width=10>>=
+lim = 5
+target = function(x) dnorm(x, -2)/2 + dnorm(x, 2)/2
+curve(target,-lim,lim)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Stepping-out slice sampler}
+
+To sample from $\theta|u,y$, let 
+\begin{itemize}[<+->]
+\item $\theta^{(i-1)}$ be the current draw for $\theta$
+\item $u^{(1)}$ be the current draw for the auxiliary variable $u$
+\item $w$ be a tuning parameter that you choose
+\end{itemize}
+Perform the following
+\begin{enumerate}
+\item Randomly place an interval $(\theta_L(u^{(i)}),\theta_U(u^{(i)}))$ of length $w$ around the current value $\theta^{(i-1)}$.
+\item Step the endpoints of this interval out in increments of $w$ until $u^{(i)}>p(\theta_L(u^{(i)})|y)$ and $u^{(i)}>p(\theta_B(u^{(i)})|y)$.
+\item Sample $\theta^* \sim Unif(\theta_L(u^{(i)}),\theta_L(u^{(i)}))$.
+\item If $u^{(i)}<p(\theta^*|y)$, then set $\theta^{(i)} = \theta^*$, otherwise
+  \begin{enumerate}
+  \item set $\theta_L(u^{(i)}) = \theta^*$ if $\theta^* <  \theta^{(i-1)}$ or
+  \item set $\theta_U(u^{(i)}) = \theta^*$ if $\theta^* > \theta^{(i-1)}$ and
+  \item return to Step 3.
+  \end{enumerate}
+\end{enumerate}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{}
+<<stepping_out_examples, dependson='bimodal_target'>>=
+step_out_plot = function(theta, u, w, lim.=lim) {
+  curve(target, -lim., lim., axes=F, frame=TRUE, xlab='', ylab='')
+  points(theta, u, col='red', pch=19)
+  abline(h=u, lty=3, col='gray')
+  
+  # Left endpoint
+  L = theta - runif(1,0,.5)
+  points(L,u)
+  while(u<target(L)) points(L <- L-w, u)
+  points(L,u, pch=8)
+  
+  # Right endpoint
+  R = L + w
+  points(R,u)
+  while(u<target(R)) points(R <- R+w, u)
+  points(R,u, pch=8)
+  
+  legend('topleft', c('Current', 'Endpoints'), pch=c(19,8), col=c('red','black'))
+}
+
+
+opar = par(mfrow=c(2,1), mar=rep(0.1,4))
+w = 1
+step_out_plot(2,.15,w)
+step_out_plot(2,.05,w)
+par(opar)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<create_interval, echo=TRUE>>=
+create_interval = function(theta, u, target, w, max_steps) {
+  L = theta - runif(1,0,w)
+  R = L + w
+  
+  # Step out
+  J = floor(max_steps * runif(1))
+  K = (max_steps - 1) - J
+  while ((u < target(L)) & J > 0) {
+    L = L - w
+    J = J - 1
+  }
+  while ((u < target(R)) & K > 0) {
+    R = R + w
+    K = K - 1
+  }
+  
+  return(list(L=L,R=R))
+}
+
+shrink_and_sample = function(theta, u, target, int) {
+  L = int$L; R = int$R
+  
+  repeat {
+    theta_prop = runif(1, L, R)
+    if (u < target(theta_prop)) 
+      return(theta_prop)
+    
+    # shrink
+    if (theta_prop > theta) 
+      R = theta_prop
+    if (theta_prop < theta) 
+      L = theta_prop
+  }
+}
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<stepping_out_slice, dependson='create_interval', echo=TRUE>>=
+slice = function(n, init_theta, target, w, max_steps) {
+  u = theta = rep(NA, n)
+  theta[1] = init_theta
+  
+  for (i in 2:n) {
+    u[i] = runif(1, 0, target(theta[i - 1]))
+    theta[i] = shrink_and_sample(theta = theta[i-1],
+                            u = u[i], 
+                            target = target, 
+                            int = create_interval(theta = theta[i-1], 
+                                                  u = u[i], 
+                                                  target = target, 
+                                                  w = w,
+                                                  max_steps = max_steps))
+  }
+  return(data.frame(theta = theta, u = u))
+}
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Sampling from mixture of normals}
+<<mixture_of_normals_stepping_out, dependson=c('stepping_out_slice','bimodal_target'), echo=TRUE>>=
+res = slice(n = 1e4, init_theta=0, target=target, w=1, max_steps=10)
+@
+
+<<stepping_out_histogram, dependson='mixture_of_normals_stepping_out'>>=
+hist(res$theta, breaks = 101, prob=TRUE, main='Stepping out slice sampler for bimodal target', xlab=expression(theta), ylab='target')
+curve(target, add=TRUE, col='red')
+@
+\end{frame}
+
+
+
+\subsection{Doubling slice sampler}
+\begin{frame}
+\frametitle{Doubling slice sampler}
+
+To sample from $\theta|u,y$, let 
+\begin{itemize}[<+->]
+\item $\theta^{(i-1)}$ be the current draw for $\theta$
+\item $u^{(1)}$ be the current draw for the auxiliary variable $u$
+\item $w$ be a tuning parameter that you choose
+\end{itemize}
+Perform the following
+\begin{enumerate}
+\item Randomly place an interval $(\theta_L(u^{(i)}),\theta_U(u^{(i)}))$ of length $w$ around the current value $\theta^{(i-1)}$.
+\item Randomly double the size of the interval to either the left or right until $u^{(i)}>p(\theta_L(u^{(i)})|y)$ and $u^{(i)}>p(\theta_B(u^{(i)})|y)$.
+\item Sample $\theta^* \sim Unif(\theta_L(u^{(i)}),\theta_L(u^{(i)}))$.
+\item If $u^{(i)}<p(\theta^*|y)$ and a \alert{reversibility criterion} is satisfied, then set $\theta^{(i)} = \theta^*$, otherwise
+  \begin{enumerate}
+  \item set $\theta_L(u^{(i)}) = \theta^*$ if $\theta^* <  \theta^{(i-1)}$ or
+  \item set $\theta_U(u^{(i)}) = \theta^*$ if $\theta^* > \theta^{(i-1)}$ and
+  \item return to Step 3.
+  \end{enumerate}
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{}
+<<doubling_out_examples, dependson='bimodal_target'>>=
+doubling_out_plot = function(theta, u, w, lim.=lim) {
+  curve(target, -lim., lim., axes=F, frame=TRUE, xlab='', ylab='')
+  points(theta, u, col='red', pch=19)
+  abline(h=u, lty=3, col='gray')
+  
+  # Left endpoint
+  L = theta - runif(1,0,.5)
+  R = L + w
+  points(L,u)
+  points(R,u)
+  
+  # doubling
+  while(u<target(L) | u<target(R)) {
+    if (runif(1)<.5) {
+      L = L - (R-L)
+      points(L,u)
+    } else {
+      R = R + (R-L)
+      points(R,u)
+    }
+    
+  }
+  
+  points(L,u, pch=8)
+  points(R,u, pch=8)
+  
+  legend('topleft', c('Current', 'Endpoints'), pch=c(19,8), col=c('red','black'))
+}
+
+
+opar = par(mfrow=c(2,1), mar=rep(0.1,4))
+w = 1
+lim = 10
+doubling_out_plot(2,.15,w,lim)
+doubling_out_plot(2,.05,w,lim)
+par(opar)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Reversibility criterion}
+\begin{quote}
+This procedure works backward through the intervals that the doubling procedure would pass through to arrive at [the doubled interval] when starting from the new point, checking that none of [the intermediate intervals] has both ends outside the slice, which would lead to earlier termination of the doubling procedure.
+\end{quote}
+
+<<accept, echo=TRUE>>=
+accept = function(theta0, theta1, L, R, u, w) {
+    D = FALSE
+    while (R - L > 1.1 * w) {
+        M = (L + R)/2
+        if ((theta0 < M & theta1 >= M) | (theta0 >= M & theta1 < M)) 
+            D = TRUE
+        if (theta1 < M) {
+            R = M
+        } else {
+            L = M
+        }
+        if (D & u >= target(L) & u >= target(R)) {
+            return(FALSE)
+        }
+    }
+    return(TRUE)
+}
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<doubling_slice_sampler, dependson='accept', echo=TRUE>>=
+slice = function(n, init_theta, target, w, max_doubling) {
+    u = theta = rep(NA, n)
+    theta[1] = init_theta
+    
+    for (i in 2:n) {
+        u[i] = runif(1, 0, target(theta[i - 1]))
+        L = theta[i - 1] - runif(1, 0, w)
+        R = L + w
+        
+        # Step out
+        K = max_doubling
+        while ((u[i] < target(L) | u[i] < target(R)) & K > 0) {
+            if (runif(1) < 0.5) {
+                L = L - (R - L)
+            } else {
+                R = R + (R - L)
+            }
+            K = K - 1
+        }
+        
+        # Sample and shrink
+        repeat {
+            theta[i] = runif(1, L, R)
+            if (u[i] < target(theta[i]) & accept(theta[i - 1], theta[i], L, R, u[i], w)) 
+                break
+            
+            # shrink
+            if (theta[i] > theta[i - 1]) 
+                R = theta[i]
+            if (theta[i] < theta[i - 1]) 
+                L = theta[i]
+        }
+    }
+    return(list(theta = theta, u = u))
+}
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Doubling slice sampler for bimodal target}
+<<doubling_slice_sampler_bimodal_target, dependson=c('bimodal_target','doubling_slice_sampler'), echo=TRUE>>=
+res = slice(n=1e4, init_theta=0, target=target, w=1, max_doubling=10)
+@
+
+<<doubling_slice_sampler_bimodal_target_histogram, dependson='doubling_slice_sampler_bimodal_target'>>=
+hist(res$theta, breaks = 101, prob=TRUE, main='Stepping out slice sampler for bimodal target', xlab=expression(theta), ylab='target')
+curve(target, add=TRUE, col='red')
+@
+
+\end{frame}
+
+
+\subsection{Multivariate slice sampling}
+\begin{frame}
+\frametitle{Multivariate slice sampling}
+
+Suppose, we are interested in sampling from 
+\[ 
+p(\theta_1,\theta_2|y) = \int_0^{p(\theta_1,\theta_2|y)} 1\, du
+\]
+\pause
+
+
+
+
+\begin{itemize}
+\item Treat each variable independently, i.e. 
+  \begin{enumerate}
+  \item $u|\theta_1,\theta_2,y \sim Unif(0,p(\theta_1,\theta_2|y))$
+  \item $\theta_1|u,\theta_2,y \sim Unif(u<p(\theta_1,\theta_2|y))$
+  \item $\theta_2|u,\theta_1,y \sim Unif(u<p(\theta_1,\theta_2|y))$
+  \end{enumerate}
+  \begin{itemize}
+  \item Use overrelaxation to avoid random walk behavior
+  \end{itemize}
+\item Hyperrectangle slice sampling
+  \begin{itemize}
+  \item Replace interval constructed from $w$ with a hyperrectangle $W$ placed randomly over the slice
+  \item Shrink as points are rejected
+  \end{itemize}
+\item Reflective slice sampling
+  \begin{itemize}
+  \item Candidate samples are kept within the bounds by reflecting the direction of sampling when the boundary is hit
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
 
 \end{document}
 
