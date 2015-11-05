@@ -100,8 +100,7 @@ segments(0,0,x,0,lwd=3, col="red")
 
 \begin{frame}[fragile]
 \frametitle{Slice sampling in R}
-<<slice_sampler, echo=TRUE>>=
-# Slice sampler 
+<<slice_sampling_function, echo=TRUE>>=
 slice = function(n,init_theta,target,A) {
   u = theta = rep(NA,n)
   theta[1] = init_theta
@@ -114,7 +113,9 @@ slice = function(n,init_theta,target,A) {
   }
   return(list(theta=theta,u=u))
 }
-# Exponential example
+@
+
+<<exponential_example, dependson='slice_sampling_function', echo=TRUE>>=
 set.seed(6)
 A = function(u,theta=NA) c(0,-log(u))
 res = slice(10, 0.1, dexp, A)
@@ -123,16 +124,23 @@ res = slice(10, 0.1, dexp, A)
 
 \begin{frame}[fragile]
 \frametitle{}
-<<slice_sampling_plot, fig.show='animate', warning=FALSE, echo=FALSE>>=
-slice_sampling_animation = function(theta, u, ask=interactive()) {
+<<slice_sampling_animation_function>>=
+slice_sampling_animation = function(theta, u, ask=interactive(), df, ...) {
   x = cbind(theta,u)
+  
+  x_lb = min(theta)
+  x_ub = max(theta)
+  
+  y_lb = 0
+  y_ub = max(df(theta))
+  
   for (i in 2:nrow(x)) {
     jj = (2:i)[-(i-1)] # vector from 2:(i-1) and NULL if i=2
     for (j in 1:6) {
       plot.new()
       
       # All previous plotting
-      curve(dexp, from=0, to=3, xlab=expression(theta), ylab="u", main="Slice sampling an Exp(1) distribution")
+      curve(df, from=x_lb, to=x_ub, ylim=c(y_lb,y_ub), ...)
       segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
       segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
       points(x[(1:(i-1)),1], x[(1:(i-1)),2], col="red", pch=19)
@@ -150,19 +158,22 @@ slice_sampling_animation = function(theta, u, ask=interactive()) {
   
   # Final plot
   jj=2:nrow(x)
-  curve(dexp, from=0, to=3, xlab=expression(theta), ylab="u", 
-        main="Slice sampling an Exp(1) distribution")
+  curve(df, from=x_lb, to=x_ub, ylim=c(y_lb,y_ub), ...)
   segments(x[jj-1,1], x[jj,2], x[jj-1,1], x[jj-1,2], col="gray")
   segments(x[jj-1,1], x[jj,2], x[jj,1], x[jj  ,2], col="gray")
   points(x[,1], x[,2], col="red", pch=19)
 }
-with(res, slice_sampling_animation(theta,u))
+@
+
+<<exponential_example_animation, dependson=c('slice_sampling_animation_function', 'exponential_example'), fig.show='animate'>>=
+with(res, slice_sampling_animation(theta, u, df=dexp, xlab=expression(theta), ylab='u', main='Slice sampling an Exp(1) distribution'))
 @
 \end{frame}
 
 
 
 \begin{frame}[fragile]
+\frametitle{Histogram of draws}
 <<slice_sampling_histogram>>=
 hist(slice(1e4, 0.1, dexp, A)$theta, freq=F, 100, main="Slice sampling approximation to Exp(1) distribution", xlab=expression(theta))
 curve(dexp, add=TRUE, col='red')
@@ -170,11 +181,188 @@ curve(dexp, add=TRUE, col='red')
 \end{frame}
 
 
-\subsection{Standard normal}
-\begin{frame}
-\frametitle{}
+\subsection{Posterior}
+\begin{frame}[fragile]
+\frametitle{Normal model with unknown mean}
+
+Let 
+\[ 
+Y_i \stackrel{ind}{\sim} N(\theta, 1) 
+\quad \mbox{ and } \quad 
+\theta \sim La(0,1)
+\]
+\pause
+then
+\[ 
+p(\theta|y) \propto \left[\prod_{i=1}^n N(y_i;\theta,1) \right] La(\theta;0,1)
+\]
+
+<<posterior_example_functions, echo=TRUE>>=
+n = 5
+y = rnorm(n,.2)
+f = Vectorize(function(theta, y.=y) exp(sum(dnorm(y., theta, log=TRUE)) + dexp(abs(theta), log=TRUE)))
+
+# Function to numerically find endpoints
+A = function(u, xx, f.=f) {
+  left_endpoint  = uniroot(function(x) f.(x) - u, c(-10^10, xx))
+  right_endpoint = uniroot(function(x) f.(x) - u, c( 10^10, xx))
+  c(left_endpoint$root, right_endpoint$root)
+}
+@
+
+<<slice_sampling_posterior_example, dependson=c('slice_sampling_function','posterior_example_functions'), echo=TRUE>>=
+res = slice(20, mean(y), f, A)
+@
 \end{frame}
 
+
+
+\begin{frame}[fragile]
+\frametitle{Slice sampling using numerically calculated endpoints}
+<<posterior_example, dependson=c('slice_sampling_animation_function','slice_sampling_posterior_example'), fig.show='animate'>>=
+i = integrate(f, -Inf, Inf)
+with(res, 
+     slice_sampling_animation(theta, 
+                              u, df=f, xlab=expression(theta), ylab='u', main='Slice sampling a posterior'))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Histogram of draws}
+<<histogram_posterior_example, dependson=c('slice_sampling_function','posterior_example_functions')>>=
+hist(slice(1e4, 0.1, f, A)$theta, 
+     freq=F, 
+     100, 
+     main="Slice sampling approximation to posterior", 
+     xlab=expression(theta))
+curve(f(x)/i$value, 
+      add=TRUE, 
+      col='red')
+@
+\end{frame}
+
+
+
+
+\subsection{Learning the endpoints}
+\begin{frame}
+\frametitle{An alternative augmentation}
+
+Suppose 
+\[ 
+Y_i \stackrel{ind}{\sim} N(\theta, 1) 
+\quad \mbox{ and } \quad 
+\theta \sim La(0,1)
+\]
+\pause
+but now, we will use the augmentation
+\[
+p(u,\theta)\propto p(\theta) \I(0<u<p(y|\theta))
+\]
+\pause
+The full conditional distributions are now 
+\begin{enumerate}
+\item $u|\theta,y \sim Unif(0,p(y|\theta))$ \pause and
+\item $\theta|u,y \sim p(\theta)\I(u<p(y|\theta))$.
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Sampling $\theta|u,y$}
+\small
+Now we need to sample from 
+\[ p(\theta)\I(u<p(y|\theta)). \]
+\pause
+If $p(\theta)$ is unimodal, then this is equivalent to 
+\[ p(\theta)\I(\theta_L(u) < \theta < \theta_U(u)) \]
+for some bounds $\theta_L(u)$ and $\theta_U(u)$ which depend on $u$. 
+
+\vspace{0.2in} \pause
+
+One way to learn these is to sample from $p(\theta)$ and update the bounds\pause, e.g. if $\theta^{(i-1)}$ is our current value in the chain, we know $u<p(y|\theta^{(i-1)})$ or, equivalently, $\theta_L(u) < \theta^{(i-1)} < \theta_U(u)$. \pause Letting $u^{(i)}$ be the current value for the auxiliary variable and setting $\theta_L(u^{(i)})$ [$\theta_U(u^{(i)})$] to the lower [upper] bound of the support for $\theta$, we can 
+\begin{enumerate}[<+->]
+\item Sample $\theta^* \sim p(\theta)\I(\theta_L(u^{(i)}) < \theta < \theta_U(u^{(i)}))$.
+\item Set  $\theta^{(i)} = \theta^*$ if $\I(u^{(i)}<p(y|\theta^*))$, otherwise 
+  \begin{enumerate}
+  \item set $\theta_L(u^{(i)}) = \theta^*$ if $\theta^* <  \theta^{(i-1)}$ or
+  \item set $\theta_U(u^{(i)}) = \theta^*$ if $\theta^* > \theta^{(i-1)}$ and
+  \item return to Step 1.
+  \end{enumerate}
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Learning the endpoints}
+<<learning_the_endpoints>>=
+curve(dnorm, -2, 2, xlab=expression(theta),
+      ylab = 'u')
+u = .25
+theta = .5
+points(theta, u, col='red', pch=19)
+abline(h=u, lty=3, col='gray')
+points(-1.5, u, col='black', pch=8)
+legend('topright', c('Current','Proposed'), pch=c(19,8), col=c('red','black'))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code}
+<<slice2, echo=TRUE>>=
+slice2 = function(n, init_theta, like, qprior) {
+    u = theta = rep(NA, n)
+    theta[1] = init_theta
+    u[1] = runif(1, 0, like(theta[1]))
+    
+    for (i in 2:n) {
+        u[i] = runif(1, 0, like(theta[i - 1]))
+        success = FALSE
+        endpoints = 0:1
+        while (!success) {
+          
+            # Inverse CDF
+            up = runif(1, endpoints[1], endpoints[2])
+            theta[i] = qprior(up)
+            
+            if (u[i] < like(theta[i])) {
+                success = TRUE
+            } else {
+                # Updated endpoints when proposed value is rejected
+                if (theta[i] > theta[i - 1]) 
+                  endpoints[2] = up
+                if (theta[i] < theta[i - 1]) 
+                  endpoints[1] = up
+            }
+        }
+        
+    }
+    return(list(theta = theta, u = u))
+}
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Histogram}
+<<learning_endpoints, dependson=c('posterior_example_functions','slice2'), eCho=TRUE>>=
+qprior = function(p) ifelse(p<.5, -qexp(1-2*p), qexp(2*(p-.5)))
+res = slice2(1e4, 0, function(theta) exp(sum(dnorm(y,theta,log=TRUE))), qprior)
+hist(res$theta, 
+     breaks = 100, 
+     prob=TRUE, 
+     main="Slice sampling approximation to posterior", 
+     xlab=expression(theta))
+curve(f(x)/i$value, 
+      add=TRUE, 
+      col='red')
+@
+\end{frame}
 
 \end{document}
 
