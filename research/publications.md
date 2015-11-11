@@ -61,7 +61,7 @@ group: navigation
 ##  Other publications
 
 1. Jarad Niemi  and Andrew Gelman. (2011) ``Statistical graphics: making information clear -- and beautiful.’’ Significance 8, 135--137
-1. Jarad B. Niemi. (2010) ``Evaluating individual player contributions to team offense and defense: a model based approach.'' JSM Proceedings, Section on Statistics in Sports. Vancouver, BC, Canada: American Statistical Association. 4914--4923.
+1. Jarad B. Niemi. (2010) ``Evaluating individual player contributions to team offense and defense: a model based approach.'' JSM Proceedings, Section on Statistics in Sports. Vancouver, BC, Canada: American Statistical Association. 4914--4923. [pdf](papers/Niem_eval_2010.pdf)
 1. Jarad B. Niemi and Matthew Wheeler*. ``Efficient Bayesian inference in stochastic chemical kinetic models using graphical processing units.'' [arXiv](http://arxiv.org/abs/1101.4242)
 1. Tim W. Dake, Jarad B. Niemi, Don L. Hughes, Jeff J. Kester, Don B. Compton, Jon J. Calderas, Rich G. Schafermeyer, Kevin P. Christmas. ``Compositions having enhanced aqueous solubility and methods of their preparation.'' PCT/US2002/014505 filed
 
