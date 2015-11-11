@@ -19,7 +19,7 @@ group: navigation
 - Ignacio Alvarez-Castro 
 - Adam Martin-Schwarze
 - [Will Landau](http://will-landau.com/)
-- Nick Michaud 
+- [Nick Michaud ](http://www.public.iastate.edu/~michaud/homepage.html)
 - Eric Mittman 
 
 ![](student_figs/ialvarez.jpg)
