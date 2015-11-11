@@ -1,15 +1,19 @@
-# plots.R
+
 
 # system
+n = 3:6 # number of 
+d = data.frame(x = sum(n),
+               y = runif(sum(n))
+               
+
+
 n <- 3:6
 clrs <- c("black","red","blue","seagreen")
 set.seed(1)
-pdf("system.pdf", width=10, height=5)
 par(mar=rep(0,4)+.01)
 plot(0,0, type='n', axes=F, frame=T, xlab='', ylab='', xlim=c(0,1), ylim=c(0,1))
 for (i in 1:length(n))
   points(runif(n[i]), runif(n[i]), pch=19, col=clrs[i], cex=3)
-dev.off()
 
 pdf("rxns.pdf", width=5, height=5)
 par(mar=rep(0,4)+.01)
