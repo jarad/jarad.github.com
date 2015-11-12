@@ -213,83 +213,131 @@ ggplot(d, aes(x,y,col=species, shape=species)) +
 		\item Calculate $a_0(X_t) = \sum_{j=1}^M a_j(X_t)$.
 		\item Simulate a reaction time $\tau \sim Exp(a_0(X_t))$ 
 		\item Simulate a reaction id $k\in\{1,\ldots,M\}$ with probability $a_k(X_t)/a_0(X_t)$
-    \ietm Update $X$ according to $v_k$ and time by $\tau$. 
+    \item Update $X$ according to $v_k$ and time by $\tau$. 
 		\end{enumerate}
 	\end{itemize}
 \end{frame}
 
 
 \begin{frame}
-\frametitle{Constituitive production}
-Let $N=1$ and $X_0=0$ with reaction $\emptyset \longrightarrow $X_1$ with propensity 1. 
+\frametitle{Michaelis-Menton Gillespie Simulation}
+<<michaelis_mention_gillespie>>=
+library('smfsb')
+data(spnModels)
+# simulate a realisation of the process and plot it
+out = gillespie(MM,500)
+out$t = c(0,out$t)
+colnames(out$x) = names(MM$M)
 
-<<constitutive_production>>=
-
+d = cbind(time=out$t, as.data.frame(out$x))
+ggplot(melt(d, id.var='time', variable.name='species', value.name='count'),
+       aes(time,count,color=species,linetype=species)) + 
+  geom_step() +
+  theme(legend.position='bottom') 
 @
 \end{frame}
 
 
 
-% \subsection{Complete observations}
-% \frame{\frametitle{}
-% 	Suppose you observe all system transitions:\pause
-% 	\begin{itemize}
-% 	\item $n$ reactions occur in the interval $[0,T]$ \pause
-% 	\item $t_1,\ldots,t_n$ are the reaction times \pause
-% 	\item $r_1,\ldots,r_n$ are the reaction indicators, $r_i\in\{1,\ldots,M\}$
-% 	\end{itemize}
-% 	
-% 	\vspace{0.2in} \pause
-% 	
-% 	Then inference can be performed based on the likelihood
-% 	\[ 
-% 	L(\theta) \propto \prod_{j=1}^M \theta_j^{n_j} \exp\left(-\theta_j I_j \right) 
-% 	\]
-% 	\pause where
-% 	\[ \begin{array}{lll}
-% 	n_j &= \sum_{i=1}^n \mathrm{I}(r_i=j) & \mbox{\# of $j$ reactions} \\
-% 	\pause \\
-% 	I_j &= \int_0^T h_j(X_t) dt \pause &= \sum_{i=1}^n h_j(X_{t_{i-1}}) (t_i-t_{i-1}) \pause + h_j(X_{t_n})[T- t_n]
-% 	\end{array} \]
-% }
-% 
-% \subsection{Inference}
-% \frame{\frametitle{}
-% 	\begin{itemize}
-% 	\item Maximum likelihood estimation \pause
-% 	\[ \hat{\theta}_j = \frac{n_j}{I_j} \]
-% 	\item \pause Conjugate Bayesian inference \pause
-% 	\[ \begin{array}{ll}
-% 	p(\theta) &= \prod_{j=1}^M Ga(\theta_j; \alpha_j,\beta_j) \\
-% 	\pause \\
-% 	p(\theta|X) &= \prod_{j=1}^M Ga(\theta_j; \alpha_j+n_j, \beta_j+I_j) \\
-% 	\pause \\
-% 	E[\theta_j|X] &= \frac{\alpha_j+n_j}{\beta_j+I_j}
-% 	\end{array} \]
-% 	\end{itemize}
-% }
-% 
-% \frame{\frametitle{}
-% 	\setkeys{Gin}{width=\textwidth}
-% 	\begin{center}
-% 	\includegraphics{inference}
-% 	\end{center}
-% }
-% 
-% \subsection{Discrete observations}
-% \frame{\frametitle{}
-% 	Suppose you only observe the system at discrete-times: \pause
-% 	\begin{itemize}
-% 	\item For simplicity, observe the system at times $t=1,2,\ldots,T$. \pause
-% 	\item At these times, we observe $y_t=X_t$ the system state. \pause
-% 	\item But do not observe the system between these times. \pause
-% 	\end{itemize}
-% 	\setkeys{Gin}{width=\textwidth}
-% 	\begin{center}
-% 	\includegraphics{discrete}
-% 	\end{center}
-% }
-% 
+\subsection{Complete observations}
+\begin{frame}
+\frametitle{Complete observations}
+	Suppose you observe all system transitions:\pause
+	\begin{itemize}
+	\item $n$ reactions occur in the interval $[0,T]$ \pause
+	\item $t_1,\ldots,t_n$ are the reaction times \pause
+	\item $r_1,\ldots,r_n$ are the reaction indicators, $r_i\in\{1,\ldots,M\}$
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	Then inference can be performed based on the likelihood
+	\[ 
+	L(\theta) \propto \prod_{j=1}^M \theta_j^{n_j} \exp\left(-\theta_j I_j \right) 
+	\]
+	\pause where
+	\[ \begin{array}{lll}
+	n_j &= \sum_{i=1}^n \mathrm{I}(r_i=j) & \mbox{\# of $j$ reactions} \\
+	\pause \\
+	I_j &= \int_0^T h_j(X_t) dt \pause &= \sum_{i=1}^n h_j(X_{t_{i-1}}) (t_i-t_{i-1}) \pause + h_j(X_{t_n})[T- t_n]
+	\end{array} \]
+\end{frame}
+
+\subsection{Inference}
+\begin{frame}
+\frametitle{Inference}
+	\begin{itemize}
+	\item Maximum likelihood estimation \pause
+	\[ \hat{\theta}_j = \frac{n_j}{I_j} \]
+	\item \pause Conjugate Bayesian inference \pause
+	\[ \begin{array}{ll}
+	p(\theta) &= \prod_{j=1}^M Ga(\theta_j; \alpha_j,\beta_j) \\
+	\pause \\
+	p(\theta|X) &= \prod_{j=1}^M Ga(\theta_j; \alpha_j+n_j, \beta_j+I_j) \\
+	\pause \\
+	E[\theta_j|X] &= \frac{\alpha_j+n_j}{\beta_j+I_j}
+	\end{array} \]
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Michaelis-Menton Complete Data Inference}
+<<michaelis_mention_complete_data_inference, dependson='michaelis_mention_gillespie'>>=
+# These simulations end after n events, so therefore there is no 
+# time at the end of the simulation where no event happens
+n_rxn = function(x, sys) {
+  stoich = sys$Post - sys$Pre
+  n_rxn = rep(0,nrow(stoich))
+  
+  for (i in 2:nrow(x)) {
+    v = x[i,] - x[i-1,]
+    for (j in 1:nrow(stoich)) 
+      if (all(v == stoich[j,])) n_rxn[j] = n_rxn[j] + 1
+  }
+  return(n_rxn)
+}
+
+d = data.frame(reaction = c('S+E->E','S+E<-SE', 'SE->P'),
+               a = 1+n_rxn(out$x, MM),
+               b = 1+colSums(adply(out$x, 1, MM$h)[,-1]))
+p = ddply(d, .(reaction), function(dd) {
+  data.frame(x=seq(0,.2,by=.001)) %>% 
+    mutate(density = dgamma(x, dd$a, dd$b))
+})
+
+ggplot(p, aes(x, density, color=reaction, linetype=reaction)) + 
+  geom_line() +
+  theme(legend.position='bottom')
+@
+\end{frame}
+
+\subsection{Discrete observations}
+\begin{frame}
+\frametitle{Discrete observations}
+	Suppose you only observe the system at discrete-times: \pause
+	\begin{itemize}
+	\item For simplicity, observe the system at times $t=1,2,\ldots,T$. \pause
+	\item At these times, we observe $y_t=X_t$ the system state. \pause
+	\item But do not observe the system between these times. \pause
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Michaelis-Mention discrete observations}
+<<michaelis_mention_discrete_observations, dependson='michaelis_mention_gillespie'>>=
+d = as.data.frame(discretise(out,dt=1))
+names(d) = names(MM$M)
+d$time = as.numeric(rownames(d))
+ggplot(melt(d, id.var='time', variable.name='species', value.name='count'), 
+       aes(time, count, color=species, shape=species)) + 
+  geom_point() + 
+  theme_bw() + 
+  theme(legend.position='bottom')
+@
+\end{frame}
+
+
 % \subsection{Inference}
 % \frame{\frametitle{}
 % 	Inference is still performed based on the likelihood
