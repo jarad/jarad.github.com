@@ -31,7 +31,7 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
 - Email: <niemi@iastate.edu>
 - Social: 
   - [Skype](skype:jaradniemi?add "Jarad Niemi's Skype account")
-  - [Twitter](https://twitter.com/#NiemiSTAT "Jarad Niemi's twitter account")
+  - [Twitter](https://twitter.com/jaradniemi "Jarad Niemi's twitter account")
   - [LinkedIn](http://www.linkedin.com/in/jaradniemi "Jarad Niemi's LinkedIn account")
   - [GitHub](https://github.com/jarad/ "Jarad Niemi's GitHub account")
 - Phone
