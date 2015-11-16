@@ -1,0 +1,307 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,xmpmulti}
+
+\graphicspath{{figs/}}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Bayesian nonparametrics}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               cache=TRUE,
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(rjags)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\section{Finite mixtures}
+
+\begin{frame}
+\frametitle{Finite mixtures}
+
+Suppose you are interested in modeling heights for the U.S. population. 
+
+<<mean_heights>>=
+prop_male = .49
+truth = data.frame(mean = c(70,65), 
+                   sd   = c(4,3.5), 
+                   p    = c(prop_male, 1-prop_male), 
+                   sex  = c('male','female'))
+full_density = Vectorize(function(x) with(truth, sum(p*dnorm(x,mean,sd))))
+@
+
+<<mean_heights_plot, dependson='mean_heights'>>=
+xx = 50:90
+tmp = data.frame(xx=xx,
+                 male   = truth$p[1] * dnorm(xx, truth$mean[1], truth$sd[1]),
+                 female = truth$p[2] * dnorm(xx, truth$mean[2], truth$sd[2])) %>%
+  mutate(full = male+female)
+
+ggplot(melt(tmp, id.var='xx'), aes(xx,value,group=variable,color=variable,linetype=variable)) + 
+  geom_line()
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Normal modeling}
+
+If we assume $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$ where $Y_i$ is the height for individual $i$. Then, ignoring the uncertainty in $\hat{\mu}$ and $\hat{\sigma}^2$, we have 
+
+<<samples, dependson='mean_heights'>>=
+d = ddply(data.frame(n=10^c(1:5)), .(n), function(x) {
+  rdply(4, function() {
+    data.frame(sex_id = sample(2, x$n, replace=TRUE, prob=truth$p)) %>%
+      mutate(sex = c('male','female')[sex_id],
+             height = rnorm(x$n, truth$mean[sex_id], truth$sd[sex_id]))
+  })
+})
+sm = ddply(d, .(n,.n), summarize,
+           mean = mean(height),
+           sd = sd(height))
+@
+
+<<samples_plots, dependson='samples'>>=
+plot_dens = ddply(sm, .(n,.n), function(x) {
+  data.frame(xx = 50:90) %>%
+    mutate(yy = dnorm(xx, x$mean, x$sd))
+})
+ggplot(d, aes(x=height)) + 
+  geom_histogram(aes(y=..density..), binwidth=1) + 
+  facet_grid(.n~n) +
+  geom_line(data=plot_dens, aes(xx,yy,group=1))
+@
+\end{frame}
+
+
+
+\subsection{Finite mixture}
+\begin{frame}
+\frametitle{Finite mixture}
+
+In this example, we know there is at least a two-component mixture where the components are comprised of males and females. \pause An alternative model for the data is 
+
+\[ 
+Y_i \stackrel{ind}{\sim} \pi_0 N(\mu_0, \sigma_0^2) + \pi_1 N(\mu_1, \sigma_1^2)
+\]
+where $\pi_0+\pi_1 = 1$. 
+
+\vspace{0.2in} \pause
+
+Alternatively, we can introduce a latent variable 
+\[ 
+\zeta_i = \left\{ 
+\begin{array}{rl}
+1 & \mbox{if the $i$th observation was from a male individual} \\
+0 & \mbox{otherwise}
+\end{array}
+\right.
+\]
+then 
+\[
+Y_i|\zeta_i \stackrel{ind}{\sim} N(\mu_{\zeta_i},\sigma_{\zeta_i}^2) \qquad \zeta_i \stackrel{ind}{\sim} Ber(\pi_1).
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Prior distributions}
+
+The parameters of the model are unidentified due to \alert{label-switching}, \pause i.e. 
+\[ Y_i \stackrel{ind}{\sim} \pi_0 N(\mu_0, \sigma_0^2) + \pi_1 N(\mu_1, \sigma_1^2)\]
+is equivalent to 
+\[ Y_i \stackrel{ind}{\sim} \pi_1 N(\mu_1, \sigma_1^2) + \pi_0 N(\mu_0, \sigma_0^2). \]
+
+\pause
+
+One way to resolve this issue is to enforce identifiability in the prior. \pause For example, in one-dimension, we can order the component means: $\mu_0<\mu_1$. 
+
+\vspace{0.2in} \pause
+
+To ensure the posterior is proper
+\begin{itemize}
+\item Maintain proper prior for $\pi$
+\item Ensure proper prior for ratios of variances 
+
+(perhaps by ensuring prior is proper for variances themselves)
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Two fully conditionally conjugate prior options}
+
+Option 1:
+\[ 
+Ber(\pi_0;a,b) \I(\mu_0<\mu_1) \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\phantom{\sigma_h^2}) IG(\sigma_h^2; c_h, d_h) 
+\]
+
+\vspace{0.2in} \pause
+
+Option 2:
+\[
+Ber(\pi_0;a,b) \I(\mu_0<\mu_1) \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\sigma_h^2) IG(\sigma_h^2; c_h, d_h)
+\]
+
+\end{frame}
+
+
+% \begin{frame}
+% \frametitle{MCMC - Option 1}
+% The steps of a Gibbs sampler are 
+% \begin{enumerate}
+% \item Sample $\zeta_i \stackrel{ind}{\sim} p(\zeta_i|\ldots)$ where 
+% \[ 
+% P(\zeta_i=1|\ldots) = \frac{\pi_1 N(y_i; \mu_1, \sigma_1^2)}{\pi_0 N(y_i; \mu_0, \sigma_0^2)+\pi_1 N(y_i; \mu_1, \sigma_1^2)}.
+% \]
+% \item For $h=0,1$, sample $\mu_h\sim p(\mu_h|\ldots)$ where
+% \[
+% p(\mu_h|\ldots) \propto \left[ \prod_{i:\zeta_i=h} N(y_i;\mu_h,\sigma_h^2) \right] N(\mu_h;m_h,v_h^2\phantom{\sigma_h^2}) 
+% \]
+% \end{enumerate}
+% \end{frame}
+
+
+\subsection{JAGS}
+\begin{frame}[fragile]
+<<jags, dependson='samples', echo=TRUE, results='hide'>>=
+library(rjags)
+jags_model = "
+model {
+  for (i in 1:n) {
+    y[i] ~ dnorm(mu[eta[i]], tau[eta[i]])
+    eta[i] ~ dcat(pi[])
+  }
+
+  for (i in 1:M) {
+    mu[i] ~ dnorm(0,1e-5)
+    tau[i] ~ dgamma(1,1)
+    sigma[i] <- 1/sqrt(tau[i])
+  }
+
+  pi ~ ddirich(alpha)
+}"
+
+tmp = subset(d, n==10^3 & .n==1)
+dat = list(n=nrow(tmp), M=2, y=tmp$height, alpha=rep(1,2))
+jm = jags.model(textConnection(jags_model), data = dat, n.chains = 3)
+r = coda.samples(jm, c('mu','tau','pi'), 1e3)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Convergence diagnostics}
+<<jags_convergence, dependson='jags', echo=TRUE>>=
+gelman.diag(r)
+gelman.diag(r, multivariate=FALSE)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Convergence diagnostics (2)}
+<<jags_convergence2, dependson='jags', echo=TRUE>>=
+plot(r, density=FALSE)
+@
+\end{frame}
+
+
+
+
+\subsection{JAGS}
+\begin{frame}[fragile]
+<<jags2, dependson='samples', echo=TRUE, results='hide'>>=
+library(rjags)
+jags_model = "
+model {
+  for (i in 1:n) {
+    y[i] ~ dnorm(mu[eta[i]], tau[eta[i]])
+    eta[i] ~ dcat(pi[])
+  }
+
+  for (i in 1:M) {
+    mu0[i] ~ dnorm(0,1e-5)
+    tau[i] ~ dgamma(1,1)
+    sigma[i] <- 1/sqrt(tau[i])
+  }
+
+  mu[1:M] <- sort(mu0)
+  pi ~ ddirich(alpha)
+}"
+
+tmp = subset(d, n==10^3 & .n==1)
+dat = list(n=nrow(tmp), M=2, y=tmp$height, alpha=rep(1,2))
+jm = jags.model(textConnection(jags_model), data = dat, n.chains = 3)
+r = coda.samples(jm, c('mu','tau','pi'), 1e3)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Convergence diagnostics}
+<<jags2_convergence, dependson='jags2', echo=TRUE>>=
+gelman.diag(r)
+gelman.diag(r, multivariate=FALSE)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Convergence diagnostics (2)}
+<<jags2_convergence2, dependson='jags2', echo=TRUE>>=
+plot(r, density=FALSE)
+@
+\end{frame}
+
+
+
+\end{document}
+
