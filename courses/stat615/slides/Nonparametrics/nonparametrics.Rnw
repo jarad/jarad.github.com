@@ -63,7 +63,7 @@ set.seed(2)
 
 \begin{frame}
 \frametitle{Complicated distributions}
-<<rnaseq>>=
+<<rnaseq, message=FALSE>>=
 library(edgeR)
 d = read.table("rna_seq.txt", header=TRUE)
 
@@ -145,60 +145,17 @@ do.call("grid.arrange", c(plots, ncol=5))
 \begin{frame}
 \frametitle{Finite mixtures}
 
-Suppose you are interested in modeling heights for the U.S. population. 
+Let's focus on modeling the univariate distribution for $\phi$
 
-<<mean_heights>>=
-prop_group1 = .44
-truth = data.frame(mean = c(70,60), 
-                   sd   = c(4,3.5), 
-                   p    = c(prop_group1, 1-prop_group1), 
-                   group  = c('1','2'))
-#full_density = Vectorize(function(x) with(truth, sum(p*dnorm(x,mean,sd))))
-@
-
-<<mean_heights_plot, dependson='mean_heights'>>=
-xx = 50:90
-truth_plot = data.frame(xx=xx,
-                 group1   = truth$p[1] * dnorm(xx, truth$mean[1], truth$sd[1]),
-                 group2 = truth$p[2] * dnorm(xx, truth$mean[2], truth$sd[2])) %>%
-  mutate(full = group1+group2)
-
-ggplot(melt(truth_plot, id.var='xx'), aes(xx,value,group=variable,color=variable,linetype=variable)) + 
-  geom_line()
+<<phi, dependson='rnaseq'>>=
+ggplot(hat, aes(phi)) + 
+  geom_histogram(aes(y=..density..))
 @
 \end{frame}
 
 
 
-\begin{frame}
-\frametitle{Normal modeling}
 
-If we assume $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$ where $Y_i$ is the height for individual $i$. Then, ignoring the uncertainty in $\hat{\mu}$ and $\hat{\sigma}^2$, we have 
-
-<<samples, dependson='mean_heights'>>=
-d = ddply(data.frame(n=10^c(1:5)), .(n), function(x) {
-  rdply(4, function() {
-    data.frame(sex_id = sample(2, x$n, replace=TRUE, prob=truth$p)) %>%
-      mutate(sex = c('male','female')[sex_id],
-             height = rnorm(x$n, truth$mean[sex_id], truth$sd[sex_id]))
-  })
-})
-sm = ddply(d, .(n,.n), summarize,
-           mean = mean(height),
-           sd = sd(height))
-@
-
-<<samples_plots, dependson='samples'>>=
-plot_dens = ddply(sm, .(n,.n), function(x) {
-  data.frame(xx = 50:90) %>%
-    mutate(yy = dnorm(xx, x$mean, x$sd))
-})
-ggplot(d, aes(x=height)) + 
-  geom_histogram(aes(y=..density..), binwidth=1) + 
-  facet_grid(.n~n) +
-  geom_line(data=plot_dens, aes(xx,yy,group=1))
-@
-\end{frame}
 
 
 
@@ -206,28 +163,21 @@ ggplot(d, aes(x=height)) +
 \begin{frame}
 \frametitle{Finite mixture}
 
-In this example, we know there is at least a two-component mixture where the components are comprised of males and females. \pause An alternative model for the data is 
+A model for the marginal distribution for $\phi$ is
 
 \[ 
-Y_i \stackrel{ind}{\sim} \pi_0 N(\mu_0, \sigma_0^2) + \pi_1 N(\mu_1, \sigma_1^2)
+Y_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h N(\mu_h, \sigma_h^2)
 \]
-where $\pi_0+\pi_1 = 1$. 
+where $\sum_{h=1}^H \pi_h = 1$. 
 
 \vspace{0.2in} \pause
 
-Alternatively, we can introduce a latent variable 
-\[ 
-\zeta_i = \left\{ 
-\begin{array}{rl}
-1 & \mbox{if the $i$th observation was from a male individual} \\
-0 & \mbox{otherwise}
-\end{array}
-\right.
-\]
-then 
+Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
+Then 
 \[
-Y_i|\zeta_i \stackrel{ind}{\sim} N(\mu_{\zeta_i},\sigma_{\zeta_i}^2) \qquad \zeta_i \stackrel{ind}{\sim} Ber(\pi_1).
+Y_i|\zeta_i=z \stackrel{ind}{\sim} N(\mu_{z},\sigma_{z}^2) \qquad \zeta_i \stackrel{ind}{\sim} Mult(1,\pi)
 \]
+where $\pi=(\pi_1,\ldots,\pi_H)$. 
 
 \end{frame}
 
@@ -237,13 +187,12 @@ Y_i|\zeta_i \stackrel{ind}{\sim} N(\mu_{\zeta_i},\sigma_{\zeta_i}^2) \qquad \zet
 \frametitle{Prior distributions}
 
 The parameters of the model are unidentified due to \alert{label-switching}, \pause i.e. 
-\[ Y_i \stackrel{ind}{\sim} \pi_0 N(\mu_0, \sigma_0^2) + \pi_1 N(\mu_1, \sigma_1^2)\]
-is equivalent to 
-\[ Y_i \stackrel{ind}{\sim} \pi_1 N(\mu_1, \sigma_1^2) + \pi_0 N(\mu_0, \sigma_0^2). \]
+\[ Y_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h N(\mu_h, \sigma_h^2) \stackrel{d}{=} \sum_{h'=1}^H \pi_{h'} N(\mu_{h'}, \sigma_{h'}^2) \]
+for some permutation $h'$. 
 
-\pause
+\vspace{0.2in} \pause
 
-One way to resolve this issue is to enforce identifiability in the prior. \pause For example, in one-dimension, we can order the component means: $\mu_0<\mu_1$. 
+One way to resolve this issue is to enforce identifiability in the prior. \pause For example, in one-dimension, we can order the component means: $\mu_1<\mu_2<\cdots<\mu_H$. 
 
 \vspace{0.2in} \pause
 
@@ -260,18 +209,18 @@ To ensure the posterior is proper
 
 
 \begin{frame}
-\frametitle{Two fully conditionally conjugate prior options}
+\frametitle{Two conditionally conjugate prior options}
 
 Option 1:
 \[ 
-Ber(\pi_0;a,b) \I(\mu_0<\mu_1) \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\phantom{\sigma_h^2}) IG(\sigma_h^2; c_h, d_h) 
+Dir(\pi;a) \I(\mu_1<\cdots<\mu_H) \prod_{h=1}^H N(\mu_h;m_h,v_h^2\phantom{\sigma_h^2}) IG(\sigma_h^2; c_h, d_h) 
 \]
 
 \vspace{0.2in} \pause
 
 Option 2:
 \[
-Ber(\pi_0;a,b) \I(\mu_0<\mu_1) \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\sigma_h^2) IG(\sigma_h^2; c_h, d_h)
+Dir(\pi;a) \I(\mu_1<\cdots<\mu_H)  \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\sigma_h^2) IG(\sigma_h^2; c_h, d_h)
 \]
 
 \end{frame}
@@ -300,8 +249,8 @@ library(rjags)
 jags_model = "
 model {
   for (i in 1:n) {
-    y[i] ~ dnorm(mu[eta[i]], tau[eta[i]])
-    eta[i] ~ dcat(pi[])
+    y[i] ~ dnorm(mu[zeta[i]], tau[zeta[i]])
+    zeta[i] ~ dcat(pi[])
   }
 
   for (i in 1:M) {
@@ -310,13 +259,13 @@ model {
     sigma[i] <- 1/sqrt(tau[i])
   }
 
-  pi ~ ddirich(alpha)
+  pi ~ ddirich(a)
 }"
 @
 
-<<jags_data, echo=TRUE>>=
-tmp = subset(d, n==10^3 & .n==1)
-dat = list(n=nrow(tmp), M=2, y=tmp$height, alpha=rep(1,2))
+<<jags_data, dependson='rnaseq', echo=TRUE>>=
+tmp = hat[sample(nrow(hat), 1000),]
+dat = list(n=nrow(tmp), M=3, y=tmp$phi, a=rep(1,3))
 @
 
 <<jags_run, dependson=c('jags','jags_data'), echo=TRUE, results='hide'>>=
@@ -352,8 +301,8 @@ library(rjags)
 jags_model = "
 model {
   for (i in 1:n) {
-    y[i] ~ dnorm(mu[eta[i]], tau[eta[i]])
-    eta[i] ~ dcat(pi[])
+    y[i] ~ dnorm(mu[zeta[i]], tau[zeta[i]])
+    zeta[i] ~ dcat(pi[])
   }
 
   for (i in 1:M) {
@@ -363,7 +312,7 @@ model {
   }
 
   mu[1:M] <- sort(mu0)
-  pi ~ ddirich(alpha)
+  pi ~ ddirich(a)
 }"
 @
 
@@ -403,10 +352,12 @@ draws = ddply(data.frame(parameter=varnames(r)), .(parameter), function(x) {
   dcast(iteration+chain~parameter)
 
 d = ddply(draws, .(iteration, chain), function(x) {
-  data.frame(xx = 50:90,
+  xx = seq(-3, 10, by=0.1)
+  data.frame(xx = xx,
              yy = 
                x$`pi[1]`*dnorm(xx, x$`mu[1]`, x$`sigma[1]`) + 
-               x$`pi[2]`*dnorm(xx, x$`mu[2]`, x$`sigma[2]`))
+               x$`pi[2]`*dnorm(xx, x$`mu[2]`, x$`sigma[2]`) + 
+               x$`pi[3]`*dnorm(xx, x$`mu[3]`, x$`sigma[3]`))
 })
 
 sm = ddply(d, .(xx), summarize, 
@@ -415,19 +366,86 @@ sm = ddply(d, .(xx), summarize,
            ub = quantile(yy, .975))
 @
 
-<<posterior_density_plot, dependson=c('posterior_density','mean_heights_plot')>>=
-ggplot(merge(sm, truth_plot), aes(x=xx,y=full, ymin=lb, ymax=ub)) +
-  geom_ribbon(fill='blue', alpha=0.5) + 
-  geom_line() +
+<<posterior_density_plot, dependson=c('posterior_density','jags_data'), results='hide'>>=
+ggplot(data.frame(x=c(-3,10)), aes(x)) + 
+  geom_histogram(data=tmp, aes(x=phi, y=..density..), binwidth=0.2, alpha=0.5)+
+  geom_ribbon(data=sm, aes(x=xx,y=mean, ymin=lb, ymax=ub), fill='blue', alpha=0.5) 
+#  geom_line() +
   labs(x='x', y='density') 
 @
 \end{frame}
 
 
 
-\subsection{More components}
+\subsection{Clustering}
+\begin{frame}[fragile]
+\frametitle{Group membership}
+
+Group membership can be obtained using the $\zeta_i$, e.g. 
+\[
+P(\mbox{gene $i$ in cluster $h$}) = P(\zeta_i=h|y) \approx \sum_{m=1}^M \I\left(\zeta_i^{(m)} = h\right).
+\]
+
+<<clustering, dependson=c('jags2_run'), results='hide'>>=
+jm = jags.model(textConnection(jags_model), data = dat, n.chains = 3)
+r = coda.samples(jm, c('zeta'), 1e3)
+@
+
+<<clustering_results, dependson='clustering'>>=
+draws = ddply(data.frame(parameter=varnames(r)), .(parameter), function(x) {
+  data.frame(iteration = start(r):end(r),
+             chain = rep(1:3, each=end(r)-start(r)+1),
+             value = unlist(r[,x$parameter])) 
+}) 
+
+sm = ddply(draws, .(parameter), function(x) {
+  data.frame(p1 = mean(x$value==1), 
+             p2 = mean(x$value==2),
+             p3 = mean(x$value==3))
+})
+head(sm)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Clustering}
+
+Genes can then be clustered by assigning them to a group based on their posterior probabilities of group membership, i.e. for gene $i$, we assign the group according to 
+\[
+\mbox{argmax}_h P(\zeta_i=h|y).
+\]
+
+<<clustering_final>>=
+cluster = ddply(sm, .(parameter), function(x) data.frame(group=which.max(x[,-1])))
+library(gtools)
+ordr = mixedorder(as.character(cluster$parameter))
+# ggplot(cbind(cluster[ordr,], tmp), aes(x=phi,y=..density..)) +
+#   geom_histogram(binwidth=0.2, alpha=0.5) +
+#   facet_wrap(~group)
+@
+
+\vspace{0.2in} \pause
+
+Unfortunately clustering is extremely sensitive to the parametric model chosen, e.g. normal in this example, and the cluster could change dramatically with a different choice, e.g. $t$. 
+\end{frame}
+
+
+\subsection{Choosing $H$}
 \begin{frame}
-\frametitle{}
+\frametitle{Choosing $H$}
+When using finite mixture modeling one of the key choices is to choose $H$ the number of clusters. 
+
+\begin{itemize}[<+->]
+\item A Bayesian approach would place a prior on $H$, e.g. a Poisson or truncated Poisson, and then use reversible jump MCMC to estimate it.
+\item A more pragmatic approach is to start with a small $H$ and then determine whether there is some feature of the data that is not being adequately addressed\pause, e.g. via posterior predictive pvalues. 
+\item An approach that is somewhere in between is to find an MLE (or MAP) via 
+\[ 
+\hat{H} = \mbox{argmax}_H p(y|H) = \int p(y|\pi,\mu,\sigma^2,H) p(\pi,\mu,\sigma^2|H) d\pi d\mu d\sigma^2
+\]
+and then condition on $\hat{H}$ in the analysis. \pause Typically this MLE (or MAP) is found via the EM algorithm.
+\end{itemize}
+
 \end{frame}
 
 
