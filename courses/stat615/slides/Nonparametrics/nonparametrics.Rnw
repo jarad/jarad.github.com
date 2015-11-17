@@ -148,22 +148,22 @@ do.call("grid.arrange", c(plots, ncol=5))
 Suppose you are interested in modeling heights for the U.S. population. 
 
 <<mean_heights>>=
-prop_male = .49
-truth = data.frame(mean = c(70,65), 
+prop_group1 = .44
+truth = data.frame(mean = c(70,60), 
                    sd   = c(4,3.5), 
-                   p    = c(prop_male, 1-prop_male), 
-                   sex  = c('male','female'))
-full_density = Vectorize(function(x) with(truth, sum(p*dnorm(x,mean,sd))))
+                   p    = c(prop_group1, 1-prop_group1), 
+                   group  = c('1','2'))
+#full_density = Vectorize(function(x) with(truth, sum(p*dnorm(x,mean,sd))))
 @
 
 <<mean_heights_plot, dependson='mean_heights'>>=
 xx = 50:90
-tmp = data.frame(xx=xx,
-                 male   = truth$p[1] * dnorm(xx, truth$mean[1], truth$sd[1]),
-                 female = truth$p[2] * dnorm(xx, truth$mean[2], truth$sd[2])) %>%
-  mutate(full = male+female)
+truth_plot = data.frame(xx=xx,
+                 group1   = truth$p[1] * dnorm(xx, truth$mean[1], truth$sd[1]),
+                 group2 = truth$p[2] * dnorm(xx, truth$mean[2], truth$sd[2])) %>%
+  mutate(full = group1+group2)
 
-ggplot(melt(tmp, id.var='xx'), aes(xx,value,group=variable,color=variable,linetype=variable)) + 
+ggplot(melt(truth_plot, id.var='xx'), aes(xx,value,group=variable,color=variable,linetype=variable)) + 
   geom_line()
 @
 \end{frame}
@@ -295,7 +295,7 @@ Ber(\pi_0;a,b) \I(\mu_0<\mu_1) \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\sigma_h^2) IG(\si
 
 \subsection{JAGS}
 \begin{frame}[fragile]
-<<jags, dependson='samples', echo=TRUE, results='hide'>>=
+<<jags, echo=TRUE>>=
 library(rjags)
 jags_model = "
 model {
@@ -312,18 +312,23 @@ model {
 
   pi ~ ddirich(alpha)
 }"
+@
 
+<<jags_data, echo=TRUE>>=
 tmp = subset(d, n==10^3 & .n==1)
 dat = list(n=nrow(tmp), M=2, y=tmp$height, alpha=rep(1,2))
+@
+
+<<jags_run, dependson=c('jags','jags_data'), echo=TRUE, results='hide'>>=
 jm = jags.model(textConnection(jags_model), data = dat, n.chains = 3)
-r = coda.samples(jm, c('mu','tau','pi'), 1e3)
+r = coda.samples(jm, c('mu','sigma','pi'), 1e3)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Convergence diagnostics}
-<<jags_convergence, dependson='jags', echo=TRUE>>=
+<<jags_convergence, dependson='jags_run', echo=TRUE>>=
 gelman.diag(r)
 gelman.diag(r, multivariate=FALSE)
 @
@@ -332,7 +337,7 @@ gelman.diag(r, multivariate=FALSE)
 
 \begin{frame}[fragile]
 \frametitle{Convergence diagnostics (2)}
-<<jags_convergence2, dependson='jags', echo=TRUE>>=
+<<jags_convergence2, dependson='jags_run', echo=TRUE>>=
 plot(r, density=FALSE)
 @
 \end{frame}
@@ -342,7 +347,7 @@ plot(r, density=FALSE)
 
 \subsection{JAGS}
 \begin{frame}[fragile]
-<<jags2, dependson='samples', echo=TRUE, results='hide'>>=
+<<jags2, echo=TRUE>>=
 library(rjags)
 jags_model = "
 model {
@@ -360,18 +365,18 @@ model {
   mu[1:M] <- sort(mu0)
   pi ~ ddirich(alpha)
 }"
+@
 
-tmp = subset(d, n==10^3 & .n==1)
-dat = list(n=nrow(tmp), M=2, y=tmp$height, alpha=rep(1,2))
+<<jags2_run, dependson=c('jags_data', 'jags2'), echo=TRUE, results='hide'>>=
 jm = jags.model(textConnection(jags_model), data = dat, n.chains = 3)
-r = coda.samples(jm, c('mu','tau','pi'), 1e3)
+r = coda.samples(jm, c('mu','sigma','pi'), 1e3)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Convergence diagnostics}
-<<jags2_convergence, dependson='jags2', echo=TRUE>>=
+<<jags2_convergence, dependson='jags2_run', echo=TRUE>>=
 gelman.diag(r)
 gelman.diag(r, multivariate=FALSE)
 @
@@ -380,11 +385,50 @@ gelman.diag(r, multivariate=FALSE)
 
 \begin{frame}[fragile]
 \frametitle{Convergence diagnostics (2)}
-<<jags2_convergence2, dependson='jags2', echo=TRUE>>=
+<<jags2_convergence2, dependson='jags2_run', echo=TRUE>>=
 plot(r, density=FALSE)
 @
 \end{frame}
 
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior on data density}
+<<posterior_density, dependson='jags2_run'>>=
+draws = ddply(data.frame(parameter=varnames(r)), .(parameter), function(x) {
+  data.frame(iteration = start(r):end(r),
+             chain = rep(1:3, each=end(r)-start(r)+1),
+             value = unlist(r[,x$parameter])) 
+}) %>%
+  dcast(iteration+chain~parameter)
+
+d = ddply(draws, .(iteration, chain), function(x) {
+  data.frame(xx = 50:90,
+             yy = 
+               x$`pi[1]`*dnorm(xx, x$`mu[1]`, x$`sigma[1]`) + 
+               x$`pi[2]`*dnorm(xx, x$`mu[2]`, x$`sigma[2]`))
+})
+
+sm = ddply(d, .(xx), summarize, 
+           mean=mean(yy), sd=sd(yy),
+           lb = quantile(yy, .025),
+           ub = quantile(yy, .975))
+@
+
+<<posterior_density_plot, dependson=c('posterior_density','mean_heights_plot')>>=
+ggplot(merge(sm, truth_plot), aes(x=xx,y=full, ymin=lb, ymax=ub)) +
+  geom_ribbon(fill='blue', alpha=0.5) + 
+  geom_line() +
+  labs(x='x', y='density') 
+@
+\end{frame}
+
+
+
+\subsection{More components}
+\begin{frame}
+\frametitle{}
+\end{frame}
 
 
 \end{document}
