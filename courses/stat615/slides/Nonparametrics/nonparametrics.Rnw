@@ -188,7 +188,7 @@ where $Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ fo
 \frametitle{A possible prior}
 
 Let's assume 
-\[ \begin{rl}
+\[ \begin{array}{rl}
 \pi &\sim Dir(a) \\
 \mu_h|\sigma_h^2 & \stackrel{ind}{\sim} N(m_h, v_h^2\sigma_h^2) \\
 \sigma_h^2 &\stackrel{ind}{\sim} IG(c_h,d_h)
@@ -197,7 +197,14 @@ and $\pi$ is independent of $\mu=(\mu_1,\ldots,\mu_H)$ and $\sigma^2 = (\sigma_1
 
 \vspace{0.2in} \pause
 
-Commonly, we have $m_h=m$, $v_h=v$, $c_h=c$, and $d_h=d$. \pause If the data have been standardized (scaled and centered), a reasonable default is $m=0$, $v=1$, $c=2$, and $d=4$ (BDA3 pg 535). \pause A reasonable default for $a$ is $1/H$ (BDA3 pg 536). 
+Commonly, we have $m_h=m$, $v_h=v$, $c_h=c$, and $d_h=d$. \pause If the data have been standardized (scaled and centered), a reasonable default prior is 
+\begin{itemize}
+\item $m=0$, 
+\item $v=1$, 
+\item $c=2$, 
+\item $d=4$, (BDA3 pg 535) and
+\item $a$ is $1/H$ (BDA3 pg 536). 
+\end{itemize}
 
 \end{frame}
 
@@ -205,8 +212,11 @@ Commonly, we have $m_h=m$, $v_h=v$, $c_h=c$, and $d_h=d$. \pause If the data hav
 
 \begin{frame}
 \frametitle{MCMC}
+\small
 
-The steps of a Gibbs sampler with target distribution 
+\vspace{-0.05in}
+
+The steps of a Gibbs sampler with stationary distribution 
 \[ 
 p(\pi,\mu,\sigma^2,\zeta|y) \propto p(y|\zeta,\mu,\sigma^2) p(\zeta|\pi) p(\mu|\sigma^2) p(\sigma^2) p(\pi)
 \]
@@ -215,54 +225,26 @@ has steps
 \begin{enumerate}
 \item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
 \[ 
-P(\zeta_i=h|\ldots) 
+P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h, \sigma_h^2) 
 \]
+\item Sample $\pi \sim Dir(a+n)$ were $n=(n_1,\ldots,n_H)$ and $n_h = \sum_{i=1}^n \I(\zeta_i=h)$. 
+\item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
+\[ 
+\mu_h|\sigma_h^2 \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^2 \stackrel{ind}{\sim} IG(c'_h, d'_h)
+\]
+where 
+\[ \begin{array}{rl}
+v_h'^2 &= (1/v_h^2 + n_h)^{-1} \\
+m_h' &= v_h'^2(m_h/v_h^2 + n_h\overline{y}_h) \\
+c_h' &= c_d + n_2/2 \\
+d_h' &= d_h + \frac{1}{2}\left(\sum_{i:\zeta_i=h} (y_i-\overline{y}_h)^2 + \left(\frac{n_h}{1+n_h/v_h^2}\right)(\overline{y}_h - m_h)^2 \right) \\
+\overline{y}_h &= \frac{1}{n_h} \sum_{i:\zeta_i=h} y_i
+\end{array} \]
 \end{enumerate}
 
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Prior distributions}
-
-The parameters of the model are unidentified due to \alert{label-switching}, \pause i.e. 
-\[ Y_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h N(\mu_h, \sigma_h^2) \stackrel{d}{=} \sum_{h'=1}^H \pi_{h'} N(\mu_{h'}, \sigma_{h'}^2) \]
-for some permutation $h'$. 
-
-\vspace{0.2in} \pause
-
-One way to resolve this issue is to enforce identifiability in the prior. \pause For example, in one-dimension, we can order the component means: $\mu_1<\mu_2<\cdots<\mu_H$. 
-
-\vspace{0.2in} \pause
-
-To ensure the posterior is proper
-\begin{itemize}
-\item Maintain proper prior for $\pi$
-\item Ensure proper prior for ratios of variances 
-
-(perhaps by ensuring prior is proper for variances themselves)
-\end{itemize}
-
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Two conditionally conjugate prior options}
-
-Option 1:
-\[ 
-Dir(\pi;a) \I(\mu_1<\cdots<\mu_H) \prod_{h=1}^H N(\mu_h;m_h,v_h^2\phantom{\sigma_h^2}) IG(\sigma_h^2; c_h, d_h) 
-\]
-
-\vspace{0.2in} \pause
-
-Option 2:
-\[
-Dir(\pi;a) \I(\mu_1<\cdots<\mu_H)  \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\sigma_h^2) IG(\sigma_h^2; c_h, d_h)
-\]
-
-\end{frame}
 
 
 % \begin{frame}
@@ -328,6 +310,48 @@ gelman.diag(r, multivariate=FALSE)
 <<jags_convergence2, dependson='jags_run', echo=TRUE>>=
 plot(r, density=FALSE)
 @
+\end{frame}
+
+\begin{frame}
+\frametitle{Prior distributions}
+
+The parameters of the model are unidentified due to \alert{label-switching}, \pause i.e. 
+\[ Y_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h N(\mu_h, \sigma_h^2) \stackrel{d}{=} \sum_{h'=1}^H \pi_{h'} N(\mu_{h'}, \sigma_{h'}^2) \]
+for some permutation $h'$. 
+
+\vspace{0.2in} \pause
+
+One way to resolve this issue is to enforce identifiability in the prior. \pause For example, in one-dimension, we can order the component means: $\mu_1<\mu_2<\cdots<\mu_H$. 
+
+\vspace{0.2in} \pause
+
+To ensure the posterior is proper
+\begin{itemize}
+\item Maintain proper prior for $\pi$
+\item Ensure proper prior for ratios of variances 
+
+(perhaps by ensuring prior is proper for variances themselves)
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Two conditionally conjugate prior options}
+
+Option 1:
+\[ 
+Dir(\pi;a) \I(\mu_1<\cdots<\mu_H) \prod_{h=1}^H N(\mu_h;m_h,v_h^2\phantom{\sigma_h^2}) IG(\sigma_h^2; c_h, d_h) 
+\]
+
+\vspace{0.2in} \pause
+
+Option 2:
+\[
+Dir(\pi;a) \I(\mu_1<\cdots<\mu_H)  \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\sigma_h^2) IG(\sigma_h^2; c_h, d_h)
+\]
+
 \end{frame}
 
 
