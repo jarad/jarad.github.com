@@ -44,6 +44,8 @@ options(width=100)
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE>>=
 library(ggplot2)
+library(grid)
+library(gridExtra)
 library(plyr)
 library(dplyr)
 library(reshape2)
@@ -57,6 +59,88 @@ set.seed(2)
 \frame{\maketitle}
 
 \section{Finite mixtures}
+
+
+\begin{frame}
+\frametitle{Complicated distributions}
+<<rnaseq>>=
+library(edgeR)
+d = read.table("rna_seq.txt", header=TRUE)
+
+# Keep only total columns
+d = d[,c(1, grep("total", names(d)))]
+
+
+#regmatches(names(d), regexpr('_[B,M]{1,2}\\.', names(d)))
+
+
+# Rename columns
+names(d)[-1] = paste(c("B73","Mo17","B73xMo17","Mo17xB73"), 
+                     rep(1:4, each=4), 
+                     sep="_")
+
+# Order columns
+B_cols = c(2,6,10,14)
+d = d[,c(1, B_cols, B_cols+1, B_cols+2, B_cols+3)]
+
+variety = factor(gsub("_[0-9]{1,2}", "", names(d)[-1]), 
+                 levels = c("B73","Mo17","B73xMo17","Mo17xB73"))
+
+# phi, alpha, delta parameterization
+design = cbind(1,
+               ifelse(variety=='Mo17', -1, 1),
+               ifelse(variety=='B73',  -1, 1),
+               ifelse(variety=='B73xMo17', 1, ifelse(variety=='Mo17xB73',-1,0)))
+
+# GLM fit using edgeR
+fit = d[,-1] %>% 
+  DGEList() %>%
+  calcNormFactors %>%
+  estimateCommonDisp %>%
+  estimateGLMTagwiseDisp(design) %>%
+  glmFit(design)
+
+# Calculate gene-specific estimates for phi, alpha, delta, and psi
+hat = data.frame(gene = 1:length(fit$dispersion),
+                 phi   = fit$coefficients[,1] + mean(fit$offset[1,]),
+                 alpha = fit$coefficients[,2],
+                 delta = fit$coefficients[,3],
+                 gamma = fit$coefficients[,4],
+                 psi   = log(fit$dispersion))
+
+hat$gene = d$GeneID
+@
+
+<<rnaseq_plot, dependson='rnaseq', warning=FALSE>>=
+parms = names(hat)[-1]
+plots = list()
+
+n = length(parms)
+for (i in 1:n) {
+  for (j in 1:n) {
+    p = (i-1)*n+j # plot number
+    if (i>j) 
+      plots[[p]] = grid.rect(gp=gpar(col="white"))
+    if (i==j) {
+      plots[[p]] = ggplot(hat, aes_string(parms[i])) + 
+        geom_histogram(fill='gray') +
+        theme_bw() + 
+        labs(x=parse(text=parms[i]))
+    }
+    if (i<j) {   
+      plots[[p]] = ggplot(hat, aes_string(parms[j], parms[i])) + 
+        stat_binhex(bin=100) +
+        theme_bw() + 
+        scale_fill_gradientn(trans='log',breaks=c(1,10,100,1000), guide=FALSE, colours=c("gray","black")) + 
+        labs(x=parse(text=parms[j]), y=parse(text=parms[i]))
+    }
+  }
+}
+
+do.call("grid.arrange", c(plots, ncol=5))
+@
+\end{frame}
+
 
 \begin{frame}
 \frametitle{Finite mixtures}
