@@ -111,7 +111,7 @@ hat = data.frame(gene = 1:length(fit$dispersion),
 hat$gene = d$GeneID
 @
 
-<<rnaseq_plot, dependson='rnaseq', warning=FALSE>>=
+<<rnaseq_plot, dependson='rnaseq', message=FALSE, fig.keep='last', fig.height=10, fig.width=12>>=
 parms = names(hat)[-1]
 plots = list()
 
@@ -174,10 +174,11 @@ where $\sum_{h=1}^H \pi_h = 1$.
 
 Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
 Then 
-\[
-Y_i|\zeta_i=z \stackrel{ind}{\sim} N(\mu_{z},\sigma_{z}^2) \qquad \zeta_i \stackrel{ind}{\sim} Mult(1,\pi)
-\]
-where $\pi=(\pi_1,\ldots,\pi_H)$. 
+\[ \begin{array}{rl}
+Y_i|\zeta_i=z &\stackrel{ind}{\sim} N(\mu_{z},\sigma_{z}^2) \\ 
+\zeta_i &\stackrel{ind}{\sim} Cat(H,\pi)
+\end{array} \]
+where $Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
 
 \end{frame}
 
@@ -253,7 +254,7 @@ model {
     zeta[i] ~ dcat(pi[])
   }
 
-  for (i in 1:M) {
+  for (i in 1:H) {
     mu[i] ~ dnorm(0,1e-5)
     tau[i] ~ dgamma(1,1)
     sigma[i] <- 1/sqrt(tau[i])
@@ -265,7 +266,7 @@ model {
 
 <<jags_data, dependson='rnaseq', echo=TRUE>>=
 tmp = hat[sample(nrow(hat), 1000),]
-dat = list(n=nrow(tmp), M=3, y=tmp$phi, a=rep(1,3))
+dat = list(n=nrow(tmp), H=3, y=tmp$phi, a=rep(1,3))
 @
 
 <<jags_run, dependson=c('jags','jags_data'), echo=TRUE, results='hide'>>=
@@ -305,13 +306,13 @@ model {
     zeta[i] ~ dcat(pi[])
   }
 
-  for (i in 1:M) {
+  for (i in 1:H) {
     mu0[i] ~ dnorm(0,1e-5)
     tau[i] ~ dgamma(1,1)
     sigma[i] <- 1/sqrt(tau[i])
   }
 
-  mu[1:M] <- sort(mu0)
+  mu[1:H] <- sort(mu0)
   pi ~ ddirich(a)
 }"
 @
