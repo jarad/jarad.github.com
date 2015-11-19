@@ -1,0 +1,250 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,xmpmulti}
+
+\graphicspath{{figs/}}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Bayesian nonparametrics}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               cache=TRUE,
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE>>=
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(rjags)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Bayesian nonparametrics}
+
+There are two main approaches to Bayesian nonparametrics for density estimation
+\begin{itemize}[<+->]
+\item Dirichlet process and
+\item Polya trees
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+See \url{https://projecteuclid.org/euclid.ba/1369407550} for a general overview of all Bayesian nonparametric problems, e.g. density estimation, clustering, regression, random effects distributions, etc.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Motivation}
+<<rnaseq, message=FALSE>>=
+library(edgeR)
+d = read.table("rna_seq.txt", header=TRUE)
+
+# Keep only total columns
+d = d[,c(1, grep("total", names(d)))]
+
+
+#regmatches(names(d), regexpr('_[B,M]{1,2}\\.', names(d)))
+
+
+# Rename columns
+names(d)[-1] = paste(c("B73","Mo17","B73xMo17","Mo17xB73"), 
+                     rep(1:4, each=4), 
+                     sep="_")
+
+# Order columns
+B_cols = c(2,6,10,14)
+d = d[,c(1, B_cols, B_cols+1, B_cols+2, B_cols+3)]
+
+variety = factor(gsub("_[0-9]{1,2}", "", names(d)[-1]), 
+                 levels = c("B73","Mo17","B73xMo17","Mo17xB73"))
+
+# phi, alpha, delta parameterization
+design = cbind(1,
+               ifelse(variety=='Mo17', -1, 1),
+               ifelse(variety=='B73',  -1, 1),
+               ifelse(variety=='B73xMo17', 1, ifelse(variety=='Mo17xB73',-1,0)))
+
+# GLM fit using edgeR
+fit = d[,-1] %>% 
+  DGEList() %>%
+  calcNormFactors %>%
+  estimateCommonDisp %>%
+  estimateGLMTagwiseDisp(design) %>%
+  glmFit(design)
+
+# Calculate gene-specific estimates for phi, alpha, delta, and psi
+hat = data.frame(gene = 1:length(fit$dispersion),
+                 phi   = fit$coefficients[,1] + mean(fit$offset[1,]),
+                 alpha = fit$coefficients[,2],
+                 delta = fit$coefficients[,3],
+                 gamma = fit$coefficients[,4],
+                 psi   = log(fit$dispersion))
+
+hat$gene = d$GeneID
+
+ggplot(hat, aes(phi)) + 
+  geom_histogram(aes(y=..density..))
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Goal}
+Let $Y_i$ come from an unknown probability distribution $G$, i.e. $Y_i\sim G$. \pause As a Bayesian, the natural approach is to put a prior on $G$. \pause That is, we want to make statements like 
+\[ 
+P(Y_i \in A) = G(A)
+\]
+for any set $A$. 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Dirichlet process}
+
+One approach is to use a Dirichlet process (Ferguson 1973). \pause We write 
+\[ 
+G \sim DP(aG_0)
+\]
+where 
+\begin{itemize}[<+->]
+\item $a>0$ is total mass (or concentration) parameter and
+\item $G_0$ is the base measure, i.e. a probability distribution defined on the support of $G$. 
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+For any partition $\{A_1,\ldots,A_K\}$ of the sample space $S$, \pause the probability vector $[G(A_1),\ldots,G(A_K)]$ \pause follows a Dirichlet distribution, i.e.
+\[ 
+[G(A_1),\ldots,G(A_K)] \sim Dir([aG_0(A_1),\ldots,aG_0(a_K)]).
+\]
+Thus 
+\begin{itemize}[<+->]
+\item $E[G(A_1)] = G_0(A_1)$ and 
+\item $V[G(A_1)] = \frac{G_0(A_1)[1-G_0(A_1)]}{1+a}$.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Conjugacy of the Dirichlet process}
+
+Assume
+\[ 
+Y_i \stackrel{ind}{\sim} G \qquad \mbox{and} \qquad G\sim DP(aG_0)
+\]
+\pause
+then for any partition $\{A_1,\ldots,A_K\}$, we have 
+\[ \begin{array}{ll}
+[G(A_1),\ldots,G(A_K)]|y \sim \\
+\quad Dir\left(\left[aG_0(A_1) + \sum_{i=1}^n \I(y_i\in A_1),\ldots,aG_0(A_K) + \sum_{i=1}^n \I(y_i\in A_K)\right]\right)
+\end{array} \]
+\pause
+and thus 
+\[
+G|y \sim DP\left(aG_0 + \sum_{i=1}^n \delta_{y_i}\right)
+\]
+which has 
+\[ 
+E(G(A)) = \left( \frac{a}{a+n} \right)G_0(A) + \left( \frac{n}{a+n} \right)\sum_{i=1}^n \frac{1}{n} \I(y_i\in A)
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Stick-breaking representation}
+
+A constructive representation of the Dirichlet process is the stick-breaking representation. \pause Assume $G\sim DP(aG_0)$, then 
+\[ 
+P(\cdot) = \sum_{h=1}^\infty \pi_h \delta_{\theta_h}(\cdot)
+\]
+where 
+\begin{itemize}
+\item $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$
+\item $V_h \stackrel{ind}{\sim} Be(1,a)$, and
+\item $\theta_h\stackrel{ind}{\sim} G_0$.
+\end{itemize}
+
+
+<<stick_breaking, fig.height=2>>=
+# Stick-breaking realizations
+calc_pi = function(v) {
+    n = length(v)
+    pi = numeric(n)
+    cumv = cumprod(1 - v)
+    pi[1] = v[1]
+    for (i in 2:n) pi[i] = v[i] * cumv[i - 1]
+    pi
+}
+par(mar = rep(0, 4))
+plot(0, 0, type = "n", xlim = c(0, 1), ylim = c(-0.31, 0.31), axes = F, xlab = "", 
+    ylab = "")
+segments(0, 0, 1, 0)
+wd = 0.2
+segments(c(0, 1), -wd, c(0, 1), wd)
+wd = wd/1.1
+
+set.seed(9)
+pi = calc_pi(rbeta(5, 1, 10))
+cpi = cumsum(pi)
+segments(cpi, -wd, cpi, wd)
+text(c(0, 1), -0.3, c(0, 1))
+
+midpoint = function(x) {
+    n = length(x)
+    mp = numeric(n - 1)
+    for (i in 2:n) mp[i - 1] = mean(x[c(i - 1, i)])
+    mp
+}
+mp = midpoint(c(0, cpi, 1))
+text(mp, -0.3, expression(pi[1], pi[2], pi[3], pi[4], pi[5], ...))
+@
+
+\end{frame}
+
+\end{document}
+
