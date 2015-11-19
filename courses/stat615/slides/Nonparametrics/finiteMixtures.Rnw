@@ -77,7 +77,7 @@ Example: discrete choice model
 
 \vspace{0.1in} \pause
 
-Suppose we have a set of $H$ unordered categories and we label these $1,\ldots,H$. \pause Independently, consumers choose one of the $H$ categories with the same probability. \pause Then a reasonable model is $Z_i\stackrel{ind}{\sim} Cat(H,p)$.
+Suppose we have a set of $H$ categories and we label these $1,\ldots,H$. \pause Independently, consumers choose one of the $H$ categories with the same probability. \pause Then a reasonable model is $Z_i\stackrel{ind}{\sim} Cat(H,p)$.
 
 \end{frame}
 
@@ -114,7 +114,7 @@ A special case is $H=2$ which is the binomial distribution.
 
 The Dirichlet distribution (named after Peter Gustav Lejeune Dirichlet), i.e. $P\sim Dir(a)$, is a probability distribution for a probability vector of length $H$. \pause The probability density function for the Dirichlet distribution is 
 \[
-p(P;a) = \frac{\mG(a_1+\cdots+a_H)}{\mG(a_1)\cdots \mG(a_H)} \prod_{h=1}^H p_h^{a_h}
+p(P;a) = \frac{\mG(a_1+\cdots+a_H)}{\mG(a_1)\cdots \mG(a_H)} \prod_{h=1}^H p_h^{a_h-1}
 \]
 where $p_h\ge 0$, $\sum_{h=1}^H p_h=1$, and $a_h>0$. 
 
@@ -124,8 +124,8 @@ Letting $a_0 = \sum_{h=1}^H a_h$, then some moments are
 \begin{itemize}[<+->]
 \item $E[p_h] = \frac{a_h}{a_0}$,
 \item $V[p_h] = \frac{a_h(a_0-a_h)}{a_0^2(a_0+1)}$,
-\item $Cov(p_h,p_k) = -\frac{-a_ha_k}{a_0^2(a_0+1)}$, and 
-\item $\mbox{mode}(p_h) = \frac{a_h-1}{a_0-H}$.
+\item $Cov(p_h,p_k) = -\frac{a_ha_k}{a_0^2(a_0+1)}$, and 
+\item $\mbox{mode}(p_h) = \frac{a_h-1}{a_0-H}$ for $a_h>1$.
 \end{itemize}
 
 A special case is $H=2$ which is the beta distribution.
@@ -150,8 +150,9 @@ then
 
 Some possible default priors are 
 \begin{itemize}
-\item $a=1$ which is the uniform density over $\pi$ and 
-\item $a=0$ which is an improper prior that is uniform in the $\log(\pi_h)$. The resulting posterior is proper if $y_h>0$ for all $h$. 
+\item $a=1$ which is the uniform density over $\pi$,
+\item $a=1/2$ is Jeffreys prior for the multinomial, and 
+\item $a=0$, an improper prior that is uniform on $\log(\pi_h)$. The resulting posterior is proper if $y_h>0$ for all $h$. 
 \end{itemize}
 
 \end{frame}
@@ -655,7 +656,7 @@ where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) =
 Let's assume 
 \[ \begin{array}{rl}
 \pi &\sim Dir(a) \\
-\mu_h|\sigma_h^2 & \stackrel{ind}{\sim} N_p(m_h, v_h^2\mySigma_h) \\
+\mu_h|\Sigma_h & \stackrel{ind}{\sim} N_p(m_h, v_h^2\mySigma_h) \\
 \mySigma_h &\stackrel{ind}{\sim} IW(D_h,c_h)
 \end{array} \]
 where $c_h>p-1$ is the degrees of freedom and $D$ is the scale matrix. \pause The mean of this distribution is $D_h/(c_h-p-1)$ for $c_h>p+1$. 
@@ -695,7 +696,7 @@ P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h, \mySigma_h)
 \item Sample $\pi \sim Dir(a+n)$ were $n=(n_1,\ldots,n_H)$ and $n_h = \sum_{i=1}^n \I(\zeta_i=h)$. 
 \item For $h=1,\ldots,H$, sample $\mu_h,\mySigma_h$ from their full conditional
 \[ 
-\mu_h|\mySigma_h \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \mySigma_h \stackrel{ind}{\sim} IW(D_h',v_h')
+\mu_h|\mySigma_h \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \mySigma_h \stackrel{ind}{\sim} IW(D_h',c_h')
 \]
 where 
 \[ \begin{array}{rl}
