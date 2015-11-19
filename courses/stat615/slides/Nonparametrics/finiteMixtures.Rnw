@@ -16,7 +16,7 @@
 \setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
 \setkeys{Gin}{width=0.6\textwidth}
 
-\title{Bayesian nonparametrics}
+\title{Finite mixture models}
 \author[Jarad Niemi]{Dr. Jarad Niemi}
 \institute[Iowa State]{Iowa State University}
 \date{\today}
@@ -103,7 +103,7 @@ which has
 
 \vspace{0.2in} \pause
 
-A special case is $H=2$ which is the binomial dsitribution. 
+A special case is $H=2$ which is the binomial distribution. 
 
 \end{frame}
 
@@ -112,7 +112,7 @@ A special case is $H=2$ which is the binomial dsitribution.
 \begin{frame}
 \frametitle{Dirichlet distribution}
 
-The Dirichlet distribution (named after peter Gustav Lejeune Dirichlet), i.e. $P\sim Dir(a)$, is a probability distribution for a probability vector of length $H$. \pause The probability density function for the Dirichlet distribution is 
+The Dirichlet distribution (named after Peter Gustav Lejeune Dirichlet), i.e. $P\sim Dir(a)$, is a probability distribution for a probability vector of length $H$. \pause The probability density function for the Dirichlet distribution is 
 \[
 p(P;a) = \frac{\mG(a_1+\cdots+a_H)}{\mG(a_1)\cdots \mG(a_H)} \prod_{h=1}^H p_h^{a_h}
 \]
@@ -716,19 +716,17 @@ library(rjags)
 joint_mixture_model = "
 model {
   for (i in 1:n) {
-    y[i,1:p] ~ dmnorm(mu[zeta[i],1:p], Tau[1:p,1:p,zeta[i]])
+    y[i,1:p] ~ dmnorm(mu[,zeta[i]], Tau[,,zeta[i]])
     zeta[i] ~ dcat(pi[])
   }
 
   for (h in 1:H) {
-    mu[h,1:p] ~ dmnorm(mu0,Tau[,,h])
+    mu[1:p,h] ~ dmnorm(mu0,Tau[,,h])
     Tau[1:p,1:p,h] ~ dwish(D[,],c)
     Sigma[1:p,1:p,h] <- inverse(Tau[,,h])
   }
 
   pi ~ ddirich(a)
-
-
 }"
 @
 
@@ -741,14 +739,53 @@ dat$c = dat$p+1
 dat$mu0 = c(3,0)
 @
 
-<<jags_joint_run, dependson=c('jags_joint','jags_joint_data'), echo=TRUE, results='hide'>>=
+<<jags_joint_run, dependson=c('jags_joint','jags_joint_data'), echo=TRUE, results='hide', eval=FALSE>>=
 jm = jags.model(textConnection(joint_mixture_model), 
                 data = dat, 
                 n.chains = 3)
-r = coda.samples(jm, c('mu','Tau','pi'), 1e3)
+r = coda.samples(jm, c('pi','mu','Sigma'), 1e3)
 @
 \end{frame}
 
+
+
+% \begin{frame}
+% \frametitle{Approximation to the joint distribution}
+% 
+% <<joint_density_estimation, dependson=c('jags_joint_run','jags_joint_data')>>=
+% draws = ddply(data.frame(parameter=varnames(r)), .(parameter), function(x) {
+%   data.frame(iteration = start(r):end(r),
+%              chain = rep(1:3, each=end(r)-start(r)+1),
+%              value = unlist(r[,x$parameter])) 
+% }) %>%
+%   dcast(iteration+chain~parameter)
+% 
+% library(mvtnorm)
+% dmixnorm = function(x,pi,mu,Sigma) {
+%   density = 0
+%   for (i in 1:length(pi)) 
+%     density = density+pi[i]*dmvnorm(x,mu[i],Sigma[,,i])
+%   return(density)
+% }
+% pi_col = grep('pi', names(draws))
+% mu_col = grep('mu', names(draws))
+% Sigma_col = grep('Sigma', names(draws))
+% 
+% grid = expand.grid(phi = seq(-3,9,length.out=101), 
+%                    psi=c(-4, 1, length.out=101))
+% 
+% ddply(data.frame(iteration=1:nrow(draws)), .(iteration), function(x) {
+%   pi = as.numeric(draws[x$iteration,pi_col])
+%   mu = as.matrix(draws[x$iteration,mu_col], ncol=2, nrow=10, byrow=TRUE)
+%   Sigma = as.array(draws[x$iteration,Sigma_col], dim=c(dat$g, dat$g, dat$H))
+%   
+%   ddply(grid, .(phi,psi), function(g) {
+%     data.frame(density = dmixnorm(c(g$phi,g$psi), pi, mu, Sigma))
+%   })
+% }) 
+% @
+% 
+% \end{frame}
 
 
 \end{document}
