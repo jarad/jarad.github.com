@@ -58,6 +58,9 @@ set.seed(2)
 
 \frame{\maketitle}
 
+
+\section{Bayesian nonparametrics}
+
 \begin{frame}
 \frametitle{Bayesian nonparametrics}
 
@@ -173,7 +176,7 @@ Thus
 
 Assume
 \[ 
-Y_i \stackrel{ind}{\sim} G \qquad \mbox{and} \qquad G\sim DP(aG_0)
+Y_i \ind G \qquad \mbox{and} \qquad G\sim DP(aG_0)
 \]
 \pause
 then for any partition $\{A_1,\ldots,A_K\}$, we have 
@@ -205,8 +208,8 @@ P(\cdot) = \sum_{h=1}^\infty \pi_h \delta_{\theta_h}(\cdot)
 where 
 \begin{itemize}
 \item $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$
-\item $V_h \stackrel{ind}{\sim} Be(1,a)$, and
-\item $\theta_h\stackrel{ind}{\sim} G_0$.
+\item $V_h \ind Be(1,a)$, and
+\item $\theta_h\ind G_0$.
 \end{itemize}
 
 
@@ -282,14 +285,14 @@ ggplot(d, aes(x=theta, weight=pi)) +
 
 If we have an absolutely continuous distribution we are trying to approximate, then a DP is not reasonable. \pause Thus, we may use a DP mixture, i.e. 
 \[ 
-Y_i \stackrel{ind}{\sim} p(\cdot|\theta_i), \quad \theta_i \stackrel{ind}{\sim} G, \quad G\sim DP(aG_0).
+Y_i \ind p(\cdot|\theta_i), \quad \theta_i \ind G, \quad G\sim DP(aG_0).
 \]
 
 Alternatively, if we use the stick-breaking construction, we have 
 \[ 
-Y_i \stackrel{ind}{\sim} p(\cdot|\theta_i), \quad \theta_i \stackrel{ind}{\sim} \sum_{h=1}^\infty \pi_h \delta_{\theta_h^*}
+Y_i \ind p(\cdot|\theta_i), \quad \theta_i \ind \sum_{h=1}^\infty \pi_h \delta_{\theta_h^*}
 \]
-where $\theta_h^* \stackrel{ind}{\sim} G_0$ and $\pi \sim \mbox{stick}(a)$. 
+where $\theta_h^* \ind G_0$ and $\pi \sim \mbox{stick}(a)$. 
 
 \end{frame}
 
@@ -300,42 +303,146 @@ where $\theta_h^* \stackrel{ind}{\sim} G_0$ and $\pi \sim \mbox{stick}(a)$.
 
 For some $\epsilon>0$, there exists an $H$ such that $\sum_{h=H}^\infty \pi_h < \epsilon$ and can be ignored. \pause The resulting model is 
 \[ 
-Y_i \stackrel{ind}{\sim} p(\cdot|\theta_i), \quad \theta_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h \delta_{\theta_h^*}
+Y_i \ind p(\cdot|\theta_i), \quad \theta_i \ind \sum_{h=1}^H \pi_h \delta_{\theta_h^*}
 \]
 where 
 \begin{itemize}
-\item $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$ for $h<H$,
-\item $\pi_H = \prod_{\ell<H} (1-V_\ell)$, and
-\item $V_h \stackrel{ind}{\sim} Be(1,a)$
+\item $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$ 
+\item $V_h \ind Be(1,a)$ for $h<H$, and
+\item $V_H=1$. 
 \end{itemize}
+\pause
+\end{frame}
+
+
+
+\subsection{Normal example}
+\begin{frame}
+\frametitle{Normal example}
+
+A model for the marginal distribution for $Y_i=\phi_i$ is
+
+\[ 
+Y_i \ind N(\mu_i, \sigma_h^2) \quad 
+\left(\begin{array}{cc} \mu_i \\ \sigma_i^2 \end{array} \right) \sim \sum_{h=1}^H \pi_h \delta_{(\mu_h,)}
+\]
+where $\sum_{h=1}^H \pi_h = 1$. 
+
+\vspace{0.2in} \pause
+
+Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
+Then 
+\[ \begin{array}{rl}
+Y_i|\zeta_i=z &\ind N(\mu_{z},\sigma_{z}^2) \\ 
+\zeta_i &\ind Cat(H,\pi)
+\end{array} \]
+where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
 
 \end{frame}
 
 
 
-% \subsection{Normal example}
-% \begin{frame}
-% \frametitle{Normal example}
-% 
-% A model for the marginal distribution for $Y_i=\phi_i$ is
-% 
-% \[ 
-% Y_i \stackrel{ind}{\sim} N(\mu_i, \sigma_h^2) \quad 
-% \left(\begin{array}{cc} \mu_i \\ \sigma_i^2 \end{array} \right) \sim \sum_{h=1}^H \pi_h \delta_{(\mu_h,)}
-% \]
-% where $\sum_{h=1}^H \pi_h = 1$. 
-% 
-% \vspace{0.2in} \pause
-% 
-% Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
-% Then 
-% \[ \begin{array}{rl}
-% Y_i|\zeta_i=z &\stackrel{ind}{\sim} N(\mu_{z},\sigma_{z}^2) \\ 
-% \zeta_i &\stackrel{ind}{\sim} Cat(H,\pi)
-% \end{array} \]
-% where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
-% 
-% \end{frame}
+\subsection{Normal example}
+\begin{frame}
+\frametitle{Normal example}
+Let
+\[ 
+Y_i \ind N(\mu_i,\sigma_i^2), \qquad (\mu_i,\sigma_i^2) \ind \sum_{h=1}^H \pi_h \delta_{(\mu_h^*,\sigma_h^{2*})}
+\]
+where the base measure is 
+\[
+\mu_h^*|\sigma_h^{2*} \ind N(m,v^2\sigma_h^{2*}) \qquad\mbox{and}\qquad \sigma_h^{2*} \ind IG(c,d).
+\]
+
+\vspace{0.2in} \pause
+
+But since each $(\mu_i,\sigma_i^2)$ must equal $(\mu_h^*,\sigma_h^{2*})$ for some $h$, we can rewrite the model as 
+\[ 
+Y_i \ind \sum_{h=1}^H \pi_h N(\mu_h^*,\sigma_h^{2*})
+\]
+with a prior that is equal to the base measure. \pause Thus this model is equivalent to our finite mixture with the exception of the distribution for $\pi$. 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{MCMC}
+\small
+
+\vspace{-0.05in}
+
+The steps of a Gibbs sampler with stationary distribution 
+\[ 
+p(\pi,\mu,\sigma^2,\zeta|y) \propto p(y|\zeta,\mu,\sigma^2) p(\zeta|\pi) p(\mu|\sigma^2) p(\sigma^2) p(\pi)
+\]
+has steps 
+
+\begin{enumerate}
+\item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
+\[ 
+P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h, \sigma_h^2) 
+\]
+\item \alert{Sample $V_h \ind Be(1+n_h,a+n_h^+)$ for $V=1,\ldots,H-1$ where $n_h = \sum_{i=1}^n \I(\zeta_i=h)$ and $n_h^+ = \sum_{h'=h+1}^H n_{h'}$ and set $V_H=1$. Then calculate $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$.}
+\item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
+\[ 
+\mu_h|\sigma_h^2 \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^2 \stackrel{ind}{\sim} IG(c'_h, d'_h)
+\]
+where are exactly the same as in the normal finite mixture MCMC.
+
+\vspace{0.2in} \pause
+
+This Gibbs sampler is blocked because you sample $\zeta=(\zeta_1,\ldots,\zeta_n)$ jointly.
+\end{enumerate}
+
+\end{frame}
+
+
+
+\subsection{JAGS}
+\begin{frame}[fragile]
+<<dp_normal_blocked_model, echo=TRUE>>=
+library(rjags)
+dp_normal_blocked = "
+model {
+  for (i in 1:n) {
+    y[i] ~ dnorm(mu[zeta[i]], tau[zeta[i]])
+    zeta[i] ~ dcat(pi[])
+  }
+
+  for (h in 1:H) {
+    mu[h] ~ dnorm(0,3)
+    tau[h] ~ dgamma(1,1)
+    sigma[h] <- 1/sqrt(tau[h])
+  }
+
+  # Stick breaking
+  for (h in 1:(H-1)) { V[h] ~ dbeta(1,a) } 
+  V[H] <- 1
+  pi[1] <- V[1]
+  for (h in 2:H) {
+    pi[h] <- V[h] * (1-V[h-1]) * pi[h-1] / V[h-1]
+  }
+}"
+@
+
+<<jags_data, dependson='rnaseq', echo=TRUE>>=
+tmp = hat[sample(nrow(hat), 1000),]
+dat = list(n=nrow(tmp), H=10, y=tmp$phi, a=1)
+@
+
+<<jags_run, dependson=c('dp_normal_blocked_model','jags_data'), echo=TRUE, results='hide'>>=
+jm = jags.model(textConnection(dp_normal_blocked), data = dat, n.chains = 3)
+r = jags.samples(jm, c('mu','sigma','pi'), 1e3)
+@
+\end{frame}
+
+
+
+\begin{frame}
+<<mcmc_convergence,dependson='jags_run'>>=
+
+@
+\end{frame}
 
 
 \end{document}
