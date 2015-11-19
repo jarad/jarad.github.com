@@ -246,5 +246,97 @@ text(mp, -0.3, expression(pi[1], pi[2], pi[3], pi[4], pi[5], ...))
 
 \end{frame}
 
+
+
+\begin{frame}
+\frametitle{Realizations from a DP}
+<<stick_breaking_realizations, dependson='stick_breaking'>>=
+rdp = function(alpha, rP0, H = 10000) {
+    theta = rP0(H)
+    v = rbeta(H, 1, alpha)
+    pi = calc_pi(v)
+    return(data.frame(theta = theta, v = v, pi = pi))
+}
+
+plot_rdp = function(rdp, ...) {
+    plot(rdp$theta, rdp$pi, type = "h", ...)
+}
+
+d = ddply(expand.grid(alpha=10^seq(-2,2)), .(alpha), function(x) {
+  rdply(4, function() {
+    rdp(x$alpha, rnorm)
+  })
+})
+
+ggplot(d, aes(x=theta, weight=pi)) +
+  geom_histogram(aes(y=..density..), binwidth=0.1) + 
+  facet_grid(alpha~.n, scales='free_y') + 
+  stat_function(fun=dnorm, color='red')
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{DP mixture}
+
+If we have an absolutely continuous distribution we are trying to approximate, then a DP is not reasonable. \pause Thus, we may use a DP mixture, i.e. 
+\[ 
+Y_i \stackrel{ind}{\sim} p(\cdot|\theta_i), \quad \theta_i \stackrel{ind}{\sim} G, \quad G\sim DP(aG_0).
+\]
+
+Alternatively, if we use the stick-breaking construction, we have 
+\[ 
+Y_i \stackrel{ind}{\sim} p(\cdot|\theta_i), \quad \theta_i \stackrel{ind}{\sim} \sum_{h=1}^\infty \pi_h \delta_{\theta_h^*}
+\]
+where $\theta_h^* \stackrel{ind}{\sim} G_0$ and $\pi \sim \mbox{stick}(a)$. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Finite approximation to the stick-breaking representation}
+
+For some $\epsilon>0$, there exists an $H$ such that $\sum_{h=H}^\infty \pi_h < \epsilon$ and can be ignored. \pause The resulting model is 
+\[ 
+Y_i \stackrel{ind}{\sim} p(\cdot|\theta_i), \quad \theta_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h \delta_{\theta_h^*}
+\]
+where 
+\begin{itemize}
+\item $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$ for $h<H$,
+\item $\pi_H = \prod_{\ell<H} (1-V_\ell)$, and
+\item $V_h \stackrel{ind}{\sim} Be(1,a)$
+\end{itemize}
+
+\end{frame}
+
+
+
+% \subsection{Normal example}
+% \begin{frame}
+% \frametitle{Normal example}
+% 
+% A model for the marginal distribution for $Y_i=\phi_i$ is
+% 
+% \[ 
+% Y_i \stackrel{ind}{\sim} N(\mu_i, \sigma_h^2) \quad 
+% \left(\begin{array}{cc} \mu_i \\ \sigma_i^2 \end{array} \right) \sim \sum_{h=1}^H \pi_h \delta_{(\mu_h,)}
+% \]
+% where $\sum_{h=1}^H \pi_h = 1$. 
+% 
+% \vspace{0.2in} \pause
+% 
+% Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
+% Then 
+% \[ \begin{array}{rl}
+% Y_i|\zeta_i=z &\stackrel{ind}{\sim} N(\mu_{z},\sigma_{z}^2) \\ 
+% \zeta_i &\stackrel{ind}{\sim} Cat(H,\pi)
+% \end{array} \]
+% where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
+% 
+% \end{frame}
+
+
 \end{document}
 
