@@ -163,7 +163,7 @@ ggplot(hat, aes(phi)) +
 \begin{frame}
 \frametitle{Finite mixture}
 
-A model for the marginal distribution for $\phi_i$, now called $Y_i$, is
+A model for the marginal distribution for $Y_i=\phi_i$ is
 
 \[ 
 Y_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h N(\mu_h, \sigma_h^2)
@@ -178,7 +178,7 @@ Then
 Y_i|\zeta_i=z &\stackrel{ind}{\sim} N(\mu_{z},\sigma_{z}^2) \\ 
 \zeta_i &\stackrel{ind}{\sim} Cat(H,\pi)
 \end{array} \]
-where $Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
+where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
 
 \end{frame}
 
@@ -510,6 +510,143 @@ and then condition on $\hat{H}$ in the analysis. \pause Typically this MLE (or M
 \end{itemize}
 
 \end{frame}
+
+
+
+
+\subsection{Multivariate density estimation}
+\begin{frame}
+\frametitle{Multivariate density estimation}
+<<phi_psi_plot, dependson='rnaseq_plot', message=FALSE>>=
+do.call("grid.arrange", c(plots[c(1,5,6,25)], ncol=2))
+@
+\end{frame}
+
+
+
+\subsection{Finite mixture}
+\begin{frame}
+\frametitle{Finite mixture}
+
+A model for the joint distribution for $Y_i=(\phi_i,\psi)^\top$ is
+
+\[ 
+Y_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h N(\mu_h, \mySigma_h)
+\]
+where $\sum_{h=1}^H \pi_h = 1$. 
+
+\vspace{0.2in} \pause
+
+Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
+Then 
+\[ \begin{array}{rl}
+Y_i|\zeta_i=z &\stackrel{ind}{\sim} N(\mu_{z},\mySigma_{z}) \\ 
+\zeta_i &\stackrel{ind}{\sim} Cat(H,\pi)
+\end{array} \]
+where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{A possible prior}
+
+Let's assume 
+\[ \begin{array}{rl}
+\pi &\sim Dir(a) \\
+\mu_h|\sigma_h^2 & \stackrel{ind}{\sim} N_p(m_h, v_h^2\mySigma_h) \\
+\mySigma_h &\stackrel{ind}{\sim} IW(D_h,c_h)
+\end{array} \]
+where $c_h>p-1$ is the degrees of freedom and $D$ is the scale matrix. \pause The mean of this distribution is $D_h/(c_h-p-1)$ for $c_h>p+1$. 
+
+% \vspace{0.2in} \pause
+% 
+% Commonly, we have $m_h=m$, $v_h=v$, $c_h=c$, and $D_h=D$. \pause If the data have been standardized (scaled and centered), a reasonable default prior is 
+% \begin{itemize}
+% \item $m=0$, 
+% \item $v=1$, 
+% \item $c=2$, 
+% \item $d=4$, (BDA3 pg 535) and
+% \item $a$ is $1/H$ (BDA3 pg 536). 
+% \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{MCMC}
+\small
+
+\vspace{-0.05in}
+
+The steps of a Gibbs sampler with stationary distribution 
+\[ 
+p(\pi,\mu,\mySigma,\zeta|y) \propto p(y|\zeta,\mu,\mySigma) p(\zeta|\pi) p(\mu|\mySigma) p(\mySigma) p(\pi)
+\]
+has steps 
+
+\begin{enumerate}
+\item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
+\[ 
+P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h, \mySigma_h) 
+\]
+\item Sample $\pi \sim Dir(a+n)$ were $n=(n_1,\ldots,n_H)$ and $n_h = \sum_{i=1}^n \I(\zeta_i=h)$. 
+\item For $h=1,\ldots,H$, sample $\mu_h,\mySigma_h$ from their full conditional
+\[ 
+\mu_h|\mySigma_h \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \mySigma_h \stackrel{ind}{\sim} IG(v'_h, D'_h)
+\]
+where 
+\[ \begin{array}{rl}
+v_h'^2 &= (1/v_h^2 + n_h)^{-1} \\
+m_h' &= v_h'^2(m_h/v_h^2 + n_h\overline{y}_h) \\
+c_h' &= c_d + n_h \\
+D_h' &= D_h + \sum_{i:\zeta_i=h} (y_i-\overline{y}_h)(y_i-\overline{y}_h)^\top + \left(\frac{n_h}{1+n_h/v_h^2}\right)(\overline{y}_h-\mu_h)(\overline{y}_h-\mu_h)^\top  \\
+\overline{y}_h &= \frac{1}{n_h} \sum_{i:\zeta_i=h} y_i 
+\end{array} \]
+\end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<jags_joint, echo=TRUE>>=
+library(rjags)
+jags_model = "
+model {
+  for (i in 1:n) {
+    y[i,1:p] ~ dmnorm(mu[zeta[i],1:p], Tau[1:p,1:p,zeta[i]])
+    zeta[i] ~ dcat(pi[])
+  }
+
+  for (h in 1:H) {
+    mu[h,1:p] ~ dmnorm(mu0,Tau[,,h])
+    Tau[1:p,1:p,h] ~ dwish(D[,],c)
+    Sigma[1:p,1:p,h] <- inverse(Tau[,,h])
+  }
+
+  pi ~ ddirich(a)
+}"
+@
+
+<<jags_joint_data, dependson=c('rnaseq'), echo=TRUE, results='hide'>>=
+tmp = hat[sample(nrow(hat), 1000),]
+dat = list(n=nrow(tmp), y = tmp[,c('phi','psi')], p=2, H=10)
+dat$a = rep(1/dat$H, dat$H)
+dat$D = diag(1, dat$p)
+dat$c = dat$p+1
+dat$mu0 = c(3,0)
+@
+
+<<jags_joint_run, dependson=c('jags_joint','jags_joint_data'), echo=TRUE, results='hide'>>=
+jm = jags.model(textConnection(jags_model), 
+                data = dat, 
+                n.chains = 3)
+r = coda.samples(jm, c('mu','Tau','pi'), 1e3)
+@
+\end{frame}
+
 
 
 \end{document}
