@@ -58,6 +58,82 @@ set.seed(2)
 
 \frame{\maketitle}
 
+
+
+
+\section{Multinomial distribution}
+\begin{frame}
+\frametitle{Categorical distribution}
+
+Let $Z \sim Cat(H,p)$ represent a categorical distribution with 
+\begin{itemize}
+\item $P(Z=h) = p_h$ for $h=1,\ldots,H$ and 
+\item $\sum_{h=1}^H p_h = 1$.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Example: discrete choice model
+
+\vspace{0.1in} \pause
+
+Suppose we have a set of $H$ unordered categories and we label these $1,\ldots,H$. \pause Independently, consumers choose one of the $H$ categories with the same probability. \pause Then a reasonable model is $Z_i\stackrel{ind}{\sim} Cat(H,p)$.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Multinomial distribution}
+
+If we count the number of times the consumer chose each category, i.e. 
+\[ 
+Y_h = \sum_{i=1}^n \I(Z_i=h),
+\]
+\pause
+then the result is the multinomial distribution, i.e. $Y\sim Mult(n, p)$. \pause The multinomial distribution has probability mass function 
+\[ 
+p(y;n,p) = \frac{n!}{y_1!\cdots y_H!} \prod_{h=1}^H p_h^{y_h} 
+\]
+which has 
+\begin{itemize}
+\item $E[Y_i] = np_i$,
+\item $V[Y_i] = np_i(1-p_i)$, and 
+\item $Cov[Y_i,Y_j] = -np_ip_j$ for $(i\ne j)$.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+A special case is $H=2$ which is the binomial dsitribution. 
+
+\end{frame}
+
+
+\section{Dirichlet distribution}
+\begin{frame}
+\frametitle{Dirichlet distribution}
+
+The Dirichlet distribution (named after peter Gustav Lejeune Dirichlet), i.e. $P\sim Dir(a)$, is a probability distribution for a probability vector of length $H$. \pause The probability density function for the Dirichlet distribution is 
+\[
+p(P;a) = \frac{\mG(a_1+\cdots+a_H)}{\mG(a_1)\cdots \mG(a_H)} \prod_{h=1}^H p_h^{a_h}
+\]
+where $p_h\ge 0$, $\sum_{h=1}^H p_h=1$, and $a_h>0$. 
+
+\vspace{0.2in} \pause
+
+Letting $a_0 = \sum_{h=1}^H a_h$, then some moments are
+\begin{itemize}[<+->]
+\item $E[p_h] = \frac{a_h}{a_0}$,
+\item $V[p_h] = \frac{a_h(a_0-a_h)}{a_0^2(a_0+1)}$,
+\item $Cov(p_h,p_k) = -\frac{-a_ha_k}{a_0^2(a_0+1)}$, and 
+\item $\mbox{mode}(p_h) = \frac{a_h-1}{a_0-H}$.
+\end{itemize}
+
+A special case is $H=2$ which is the beta distribution.
+
+\end{frame}
+
+
+
 \section{Finite mixtures}
 
 
@@ -613,7 +689,7 @@ D_h' &= D_h + \sum_{i:\zeta_i=h} (y_i-\overline{y}_h)(y_i-\overline{y}_h)^\top +
 \begin{frame}[fragile]
 <<jags_joint, echo=TRUE>>=
 library(rjags)
-jags_model = "
+joint_mixture_model = "
 model {
   for (i in 1:n) {
     y[i,1:p] ~ dmnorm(mu[zeta[i],1:p], Tau[1:p,1:p,zeta[i]])
@@ -627,6 +703,8 @@ model {
   }
 
   pi ~ ddirich(a)
+
+
 }"
 @
 
@@ -640,7 +718,7 @@ dat$mu0 = c(3,0)
 @
 
 <<jags_joint_run, dependson=c('jags_joint','jags_joint_data'), echo=TRUE, results='hide'>>=
-jm = jags.model(textConnection(jags_model), 
+jm = jags.model(textConnection(joint_mixture_model), 
                 data = dat, 
                 n.chains = 3)
 r = coda.samples(jm, c('mu','Tau','pi'), 1e3)
