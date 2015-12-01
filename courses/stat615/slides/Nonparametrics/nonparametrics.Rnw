@@ -323,8 +323,8 @@ where
 A model for the marginal distribution for $Y_i=\phi_i$ is
 
 \[ 
-Y_i \ind N(\mu_i, \sigma_h^2) \quad 
-\left(\begin{array}{cc} \mu_i \\ \sigma_i^2 \end{array} \right) \sim \sum_{h=1}^H \pi_h \delta_{(\mu_h,)}
+Y_i \ind N(\mu_i, \sigma_i^2) \quad 
+\left(\begin{array}{cc} \mu_i \\ \sigma_i^2 \end{array} \right) \sim \sum_{h=1}^H \pi_h \delta_{(\mu_h,\sigma_h^{2*})}
 \]
 where $\sum_{h=1}^H \pi_h = 1$. 
 
@@ -333,7 +333,7 @@ where $\sum_{h=1}^H \pi_h = 1$.
 Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
 Then 
 \[ \begin{array}{rl}
-Y_i|\zeta_i=z &\ind N(\mu_{z},\sigma_{z}^2) \\ 
+Y_i|\zeta_i=z &\ind N(\mu_{h},\sigma_{h}^2) \\ 
 \zeta_i &\ind Cat(H,\pi)
 \end{array} \]
 where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
@@ -353,20 +353,19 @@ where the base measure is
 \[
 \mu_h^*|\sigma_h^{2*} \ind N(m,v^2\sigma_h^{2*}) \qquad\mbox{and}\qquad \sigma_h^{2*} \ind IG(c,d).
 \]
-
-\vspace{0.2in} \pause
+\pause
 
 But since each $(\mu_i,\sigma_i^2)$ must equal $(\mu_h^*,\sigma_h^{2*})$ for some $h$, we can rewrite the model as 
 \[ 
 Y_i \ind \sum_{h=1}^H \pi_h N(\mu_h^*,\sigma_h^{2*})
 \]
-with a prior that is equal to the base measure. \pause Thus this model is equivalent to our finite mixture with the exception of the distribution for $\pi$. 
+with a prior that is equal to the base measure. \pause Thus this model is equivalent to our finite mixture with the exception of the prior for $\pi$. 
 \end{frame}
 
 
 
 \begin{frame}
-\frametitle{MCMC}
+\frametitle{MCMC - Blocked Gibbs sampler}
 \small
 
 \vspace{-0.05in}
@@ -380,14 +379,14 @@ has steps
 \begin{enumerate}
 \item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
 \[ 
-P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h, \sigma_h^2) 
+P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h^*, \sigma_h^{2*}) 
 \]
 \item \alert{Sample $V_h \ind Be(1+n_h,a+n_h^+)$ for $V=1,\ldots,H-1$ where $n_h = \sum_{i=1}^n \I(\zeta_i=h)$ and $n_h^+ = \sum_{h'=h+1}^H n_{h'}$ and set $V_H=1$. Then calculate $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$.}
 \item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
 \[ 
-\mu_h|\sigma_h^2 \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^2 \stackrel{ind}{\sim} IG(c'_h, d'_h)
+\mu_h^*|\sigma_h^{2*} \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^{2*} \stackrel{ind}{\sim} IG(c'_h, d'_h)
 \]
-where are exactly the same as in the normal finite mixture MCMC.
+where $m_h', v_h'^2, c_h'$, and $d_h'$ are exactly the same as in the normal finite mixture MCMC.
 
 \vspace{0.2in} \pause
 
@@ -427,22 +426,215 @@ model {
 
 <<jags_data, dependson='rnaseq', echo=TRUE>>=
 tmp = hat[sample(nrow(hat), 1000),]
-dat = list(n=nrow(tmp), H=10, y=tmp$phi, a=1)
+dat = list(n=nrow(tmp), H=20, y=tmp$phi, a=1)
 @
 
 <<jags_run, dependson=c('dp_normal_blocked_model','jags_data'), echo=TRUE, results='hide'>>=
 jm = jags.model(textConnection(dp_normal_blocked), data = dat, n.chains = 3)
-r = jags.samples(jm, c('mu','sigma','pi'), 1e3)
+r = jags.samples(jm, c('mu','sigma','pi','zeta'), 1e3)
 @
 \end{frame}
 
 
 
 \begin{frame}
-<<mcmc_convergence,dependson='jags_run'>>=
+\frametitle{Monitor convergence of density}
 
+As previously discussed, the model as constructed as identifiability problems among the $\pi_h$, $\mu_h^*$, and $\sigma_h^{2*}$ due to label switching. \pause
+What is identified in the model is the value of the density at any particular value. 
+
+\vspace{0.2in} \pause
+
+So rather than directly monitoring the parameters, we will monitor the estimated density, \pause i.e. at iteration $m$ of the MCMC, the estimated density at location $x$ is 
+\[ 
+\sum_{h=1}^H \pi_h^{(m)} N(x; \mu_h^{*(m)}, \sigma_h^{2*(m)}).
+\]
+\pause
+Monitoring this quantity at a variety of locations $x$ will provide appropriate convergence assessment. 
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Monitor convergence of density}
+<<jags_conversion,dependson='jags_run'>>=
+xx = seq(min(dat$y)-1, max(dat$y)+1, length=101)
+grid = expand.grid(iteration=1:dim(r$mu)[2],
+                  chain = 1:dim(r$mu)[3],
+                  x = xx)
+d = 
+ddply(grid, .(iteration,chain,x), function(d) {
+  data.frame(density = sum(r$pi[,d$iteration, d$chain] * dnorm(d$x, 
+                                                               r$mu[,d$iteration,d$chain], 
+                                                               r$sigma[,d$iteration,d$chain])))
+})
+@
+
+<<example_traceplots, dependson='jags_conversion'>>=
+d$chain = as.factor(d$chain)
+ggplot(subset(d, x == sample(xx, 4)), aes(iteration, density, color=chain, group=chain)) + 
+  geom_line() + 
+  facet_wrap(~x, scales='free')
 @
 \end{frame}
+
+
+
+\begin{frame}
+\frametitle{Monitoring the number of utilized components}
+
+Since we are using a finite approximation to the DP, we should monitor the index of the maximum occupied component. \pause If the finite approximation is reasonable, then this index will be far from our choice of $H$. \pause If not, then $H$ should be increased. 
+
+\vspace{0.2in} \pause
+
+Specifically, at iteration $m$, we monitor
+\[ 
+\max \{ \zeta_1^{(m)}, \ldots,\zeta_n^{(m)} \}.
+\]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Monitoring the number of utilized components}
+
+<<max_occupied_index, dependson='jags_run'>>=
+index = adply(r$zeta, 2:3, function(d) data.frame(max_index = max(d)))
+names(index)[1:2] = c('iteration','chain')
+index$chain = as.factor(index$chain)
+ggplot(index, aes(iteration, max_index, color=chain, group=chain)) + 
+  geom_line() 
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Posterior density estimation}
+
+<<posterior_density_estimation, dependson=c('jags_data','jags_conversion')>>=
+sm = ddply(d, .(x), summarize,
+           lb = quantile(density, .025),
+           ub = quantile(density, .975))
+ggplot(sm, aes(x)) + 
+  geom_histogram(data=tmp, aes(x=phi, y=..density..), binwidth=0.2, alpha=0.5) + 
+  geom_ribbon(aes(ymin=lb, ymax=ub), fill='blue', alpha=0.5) 
+@
+
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Chinese restaurant process}
+
+\small
+
+Rather than utilizing the finite approximation to the DP, we can use the DP directly, by marginalizing out $G$. \pause
+This results in a prior directly on $\theta_1,\ldots,\theta_n$ via 
+\[ 
+\theta_i|\theta_1,\ldots,\theta_{i-1} \sim \left( \frac{a}{a+i-1} \right)G_0(\theta_i) + \sum_{j=1}^{i-1} \left(\frac{1}{\alpha+i-1} \right) \delta_{\theta_j}
+\]
+
+\pause
+
+The conditional prior distribution for $\theta_i$ is 
+\[ 
+\theta_i| \theta_{-i} \sim \left( \frac{a}{a+n-1} \right)G_0(\theta_i) + \sum_{j\ne i} \left(\frac{1}{\alpha+n-1} \right) \delta_{\theta_j}
+\]
+or, equivalently, 
+\[ 
+\theta_i| \theta_{-i} \sim \left( \frac{a}{a+n-1} \right)G_0(\theta_i) + \sum_{h=1}^{H^{(-i)}} \left(\frac{n_h^{(-i)}}{\alpha+n-1} \right) \delta_{\theta_h^*}
+\]
+where $H^{(-i)}$ is the number of components without $i$ and $n_h^{(-i)}$ is the number of observations in each component without $i$. 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Marginalized Gibbs sampler}
+
+Using this Chinese restaurant process, we have the following MCMC
+
+\begin{enumerate}
+\item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
+\[ 
+P(\zeta_i=h|\zeta_{-i},\ldots) \left\{ 
+\begin{array}{ll} 
+n_h^{(-i)} p(y_i|\theta_h^*) & h=1,\ldots,H^{(-i)} \\
+\alpha \int p(y_i;\theta) dG_0(\theta) & h=H^{(-i)}+1
+\end{array} \right.
+\]
+\pause
+If $\zeta_i = H^{(-i)}+1$, then sample $\theta^*_{\zeta_i}$ from its posterior using $y_i$ as the only observation.
+
+\pause
+
+\item For $h=1,\ldots,H$, sample $\theta_h^*$ from their full conditional
+\[ 
+\theta_h^*|\ldots \propto G_0(\theta_h^*)\prod_{i:\zeta_i=h} p(y_i|\theta_h^*)
+\]
+\pause
+i.e. sample the parameters from their posteriors using only the data in that group.
+\end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Marginalized Gibbs sampler - Normal example}
+
+For the normal example, we have 
+
+\begin{enumerate}
+\item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
+\[ 
+P(\zeta_i=h|\zeta_{-i},\ldots) \left\{ 
+\begin{array}{ll} 
+n_h^{(-i)} N(y_i|\mu_h^*,\sigma_h^{2*}) & h=1,\ldots,H^{(-i)} \\
+\alpha t_{2c}(y_i;m,v^2[d/c]) & h=H^{(-i)}+1
+\end{array} \right.
+\]
+\pause
+If $\zeta_i = H^{(-i)}+1$, then sample $\mu^*_{\zeta_i},\sigma_{\zeta_i}^{2*}$ from its normal-inverse-gamma posterior using $y_i$ as a the only observation. \pause 
+
+\item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
+\[ 
+\mu_h^*|\sigma_h^{2*} \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^{2*} \stackrel{ind}{\sim} IG(c'_h, d'_h)
+\]
+where $m_h', v_h'^2, c_h'$, and $d_h'$ are exactly the same as in the normal finite mixture MCMC.
+\end{enumerate}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Putting a prior on the concentration parameter}
+
+If $G\sim DP(a G_0)$, then the concentration parameter ($a$) controls the prior on the number of clusters. \pause 
+For example, if $a=1$, then in the prior two randomly selected observations have a 0.5 probability of belonging to the same cluster. \pause 
+As $a$ increases, then you have more clusters and more concentration around $G_0$. \pause
+As $a$ decreases, then you have fewer clusters and the data are more informative. 
+
+\vspace{0.2in} \pause
+
+Rather than setting the concentration parameter, we can learn it. \pause
+Let $G\sim DP(\alpha G_0)$ and 
+\[ 
+\alpha \sim Ga(a,b)
+\]
+\pause
+then the full conditional for $\alpha$ is 
+\[ 
+\alpha|\ldots \sim Ga(a+H-1, b - \sum_{h=1}^{H-1} \log(1-V_h))
+\]
+\end{frame}
+
 
 
 \end{document}
