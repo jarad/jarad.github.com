@@ -409,8 +409,8 @@ model {
   }
 
   for (h in 1:H) {
-    mu[h] ~ dnorm(0,3)
-    tau[h] ~ dgamma(1,1)
+    mu[h] ~ dnorm(2,1/3)
+    tau[h] ~ dgamma(.1,.1)
     sigma[h] <- 1/sqrt(tau[h])
   }
 
@@ -426,7 +426,7 @@ model {
 
 <<jags_data, dependson='rnaseq', echo=TRUE>>=
 tmp = hat[sample(nrow(hat), 1000),]
-dat = list(n=nrow(tmp), H=20, y=tmp$phi, a=1)
+dat = list(n=nrow(tmp), H=25, y=tmp$phi, a=1)
 @
 
 <<jags_run, dependson=c('dp_normal_blocked_model','jags_data'), echo=TRUE, results='hide'>>=
@@ -535,18 +535,18 @@ ggplot(sm, aes(x)) +
 Rather than utilizing the finite approximation to the DP, we can use the DP directly, by marginalizing out $G$. \pause
 This results in a prior directly on $\theta_1,\ldots,\theta_n$ via 
 \[ 
-\theta_i|\theta_1,\ldots,\theta_{i-1} \sim \left( \frac{a}{a+i-1} \right)G_0(\theta_i) + \sum_{j=1}^{i-1} \left(\frac{1}{\alpha+i-1} \right) \delta_{\theta_j}
+\theta_i|\theta_1,\ldots,\theta_{i-1} \sim \left( \frac{a}{a+i-1} \right)G_0(\theta_i) + \sum_{j=1}^{i-1} \left(\frac{1}{a+i-1} \right) \delta_{\theta_j}
 \]
 
 \pause
 
 The conditional prior distribution for $\theta_i$ is 
 \[ 
-\theta_i| \theta_{-i} \sim \left( \frac{a}{a+n-1} \right)G_0(\theta_i) + \sum_{j\ne i} \left(\frac{1}{\alpha+n-1} \right) \delta_{\theta_j}
+\theta_i| \theta_{-i} \sim \left( \frac{a}{a+n-1} \right)G_0(\theta_i) + \sum_{j\ne i} \left(\frac{1}{a+n-1} \right) \delta_{\theta_j}
 \]
 or, equivalently, 
 \[ 
-\theta_i| \theta_{-i} \sim \left( \frac{a}{a+n-1} \right)G_0(\theta_i) + \sum_{h=1}^{H^{(-i)}} \left(\frac{n_h^{(-i)}}{\alpha+n-1} \right) \delta_{\theta_h^*}
+\theta_i| \theta_{-i} \sim \left( \frac{a}{a+n-1} \right)G_0(\theta_i) + \sum_{h=1}^{H^{(-i)}} \left(\frac{n_h^{(-i)}}{a+n-1} \right) \delta_{\theta_h^*}
 \]
 where $H^{(-i)}$ is the number of components without $i$ and $n_h^{(-i)}$ is the number of observations in each component without $i$. 
 \end{frame}
@@ -564,7 +564,7 @@ Using this Chinese restaurant process, we have the following MCMC
 P(\zeta_i=h|\zeta_{-i},\ldots) \left\{ 
 \begin{array}{ll} 
 n_h^{(-i)} p(y_i|\theta_h^*) & h=1,\ldots,H^{(-i)} \\
-\alpha \int p(y_i;\theta) dG_0(\theta) & h=H^{(-i)}+1
+a \int p(y_i;\theta) dG_0(\theta) & h=H^{(-i)}+1
 \end{array} \right.
 \]
 \pause
@@ -594,7 +594,7 @@ For the normal example, we have
 P(\zeta_i=h|\zeta_{-i},\ldots) \left\{ 
 \begin{array}{ll} 
 n_h^{(-i)} N(y_i|\mu_h^*,\sigma_h^{2*}) & h=1,\ldots,H^{(-i)} \\
-\alpha t_{2c}(y_i;m,v^2[d/c]) & h=H^{(-i)}+1
+a\, t_{2c}(y_i;m,v^2[d/c]) & h=H^{(-i)}+1
 \end{array} \right.
 \]
 \pause
@@ -631,7 +631,7 @@ Let $G\sim DP(\alpha G_0)$ and
 \pause
 then the full conditional for $\alpha$ is 
 \[ 
-\alpha|\ldots \sim Ga(a+H-1, b - \sum_{h=1}^{H-1} \log(1-V_h))
+\alpha|\ldots \sim Ga\left(a+H-1, b - \sum_{h=1}^{H-1} \log(1-V_h)\right)
 \]
 \end{frame}
 
