@@ -649,6 +649,14 @@ Y_{ij} \ind G_j, \quad G_j \ind DP(\alpha_j G_{0j})
 where we must now specify $\alpha_j$ and $G_{0j}$ for $j=1,\ldots,J$. \pause
 More importantly, this model does not allow us to borrow any information across the groups since the observations across groups given $\alpha_j$ and $G_{0j}$. 
 
+\vspace{0.2in} \pause
+
+Some possible models to allow borrowing of information are the 
+\begin{itemize}
+\item Dependent Dirichlet process (DDP)
+\item Hierarchical Dirichlet process (HDP)
+\item Nested Dirichlet process (NDP)
+\end{itemize}
 
 \end{frame}
 
@@ -666,7 +674,7 @@ G_j \ind DP(\alpha_j G_{0j})
 but we may want to incorporate dependency between the measures and thus borrow information across the measures. \pause
 One approach is a ``fixed-$\pi$ DDP'' which is defined via the stick-breaking process such that each measure has the same weights $\pi$ but the locations vary, \pause i.e.
 \[
-G_j = \sum_{h=1}^\infty \pi_h \delta_{\theta_{jh}^*}, \quad 
+G_j \stackrel{d}{=} \sum_{h=1}^\infty \pi_h \delta_{\theta_{jh}^*}, \quad 
 \pi \sim \mbox{stick}(\alpha), \quad 
 \theta_{jh}^* \sim G_0
 \]
@@ -685,8 +693,8 @@ G_j \ind DP(\alpha G_0) \qquad G_0 \sim DP(\beta G_{00})
 \pause
 The stick-breaking process related to this model is 
 \[ 
-G_j = \sum_{h=1}^\infty \pi_{jh}\delta_{\theta_h^*}, \quad 
-G_0 = \sum_{h=1}^\infty \lambda_h \delta_{\theta_h^*}, \quad 
+G_j \stackrel{d}{=} \sum_{h=1}^\infty \pi_{jh}\delta_{\theta_h^*}, \quad 
+G_0 \stackrel{d}{=} \sum_{h=1}^\infty \lambda_h \delta_{\theta_h^*}, \quad 
 \theta_h^* \sim G_{00}
 \]
 \pause
@@ -718,9 +726,123 @@ P_h^* \ind DP(\beta G_{00}).
 \]
 \pause
 A natural combination of the HDP and NDP is to place a DP on $G_{00}$ which results in common set of global atoms, i.e. $\theta_h^*$, but with varying weights for each cluster.
+\end{frame}
 
+
+
+\subsection{Applications}
+\begin{frame}
+\frametitle{Applications of DP}
+
+Primarily we have been discussing the use of the DP prior as a tool for Bayesian nonparametric density estimation. \pause
+Here we discuss additional uses in the context of 
+\begin{itemize}
+\item Random effects 
+\item Error distributions
+\item Functional data analysis
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Random effects model}
+\small
+
+Let $y_{ij}$ be the observation for individual $i$ in group $j$ \pause and assume 
+\[
+y_{ij} = \mu_j + \epsilon_{ij}, \quad
+\mu_j \ind F, \quad
+\epsilon_{ij} \ind G
+\]
+\pause
+A typical parametric model would assume $F\stackrel{d}{=} N(\eta,\tau^2)$ and $G \stackrel{d}{=} N(0,\sigma^2)$. 
+\pause
+Suppose we would like to be less informative about these distributional assumptions. \pause
+One possibility is to assume 
+\[ 
+F\ind DP(\alpha F_0).
+\]
+\pause
+Now we will estimate the density for the random effects $\mu_j$. \pause
+To estimate $F$, we will need many groups, i.e. $J$ should be large. \pause
+Alternatively (or additionally), we could assume 
+\[
+\epsilon_{ij} \ind N(0,\sigma_i^2), \quad
+\sigma_i^2 \ind G, \quad
+G \sim DP(\beta G_0).
+\]
+\pause
+Here we use the Dirichlet Process mixture to assure that the distribution for the observations are continuous. \pause
+To estimate $G$, we need many observations per group. \pause
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Functional data analysis}
+
+\small
+
+Let $y_{ij}$ be the observation and $x_{ij}$ be an explanatory variable for individual $i$ in group $j$ \pause and assume 
+\[
+y_{ij} = f_j(x_{ij}) + \epsilon_{ij}, \quad
+f_j(x) = \sum_{h=1}^H \theta_{jh} b_h(x)
+\]
+where $b_h(x)$ for $h=1,\ldots,H$ be a collection of basis functions. \pause
+Now assume 
+\[
+\theta_{j} = (\theta_{j1},\ldots,\theta_{jH}) \ind G,\quad
+G \sim DP(\alpha G_0)
+\]
+To provide parismony, i.e. dropping basis functions, we can utilize a base measure that a point-mass mixtures, i.e. 
+\[
+G_{0h} \stackrel{d}{=} = \pi_{0h}\delta_0 + (1-\pi_{0h}) N(0,\tau_h^2)
+\]
+\pause
+If we want $t$ alternatives, let $\tau_h^* \sim IG(\cdot,\cdot)$. \pause
+A conditionally conjugate prior on the $\pi$ is \pause $\pi_{0h}\ind Be(a,b)$. \pause
+If exact zeros are not necessary, then let 
+\[ 
+\theta_{ch}^* \ind N(0,\tau_{ch}^2),\quad
+\tau_{ch}^2 \ind IG(\cdot, \cdot)
+\]
+and thus have $t$ distribution for the $\theta_{ch}^*$, but now the MCMC is more efficient.
 
 \end{frame}
 
+
+
+\subsection{Bayesian nonparametrics in R}
+\begin{frame}
+\frametitle{Bayesian nonparametrics in R}
+
+From \href{https://cran.r-project.org/web/views/Bayesian.html}{CRAN Task View: Bayesian Inference}, the packages that contain Dirichlet process related Bayesian nonparametrics are 
+\begin{itemize}
+\item bayesm
+\item DPpackage
+\item growcurves
+\item PReMiuM
+\end{itemize}
+\end{frame}
+
+The DPpackage was (is?) the premiere package for Dirichlet process, but it hasn't been updated since 2012-09-14. 
+
 \end{document}
+
+
+\begin{frame}[fragile]
+\frametitle{Density estimation in the DPpackage}
+<<DPpackage_density_estimation, dependson='rnaseq', echo=TRUE>>=
+library(DPpackage)
+prior = list(alpha=1,m1=rep(0,1),psiinv1=diag(0.5,1),nu1=4,
+                     tau1=1,tau2=100)
+mcmc = list(nburn=1000, nsave=10000, nskip=10, ndisplay=100)
+state = NULL # initial state
+dp = DPdensity(y = hat$phi,
+               prior = prior,
+               mcmc = mcmc,
+               state=state, 
+               status=TRUE)
+@
+\end{frame}
 
