@@ -593,7 +593,7 @@ For the normal example, we have
 \[ 
 P(\zeta_i=h|\zeta_{-i},\ldots) \propto \left\{ 
 \begin{array}{ll} 
-n_h^{(-i)} N(y_i|\mu_h^*,\sigma_h^{2*}) & h=1,\ldots,H^{(-i)} \\
+n_h^{(-i)} N(y_i;\mu_h^*,\sigma_h^{2*}) & h=1,\ldots,H^{(-i)} \\
 a\, t_{2c}(y_i;m,v^2[d/c]) & h=H^{(-i)}+1
 \end{array} \right.
 \]
@@ -636,6 +636,91 @@ then the full conditional for $\alpha$ is
 \end{frame}
 
 
+\subsection{Hierarchical dependence}
+%\subsection{Dependent Dirichlet process}
+\begin{frame}
+\frametitle{Multiple groups}
+
+Suppose we have $Y_{ij}$ for $i=1,\ldots,n_j$ and $j=1,\ldots,J$, \pause i.e. we have $J$ groups with $n_j$ observations per group. \pause
+We may consider a DP for each group individually, i.e. 
+\[ 
+Y_{ij} \ind G_j, \quad G_j \ind DP(\alpha_j G_{0j})
+\]
+where we must now specify $\alpha_j$ and $G_{0j}$ for $j=1,\ldots,J$. \pause
+More importantly, this model does not allow us to borrow any information across the groups since the observations across groups given $\alpha_j$ and $G_{0j}$. 
+
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Dependent Dirichlet process}
+
+Suppose we are interested in estimating a collection of random probability measures $G_1,\ldots,G_J$. \pause
+We would like for the measures to be DPs marginally, i.e. 
+\[ 
+G_j \ind DP(\alpha_j G_{0j})
+\]
+\pause
+but we may want to incorporate dependency between the measures and thus borrow information across the measures. \pause
+One approach is a ``fixed-$\pi$ DDP'' which is defined via the stick-breaking process such that each measure has the same weights $\pi$ but the locations vary, \pause i.e.
+\[
+G_j = \sum_{h=1}^\infty \pi_h \delta_{\theta_{jh}^*}, \quad 
+\pi \sim \mbox{stick}(\alpha), \quad 
+\theta_{jh}^* \sim G_0
+\]
+
+\end{frame}
+
+
+%\subsection{Hierarchical Dirichlet process}
+\begin{frame}
+\frametitle{Hierarchical Dirichlet process}
+
+An alternative is to build a hierarchical model, i.e. 
+\[
+G_j \ind DP(\alpha G_0) \qquad G_0 \sim DP(\beta G_{00})
+\]
+\pause
+The stick-breaking process related to this model is 
+\[ 
+G_j = \sum_{h=1}^\infty \pi_{jh}\delta_{\theta_h^*}, \quad 
+G_0 = \sum_{h=1}^\infty \lambda_h \delta_{\theta_h^*}, \quad 
+\theta_h^* \sim G_{00}
+\]
+\pause
+where 
+\[
+\pi_j = (\pi_{j1},\pi_{j2},\ldots) \sim \mbox{stick}(\alpha) 
+\quad \mbox{and} \quad 
+\lambda = (\lambda_1,\lambda_2,\ldots) \sim \mbox{stick}(\beta).
+\]
+\pause
+Like the DDP, the HDP allows individuals in different groups to be clustered together, i.e. have the same $\theta_h^*$.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Nested Dirichlet process}
+
+Rather than clusting individuals across groups, we may be interested in clustering groups themselves\pause, i.e. groups that have the same distribution should be treated as the same group. \pause
+Here we can use the nested Dirichlet process: \pause
+\[ 
+G_j \ind G, \quad G\sim DP(\alpha G_0),\quad G_0\equiv DP(\beta G_{00}).
+\]
+\pause
+The stick-breaking process related to this model is 
+\[
+G_j \ind G \stackrel{d}{=} \sum_{h=1}^\infty \pi_h \delta_{G_h^*}, \quad 
+\pi \sim \mbox{stick}(\alpha), \quad 
+P_h^* \ind DP(\beta G_{00}).
+\]
+\pause
+A natural combination of the HDP and NDP is to place a DP on $G_{00}$ which results in common set of global atoms, i.e. $\theta_h^*$, but with varying weights for each cluster.
+
+
+\end{frame}
 
 \end{document}
 
