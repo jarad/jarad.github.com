@@ -80,8 +80,7 @@ For the purpose of this page,
 
 > derived data is any combination, summarization, or reshaping of your raw data.
 
-I highly recommend you use a script, e.g. R or SAS, to combine, summarize, or reshape your raw data into a derived data format. 
 Unlike the relatively strict ``rules'' for raw data, derived data can be any format you want. 
 I know many individuals use Excel to produce summary statistics, figures, and tables.
-Although this is fine, I suggest a scripting language that will allow you to easily recreate those statistics, figures, and tables if errors in the raw data are found. 
+Although this is fine, I suggest a scripting language, e.g. R or SAS, that will allow you to easily recreate those statistics, figures, and tables if errors in the raw data are found. 
 
