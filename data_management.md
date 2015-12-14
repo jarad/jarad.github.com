@@ -14,6 +14,7 @@ To construct this page, I used many sources including
 - [NOAA - Data Management Best Practices](http://www.ncddc.noaa.gov/activities/science-technology/data-management/)
 - [ESA Bulletin - Some Simple Guidelines for Effective Data Management](http://www.esajournals.org/doi/abs/10.1890/0012-9623-90.2.205)
 
+
 ## What is raw data?
 
 For the purpose of this page, 
@@ -70,3 +71,17 @@ The main goal with these tips are to simplify the raw data creation process in o
 - Record full dates using standardized formats
 
     In R, the only two Date formats that are recognized are "%Y-%m-%d" and "%Y/%m/%d". 
+
+
+
+## What is derived data?
+
+For the purpose of this page,
+
+> derived data is any combination, summarization, or reshaping of your raw data.
+
+I highly recommend you use a script, e.g. R or SAS, to combine, summarize, or reshape your raw data into a derived data format. 
+Unlike the relatively strict ``rules'' for raw data, derived data can be any format you want. 
+I know many individuals use Excel to produce summary statistics, figures, and tables.
+Although this is fine, I suggest a scripting language that will allow you to easily recreate those statistics, figures, and tables if errors in the raw data are found. 
+
