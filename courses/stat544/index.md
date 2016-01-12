@@ -24,6 +24,10 @@ Office hours are
 
 The required textbook for the course is [Bayesian Data Analysis (3rd edition)](http://www.amazon.com/gp/product/1439840954/ref=as_li_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=1439840954&linkCode=as2&tag=jarnieassprod-20&linkId=3HFCNUPX52YW2EVV). [Other suggested textbooks.](textbook.html)
 
+## Software 
+
+Some links to Bayesian statistical software is provided [here](software.html).
+
 ## Relevant course pages
 
 - [Applets](applets.html)
