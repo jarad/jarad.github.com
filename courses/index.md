@@ -8,6 +8,8 @@ group: navigation
 
 ## Regular courses
 
+- Spring 2016
+  - [STAT 544](stat544)
 - Fall 2015
   - [STAT 615](stat615)
 - Spring 2015
