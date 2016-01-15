@@ -10,9 +10,10 @@ tagline: TA responsibilities
   - 10 pts per homework
   - No credit if problem is not attempted
   - 0.1 off for minor mistakes, e.g. typos
-  - 0.5-1 off for major mistakes indicating lack of understanding
+  - 0.5 off for major mistakes indicating lack of understanding
 - Post solutions on Blackboard
-  - on homework due date unless instructor indicates otherwise
+  - create solutions as needed
+  - on homework due date unless instructor indicates otherwise via email
 - Be active on the discussion board
   - Subscribe to the discussion board
   - Post responses/answers as you can
