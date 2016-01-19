@@ -31,8 +31,10 @@ opts_chunk$set(comment=NA,
                out.width='0.8\\textwidth', 
                fig.align='center', 
                message=FALSE,
-               echo=FALSE)
+               echo=FALSE,
+               cache=TRUE)
 library(plyr)
+library(dplyr)
 library(ggplot2)
 library(xtable)
 library(Sleuth3)
@@ -121,9 +123,10 @@ library(reshape2)
 	\[ \begin{array}{ll}
 	p(\theta|y) &= p(y|\theta)p(\theta) / p(y) \pause \\
 	&= {n\choose y} \theta^y(1-\theta)^{n-y}  \frac{\theta^{a-1} (1-\theta)^{b-1}}{\mbox{Beta}(a,b)}  \left/ {n\choose y} \frac{\mbox{Beta}(a+y,b+n-y)}{\mbox{Beta}(a,b)} \right. \pause \\
-	&= \frac{\theta^{a+y-1} (1-\theta)^{b+n-y-1}}{\mbox{Beta}(a+y,b+n-y)}  \pause \\
-	&= Be(\theta|a+y, b+n-y) 
+	&= \frac{\theta^{a+y-1} (1-\theta)^{b+n-y-1}}{\mbox{Beta}(a+y,b+n-y)}
 	\end{array} \]
+\pause
+Thus $\theta|y \sim Be(\theta|a+y, b+n-y)$.
 	
 }
 
@@ -133,8 +136,9 @@ library(reshape2)
 	p(\theta|y) &\propto p(y|\theta)p(\theta) \pause \\
 	&\propto \theta^y(1-\theta)^{n-y} \theta^{a-1} (1-\theta)^{b-1} \pause \\
 	&= \theta^{a+y-1} (1-\theta)^{b+n-y-1} \pause \\
-	&= Be(\theta|a+y, b+n-y) 
 	\end{array} \]
+\pause
+Thus $\theta|y \sim Be(\theta|a+y, b+n-y)$.
 }
 
 
@@ -158,18 +162,20 @@ so it may seem that a reasonable approach to a default prior is to replace $p(\t
 \begin{frame}[fragile]
 \frametitle{Posterior distribution}
 
-<<echo=FALSE, out.width='0.7\\textwidth'>>=
+<<data>>=
 n = 10
 y = 3
 a = b = 1
-opar = par(mar=c(5,4,.1,0)+.1)
-curve(dbeta(x, a+y, b+n-y), lwd=2, col="red", lty=1, 
-      xlab=expression(theta),
-      ylab=expression(paste("p(", theta, "|y)")))
-curve(dbeta(x,a,b), lwd=2, col="blue", add=TRUE, lty=1)
-curve(dbeta(x,y,n-y), lwd=2, col="black", add=TRUE, lty=3)
-legend("topright", c("Prior","Normalized model","Posterior"), lwd=2, lty=c(1,3,1), col=c("blue","black","red"))
-par(opar)
+d = data.frame(x = seq(0,1,by=0.01)) %>% 
+  mutate(prior = dbeta(x,a,b),
+         "normalized likelihood" = dbeta(x, y, n-y),
+         posterior = dbeta(x, a+y, b+n-y))
+
+m = melt(d, id.var='x', variable.name="Distribution", value.name="density")
+
+ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
+  geom_line() +
+    theme(legend.position="bottom")
 @
 {\tiny Try it yourself at \url{https://jaradniemi.shinyapps.io/one_parameter_conjugate/}.}
 \end{frame}
@@ -211,7 +217,7 @@ par(opar)
 	\begin{itemize}
 	\item Mean: $\hat{\theta}_{Bayes} = E[\theta|y]$ minimizes $L\!\left(\theta,\hat{\theta}\right) = \left(\theta-\hat{\theta}\right)^2$ \pause
 	\item Median: $\int_{\hat{\theta}_{Bayes}}^\infty p(\theta|y) d\theta = \frac{1}{2}$ minimizes $L\!\left(\theta,\hat{\theta}\right) = \left|\theta-\hat{\theta}\right|$ \pause
-	\item Mode: $\hat{\theta}_{Bayes} = \mbox{argmax}_\theta \, p(\theta|y)$ minimizes $L\!\left(\theta,\hat{\theta}\right) = -\I\left(\theta = \hat{\theta}\right)$  \pause also called \alert{maximum a posterior (MAP)}
+	\item Mode: $\hat{\theta}_{Bayes} = \mbox{argmax}_\theta \, p(\theta|y)$ is obtained by minimizing $L\!\left(\theta,\hat{\theta}\right) = -\I\left(|\theta| - \hat{\theta}|<\epsilon\right)$ as $\epsilon \to 0$, \pause also called \alert{maximum a posterior (MAP)} estimator.
 	\end{itemize}
 }
 
@@ -240,17 +246,18 @@ par(opar)
 \begin{frame}[fragile]
 \frametitle{Point estimation}
 
-<<echo=FALSE, out.width='0.8\\textwidth'>>=
-opar = par(mar=c(5,4,.1,0)+.1)
-curve(dbeta(x, a+y, b+n-y), lwd=2, 
-      xlab=expression(theta),
-      ylab=expression(paste("p(", theta, "|y)")), col="gray")
-estimates = c(mean = (a+y)/(a+b+n), 
+<<estimates, dependson='data'>>=
+estimates = data.frame(mean = (a+y)/(a+b+n), 
               median = qbeta(.5, a+y, b+n-y),
               mode = (a+y-1)/(a+b+n-2))
-abline(v=estimates, lty=1:3, col=1:3, lwd=2)
-legend("topright", names(estimates), lty=1:3, col=1:3, lwd=2)
-par(opar)
+
+ggplot(d, aes(x, posterior, group = 1)) +
+  geom_line() +
+  geom_vline(data = melt(estimates,variable.name='estimator', 
+                         measure.vars = c('mean','median','mode')), 
+             aes(xintercept=value, color=estimator, linetype=estimator),
+             show_guide = TRUE) +
+    theme(legend.position="bottom")
 @
 
 \end{frame}
@@ -277,22 +284,32 @@ par(opar)
 
 
 \begin{frame}[fragile]
-\frametitle{Point estimation}
+\frametitle{Interval estimation}
 
-<<echo=FALSE, out.width='0.8\\textwidth'>>=
+<<intervals, dependson='data'>>=
 library(pscl)
-opar = par(mar=c(5,4,.1,0)+.1)
-curve(dbeta(x, a+y, b+n-y), lwd=2, 
-      xlab=expression(theta),
-      ylab=expression(paste("p(", theta, "|y)")), col="gray")
-intervals = rbind(qbeta(c(.025,.975), a+y, b+n-y),
-                  qbeta(c(   0, .95), a+y, b+n-y),
-                  qbeta(c( .05,   1), a+y, b+n-y),
-                  betaHPD(a+y,b+n-y,.95))
-rownames(intervals) = c("Equal-tail", "Lower one-sided", "Upper one-sided", "Highest posterior density (HPD)")
-segments(intervals[,1], (1:4)/10, intervals[,2], (1:4)/10, lwd=2, lty=1:4, col=1:4)
-legend("topright", rownames(intervals), lwd=2, lty=1:4, col=1:4)
-par(opar)
+hpd = betaHPD(a+y,b+n-y,.95)
+
+interval = data.frame(type = c('equal-tail',
+                               'lower tail',
+                               'higher tail',
+                               'highest posterior density (HPD)'),
+                      lb = c(qbeta(.025, a+y, b+n-y),
+                             0,
+                             qbeta(.05, a+y, b+n-y),
+                             hpd[1]),
+                      ub = c(qbeta(.975, a+y, b+n-y),
+                             qbeta(.95, a+y, b+n-y),
+                             1,
+                             hpd[2]),
+                      y = (1:4)/10)
+
+ggplot(d, aes(x, posterior, group=1)) +
+  geom_line(color='gray') +
+  geom_segment(data = interval, aes(x = lb, xend = ub, y=y, yend=y, 
+                                    color = type, linetype = type)) + 
+  theme_bw() +
+  theme(legend.position="bottom") 
 @
 
 \end{frame}
@@ -305,12 +322,11 @@ par(opar)
 
 An estimate of the full posterior can be obtained via simulation, i.e. 
 
-<<>>=
-hist(samples <- rbeta(10000, a+y, b+n-y), 100, freq=F, ylim=c(0,3.5), xlim=c(0,1),
-     main="Samples from the posterior",
-     xlab=expression(theta),
-     ylab=expression(paste("p(", theta, "|y)")))
-curve(dbeta(x, a+y, b+n-y), col="gray", lwd=2, add=TRUE)
+<<simulation, dependson='data'>>=
+sim = data.frame(x = rbeta(10000, a+y, b+n-y))
+ggplot(sim, aes(x=x)) + 
+  geom_histogram(aes(y=..density..), binwidth=.01) + 
+  stat_function(color = 'red', fun=dbeta, args=list(shape1=a+y, shape2=b+n-y))
 @
 
 \end{frame}
@@ -322,11 +338,11 @@ curve(dbeta(x, a+y, b+n-y), col="gray", lwd=2, add=TRUE)
 
 We can also obtain point and interval estimates using these simulations
 
-<<echo=TRUE>>=
-c(mean=mean(samples), median=median(samples))
-quantile(samples, c(.025,.975)) # Equal-tail
-quantile(samples, .05) # Upper
-quantile(samples, .95) # Lower
+<<quantiles, dependson='simulation', echo=TRUE>>=
+c(mean = mean(sim$x), median = median(sim$x))
+quantile(sim$x, c(.025,.975)) # Equal-tail
+quantile(sim$x, .05) # Upper
+quantile(sim$x, .95) # Lower
 @
 
 \end{frame}
@@ -391,16 +407,19 @@ quantile(samples, .95) # Lower
 \begin{frame}[fragile]
 \frametitle{Discrete prior}
 <<discrete, fig.width=10, out.width='\\textwidth'>>=
-theta = seq(0.01, 0.99, by=0.01)
-prior = dbeta(theta, 3, 2)
-prior = prior / sum(prior)
-posterior = prior * dbinom(y, n, theta)
-posterior = posterior / sum(posterior)
+dd = data.frame(theta = seq(0.01, 0.99, by=0.01)) %>%
+  mutate(prior = dbeta(theta, 3, 2),
+         prior = prior / sum(prior),
+         posterior = prior * dbinom(y, n, theta),
+         posterior = posterior / sum(posterior))
 
-plot(theta, prior, type="p", main="Binomial, discrete prior", xlab=expression(theta), ylab="Density",
-     ylim=range(prior,posterior), xlim=c(0,1), col="blue", pch=19)
-points(theta, posterior, col="red", pch=19)
-legend("topleft", c("Prior","Posterior"), col=c("blue","red"), pch=19)
+ggplot(melt(dd, 
+            id.var='theta', 
+            variable.name = 'distribution', 
+            value.name = 'density'),
+       aes(theta, density, color = distribution, linetype = distribution)) +
+  geom_point() +
+  theme(legend.position="bottom") 
 @
 \end{frame}
 
@@ -546,11 +565,20 @@ legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 }
 
 \begin{frame}[fragile]
-<<jeffreys, fig.width=7, size='tiny'>>=
-curve(dbeta(x,.5+y,.5+n-y), col="red", lwd=2, main="Binomial, Jeffreys prior",
-      xlab=expression(theta), ylab="Density")
-curve(dbeta(x, .5,.5), col="blue", lwd=2, add=TRUE)
-legend("topright", c("Prior",'Posterior'), col=c("blue","red"), lwd=2, bg="white")
+<<jeffreys>>=
+n = 10
+y = 3
+a = b = .5
+d = data.frame(x = seq(0,1,by=0.01)) %>% 
+  mutate(prior = dbeta(x,a,b),
+         "normalized likelihood" = dbeta(x, y, n-y),
+         posterior = dbeta(x, a+y, b+n-y))
+
+m = melt(d, id.var='x', variable.name="Distribution", value.name="density")
+
+ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
+  geom_line() +
+    theme(legend.position="bottom")
 @
 \end{frame}
 
@@ -588,13 +616,15 @@ legend("topright", c("Prior",'Posterior'), col=c("blue","red"), lwd=2, bg="white
 }
 
 \begin{frame}[fragile]
+\frametitle{Nonconjugate prior, numerical integration}
 <<nonconjugate_plot_unnormalized, fig.width=7>>=
 f = function(theta) {
   theta^y*(1-theta)^(n-y)*exp(theta)
 }
+i = integrate(f, 0, 1)
 curve(exp(x)/(exp(1)-1), col="blue", lwd=2, ylim=c(0,3), 
       main="Binomial, nonconjugate prior", ylab="Density", xlab=expression(theta))
-curve(1000*f(x), add=TRUE, col="red", lwd=2)
+curve(f(x)/i$value, add=TRUE, col="red", lwd=2)
 legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 @
 \end{frame}
@@ -603,6 +633,7 @@ legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 
 
 \begin{frame}[fragile]
+\frametitle{Nonconjugate prior, evaluated on a grid}
 <<nonconjugate_grid, fig.width=9>>=
 w = 0.01
 theta = seq(w/2, 1-w/2, by=w)
