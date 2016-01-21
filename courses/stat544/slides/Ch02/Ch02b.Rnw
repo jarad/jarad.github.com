@@ -23,7 +23,15 @@
 %\section{Temp??} \begin{comment}
 
 <<chunk_options, echo=FALSE, message=FALSE>>=
-opts_chunk$set(fig.width=6, fig.height=5, out.width='.8\\linewidth', fig.align='center', size='tiny')
+options(width=120)
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
 require(MCMCpack)
 require(rjags)
 require(rstan)
@@ -58,32 +66,32 @@ require(rstan)
 \end{frame}
 
 
-\section{Probability theory review}
-\frame{\frametitle{Relevant probability results}\tiny 
-  This is the only result I used:
-
-  If $Y|m \sim N(m,C)$, the kernel of the density for $Y$ is 
-  \[ p(y| m) \propto \exp\left(-\frac{1}{2C} [y- m]^2 \right) \propto \exp\left(-\frac{1}{2C} \left[ y^2 -2y m\right] \right) \propto \exp\left(-\frac{1}{2} \left[ \frac{1}{C} y^2 -2y \frac{m}{C} \right] \right). \]
-  
-  \vspace{0.2in} \pause 
-
-  These could be used, but I didn't. 
-
-  If $Y_i\stackrel{ind}{\sim} N(m_i, C_i)$, then for constants $c_1$ and $c_2$ 
-  \[ c_1 Y_1+c_2 Y_2 \sim \pause  N\left(c_1m_1+c_2m_2, c_1^2C_1+c_2^2C_2\right) \qquad \mbox{and} \qquad \sum_{i=1}^n c_i Y_i \sim \pause N\left( \sum_{i=1}^n c_i m_i, \sum_{i=1}^n c_i^2 C_i \right). \]
-  
-  \pause 
-  If
-  \[ \left( \begin{array}{c} Y_1 \\ Y_2 \end{array} \right) \sim N\left( \left[ \begin{array}{c} m_1 \\ m_2 \end{array} \right], \left[ \begin{array}{cc} C_{1} & C_{12} \\ C_{21} & C_{2} \end{array} \right] \right), \mbox{ then } Y_1|Y_2 \sim \pause N\left(m_1+C_{12}C_{2}^{-1}(Y_2-m_2), C_{1}-C_{12}C_{2}^{-1}C_{21}\right). \]
-  
-  \pause
-  If $Y|\mu \sim N(\mu,s^2\mathrm{I})$ and $\mu\sim N(m,C)$, then $Cov(Y,\mu) = \pause Var(\mu)=C$, see Casella \& Berger exercise 12.11a. 
-  
-  \vspace{0.2in} \pause 
-  
-  If $Y|\sigma^2 \sim N(m,\sigma^2)$, then 
-  \[ E_y \left[s^2\right] = E\left[ \frac{1}{n} \sum_{i=1}^n (y_i-m)^2 \right] = \sigma^2 \]
-}
+% \section{Probability theory review}
+% \frame{\frametitle{Relevant probability results}\tiny 
+%   This is the only result I used:
+% 
+%   If $Y|m \sim N(m,C)$, the kernel of the density for $Y$ is 
+%   \[ p(y| m) \propto \exp\left(-\frac{1}{2C} [y- m]^2 \right) \propto \exp\left(-\frac{1}{2C} \left[ y^2 -2y m\right] \right) \propto \exp\left(-\frac{1}{2} \left[ \frac{1}{C} y^2 -2y \frac{m}{C} \right] \right). \]
+%   
+%   \vspace{0.2in} \pause 
+% 
+%   These could be used, but I didn't. 
+% 
+%   If $Y_i\stackrel{ind}{\sim} N(m_i, C_i)$, then for constants $c_1$ and $c_2$ 
+%   \[ c_1 Y_1+c_2 Y_2 \sim \pause  N\left(c_1m_1+c_2m_2, c_1^2C_1+c_2^2C_2\right) \qquad \mbox{and} \qquad \sum_{i=1}^n c_i Y_i \sim \pause N\left( \sum_{i=1}^n c_i m_i, \sum_{i=1}^n c_i^2 C_i \right). \]
+%   
+%   \pause 
+%   If
+%   \[ \left( \begin{array}{c} Y_1 \\ Y_2 \end{array} \right) \sim N\left( \left[ \begin{array}{c} m_1 \\ m_2 \end{array} \right], \left[ \begin{array}{cc} C_{1} & C_{12} \\ C_{21} & C_{2} \end{array} \right] \right), \mbox{ then } Y_1|Y_2 \sim \pause N\left(m_1+C_{12}C_{2}^{-1}(Y_2-m_2), C_{1}-C_{12}C_{2}^{-1}C_{21}\right). \]
+%   
+%   \pause
+%   If $Y|\mu \sim N(\mu,s^2\mathrm{I})$ and $\mu\sim N(m,C)$, then $Cov(Y,\mu) = \pause Var(\mu)=C$, see Casella \& Berger exercise 12.11a. 
+%   
+%   \vspace{0.2in} \pause 
+%   
+%   If $Y|\sigma^2 \sim N(m,\sigma^2)$, then 
+%   \[ E_y \left[s^2\right] = E\left[ \frac{1}{n} \sum_{i=1}^n (y_i-m)^2 \right] = \sigma^2 \]
+% }
 
 
 
@@ -251,11 +259,7 @@ legend("topright", c("Prior","Posterior","Likelihood"), col=c("blue","red","seag
 }
 
 \frame{\frametitle{Natural conjugate prior} \small
-  If $Y_i\stackrel{iid}{\sim} N(m,\sigma^2)$ ($m$ known), the natural conjugate prior is $\sigma^2\sim IG(a,b)$ and the posterior is $\mu|y \sim N\left(a+n/2, b+\sum_{i=1}^n [y_i-m]^2/2\right)$.  
-  
-  \vspace{0.2in} \pause
-  
-  The likelihood is 
+  Let $Y_i\stackrel{iid}{\sim} N(m,\sigma^2)$ with $m$ known. The likelihood is 
   \[ \begin{array}{rl}
   L(\sigma^2) &\propto (\sigma^2)^{-n/2} \exp\left( -\frac{1}{2\sigma^2} \sum_{i=1}^n [y_i-m]^2  \right) \\
   \end{array} \]
