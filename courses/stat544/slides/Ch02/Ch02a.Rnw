@@ -593,28 +593,38 @@ ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= 
   
   Options
   \begin{itemize}[<+->]
-  \item Find $i = \int f(\theta) d\theta$, so that $p(\theta|y) = f(\theta)/i$. 
   \item Plot $f(\theta)$ (possibly multiplying by a constant). 
+  \item Find $i = \int f(\theta) d\theta$, so that $p(\theta|y) = f(\theta)/i$. 
   \item Evaluate $f(\theta)$ on a grid and normalize by the grid spacing.
   \end{itemize}
 }
 
 
+
+\begin{frame}[fragile]
+\frametitle{Plot of $f(\theta)$}
+<<plot_f, dependson='data'>>=
+f = function(theta) {
+  theta^y*(1-theta)^(n-y)*exp(theta)
+}
+curve(f, col="red", lwd=2, 
+      main="Binomial, nonconjugate prior", ylab="Density (proportional)", xlab=expression(theta))
+legend("topright", c("Posterior"), col=c("red"), lwd=2)
+@
+\end{frame}
+
 \begin{frame}[fragile]
 \frametitle{Numerical integration}
 Find $i = \int f(\theta) d\theta$, so that $p(\theta|y) = f(\theta)/i$. 
 
-<<integrate, dependson='data', echo=TRUE>>=
-f = function(theta) {
-  theta^y*(1-theta)^(n-y)*exp(theta)
-}
+<<integrate, dependson=c('data','plot_f'), echo=TRUE>>=
 (i = integrate(f, 0, 1))
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Nonconjugate prior, numerical integration}
-<<nonconjugate_plot_unnormalized, dependson='integrate'>>=
+<<nonconjugate_plot_normalized, dependson='integrate'>>=
 curve(exp(x)/(exp(1)-1), col="blue", lwd=2, ylim=c(0,3), 
       main="Binomial, nonconjugate prior", ylab="Density", xlab=expression(theta))
 curve(f(x)/i$value, add=TRUE, col="red", lwd=2)
