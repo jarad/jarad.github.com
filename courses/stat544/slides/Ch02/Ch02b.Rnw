@@ -159,7 +159,7 @@ require(rstan)
   \end{array} \]
   \pause 
   This is the kernel of a $N(m',C')$ where 
-  \[ C' = [1/C + n s^{-2}]^{-1} \qquad m' = C'[m/C + n s^{-2}\overline{y}]. \]
+  \[ C' = \left[\frac{1}{C} + \frac{n}{s^{2}}\right]^{-1} \qquad m' = C'\left[\frac{m}{C} + \frac{n}{s^{2}}\overline{y}\right]. \]
 }
 
 \frame{\frametitle{Normal mean posterior comments}
@@ -183,7 +183,7 @@ require(rstan)
 \frametitle{Example}
 
 Consider $Y_i\stackrel{ind}{\sim} N(\mu,1)$ and $\mu\sim N(0,1)$. 
-<<unknown_mean>>=
+<<unknown_mean, echo=TRUE>>=
 # Prior
 m = 0
 C = 1; P = 1/C
@@ -202,7 +202,7 @@ mp = (P*m+nQ*mean(y))/Pp
 \end{frame}
 
 \begin{frame}[fragile]
-<<unknown_mean_plot, echo=FALSE>>=
+<<unknown_mean_plot>>=
 # Plot 
 curve(dnorm(x,mp,sqrt(1/Pp)), col="red", lwd=2, -2, 4,
       main="Normal model with unknown mean, normal prior",
@@ -281,7 +281,7 @@ legend("topright", c("Prior","Posterior","Likelihood"), col=c("blue","red","seag
 \frametitle{Example}
 
 Suppose $Y_i\stackrel{ind}{\sim} N(1,\sigma^2)$ and $\sigma^2\sim IG(1,1)$.
-<<unknown_var>>=
+<<unknown_var, echo=TRUE>>=
 # Prior
 a = b = 1
 
@@ -297,7 +297,7 @@ ap = a+n/2
 \end{frame}
 
 \begin{frame}[fragile]
-<<unknown_var_plot, echo=FALSE>>=
+<<unknown_var_plot>>=
 # Plot 
 curve(dinvgamma(x,ap,bp), col="red", lwd=2, 0,3,
       main="Normal model with unknown variance, inverse gamma prior",
@@ -360,7 +360,7 @@ The basic workflow when using {\tt rjags} is
 
 Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$ and we observe $y=3$ successes out of $n=10$ attempts.
 
-<<>>=
+<<jags_binomial, echo=TRUE>>=
 model = "
 model 
 {
@@ -381,7 +381,7 @@ r = coda.samples(m, "theta", n.iter=1000)
 \begin{frame}[fragile]
 \frametitle{Binomial model}
 
-<<>>=
+<<jags_binomial_summary, dependson='jags_binomial', echo=TRUE>>=
 summary(r)
 @
 \end{frame}
@@ -390,7 +390,7 @@ summary(r)
 \begin{frame}[fragile]
 \frametitle{Binomial model}
 
-<<fig.width=8>>=
+<<jags_binomial_plot, dependson='jags_binomial', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
@@ -406,7 +406,7 @@ plot(r)
 
 Let $Y\sim N(\mu,s^2)$ and $\mu\sim N(0,1)$. 
 
-<<>>=
+<<jags_normal, echo=TRUE>>=
 model = "
 model 
 {
@@ -430,7 +430,7 @@ r = coda.samples(m, "mu", n.iter=1000)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-<<>>=
+<<jags_normal_summary, dependson='jags_normal', echo=TRUE>>=
 summary(r)
 @
 \end{frame}
@@ -439,7 +439,7 @@ summary(r)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-<<fig.width=8>>=
+<<jags_normal_plot, dependson='jags_normal', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
@@ -452,7 +452,7 @@ plot(r)
 
 Let $Y\sim N(m,\sigma^2)$ and $\sigma^2\sim IG(1,1)$.
 
-<<>>=
+<<jags_normal_var, echo=TRUE>>=
 model = "
 model 
 {
@@ -477,7 +477,7 @@ r = coda.samples(m, "sigma2", n.iter=1000)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-<<>>=
+<<jags_normal_var_summary, dependson='jags_normal_var', echo=TRUE>>=
 summary(r)
 @
 \end{frame}
@@ -486,7 +486,7 @@ summary(r)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-<<fig.width=8>>=
+<<jags_normal_var_plot, dependson='jags_normal_var', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
@@ -520,11 +520,11 @@ But, additional coding is required for Stan.
 
 \subsection{Binomial model}
 \begin{frame}[fragile]
-\frametitle{Binomial model}
+\frametitle{Stan - Binomial model}
 
 Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$.
 
-<<>>=
+<<stan_binomial, echo=TRUE>>=
 model = "
 data {
   int<lower=0> n;              # define range and type 
@@ -546,7 +546,7 @@ dat = list(n=10, y=3, a=1, b=1)
 m = stan_model(model_code = model) # Only needs to be done once
 @
 
-<<message=FALSE>>=
+<<stan_binomial_sampling, dependson='stan_binomial', echo=TRUE, message=FALSE>>=
 r = sampling(m, data=dat)
 @
 
@@ -555,18 +555,18 @@ r = sampling(m, data=dat)
 
 
 \begin{frame}[fragile]
-\frametitle{Binomial model}
+\frametitle{Stan - Binomial model}
 
-<<>>=
+<<stan_binomial_results, dependson='stan_binomial_sampling', echo=TRUE>>=
 r
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-\frametitle{Binomial model}
+\frametitle{Stan - Binomial model}
 
-<<fig.width=8>>=
+<<stan_binomial_plot, dependson='stan_binomial_sampling', echo=TRUE, out.width='0.5\\textwidth'>>=
 plot(r)
 @
 \end{frame}
@@ -582,7 +582,7 @@ plot(r)
 
 Let $Y\sim N(\mu,s^2)$ and $\mu\sim N(0,1)$. 
 
-<<>>=
+<<stan_normal_mean, echo=TRUE>>=
 model = "
 data {
   int<lower=0> n;
@@ -612,7 +612,7 @@ dat$n = length(dat$y)
 m = stan_model(model_code = model)
 @
 
-<<message=FALSE>>=
+<<stan_normal_mean_sampling, dependson='stan_normal_mean', echo=TRUE, message=FALSE>>=
 r = sampling(m, data = dat)
 @
 \end{frame}
@@ -622,7 +622,7 @@ r = sampling(m, data = dat)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-<<>>=
+<<stan_normal_mean_results, dependson='stan_normal_mean_sampling', echo=TRUE>>=
 r
 @
 \end{frame}
@@ -631,7 +631,7 @@ r
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-<<fig.width=8>>=
+<<stan_normal_mean_plot, dependson='stan_normal_mean_sampling', echo=TRUE, out.width='0.5\\textwidth'>>=
 plot(r)
 @
 \end{frame}
@@ -646,7 +646,7 @@ plot(r)
 
 Let $Y\sim N(m,\sigma^2)$ and $\sigma^2\sim IG(1,1)$. 
 
-<<>>=
+<<stan_normal_var, echo=TRUE>>=
 model = "
 data {
   int<lower=0> n;
@@ -674,7 +674,7 @@ dat$n = length(dat$y)
 m = stan_model(model_code = model)
 @
 
-<<message=FALSE>>=
+<<stan_normal_var_sampling, dependson='stan_normal_var', echo=TRUE, message=FALSE>>=
 r = sampling(m, data = dat)
 @
 \end{frame}
@@ -684,7 +684,7 @@ r = sampling(m, data = dat)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-<<>>=
+<<stan_normal_var_results, dependson='stan_normal_var_sampling', echo=TRUE>>=
 r
 @
 \end{frame}
@@ -693,7 +693,7 @@ r
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-<<fig.width=8>>=
+<<stan_normal_var_plot, dependson='stan_normal_var_sampling', echo=TRUE, out.width='0.5\\textwidth'>>=
 plot(r)
 @
 \end{frame}

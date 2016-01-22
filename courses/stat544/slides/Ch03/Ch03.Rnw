@@ -24,12 +24,17 @@
 %\section{Temp??} \begin{comment}
 
 <<chunk_options, echo=FALSE>>=
-opts_chunk$set(fig.width=6, 
-               fig.height=5, 
-               out.width='.8\\linewidth', 
+options(width=120)
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
                fig.align='center', 
-               size='tiny')
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
 library(plyr)
+library(ggplot2)
 @
 
 
@@ -107,7 +112,7 @@ library(plyr)
 
 \begin{frame}[fragile]
 \frametitle{Strong law of large numbers}
-<<uniform, echo=FALSE>>=
+<<uniform>>=
 f = function(x) exp(-x^2/2)
 
 # Monte Carlo integration
@@ -126,7 +131,7 @@ segments(x[1:n_points], 0, x[1:n_points], fx[1:n_points])
 
 \begin{frame}[fragile]
 \frametitle{Strong law of large numbers}
-<<uniform2, echo=FALSE>>=
+<<uniform2>>=
 
 # Monte Carlo integration
 cummean = function(x) return(cumsum(x)/(1:length(x)))
@@ -137,7 +142,7 @@ abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
 
 \begin{frame}[fragile]
 \frametitle{Central limit theorem}
-<<uniform3, echo=FALSE>>=
+<<uniform3>>=
 cumvar = function(x) { 
   J = length(x)
   cumvar = numeric(J)
@@ -210,7 +215,7 @@ par(opar)
 
 \begin{frame}[fragile]
 \frametitle{Monte Carlo estimate}
-<<infinite, echo=FALSE>>=
+<<infinite>>=
 # Normal expectation
 set.seed(1)
 x = rnorm(1e3)
@@ -281,7 +286,7 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 
 \begin{frame}[fragile]
 \frametitle{Joint posterior}
-<<joint_posterior, echo=FALSE>>=
+<<joint_posterior>>=
 a = b = 1
 d = data.frame(year=1:4, y=c(36,64,67,64), n=c(95,150,171,152))
 d$a = a + d$y
@@ -297,7 +302,7 @@ legend("topright", paste("Season", 1:nrow(d)), col=1:4, lwd=2, lty=1:4)
 \begin{frame}[fragile]
 \frametitle{Monte Carlo estimates}
 Estimated means, medians, and quantiles.
-<<echo=FALSE>>=
+<<theta_sims>>=
 sim = ddply(d, .(year), 
             function(x) data.frame(theta=rbeta(1e3, x$a, x$b),
                                    a = x$a, b = x$b))
@@ -324,7 +329,7 @@ ddply(sim, .(year), summarize,
 
 
 \frame{\frametitle{Comparing probabilities across years}
-	The scientific question of interest here is whether Dawkins's 3-point percentage is higher 2013-2014 than previously. \pause In probability notation this is 
+	The scientific question of interest here is whether Dawkins's 3-point percentage is higher in 2013-2014 than previously. \pause In probability notation this is 
 	\[ P(\theta_4>\theta_s|y)\mbox{ for } s=1,2,3.\]
 	\pause which can be approximated via Monte Carlo as 
 	\[ P(\theta_4>\theta_s|y) = E_{\theta|y}[\mathrm{I}(\theta_4>\theta_s)]\approx \frac{1}{J} \sum_{j=1}^J \mathrm{I}\left(\theta_4^{(j)} > \theta_s^{(j)}\right) \]
@@ -337,7 +342,7 @@ ddply(sim, .(year), summarize,
 
 \begin{frame}[fragile]
 \frametitle{Estimated probabilities}
-<<>>=
+<<theta_results, dependson='theta_sim', echo=TRUE>>=
 # Should be able to use dcast
 d = data.frame(theta_1 = sim$theta[sim$year==1],
                theta_2 = sim$theta[sim$year==2],
@@ -355,7 +360,7 @@ mean(d$theta_4 > d$theta_3)
 \subsection{JAGS}
 \begin{frame}[fragile]
 \frametitle{Using JAGS}
-<<jags>>=
+<<jags, echo=TRUE>>=
 library(rjags)
 independent_binomials = "
 model {
@@ -373,14 +378,14 @@ res = coda.samples(m, "theta", 1000)
 \end{frame}
 
 \begin{frame}[fragile]
-<<jags2>>=
+<<jags_summary, dependson='jags', echo=TRUE>>=
 summary(res)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-<<jags3>>=
+<<jags_results, dependson='jags', echo=TRUE>>=
 # Extract sampled theta values
 theta = as.matrix(res[[1]]) # with only 1 chain, all values are in the first list element
 
@@ -436,20 +441,23 @@ mean(theta[,4] > theta[,3])
 
 \begin{frame}[fragile]
 \frametitle{Scaled-inverse $\chi^2$-distribution}
-<<scaled_inverse_chi_square, echo=FALSE, fig.height=4.5>>=
-dinvgamma = function(x, a, b,...) dgamma(1/x, a, b,...)/x^2
+<<scaled_inverse_chi_square, echo=TRUE>>=
+dinvgamma = function(x, a, b, ...) dgamma(1/x, a, b,...)/x^2
 dsichisq = function(x, v, s2, ...) dinvgamma(x, v/2, v*s2/2, ...)
-d = expand.grid(v=c(10,5,1), s2=c(1,2,3))
-xmax = 5
-par(mfcol=c(3,1), mar=c(2,2,0,0)+0.1)
-d_ply(d, .(s2), function(x) {
-  v = x$v; s2 = x$s2
-  curve(dsichisq(x, v[1], s2), 0 , xmax, lwd=2, ylab="", main="", ylim=c(0,1))
-  curve(dsichisq(x, v[2], s2), 0 , xmax, lwd=2, col=2, add=TRUE)
-  curve(dsichisq(x, v[3], s2), 0 , xmax, lwd=2, col=3, add=TRUE)
-  abline(v=s2,lty=2,col=8)
-  legend("topright", c(paste("v=",v),"s2"), lwd=c(2,2,2,1), lty=c(1,1,1,2), col=c(1:3,8))
+@
+
+<<scaled_inverse_chi_square_plot, dependson='scaled_inverse_chi_square', out.width='0.7\\textwidth'>>=
+d = ddply(expand.grid(v=c(10,5,1), s2=c(1,2,3), x=seq(.01,5,.01)), .(v,s2,x), function(x) {
+  data.frame(density = dsichisq(x$x,x$v,x$s2))
 })
+
+d$v_f = as.factor(d$v)
+d$s2_f = as.factor(d$s2)
+levels(d$s2_f) = paste('s2=',levels(d$s2_f))
+
+ggplot(d, aes(x,density, color=v_f, linetype=v_f, group=v_f)) + 
+  geom_line() + 
+  facet_grid(s2_f~.)
 @
 \end{frame}
 
@@ -469,7 +477,7 @@ d_ply(d, .(s2), function(x) {
 
 \begin{frame}[fragile]
 \frametitle{$t$ distribution as $v$ changes}
-<<scaled_inverse_chi_square2, echo=FALSE, fig.height=4.5>>=
+<<t_distribution, fig.height=4.5>>=
 dtms = function(x,v,m,s) dt((x-m)/s,v)/s
 opar = par(mar=c(5,4,0,0)+.1, mfrow=c(1,2))
 curve(dtms(x, 1, 0, 1), -3, 3, lwd=2, ylim=c(0,.45),
@@ -506,9 +514,9 @@ p(\mu,\sigma^2) &= p(\mu|\sigma^2)p(\sigma^2) \pause \\
 In addition, the marginal distribution for $\mu$ is 
   \[ \begin{array}{rl}
   p(\mu) &= \int p(\mu|\sigma^2) p(\sigma^2) d\sigma^2 \pause \\
-  &= \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}s/\sqrt{k}}\left(1+\frac{1}{v}\left[\frac{\mu-m}{s/\sqrt{k}}\right]^2\right)^{-(v+1)/2} \pause \\
-  &\stackrel{d}{=} t_{v}(m, s^2/k)
+  &= \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}s/\sqrt{k}}\left(1+\frac{1}{v}\left[\frac{\mu-m}{s/\sqrt{k}}\right]^2\right)^{-(v+1)/2}. \pause 
   \end{array} \]
+Thus $\mu \sim t_{v}(m, s^2/k)$. 
   
 \end{frame}
 
@@ -520,7 +528,7 @@ In addition, the marginal distribution for $\mu$ is
 \frametitle{Univariate normal model}
 Suppose $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$. 
 
-<<normal_model, echo=FALSE>>=
+<<normal_model>>=
 curve(dnorm,-3,3,lwd=2, axes=F, frame=TRUE, 
       xlab="y", ylab=expression(p(y~"|"~mu,sigma^2)), main="Normal model")
 abline(v=0, lty=2)
