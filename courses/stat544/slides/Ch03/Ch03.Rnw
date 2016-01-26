@@ -34,7 +34,9 @@ opts_chunk$set(comment=NA,
                echo=FALSE,
                cache=TRUE)
 library(plyr)
+library(dplyr)
 library(ggplot2)
+library(gridExtra)
 @
 
 
@@ -307,26 +309,29 @@ ggplot(d, aes(x,density, color=v_f, linetype=v_f, group=v_f)) +
   \[ f_t(t) = \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}}\left(1+t^2/v\right)^{-(v+1)/2}, \]
   \pause then $X=m+sT_v$ has pdf 
   \[ f_X(x) = f_t([x-m]/s)/s \pause = \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}s}\left(1+\frac{1}{v}\left[\frac{x-m}{s}\right]^2\right)^{-(v+1)/2}. \]
-  \pause This is referred to as a $t$ distribution with $v$ degrees of freedom, location $m$, and scale $s$; it is written as $t_{v}(m,s^2)$. \pause As $v\to \infty$, this family converges to a normal distribution with mean $m$ and variance $s^2$. 
+  \pause This is referred to as a $t$ distribution with $v$ degrees of freedom, location $m$, and scale $s$; it is written as $t_{v}(m,s^2)$. \pause Also,
+\[ 
+t_v(m,s^2) \stackrel{v\to\infty}{\longrightarrow} N(m,s^2).
+\]
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{$t$ distribution as $v$ changes}
-<<t_distribution, fig.height=4.5>>=
-dtms = function(x,v,m,s) dt((x-m)/s,v)/s
-opar = par(mar=c(5,4,0,0)+.1, mfrow=c(1,2))
-curve(dtms(x, 1, 0, 1), -3, 3, lwd=2, ylim=c(0,.45),
-      ylab='f(x)')
-curve(dtms(x, 10, 0, 1), add=TRUE, lty=2, col=2, lwd=2)
-curve(dtms(x, 100, 0, 1), add=TRUE, lty=3, col=3, lwd=2)
+<<t_distribution, fig.height=4.5, warning=FALSE>>=
+dtms = function(x,v,m=0,s=1) dt((x-m)/s,v)/s
+#opar = par(mar=c(5,4,0,0)+.1, mfrow=c(1,2))
 
-curve(dtms(x, 1, 0, 1), 4, 6, lwd=2, ylim=c(0,.02), ylab='')
-curve(dtms(x, 10, 0, 1), add=TRUE, lty=2, col=2, lwd=2)
-curve(dtms(x, 100, 0, 1), add=TRUE, lty=3, col=3, lwd=2)
-legend("topright", paste("v=",c(1,10,100)), lwd=2, lty=1:3, col=1:3)
-par(opar)
+d = ddply(data.frame(v=c(1,10,100)), .(v), function(x) {
+  data.frame(x = seq(-3,6,by=.1)) %>%
+    mutate(density = dtms(x, x$v))
+})
+d$v = factor(d$v)
+
+ggplot(d, aes(x=x,y=density, group=v, linetype=v, color=v)) +
+  geom_line() + 
+  theme(legend.position='bottom')
 @
 \end{frame}
 
