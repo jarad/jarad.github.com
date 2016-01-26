@@ -2,7 +2,7 @@
 layout: page
 title : Research
 header : Research
-group: 
+group: navigation
 ---
 {% include JB/setup %}
 

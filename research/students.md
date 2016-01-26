@@ -2,7 +2,7 @@
 layout: page
 title : Students
 header : Students
-group: navigation
+group: 
 ---
 {% include JB/setup %}
 
