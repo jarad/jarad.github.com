@@ -19,14 +19,14 @@ group:
 - Ignacio Alvarez-Castro 
 - Adam Martin-Schwarze
 - [Will Landau](http://will-landau.com/)
-- [Nick Michaud ](http://www.public.iastate.edu/~michaud/homepage.html)
+- [Nick Michaud](http://www.public.iastate.edu/~michaud/homepage.html)
 - Eric Mittman 
 
 ![](student_figs/ialvarez.jpg)
 ![](student_figs/adamms.jpg)
 ![](student_figs/landau.jpg)
 ![](student_figs/michaud.jpg)
-![](student_figs/mittman.jpg)
+![](student_figs/emittman.jpg)
 
 ## Former advisees
 
