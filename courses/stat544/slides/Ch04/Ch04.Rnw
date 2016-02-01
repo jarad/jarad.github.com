@@ -93,7 +93,7 @@ Thus
 \begin{frame}[fragile]
 \frametitle{Binomial probability}
 
-<<beta_normal_approximation, eval=FALSE>>=
+<<beta_normal_approximation, eval=FALSE, echo=TRUE>>=
 a = b = 1
 n = 10
 y = 3
@@ -112,7 +112,7 @@ legend("topright",c("True posterior","Normal approximation"), col=c("black","red
 \begin{frame}[fragile]
 \frametitle{Binomial probability}
 
-<<beta_normal_approximation_plot, echo=FALSE>>=
+<<beta_normal_approximation_plot>>=
 <<beta_normal_approximation>>
 @
 \end{frame}
@@ -155,7 +155,7 @@ If the parameter space $\Theta$ is continuous and $A$ is in a neighborhood aroun
 
 
 \begin{frame}[fragile]
-<<convergence_of_the_posterior_distribution_discrete, fig.width=10>>=
+<<convergence_of_the_posterior_distribution_discrete, fig.width=10, echo=TRUE>>=
 library(smcUtils)
 theta = seq(0.1,0.9, by=0.1); theta0 = 0.3
 n = 1000
@@ -173,7 +173,7 @@ legend("right", legend=theta, col=1:9, lty=1)
 
 
 \begin{frame}[fragile]
-<<convergence_of_the_posterior_distribution_continuous, fig.width=10>>=
+<<convergence_of_the_posterior_distribution_continuous, fig.width=10, echo=TRUE>>=
 a = b = 1
 e = 0.05
 p = rep(NA,n)
@@ -182,7 +182,8 @@ for (i in 1:n) {
   zz = i-yy
   p[i] = diff(pbeta(theta0+c(-1,1)*e, a+yy, b+zz))
 }
-plot(p, type="l", ylim=c(0,1), ylab="Posterior probability of neighborhood", xlab="n", main="Continuous parameter space")
+plot(p, type="l", ylim=c(0,1), ylab="Posterior probability of neighborhood", 
+     xlab="n", main="Continuous parameter space")
 @
 \end{frame}
 
@@ -196,7 +197,7 @@ Suppose $y_i\stackrel{iid}{\sim} p(y|\theta_0)$ where $\theta_0$ is a particular
 
 \vspace{0.2in} \pause
 
-Recall that an estimator is consistent, i.e. $\hat{\theta}\stackrel{p}{\to} \theta_0$ if 
+Recall that an estimator is consistent, i.e. $\hat{\theta}\stackrel{p}{\to} \theta_0$, if 
 \[ \lim_{n\to\infty} P(|\hat{\theta}-\theta_0|<\epsilon) = 1. \]
 
 \vspace{0.2in} \pause
@@ -204,6 +205,7 @@ Recall that an estimator is consistent, i.e. $\hat{\theta}\stackrel{p}{\to} \the
 Recall, under regularity conditions that $\hat{\theta}_{MLE}\stackrel{p}{\to} \theta_0$. \pause If Bayesian estimators converge to the MLE, then they have the same properties. 
 
 \end{frame}
+
 
 
 \begin{frame}
@@ -226,7 +228,7 @@ Recall that $\hat{\theta}_{MLE} = y/n$. \pause The following estimators are all 
 
 
 \begin{frame}[fragile]
-<<beta_binomial_consistency, fig.width=10>>=
+<<beta_binomial_consistency, fig.width=10, echo=TRUE>>=
 a = b = 1
 n = 1000
 theta0 = 0.5
@@ -254,7 +256,7 @@ Consider $Y_i\stackrel{iid}{\sim} N(\theta,1)$ with known and prior $\theta\sim 
 
 Recall that $\hat{\theta}_{MLE} = \overline{y}$. \pause Since the posterior mean converges to the MLE, then the posterior mean (as well as the median and mode) are consistent.
 
-<<normal_consistency, echo=FALSE, fig.width=10>>=
+<<normal_consistency, fig.width=10>>=
 c = 0
 n = 200; nn = 1:n
 theta0 = 10
@@ -298,7 +300,7 @@ The coefficient for the quadratic term can be written as
 where 
 \[ E_y\left[ -\frac{d^2}{d\theta^2} [\log p(y_i|\theta)]_{\theta=\hat{\theta}}\right] = \I(\theta_0) \]
 \pause 
-where $\I(\theta_0)$ is the expected Fisher information \pause and thus, by the LLN, the second term converges to $-n\I(\theta_0)$. 
+where $\I(\theta_0)$ is the expected Fisher information \pause and thus, by the LLN, the second term converges to $n\I(\theta_0)$. 
 }
 \end{frame}
 
@@ -314,10 +316,10 @@ Since for large $n$
 \frac{1}{2} (\theta-\hat{\theta})^\top \left[ n\I(\theta_0) \right](\theta-\hat{\theta})  \]
 \pause 
 and since $\hat{\theta}\to\theta_0$, we have 
-\[ p(\theta|y) \propto \exp\left(-\frac{1}{2} (\theta-\hat{\theta})^\top \left[ n\I(\hat{\theta}) \right](\theta-\hat{\theta}) \right) \]
+\[ p(\theta|y) \propto \exp\left(-\frac{1}{2} (\theta-\hat{\theta})^\top \left[ n\J(\hat{\theta}) \right](\theta-\hat{\theta}) \right) \]
 \pause 
 and thus, as $n\to\infty$
-\[ \theta|y \stackrel{d}{\to} N\left(\hat{\theta}, \frac{1}{n}\I(\hat{\theta})^{-1}\right) \]
+\[ \theta|y \stackrel{d}{\to} N\left(\hat{\theta}, \frac{1}{n}\J(\hat{\theta})^{-1}\right) \]
 \pause 
 Thus, the posterior distribution is asymptotically normal. 
 
@@ -327,7 +329,7 @@ Thus, the posterior distribution is asymptotically normal.
 \begin{frame}
 \frametitle{Binomial example}
 Suppose $y\sim Bin(n,\theta)$ and $\theta\sim Be(a,b)$.
-<<binomial_example, echo=FALSE, fig.width=8>>=
+<<binomial_example, fig.width=8>>=
 d = expand.grid(n=10^(1:3), a=10^(0:2))
 tmp = ddply(d, .(n,a), function(x) {
   d = with(x, data.frame(a=a,b=a,n=n,x=seq(0,1,length=1001)))
@@ -347,7 +349,7 @@ ggplot(mutate(plot_d, af = paste("a = b =",a), nf = paste("n =", n)),
               aes(x=x, y=Density,color=Distribution)) + 
   geom_line() + 
   facet_grid(nf~af) + 
-  geom_vline(xintercept=0.3, style=3) + 
+  geom_vline(xintercept=0.3, linetype=3) + 
   theme_bw()
 @
 \end{frame}
