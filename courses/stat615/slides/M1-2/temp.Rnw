@@ -1,0 +1,52 @@
+\documentclass{article}
+
+\usepackage{fullpage}
+
+\begin{document}
+
+In our models, we have something similar to $y\sim N(0,\tau^2)$ with $\tau\sim No^+(0,1)$ (I'm using a half-normal here because the plots aren't so heavy tailed).
+
+\section{Thinking about $\eta=\tau^2$ as the parameter}
+
+If we think about a parameter $\eta=\tau^2$, then the prior for $\eta$ is 
+\[ p(\eta|\ldots) \propto  e^{-\eta/2} |\eta^{-1/2}| \]
+where the $|\eta^{-1/2}|$ comes from the Jacobian for the transformation $\eta=\tau^2$.
+
+The code here shows that you need to incorporate the Jacobian. 
+
+<<>>=
+tau = abs(rnorm(1e5))
+eta = tau^2
+
+# eta = tau^2
+no_jacobian   = function(eta) 2*dnorm(sqrt(eta))
+with_jacobian = function(eta) dnorm(sqrt(eta))/sqrt(eta)
+
+hist(eta, 1000, freq=F, xlim=c(0,3))
+curve(no_jacobian, col='red', lwd=2, add=TRUE, lty=2)
+curve(with_jacobian, col='blue', lwd=2, add=TRUE)
+@
+
+The full conditional is then 
+\[ p(\eta|\ldots) \propto \eta^{-1/2}e^{-y^2/2\eta} e^{-\eta/2} |\eta^{-1/2}| \]
+and using this full conditional will get you exactly what you want. 
+
+
+\section{Thinking about $\tau$ as the parameter}
+
+If we think about $\tau$ as the parameter, then the prior is immediate. The full conditional is 
+\[ 
+p(\tau|\ldots) \propto (\tau^2)^{-1/2} e^{-y^2/2\tau^2} e^{-\tau^2/2}.
+\]
+
+
+The code here shows that this also fits.
+
+<<>>=
+tau_conditional = function(tau) exp(dnorm(0,tau,log=TRUE)+dnorm(tau, log=TRUE))
+i = integrate(tau_conditional, 0, Inf)
+hist(tau, 1000, freq=F, xlim=c(0,3))
+curve(tau_conditional(x)/i$value, col='red', lwd=2, add=TRUE)
+@
+
+\end{document}
