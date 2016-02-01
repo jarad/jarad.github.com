@@ -29,17 +29,28 @@
 
 \begin{document}
 
-<<chunk_options, echo=FALSE, message=FALSE>>=
-require(knitr) # only needed so the following command does not fail when sourcing R code
-opts_chunk$set(fig.width=7, fig.height=5, out.width='.8\\linewidth', fig.align='center', size='tiny', message=FALSE)
-##############################################
-# GLMMs                                      #
-##############################################
-require(reshape2)
-require(plyr)
-require(ggplot2)
-require(rstan)
-set.seed(20140424)
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(reshape2)
+library(plyr)
+library(ggplot2)
+library(rstan)
+@
+
+<<set_seed>>=
+set.seed(2)
 @
 
 \frame{\maketitle}
@@ -58,8 +69,8 @@ where the linear term in the expansion is zero because the derivative of the log
 Disregarding the higher order terms, this expansion provides a normal approximation to the posterior, i.e. 
 \[ p(\theta|y) \stackrel{d}{\approx} N(\hat{\theta}, \J(\hat{\theta})^{-1}) \]
 \pause 
-where $\I(\theta)$ is the observed information, i.e. 
-\[ \J(\theta) = -\frac{d^2}{d\theta^2} \log p(\theta|y). \]
+where $\J(\hat{\theta})$ is the observed information, i.e. 
+\[ \J(\hat{\theta}) = -\frac{d^2}{d\theta^2} \log p(\theta|y)_{|_{\theta=\hat{\theta}}}. \]
 \end{frame}
 
 
@@ -71,7 +82,7 @@ Let $y \sim Bin(n,\theta)$ and $\theta \sim Be(a,b)$, \pause then $\theta|y\sim 
 \[ \hat{\theta}=\frac{y'}{n'} = \frac{a+y-1}{a+b+n-2}. \] 
 \pause 
 Thus
-\[ \J(\theta) = \frac{n'}{\hat{\theta}(1-\hat{\theta})}. \]
+\[ \J(\hat{\theta}) = \frac{n'}{\hat{\theta}(1-\hat{\theta})}. \]
 \pause 
 Thus 
 \[ p(\theta|y) \stackrel{d}{\approx} N\left( \hat{\theta}, \frac{\hat{\theta}(1-\hat{\theta})}{n'} \right). \]
