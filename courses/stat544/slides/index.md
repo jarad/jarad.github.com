@@ -25,7 +25,7 @@ To extract the R code, run
 - [Chapter 02a](Ch02/Ch02a.Rnw)
 - [Chapter 02b](Ch02/Ch02b.Rnw)
 - [Chapter 03](Ch03/Ch03.Rnw)
-- [Chapter 04](Ch04.Rnw)
+- [Chapter 04](Ch04/Ch04.Rnw)
 - [Chapter 05a](Ch05a.Rnw)
 - [Chapter 05b](Ch05b.Rnw)
 - [Chapter 06a](Ch06a.Rnw)
