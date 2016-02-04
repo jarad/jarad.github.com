@@ -61,10 +61,19 @@ set.seed(2)
 \item Multivariate normal
   \begin{itemize}
   \item Unknown mean
-  \item Unknown covariance
+%  \item Unknown covariance
   \item Unknown mean and covariance
   \end{itemize}
 \end{itemize}
+
+In the process, we'll introduce the following distributions
+\begin{itemize}
+\item Multinomial
+\item Dirichlet
+\item Multivariate normal
+\item Inverse Wishart (and Wishart)
+\end{itemize}
+
 \end{frame}
 
 
@@ -253,13 +262,101 @@ Let $Y_i\sim N(\mu,S)$ with default prior $p(\mu)\propto 1$, then
 \[ \begin{array}{rl}
 p(\mu|y) &\propto p(y|\mu)p(\mu) \pause \\
 &\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right) \pause \\
-&\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right)
+&= \exp\left(-\frac{1}{2} tr(\mS^{-1} S_0) \right)
 \end{array} \]
+where 
+\[ S_0 = \sum_{i=1}^n (y_i-\mu)(y_i-\mu)^\top. \]
+\pause
+This posterior is proper if $n\ge K$ and, in that case, is 
+\[ 
+\mu|y \sim N(\overline{y}, S/n).
+\]
 \end{frame}
 
 
 
-\subsection{Unknown covariance}
+\begin{frame}
+\frametitle{Conjugate inference with an unknown mean}
+
+Let $Y_i\sim N(\mu,S)$ with conjugate prior $\mu \sim N_K(m,C)$
+\[ \begin{array}{rl}
+p(\mu|y) &\propto p(y|\mu)p(\mu) \pause \\
+&\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right)\exp\left(-\frac{1}{2}\mu-m)^\top C^{-1} (\mu-m) \right) \pause \\
+&= \exp\left(-\frac{1}{2} (\mu-m')^{\top}C'^{-1}(\mu-m') \right)
+\end{array} \]
+and thus 
+\[ \mu|y \sim N(m',C') \]
+where 
+\[ \begin{array}{rl}
+C' &= C^{-1} + nS^{-1} \\
+m' &= C'\left[ C^{-1}m + n S^{-1}\overline{y} \right]
+\end{array} \]
+\end{frame}
+
+%\subsection{Unknown covariance}
+\begin{frame}
+\frametitle{Inverse Wishart distribution}
+
+Let the $K\times K$ matrix $\mS$ have an inverse Wishart distribution, i.e. $\mS \sim IW(v,W^{-1})$, with scalar $v>0$ and positive definite scale matrix $W$. 
+
+\vspace{0.2in} \pause
+
+The pdf for $\mS$ is 
+\[ 
+p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr(W\mS^{-1} \right).
+\]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Properties of the inverse Wishart distribution}
+
+The inverse Wishart distribution with pdf 
+\[ 
+p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr(W\mS^{-1} \right).
+\]
+has the following properties:
+\begin{itemize}
+\item $E[\mS] = (v-K-1)^{-1} W$
+\item Marginally, $\sigma_k^2 = \mS_{kk} \sim \chi^2(v,W_{kk})$.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
 \subsection{Unknown mean and covariance}
+
+
+
+\begin{frame}
+\frametitle{Conjugate inference with unknown mean and covariance}
+
+Let $Y_i\stackrel{ind}{\sim} N(\mu,\mS)$ with conjugate prior 
+\[ 
+\mu|\mS \sim N(m,\mS/c) \quad \mS \sim IW(v,W^{-1})
+\]
+which has pdf \[ 
+p(\mu,\mS) \propto |\mS|^{-((v+K)/2+1)} \exp\left(-\frac{1}{2} tr(W\mS^{-1}) - \frac{c}{2}(\mu-m)^\top \mS^{-1}(\mu-m)\right).
+\]
+
+\vspace{0.1in} \pause
+
+The posterior is a normal-inverse Wishart with parameters
+\[ \begin{array}{rl}
+c' &= c+n \\
+v' &= v+n \\
+m' &= \frac{k}{k+n}m + \frac{n}{k+n}\overline{y} \\
+W' &= W + S + \frac{kn}{k+n}(\overline{y}-m)(\overline{y}-m)^\top
+\end{array} \]
+where 
+\[ 
+S = \sum_{i=1}^n (y_i-\overline{y})(y_i-\overline{y})^\top.
+\]
+
+
+\end{frame}
 
 \end{document}
