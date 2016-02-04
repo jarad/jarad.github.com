@@ -23,6 +23,8 @@
 \newcommand{\mS}{\mathrm{\Sigma}}
 \newcommand{\mO}{\mathrm{\Omega}}
 \newcommand{\Beta}{\mbox{Beta}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
 
 \begin{document}
 
@@ -72,6 +74,7 @@ In the process, we'll introduce the following distributions
 \item Dirichlet
 \item Multivariate normal
 \item Inverse Wishart (and Wishart)
+\item normal-inverse Wishart distribution
 \end{itemize}
 
 \end{frame}
@@ -99,7 +102,7 @@ Multivariate count data:
 \frametitle{Multinomial distribution}
 
 Suppose there are $K$ categories and each individual independently chooses category $k$ with probability $\pi_k$ such that $\sum_{k=1}^K \pi_k=1$. \pause 
-Let $x_k$ be the number of individuals who choose category $k$ with $n = \sum_{k=1}^K x_k$ is the total number of individuals.
+Let $y_k$ be the number of individuals who choose category $k$ with $n = \sum_{k=1}^K y_k$ begin the total number of individuals.
 
 \vspace{0.2in} \pause 
 
@@ -176,7 +179,8 @@ Marginally, each component of a Dirichlet distribution is a beta distribution wi
 \frametitle{Bayesian inference}
 
 The conjugate prior for a multinomial distribution, i.e. $Y\sim Mult(n,\pi)$, with unknown probability vector $\pi$ is a Dirichlet distribution. \pause
-The Jeffreys prior is a Dirichlet distribution with $a_k=0.5$ for all $k$. 
+The Jeffreys prior is a Dirichlet distribution with $a_k=0.5$ for all $k$. \pause
+Some argue that for large $K$, this prior will put too much mass on rare categories and would suggest the Dirichlet prior with $a_k=1/K$ for all $k$.
 
 \vspace{0.2in} \pause 
 
@@ -195,8 +199,6 @@ Thus $\pi|y \sim Dir(a+y)$.
 \begin{frame}
 \frametitle{Multivariate normal distribution}
 
-Let $\pi=(\pi_1,\ldots,\pi_K)$ have a Dirichlet distribution, i.e. $\pi \sim Dir(a)$, with concentration parameter $a=(a_1,\ldots,a_K)$ where $a_k>0$ for all $k$. 
-
 Let $Y=(Y_1,\ldots,Y_K)$ have a multivariate normal distribution, i.e. $Y\sim N_K(\mu,\mS)$ with mean $\mu$ and variance-covariance matrix $\mS$.
 
 \vspace{0.2in} \pause
@@ -205,6 +207,27 @@ The probability density function (pdf) for $Y$ is
 \[
 p(y) = (2\pi)^{-k/2}|\mS|^{-1/2} \exp\left(-\frac{1}{2}(y-\mu)^\top \mS^{-1} (y-\mu) \right)
 \]
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Bivariate normal contours}
+
+<<multivariate_normal, fig.show='asis'>>=
+# Modified from http://stats.stackexchange.com/questions/24380/how-to-get-ellipse-region-from-bivariate-normal-distributed-data
+sigma = matrix(c(1,.8,.8,1), nrow=2)
+sigma.inv = solve(sigma)
+ellipse <- function(s,t) {u<-c(s,t); u %*% sigma.inv %*% u / 2}
+
+e = 3
+n = 50
+x = seq(-e,e,length=n)
+y = seq(-e,e,length=n)
+z <- mapply(ellipse, as.vector(rep(x,n)), as.vector(outer(rep(0,n), y, `+`)))
+contour(x,y, matrix(z,n,n), levels=(0:10), col = terrain.colors(11), 
+        main=paste('Contours of a bivariate normal with correlation of',sigma[1,2]))
+@
 
 \end{frame}
 
@@ -221,7 +244,7 @@ has the following properties: \pause
 \item $E[y_k] = \mu_k$
 \item $V[y_k] = \mS_{kk}$
 \item $Cov[y_k,y_{k'}] = \mS_{k,k'}$ \pause
-\item Marginally, each component of a multivariate normal distribution is a normal distribution with $y_k \sim N(\mu,\mS_{kk})$. 
+\item Marginally, each component of a multivariate normal distribution is a normal distribution with $Y_k \sim N(\mu,\mS_{kk})$. 
 \item Conditional distributions are also normal, i.e. if 
 \[
 \left( \begin{array}{c} Y_1 \\ Y_2 \end{array}\right) \sim N\left(\left[ \begin{array}{c} \mu_1 \\ \mu_2 \end{array} \right],\left[ \begin{array}{cc} \mS_{11} & \mS_{12} \\ \mS_{21} & \mS_{22} \end{array} \right]\right)
@@ -258,11 +281,11 @@ Graphs
 \begin{frame}
 \frametitle{Default inference with an unknown mean}
 
-Let $Y_i\sim N(\mu,S)$ with default prior $p(\mu)\propto 1$, then 
+Let $Y_i\ind N(\mu,S)$ with default prior $p(\mu)\propto 1$, then 
 \[ \begin{array}{rl}
 p(\mu|y) &\propto p(y|\mu)p(\mu) \pause \\
 &\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right) \pause \\
-&= \exp\left(-\frac{1}{2} tr(\mS^{-1} S_0) \right)
+&= \exp\left(-\frac{1}{2} tr(S^{-1} S_0) \right)
 \end{array} \]
 where 
 \[ S_0 = \sum_{i=1}^n (y_i-\mu)(y_i-\mu)^\top. \]
@@ -278,17 +301,18 @@ This posterior is proper if $n\ge K$ and, in that case, is
 \begin{frame}
 \frametitle{Conjugate inference with an unknown mean}
 
-Let $Y_i\sim N(\mu,S)$ with conjugate prior $\mu \sim N_K(m,C)$
+Let $Y_i\ind N(\mu,S)$ with conjugate prior $\mu \sim N_K(m,C)$
 \[ \begin{array}{rl}
-p(\mu|y) &\propto p(y|\mu)p(\mu) \pause \\
-&\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right)\exp\left(-\frac{1}{2}\mu-m)^\top C^{-1} (\mu-m) \right) \pause \\
-&= \exp\left(-\frac{1}{2} (\mu-m')^{\top}C'^{-1}(\mu-m') \right)
+p(\mu|y) \propto& p(y|\mu)p(\mu) \pause \\
+&\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right) \\
+&\times \exp\left(-\frac{1}{2}\mu-m)^\top C^{-1} (\mu-m) \right) \pause \\
+=& \exp\left(-\frac{1}{2} (\mu-m')^{\top}C'^{-1}(\mu-m') \right)
 \end{array} \]
 and thus 
 \[ \mu|y \sim N(m',C') \]
 where 
 \[ \begin{array}{rl}
-C' &= C^{-1} + nS^{-1} \\
+C' &= \left[C^{-1} + nS^{-1}\right]^{-1} \\
 m' &= C'\left[ C^{-1}m + n S^{-1}\overline{y} \right]
 \end{array} \]
 \end{frame}
@@ -297,14 +321,17 @@ m' &= C'\left[ C^{-1}m + n S^{-1}\overline{y} \right]
 \begin{frame}
 \frametitle{Inverse Wishart distribution}
 
-Let the $K\times K$ matrix $\mS$ have an inverse Wishart distribution, i.e. $\mS \sim IW(v,W^{-1})$, with scalar $v>0$ and positive definite scale matrix $W$. 
+Let the $K\times K$ matrix $\mS$ have an inverse Wishart distribution, i.e. $\mS \sim IW(v,W^{-1})$, with degrees of freedom $v>K-1$ and positive definite scale matrix $W$. 
 
 \vspace{0.2in} \pause
 
 The pdf for $\mS$ is 
 \[ 
-p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr(W\mS^{-1} \right).
+p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \right).
 \]
+
+
+
 \end{frame}
 
 
@@ -313,16 +340,41 @@ p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr(W\mS^{-1} \right).
 
 The inverse Wishart distribution with pdf 
 \[ 
-p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr(W\mS^{-1} \right).
+p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \right).
 \]
 has the following properties:
 \begin{itemize}
-\item $E[\mS] = (v-K-1)^{-1} W$
+\item $E[\mS] = (v-K-1)^{-1} W$.
 \item Marginally, $\sigma_k^2 = \mS_{kk} \sim \chi^2(v,W_{kk})$.
+\item If a $K\times K$ matrix $W$ has a Wishart distribution, i.e. $W\sim Wishart(v,S)$,  then $W^{-1} \sim IW(v,S^{-1})$. 
 \end{itemize}
 
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Normal-inverse Wishart distribution}
+
+A multivariate generalization of the normal-scaled-inverse-$\chi^2$ distribution is the normal-inverse Wishart distribution. \pause
+For a vector $\mu\in \mathbb{R}^K$ and $K\times K$ matrix $\mS$, the normal-inverse Wishart distribution is 
+\[ \begin{array}{rl}
+\mu|\mS &\sim N(m,\mS/c) \\
+\mS &\sim IW(v,W^{-1})
+\end{array} \]
+
+\vspace{0.2in} \pause
+
+The marginal distribution for $\mu$, i.e. 
+\[ 
+p(\mu) = \int p(\mu|\mS)p(\mS) d\mS,
+\]
+\pause
+is a multivariate t-distribution, i.e. 
+\[ 
+\mu \sim t_{v-K+1}(m,W/[c(v-K+1)]).
+\]
+
+\end{frame}
 
 
 
@@ -334,7 +386,7 @@ has the following properties:
 \begin{frame}
 \frametitle{Conjugate inference with unknown mean and covariance}
 
-Let $Y_i\stackrel{ind}{\sim} N(\mu,\mS)$ with conjugate prior 
+Let $Y_i\ind N(\mu,\mS)$ with conjugate prior 
 \[ 
 \mu|\mS \sim N(m,\mS/c) \quad \mS \sim IW(v,W^{-1})
 \]
@@ -355,8 +407,50 @@ where
 \[ 
 S = \sum_{i=1}^n (y_i-\overline{y})(y_i-\overline{y})^\top.
 \]
+\end{frame}
 
 
+\begin{frame}
+\frametitle{Default inference with unknown mean and covariance}
+
+\begin{itemize}
+\item The prior $\mS \sim IW(K+1,\I)$ is non-informative in the sense that marginally each correlation has a uniform distribution on (-1,1). \pause
+\item The prior 
+\[ p(\mu,\mS) \propto |\mS|^{-(K+1)/2}, \]
+\pause
+which can be thought of as a normal-inverse-Wishart distribution with $c\to 0, v\to -1, and |W|\to 0$, \pause results in the posterior distribution
+\[ \begin{array}{rl} 
+\mu|\mS,y &\sim N(\overline{y}, \mS/n) \\
+\mS|y &\sim IW(n-1,S^{-1}).
+\end{array}
+\]
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Issues with the inverse Wishart distribution}
+{\scriptsize
+
+\begin{itemize}
+\item Marginals of the IW have an IG (or scaled-inverse-$\chi^2$) distribution and therefore inherit the low density near zero resulting in a (possible) bias for small variances toward larger values.
+\item Due to the above issue, and the relationship between the variances and the correlations (\url{http://www.themattsimpson.com/2012/08/20/prior-distributions-for-covariance-matrices-the-scaled-inverse-wishart-prior/}), the correlations can be biased:
+\begin{itemize}
+\item small variances imply small correlations
+\item large variances imply large correlations
+\end{itemize}
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Remedies:
+\begin{itemize}
+\item Don't blindly use $\I$ for the scale matrix in an IW, instead use a reasonable diagonal matrix for your data set.
+\item Use the scaled Inverse wishart distribution (see pg 74)
+\item Use the separation strategy, i.e. $\mS = DCD$ where $D$ is diagonal and $C$ is a correlation matrix, where you specify the standard deviations (or variances) and correlations separately. \pause In this case, Gelman recommends putting the LKJ prior (see page 582) on the correlation matrix.
+\end{itemize}
+}
 \end{frame}
 
 \end{document}
