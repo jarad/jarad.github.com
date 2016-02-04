@@ -19,12 +19,16 @@
 \institute[Iowa State]{Iowa State University}
 \date{\today}
 
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\mS}{\mathrm{\Sigma}}
+\newcommand{\mO}{\mathrm{\Omega}}
+\newcommand{\Beta}{\mbox{Beta}}
+
 \begin{document}
-\SweaveOpts{concordance=TRUE}
 
 %\section{Temp??} \begin{comment}
 
-<<options, results='hide', echo=FALSE, purl=FALSE>>=
+<<options, results="hide", echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
                fig.width=6, fig.height=5, 
                size='tiny', 
@@ -70,8 +74,13 @@ set.seed(2)
 
 Multivariate count data:
 \begin{itemize}
-\item Vacuum cleaner sales by model
-\item 
+\item Item-response (Likert scale)
+
+\includegraphics{likert-scale-1}
+
+\item Voting
+
+\includegraphics[width=1in]{Candidates}
 \end{itemize}
 
 \end{frame}
@@ -80,12 +89,176 @@ Multivariate count data:
 \begin{frame}
 \frametitle{Multinomial distribution}
 
+Suppose there are $K$ categories and each individual independently chooses category $k$ with probability $\pi_k$ such that $\sum_{k=1}^K \pi_k=1$. \pause 
+Let $x_k$ be the number of individuals who choose category $k$ with $n = \sum_{k=1}^K x_k$ is the total number of individuals.
+
+\vspace{0.2in} \pause 
+
+Then $Y = (Y_1,\ldots,Y_n)$ has a multinomial distribution, i.e. $Y\sim Mult(n,\pi)$, \pause with probability mass function (pmf)
+\[ 
+p(y) = n! \prod_{k=1}^k \frac{\pi_k^{y_k}}{y_k!}.
+\]
 
 \end{frame}
 
 
+
+\begin{frame}
+\frametitle{Properties of the multinomial distribution}
+
+The multinomial distribution with pmf:
+\[ p(y) = n! \prod_{k=1}^k \frac{\pi_k^{y_k}}{y_k!} \]
+has the following properties:
+\pause
+\begin{itemize}
+\item $E[Y_k] = n\pi_k$ \pause
+\item $V[Y_k] = n\pi_k(1-\pi_k)$ \pause 
+\item $Cov[Y_k,Y_{k'}] = -n\pi_k\pi_{k'}$ for $k\ne k'$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Marginally, each component of a multinomial distribution is a binomial distribution with $Y_k \sim Bin(n,\pi_k)$. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Dirichlet distribution}
+
+Let $\pi=(\pi_1,\ldots,\pi_K)$ have a Dirichlet distribution, i.e. $\pi \sim Dir(a)$, with concentration parameter $a=(a_1,\ldots,a_K)$ where $a_k>0$ for all $k$. 
+
+\vspace{0.2in} \pause
+
+The probability density function (pdf) for $\pi$ is 
+\[
+p(\pi) = \frac{1}{\Beta(a)} \prod_{k=1}^K \pi_k^{a_k-1}
+\]
+where Beta($a$) is the multinomial beta function, i.e. 
+\[
+\Beta(a) = \frac{\prod_{k=1}^K \mG(a_k)}{\mG(\sum_{k=1}^K a_k)}.
+\]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Properties of the Dirichlet distribution}
+
+The Dirichlet distribution with pdf 
+\[
+p(\pi) \propto \prod_{k=1}^K \pi_k^{a_k-1}
+\]
+has the following properties (where $a_0 = \sum_{k=1}^K a_k$): \pause
+\begin{itemize}
+\item $E[\pi_k] = \frac{a_k}{a_0}$
+\item $V[\pi_k] = \frac{a_k(a_0-a_k)}{a_0^2(a_0+1)}$
+\item $Cov[\pi_k,\pi_{k'}] = \frac{-a_k a_{k'}}{a_0^2(a_0+1)}$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Marginally, each component of a Dirichlet distribution is a beta distribution with $\pi_k \sim Be(a_k,a_0-a_k)$. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bayesian inference}
+
+The conjugate prior for a multinomial distribution, i.e. $Y\sim Mult(n,\pi)$, with unknown probability vector $\pi$ is a Dirichlet distribution. \pause
+The Jeffreys prior is a Dirichlet distribution with $a_k=0.5$ for all $k$. 
+
+\vspace{0.2in} \pause 
+
+The posterior under a Dirichlet prior is \pause 
+\[ \begin{array}{rl}
+p(\pi|y) &\propto p(y|\pi) p(\pi) \pause \\
+&\propto \left[ \prod_{k=1}^K \pi_k^{y_k} \right] \left[ \prod_{k=1}^K \pi_k^{a_k-1} \right] \pause \\
+&= \prod_{k=1}^K \pi_k^{a_k+y_k-1}
+\end{array} \]
+\pause
+Thus $\pi|y \sim Dir(a+y)$.
+\end{frame}
+
+
 \section{Multivariate normal}
+\begin{frame}
+\frametitle{Multivariate normal distribution}
+
+Let $\pi=(\pi_1,\ldots,\pi_K)$ have a Dirichlet distribution, i.e. $\pi \sim Dir(a)$, with concentration parameter $a=(a_1,\ldots,a_K)$ where $a_k>0$ for all $k$. 
+
+Let $Y=(Y_1,\ldots,Y_K)$ have a multivariate normal distribution, i.e. $Y\sim N_K(\mu,\mS)$ with mean $\mu$ and variance-covariance matrix $\mS$.
+
+\vspace{0.2in} \pause
+
+The probability density function (pdf) for $Y$ is 
+\[
+p(y) = (2\pi)^{-k/2}|\mS|^{-1/2} \exp\left(-\frac{1}{2}(y-\mu)^\top \mS^{-1} (y-\mu) \right)
+\]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Properties of the multivariate normal distribution}
+
+The multivariate normal distribution with pdf 
+\[
+p(y) = (2\pi)^{-k/2}|\mS|^{-1/2} \exp\left(-\frac{1}{2}(y-\mu)^\top \mS^{-1} (y-\mu) \right)
+\]
+has the following properties: \pause
+\begin{itemize}
+\item $E[y_k] = \mu_k$
+\item $V[y_k] = \mS_{kk}$
+\item $Cov[y_k,y_{k'}] = \mS_{k,k'}$ \pause
+\item Marginally, each component of a multivariate normal distribution is a normal distribution with $y_k \sim N(\mu,\mS_{kk})$. 
+\item Conditional distributions are also normal, i.e. if 
+\[
+\left( \begin{array}{c} Y_1 \\ Y_2 \end{array}\right) \sim N\left(\left[ \begin{array}{c} \mu_1 \\ \mu_2 \end{array} \right],\left[ \begin{array}{cc} \mS_{11} & \mS_{12} \\ \mS_{21} & \mS_{22} \end{array} \right]\right)
+\]
+then 
+\[ 
+Y_1|Y_2 = y_2 \sim N\left(\mu_1 + \mS_{12}\mS_{22}^{-1}(y_2-\mu_2), \mS_{11}-\mS_{12}\mS_{22}^{-1}\mS_{21}\right).
+\]
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Representing independence in a multivariate normal}
+
+Let $Y\sim N(\mu,\mS)$ with precision matrix $\mO = \mS^{-1}$. \pause
+\begin{itemize}
+\item If $\mS_{k,k'}=0$, then $Y_k$ and $Y_{k'}$ are independent of each other.
+\item If $\mO_{k,k'}=0$, then $Y_k$ and $Y_{k'}$ are conditionally independent of each other given $Y_j$ for $j\ne k,k'$.
+\end{itemize}
+
+\vspace{1in}
+
+Graphs
+
+\vspace{1in}
+
+\end{frame}
+
+
+
+
 \subsection{Unknown mean}
+\begin{frame}
+\frametitle{Default inference with an unknown mean}
+
+Let $Y_i\sim N(\mu,S)$ with default prior $p(\mu)\propto 1$, then 
+\[ \begin{array}{rl}
+p(\mu|y) &\propto p(y|\mu)p(\mu) \pause \\
+&\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right) \pause \\
+&\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right)
+\end{array} \]
+\end{frame}
+
+
+
 \subsection{Unknown covariance}
 \subsection{Unknown mean and covariance}
 
