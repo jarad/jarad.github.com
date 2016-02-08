@@ -42,6 +42,8 @@ library(ggplot2)
 library(xtable)
 library(rstan)
 library(GGally)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
 @
 
 <<set_seed>>=
@@ -120,7 +122,7 @@ set.seed(1)
   \end{itemize}
 }
 
-<<data, echo=FALSE, results='hide'>>=
+<<data, results='hide'>>=
 d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L, 
 14L, 15L, 20L, 17L, 18L, 19L, 21L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 
 6L, 22L, 23L, 24L), .Label = c("1/11/14", "1/13/14", "1/18/14", 
@@ -145,7 +147,7 @@ d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L,
 
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
-<<dawkins_data, echo=FALSE>>=
+<<dawkins_data>>=
 d = rbind(d, data.frame(date=NA, opponent='Total', made=sum(d$made), attempts=sum(d$attempts)))
 d = mutate(d, 
            a = 0.5 + made,
@@ -170,7 +172,7 @@ ggplot(d,
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
 {\tiny
-<<results='asis', echo=FALSE>>=
+<<results='asis'>>=
 xtable(d)
 d = subset(d, opponent!="Total")
 @
@@ -305,7 +307,7 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
 
 \begin{frame}[fragile]
 \frametitle{Prior draws}
-<<proper_prior>>=
+<<proper_prior, echo=TRUE>>=
 n = 1e4
 prior_draws = mutate(data.frame(mu  = runif(n, 0 , 1), eta = rlnorm(n, 0, 1)),
                       alpha = eta*   mu,
@@ -328,7 +330,7 @@ ggpairs(prior_draws, lower=list(continuous='density'))
 \section{Stan}
 \begin{frame}[fragile]
 \frametitle{Stan}
-<<stan>>=
+<<stan, echo=TRUE>>=
 model = "
 data {
   int<lower=0> N;
@@ -361,9 +363,9 @@ model {
 
 \begin{frame}[fragile]
 \frametitle{Stan}
-<<stan_run, echo=FALSE, cache=TRUE>>=
+<<stan_run, dependson='stan', echo=TRUE, results='hide'>>=
 dat = list(y=d$made, n=d$attempts, N=nrow(d))
-m = stan_model(model_code="model")
+m = stan_model(model_code=model)
 r = sampling(m, dat, c("mu","eta","alpha","beta","theta"))
 @
 \end{frame}
@@ -371,7 +373,7 @@ r = sampling(m, dat, c("mu","eta","alpha","beta","theta"))
 
 \begin{frame}[fragile]
 \frametitle{stan}
-<<stan_post, dependson="stan_run", echo=FALSE>>=
+<<stan_post, dependson="stan_run">>=
 r
 @
 \end{frame}
@@ -379,7 +381,7 @@ r
 
 \begin{frame}[fragile]
 \frametitle{stan}
-<<stan_plot, dependson="stan_run", echo=FALSE>>=
+<<stan_plot, dependson="stan_run">>=
 plot(r)
 @
 \end{frame}
@@ -387,7 +389,7 @@ plot(r)
 
 \begin{frame}[fragile]
 \frametitle{Comparing independent and hierarchical models}
-<<quantiles, dependson="stan_run", echo=FALSE>>=
+<<quantiles, dependson="stan_run">>=
 d$model = "independent"
 
 tmp = data.frame(summary(r)$summary[,c(4,8)])
@@ -433,7 +435,7 @@ ggplot(rbind(d, new_d), aes(x=lcl,
 \subsection{improper prior}
 \begin{frame}[fragile]
 \frametitle{Stan - improper prior}
-<<stan2_run, results='hide', cache=TRUE>>=
+<<stan2_run, echo=TRUE, results='hide'>>=
 model2 = "
 data {
   int<lower=0> N;
@@ -456,14 +458,14 @@ model {
 }
 "
 
-m2 = stan_model(model_code="model2")
+m2 = stan_model(model_code=model2)
 r2 = sampling(m2, dat, c("alpha","beta","theta"))
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Stan - improper prior}
-<<stan_post2, dependson="stan2_run", echo=FALSE>>=
+<<stan_post2, dependson="stan2_run">>=
 r2
 @
 \end{frame}
@@ -471,7 +473,7 @@ r2
 
 \begin{frame}[fragile]
 \frametitle{Stan - improper prior}
-<<stan_plot2, dependson="stan2_run", echo=FALSE>>=
+<<stan_plot2, dependson="stan2_run">>=
 plot(r2)
 @
 \end{frame}
@@ -479,7 +481,7 @@ plot(r2)
 
 \begin{frame}[fragile]
 \frametitle{Comparing all models}
-<<quantiles2, dependson=c("stan_run","stan2_run"), echo=FALSE>>=
+<<quantiles2, dependson=c("stan_run","stan2_run")>>=
 d$prior     = "independent"
 new_d$prior = "proper"
 
@@ -524,7 +526,7 @@ The maginal posterior for $\alpha,\beta$ is
 
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
-<<stan3_run, results='hide', cache=TRUE>>=
+<<stan3_run, echo=TRUE, results='hide'>>=
 model3 = "
 data {
   int<lower=0> N;
@@ -541,7 +543,7 @@ model {
 }
 "
 
-m3 = stan_model(model_code="model3")
+m3 = stan_model(model_code=model3)
 r3 = sampling(m3, dat, c("alpha","beta"))
 @
 \end{frame}
@@ -549,7 +551,7 @@ r3 = sampling(m3, dat, c("alpha","beta"))
 
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
-<<stan3_post, dependson="stan3_run", echo=FALSE>>=
+<<stan3_post, dependson="stan3_run">>=
 r3
 @
 \end{frame}
@@ -560,7 +562,7 @@ r3
 
 Posterior samples for $\alpha$ and $\beta$ 
 
-<<stan3_alpha_beta, dependson="stan3_run", echo=TRUE>>=
+<<stan3_alpha_beta, dependson="stan3_run", echo=FALSE>>=
 samples = extract(r3, c("alpha","beta"))
 ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)), log_beta  = log(as.numeric(samples$beta))),
         lower  = list(continuous='density'))
@@ -583,7 +585,7 @@ hist(theta22, 100,
 
 \begin{frame}[fragile]
 \frametitle{$\theta$s are not independent in the posterior}
-<<stan3_thetas, dependson="stan3_run", echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
+<<stan3_thetas, dependson="stan3_run", out.width='\\textwidth'>>=
 game = 23
 theta23 = rbeta(length(samples$alpha), 
               samples$alpha + d$made[game], 
@@ -600,9 +602,9 @@ ggpairs(data.frame(theta22=theta22,theta23=theta23), lower=list(continuous='dens
 
 An alternative to modeling game-specific 3-point percentage is to model 3-point percentage in a season. \pause The model is exactly the same, but the data changes. \pause
 
-<<echo=FALSE, results='asis'>>=
+<<season_data, results='asis'>>=
 d = data.frame(season=1:4, y=c(36,64,67,64), n=c(95,150,171,152))
-xtable(d)
+xtable(d, digits=0)
 @
 
 Due to the low number of seasons (observations), we will use the proper prior for $\alpha$ and $\beta$. 
@@ -612,7 +614,7 @@ Due to the low number of seasons (observations), we will use the proper prior fo
 
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
-<<stan_season, echo=TRUE, results='hide', cache=TRUE>>=
+<<stan_season, dependson='season_data', echo=TRUE, results='hide'>>=
 model4 = "
 data {
   int<lower=0> N;
@@ -641,7 +643,7 @@ generated quantities {
 }
 "
 
-m4 = stan_model(model_code="model4")
+m4 = stan_model(model_code=model4)
 r_seasons = sampling(m4, list(N=nrow(d), y=d$y, n=d$n, eta_sd=2), 
                      c("alpha","beta","mu","eta","theta"), seed=1)
 @
@@ -660,7 +662,7 @@ r_seasons
 \begin{frame}[fragile]
 \frametitle{Stan - hierarchical model for seasons}
 
-<<stan_season_posteriors, echo=FALSE>>=
+<<stan_season_posteriors, dependson="stan_season">>=
 posterior = melt(extract(r_seasons, "theta")[[1]])
 names(posterior)[2] = "season"
 posterior$season = factor(posterior$season)
