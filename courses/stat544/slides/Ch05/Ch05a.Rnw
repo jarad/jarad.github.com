@@ -162,7 +162,7 @@ ggplot(d,
            y     = game, 
            yend  = game, 
            color = Estimate))+
-  geom_segment(lwd=2) + 
+  geom_segment(lwd=1) + 
 #  theme(legend.position="none") + 
   labs(x=expression(theta))
 @
@@ -300,30 +300,31 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
   Let's assume a proper prior for $\mu$ and $\eta$ \pause perhaps
   \begin{itemize}
   \item $\mu \sim Be(1,1)$
-  \item $\eta \sim LN(0,1)$
+  \item $\eta \sim LN(0,3)$
   \end{itemize}
-  \pause where $LN(0,1)$ is a log-normal distribution, i.e. $\log(\eta) \sim N(0,1)$.
+  \pause where $LN(0,3)$ is a log-normal distribution, i.e. $\log(\eta) \sim N(0,3)$.
 }
 
 \begin{frame}[fragile]
 \frametitle{Prior draws}
 <<proper_prior, echo=TRUE>>=
 n = 1e4
-prior_draws = mutate(data.frame(mu  = runif(n, 0 , 1), eta = rlnorm(n, 0, 1)),
+prior_draws = mutate(data.frame(mu  = runif(n, 0 , 1), eta = rlnorm(n, 0, 3)),
                       alpha = eta*   mu,
                       beta  = eta*(1-mu))
 ddply(melt(prior_draws), .(variable), function(x) quantile(x$value, prob=c(.025,.5,.975)))
+cor(prior_draws$alpha, prior_draws$beta)
 
 @
 \end{frame}
 
 
 
-\begin{frame}[fragile]
-<<proper_prior_plot, out.width='0.8\\textwidth'>>=
-ggpairs(prior_draws, lower=list(continuous='density'))
-@
-\end{frame}
+% \begin{frame}[fragile]
+% <<proper_prior_plot, dependson='proper_prior', out.width='0.8\\textwidth'>>=
+% ggpairs(prior_draws, lower=list(continuous='density'))
+% @
+% \end{frame}
 
 
 
@@ -351,7 +352,7 @@ transformed parameters {
 }
 model {
   mu    ~ beta(1,1);
-  eta   ~ lognormal(0,10);
+  eta   ~ lognormal(0,3);
 
   # implicit joint distributions
   theta ~ beta(alpha,beta); 
@@ -366,14 +367,14 @@ model {
 <<stan_run, dependson='stan', echo=TRUE, results='hide'>>=
 dat = list(y=d$made, n=d$attempts, N=nrow(d))
 m = stan_model(model_code=model)
-r = sampling(m, dat, c("mu","eta","alpha","beta","theta"))
+r = sampling(m, dat, c("mu","eta","alpha","beta","theta"), iter=10000)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{stan}
-<<stan_post, dependson="stan_run">>=
+<<stan_post, dependson="stan_run", echo=TRUE>>=
 r
 @
 \end{frame}
@@ -381,10 +382,18 @@ r
 
 \begin{frame}[fragile]
 \frametitle{stan}
-<<stan_plot, dependson="stan_run">>=
-plot(r)
+<<stan_plot, dependson="stan_run", message=TRUE, echo=TRUE, out.width='0.5\\textwidth'>>=
+plot(r, pars=c('eta','alpha','beta'))
 @
 \end{frame}
+
+\begin{frame}[fragile]
+\frametitle{stan}
+<<stan_plot2, dependson="stan_run", echo=TRUE, out.width='0.7\\textwidth'>>=
+plot(r, pars=c('mu','theta'))
+@
+\end{frame}
+
 
 
 \begin{frame}[fragile]
@@ -404,7 +413,7 @@ ggplot(rbind(d, new_d), aes(x=lcl,
                      y=game+e*(model=="hierarchical"), 
                      yend=game+e*(model=="hierarchical"), 
                      color=model))+
-  geom_segment(lwd=2, alpha=0.5) + 
+  geom_segment(lwd=1, alpha=0.5) + 
   labs(x=expression(theta), y="game")
 @
 \end{frame}
@@ -473,10 +482,19 @@ r2
 
 \begin{frame}[fragile]
 \frametitle{Stan - improper prior}
-<<stan_plot2, dependson="stan2_run">>=
-plot(r2)
+<<stan2_plot, dependson="stan2_run", out.width='0.7\\textwidth'>>=
+plot(r2, pars=c('alpha','beta'))
 @
 \end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stan - improper prior}
+<<stan2_plot2, dependson="stan2_run", out.width='0.7\\textwidth'>>=
+plot(r2, pars=c('theta'))
+@
+\end{frame}
+
 
 
 \begin{frame}[fragile]
@@ -498,7 +516,7 @@ ggplot(rbind(d,new_d,new_d2),
            y     = game+e*(prior=="improper")-e*(prior=="independent"), 
            yend  = game+e*(prior=="improper")-e*(prior=="independent"), 
            color = prior))+
-  geom_segment(lwd=2, alpha=0.5) + 
+  geom_segment(lwd=1, alpha=0.5) + 
   labs(x=expression(theta), y="game")
 @
 \end{frame}
@@ -571,7 +589,8 @@ ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)), log_beta  = log(a
 
 \begin{frame}[fragile]
 \frametitle{Posterior sample for $\theta_{22}$}
-<<stan3_theta, dependson="stan3_run", fig.width=10>>=
+<<stan3_theta, dependson="stan3_run", fig.width=10, echo=TRUE>>=
+samples = extract(r3, c("alpha","beta"))
 game = 22
 theta22 = rbeta(length(samples$alpha), 
               samples$alpha + d$made[game], 
@@ -585,7 +604,7 @@ hist(theta22, 100,
 
 \begin{frame}[fragile]
 \frametitle{$\theta$s are not independent in the posterior}
-<<stan3_thetas, dependson="stan3_run", out.width='\\textwidth'>>=
+<<stan3_thetas, dependson='stan3_run'>>=
 game = 23
 theta23 = rbeta(length(samples$alpha), 
               samples$alpha + d$made[game], 
