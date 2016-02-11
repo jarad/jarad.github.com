@@ -189,7 +189,7 @@ set.seed(1)
 	\[ \begin{array}{rl}
 	y_{ij} &\stackrel{ind}{\sim} N(\theta_i, \sigma^2) \pause \\
 	\theta_i &\stackrel{iid}{\sim} N(\mu,\tau^2) \pause \\
-	p(\mu,\tau) &\propto p(\tau)
+	p(\mu,\tau) &\propto p(\mu|\tau)p(\tau)
 	\end{array} \]
 	\pause with $j=1,\ldots,n_i$, $i=1,\ldots,\I$, and $n=\sum_{i=1}^J n_i$. \pause This is a normal hierarchical model. 
 	
@@ -201,7 +201,7 @@ set.seed(1)
 \subsection{Posterior}
 \frame{\frametitle{Posterior distribution}
 	The posterior is 
-	\[ p(\theta,\mu,\tau|y) \pause \propto p(y|\theta)p(\theta|\mu,\tau) p(\mu,\tau) \]
+	\[ p(\theta,\mu,\tau|y) \pause \propto p(y|\theta)p(\theta|\mu,\tau) p(\mu|\tau)p(\tau) \]
 	\pause but the decomposition 
 	\[ p(\theta,\mu,\tau|y) = p(\theta|\mu,\tau,y) p(\mu|\tau,y) p(\tau|y) \]
 	\pause where
@@ -254,7 +254,7 @@ Then
   
 	\vspace{0.2in} \pause
   
-  Use $p(\tau) \propto \mbox{Unif}(0,10)$. 
+  Use $\tau \sim Ca^+(0,1)$. 
 }
 
 \begin{frame}[fragile]
@@ -322,14 +322,15 @@ Consider samping from an arbitrary unnormalized density $f(\tau)\propto p(\tau|y
 
 
 \begin{frame}[fragile]
-\frametitle{Approximation to $p(\tau|y)$ when $p(\tau) \propto \mathrm{I}(0<\tau<10)$}
+\frametitle{Approximation to $p(\tau|y)$ when $\tau\sim Ca^+(0,1)$}
 <<analysis, echo=FALSE, fig.width=8>>=
-tau_log_posterior = function(tau, ybar, sj2) 
+tau_log_posterior = function(tau, ybar, sj2, C=1) 
 {
+  if (tau<=0) return(-Inf)
   spt = sj2+tau^2
   Vmu = 1/sum(1/spt)
   mu = sum(ybar/spt)*Vmu
-  0.5*log(Vmu)+sum(-0.5*log(spt)-(ybar-mu)^2/(2*spt))
+  0.5*log(Vmu)+sum(-0.5*log(spt)-(ybar-mu)^2/(2*spt))+dcauchy(tau, 0, C, log=TRUE)
 }
 
 V_tau_log_posterior = Vectorize(tau_log_posterior,"tau")
