@@ -15,6 +15,11 @@
 \setkeys{Gin}{width=0.6\textwidth}
 
 
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
+
 
 \title{Hierarchical models}
 \author[Jarad Niemi]{Dr. Jarad Niemi}
@@ -729,17 +734,34 @@ mean(theta[,4] > theta[,3])
 
 
 \subsection{Summary}
-\frame{\frametitle{Summary - hierarchical models}
-  Hierarchical models: \pause
-	\begin{itemize}[<+->]
-	\item Basic structure
-	\[ y\sim p(y|\theta) \qquad \theta\sim p(\theta|\phi) \qquad \phi\sim p(\phi) \phantom{|\psi\qquad \psi\sim p(\psi)} \]
-	\item \pause Extension (one more level in the hierarchy)
+\begin{frame}
+\frametitle{Summary - hierarchical models}
+Two-level hierarchical model:
+\[ y_i\ind p(y|\theta) \qquad \theta_i \ind p(\theta|\phi) \qquad \phi\sim p(\phi) \phantom{|\psi\qquad \psi\sim p(\psi)} \]
+
+\vspace{0.2in} \pause
+
+Conditional independencies:
+\begin{itemize}
+\item $y_i \independent y_j | \theta$ for $i\ne j$
+\item $\theta_i \independent \theta_j | \phi$ for $i\ne j$
+\item $y \independent \phi | \theta$
+\item $y_i \independent y_j | \phi$ for $i\ne j$
+\item $\theta_i \independent \theta_j | \phi, y$ for $i\ne j$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Summary - extension to more levels}
+Three-level hierarchical model:
 	\[ y\sim p(y|\theta) \qquad \theta\sim p(\theta|\phi) \qquad \phi\sim p(\phi|\psi) \qquad \psi\sim p(\psi) \]
-	\item \pause When deriving posteriors, remember the conditional independence structure, \pause e.g.
+
+\vspace{0.2in} \pause
+  
+  When deriving posteriors, remember the conditional independence structure, \pause e.g.
 	\[ p(\theta,\phi,\psi|y) \propto p(y|\theta) p(\theta|\phi) p(\phi|\psi) p(\psi) \]
-	\end{itemize}
-}
+\end{frame}
 
 
 
