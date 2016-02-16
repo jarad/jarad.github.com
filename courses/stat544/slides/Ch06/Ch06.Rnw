@@ -36,9 +36,14 @@ options(width=120)
 <<libraries, message=FALSE, warning=FALSE>>=
 library(reshape2)
 library(plyr)
+library(dplyr)
+
 library(ggplot2)
 library(xtable)
+
 library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
 @
 
 <<set_seed>>=
@@ -73,7 +78,7 @@ We assume $p(y|\theta)$ and $p(\theta)$, so it would be prudent to determine if 
 \begin{frame}
 \frametitle{Prior sensitivity analysis}
 
-Since a prior specifies our prior belief, we may want to check to determine whether our conclusions would change it we held different prior beliefs. \pause Suppose a particular scientific question can be boiled down to 
+Since a prior specifies our prior belief, we may want to check to determine whether our conclusions would change if we held different prior beliefs. \pause Suppose a particular scientific question can be boiled down to 
 \[ Y_i \stackrel{ind}{\sim} Ber(\theta) \]
 \pause 
 and that there is wide disagreement about the value for $\theta$ such that the following might reasonably characterize different individual beliefs before the experiment is run: \pause
@@ -89,42 +94,27 @@ An experiment is run and the posterior under these different priors are compared
 
 
 \begin{frame}
-\frametitle{Ten data points}
+\frametitle{Posteriors}
 
 <<>>=
-n = 10
-xx = seq(0,1,by=0.01)
-d = ddply(data.frame(a=c(1,1,100), b=c(100,1,1), 
-                     type=factor(c("skeptic","agnostic","believer"),
-                                 c("skeptic","agnostic","believer"))), 
-          .(type), function(x) {
-  data.frame(xx=xx, yy=dbeta(xx, x$a+.9*n, x$b+.1*n))
+prior = data.frame(a=c(1,1,100), b=c(100,1,1), 
+                   type=factor(c("skeptic","agnostic","believer"),
+                               c("skeptic","agnostic","believer")),
+                   n=10^rep(1:6, each=3))
+
+p = 0.9
+d = ddply(prior, .(type, n), function(x) {
+  data.frame(xx=seq(0,1,by=0.01)) %>%
+    mutate(yy=dbeta(xx, x$a+p*x$n, x$b+(1-p)*x$n))
 })
 
-ggplot(d, aes(x=xx,y=yy,col=type)) + geom_line() +
-  labs(x=expression(theta), y=expression(paste("p(",theta,"|y)")))
+ggplot(d, aes(x=xx,y=yy,col=type, linetype=type)) + 
+  geom_line() +
+  facet_wrap(~n, scales='free') + 
+  labs(x=expression(theta), y=expression(paste("p(",theta,"|y)"))) +
+  theme(legend.position="bottom")
 @
 \end{frame}
-
-
-\begin{frame}
-\frametitle{A million data points}
-
-<<>>=
-n = 1000000
-xx = seq(0.89,.91,by=0.0001)
-d = ddply(data.frame(a=c(1,1,100), b=c(100,1,1), 
-                     type=factor(c("skeptic","agnostic","believer"),
-                                 c("skeptic","agnostic","believer"))), 
-          .(type), function(x) {
-  data.frame(xx=xx, yy=dbeta(xx, x$a+.9*n, x$b+.1*n))
-})
-
-ggplot(d, aes(x=xx,y=yy,col=type)) + geom_line() +
-  labs(x=expression(theta), y=expression(paste("p(",theta,"|y)")))
-@
-\end{frame}
-
 
 
 
@@ -139,7 +129,7 @@ which results in the posterior distribution for $\tau$ of
 
  \pause
 
-As an attempt to be non-informative, consider an $IG(\epsilon,\epsilon)$ prior for $\tau^2$. \pause As an alternative, consider $\tau \sim Unif(0,C)$ or $\tau\sim Ca^+(0,C)$ \pause where $C$ problem specific, but is chosen to be relatively large for the particular problem. 
+As an attempt to be non-informative, consider an $IG(\epsilon,\epsilon)$ prior for $\tau^2$. \pause As an alternative, consider $\tau \sim Unif(0,C)$ or $\tau\sim Ca^+(0,C)$ \pause where $C$ is problem specific, but is chosen to be relatively large for the particular problem. 
 
  \pause
 
@@ -148,7 +138,7 @@ The \href{https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started}{8-school
 <<results='asis'>>=
 d = data.frame(y = c(28,  8, -3,  7, -1,  1, 18, 12),
                s = c(15, 10, 16, 11,  9, 11, 10, 18))
-print(xtable(t(d)))
+print(xtable(t(d), digits=0))
 @
 
 
@@ -173,32 +163,70 @@ V_tau_log_posterior = Vectorize(tau_log_posterior,"tau")
 
 
 
-h = .001
-tmp =data.frame(x = seq(0,30-2*h, by=2*h)+h)
-post = rbind(mutate(tmp, 
-                    prior = 1/30, 
-                    f = exp(V_tau_log_posterior(x, d$y, d$s^2)), 
-                    prior_type="uniform"),
-             mutate(tmp, 
-                    prior = dsqrtinvgamma(x, 1, 1), 
-                    f= exp(V_tau_log_posterior(x, d$y, d$s^2) + log(dsqrtinvgamma(x, 1, 1))), 
-                    prior_type="IG(1,1)"),
-             mutate(tmp, 
-                    prior = dsqrtinvgamma(x, .001, .001),
-                    f = exp(V_tau_log_posterior(x, d$y, d$s^2) + log(dsqrtinvgamma(x, .001, .001 ))), 
-                    prior_type="IG(.001,001)"))
-post2 = ddply(post, .(prior_type), function(d) 
-  data.frame(x=d$x, posterior = d$f/(sum(d$f)*2*h), prior=d$prior/(sum(d$prior)*2*h))
-)
-m = melt(post2, id.var=c("prior_type","x"))
-names(m) = c("prior","x","density","y")
-m$density = factor(m$density, c("prior","posterior"))
-ggplot(m, aes(x=x, y=y, color=prior)) + geom_line() + 
-  labs(x=expression(tau), y='density') + 
-  xlim(0,10) + facet_wrap(~density)
+h = 0.001
+e = 0.001
+
+df = data.frame(x = seq(0,20-h, by=h)+h/2) %>%
+  mutate(log_like = V_tau_log_posterior(x, d$y, d$s^2),
+         'IG(1,1)'    = log(dsqrtinvgamma(x,1,1)),
+         'IG(e,e)'    = log(dsqrtinvgamma(x,e,e)),
+         'Unif(0,20)' = 0,
+         'Ca^*(0,5)'  = dcauchy(x, 0, 10, log=TRUE)) %>%
+  melt(id.var=c('x','log_like'), 
+       variable.name = 'Distribution', 
+       value.name = 'log_prior') %>%
+  mutate(log_posterior = log_like + log_prior) %>%
+  group_by(Distribution) %>% 
+  mutate(prior = exp(log_prior-max(log_prior)),
+         prior = prior/sum(prior)/h,
+         posterior = exp(log_posterior-max(log_posterior)),
+         posterior = posterior/sum(posterior)/h) %>%
+  melt(measure.vars = c('prior','posterior'), 
+       value.name = 'density')
+  
+ggplot(df, aes(x, density, color=variable, linetype=variable, group=variable)) +
+  geom_line() + 
+  facet_wrap(~Distribution, scales='free') +
+  theme(legend.position="bottom")
 @
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Summary}
+
+For a default prior on a variance ($\sigma^2$) or standard deviation ($\sigma$), use 
+
+\begin{enumerate}
+\item Easy to remember.
+  \begin{itemize}
+  \item Half-Cauchy on the standard deviation ($\sigma \sim Ca^+(0,C)$). \pause
+  \end{itemize}
+\item Harder to remember
+  \begin{itemize}
+  \item Data-level variance 
+    \begin{itemize}
+    \item Use default prior ($p(\sigma^2)\propto 1/\sigma^2$) \pause 
+    \end{itemize}
+  \item Hierarchical standard deviation
+    \begin{itemize}
+    \item Use uniform prior (Unif$(0,C)$) if there are enough reps (5 or more) of that parameter. \pause 
+    \item Use half-Cauchy prior ($Ca^+(0,C)$) otherwise.
+    \end{itemize}
+  \end{itemize}
+\end{enumerate}
+
+\vspace{0.2in} \pause
+
+{\footnotesize
+
+When assigning the values for $C$
+\begin{itemize}
+\item For a uniform prior (Unif$(0,C)$) make sure $C$ is large enough to capture any reasonable value for the standard deviation.
+\item For a half-Cauchy prior ($Ca^+(0,C)$) err on the side of making $C$ too small since the heavy tails will let the data tell you if the standard deviation needs to be larger whereas a value of $C$ that is too large will put too much weight toward large values of the standard deviation and make the prior more informative.
+\end{itemize}
+}
+\end{frame}
 
 
 \section{Posterior predictive checks}
