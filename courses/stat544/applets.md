@@ -5,7 +5,7 @@ tagline: Applets
 ---
 {% include JB/setup %}
 
-Please run these apps from r using the `run_GitHub` function from the `shiny` package:
+Please run these apps from r using the `runGitHub` function from the `shiny` package:
 
     install.packages('shiny')
     
