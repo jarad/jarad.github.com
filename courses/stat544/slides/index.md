@@ -29,7 +29,7 @@ To extract the R code, run
 - [Chapter 04](Ch04/Ch04.Rnw)
 - [Chapter 05a](Ch05/Ch05a.Rnw)
 - [Chapter 05b](Ch05/Ch05b.Rnw)
-- [Chapter 06a](Ch06/Ch06a.Rnw)
+- [Chapter 06](Ch06/Ch06.Rnw)
 - [Chapter 07a](Ch07/Ch07a.Rnw)
 - [Chapter 07b](Ch07/Ch07b.Rnw)
 - [AmazonReviews](AmazonReviews/AmazonReviews.Rnw)
