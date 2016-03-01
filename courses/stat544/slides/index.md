@@ -10,7 +10,7 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 ## Chapter slide source files
 
 
-|Chapter|Topic|Rnw|pdf|
+|Chapter|Topic|Source|Handouts|
 |:-----:|-----|---|---|
 |1|Bayesian statistics|[Ch01.Rnw](Ch01/Ch01.Rnw)|[Ch01.pdf](Ch01/Ch01.pdf)|
 |2|Binomial model/priors|[Ch02a.Rnw](Ch02/Ch02a.Rnw)|[Ch02a.pdf](Ch02/Ch02a.pdf)|
