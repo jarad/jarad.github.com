@@ -10,23 +10,23 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 ## Chapter slide source files
 
 - Chapter 1
-  - Bayesian statistics [Ch01.Rnw](Ch01/Ch01.Rnw) [Ch01.pdf](Ch01/Ch01.pdf)
+  - [Ch01.Rnw](Ch01/Ch01.Rnw) [Ch01.pdf](Ch01/Ch01.pdf): Bayesian statistics
 - Chapter 2
-  - Binomial model/priors [Ch02a.Rnw](Ch02/Ch02a.Rnw) [Ch02a.pdf](Ch02/Ch02a.pdf)
-  - Normal model/computation [Ch02b.Rnw](Ch02/Ch02b.Rnw) [Ch02a.pdf](Ch02/Ch02b.pdf)
+  - [Ch02a.Rnw](Ch02/Ch02a.Rnw) [Ch02a.pdf](Ch02/Ch02a.pdf): Binomial model/priors
+  - [Ch02b.Rnw](Ch02/Ch02b.Rnw) [Ch02a.pdf](Ch02/Ch02b.pdf): Normal model/computation
 - Chapter 3
   - Independent binomials/normal [Ch03a.Rnw](Ch03/Ch03a.Rnw) [Ch03a.pdf](Ch03/Ch03a.pdf)
-  - Multinomial/multivariate normal [Ch03b.Rnw](Ch03/Ch03b.Rnw) [Ch03b.pdf](Ch03/Ch03b.pdf)
+  - [Ch03b.Rnw](Ch03/Ch03b.Rnw) [Ch03b.pdf](Ch03/Ch03b.pdf): Multinomial/multivariate normal
 - Chapter 4
-  - Data asympotitics [Ch04.Rnw](Ch04/Ch04.Rnw) [Ch04.pdf](Ch04/Ch04.pdf)
+  - [Ch04.Rnw](Ch04/Ch04.Rnw) [Ch04.pdf](Ch04/Ch04.pdf): Data asympotitics
 - Chapter 5
-  - Binomial hierarchical model [Ch05a.Rnw](Ch05/Ch05a.Rnw) [Ch05a.pdf](Ch05/Ch05a.pdf)
-  - de Finetti/normal hierarchical model [Ch05b.Rnw](Ch05/Ch05b.Rnw) [Ch05b.pdf](Ch05/Ch05b.pdf)
+  - [Ch05a.Rnw](Ch05/Ch05a.Rnw) [Ch05a.pdf](Ch05/Ch05a.pdf): Binomial hierarchical model
+  -  [Ch05b.Rnw](Ch05/Ch05b.Rnw) [Ch05b.pdf](Ch05/Ch05b.pdf): de Finetti/normal hierarchical model
 - Chapter 6
-  - Model checking [Ch06.Rnw](Ch06/Ch06.Rnw) [Ch06.pdf](Ch06/Ch06.pdf)
+  -  [Ch06.Rnw](Ch06/Ch06.Rnw) [Ch06.pdf](Ch06/Ch06.pdf): Model checking
 - Chapter 7
-  - Hypothesis testing [Ch07a.Rnw](Ch07/Ch07a.Rnw) [Ch07a.pdf](Ch07/Ch07a.pdf)
-  - Comparison to LRTs [Ch07b.Rnw](Ch07/Ch07b.Rnw) [Ch07b.pdf](Ch07/Ch07b.pdf)
+  - [Ch07a.Rnw](Ch07/Ch07a.Rnw) [Ch07a.pdf](Ch07/Ch07a.pdf): Hypothesis testing
+  - [Ch07b.Rnw](Ch07/Ch07b.Rnw) [Ch07b.pdf](Ch07/Ch07b.pdf): Comparison to LRTs
 - Reviews
   - [AmazonReviews.Rnw](AmazonReviews/AmazonReviews.Rnw) [AmazonReviews.pdf](AmazonReviews/AmazonReviews.pdf)
   - [MidtermReview.Rnw](MidtermReview/midterm_review.Rnw) [MidtermReview.pdf](MidtermReview/midterm_review.pdf)
