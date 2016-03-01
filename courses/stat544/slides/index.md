@@ -23,8 +23,8 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 |6|Model checking|[Ch06.Rnw](Ch06/Ch06.Rnw)|[Ch06.pdf](Ch06/Ch06.pdf)|
 |7|Hypothesis testing|[Ch07a.Rnw](Ch07/Ch07a.Rnw)|[Ch07a.pdf](Ch07/Ch07a.pdf)|
 | |Comparison to LRTs|[Ch07b.Rnw](Ch07/Ch07b.Rnw)|[Ch07b.pdf](Ch07/Ch07b.pdf)|
-|R|Amazon reviews analysis|[Rnw](AmazonReviews/AmazonReviews.Rnw)|[pdf](AmazonReviews/AmazonReviews.pdf)|
-| |Midterm review|[Rnw](MidtermReview/midterm_review.Rnw)|[pdf](MidtermReview/midterm_review.pdf)|
+|R|Amazon reviews analysis|[AmazonReview.Rnw](AmazonReviews/AmazonReviews.Rnw)|[AmazonReview.pdf](AmazonReviews/AmazonReviews.pdf)|
+| |Midterm review|[MidtermReview.Rnw](MidtermReview/midterm_review.Rnw)|[MidtermReview.pdf](MidtermReview/midterm_review.pdf)|
 
   
 Below are (to be organized)
