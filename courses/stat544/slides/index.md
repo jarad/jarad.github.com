@@ -9,7 +9,8 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 
 ## Chapter slide source files
 
-- Chapter 1: [Rnw](Ch01/Ch01.Rnw) [pdf](Ch01/Ch01.pdf)
+- Chapter 1
+  - Bayesian statistics [Ch01.Rnw](Ch01/Ch01.Rnw) [Ch01.pdf](Ch01/Ch01.pdf)
 - [Chapter 02a](Ch02/Ch02a.Rnw)
 - [Chapter 02b](Ch02/Ch02b.Rnw)
 - [Chapter 03a](Ch03/Ch03a.Rnw)
