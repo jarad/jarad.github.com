@@ -15,7 +15,11 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
   - [Ch02a.Rnw](Ch02/Ch02a.Rnw) [Ch02a.pdf](Ch02/Ch02a.pdf): Binomial model/priors
   - [Ch02b.Rnw](Ch02/Ch02b.Rnw) [Ch02a.pdf](Ch02/Ch02b.pdf): Normal model/computation
 - Chapter 3
+<<<<<<< HEAD
   - [Ch03a.Rnw](Ch03/Ch03a.Rnw) [Ch03a.pdf](Ch03/Ch03a.pdf): Independent binomials/normal
+=======
+  - Independent binomials/normal [Ch03a.Rnw](Ch03/Ch03a.Rnw) [Ch03a.pdf](Ch03/Ch03a.pdf)
+>>>>>>> 3ec5f4698f762db34c6e61e2e51319208030a0b6
   - [Ch03b.Rnw](Ch03/Ch03b.Rnw) [Ch03b.pdf](Ch03/Ch03b.pdf): Multinomial/multivariate normal
 - Chapter 4
   - [Ch04.Rnw](Ch04/Ch04.Rnw) [Ch04.pdf](Ch04/Ch04.pdf): Data asympotitics
