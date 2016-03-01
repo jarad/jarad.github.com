@@ -11,18 +11,28 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 
 - Chapter 1
   - Bayesian statistics [Ch01.Rnw](Ch01/Ch01.Rnw) [Ch01.pdf](Ch01/Ch01.pdf)
-- [Chapter 02a](Ch02/Ch02a.Rnw)
-- [Chapter 02b](Ch02/Ch02b.Rnw)
-- [Chapter 03a](Ch03/Ch03a.Rnw)
-- [Chapter 03b](Ch03/Ch03b.Rnw)
-- [Chapter 04](Ch04/Ch04.Rnw)
-- [Chapter 05a](Ch05/Ch05a.Rnw)
-- [Chapter 05b](Ch05/Ch05b.Rnw)
-- [Chapter 06](Ch06/Ch06.Rnw)
-- [Chapter 07a](Ch07/Ch07a.Rnw)
-- [Chapter 07b](Ch07/Ch07b.Rnw)
-- [AmazonReviews](AmazonReviews/AmazonReviews.Rnw)
-- [Midterm Review](MidtermReview/midterm_review.Rnw)
+- Chapter 2
+  - Binomial model/priors [Ch02a.Rnw](Ch02/Ch02a.Rnw) [Ch02a.pdf](Ch02/Ch02a.pdf)
+  - Normal model/computation [Ch02b.Rnw](Ch02/Ch02b.Rnw) [Ch02a.pdf](Ch02/Ch02b.pdf)
+- Chapter 3
+  - Independent binomials/normal [Ch03a.Rnw](Ch03/Ch03a.Rnw) [Ch03a.pdf](Ch03/Ch03a.pdf)
+  - Multinomial/multivariate normal [Ch03b.Rnw](Ch03/Ch03b.Rnw) [Ch03b.pdf](Ch03/Ch03b.pdf)
+- Chapter 4
+  - Data asympotitics [Ch04.Rnw](Ch04/Ch04.Rnw) [Ch04.pdf](Ch04/Ch04.pdf)
+- Chapter 5
+  - Binomial hierarchical model [Ch05a.Rnw](Ch05/Ch05a.Rnw) [Ch05a.pdf](Ch05/Ch05a.pdf)
+  - de Finetti/normal hierarchical model [Ch05b.Rnw](Ch05/Ch05b.Rnw) [Ch05b.pdf](Ch05/Ch05b.pdf)
+- Chapter 6
+  - Model checking [Ch06.Rnw](Ch06/Ch06.Rnw) [Ch06.pdf](Ch06/Ch06.pdf)
+- Chapter 7
+  - Hypothesis testing [Ch07a.Rnw](Ch07/Ch07a.Rnw) [Ch07a.pdf](Ch07/Ch07a.pdf)
+  - Comparison to LRTs [Ch07b.Rnw](Ch07/Ch07b.Rnw) [Ch07b.pdf](Ch07/Ch07b.pdf)
+- Reviews
+  - [AmazonReviews.Rnw](AmazonReviews/AmazonReviews.Rnw) [AmazonReviews.pdf](AmazonReviews/AmazonReviews.pdf)
+  - [MidtermReview.Rnw](MidtermReview/midterm_review.Rnw) [MidtermReview.pdf](MidtermReview/midterm_review.pdf)
+  
+Below are (to be organized)
+  
 - [Chapter 10a](Ch10/Ch10a.Rnw)
 - [Chapter 10b](Ch10/Ch10b.Rnw)
 - [Chapter 11a](Ch11/Ch11a.Rnw)
