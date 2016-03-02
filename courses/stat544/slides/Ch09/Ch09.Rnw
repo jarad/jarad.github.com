@@ -1,0 +1,142 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Decision theory}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\I}{\mathrm{I}}
+
+\begin{document}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(reshape2)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(rstan)
+@
+
+<<set_seed>>=
+set.seed(1)
+@
+
+
+
+\frame{\maketitle}
+
+
+\begin{frame}
+\frametitle{Loss function}
+
+Let $L(\theta,\delta(y))$ for an unknown quantity $\theta$ and a decision $\delta(y)$ based on the data $y$. \pause 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{How many quarters in the jar?}
+
+Suppose a jar is filled up to a pre-specified line. \pause
+Let $\theta_0$ be the number of quarters in the jar. \pause
+Provide a probability distribution for your uncertainty in $\theta$. \pause
+Suppose you choose 
+\[ 
+\theta \sim N(\mu,\sigma^2)
+\]
+even though 
+\begin{itemize}
+\item $\theta$ must be positive \pause and
+\item $\theta$ is an integer. 
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Guessing how many quarters are in the jar.}
+
+Now you are asked to guess how many quarters are in the jar. \pause
+What should you guess? 
+
+\vspace{0.2in} \pause
+
+Approximately (ignoring the continuous density for $\theta$), 
+your utility is $\theta$ if $\theta=\theta_0$. \pause
+The expected utility, i.e. risk, is 
+\[
+E[U(\theta)] = \int \theta p(\theta) d\theta = \int \theta \frac{1}{\sqrt{2\pi}\sigma} e^{-(\theta-\mu)^2/2\sigma^2}.
+\]
+
+\vspace{0.2in} \pause
+
+The optimal decision is the one that maximizes expected utility, i.e. 
+\[
+\sup_\theta E[U(\theta)]
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Deriving the optimal decision}
+
+
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Guessing how many quarters are in the jar.}
+
+Now you are asked to guess how many quarters are in the jar. \pause
+What should you guess? 
+
+\vspace{0.2in} \pause
+
+If the truth is $\theta_0$, then your return (utility) for a guess $\theta$ is 
+\[ 
+U(\theta,\theta_0) = \left\{ \begin{array}{ll}
+\theta & \mbox{if }\theta=\theta_0 \\
+0 & \mbox{if }\theta\ne\theta_0 
+\end{array} \right.
+\]
+
+\vspace{0.2in} \pause
+
+The optimal guess is the one that maximizes your expected return. \pause
+If you guess $y$, then your expected return (ignoring discreteness) is 
+\[ 
+E_\theta[U(\theta,\theta_0)] = \int U(\theta,\theta_0) p(y) dy = \int y p(y) dy = \int y \frac{1}{\sqrt{2\pi}\sigma} e^{-(y-\mu)^2/2\sigma^2}.
+\]
+This is maximized when 
+
+\end{frame}
+
+
+\end{document}
