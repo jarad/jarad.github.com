@@ -35,7 +35,7 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(reshape2)
+library(tidyr)
 library(plyr)
 library(dplyr)
 library(ggplot2)
@@ -64,6 +64,8 @@ The optimal Bayesian decision is to choose $\delta$ that minimizes the expected 
 \[
 \delta_{opt} = \mbox{argmin}_\delta E[L(\theta,\delta)] \pause = \mbox{argmin}_\delta f(\delta).
 \]
+\pause
+Economists typically maximize expected utility where utility is the negative of loss, i.e. $U(\theta,\delta)=-L(\theta,\delta)$. \pause If we have data, just replace the prior $p(\theta)$ with the posterior $p(\theta|y)$. 
 
 \end{frame}
 
@@ -73,35 +75,15 @@ The optimal Bayesian decision is to choose $\delta$ that minimizes the expected 
 
 <<utility_functions, fig.width=8>>=
 d = data.frame(theta=seq(-2,2,by=0.1)) %>%
-  mutate(Loss1=2,
-         Loss2=1,
-         Loss3=theta^2) %>%
-  melt(id.vars='theta', variable.name='loss', value.name='Loss')
+  mutate(d_1=2,
+         d_2=1,
+         d_3=theta^2) %>%
+  gather(Decision, Loss, -theta)
   
-ggplot(d, aes(theta, Loss, color=loss, linetype=loss)) +
-  geom_line(size=2)
+ggplot(d, aes(theta, Loss, color=Decision, linetype=Decision)) +
+  geom_line(size=2) +
+  theme(legend.position='bottom')
 @
-
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{An optimistic, data-based approach}
-
-Rather than considering our loss, we can consider our utility 
-\[
-U(\theta,\delta) = -L(\theta,\delta)
-\]
-and maximizes this utility. \pause
-In addition, we may want to make explicit that our decision depends on data in which case we use the posterior $p(\theta|y)$ and update our decision notation to $\delta(y)$. 
-
-\vspace{0.2in} \pause
-
-We then maximize our expected utility, i.e. 
-\[
-\delta_{opt} = \mbox{argmax}_\delta E_{\theta|y}[U(\theta,\delta(y))] = \mbox{argmax}_\delta \int U(\theta,\delta(y)) p(\theta|y) d\theta.
-\]
 
 \end{frame}
 
@@ -288,6 +270,25 @@ Since $q$ must be positive, the answer is
 
 
 \end{frame}
+
+
+
+% \begin{frame}
+% \frametitle{Risk and Bayes Risk}
+% 
+% If we will be collecting data and our decision depends on data, i.e. $\delta(y)$, then we define the risk as 
+% \[
+% R(\theta,\delta) = E_Y[L(\theta,\delta(Y))] = \int L(\theta,\delta(y)) p(y|\theta) dy
+% \]
+% (For no-data problems $R(\theta,\delta) \equiv L(\theta,\delta)$ which is why we didn't worry about this )
+% 
+% \vspace{0.2in} \pause
+% 
+% This risk is a function of the true $\theta$ and the decision rule $\delta$. 
+% 
+% \end{frame}
+
+
 
 
 \end{document}
