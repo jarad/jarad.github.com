@@ -1,4 +1,4 @@
-\documentclass[10pt]{article}
+\documentclass[10pt,draft]{article}
 
 \usepackage{verbatim,multicol,color,amsmath,ifdraft, graphicx, wrapfig,setspace}
 \usepackage{fullpage}
@@ -48,6 +48,10 @@ opts_knit$set( out.format="latex" )
 knit_theme$set("print")
 @
 
+<<packages, echo=FALSE, messages=FALSE>>=
+library(xtable)
+library(rstan)
+@
 
 \begin{document}
 
@@ -96,24 +100,27 @@ Student Name: \underline{\phantom{XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}}
 \noindent \begin{Large}Diagnostic testing  \end{Large}
 
 <<diagnostic_testing, echo=FALSE>>=
-d = data.frame(test = c('CDC','MD'),
-               sensitivity = c(.9,.7),
-               specificity = c(.8,.6))
+d = data.frame(Test = c('CDC','MD'),
+               Sensitivity = c(.9,.7),
+               Specificity = c(.8,.6))
 prevalence = 0.1
 @
 
 \begin{enumerate}
 \item  Details of two diagnostic tests for a fairly prevalent disease is given below.
-\begin{table}[h]
-\centering
-\begin{tabular}{lcc}
-Test & Sensitivity & Specificity  \\
-\hline
-CDC & 0.9 & 0.8  \\
-MD & 0.7 & 0.6 \\
-\hline
-\end{tabular}
-\end{table}
+% \begin{table}[h]
+% \centering
+% \begin{tabular}{lcc}
+% Test & Sensitivity & Specificity  \\
+% \hline
+% CDC & 0.9 & 0.8  \\
+% MD & 0.7 & 0.6 \\
+% \hline
+% \end{tabular}
+% \end{table}
+<<tests, results='asis', echo=FALSE>>=
+print(xtable(d), include.rownames=FALSE)
+@
 
 Recall that sensitivity is the probability of a positive test result when the individual has the disease and specificity is the probability of a negative test result when the individual does not have the disease.
 Suppose the prevalence of this disease is one case per ten individuals. 
@@ -248,10 +255,6 @@ c = \frac{\log 0.05}{\log y} = \log_y(0.05)
 
 \end{enumerate}
 
-
-<<packages, echo=FALSE, message=FALSE>>=
-library(rstan)
-@
 
 <<model, cache=TRUE, echo=FALSE>>=
 pilots_stan = "
