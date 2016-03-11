@@ -31,11 +31,11 @@
 \ifdraft{
   \newcommand{\correct}[1]{{\color{red} #1}}
   \newcommand{\shortcorrect}[1]{{\color{red} #1}}
-  \newcommand{\longcorrect}[2][\bigbrk]{{\color{red} #2}}
+  \newcommand{\longcorrect}[2][\vfill]{{\color{red} #2}}
 }{
   \newcommand{\correct}[1]{}
   \newcommand{\shortcorrect}[1]{{\phantom{33.33}}}
-  \newcommand{\longcorrect}[2][\bigbrk]{#1}
+  \newcommand{\longcorrect}[2][\vfill]{#1}
 }
 
 \newcommand{\I}{\mathrm{I}}
@@ -136,19 +136,22 @@ Notation
 \item $+$ the CDC test was positive
 \item $-$ the CDC test was negative
 \end{itemize}
-\[
-P(+) = P(+|D)P(D) + P(+|D^c)P(D^c)= P(+|D)P(D) + [1-P(-|D^c)][1-P(D)]
-\]
+\begin{align*}
+P(+) &= P(+|D)P(D) + P(+|D^c)P(D^c)= P(+|D)P(D) + [1-P(-|D^c)][1-P(D)] \\
+&= 0.9\times 0.1 + [0.2][0.9] = 0.27
+\end{align*}
+
 }
-\smallbrk\smallbrk\smallbrk
+\vfill
 
 \item Calculate the probability of having Zika for an individual with a positive CDC test. (5 pts)
 
 \longcorrect{
 \[
-P(D|+) = \frac{P(+|D)P(D)}{P(+|D)P(D) + [1-P(-|D^c)][1-P(D)]} = \frac{0.9\times 0.1}{0.9\times 0.1 + [0.2][0.9]} = \frac{1}{3}
+P(D|+) = \frac{P(+|D)P(D)}{P(+)} = \frac{0.9\times 0.1}{0.27} = \frac{1}{3}
 \]
 }
+\vfill
 
 \newpage
 The table below provides the cost for each combination of true disease state and diagnostic test result. 
@@ -187,7 +190,10 @@ P(D^c,-|MD) &= P(-|D^c,MD)P(D) = 0.6\times 0.9 = 0.54
 
 \item The cost for the CDC test is \$50 while the cost for the MD test is \$10. Determine the optimal diagnostic test to use. (5 pts)
 
-\longcorrect{The optimal diagnostic test is the one that will minimize expected costs. The expected costs for the CDC test is $50+10\times 0.01+1\times 0.1 = 0.78$ while the expected costs for the MD test is $10+10\times 0.03+1\times 0.36 = 0.76$. Thus the optimal test is the MD test.}
+\longcorrect{
+The easiest approach is to realize that the cost to administer the test is so different between these two that it would take a lot for the CDC test to be preferred over the MD test. If the CDC test was perfect (which it is not) such that you never incurred a penalty and the MD test was always wrong (which it is not), then the cost for using the MD test would be \$10 (to administer) and at most \$10 if the individual has the disease and the test said they didn't. Thus, even in this scenario you would prefer the MD test (although you may question your loss function). 
+
+Formally, the optimal diagnostic test is the one that will minimize expected costs. The expected costs for the CDC test is $50+10\times 0.01+1\times 0.18 = 50.28$ while the expected costs for the MD test is $10+10\times 0.03+1\times 0.36 = 10.66$. Thus the optimal test is the MD test.}
 
 \end{enumerate}
 
@@ -198,7 +204,7 @@ P(D^c,-|MD) &= P(-|D^c,MD)P(D) = 0.6\times 0.9 = 0.54
 
 \item Suppose $Y$ has the probability density function 
 \[
-p(y|\theta) = (\theta+1)y^\theta \I(0<y<1).
+p(y|\theta) = (\theta+1)y^\theta \I(0<y<1) \mbox{ for }\theta>0.
 \]
 
 \begin{enumerate}
@@ -350,34 +356,51 @@ Each group-scenario combination had from 5 to 8 pilots and the response $p$ is t
 \begin{enumerate}
 \item Using statistical notation, write down the model (including priors) encoded by Stan. (5 pts)
 
-\vfill \vfill
-\vfill \vfill
+\longcorrect{Let $p_i$ be the proportion of successes in the $i$th group-scenario combination. Let $s[i]$ and $g[i]$ indicate the group and scenario, respectively for the $i$th combination. The model is 
+\begin{align*}
+p_i &\stackrel{ind}{\sim} N(\eta+\gamma[g[i]]+\delta[s[i]], \sigma^2) \\
+\gamma_g &\stackrel{ind}{\sim} N(0,\sigma_\gamma^2) \\
+\delta_g &\stackrel{ind}{\sim} N(0,\sigma_\delta^2) \\
+p(\eta,\sigma,\sigma_\gamma,\sigma_\delta) &\propto Unif(\sigma;0,1)Unif(\sigma_\gamma;0,1)Unif(\sigma_\delta;0,1)
+\end{align*}
+}
+\vfill \vfill \vfill
 
 \item Are the priors on the standard deviations reasonable? Why or why not? (3 pts)
 
-\vfill\vfill
-
-\item Are you concerned about convergence of the Markov chain? Why or why not? (2 pts)
-
+\longcorrect{Yes. The range of the data is only 0 to 1, so these standard deviations are certainly no larger than 1.}
 \vfill
+
+\item Are you concerned about convergence of {\bf this} Markov chain? Why or why not? (2 pts)
+
+\longcorrect{There is no concern about convergence of the Markov chain since all potential scale reduction factors (Rhats) are close to one and the effective samples sizes are large.}
 
 \newpage
 \item Provide a 95\% credible interval for the overall proportion of successes. (1 pt)
 
-\vfill
+\longcorrect{(0.13,.76)}
 
-\item Are the groups or scenarios more variable? Explain your answer. (2 pts)
+\item Are the mean proportion of successes for groups or scenarios more variable? Explain your answer. (2 pts)
 
-\vfill\vfill
+\longcorrect{Scenarios appear more variable than groups since the estimated standard deviation is larger, i.e. (0.21,.75) compared to (0.00,0.24).}\vfill
 
-\item Suggest a test statistic for which you could calculate a posterior predictive pvalue that could identify heavy-tails in the scenario means and defend this suggestion. (4 pts)
+\item Suggest a test statistic for which you could calculate a posterior predictive pvalue that could identify heavy-tails in the scenario means and defend this suggestion. (3 pts)
 
+\longcorrect{This is a difficult question. I gave full credit for anyone who provided a test statistical that looked at the tails of the data, e.g. how many zeros or ones there were.}
 \vfill \vfill
-\vfill
+
 
 \item Using statistical notation, write down a model (without priors) that accommodates the discreteness of the response. (4 pts)
 
-\vfill \vfill
+\longcorrect{
+Let $y_i$ be the number of successes in combination $i$ and $n_i$ be the number of attempts. Then a model that seems reasonable is 
+\begin{align*} 
+y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \\
+\mbox{logit}(\theta_i) &= \eta+\gamma[g[i]]+\delta[s[i]]
+\end{align*}
+with the hierarchical structure given in part a).
+}
+\vfill
 
 
 
