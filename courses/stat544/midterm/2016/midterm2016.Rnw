@@ -1,0 +1,431 @@
+\documentclass[10pt]{article}
+
+\usepackage{verbatim,multicol,color,amsmath,ifdraft, graphicx, wrapfig,setspace}
+\usepackage{fullpage}
+
+%\usepackage[latin1]{inputenc}
+%\usepackage[T1]{fontenc}
+%\usepackage[dvips]{graphicx}
+
+\title{STAT 544 Mid-term Exam \\ Thursday 10 March 8:00-9:20}
+\author{Instructor: Jarad Niemi}
+\date{}
+
+\newenvironment{longitem}{
+\begin{itemize}
+  \setlength{\itemsep}{15pt}
+  \setlength{\parskip}{20pt}
+  \setlength{\parsep}{20pt}
+}{\end{itemize}}
+
+% \setlength{\textheight}{9in}
+% \setlength{\textwidth}{6.5in}
+% \setlength{\topmargin}{-0.125in}
+% \setlength{\oddsidemargin}{-.2in}
+% \setlength{\evensidemargin}{-.2in}
+% \setlength{\headsep}{0in}
+
+\newcommand{\bigbrk}{\vspace*{2in}}
+\newcommand{\smallbrk}{\vspace*{.3in}}
+
+\ifdraft{
+  \newcommand{\correct}[1]{{\color{red} #1}}
+  \newcommand{\shortcorrect}[1]{{\color{red} #1}}
+  \newcommand{\longcorrect}[2][\vfill]{{\color{red} #2}}
+}{
+  \newcommand{\correct}[1]{}
+  \newcommand{\shortcorrect}[1]{{\phantom{33.33}}}
+  \newcommand{\longcorrect}[2][\vfill]{#1}
+}
+
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\iid}{\stackrel{iid}{\sim}}
+\newcommand{\Yiid}{Y_1,\ldots,Y_n\stackrel{iid}{\sim}}
+
+
+<<echo=FALSE, purl=FALSE>>=
+opts_knit$set( out.format="latex" )
+knit_theme$set("print")
+@
+
+<<packages, echo=FALSE, messages=FALSE>>=
+library(xtable)
+library(rstan)
+@
+
+\begin{document}
+
+\maketitle
+
+
+\bigskip
+
+
+\textbf{INSTRUCTIONS}
+
+\bigskip
+
+Please check to make sure you have 5 pages with writing on the front and back (some pages are marked `intentionally left blank'). Feel free to remove the last page, i.e. the one with R code.
+
+\bigskip
+
+On the following pages you will find short answer questions related to the topics we covered in class for a total of 50 points. Please read the directions carefully.
+
+\bigskip
+
+You are allowed to use a calculator and one $8\frac{1}{2}\times 11$ sheet of paper with writing on both front and back. A non-exhaustive list of items you are not allowed to use are {\bf cell phones, laptops, PDAs, and textbooks}. Cheating will not be tolerated. Anyone caught cheating will receive an automatic F on the exam. In addition the incident will be reported, and dealt with according to University's Academic Dishonesty regulations. Please refrain from talking to your peers, exchanging papers, writing utensils or other objects, or walking around the room. All of these activities can be considered cheating. {\bf If you have any questions, please raise your hand.}
+
+\bigskip
+
+You will be given only the time allotted for the course; no extra time will be given.
+
+\bigskip
+
+
+Good Luck!
+
+\smallbrk
+
+Please print your name below:
+
+\smallbrk
+
+
+Student Name: \underline{\phantom{XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}}  
+
+\newpage
+(intentionally left blank)
+
+\newpage
+\noindent \begin{Large}Diagnostic testing  \end{Large}
+
+<<diagnostic_testing, echo=FALSE>>=
+d = data.frame(Test = c('CDC','MD'),
+               Sensitivity = c(.9,.7),
+               Specificity = c(.8,.6))
+prevalence = 0.1
+@
+
+\begin{enumerate}
+\item  Details of two diagnostic tests for a fairly prevalent disease is given below.
+% \begin{table}[h]
+% \centering
+% \begin{tabular}{lcc}
+% Test & Sensitivity & Specificity  \\
+% \hline
+% CDC & 0.9 & 0.8  \\
+% MD & 0.7 & 0.6 \\
+% \hline
+% \end{tabular}
+% \end{table}
+<<tests, results='asis', echo=FALSE>>=
+print(xtable(d), include.rownames=FALSE)
+@
+
+Recall that sensitivity is the probability of a positive test result when the individual has the disease and specificity is the probability of a negative test result when the individual does not have the disease.
+Suppose the prevalence of this disease is one case per ten individuals. 
+
+\begin{enumerate}
+\item Determine the marginal probability of a positive CDC test. Show all your work and define all your notation. (5 pts)
+
+\longcorrect{
+Notation
+\begin{itemize}
+\item $D$ the individual has the disease
+\item $D^c$ the individual does not have the disease
+\item $+$ the CDC test was positive
+\item $-$ the CDC test was negative
+\end{itemize}
+\begin{align*}
+P(+) &= P(+|D)P(D) + P(+|D^c)P(D^c)= P(+|D)P(D) + [1-P(-|D^c)][1-P(D)] \\
+&= 0.9\times 0.1 + [0.2][0.9] = 0.27
+\end{align*}
+
+}
+\vfill
+
+\item Calculate the probability of having Zika for an individual with a positive CDC test. (5 pts)
+
+\longcorrect{
+\[
+P(D|+) = \frac{P(+|D)P(D)}{P(+)} = \frac{0.9\times 0.1}{0.27} = \frac{1}{3}
+\]
+}
+\vfill
+
+\newpage
+The table below provides the cost for each combination of true disease state and diagnostic test result. 
+\begin{table}[h]
+\centering
+\begin{tabular}{llr||ll}
+&&& \multicolumn{2}{c}{Probability}\\
+Truth & Test result & Cost (\$) & CDC & MD  \\
+\hline
+Disease    & Positive &  0 & \correct{0.09} & \correct{0.07}\\
+Disease    & Negative & 10 & \correct{0.01} & \correct{0.03}\\
+No disease & Positive &  1 & \correct{0.18} & \correct{0.36}\\
+No disease & Negative &  0 & \correct{0.72} & \correct{0.54}\\
+
+\hline
+\end{tabular}
+\end{table}
+\item Complete the table above by calculating the probabilities for each truth-test result combination for each of the two diagnostic tests. Define your notation and show your work here. (5 pts)
+
+\longcorrect{
+Let $CDC$ indicate the CDC test and $MD$ indicate the $MD$ test. Otherwise the notation is the same as it was before.
+Note that the prevalence is independent of the test being used. 
+\begin{align*}
+P(D,+|CDC) &= P(+|D,CDC)P(D)     = 0.9\times 0.1 = 0.09 \\
+P(D,-|CDC) &= P(-|D,CDC)P(D)     = 0.1\times 0.1 = 0.01 \\
+P(D^c,+|CDC) &= P(+|D^c,CDC)P(D) = 0.2\times 0.9 = 0.18 \\
+P(D^c,-|CDC) &= P(-|D^c,CDC)P(D) = 0.0\times 0.9 = 0.72 \\
+P(D,+|MD) &= P(+|D,MD)P(D)     = 0.7\times 0.1 = 0.07 \\
+P(D,-|MD) &= P(-|D,MD)P(D)     = 0.3\times 0.1 = 0.03 \\
+P(D^c,+|MD) &= P(+|D^c,MD)P(D) = 0.4\times 0.9 = 0.36 \\
+P(D^c,-|MD) &= P(-|D^c,MD)P(D) = 0.6\times 0.9 = 0.54 
+\end{align*}
+}
+
+\smallbrk\smallbrk\smallbrk\smallbrk
+
+\item The cost for the CDC test is \$50 while the cost for the MD test is \$10. Determine the optimal diagnostic test to use. (5 pts)
+
+\longcorrect{
+The easiest approach is to realize that the cost to administer the test is so different between these two that it would take a lot for the CDC test to be preferred over the MD test. If the CDC test was perfect (which it is not) such that you never incurred a penalty and the MD test was always wrong (which it is not), then the cost for using the MD test would be \$10 (to administer) and at most \$10 if the individual has the disease and the test said they didn't. Thus, even in this scenario you would prefer the MD test (although you may question your loss function). 
+
+Formally, the optimal diagnostic test is the one that will minimize expected costs. The expected costs for the CDC test is $50+10\times 0.01+1\times 0.18 = 50.28$ while the expected costs for the MD test is $10+10\times 0.03+1\times 0.36 = 10.66$. Thus the optimal test is the MD test.}
+
+\end{enumerate}
+
+
+
+\newpage
+\noindent \begin{Large} Prior-posterior \end{Large}
+
+\item Suppose $Y$ has the probability density function 
+\[
+p(y|\theta) = (\theta+1)y^\theta \I(0<y<1) \mbox{ for }\theta>0.
+\]
+
+\begin{enumerate}
+\item Derive Jeffreys prior for this model. (If you are having trouble, I will give you the answer and mark off 2 points. You can still obtain the remaining 6 points by deriving the answer now that you know it.) (8 pts)
+
+\longcorrect{
+\begin{align*}
+\log L(\theta) &= \theta \log(y) + \log(\theta+1) \\
+\frac{\partial}{\partial \theta} \log L(\theta) &= \log(y)+\frac{1}{\theta+1} \\
+\frac{\partial^2}{\partial \theta^2} \log L(\theta) &= -\frac{1}{(\theta+1)^2} \\
+\mathcal{I}(\theta) &= -E\left[\frac{\partial^2}{\partial \theta^2} \log L(\theta) \right] = \frac{1}{(\theta+1)^2}  \\
+p(\beta) &\propto \sqrt{|\mathcal{I}(\beta)|} = \frac{1}{\theta+1}
+\end{align*}
+}
+\vfill\vfill\vfill
+
+\item Is Jeffreys prior proper? (2 pt)
+
+\shortcorrect{No, this prior is not proper because 
+$\int_0^\infty \frac{1}{\theta+1} = \int_1^\infty \frac{1}{t} dt$ diverges.
+}\vfill
+
+\newpage
+\item Derive the posterior for one observation under Jeffreys prior. (4 pts)
+
+\longcorrect{The posterior is 
+\[
+p(\theta|y) \propto p(y|\theta)p(\theta) = (\theta+1)y^\theta \frac{1}{\theta+1}\I(0<y<1) = y^\theta \I(0<y<1)
+\]}
+\vfill
+
+\item When is this posterior proper? (Hint: $y^\theta = e^{\theta \log y}$.) (3 pts)
+
+\longcorrect{
+\[
+p(y) = \int p(y|\theta)p(\theta) d\theta = \int_0^\infty e^{\theta \log y} d\theta =
+\int_0^\infty \frac{1}{\log y} e^{\theta \log y} d\theta = \frac{1}{\log y} (0-1) = -\frac{1}{\log y}
+\]
+which is finite for any $0<y<1$. So the posterior is always proper. 
+}
+\vfill
+
+\item Find a 95\% HPD interval for $\theta$ for a single observation $y$. (3 pts)
+
+\longcorrect{Since the posterior is monotonically decreasing, a 95\% HPD will be an interval of the form $(0,c)$ where $c$ is obtained from
+\[
+0.95 = \frac{\int_0^c y^\theta d\theta}{\int_0^c y^\theta d\theta} = \frac{\frac{1}{\log y} (e^{c \log y}-1)}{\frac{1}{\log y} (0-1)} = 1-e^{c \log y}.
+\]
+Solving for $c$ we obtain
+\[ 
+c = \frac{\log 0.05}{\log y} = \log_y(0.05)
+\]}
+\vfill
+
+\end{enumerate}
+
+
+<<model, cache=TRUE, echo=FALSE>>=
+pilots_stan = "
+data {
+  int<lower=0> N;
+  int<lower=0> n_groups;
+  int<lower=0> n_scenarios;
+  int<lower=1,upper=n_groups> group_id[N];
+  int<lower=1,upper=n_scenarios> scenario_id[N];
+  vector[N] p;
+}
+parameters {
+  vector[n_groups] gamma;
+  vector[n_scenarios] delta;
+  real eta;
+  real<lower=0,upper=1> sigma_gamma;
+  real<lower=0,upper=1> sigma_delta;
+  real<lower=0,upper=1> sigma;
+}
+transformed parameters {
+  vector[N] mu;
+
+  for (i in 1:N)
+    mu[i] <- eta + gamma[group_id[i]] + delta[scenario_id[i]];
+}
+model {
+  gamma ~ normal(0, sigma_gamma);
+  delta ~ normal(0, sigma_delta);
+  p ~ normal(mu, sigma);
+}
+"
+@
+
+<<data, echo=FALSE, cache=TRUE>>=
+pilots <- read.table("pilots.dat", header=TRUE)
+attach (pilots)
+group.names <- as.vector(unique(group))
+scenario.names <- as.vector(unique(scenario))
+n.group <- length(group.names)
+n.scenario <- length(scenario.names)
+successes <- NULL
+failures <- NULL
+group.id <- NULL
+scenario.id <- NULL
+for (j in 1:n.group){
+  for (k in 1:n.scenario){
+    ok <- group==group.names[j] & scenario==scenario.names[k]
+    successes <- c (successes, sum(recovered[ok]==1,na.rm=T))
+    failures <- c (failures, sum(recovered[ok]==0,na.rm=T))
+    group.id <- c (group.id, j)
+    scenario.id <- c (scenario.id, k)
+  }
+}
+
+y <- successes/(successes+failures)
+y.mat <- matrix (y, n.scenario, n.group)
+sort.group <- order(apply(y.mat,2,mean))
+sort.scenario <- order(apply(y.mat,1,mean))
+
+group.id.new <- sort.group[group.id]
+scenario.id.new <- sort.scenario[scenario.id]
+y.mat.new <- y.mat[sort.scenario,sort.group]
+
+scenario.abbr <- c("Nagoya", "B'ham", "Detroit", "Ptsbgh", "Roseln", "Chrlt", "Shemya", "Toledo")
+dat <- list(N=length(y),
+            p=y,
+            n_groups=n.group,
+            n_scenarios=n.scenario,
+            group_id=group.id,
+            scenario_id=scenario.id)
+@
+
+<<analysis, dependson=c('data','model'), echo=FALSE, cache=TRUE, results='hide'>>=
+library(rstan)
+m = stan_model(model_code = pilots_stan)
+r = sampling(m, 
+             data = dat, 
+             pars = c('mu'), include = FALSE, # removes mu from the output
+             iter = 20000, 
+             chains = 4)
+@
+
+
+\newpage
+\noindent \begin{Large}Pilot training \end{Large}
+
+\item Airplane pilots were randomly assigned to a group where each group used a different teaching method.
+The pilots in the group where randomly assigned to a training scenario.
+The result of an individual pilot's success on the training scenario was binary: a 1 if the pilot successfully met the scenario's objectives and a 0 otherwise. 
+Each group-scenario combination had from 5 to 8 pilots and the response $p$ is the proportion of pilots in that group-scenario combination to successfully satisfy the scenario's objectives.
+
+
+\begin{enumerate}
+\item Using statistical notation, write down the model (including priors) encoded by Stan. (5 pts)
+
+\longcorrect{Let $p_i$ be the proportion of successes in the $i$th group-scenario combination. Let $s[i]$ and $g[i]$ indicate the group and scenario, respectively for the $i$th combination. The model is 
+\begin{align*}
+p_i &\stackrel{ind}{\sim} N(\eta+\gamma[g[i]]+\delta[s[i]], \sigma^2) \\
+\gamma_g &\stackrel{ind}{\sim} N(0,\sigma_\gamma^2) \\
+\delta_g &\stackrel{ind}{\sim} N(0,\sigma_\delta^2) \\
+p(\eta,\sigma,\sigma_\gamma,\sigma_\delta) &\propto Unif(\sigma;0,1)Unif(\sigma_\gamma;0,1)Unif(\sigma_\delta;0,1)
+\end{align*}
+}
+\vfill \vfill \vfill
+
+\item Are the priors on the standard deviations reasonable? Why or why not? (3 pts)
+
+\longcorrect{Yes. The range of the data is only 0 to 1, so these standard deviations are certainly no larger than 1.}
+\vfill
+
+\item Are you concerned about convergence of {\bf this} Markov chain? Why or why not? (2 pts)
+
+\longcorrect{There is no concern about convergence of the Markov chain since all potential scale reduction factors (Rhats) are close to one and the effective samples sizes are large.}
+
+\newpage
+\item Provide a 95\% credible interval for the overall proportion of successes. (1 pt)
+
+\longcorrect{(0.13,.76)}
+
+\item Are the mean proportion of successes for groups or scenarios more variable? Explain your answer. (2 pts)
+
+\longcorrect{Scenarios appear more variable than groups since the estimated standard deviation is larger, i.e. (0.21,.75) compared to (0.00,0.24).}\vfill
+
+\item Suggest a test statistic for which you could calculate a posterior predictive pvalue that could identify heavy-tails in the scenario means and defend this suggestion. (3 pts)
+
+\longcorrect{This is a difficult question. I gave full credit for anyone who provided a test statistical that looked at the tails of the data, e.g. how many zeros or ones there were.}
+\vfill \vfill
+
+
+\item Using statistical notation, write down a model (without priors) that accommodates the discreteness of the response. (4 pts)
+
+\longcorrect{
+Let $y_i$ be the number of successes in combination $i$ and $n_i$ be the number of attempts. Then a model that seems reasonable is 
+\begin{align*} 
+y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \\
+\mbox{logit}(\theta_i) &= \eta+\gamma[g[i]]+\delta[s[i]]
+\end{align*}
+with the hierarchical structure given in part a).
+}
+\vfill
+
+
+
+
+
+\end{enumerate}
+
+\end{enumerate}
+
+
+\newpage
+\noindent \begin{Large}Stan code  \end{Large}
+\label{stan}
+
+<<eval=FALSE>>=
+<<model>>
+<<analysis>>
+@
+
+\newpage
+\noindent \begin{Large}Stan results  \end{Large}
+\label{stan-results}
+<<results, dependson='analysis'>>=
+r
+@
+
+\end{document}
+

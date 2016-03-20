@@ -2,10 +2,11 @@
 
 lectures = c('Ch01',
              'Ch02a','Ch02b',
-             'Ch03a',
+             'Ch03',
              'Ch04',
              'Ch05a','Ch05b',
-             'Ch06a','Ch07a','Ch07b','Ch10a','Ch10b',
+             'Ch06',
+             'Ch07a','Ch07b','Ch10a','Ch10b',
              'Ch11a','Ch11b','Ch11c','Ch11d',
              'Ch14a','Ch14b','Ch15a','Ch15b',
              'Ch16a','Ch16b',

@@ -150,16 +150,19 @@ If $j=0$ ($j=10$), any $y_i=1$ ($y_i=0$) will make the posterior probability zer
 \begin{frame}[fragile]
 \frametitle{Discrete prior example}
 
-<<fig.width=10>>=
-n = 13
-y = rbinom(n,1,.45)
+<<discrete_data,echo=TRUE>>=
+n = 13; y = rbinom(n,1,.45); sum(y)
+@
+
+<<discrete_data_discrete_prior, dependson='discrete_data', fig.width=10>>=
 d = ddply(data.frame(theta = seq(0,1,by=0.1), prior=1/11), 
           .(theta, prior), 
           function(x) {
             data.frame(posterior = x$prior * x$theta^sum(y)*(1-x$theta)^(n-sum(y)))
           })
 d$posterior = d$posterior/sum(d$posterior)
-ggplot(melt(d, id.var="theta"), aes(x=theta, y=value, color=variable)) + geom_point(size=5)
+ggplot(melt(d, id.var="theta"), aes(x=theta, y=value, color=variable)) + 
+  geom_point(size=5)
 @
 
 \end{frame}
@@ -183,7 +186,7 @@ For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $E_j = j/1
 
 \begin{frame}[fragile]
 \frametitle{Beta example}
-<<fig.width=10>>=
+<<discrete_data_continuous_prior, dependson='discrete_data', fig.width=10>>=
 Ej = seq(0,1,by=0.1)
 vlines = data.frame(x=Ej, xend=Ej, y=0, yend = dbeta(Ej,1+sum(y), 1+n-sum(y)))
 heights = data.frame(x=Ej[-1]-.05, y=0.4, label = round(diff(pbeta(Ej,1+sum(y), 1+n-sum(y))),2))
@@ -305,6 +308,24 @@ where $p(H_j)$ is the prior model probability \pause and
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Marginal likelihood}
+
+The marginal likelihood calculation differs for simple vs composite hypotheses:
+\begin{itemize}
+\item Simple hypotheses can be considered to have a Dirac delta function for a prior, \pause e.g. if $H_0:\theta=\theta_0$ then $\theta|H_0 \sim \delta_{\theta_0}$. \pause Then the marginal likelihood is 
+\[
+p(y|H_0) = \int p(y|\theta)p(\theta|H_0) d\theta = p(y|\theta_0).
+\]
+\item \pause Composite hypotheses have a continuous prior and thus 
+\[
+p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta.
+\]
+\end{itemize}
+
+\end{frame}
+
+
 
 \frame{\frametitle{Two models}
   If we only have two models: $H_0$ and $H_1$, then 
@@ -412,7 +433,7 @@ ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(e))) +
 \frametitle{Normal example}
 <<normal_bayes_factor, fig.width=8>>=
 d = ddply(expand.grid(y=seq(0,5,by=1), C=10^seq(0,4,by=0.1)), .(y,C), summarize,
-          post_prob_H0 = 1/(1+1/exp(dnorm(ybar,0,1,log=TRUE)-dnorm(y,0,1+C,log=TRUE))))
+          post_prob_H0 = 1/(1+1/exp(dnorm(y,0,1,log=TRUE)-dnorm(y,0,1+C,log=TRUE))))
 ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) + 
   geom_line() + 
   labs(x = expression(sqrt(C)), y = expression(paste("p(",H[0],"|y)"))) + 

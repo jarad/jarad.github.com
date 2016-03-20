@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 
 \usecolortheme[RGB={0,0,144}]{structure}
@@ -40,6 +40,7 @@
 %  \item Introduction to regression models (Ch 14)
   \item Model checking (Ch 6)
   \item Bayesian hypothesis tests (Sec 7.4)
+  \item Decision theory (Sec 9.1)
   \item Stan
   \end{itemize}
 }
@@ -115,12 +116,13 @@
     \begin{itemize}
     \item Mean minimizes squared error
     \item Median minimizes absolute error
-    \item Mode minimizes 0-1 error
+    \item Mode is obtained as a limit of minimizing a sequence of 0-1 errors
     \end{itemize}
-  \item Computation, $E[h(\theta)|y]$ 
+  \item Credible intervals
     \begin{itemize}
-    \item SLLN
-    \item CLT
+    \item One-tailed 
+    \item Equal-tailed 
+    \item Highest posterior density 
     \end{itemize}
   \end{itemize}
 }
@@ -231,6 +233,17 @@ If $A$ is a neighborhood of $\theta_0$, then $Pr(\theta\in A|y)\to 1$.
   \end{itemize}
 }
 
+\subsection{Model checking}
+\frame{\frametitle{Model checking (Ch 6)}
+  \begin{itemize}[<+->]
+  \item Data replications
+  \[ p(y^{rep}|y) = \int p(y^{rep}|\theta)p(\theta|y) d\theta \]
+  \item Graphical posterior predictive checks (Sec 6.4)
+  \item Posterior predictive pvalues (Sec 6.3)
+  \[ p_B = P(T(y^{rep},\theta)\ge T(y,\theta)|y) \]
+  for a test statistic $T(y,\theta)$. 
+  \end{itemize}
+}
 
 
 \frame{\frametitle{Hypothesis testing (Section 7.4)}
@@ -269,17 +282,21 @@ If $A$ is a neighborhood of $\theta_0$, then $Pr(\theta\in A|y)\to 1$.
 %   \end{itemize}
 % }
 
-\subsection{Model checking}
-\frame{\frametitle{Model checking (Ch 6)}
-  \begin{itemize}[<+->]
-  \item Data replications
-  \[ p(y^{rep}|y) = \int p(y^{rep}|\theta)p(\theta|y) d\theta \]
-  \item Graphical posterior predictive checks (Sec 6.4)
-  \item Posterior predictive pvalues (Sec 6.3)
-  \[ p_B = P(T(y^{rep},\theta)\ge T(y,\theta)|y) \]
-  for a test statistic $T(y,\theta)$. 
-  \end{itemize}
-}
+
+
+\subsection{Decision theory}
+\begin{frame}
+\frametitle{Decision theory (Sec 9.1)}
+
+In order to make a decision, a utility (or loss) function, i.e. $U(\theta,\delta)=-L(\theta,\delta)$, must be set. \pause 
+Then the optimal Bayesian decision is to maximize expected utility (or minimize expected loss), i.e. 
+\[
+\mbox{argmax}_\delta \int U(\theta,\delta) p(\theta) d\theta
+\]
+\pause
+where $p(\theta)$ represents your current state of belief, \pause i.e. it could be a prior or a posterior depending on your perspective. 
+
+\end{frame}
 
 
 \subsection{Stan}

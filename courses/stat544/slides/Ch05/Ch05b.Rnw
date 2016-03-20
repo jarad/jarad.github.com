@@ -39,9 +39,14 @@ options(width=120)
 <<libraries, message=FALSE, warning=FALSE>>=
 library(reshape2)
 library(plyr)
-library(ggplot2)
 library(xtable)
+
+library(ggplot2)
+library(RColorBrewer)
+
 library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
 @
 
 <<set_seed>>=
@@ -152,16 +157,16 @@ set.seed(1)
 	Suppose we observe $y_i$ observations and $x_i$ covariates for each unit $i$.  Now we assume $(y_1,y_2,\ldots)$ are infinitely exchangeable given $x_i$, then by de Finetti's theorem for the $(y_1,\ldots,y_n)$, there exists
 	\begin{itemize}
 	\item a parameter $\theta$,
-	\item a distribution $p(y|\theta,x)$  such that $y_i\stackrel{ind}{\sim} p(y|\theta,x)$, and
-	\item a distribution $P$ on $\theta$ given $x$. 
+	\item a distribution $p(y|\theta,\alert{x})$  such that $y_i\stackrel{ind}{\sim} p(y|\theta,\alert{x_i})$, and
+	\item a distribution $P$ on $\theta$ given $\alert{x}$. 
 	\end{itemize}
-	 Assume $\theta=(\theta_1,\theta_2,\ldots)$  with $\theta_i$ infinitely exchangeable given $x$.  By de Finetti's theorem for $(\theta_1,\ldots,\theta_n)$, there exists
+	 Assume $\theta=(\theta_1,\theta_2,\ldots)$  with $\theta_i$ infinitely exchangeable given $\alert{x}$.  By de Finetti's theorem for $(\theta_1,\ldots,\theta_n)$, there exists
 	\begin{itemize}
 	\item a parameter $\phi$, 
-	\item a distribution $p(\theta|\phi,x)$  such that $\theta_i\stackrel{ind}{\sim} p(\theta|\phi,x)$, and 
-	\item a distribution $P$ on $\phi$ given $x$.
+	\item a distribution $p(\theta|\phi,\alert{x})$  such that $\theta_i\stackrel{ind}{\sim} p(\theta|\phi,\alert{x_i})$, and 
+	\item a distribution $P$ on $\phi$ given $\alert{x}$.
 	\end{itemize}
-	 Assume $\phi=\phi$  with $\phi \sim p(\phi|x)$. 
+	 Assume $\phi=\phi$  with $\phi \sim p(\phi|\alert{x})$. 
 }
 
 \section{Summary}
@@ -184,7 +189,7 @@ set.seed(1)
 	\[ \begin{array}{rl}
 	y_{ij} &\stackrel{ind}{\sim} N(\theta_i, \sigma^2) \pause \\
 	\theta_i &\stackrel{iid}{\sim} N(\mu,\tau^2) \pause \\
-	p(\mu,\tau) &\propto p(\tau)
+	p(\mu,\tau) &\propto p(\mu|\tau)p(\tau)
 	\end{array} \]
 	\pause with $j=1,\ldots,n_i$, $i=1,\ldots,\I$, and $n=\sum_{i=1}^J n_i$. \pause This is a normal hierarchical model. 
 	
@@ -196,7 +201,7 @@ set.seed(1)
 \subsection{Posterior}
 \frame{\frametitle{Posterior distribution}
 	The posterior is 
-	\[ p(\theta,\mu,\tau|y) \pause \propto p(y|\theta)p(\theta|\mu,\tau) p(\mu,\tau) \]
+	\[ p(\theta,\mu,\tau|y) \pause \propto p(y|\theta)p(\theta|\mu,\tau) p(\mu|\tau)p(\tau) \]
 	\pause but the decomposition 
 	\[ p(\theta,\mu,\tau|y) = p(\theta|\mu,\tau,y) p(\mu|\tau,y) p(\tau|y) \]
 	\pause where
@@ -215,7 +220,7 @@ set.seed(1)
 
 
 \frame{\frametitle{Posterior distributions}
-	The necessary conditional/marginal posterior are present in section 5.4 of BDA. Let 
+	The necessary conditional and marginal posteriors are presented in section 5.4 of BDA. Let 
   \[ \overline{y}_{i\cdot } = \frac{1}{n_i} \sum_{j=1}^{n_i} y_{ij} \qquad \mbox{and} \qquad s_i^2 =s^2/n_i \]
 \pause
 Then
@@ -249,12 +254,12 @@ Then
   
 	\vspace{0.2in} \pause
   
-  Use $p(\tau) \propto \mbox{Unif}(0,10)$. 
+  Use $\tau \sim Ca^+(0,1)$. 
 }
 
 \begin{frame}[fragile]
 \frametitle{Simulation study}
-<<simulation>>=
+<<data, echo=TRUE>>=
 J = 10
 n_per_group = 9
 n = rep(n_per_group,J)
@@ -263,13 +268,17 @@ N = sum(n)
 group = rep(1:J, each=n_per_group)
 
 set.seed(1)
-df = rbind(data.frame(group = factor(group), simulation = "common_mean",         y = rnorm(N               )),
-           data.frame(group = factor(group), simulation = "group_specific_mean", y = rnorm(N, group-(J/2+.5))))
+df = rbind(data.frame(group = factor(group),         
+                      simulation = "common_mean",         
+                      y = rnorm(N                )), # All means are the same
+           data.frame(group = factor(group), 
+                      simulation = "group_specific_mean", 
+                      y = rnorm(N, group-(J/2+.5)))) # Each group has its own mean
 @
 \end{frame}
 
 \begin{frame}[fragile]
-<<data>>=
+<<data_plot, dependson='data'>>=
 ggplot(df, aes(x=group, y=y, color=group)) + geom_point() + facet_wrap(~simulation)
 @
 \end{frame}
@@ -280,7 +289,7 @@ ggplot(df, aes(x=group, y=y, color=group)) + geom_point() + facet_wrap(~simulati
 \begin{frame}[fragile]
 \frametitle{Summary statistics}
 \tiny
-<<exploratory_analysis, results='asis', echo=FALSE>>=
+<<exploratory_analysis, dependson='data', results='asis'>>=
 d_sum = ddply(df, .(simulation, group), summarize, n=length(y), mean=mean(y), sd=sd(y))
 tab = xtable(d_sum)
 print(tab, hline.after=c(-1,0,J,2*J))
@@ -313,14 +322,15 @@ Consider samping from an arbitrary unnormalized density $f(\tau)\propto p(\tau|y
 
 
 \begin{frame}[fragile]
-\frametitle{Approximation to $p(\tau|y)$ when $p(\tau) \propto \mathrm{I}(0<\tau<10)$}
+\frametitle{Approximation to $p(\tau|y)$ when $\tau\sim Ca^+(0,1)$}
 <<analysis, echo=FALSE, fig.width=8>>=
-tau_log_posterior = function(tau, ybar, sj2) 
+tau_log_posterior = function(tau, ybar, sj2, C=1) 
 {
+  if (tau<=0) return(-Inf)
   spt = sj2+tau^2
   Vmu = 1/sum(1/spt)
   mu = sum(ybar/spt)*Vmu
-  0.5*log(Vmu)+sum(-0.5*log(spt)-(ybar-mu)^2/(2*spt))
+  0.5*log(Vmu)+sum(-0.5*log(spt)-(ybar-mu)^2/(2*spt))+dcauchy(tau, 0, C, log=TRUE)
 }
 
 V_tau_log_posterior = Vectorize(tau_log_posterior,"tau")

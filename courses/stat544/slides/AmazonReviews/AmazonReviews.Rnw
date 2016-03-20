@@ -24,19 +24,19 @@
 %\section{Temp??} \begin{comment}
 
 
-<<options, results='hide', echo=FALSE>>=
-# These are only needed for the slides
-# No need to run if you are just running the R code
-opts_chunk$set(fig.width=6, 
-               fig.height=5, 
-               out.width='.8\\linewidth', 
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
                fig.align='center', 
-               size='tiny',
-               echo=FALSE)
-options(width=100)
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
 @
 
-<<libraries, echo=FALSE, message=FALSE>>=
+<<libraries, message=FALSE, warning=FALSE>>=
 library(reshape2)
 library(plyr)
 library(ggplot2)
@@ -44,7 +44,7 @@ library(xtable)
 library(rstan)
 @
 
-<<set_seed, echo=FALSE>>=
+<<set_seed>>=
 set.seed(1)
 @
 
@@ -56,9 +56,9 @@ set.seed(1)
 
 \section{Amazon Reviews}
 \begin{frame}
-\frametitle{Amazon Reviews}
+\frametitle{Amazon Reviews - Upright, bagless, cyclonic vacuum cleaners}
 
-<<>>=
+<<reviews>>=
 tmp = read.csv("reviews.csv",header=FALSE)[,c(3,4)]
 names(tmp) = c("product_id","stars")
 
@@ -72,7 +72,7 @@ d$stars      = as.numeric(factor(d$stars))
 @
 
 \small
-<<results='asis'>>=
+<<table, results='asis', dependson='reviews'>>=
 for_table = ddply(d, .(product_id), summarise, 
           n1 = sum(stars==1),
           n2 = sum(stars==2),
@@ -95,18 +95,6 @@ print(xtable(for_table,
 \end{frame}
 
 
-
-\begin{frame}
-\frametitle{}
-\end{frame}
-
-\begin{frame}
-\frametitle{}
-\end{frame}
-
-
-
-
 \subsection{Normal model}
 \begin{frame}
 \frametitle{Model for Amazon Reviews}
@@ -127,7 +115,7 @@ and
 \begin{frame}[fragile]
 \frametitle{Normal hierarchical model in Stan}
 
-<<echo=TRUE>>=
+<<normal_model, echo=TRUE>>=
 normal_model = "
 data {
   int <lower=1> n;
@@ -137,17 +125,22 @@ data {
 }
 
 parameters {
-  real theta[n_products];
+  real mu;                // implied uniform prior
   real<lower=0> sigma;
-  real mu;
   real<lower=0> tau;
+  real theta[n_products];
 }
 
 model {
+  // Prior 
   sigma ~ cauchy(0,1);
-  tau ~ cauchy(0,1);
+  tau   ~ cauchy(0,1);
+
+  // Hierarchial model
+  theta ~ normal(mu,tau);
+
+  // Data model
   for (i in 1:n) stars[i] ~ normal(theta[id[i]], sigma);
-  for (p in 1:n_products) theta[p] ~ normal(mu,tau);
 }
 "
 @
@@ -159,8 +152,8 @@ model {
 \begin{frame}[fragile]
 \frametitle{Fit model}
 
-<<run_normal_model, echo=TRUE, cache=TRUE, dependson='normal_model'>>=
-m = stan_model(model_code = "normal_model")
+<<run_normal_model, echo=TRUE, dependson=c('normal_model','reviews')>>=
+m = stan_model(model_code = normal_model)
 dat = list(n = nrow(d),
            n_products = nlevels(d$product_id),
            stars = d$stars,
@@ -199,7 +192,7 @@ ggplot(theta_m, aes(x=value, fill=product)) +  geom_density(alpha=0.5)
 \begin{frame}[fragile]
 \frametitle{Other parameter posteriors}
 
-<<dependson='normal_model', message=FALSE>>=
+<<dependson='run_normal_model', message=FALSE>>=
 other = rbind(data.frame(parameter = "sigma", value = draws$sigma),
               data.frame(parameter = "mu",    value = draws$mu   ),
               data.frame(parameter = "tau",   value = draws$tau))
@@ -279,8 +272,8 @@ for the $j$th star rating of product $i$. \pause Clearly this model is incorrect
 \vspace{0.2in} 
 
 An alternative model is 
-\[ y_{ij} \stackrel{ind}{\sim} Bin(4, \theta_i) \]
-where $y_{ij}$ is the $j$th star rating minus 1 of product $i$ \pause and 
+\[ z_{ij} \stackrel{ind}{\sim} Bin(4, \theta_i) \]
+where $z_{ij}=y_{ij}-1$ is the $j$th star rating minus 1 of product $i$ \pause and 
 \[ \theta_i \sim Be(\alpha,\beta) \pause \qquad \mbox{and} \qquad p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}. \]
 \pause
 The idea behind this model would be that product $i$ has an independent, but common probability ($\theta_i$) of earning each star.
@@ -291,12 +284,12 @@ The idea behind this model would be that product $i$ has an independent, but com
 \begin{frame}[fragile]
 \frametitle{Binomial hierarchical model in Stan}
 
-<<binomial_model, echo=TRUE, cache=TRUE>>=
+<<binomial_model, echo=TRUE>>=
 binomial_model = "
 data {
   int <lower=1> n;
   int <lower=1> n_products;
-  int <lower=0,upper=4> stars[n];
+  int <lower=0,upper=4> z[n];
   int <lower=1,upper=n_products> id[n];
 }
 
@@ -307,10 +300,14 @@ parameters {
 }
 
 model {
-  increment_log_prob(-5*log(alpha+beta)/2); # improper prior
+  // Prior
+  increment_log_prob(-5*log(alpha+beta)/2); // improper prior
 
-  for (i in 1:n) stars[i] ~ binomial(4, theta[id[i]]);
-  for (p in 1:n_products) theta[p] ~ beta(alpha,beta);
+  // Hierarchical model
+  theta ~ beta(alpha,beta);
+
+  // Data model
+  for (i in 1:n) z[i] ~ binomial(4, theta[id[i]]);
 }
 "
 @
@@ -321,11 +318,11 @@ model {
 \begin{frame}[fragile]
 \frametitle{Fit model}
 
-<<run_binomial_model, echo=TRUE, cache=TRUE, dependson='normal_model'>>=
-m = stan_model(model_code = "binomial_model")
+<<run_binomial_model, echo=TRUE, dependson=c('binomial_model','reviews')>>=
+m = stan_model(model_code = binomial_model)
 dat = list(n = nrow(d),
            n_products = nlevels(d$product_id),
-           stars = d$stars-1,
+           z = d$stars-1,
            id = as.numeric(d$product_id))
 r = sampling(m, dat)
 @
@@ -420,7 +417,7 @@ As an example, $\hat{\theta}_2 = 0.81$ (and a 95\% CI is (0.79, 0.83)). \pause T
 <<results='asis'>>=
 tmp = data.frame(stars = 1:5,
            theoretical = dbinom(0:4, 4, .81),
-           actual = as.numeric(for_table[2,2:6]/for_table[2,7]))
+           observed = as.numeric(for_table[2,2:6]/for_table[2,7]))
 print(xtable(tmp, digits=c(NA, 0, 3, 3)), include.rownames=FALSE)
 @
 
@@ -462,7 +459,7 @@ Let $\tilde{y}_2$ be all the predictive data for product 2, i.e. $\tilde{y}_2 = 
 \begin{frame}[fragile]
 \frametitle{Posterior predictive distribution in R}
 
-<<echo=TRUE>>=
+<<posterior_predictive_binomial, dependson='run_binomial_model', echo=TRUE>>=
 theta2 = as.numeric(draws$theta[,2])
 ytilde2 = adply(theta2, 1, function(x) {
   ytilde = rbinom(526, 4, x) + 1
@@ -505,9 +502,9 @@ Let $y_i = (y_{i1},\ldots,y_{i5})$ be the vector of 1-star to 5-star ratings, \p
 Y_{i} \stackrel{ind}{\sim} Mult(n_i,\theta_i)
 \end{align*}
 where $\theta_i$ is a probability vector \pause
-\[ \theta_{ik} = \int_{\alpha_{k-1}}^{\alpha_k} N(x|\mu_i,1) dx = \Phi(\alpha_k-\mu_i) - \Phi(\alpha_{k-1}-\mu_i) \]
+\[ \theta_{ik} = \int_{\alpha_{k-1}}^{\alpha_k} N(x|\mu_i,1) dx = \mathrm{\Phi}(\alpha_k-\mu_i) - \mathrm{\Phi}(\alpha_{k-1}-\mu_i) \]
 \pause 
-where $\alpha_0=-\infty$, $\alpha_1=0$, and $\alpha_5=\infty$, \pause and $\Phi$ is the standard normal cumulative distribution function (cdf). 
+where $\alpha_0=-\infty$, $\alpha_1=0$, and $\alpha_5=\infty$, \pause and $\mathrm{\Phi}$ is the standard normal cumulative distribution function (cdf). 
 
 \end{frame}
 
@@ -515,12 +512,12 @@ where $\alpha_0=-\infty$, $\alpha_1=0$, and $\alpha_5=\infty$, \pause and $\Phi$
 \begin{frame}
 \frametitle{Visualizing the model}
 
-<<cuts, echo=FALSE>>=
+<<cuts>>=
 mu = 1.7
 curve(dnorm(x,mu,1), -1, 5, lwd=2, xlab="", axes=F, frame=T, ylab="")
 abline(v=0:3,col="red")
 axis(1, at=0:3, 
-     labels=paste("alpha_",1:4,sep=""), 
+     labels=parse(text=paste("alpha[",1:4,"]",sep='')), 
      col="red")
 
 abline(v=mu, lty=2, col="blue")
@@ -546,28 +543,27 @@ with a prior
 
 
 \begin{frame}[fragile]
-\frametitle{Ordinal hierarchical model in Stan}
+\frametitle{}
 
-<<ordinal_model, echo=TRUE, cache=TRUE, eval=FALSE>>=
+<<ordinal_model, echo=TRUE>>=
 ordinal_model = "
 data {
   int <lower=1> n_products;
-  int <lower=0> y[n_products,5];
+  int <lower=0> y[n_products,5]; // summarized count by product
 }
 
 parameters {
-  real<lower=0,upper=1> alpha_diff[3];
+  real<lower=0> alpha_diff[3];
   real mu[n_products];
   real eta;
   real<lower=0> tau;
 }
 
 transformed parameters {
-  ordered[4] alpha;
-  simplex[5] theta[n_products];
+  ordered[4] alpha;             // cut points
+  simplex[5] theta[n_products]; // each theta vector sums to 1
 
-  alpha[1] <- 0;
-  for (i in 1:3) alpha[i+1] <- alpha[i] + alpha_diff[i];
+  alpha[1] <- 0; for (i in 1:3) alpha[i+1] <- alpha[i] + alpha_diff[i];
 
   for (p in 1:n_products) {
     theta[p,1] <- Phi(-mu[p]);
@@ -580,7 +576,7 @@ transformed parameters {
 model {
   tau ~ cauchy(0,1);
   mu ~ normal(eta, tau);
-  for (p in 1:n_products) y[p] ~ multinomial(theta[p]); # n_reviews[p] is implicit
+  for (p in 1:n_products) y[p] ~ multinomial(theta[p]); // n_reviews[p] is implicit
 }
 "
 @
@@ -591,8 +587,8 @@ model {
 \begin{frame}[fragile]
 \frametitle{Fit model}
 
-<<run_ordinal_model, echo=TRUE, cache=TRUE, dependson='ordinal_model', eval=FALSE>>=
-m = stan_model(model_code = "ordinal_model")
+<<run_ordinal_model, echo=TRUE, dependson='ordinal_model'>>=
+m = stan_model(model_code = ordinal_model)
 dat = list(n_products = nrow(for_table),
            y = as.matrix(for_table[,2:6]))
 r = sampling(m, dat, pars = c("alpha","eta","tau","mu"))
@@ -603,7 +599,7 @@ r = sampling(m, dat, pars = c("alpha","eta","tau","mu"))
 \begin{frame}[fragile]
 \frametitle{Fit model}
 
-<<echo=TRUE, cache=TRUE, dependson='run_ordinal_model', eval=FALSE>>=
+<<echo=TRUE, dependson='run_ordinal_model'>>=
 r
 @
 \end{frame}
@@ -645,19 +641,19 @@ ggplot(melt(other), aes(x=value)) +
 \begin{frame}
 \frametitle{Visualizing the model}
 
-<<cuts2, echo=FALSE>>=
+<<cuts2, dependson='run_ordinal_model'>>=
 alpha = c(0,.36,.6,1.11)
 mu = c(1.49,-.38)
-curve(dnorm(x,mu[1],1), -3, 5, lwd=2, xlab="", axes=F, frame=T, ylab="")
-curve(dnorm(x,mu[2],1), lwd=2, add=TRUE)
+curve(dnorm(x,mu[1],1), -3, 5, lwd=2, xlab="", axes=F, frame=T, ylab="", col='gray')
+curve(dnorm(x,mu[2],1), lwd=2, col='gray', add=TRUE)
 abline(v=alpha,col="red")
 axis(1, at=alpha, 
-     labels=parse(text=paste("alpha[",1:4,"]",sep='')), 
+     labels=parse(text=paste("hat(alpha)[",1:4,"]",sep='')), 
      col="red")
 
-abline(v=mu, lty=2, col="blue")
-axis(3, at=mu, labels=expression(mu[2],mu[10]), col="blue")
-text((-1:3)+.5, 0, 1:5, col="seagreen")
+#abline(v=mu, lty=2, col="blue")
+axis(3, at=mu, labels=parse(text=paste("hat(mu)[",c(2,10),"]",sep='')), col="blue")
+#text((-1:3)+.5, 0, 1:5, col="seagreen")
 @
 \end{frame}
 

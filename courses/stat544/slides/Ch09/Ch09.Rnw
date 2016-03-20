@@ -1,0 +1,294 @@
+\documentclass[handout]{beamer}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{Decision theory}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\argmax}{\mbox{argmax}}
+
+\begin{document}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(tidyr)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+@
+
+<<set_seed>>=
+set.seed(1)
+@
+
+
+
+\frame{\maketitle}
+
+
+\begin{frame}
+\frametitle{Bayesian decision theory}
+
+Suppose we have an unknown quantity $\theta$ which we believe follows a probability distribution $p(\theta)$ and a decision (or action) $\delta$. \pause
+For each decision, we have a loss function $L(\theta,\delta)$ that describes how much we lose if $\theta$ is the truth. \pause
+The expected loss is taken with respect to $\theta\sim p(\theta)$, i.e. 
+\[
+E_\theta[L(\theta,\delta)] = \int L(\theta,\delta) p(\theta) d\theta \pause = f(\delta).
+\]
+\pause
+The optimal Bayesian decision is to choose $\delta$ that minimizes the expected loss, i.e. 
+\[
+\delta_{opt} = \mbox{argmin}_\delta E[L(\theta,\delta)] \pause = \mbox{argmin}_\delta f(\delta).
+\]
+\pause
+Economists typically maximize expected utility where utility is the negative of loss, i.e. $U(\theta,\delta)=-L(\theta,\delta)$. \pause If we have data, just replace the prior $p(\theta)$ with the posterior $p(\theta|y)$. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Depicting loss/utility functions}
+
+<<utility_functions, fig.width=8>>=
+d = data.frame(theta=seq(-2,2,by=0.1)) %>%
+  mutate(d_1=2,
+         d_2=1,
+         d_3=theta^2) %>%
+  gather(Decision, Loss, -theta)
+  
+ggplot(d, aes(theta, Loss, color=Decision, linetype=Decision)) +
+  geom_line(size=2) +
+  theme(legend.position='bottom')
+@
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Which hand?}
+{\scriptsize
+
+The setup:
+\begin{itemize}[<+->]
+\item Randomly put a quarter in one of two hands with probability $p$.
+\item Let $\theta\in\{0,1\}$ indicate that the quarter is in the right hand.
+\item You get to choose whether the quarter is in the right hand or not.
+\item If you guess the quarter is in the right hand and it is, you get to keep the quarter. Otherwise, you don't get anything. 
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+We have $\theta\sim Ber(p)$ and two actions
+\begin{itemize}
+\item $a_0$: say the quarter is not in the right hand \pause and
+\item $a_1$: say the quarter is in the right hand.
+\end{itemize}
+Thus, the utility is 
+\[
+U(\theta,a_i) = \left\{ \begin{array}{rl}
+\$0.25 \theta & \mbox{if }a_1 \\
+0 & \mbox{if }a_0
+\end{array} \right.
+\]
+and the expected utility is 
+\[
+E[U(\theta,a_i)] = \left\{ \begin{array}{rl}
+\$0.25 p & \mbox{if }a_1 \\
+0 & \mbox{if }a_0
+\end{array} \right.
+\]
+So, we maximize expected utility by taking $a_1$ if $p>0$. 
+}
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{How many quarters in the jar?}
+
+Suppose a jar is filled up to a pre-specified line. \pause
+Let $\theta$ be the number of quarters in the jar. \pause
+Provide a probability distribution for your uncertainty in $\theta$. \pause
+Suppose you choose 
+\[ 
+\theta \sim N(\mu,\sigma^2)
+\]
+Since $\theta\in\mathbb{N}^+$, we can provide a formal prior by letting 
+\[
+P(\theta=q) \propto N(q;\mu,\sigma^2)\I(0<q\le U)
+\]
+for some upper bound $U$. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Guessing how many quarters are in the jar.}
+
+Now you are asked to guess how many quarters are in the jar. \pause
+What should you guess? 
+
+\vspace{0.2in} \pause
+
+Let $q$ be the guess that the number of quarters is $q$, then our utility is 
+\[
+U(\theta,q) = q\I(\theta=q)
+\]
+and our expected utility is 
+\[
+E_\theta[U(\theta,q)] = q P(\theta=q) \propto q N(q;\mu,\sigma^2)\I(0\le q\le U).
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Deriving the optimal decision}
+
+Here are three approaches for deriving the optimal decision:
+\[
+\argmax_{q} f(q), \quad f(q) = q N(q;\mu,\sigma^2)\I(0\le q\le U)
+\]
+
+\begin{enumerate}[<+->]
+\item Evaluate $f(q)$ for $q\in\{1,2,\ldots,U\}$ and find which one is the maximum. 
+\item Treat $q$ as continuous and use a numerical optimization routine.
+\item Take the derivative of $f(q)$, set it equal to zero, and solve for $q$.
+\end{enumerate}
+
+In all cases, you are better off taking the $\log f(q)$ which is monotonic and therefore will still provide the same maximum as $f(q)$.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the expected log utility}
+
+<<theta_pmf, echo=TRUE>>=
+# p(theta) \propto N(theta;mu,sigma^2)I(1<= theta <= 400)
+mu=160; sigma=60; U=400
+@
+
+<<log_utility, dependson='theta_pmf', fig.width=8>>=
+d = data.frame(theta=1:U) %>%
+  mutate(probability_mass_function = dnorm(theta, mu, sigma),
+         expected_utility = theta*probability_mass_function,
+         expected_utility = expected_utility/sum(expected_utility)) %>%
+  melt(id.vars='theta', variable.name='fxn')
+
+ggplot(d, aes(theta, value, color=fxn, linetype=fxn)) +
+  geom_line(size=2) +
+  theme(legend.position='bottom')
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Computational approaches}
+
+<<optimal_quarters, dependson='theta_pmf', echo=TRUE>>=
+log_f = Vectorize(function(q, mu, sigma, U) {
+  if (q<0 | q>U) return(-Inf)
+  return(log(q) + dnorm(q, mu, sigma, log=TRUE))
+})
+
+# Evaluate all options
+log_expected_utility = log_f(1:U, mu=mu, sigma=sigma, U=U)
+which.max(log_expected_utility) # since we are using integers 1:U
+
+# Numerical optimization
+optimize(function(x) log_f(x, mu=mu, sigma=sigma, U=U), c(1,U), maximum=TRUE)
+@
+
+<<expected_gain, dependson='optimal_quarters'>>=
+# Actual expected gains
+expected_utility = exp(log_expected_utility - max(log_expected_utility))
+expected_utility = expected_utility/sum(expected_utility)
+#expected_utility[which.max(log_expected_utility)]*0.25
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Derivation}
+
+The function to maximize is 
+\[
+\log f(q) = \log(q) - (q-\mu)^2/2\sigma^2.
+\]
+\pause
+The derivative is 
+\[
+\frac{d}{dq} \log f(q) = \frac{1}{q} - (q-\mu)/\sigma^2.
+\]
+\pause
+Setting this equal to zero and multiplying by $-q\sigma^2$ results in 
+\[
+q^2-\mu q - \sigma^2 = 0.
+\]
+\pause
+This is a quadratic with roots at 
+\[
+\frac{\mu \pm \sqrt{\mu^2+4\sigma^2}}{2}.
+\]
+\pause
+Since $q$ must be positive, the answer is 
+<<derived, dependson='optimal_quarters', echo=TRUE>>=
+(mu+sqrt(mu^2+4*sigma^2))/2
+@
+
+
+\end{frame}
+
+
+
+% \begin{frame}
+% \frametitle{Risk and Bayes Risk}
+% 
+% If we will be collecting data and our decision depends on data, i.e. $\delta(y)$, then we define the risk as 
+% \[
+% R(\theta,\delta) = E_Y[L(\theta,\delta(Y))] = \int L(\theta,\delta(y)) p(y|\theta) dy
+% \]
+% (For no-data problems $R(\theta,\delta) \equiv L(\theta,\delta)$ which is why we didn't worry about this )
+% 
+% \vspace{0.2in} \pause
+% 
+% This risk is a function of the true $\theta$ and the decision rule $\delta$. 
+% 
+% \end{frame}
+
+
+
+
+\end{document}
