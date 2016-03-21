@@ -56,6 +56,7 @@ Bayesian computation
 \item Deterministic approximation
 \item Monte Carlo approximation
   \begin{itemize}
+  \item Theoretical justification
   \item Gridding
   \item Inverse CDF
   \item Accept-reject
@@ -94,13 +95,6 @@ Bayesian computation
 \subsection{Numerical integration}
 \frame{\frametitle{Numerical integration}
   \begin{itemize}[<+->]
-  \item Simulation methods:
-  \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \frac{1}{S} \sum_{S=1}^S h\left(\theta^{(s)}\right) \]
-  where 
-    \begin{itemize}
-    \item $\theta^{(s)} \stackrel{iid}{\sim} p(\theta|y)$ \pause 
-    \item and we have SLLN and CLT.
-    \end{itemize}
   \item Deterministic methods:
   \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) \]
   where 
@@ -108,6 +102,13 @@ Bayesian computation
     \item $\theta^{(s)}$ are selected points, 
     \item $w_s$ is the weight given to the point $\theta^{(s)}$, and
     \item the error can be bounded. 
+    \end{itemize}
+  \item Monte Carlo (simulation) methods:
+  \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \frac{1}{S} \sum_{S=1}^S h\left(\theta^{(s)}\right) \]
+  where 
+    \begin{itemize}
+    \item $\theta^{(s)} \stackrel{iid}{\sim} p(\theta|y)$ \pause 
+    \item and we have SLLN and CLT.
     \end{itemize}
 	\end{itemize}
 }
@@ -195,6 +196,174 @@ ggplot(melt(res, id.var='y', variable.name = "prior"),
 @
 \end{frame}
 
+
+
+\section{Monte Carlo integration}
+
+\section{Monte Carlo methods}
+\frame{\frametitle{Monte Carlo integration}
+\small
+  Consider evaluating the integral
+  \[ E_X[h(X)] = \int_{\mathcal{X}} h(x) f(x) dx \]
+	\pause using the Monte Carlo estimate
+	\[ \hat{h}_J = \frac{1}{J} \sum_{j=1}^J h\left(x^{(j)}\right) \]
+	\pause where $x^{(j)} \stackrel{ind}{\sim} f(x)$.  \pause We know
+	\begin{itemize}
+	\item SLLN: $\hat{h}_J$ converges almost surely to $E_X[h(X)]$. \pause
+	\item CLT: if $h^2$ has finite expectation, \pause then
+	\[ \hat{h}_J \stackrel{d}{\to} N(E_X[h(X)], v_J) \pause \]
+	where
+	\[ v_J = \frac{1}{J} \widehat{V_X[h(X)]} \pause \approx \frac{1}{J^2} \sum_{s=1}^J \left[ h\left(x^{(j)}\right) - \hat{h}_J \right]^2. \]
+	\end{itemize}
+}
+
+\subsection{Definite integral}
+\frame{\frametitle{Definite integral}
+	Suppose you are interested in evaluating
+	\[ \mathrm{I} = \int_0^1 e^{-x^2/2} dx. \]
+	\pause Then set
+	\begin{itemize}
+	\item $h(x) = e^{-x^2/2}$ \pause and
+	\item $f(x) = 1$\pause, i.e. $x\sim \mbox{Unif}(0,1)$. \pause
+	\end{itemize}
+  \pause
+  and approximate by a Monte Carlo estimate via
+  \begin{enumerate}[<+->]
+  \item For $j=1,\ldots,J$,
+    \begin{enumerate}
+    \item sample $x^{(j)} \sim Unif(0,1)$ and
+    \item calculate $h\left(x^{(j)}\right)$.
+    \end{enumerate}
+  \item Calculate
+  \[ \mathrm{I} \approx \frac{1}{J} \sum_{j=1}^J h(x^{(j)}). \]
+  \end{enumerate}
+}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Strong law of large numbers}
+<<uniform>>=
+f = function(x) exp(-x^2/2)
+
+# Monte Carlo integration
+set.seed(1)
+n = 1e3
+x = runif(n)
+fx = f(x)
+
+par(mfrow=c(1,2))
+n_points = 20; curve(f, main=paste(n_points, "samples"))
+segments(x[1:n_points], 0, x[1:n_points], fx[1:n_points])
+n_points = 200; curve(f, main=paste(n_points, "samples"))
+segments(x[1:n_points], 0, x[1:n_points], fx[1:n_points])
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Strong law of large numbers}
+<<uniform2>>=
+
+# Monte Carlo integration
+cummean = function(x) return(cumsum(x)/(1:length(x)))
+plot(cmfx<-cummean(fx), type='l', ylab="Estimate", main="Monte Carlo estimate", xlab="Number of samples")
+abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Central limit theorem}
+<<uniform3>>=
+cumvar = function(x) {
+  J = length(x)
+  cumvar = numeric(J)
+  for (j in 1:J) { cumvar[j] = var(x[1:j])/j }
+  return(cumvar)
+}
+
+cvfx = cumvar(fx)
+uci  = cmfx+qnorm(.975)*sqrt(cvfx)
+lci  = cmfx-qnorm(.975)*sqrt(cvfx)
+plot(cmfx, main="Monte Carlo estimate", type="n",
+     ylim=range(uci,lci,na.rm=T), xlab="Number of samples", ylab="Estimate")
+abline(h=h, col="red",lwd=2)
+lines(cmfx,lwd=2)
+lines(uci, lty=2)
+lines(lci, lty=2)
+legend("bottomright", c("Truth","Estimate","95% CI"),
+       lwd=c(2,2,1), lty=c(1,1,2), col=c("red","black","black"))
+@
+\end{frame}
+
+
+
+
+\subsection{Infinite bounds}
+\frame{\frametitle{Infinite bounds}
+	Suppose $X\sim N(0,1)$ and you are interested in evaluating
+	\[ E_X[X] \pause = \int_{-\infty}^\infty x \frac{1}{\sqrt{2\pi}} e^{-x^2/2} dx \]
+
+	\pause Then set
+	\begin{itemize}
+	\item $h(x) = x$ \pause and
+	\item $f(x) = \phi(x)$\pause, i.e. $x\sim N(0,1)$. \pause
+	\end{itemize}
+  and approximate by a Monte Carlo estimate via
+  \begin{enumerate}[<+->]
+  \item For $j=1,\ldots,J$,
+    \begin{enumerate}
+    \item sample $x^{(j)} \sim N(0,1)$ and
+    \item calculate $h\left(x^{(j)}\right)$.
+    \end{enumerate}
+  \item Calculate
+  \[ E_X[X] \approx \frac{1}{J} \sum_{j=1}^J h(x^{(j)}). \]
+  \end{enumerate}
+}
+
+\begin{frame}[fragile]
+\frametitle{Non-uniform sampling}
+<<echo=FALSE>>=
+opar = par(mfrow=c(1,2))
+x = rnorm(100)
+y = x[1:20]
+rng = c(-3,3)
+plot(y,y, type='l',
+     main="n=20", xlab="locations, x", ylab='h(x)=x',
+     xlim=rng, ylim=rng)
+segments(y,0,y,y)
+abline(0,1,lwd=2)
+abline(h=0)
+plot(x, x, type='l',
+     main="n=100", xlab="locations, x", ylab='h(x)=x',
+     xlim=rng, ylim=rng)
+segments(x,0,x,x)
+abline(0,1,lwd=2)
+abline(h=0)
+par(opar)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Monte Carlo estimate}
+<<infinite>>=
+# Normal expectation
+set.seed(1)
+x = rnorm(1e3)
+cmfx = cummean(x)
+cvfx = cumvar(x)
+uci  = cmfx+qnorm(.975)*sqrt(cvfx)
+lci  = cmfx-qnorm(.975)*sqrt(cvfx)
+plot(cmfx, main="Monte Carlo estimate", type="n",
+     ylim=range(uci,lci,na.rm=T), xlab="J", ylab="Estimate")
+abline(h=0, col="red",lwd=2)
+lines(cmfx,lwd=2)
+lines(uci, lty=2)
+lines(lci, lty=2)
+legend("bottomright", c("Truth","Estimate","95% CI"),
+       lwd=c(2,2,1), lty=c(1,1,2), col=c("red","black","black"))
+@
+\end{frame}
 
 \subsection{Gridding}
 \frame{\frametitle{Monte Carlo approximation via gridding}
