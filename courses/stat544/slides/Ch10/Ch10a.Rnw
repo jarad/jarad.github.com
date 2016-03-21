@@ -48,11 +48,18 @@ set.seed(1)
 
 
 \begin{frame}
-\frametitle{Outline}
+\frametitle{Bayesian computation}
 
-Bayesian computation
+Goals:
+\begin{itemize}[<+->]
+\item $E_{\theta|y}[h(\theta)|y] = \int h(\theta) p(\theta|y) d\theta$
+\item $p(y) = \int p(y|\theta)p(\theta) d\theta = E_\theta[p(y|\theta)]$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Approaches:
 \begin{itemize}
-\item Goal: $p(y) = \int p(y|\theta)p(\theta) d\theta$ or $E[h(\theta)|y] = \int h(\theta) p(\theta|y) d\theta$. 
 \item Deterministic approximation
 \item Monte Carlo approximation
   \begin{itemize}
@@ -66,20 +73,8 @@ Bayesian computation
 \end{frame}
 
 
-\section{Introduction to Bayesian computation}
-\frame{\frametitle{Notation}
-  \begin{itemize}
-  \item Target distribution: $p(\theta|y)$
-  \item Unnormalized target distribution: $q(\theta|y)$, i.e.
-  \[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)} \propto q(\theta|y) \]
-  \item Proposal distribution: $g(\theta)$ which may depend on $y$
-  \end{itemize}
-}
-
-
-
-\subsection{Example: Normal-Cauchy model}
-\frame{\frametitle{Example: Normal-Cauchy model}
+\begin{frame}
+\frametitle{Example: Normal-Cauchy model}
   Let $Y\sim N(\theta,1)$ with $\theta\sim Ca(0,1)$. \pause The posterior is 
   \[ p(\theta|y) \propto p(y|\theta)p(\theta) \propto \frac{\exp(-(y-\theta)^2/2)}{1+\theta^2} \]
   \pause which is not a known distribution. \pause We might be interested in
@@ -89,31 +84,34 @@ Bayesian computation
   \item or in calculating the posterior mean, i.e. 
   \[ E[\theta|y] = \int \theta p(\theta|y) d\theta. \]
   \end{enumerate}
-}
+\end{frame}
 
 
-\subsection{Numerical integration}
+%\subsection{Numerical integration}
 \frame{\frametitle{Numerical integration}
-  \begin{itemize}[<+->]
-  \item Deterministic methods:
+  We have 
   \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) \]
-  where 
+  
+  \vspace{0.2in}\pause
+  
+  Approaches:
+  \begin{itemize}[<+->]
+  \item deterministic methods where 
     \begin{itemize}
     \item $\theta^{(s)}$ are selected points, 
     \item $w_s$ is the weight given to the point $\theta^{(s)}$, and
     \item the error can be bounded. 
     \end{itemize}
-  \item Monte Carlo (simulation) methods:
-  \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \frac{1}{S} \sum_{S=1}^S h\left(\theta^{(s)}\right) \]
-  where 
+  \item Monte Carlo (simulation) methods where 
     \begin{itemize}
-    \item $\theta^{(s)} \stackrel{iid}{\sim} p(\theta|y)$ \pause 
+    \item $\theta^{(s)} \stackrel{iid}{\sim} g(\theta)$ (for some proposal distribution $g$),
+    \item $w_s = p(\theta|y)/g(\theta)$, 
     \item and we have SLLN and CLT.
     \end{itemize}
 	\end{itemize}
 }
 
-
+\section{Deterministic methods}
 \begin{frame}[fragile]
 \frametitle{Marginal likelihood }
 <<normal_cauchy_posterior, echo=TRUE>>=
@@ -196,46 +194,43 @@ ggplot(melt(res, id.var='y', variable.name = "prior"),
 @
 \end{frame}
 
-
-
-\section{Monte Carlo integration}
-
 \section{Monte Carlo methods}
-\frame{\frametitle{Monte Carlo integration}
+\begin{frame}
+\frametitle{Monte Carlo integration}
 \small
   Consider evaluating the integral
-  \[ E_X[h(X)] = \int_{\mathcal{X}} h(x) f(x) dx \]
+  \[ E[h(\theta)] = \int_{\Theta} h(\theta) p(\theta) d\theta \]
 	\pause using the Monte Carlo estimate
-	\[ \hat{h}_J = \frac{1}{J} \sum_{j=1}^J h\left(x^{(j)}\right) \]
-	\pause where $x^{(j)} \stackrel{ind}{\sim} f(x)$.  \pause We know
+	\[ \hat{h}_J = \frac{1}{J} \sum_{j=1}^J h\left(\theta^{(j)}\right) \]
+	\pause where $\theta^{(j)} \stackrel{ind}{\sim} g(\theta)$.  \pause We know
 	\begin{itemize}
-	\item SLLN: $\hat{h}_J$ converges almost surely to $E_X[h(X)]$. \pause
+	\item SLLN: $\hat{h}_J$ converges almost surely to $E[h(\theta)]$. \pause
 	\item CLT: if $h^2$ has finite expectation, \pause then
-	\[ \hat{h}_J \stackrel{d}{\to} N(E_X[h(X)], v_J) \pause \]
+	\[ \hat{h}_J \stackrel{d}{\to} N(E[h(\theta)], v_J) \pause \]
 	where
-	\[ v_J = \frac{1}{J} \widehat{V_X[h(X)]} \pause \approx \frac{1}{J^2} \sum_{s=1}^J \left[ h\left(x^{(j)}\right) - \hat{h}_J \right]^2. \]
+	\[ v_J = \frac{1}{J} \widehat{V[h(\theta)]} \pause \approx \frac{1}{J^2} \sum_{s=1}^J \left[ h\left(\theta^{(j)}\right) - \hat{h}_J \right]^2. \]
 	\end{itemize}
-}
+\end{frame}
 
 \subsection{Definite integral}
 \frame{\frametitle{Definite integral}
 	Suppose you are interested in evaluating
-	\[ \mathrm{I} = \int_0^1 e^{-x^2/2} dx. \]
+	\[ \mathrm{I} = \int_0^1 e^{-\theta^2/2} d\theta. \]
 	\pause Then set
 	\begin{itemize}
-	\item $h(x) = e^{-x^2/2}$ \pause and
-	\item $f(x) = 1$\pause, i.e. $x\sim \mbox{Unif}(0,1)$. \pause
+	\item $h(\theta) = e^{-\theta^2/2}$ \pause and
+	\item $p(\theta) = 1$\pause, i.e. $\theta\sim \mbox{Unif}(0,1)$. \pause
 	\end{itemize}
   \pause
   and approximate by a Monte Carlo estimate via
   \begin{enumerate}[<+->]
   \item For $j=1,\ldots,J$,
     \begin{enumerate}
-    \item sample $x^{(j)} \sim Unif(0,1)$ and
-    \item calculate $h\left(x^{(j)}\right)$.
+    \item sample $\theta^{(j)} \sim Unif(0,1)$ and
+    \item calculate $h\left(\theta^{(j)}\right)$.
     \end{enumerate}
   \item Calculate
-  \[ \mathrm{I} \approx \frac{1}{J} \sum_{j=1}^J h(x^{(j)}). \]
+  \[ \mathrm{I} \approx \frac{1}{J} \sum_{j=1}^J h(\theta^{(j)}). \]
   \end{enumerate}
 }
 
@@ -244,19 +239,19 @@ ggplot(melt(res, id.var='y', variable.name = "prior"),
 \begin{frame}[fragile]
 \frametitle{Strong law of large numbers}
 <<uniform>>=
-f = function(x) exp(-x^2/2)
+f = function(theta) exp(-theta^2/2)
 
 # Monte Carlo integration
 set.seed(1)
 n = 1e3
-x = runif(n)
-fx = f(x)
+theta = runif(n)
+ptheta = f(theta)
 
 par(mfrow=c(1,2))
 n_points = 20; curve(f, main=paste(n_points, "samples"))
-segments(x[1:n_points], 0, x[1:n_points], fx[1:n_points])
+segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
 n_points = 200; curve(f, main=paste(n_points, "samples"))
-segments(x[1:n_points], 0, x[1:n_points], fx[1:n_points])
+segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
 @
 \end{frame}
 
@@ -265,8 +260,8 @@ segments(x[1:n_points], 0, x[1:n_points], fx[1:n_points])
 <<uniform2>>=
 
 # Monte Carlo integration
-cummean = function(x) return(cumsum(x)/(1:length(x)))
-plot(cmfx<-cummean(fx), type='l', ylab="Estimate", main="Monte Carlo estimate", xlab="Number of samples")
+cummean = function(theta) return(cumsum(theta)/(1:length(theta)))
+plot(cmptheta<-cummean(ptheta), type='l', ylab="Estimate", main="Monte Carlo estimate", xlab="Number of samples")
 abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
 @
 \end{frame}
@@ -274,20 +269,20 @@ abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
 \begin{frame}[fragile]
 \frametitle{Central limit theorem}
 <<uniform3>>=
-cumvar = function(x) {
-  J = length(x)
+cumvar = function(theta) {
+  J = length(theta)
   cumvar = numeric(J)
-  for (j in 1:J) { cumvar[j] = var(x[1:j])/j }
+  for (j in 1:J) { cumvar[j] = var(theta[1:j])/j }
   return(cumvar)
 }
 
-cvfx = cumvar(fx)
-uci  = cmfx+qnorm(.975)*sqrt(cvfx)
-lci  = cmfx-qnorm(.975)*sqrt(cvfx)
-plot(cmfx, main="Monte Carlo estimate", type="n",
+cvptheta = cumvar(ptheta)
+uci  = cmptheta+qnorm(.975)*sqrt(cvptheta)
+lci  = cmptheta-qnorm(.975)*sqrt(cvptheta)
+plot(cmptheta, main="Monte Carlo estimate", type="n",
      ylim=range(uci,lci,na.rm=T), xlab="Number of samples", ylab="Estimate")
 abline(h=h, col="red",lwd=2)
-lines(cmfx,lwd=2)
+lines(cmptheta,lwd=2)
 lines(uci, lty=2)
 lines(lci, lty=2)
 legend("bottomright", c("Truth","Estimate","95% CI"),
@@ -300,23 +295,23 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 
 \subsection{Infinite bounds}
 \frame{\frametitle{Infinite bounds}
-	Suppose $X\sim N(0,1)$ and you are interested in evaluating
-	\[ E_X[X] \pause = \int_{-\infty}^\infty x \frac{1}{\sqrt{2\pi}} e^{-x^2/2} dx \]
+	Suppose $\theta\sim N(0,1)$ and you are interested in evaluating
+	\[ E[\theta] \pause = \int_{-\infty}^\infty \theta \frac{1}{\sqrt{2\pi}} e^{-\theta^2/2} d\theta \]
 
 	\pause Then set
 	\begin{itemize}
-	\item $h(x) = x$ \pause and
-	\item $f(x) = \phi(x)$\pause, i.e. $x\sim N(0,1)$. \pause
+	\item $h(\theta) = \theta$ \pause and
+	\item $g(\theta) = \phi(\theta)$\pause, i.e. $\theta\sim N(0,1)$. \pause
 	\end{itemize}
   and approximate by a Monte Carlo estimate via
   \begin{enumerate}[<+->]
   \item For $j=1,\ldots,J$,
     \begin{enumerate}
-    \item sample $x^{(j)} \sim N(0,1)$ and
-    \item calculate $h\left(x^{(j)}\right)$.
+    \item sample $\theta^{(j)} \sim N(0,1)$ and
+    \item calculate $h\left(\theta^{(j)}\right)$.
     \end{enumerate}
   \item Calculate
-  \[ E_X[X] \approx \frac{1}{J} \sum_{j=1}^J h(x^{(j)}). \]
+  \[ E[\theta] \approx \frac{1}{J} \sum_{j=1}^J h(\theta^{(j)}). \]
   \end{enumerate}
 }
 
@@ -324,19 +319,19 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 \frametitle{Non-uniform sampling}
 <<echo=FALSE>>=
 opar = par(mfrow=c(1,2))
-x = rnorm(100)
-y = x[1:20]
+theta = rnorm(100)
+y = theta[1:20]
 rng = c(-3,3)
 plot(y,y, type='l',
-     main="n=20", xlab="locations, x", ylab='h(x)=x',
+     main="n=20", xlab="locations, theta", ylab='h(theta)=theta',
      xlim=rng, ylim=rng)
 segments(y,0,y,y)
 abline(0,1,lwd=2)
 abline(h=0)
-plot(x, x, type='l',
-     main="n=100", xlab="locations, x", ylab='h(x)=x',
+plot(theta, theta, type='l',
+     main="n=100", xlab="locations, theta", ylab='h(theta)=theta',
      xlim=rng, ylim=rng)
-segments(x,0,x,x)
+segments(theta,0,theta,theta)
 abline(0,1,lwd=2)
 abline(h=0)
 par(opar)
@@ -349,15 +344,15 @@ par(opar)
 <<infinite>>=
 # Normal expectation
 set.seed(1)
-x = rnorm(1e3)
-cmfx = cummean(x)
-cvfx = cumvar(x)
-uci  = cmfx+qnorm(.975)*sqrt(cvfx)
-lci  = cmfx-qnorm(.975)*sqrt(cvfx)
-plot(cmfx, main="Monte Carlo estimate", type="n",
+theta = rnorm(1e3)
+cmptheta = cummean(theta)
+cvptheta = cumvar(theta)
+uci  = cmptheta+qnorm(.975)*sqrt(cvptheta)
+lci  = cmptheta-qnorm(.975)*sqrt(cvptheta)
+plot(cmptheta, main="Monte Carlo estimate", type="n",
      ylim=range(uci,lci,na.rm=T), xlab="J", ylab="Estimate")
 abline(h=0, col="red",lwd=2)
-lines(cmfx,lwd=2)
+lines(cmptheta,lwd=2)
 lines(uci, lty=2)
 lines(lci, lty=2)
 legend("bottomright", c("Truth","Estimate","95% CI"),
@@ -495,7 +490,15 @@ ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dtnorm,
 
 
 
-
+% \section{Introduction to Bayesian computation}
+% \frame{\frametitle{Notation}
+%   \begin{itemize}
+%   \item Target distribution: $p(\theta|y)$
+%   \item Unnormalized target distribution: $q(\theta|y)$, i.e.
+%   \[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)} \propto q(\theta|y) \]
+%   \item Proposal distribution: $g(\theta)$ which may depend on $y$
+%   \end{itemize}
+% }
 
 \subsection{Rejection sampling}
 \frame{\frametitle{Rejection sampling}
