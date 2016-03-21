@@ -17,8 +17,8 @@ This course meets
 
 Office hours are
 
-- Instructor: TBD
-- TA: TBD
+- Instructor: T 12-2 Snedecor 2208
+- TA: W 1-3 Snedecor 1404
 
 ## Textbook
 
