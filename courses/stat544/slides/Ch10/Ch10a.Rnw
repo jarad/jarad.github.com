@@ -73,36 +73,20 @@ Approaches:
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Example: Normal-Cauchy model}
-  Let $Y\sim N(\theta,1)$ with $\theta\sim Ca(0,1)$. \pause The posterior is 
-  \[ p(\theta|y) \propto p(y|\theta)p(\theta) \propto \frac{\exp(-(y-\theta)^2/2)}{1+\theta^2} \]
-  \pause which is not a known distribution. \pause We might be interested in
-  \begin{enumerate}
-  \item  normalizing this posterior, i.e. calculating
-  \[ p(y) = \int p(y|\theta)p(\theta) d\theta \]
-  \item or in calculating the posterior mean, i.e. 
-  \[ E[\theta|y] = \int \theta p(\theta|y) d\theta. \]
-  \end{enumerate}
-\end{frame}
 
 
 %\subsection{Numerical integration}
 \frame{\frametitle{Numerical integration}
-  We have 
-  \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) \]
-  
-  \vspace{0.2in}\pause
-  
-  Approaches:
   \begin{itemize}[<+->]
-  \item deterministic methods where 
+  \item Deterministic methods where   \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) \]
+  and
     \begin{itemize}
     \item $\theta^{(s)}$ are selected points, 
     \item $w_s$ is the weight given to the point $\theta^{(s)}$, and
     \item the error can be bounded. 
     \end{itemize}
-  \item Monte Carlo (simulation) methods where 
+  \item Monte Carlo (simulation) methods where \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right) \]
+  and
     \begin{itemize}
     \item $\theta^{(s)} \stackrel{iid}{\sim} g(\theta)$ (for some proposal distribution $g$),
     \item $w_s = p(\theta^{(s)}|y)/g(\theta^{(s)})$, 
@@ -112,11 +96,28 @@ Approaches:
 }
 
 \section{Deterministic methods}
+\begin{frame}
+\frametitle{Example: Normal-Cauchy model}
+  Let $Y\sim N(\theta,1)$ with $\theta\sim Ca(0,1)$. \pause The posterior is 
+  \[ p(\theta|y) \propto p(y|\theta)p(\theta) \propto \frac{\exp(-(y-\theta)^2/2)}{1+\theta^2}=q(\theta|y) \]
+  \pause which is not a known distribution. \pause We might be interested in
+  \begin{enumerate}
+  \item  normalizing this posterior, i.e. calculating
+  \[ q(y) = \int q(\theta|y) d\theta \]
+  \item or in calculating the posterior mean, i.e. 
+  \[ E[\theta|y] = \int \theta p(\theta|y) d\theta = \int \theta \frac{q(\theta|y)}{q(y)} d\theta. \]
+  \end{enumerate}
+\end{frame}
+
+
+
 \begin{frame}[fragile]
 \frametitle{Marginal likelihood }
-<<normal_cauchy_posterior, echo=TRUE>>=
+<<data, echo=TRUE>>=
 y = 1 # Data
+@
 
+<<normal_cauchy_posterior, dependson='data', echo=TRUE>>=
 q = function(theta,y,log=FALSE) {
   out = -(y-theta)^2/2-log(1+theta^2)
   if (log) return(out)
@@ -133,7 +134,7 @@ integrate(function(x) q(x,y), -Inf, Inf)
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
-<<normal_cauchy_posterior_plot, echo=TRUE, fig.width=8>>=
+<<normal_cauchy_posterior_plot, dependson=c('data','normal_cauchy_posterior'), echo=TRUE, fig.width=8>>=
 curve(q(x,y), -5, 5, n=1001)
 points(theta,rep(0,length(theta)), cex=0.5, pch=19)
 segments(theta,0,theta,q(theta,y))
@@ -144,7 +145,7 @@ segments(theta,0,theta,q(theta,y))
 \begin{frame}[fragile]
 \frametitle{Posterior expectation }
 \[ E[h(\theta)|y) \approx \sum_{s=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) = \sum_{s=1}^S w_s h\left(\theta^{(s)}\right) \frac{p\left(\left.\theta^{(s)}\right|y\right)}{p(y)} \]
-<<normal_cauchy_posterior_expectation, echo=TRUE>>=
+<<normal_cauchy_posterior_expectation, dependson=c('data','normal_cauchy_posterior'), echo=TRUE>>=
 h = function(theta) theta
 sum(w*h(theta)*q(theta,y)/py)
 @
@@ -153,7 +154,7 @@ sum(w*h(theta)*q(theta,y)/py)
 
 
 
-<<normal_cauchy_posterior_mean, echo=FALSE>>=
+<<normal_cauchy_posterior_mean, dependson=c('data','normal_cauchy_posterior'), echo=FALSE>>=
 # Calculate marginal likelihood, p(y)
 py = function(y,log=FALSE) {
   int = integrate(function(x) q(x,y,log=FALSE),-Inf,Inf)
@@ -186,7 +187,7 @@ res = mutate(res, normal = y/2, "improper uniform" = y)
 
 \begin{frame}[fragile]
 \frametitle{Posterior expectation as a function of observed data}
-<<normal_cauchy_posterior_mean_plot, fig.width=8>>=
+<<normal_cauchy_posterior_mean_plot, dependson='normal_cauchy_posterior_mean', fig.width=8>>=
 ggplot(melt(res, id.var='y', variable.name = "prior"),
        aes(y,value,color=prior))+
   geom_line() + 
@@ -208,7 +209,7 @@ ggplot(melt(res, id.var='y', variable.name = "prior"),
 	\item CLT: if $h^2$ has finite expectation, \pause then
 	\[ \hat{h}_J \stackrel{d}{\to} N(E[h(\theta)], v_J) \pause \]
 	where
-	\[ v_J = \frac{1}{J} \widehat{V[h(\theta)]} \pause \approx \frac{1}{J^2} \sum_{s=1}^J \left[ h\left(\theta^{(j)}\right) - \hat{h}_J \right]^2. \]
+	\[ v_J = \frac{1}{J} V[h(\theta)] \pause \approx \frac{1}{J^2} \sum_{s=1}^J \left[ h\left(\theta^{(j)}\right) - \hat{h}_J \right]^2. \]
 	\end{itemize}
 \end{frame}
 
@@ -257,8 +258,7 @@ segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
 
 \begin{frame}[fragile]
 \frametitle{Strong law of large numbers}
-<<uniform2>>=
-
+<<uniform2, dependson='uniform'>>=
 # Monte Carlo integration
 cummean = function(theta) return(cumsum(theta)/(1:length(theta)))
 plot(cmptheta<-cummean(ptheta), type='l', ylab="Estimate", main="Monte Carlo estimate", xlab="Number of samples")
@@ -268,7 +268,7 @@ abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
 
 \begin{frame}[fragile]
 \frametitle{Central limit theorem}
-<<uniform3>>=
+<<uniform3, dependson='uniform2'>>=
 cumvar = function(theta) {
   J = length(theta)
   cumvar = numeric(J)
@@ -373,7 +373,9 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model }
-<<normal_cauchy_posterior_mean_grid, echo=TRUE>>=
+<<normal_cauchy_posterior_mean_grid, dependson='data', echo=TRUE>>=
+<<data>> 
+
 # Small number of grid locations
 theta = seq(-5,5,length=1e2+1)+y; p = q(theta,y)/sum(q(theta,y)); sum(p*theta)
 mean(sample(theta,prob=p,replace=TRUE))
@@ -557,7 +559,7 @@ ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dtnorm,
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
-<<rejection_sampling_plot, echo=FALSE, fig.width=8>>=
+<<rejection_sampling_plot, dependson='data', echo=FALSE, fig.width=8>>=
 M = sqrt(2*pi)
 g = function(theta,y,log=FALSE) dnorm(theta,y,log=log)
 
