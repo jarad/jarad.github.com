@@ -30,7 +30,7 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 ||ARS and Importance sampling|[Ch10b.Rnw](Ch10/Ch10b.Rnw)|[Ch10a.pdf](Ch10/Ch10b.pdf)|
 
   
-Below are (to be organized)
+Below are to be organized:
   
 - [Chapter 11a](Ch11/Ch11a.Rnw)
 - [Chapter 11b](Ch11/Ch11b.Rnw)
