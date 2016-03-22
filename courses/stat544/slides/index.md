@@ -27,11 +27,11 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 |R|Amazon reviews analysis|[AmazonReview.Rnw](AmazonReviews/AmazonReviews.Rnw)|[AmazonReview.pdf](AmazonReviews/AmazonReviews.pdf)|
 | |Midterm review|[MidtermReview.Rnw](MidtermReview/midterm_review.Rnw)|[MidtermReview.pdf](MidtermReview/midterm_review.pdf)|
 |10|Bayesian computation|[Ch10a.Rnw](Ch10/Ch10a.Rnw)|[Ch10a.pdf](Ch10/Ch10a.pdf)|
+||ARS and Importance sampling|[Ch10b.Rnw](Ch10/Ch10b.Rnw)|[Ch10a.pdf](Ch10/Ch10b.pdf)|
 
   
 Below are (to be organized)
   
-- [Chapter 10b](Ch10/Ch10b.Rnw)
 - [Chapter 11a](Ch11/Ch11a.Rnw)
 - [Chapter 11b](Ch11/Ch11b.Rnw)
 - [Chapter 11c](Ch11/Ch11c.Rnw)
