@@ -34,11 +34,13 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
+library(MASS)
 library(reshape2)
 library(plyr)
+library(dplyr)
+library(tidyr)
 library(ggplot2)
 library(xtable)
-library(MASS)
 library(GGally)
 @
 
@@ -75,23 +77,63 @@ set.seed(1)
 
 Let 
 \begin{itemize}
-\item $p(\theta|y)\propto q(\theta|y)$ be the target distribution and
-\item $\theta^t$ be the current draw from $p(\theta|y)$.
+\item $p(\theta|y)$ be the target distribution and
+\item $\theta^{(t)}$ be the current draw from $p(\theta|y)$.
 \end{itemize}
 
 \vspace{0.2in} \pause
 
 The Metropolis-Hastings algorithm performs the following \pause 
 \begin{enumerate}
-\item propose $\theta^*\sim g(\theta|\theta^t)$ \pause 
+\item propose $\theta^*\sim g(\theta|\theta^{(t)})$ \pause 
 \item accept $\theta^{t+1}=\theta^*$ with probability $\min\{1,r\}$ \pause where 
-\[ r = r(\theta^t,\theta^*) \pause 
-= \frac{q(\theta^*|y)/g(\theta^*|\theta^t)}{q(\theta^t|y)/g(\theta^t|\theta^*)} \pause 
-= \frac{q(\theta^*|y)}{q(\theta^t|y)}\frac{g(\theta^t|\theta^*)}{g(\theta^*|\theta^t)} \]
-\pause otherwise, set $\theta^{t+1}=\theta^t$. 
+\[ r = r(\theta^{(t)},\theta^*) \pause 
+= \frac{p(\theta^*|y)/g(\theta^*|\theta^{(t)})}{p(\theta^{(t)}|y)/g(\theta^{(t)}|\theta^*)} \pause 
+= \frac{p(\theta^*|y)}{p(\theta^{(t)}|y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} \]
+\pause otherwise, set $\theta^{t+1}=\theta^{(t)}$. 
 \end{enumerate}
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Metropolis-Hastings algorithm}
+
+Suppose we only know the target up to a normalizing constant, i.e. 
+\[ 
+p(\theta|y) = q(\theta|y)/p(y)
+\]
+where we only know $q(\theta|y)$. 
+
+\vspace{0.2in} \pause
+
+The Metropolis-Hastings algorithm performs the following \pause 
+\begin{enumerate}
+\item propose $\theta^*\sim g(\theta|\theta^{(t)})$ \pause 
+\item accept $\theta^{t+1}=\theta^*$ with probability $\min\{1,r\}$ \pause where 
+\[ r = r(\theta^{(t)},\theta^*) \pause 
+= \frac{p(\theta^*|y)}{p(\theta^{(t)}|y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} \pause
+= \frac{q(\theta^*|y)/p(y)}{q(\theta^{(t)}|y)/p(y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})}\pause
+= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} \]
+\pause otherwise, set $\theta^{t+1}=\theta^{(t)}$. 
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Two standard Metropolis-Hastings algorithms}
+
+\begin{itemize}
+\item Independent Metropolis-Hastings
+  \begin{itemize}
+  \item Independent proposal, i.e. $g(\theta|\theta^{(t)}) = g(\theta)$
+  \end{itemize}
+\item Random-walk Metropolis
+  \begin{itemize}
+  \item Symmetric proposal, i.e. $g(\theta|\theta^{(t)}) = g(\theta^{(t)}|\theta)$ for all $\theta,\theta^{(t)}$. 
+  \end{itemize}
+\end{itemize}
+\end{frame}
 
 
 % \begin{frame}
@@ -103,8 +145,8 @@ The Metropolis-Hastings algorithm performs the following \pause
 % \[ r = \bordermatrix{ & 0 & 1 \cr 0 & 1 & \frac{1/3}{2/3} \frac{0.3}{0.5} \cr 1 & \frac{2/3}{1/3} \frac{0.5}{0.3} & 1 } \pause = \bordermatrix{ & 0 & 1 \cr 0 & 1 & 0.3 \cr 1 & 3.33 & 1 }  \]
 % \pause Thus, the transition distribution is 
 % \[\begin{array}{rlll}
-% p &= p(\theta^{t+1}=1|\theta^t=0) \pause = p(\theta^*=1|\theta^t=0)p(\theta^*\mbox{ accepted}) &\pause= 0.5\times 0.3 &= 0.15 \pause \\
-% q &= p(\theta^{t+1}=0|\theta^t=1) \pause = p(\theta^*=0|\theta^t=1)p(\theta^*\mbox{ accepted}) &\pause = 0.3\times 1 &\pause = 0.3
+% p &= p(\theta^{t+1}=1|\theta^{(t)}=0) \pause = p(\theta^*=1|\theta^{(t)}=0)p(\theta^*\mbox{ accepted}) &\pause= 0.5\times 0.3 &= 0.15 \pause \\
+% q &= p(\theta^{t+1}=0|\theta^{(t)}=1) \pause = p(\theta^*=0|\theta^{(t)}=1)p(\theta^*\mbox{ accepted}) &\pause = 0.3\times 1 &\pause = 0.3
 % \end{array} \]
 % and the stationary distribution is $(0.3,0.15)/(0.3+0.15)=(2/3\,\,1/3)$. 
 % \end{frame}
@@ -158,7 +200,7 @@ The Metropolis-Hastings algorithm performs the following \pause
 % \vspace{0.2in} \pause
 % 
 % \begin{theorem}
-% For an \alert{irreducible} and \alert{aperiodic} Markov chain, if there exists a positive vector $\pi$ such that $\pi=\pi P$ and $\sum_i \pi_i=1$, then it must be the stationary distribution and $\lim_{t\to\infty} \pi^t = \pi$.
+% For an \alert{irreducible} and \alert{aperiodic} Markov chain, if there exists a positive vector $\pi$ such that $\pi=\pi P$ and $\sum_i \pi_i=1$, then it must be the stationary distribution and $\lim_{t\to\infty} \pi^{(t)} = \pi$.
 % \end{theorem}
 % \end{frame}
 % 
@@ -193,8 +235,8 @@ The Metropolis-Hastings algorithm performs the following \pause
 Let 
 \begin{itemize}
 \item $p(\theta|y)\propto q(\theta|y)$ be the target distribution, 
-\item $\theta^t$ be the current draw from $p(\theta|y)$, \pause and
-\item $g(\theta|\theta^t) = g(\theta)$, i.e. the proposal is \alert{independent} of the current value.
+\item $\theta^{(t)}$ be the current draw from $p(\theta|y)$, \pause and
+\item $g(\theta|\theta^{(t)}) = g(\theta)$, i.e. the proposal is \alert{independent} of the current value.
 \end{itemize}
 
 \vspace{0.2in} \pause
@@ -204,10 +246,39 @@ The \alert{independence Metropolis-Hastings algorithm} performs the following \p
 \item propose $\theta^*\sim g(\theta)$ \pause
 \item accept $\theta^{t+1}=\theta^*$ with probability $\min\{1,r\}$ \pause where 
 \[ r = 
-\frac{q(\theta^*|y)/g(\theta^*)}{q(\theta^t|y)/g(\theta^t)} = \frac{q(\theta^*|y)}{q(\theta^t|y)}\frac{g(\theta^t)}{g(\theta^*)} \]
-\pause otherwise, set $\theta^{t+1}=\theta^t$. 
+\frac{q(\theta^*|y)/g(\theta^*)}{q(\theta^{(t)}|y)/g(\theta^{(t)})} = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)})}{g(\theta^*)} \]
+\pause otherwise, set $\theta^{t+1}=\theta^{(t)}$. 
 \end{enumerate}
 \end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Intuition through examples}
+
+<<independent_metropolis_hastings_intuition>>=
+curves = data.frame(theta=seq(-2,3, length=101)) %>%
+  mutate(target   = dnorm(theta),
+         proposal = dnorm(theta,1)) %>%
+  gather(distribution,density,-theta)
+
+d = expand.grid(current=-1:1, proposed=-1:1) %>%
+  mutate(cv = paste("current= ", current),
+         pv = paste("proposed=", proposed),
+    acceptance_probability = 
+           dnorm(proposed)/dnorm(current)*dnorm(current,1)/dnorm(proposed,1),
+         accept = acceptance_probability>.5) %>%
+  dplyr::select(-acceptance_probability) %>%
+  gather(value, theta, -cv, -pv, -accept) 
+
+ggplot(d, aes(x=theta, y=0)) + 
+  geom_point(aes(color=accept, shape=value), size=2) + 
+  facet_grid(cv~pv, switch='y') +
+  geom_line(data=curves, aes(theta,density,linetype=distribution))
+
+@
+
+\end{frame}
+
 
 
 \begin{frame}
@@ -217,9 +288,9 @@ The \alert{independence Metropolis-Hastings algorithm} performs the following \p
 \pause Use $N(y,1)$ as the proposal, \pause then the Metropolis-Hastings acceptance probability is the $\min\{1,r\}$ \pause with 
 \[ 
 \begin{array}{rl}
-r &= \frac{q(\theta^*|y)}{q(\theta^t|y)}\frac{g(\theta^t)}{g(\theta^*)} \pause \\
-&= \frac{\exp(-(y-\theta^*)^2/2)/1+(\theta^*)^2}{\exp(-(y-\theta^t)^2/2)/1+(\theta^t)^2} \frac{\exp(-(\theta^t-y)^2/2)}{\exp(-(\theta^*-y)^2/2)} \\
-&= \frac{1+(\theta^t)^2}{1+(\theta^*)^2} 
+r &= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)})}{g(\theta^*)} \pause \\
+&= \frac{\exp(-(y-\theta^*)^2/2)/1+(\theta^*)^2}{\exp(-(y-\theta^{(t)})^2/2)/1+(\theta^{(t)})^2} \frac{\exp(-(\theta^{(t)}-y)^2/2)}{\exp(-(\theta^*-y)^2/2)} \\
+&= \frac{1+(\theta^{(t)})^2}{1+(\theta^*)^2} 
 \end{array} 
 \] 
 \end{frame}
@@ -287,13 +358,13 @@ Recall that
 
 \vspace{0.2in} \pause
 
-Independence Metropolis-Hastings also requires heavy tailed proposals \pause since if $\theta^t$ is 
+Independence Metropolis-Hastings also requires heavy tailed proposals \pause since if $\theta^{(t)}$ is 
 \begin{itemize}
-\item in a region where $p(\theta^t|y)>>g(\theta^t)$ \pause then
+\item in a region where $p(\theta^{(t)}|y)>>g(\theta^{(t)})$ \pause then
 \item any proposal $\theta^*$ such that $p(\theta^*|y)\approx g(\theta^*)$ \pause 
 \end{itemize}
 will result in 
-\[ r = \frac{g(\theta^t)}{p(\theta^t|y)}\frac{p(\theta^*|y)}{g(\theta^*)} \pause \approx 0 \]
+\[ r = \frac{g(\theta^{(t)})}{p(\theta^{(t)}|y)}\frac{p(\theta^*|y)}{g(\theta^*)} \pause \approx 0 \]
 \pause and few samples will be accepted.
 \end{frame}
 
@@ -344,20 +415,20 @@ qplot(1:n, theta)+labs(x="t",y=expression(theta))
 Let 
 \begin{itemize}
 \item $p(\theta|y)\propto q(\theta|y)$ be the target distribution, 
-\item $\theta^t$ be the current draw from $p(\theta|y)$, \pause and
-\item $g(\theta^*|\theta^t) = g(\theta^t|\theta^*)$, i.e. the proposal is \alert{symmetric}.
+\item $\theta^{(t)}$ be the current draw from $p(\theta|y)$, \pause and
+\item $g(\theta^*|\theta^{(t)}) = g(\theta^{(t)}|\theta^*)$, i.e. the proposal is \alert{symmetric}.
 \end{itemize}
 
 \vspace{0.2in} \pause
 
 The \alert{Metropolis algorithm} performs the following \pause
 \begin{enumerate}
-\item propose $\theta^*\sim g(\theta|\theta^t)$ \pause 
+\item propose $\theta^*\sim g(\theta|\theta^{(t)})$ \pause 
 \item accept $\theta^{t+1}=\theta^*$ with probability $\min\{1,r\}$ \pause where 
-\[ r = \frac{q(\theta^*|y)}{q(\theta^t|y)}\frac{g(\theta^t|\theta^*)}{g(\theta^*|\theta^t)} \pause =
-\frac{q(\theta^*|y)}{q(\theta^t|y)} 
+\[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} \pause =
+\frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} 
 \]
-\pause otherwise, set $\theta^{t+1}=\theta^t$. 
+\pause otherwise, set $\theta^{t+1}=\theta^{(t)}$. 
 \end{enumerate}
 \pause This is also referred to as \alert{random-walk Metropolis}.
 \end{frame}
@@ -366,11 +437,11 @@ The \alert{Metropolis algorithm} performs the following \pause
 \begin{frame}[fragile]
 \frametitle{Stochastic hill climbing}
 
-Notice that $r = q(\theta^*|y)/q(\theta^t|y)$ and thus will accept whenever the target density is larger when evaluated at the proposed value than it is when evaluated at the current value. 
+Notice that $r = q(\theta^*|y)/q(\theta^{(t)}|y)$ and thus will accept whenever the target density is larger when evaluated at the proposed value than it is when evaluated at the current value. 
 
 \vspace{.2in} \pause
 
-Suppose $\theta|y \sim N(0,1)$, $\theta^t = 1$, and $\theta^* \sim N(\theta^t,1)$. \pause 
+Suppose $\theta|y \sim N(0,1)$, $\theta^{(t)} = 1$, and $\theta^* \sim N(\theta^{(t)},1)$. \pause 
 
 <<hill_climbing, fig.width=10>>=
 curve(dnorm, -3, 3, lwd=2)
@@ -392,8 +463,8 @@ legend("topright",c("Target","Proposal"), col=1:2, lwd=2)
 
 \vspace{0.2in} \pause 
 
-Use $N(\theta^t,\tau^2)$ as the proposal\pause, then the acceptance probability is the $\min\{1,r\}$ \pause with 
-\[ r = \frac{q(\theta^*|y)}{q(\theta^t|y)} \pause = \frac{p(y|\theta^*)p(\theta^*)}{p(y|\theta^t)p(\theta^t)}. \] 
+Use $N(\theta^{(t)},\tau^2)$ as the proposal\pause, then the acceptance probability is the $\min\{1,r\}$ \pause with 
+\[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \pause = \frac{p(y|\theta^*)p(\theta^*)}{p(y|\theta^{(t)})p(\theta^{(t)})}. \] 
 For this example, let $\tau^2 = 1$. 
 \end{frame}
 
@@ -434,14 +505,14 @@ qplot(1:n, samps) +
 \begin{frame}
 \frametitle{Random-walk tuning parameter}
 \small 
-  Let $p(\theta|y)$ be the target distribution\pause, the proposal is symmetric with scale $\tau^2$, \pause and $\theta^t$ is (approximately) distributed according to $p(\theta|y)$. \pause 
+  Let $p(\theta|y)$ be the target distribution\pause, the proposal is symmetric with scale $\tau^2$, \pause and $\theta^{(t)}$ is (approximately) distributed according to $p(\theta|y)$. \pause 
 
 \begin{itemize}
-\item If $\tau^2\approx 0$\pause, then $\theta^*\approx \theta^t$ \pause and
-\[ r = \frac{q(\theta^*|y)}{q(\theta^t|y)} \approx 1 \]
+\item If $\tau^2\approx 0$\pause, then $\theta^*\approx \theta^{(t)}$ \pause and
+\[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \approx 1 \]
 \pause and all proposals are accepted. \pause 
 \item As $\tau^2\to\infty$\pause, then $q(\theta^*|y)\approx 0$ \pause since $\theta^*$ will be far from the mass of the target distribution \pause and 
-\[ r = \frac{q(\theta^*|y)}{q(\theta^t|y)} \pause \approx 0 \]
+\[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \pause \approx 0 \]
 \pause so all proposed values are rejected.
 \end{itemize}
 
@@ -485,9 +556,9 @@ Let $Y \sim Bin(n,\theta)$ and $\theta \sim Be(1/2,1/2)$\pause, thus the posteri
 \vspace{0.2in} \pause
 
 To construct a random-walk Metropolis algorithm, we choose the proposal 
-\[ \theta^* \sim N(\theta^t,0.4^2) \]
+\[ \theta^* \sim N(\theta^{(t)},0.4^2) \]
 \pause and accept with probability $\min\{1,r\}$ \pause where 
-\[ r = \frac{p(\theta^*|y)}{p(\theta^t|y)} \pause = \frac{(\theta^*)^{y-0.5}(1-\theta^*)^{n-y-0.5}\mathrm{I}(0<\theta^*<1)}{(\theta^t)^{y-0.5}(1-\theta^t)^{n-y-0.5}\mathrm{I}(0<\theta^t<1)} \]
+\[ r = \frac{p(\theta^*|y)}{p(\theta^{(t)}|y)} \pause = \frac{(\theta^*)^{y-0.5}(1-\theta^*)^{n-y-0.5}\mathrm{I}(0<\theta^*<1)}{(\theta^{(t)})^{y-0.5}(1-\theta^{(t)})^{n-y-0.5}\mathrm{I}(0<\theta^{(t)}<1)} \]
 \end{frame}
 
 
@@ -548,9 +619,9 @@ p(\mu,\sigma|y) &\propto
 
 \vspace{0.2in} \pause
 
-Perform a random-walk Metropolis using a normal proposal, i.e. if $\mu^t$ and $\sigma^t$ are the current values for $\mu$ and $\sigma$, then 
+Perform a random-walk Metropolis using a normal proposal, i.e. if $\mu^{(t)}$ and $\sigma^{(t)}$ are the current values for $\mu$ and $\sigma$, then 
 \[ \left( \begin{array}{c} \mu^* \\ \sigma^*
-\end{array} \right) \sim N\left( \left[ \begin{array}{c} \mu^t \\ \sigma^t \end{array} \right], \mathrm\Sigma \right)
+\end{array} \right) \sim N\left( \left[ \begin{array}{c} \mu^{(t)} \\ \sigma^{(t)} \end{array} \right], \mathrm\Sigma \right)
 \]
 where $\mathrm\Sigma$ is the tuning parameter.
 \end{frame}
@@ -776,13 +847,13 @@ ggpairs(samps,
 \frametitle{Metropolis-Hastings summary}
 
 \begin{itemize}[<+->]
-\item The Metropolis-Hastings algorithm, samples $\theta^*\sim g(\cdot|\theta^t)$ and sets $\theta^{t+1}=\theta^*$ with probability equal to $\min\{1,r\}$ where 
-\[ r = \frac{q(\theta^*|y)}{q(\theta^t|y)} \frac{g(\theta^t|\theta^*)}{g(\theta^*|\theta^t)} \]
-and otherwise sets $\theta^{t+1}=\theta^t$.
+\item The Metropolis-Hastings algorithm, samples $\theta^*\sim g(\cdot|\theta^{(t)})$ and sets $\theta^{t+1}=\theta^*$ with probability equal to $\min\{1,r\}$ where 
+\[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} \]
+and otherwise sets $\theta^{t+1}=\theta^{(t)}$.
 \item There are two common Metropolis-Hastings proposals
 \begin{itemize}
-\item independent proposal: $g(\theta^*|\theta^t) = g(\theta^*)$
-\item random-walk proposal: $g(\theta^*|\theta^t) = g(\theta^t|\theta^*)$
+\item independent proposal: $g(\theta^*|\theta^{(t)}) = g(\theta^*)$
+\item random-walk proposal: $g(\theta^*|\theta^{(t)}) = g(\theta^{(t)}|\theta^*)$
 \end{itemize}
 \item Independent proposals suffer from the same heavy-tail problems as rejection sampling proposals.
 \item Random-walk proposals require tuning of the random walk parameter. 
