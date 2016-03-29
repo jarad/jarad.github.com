@@ -28,7 +28,8 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 | |Midterm review|[MidtermReview.Rnw](MidtermReview/midterm_review.Rnw)|[MidtermReview.pdf](MidtermReview/midterm_review.pdf)|
 |10|Bayesian computation|[Ch10a.Rnw](Ch10/Ch10a.Rnw)|[Ch10a.pdf](Ch10/Ch10a.pdf)|
 ||ARS and Importance sampling|[Ch10b.Rnw](Ch10/Ch10b.Rnw)|[Ch10a.pdf](Ch10/Ch10b.pdf)|
-|11|Markov chains|[Ch11a.Rnw](Ch11/Ch11a.Rnw)|[Ch11a.pdf](Ch11/Ch11a.pdf)|
+|11|Metropolis-Hastings|[Ch11a.Rnw](Ch11/Ch11a.Rnw)|[Ch11a.pdf](Ch11/Ch11a.pdf)|
+||Gibbs sampling|[Ch11b.Rnw](Ch11/Ch11b.Rnw)|[Ch11b.pdf](Ch11/Ch11b.pdf)|
 
   
 Below are to be organized:
