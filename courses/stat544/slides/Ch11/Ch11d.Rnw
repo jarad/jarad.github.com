@@ -1,27 +1,9 @@
 \documentclass[handout]{beamer}
 
-\usetheme{AnnArbor}
-\usecolortheme{beaver}
-
-\setlength{\unitlength}{\textwidth}  % measure in textwidths
-\usepackage[normalem]{ulem}
-
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{enumerate items}[default]
-\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
-\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
-\setkeys{Gin}{width=0.6\textwidth}
+\input{../frontmatter}
+\input{../commands}
 
 \title{Markov chain Monte Carlo}
-\author[Jarad Niemi]{Dr. Jarad Niemi}
-\institute[Iowa State]{Iowa State University}
-\date{\today}
-
-\newcommand{\I}{\mathrm{I}}
-
-\newcommand*{\approxdist}{\mathrel{\vcenter{\offinterlineskip
-\vskip-.25ex\hbox{\hskip.55ex$\cdot$}\vskip-.25ex\hbox{$\sim$}
-\vskip-.5ex\hbox{\hskip.55ex$\cdot$}}}}
 
 \begin{document}
 
@@ -87,10 +69,10 @@ Today we look at some practical questions involving the use of MCMC:
 \begin{frame}
 \frametitle{Markov chain Monte Carlo}
 
-An MCMC algorithm with transition kernel $K(\theta^{t-1},\theta^{t})$ constructed to sample from $p(\theta|y)$ is the following: \pause
+An MCMC algorithm with transition kernel $K(\theta^{(t-1)},\theta^{(t)})$ constructed to sample from $p(\theta|y)$ is the following: \pause
 \begin{enumerate}[<+->]
 \item Sample $\theta^0\sim \pi^0$.
-\item For $t=1,\ldots,T$, perform the kernel $K(\theta^{t-1},\theta^{t})$ to obtain a sequence $\theta^1,\ldots,\theta^T$. 
+\item For $t=1,\ldots,T$, perform the kernel $K(\theta^{(t-1)},\theta^{(t)})$ to obtain a sequence $\theta^1,\ldots,\theta^{(t)}$. 
 \end{enumerate}
 
 \vspace{0.2in} \pause
@@ -99,7 +81,7 @@ The questions can then be rephrased as
 \begin{itemize}
 \item What should I use for $\pi^0$?
 \item What should $T$ be?
-\item What can I do with $\theta^1,\ldots,\theta^T$?
+\item What can I do with $\theta^1,\ldots,\theta^{(t)}$?
 \end{itemize}
 \end{frame}
 
@@ -109,17 +91,17 @@ The questions can then be rephrased as
 \frametitle{Initial values}
 
 For ergodic Markov chains with stationary distribution $p(\theta|y)$, theory states that 
-\[ \theta^t \stackrel{d}{\to} \theta \mbox{ where } \theta\sim p(\theta|y) \]
+\[ \theta^{(t)} \stackrel{d}{\to} \theta \mbox{ where } \theta\sim p(\theta|y) \]
 for \alert{almost all $\theta^0$} (all with Harris recurrence). 
 
 \vspace{0.2in} \pause
 
 If $p(\theta^0|y)<<p(\theta_{MAP}|y)$, then this can take a long time. \pause For example, let 
-\[ \theta^t = 0.99 \theta^{t-1} + \epsilon_t \qquad \epsilon_t \stackrel{iid}{\sim} N(0,1-.99^2) \]
+\[ \theta^{(t)} = 0.99 \theta^{(t-1)} + \epsilon_t \qquad \epsilon_t \stackrel{iid}{\sim} N(0,1-.99^2) \]
 which has stationary distribution \pause $p(\theta|y) \stackrel{d}{=}  N(0,1)$. \pause If 
 \begin{itemize}
-\item $\theta^0\sim p(\theta|y)$ then $\theta^t \approxdist p(\theta|y)$ for all $t$\pause, but if 
-\item $\theta^0$ is very far from $p(\theta|y)$ then $\theta^t \approxdist p(\theta|y)$ only for $t$ very large. 
+\item $\theta^0\sim p(\theta|y)$ then $\theta^{(t)} \approxdist p(\theta|y)$ for all $t$\pause, but if 
+\item $\theta^0$ is very far from $p(\theta|y)$ then $\theta^{(t)} \approxdist p(\theta|y)$ only for $t$ very large. 
 \end{itemize}
 \end{frame}
 
@@ -259,8 +241,8 @@ par(opar)
 \small
   Consider approximating the integral via it's Markov chain Monte Carlo (MCMC) estimate, i.e. 
   \[ E_{\theta|y}[h(\theta)|y] = \int_{\Theta} h(\theta) p(\theta|y) d\theta \quad \mbox{and} \quad 
-  \hat{h}_T = \frac{1}{T} \sum_{t=1}^T h\left(\theta^t\right). \]
-	\pause where $\theta^t$ is the $t^{th}$ iteration from the MCMC.  \pause Under regularity conditions, 
+  \hat{h}_T = \frac{1}{T} \sum_{t=1}^{(t)} h\left(\theta^{(t)}\right). \]
+	\pause where $\theta^{(t)}$ is the $t^{th}$ iteration from the MCMC.  \pause Under regularity conditions, 
 	\begin{itemize}
 	\item SLLN: $\hat{h}_T$ converges almost surely to $E[h(\theta)|y]$. \pause 
 	\item CLT: \alert{under stronger regularity conditions}, \pause then 

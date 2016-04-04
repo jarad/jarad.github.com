@@ -30,14 +30,12 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 ||ARS and Importance sampling|[Ch10b.Rnw](Ch10/Ch10b.Rnw)|[Ch10a.pdf](Ch10/Ch10b.pdf)|
 |11|Metropolis-Hastings|[Ch11a.Rnw](Ch11/Ch11a.Rnw)|[Ch11a.pdf](Ch11/Ch11a.pdf)|
 ||Gibbs sampling|[Ch11b.Rnw](Ch11/Ch11b.Rnw)|[Ch11b.pdf](Ch11/Ch11b.pdf)|
+||Markov chains|[Ch11c.Rnw](Ch11/Ch11c.Rnw)|[Ch11c.pdf](Ch11/Ch11c.pdf)|
+||Markov chain Monte Carlo|[Ch11d.Rnw](Ch11/Ch11d.Rnw)|[Ch11d.pdf](Ch11/Ch11d.pdf)|
 
   
 Below are to be organized:
   
-- [Chapter 11a](Ch11/Ch11a.Rnw)
-- [Chapter 11b](Ch11/Ch11b.Rnw)
-- [Chapter 11c](Ch11/Ch11c.Rnw)
-- [Chapter 11d](Ch11/Ch11d.Rnw)
 - [Chapter 14a](Ch14/Ch14a.Rnw)
 - [Chapter 14b](Ch14/Ch14b.Rnw)
 - [Chapter 15a](Ch15/Ch15a.Rnw)
