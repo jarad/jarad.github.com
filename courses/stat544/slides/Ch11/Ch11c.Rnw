@@ -60,7 +60,7 @@ set.seed(1)
 
 \begin{definition}
 A \alert{discrete-time, time-homogeneous Markov chain} is a sequence of random variables $\theta^{(t)}$ \pause such that
-\[ p(\theta^{(t)}|\theta^{(t-1)},\ldots,\theta^0) = p(\theta^{(t)}|\theta^{(t-1)}) \]
+\[ p\left(\theta^{(t)}|\theta^{(t-1)},\ldots,\theta^{(0)}\right) = p\left(\theta^{(t)}|\theta^{(t-1)}\right) \]
 \pause which is known as the \alert{transition distribution}.
 \end{definition}
 
@@ -187,10 +187,10 @@ qplot(0:n, rwalk(n, theta0=0))+labs(x="Time",y="State",title="Random walk on the
 \frametitle{Stationary distribution}
 \small
   Let $\pi^{(t)}$ denote a row vector with 
-  \[ \pi_i^{(t)} = Pr(\theta^{(t)}=i). \]
+  \[ \pi_i^{(t)} = Pr\left(\theta^{(t)}=i\right). \]
   \pause Then 
   \[ \pi^{(t)} = \pi^{(t-1)} P. \]
-  \pause Thus, $\pi^0$ and $P$ completely characterize $\pi^{(t)} \pause =\pi^0 P^{(t)}$ where $P^{(t)} = P^{(t-1)}P$ for $t>1$ and $P^1=P$. \pause 
+  \pause Thus, $\pi^{(0)}$ and $P$ completely characterize $\pi^{(t)} \pause =\pi^{(0)} P^t$ where $P^t = P^{t-1}P$ for $t>1$ and $P^1=P$. \pause 
   \begin{definition}
   A \alert{stationary distribution} is a distribution $\pi$ such that
   \[ \pi = \pi P. \]
@@ -205,7 +205,7 @@ qplot(0:n, rwalk(n, theta0=0))+labs(x="Time",y="State",title="Random walk on the
   Given a transition matrix $P$, \pause 
   \begin{itemize}
   \item Does a $\pi$ exist? \pause  Is $\pi$ unique? \pause
-  \item If $\pi$ is unique, does $\lim_{t\to\infty} \pi^{(t)} = \pi$ for all $\pi^0$? \pause In this case, $\pi$ is often called the \alert{limiting distribution}.
+  \item If $\pi$ is unique, does $\lim_{t\to\infty} \pi^{(t)} = \pi$ for all $\pi^{(0)}$? \pause In this case, $\pi$ is often called the \alert{limiting distribution}.
   \end{itemize}
 
 \end{frame}
@@ -239,16 +239,21 @@ This Markov chain stays where it is.
 
 \begin{definition}
 A Markov chain is \alert{irreducible} if for all $i$ and $j$
-\[ Pr(\theta^{t_{ij}}=j|\theta^0=i) > 0 \]
+\[ Pr\left(\theta^{t_{ij}}=j|\theta^{(0)}=i\right) > 0 \]
 for some $t_{ij}\ge 0$. \pause Otherwise the chain is \alert{reducible}.
-\end{definition}
+\end{definition} \pause
+\begin{theorem}
+A \alert{finite} state space, \alert{irreducible} Markov chain has a unique stationary distribution $\pi$.
+\end{theorem}
 \pause 
 Reducible example:
+{\scriptsize
 \[ P = \bordermatrix{ & 0 & 1 & 2 & 3  \cr 
 0 & 0.5 & 0.5 & 0 & 0 \cr
 1 & 0.5 & 0.5 & 0 & 0 \cr
 2 & 0 & 0 & 0.5 & 0.5 \cr
 3 & 0 & 0 & 0.5 & 0.5 } \]
+}
 \end{frame}
 
 
@@ -260,14 +265,14 @@ Reducible example:
 Let 
 \[ P = \bordermatrix{ & 0 & 1 \cr 0 & 0 & 1  \cr 1 & 1 & 0 } \]
 \pause then $\pi=\left(\frac{1}{2}\,\,\frac{1}{2}\right)$ since $\pi=\pi P$\pause, but
-\[ \lim_{t\to\infty} \pi^{(t)} \ne \pi \,\forall\, \pi^0\]
+\[ \lim_{t\to\infty} \pi^{(t)} \ne \pi \,\forall\, \pi^{(0)}\]
 \pause since 
 
 \[ 
 \pi^{(t)} = 
 \left\{ \begin{array}{rll}
-\pi^0 & t\mbox{ even} \pause \\
-1-\pi^0 & t\mbox{ odd}
+\pi^{(0)} & t\mbox{ even} \pause \\
+1-\pi^{(0)} & t\mbox{ odd}
 \end{array} \right. \]
 
 \vspace{0.2in} \pause 
@@ -287,10 +292,10 @@ This Markov chain jumps back and forth.
 
 \begin{definition}
 The \alert{period} $k_i$ of a state $i$ is 
-\[ k_i = \mbox{gcd}\{t: Pr(\theta^{(t)}=i|\theta^0=i)>0\}\]
+\[ k_i = \mbox{gcd}\{t: Pr\left(\theta^{(t)}=i|\theta^{(0)}=i\right)>0\}\]
 where gcd is the greatest common divisor. \pause If $k_i=1$, then state $i$ is said to be \alert{aperiodic}\pause, i.e.
-\[ Pr(\theta^{t'}=i|\theta^0=i)>0 \]
-for $t'>t$ for some $t$. \pause A Markov chain is \alert{aperiodic} if every state is aperiodic.
+\[ Pr\left(\theta^{(t)}=i|\theta^{(0)}=i\right)>0 \]
+for $t>t_0$ for some $t_0$. \pause A Markov chain is \alert{aperiodic} if every state is aperiodic.
 \end{definition}
 
 
@@ -309,23 +314,20 @@ Periodic example:
 
 \begin{frame}\frametitle{Example}
 Let
-\[ P = \left(
-\begin{array}{cc}
-0 & 1  \\
-\frac{1}{2} & \frac{1}{2} 
-\end{array}
-\right) \]
+\[ P = 
+\bordermatrix{ & 0 & 1 \cr 0 & 0 & 1 \cr 1 & \frac{1}{2} & \frac{1}{2} }
+ \]
 \pause Note that 
 \[ \begin{array}{rl}
-Pr(\theta^{t+1}=0|\theta^{(t)}=0) &= \pause0 \pause  \\
-Pr(\theta^{t+2}=0|\theta^{(t)}=0) &= \pause\frac{1}{2} \pause \\
-Pr(\theta^{t+3}=0|\theta^{(t)}=0) &= \pause\frac{1}{2}\frac{1}{2} = \frac{1}{4} \pause \\
-Pr(\theta^4=0|\theta^0=0) &= \pause\frac{1}{2}\frac{1}{2}+\frac{1}{2}\frac{1}{2}\frac{1}{2} = \frac{3}{8} \pause \\ 
+Pr\left(\theta^{(1)}=0|\theta^{(0)}=0\right) &= \pause0 \pause  \\
+Pr\left(\theta^{(2)}=0|\theta^{(0)}=0\right) &= \pause\frac{1}{2} \pause \\
+Pr\left(\theta^{(3)}=0|\theta^{(0)}=0\right) &= \pause\frac{1}{2}\frac{1}{2} = \frac{1}{4} \pause \\
+Pr\left(\theta^{(4)}=0|\theta^{(0)}=0\right) &= \pause\frac{1}{2}\frac{1}{2}+\frac{1}{2}\frac{1}{2}\frac{1}{2} = \frac{3}{8} \pause \\ 
 \vdots
 \end{array} \]
-generally $Pr(\theta^{(t)}=0|\theta^0=0)>0$ for all $t>1$. \pause The \alert{period} $k$ of state 0 is 
-\[ \mbox{gcd}\{t: Pr(\theta^{(t)}=i|\theta^0=i)>0\}\pause =\mbox{gcd}\{2,3,4,5,\ldots \}\pause =1 \]
-\pause Thus state $0$ is aperiodic. \pause State $1$ is trivially aperiodic since $P(\theta^{t+1}=1|\theta^{(t)}=1)=1/2>0$. \pause Thus the Markov chain is aperiodic.
+generally $Pr\left(\theta^{(t)}=0|\theta^{(0)}=0\right)>0$ for all $t>1$. \pause The \alert{period} $k$ of state 0 is 
+\[ \mbox{gcd}\{t: Pr\left(\theta^{(t)}=i|\theta^{(0)}=i\right)>0\}\pause =\mbox{gcd}\{2,3,4,5,\ldots \}\pause =1 \]
+\pause Thus state $0$ is aperiodic. \pause State $1$ is trivially aperiodic since $P(\theta^{(1)}=1|\theta^{(0)}=1)=1/2>0$. \pause Thus the Markov chain is aperiodic.
 
 \end{frame}
 
@@ -339,7 +341,7 @@ Every state in an irreducible Markov chain has the same period. Thus, in an irre
 \end{lemma}
 \pause
 \begin{theorem}
-A \alert{finite} state space, \alert{irreducible} Markov chain has a unique stationary distribution $\pi$. \pause If the chain is \alert{aperiodic}, \pause then $\lim_{t\to\infty} \pi^{(t)}=\pi$ for all $\pi^0$.
+A \alert{finite} state space, \alert{irreducible} Markov chain has a unique stationary distribution $\pi$. \pause If the chain is \alert{aperiodic}, \pause then $\lim_{t\to\infty} \pi^{(t)}=\pi$ for all $\pi^{(0)}$.
 \end{theorem}
 \end{frame}
 
@@ -371,11 +373,11 @@ So, the stationary distribution for $P$ is $\pi=(q,p)/(p+q)$.
 \begin{frame}[fragile]
 \frametitle{Calculate numerically}
 
-For finite state space and $P^{(t)} = P^{(t-1)} P$\pause, we have 
+For finite state space and $P^t = P^{t-1} P$\pause, we have 
 \[ \lim_{t\to\infty} \pi^{(t)} 
-= \lim_{t\to\infty} \pi^0 P^{(t)} \pause
-= \pi^0 \lim_{t\to\infty} P^{(t)} \pause 
-= \pi^0 \left[ \begin{array}{c} \pi \\ \vdots \\ \pi \end{array} \right] \pause 
+= \lim_{t\to\infty} \pi^{(0)} P^t \pause
+= \pi^{(0)} \lim_{t\to\infty} P^t \pause 
+= \pi^{(0)} \left[ \begin{array}{c} \pi \\ \vdots \\ \pi \end{array} \right] \pause 
 = \pi \pause  \]
 
 <<P, echo=TRUE>>=
@@ -403,10 +405,10 @@ Let
 Then, this Markov chain is 
 \begin{itemize}
 \item irreducible 
-\[ Pr(\theta^{|j-i|}=j|\theta^0=i) = 3^{-|j-i|}>0, \]
+\[ Pr\left(\theta^{(|j-i|)}=j|\theta^{(0)}=i\right) = 3^{-|j-i|}>0, \]
 \pause
 \item and aperiodic 
-\[ Pr(\theta^{(t)}=i|\theta^{(t-1)}=i)=1/3>0, \]
+\[ Pr\left(\theta^{(t)}=i|\theta^{(t-1)}=i\right)=1/3>0, \]
 \end{itemize}
 \pause
 but the Markov chain does not have a stationary distribution.
@@ -473,9 +475,9 @@ Thus a stationary distribution does not exist.
 
 \begin{definition}
 Let $T_i$ be the first return time to state $i$\pause, i.e.
-\[ T_i =\mbox{inf}\{t\ge 1: \theta^{(t)}=i|\theta^0=i\} \]
+\[ T_i =\mbox{inf}\{t\ge 1: \theta^{(t)}=i|\theta^{(0)}=i\} \]
 \pause 
-A state is \alert{recurrent} if $Pr(T_i<\infty)=1$ and is \alert{transient} otherwise. \pause A recurrent state is \alert{positive recurrent} if $E[T_i]<\infty$ and is \alert{null recurrent} otherwise. \pause A Markov chain is called \alert{positive recurrent} if all of its states are positive recurrent.
+A state is \alert{recurrent} if $Pr\left(T_i<\infty\right)=1$ and is \alert{transient} otherwise. \pause A recurrent state is \alert{positive recurrent} if $E[T_i]<\infty$ and is \alert{null recurrent} otherwise. \pause A Markov chain is called \alert{positive recurrent} if all of its states are positive recurrent.
 \end{definition}
 
 \pause
@@ -494,27 +496,29 @@ If state $i$ of a Markov chain is aperiodic, then $\lim_{t\to\infty} \pi^{(t)}_i
 
 
 
-\begin{frame}
-\frametitle{Recurrence example}
-
-Let
-\[ P = \bordermatrix{
-  & 0   & 1   & 2 \cr 
-0 & 1/3 & 1/3 & 1/3 \cr 
-1 & 1/3 & 1/3 & 1/3 \cr
-2 & 0 & 0 & 1 } \]
-
-\vspace{0.2in} \pause
-
-\begin{itemize}
-\item States 0 and 1 are transient. \pause
-\item State 2 is (positive) recurrent \pause and absorbing.
-\end{itemize}
-
-\vspace{0.2in} \pause
-
-\alert{If state 2 is positive recurrent, why aren't all the states positive recurrent?}
-\end{frame}
+% \begin{frame}
+% \frametitle{Recurrence example}
+% 
+% Let
+% \[ P = \bordermatrix{
+%   & A   & C   & G & T \cr 
+% A & 1/4 & 1/4 & 1/4 & 1/4 \cr 
+% C & 1/4 & 1/4 & 1/4 & 1/4 \cr
+% G & 1/4 & 1/4 & 1/4 & 1/4 \cr
+% T & 0 & 0 & 0 & 1
+% } \]
+% 
+% \vspace{0.2in} \pause
+% 
+% \begin{itemize}
+% \item States A, C, and G are transient. \pause
+% \item State T is (positive) recurrent \pause and absorbing.
+% \end{itemize}
+% 
+% \vspace{0.2in} \pause
+% 
+% \alert{If state 2 is positive recurrent, why aren't all the states positive recurrent?}
+% \end{frame}
 
 
 
