@@ -34,6 +34,7 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
   - [Twitter](https://twitter.com/jaradniemi "Jarad Niemi's twitter account")
   - [LinkedIn](http://www.linkedin.com/in/jaradniemi "Jarad Niemi's LinkedIn account")
   - [GitHub](https://github.com/jarad/ "Jarad Niemi's GitHub account")
+  - [OrcID](http://orcid.org/0000-0002-5079-158X)
 - Phone
   - (515) 294-8679
   - (515) 294-4040 (fax)
