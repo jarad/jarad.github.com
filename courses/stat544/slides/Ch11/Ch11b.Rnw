@@ -85,23 +85,32 @@ set.seed(1)
 
 
 \section{Two-component Gibbs sampling}
-\frame{\frametitle{Gibbs sampling}
-  Suppose our target distribution is $p(\theta|y)$ with $\theta=(\theta_1,\theta_2)$  \pause and we can sample from $p\left(\theta_1|\theta_2,y\right)$ and $p\left(\theta_2|\theta_1, y\right)$\pause. Beginning with an initial value $\left(\theta_1^0, \theta_2^0\right)$\pause, the \alert{Gibbs sampler} is 
+\begin{frame}
+\frametitle{Two component Gibbs sampler}
+  Suppose our target distribution is $p(\theta|y)$ with $\theta=(\theta_1,\theta_2)$  \pause and we can sample from $p\left(\theta_1|\theta_2,y\right)$ and $p\left(\theta_2|\theta_1, y\right)$\pause. Beginning with an initial value $\left(\theta_1^0, \theta_2^0\right)$\pause, an \alert{iteration} of the \alert{Gibbs sampler} involves
 	\begin{enumerate}[\quad1.]
-	\item sample $\theta_1^{t}\sim p\left(\theta_1|\theta_2^{t-1},y\right)$ \pause and then 
-	\item sample $\theta_2^{t}\sim p\left(\theta_2|\theta_1^{t},y\right)$. 
+	\item Sampling $\theta_1^{t}\sim p\left(\theta_1|\theta_2^{(t-1)},y\right)$. \pause 
+	\item Sampling $\theta_2^{t}\sim p\left(\theta_2|\theta_1^{t},y\right)$.
 	\end{enumerate}
+	
+	By the Law of Large Numbers, $(\theta_1^{(t)},\theta_2^{(t)})$ converges to samples from $p(\theta|y)$. 
 	
   \vspace{0.2in} \pause
   
   Thus in order to run a Gibbs sampler, we need to derive the \alert{full conditional} for $\theta_1$ and $\theta_2$, i.e. the distribution for $\theta_1$ and $\theta_2$ conditional on everything else.
-  
+
+\end{frame}
+
+
+
+
+
 % 	\vspace{0.2in} \pause
 % 	
 % 	Notes:
 % 	\begin{itemize}[<+->]
 %   \item The sequence $\{\theta^0,\theta^1,\ldots,\}$ is a Markov chain with transition distribution 
-%   \[ p(\theta^{t}|\theta^{t-1},y) = p(\theta_2^{t}|\theta_1^{t},y)p(\theta_1^{t}|\theta_2^{t-1},y). \]
+%   \[ p(\theta^{t}|\theta^{(t-1)},y) = p(\theta_2^{t}|\theta_1^{t},y)p(\theta_1^{t}|\theta_2^{(t-1)},y). \]
 % 	\item $\theta^{t} \stackrel{d}{\rightarrow} \theta$ where $\theta \sim p\left(\theta|y\right)$.  
 % %	\item 
 % %	\[  \frac{1}{J} \sum_{j=1}^J h\left(\theta^{t}\right) \rightarrow E_p[h(\theta)] = \int_{\Theta} h(\theta) f(\theta) d\theta  \]
@@ -149,7 +158,7 @@ set.seed(1)
 	\hline 
 	1 & \theta_1^1\sim N\left(\rho\theta_2^{0}, [1-\rho^2]\right) &\theta_2^1 \sim N\left(\rho\theta_1^{1}, [1-\rho^2]\right) \pause \\
 	& \vdots & \\
-	t & \theta_1^t\sim N\left(\rho\theta_2^{t-1}, [1-\rho^2]\right) &\theta_2^t \sim N\left(\rho\theta_1^{t}, [1-\rho^2]\right) \pause \\
+	t & \theta_1^{(t)}\sim N\left(\rho\theta_2^{(t-1)}, [1-\rho^2]\right) &\theta_2^{(t)} \sim N\left(\rho\theta_1^{t}, [1-\rho^2]\right) \pause \\
 	& \vdots &
 	\end{array} \]	
 }
@@ -171,7 +180,7 @@ x = gibbs_bivariate_normal(c(-3,3), n<-20, rho=rho<-0.9)
 @
 \end{frame}
 
-<<bivariate_normal, echo=FALSE>>=
+<<bivariate_normal, dependson='bivariate_normal_mcmc', echo=FALSE>>=
 bivariate_normal_animation = function(x, rho, ask=interactive()) {
   # Create contour plot
   n.out = 101
@@ -213,7 +222,7 @@ bivariate_normal_animation = function(x, rho, ask=interactive()) {
 @
 
 \begin{frame}[fragile]
-<<bivariate_normal_animation, fig.show='animate', echo=FALSE, cache=TRUE>>=
+<<bivariate_normal_animation, dependson=c('bivariate_normal_mcmc','bivariate_normal'), fig.show='animate', echo=FALSE, cache=TRUE>>=
 bivariate_normal_animation(x, rho)
 @
 \end{frame}
@@ -296,7 +305,7 @@ v'(s')^2 &= vs^2 + \sum_{i=1}^n (y_i-\mu)^2
 \begin{frame}[fragile]
 \frametitle{R code for Gibbs sampler}
 
-<<echo=TRUE>>=
+<<data, echo=TRUE>>=
 # Data and prior
 y = rnorm(10)
 m = 0; C = 10
@@ -325,7 +334,7 @@ vs2 = v*s^2
 \begin{frame}[fragile]
 \frametitle{R code for Gibbs sampler}
 
-<<echo=TRUE>>=
+<<gibbs, dependson='data', echo=TRUE>>=
 # Gibbs sampler
 for (i in 1:n_iter) {
   # Sample mu
@@ -351,7 +360,7 @@ for (i in 1:n_iter) {
 \begin{frame}[fragile]
 \frametitle{Posteriors}
 
-<<fig.width=15, warning=FALSE>>=
+<<gibbs_posteriors, dependson='gibbs', fig.width=15, warning=FALSE>>=
 d = data.frame(mu=mu_keep, sigma=sigma_keep, t = 1:length(mu_keep))
 m = melt(d, id.vars='t', variable.name='parameter')
 ggplot(m, aes(x=t, y=value)) + 
@@ -368,15 +377,20 @@ ggplot(m, aes(x=value, y=..density..)) +
 
 \section{$K$-component Gibbs sampler}
 \frame{\frametitle{$K$-component Gibbs sampler}
-	Suppose $\theta = (\theta_1,\ldots,\theta_K)$\pause, then the following Gibbs sampler can be constructed \pause
+	Suppose $\theta = (\theta_1,\ldots,\theta_K)$\pause, then an iteration of a $K$-component Gibbs sampler is  \pause
 	\[ \begin{array}{rl}
-	\theta_1^{t} &\sim p\left(\theta_1|\theta_2^{t-1},\ldots, \theta_K^{t-1},y\right) \pause \\ \\
-	\theta_2^{t} &\sim p\left(\theta_2|\theta_1^{t}, \theta_3^{t-1},\ldots, \theta_K^{t-1},y\right) \pause\\
+	\theta_1^{t} &\sim p\left(\theta_1|\theta_2^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \pause \\ \\
+	\theta_2^{t} &\sim p\left(\theta_2|\theta_1^{t}, \theta_3^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \pause\\
 	&\vdots \\
-	\theta_k^{t} &\sim p\left(\theta_k|\theta_1^{t}\ldots,\theta_{k-1}^{t}, \theta_{k+1}^{t-1},\ldots, \theta_K^{t-1},y\right) \\
+	\theta_k^{t} &\sim p\left(\theta_k|\theta_1^{t}\ldots,\theta_{k-1}^{t}, \theta_{k+1}^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \\
 	&\vdots \pause\\
 	\theta_K^{t} &\sim p\left(\theta_K|\theta_1^{t},\ldots, \theta_{K-1}^{t},y\right) \pause
 	\end{array} \]
+	
+	By the Law of Large Numbers, $(\theta_1^{(t)},\theta_2^{(t)})$ converges to samples from $p(\theta|y)$. 
+	
+	\vspace{0.2in} \pause
+	
 	The distributions above are called the \alert{full conditional distributions}. \pause If some of the $\theta_k$ are vectors, then this is called a \alert{block} Gibbs sampler.
 }
 
@@ -449,7 +463,7 @@ length(unique(x[,2]))/length(x[,2]) # acceptance rate
 \end{frame}
 
 \begin{frame}[fragile]
-<<gibbs_and_metropolis_animation, fig.show='animate', echo=FALSE, warning=FALSE>>=
+<<gibbs_and_metropolis_animation, dependson='gibbs_and_metropolis_mcmc', fig.show='animate', echo=FALSE, warning=FALSE>>=
 bivariate_normal_animation(x, rho)
 @
 \end{frame}
@@ -462,14 +476,14 @@ Let
 \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_i,\sigma^2), \qquad \mu_i \stackrel{ind}{\sim} N(\eta,\tau^2)\]
 \pause
 for $i=1,\ldots,\mathrm{I}$, $j=1,\ldots,n_i$, $n = \sum_{i=1}^\mathrm{I} n_i$ and \pause prior 
-\[ p(\eta,\tau^2,\sigma) \propto Ca^+(\tau^2; 0, b_\tau) Ca^+(\sigma^2; 0, b_\sigma). \]
+\[ p(\eta,\tau,\sigma) \propto Ca^+(\tau; 0, b_\tau) Ca^+(\sigma; 0, b_\sigma). \]
 
 \vspace{0.2in} \pause
 
 The full conditionals are \pause exactly the same except \pause
 \[ \begin{array}{rl}
-p(\sigma^2|\mu,\eta,\tau^2,y) \pause &\propto IG(n/2, \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2)Ca^+(0,b_\sigma) \pause \\
-p(\tau^2|\mu,\eta,\sigma^2,y) \pause &\propto IG(\mathrm{I}/2, \sum_{i=1}^\mathrm{I} (\mu_i-\eta)^2/2) Ca^+(0,b_\tau)
+p(\sigma|\mu,\eta,\tau^2,y) \pause &\propto IG(\sigma^2;n/2, \sum_{i=1}^\mathrm{I} \sum_{j=1}^{n_j} (y_{ij}-\mu_i)^2/2)Ca^+(\sigma;0,b_\sigma) \pause \\
+p(\tau^2|\mu,\eta,\sigma^2,y) \pause &\propto IG(\tau^2;\mathrm{I}/2, \sum_{i=1}^\mathrm{I} (\mu_i-\eta)^2/2) Ca^+(\tau;0,b_\tau)
 \end{array} \]
 \pause 
 where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\mu} = \sum_{i=1}^\mathrm{I} \mu_i$. 
@@ -481,11 +495,11 @@ where $n_i\overline{y}_i = \sum_{j=1}^{n_i} y_{ij}$ and $\mathrm{I}\,\overline{\
 \begin{frame}
 \frametitle{Hierarchical normal model}
 
-To sample from $p(\theta|y) \propto IG(a,b) Ca^+(0,b_\theta)$, we have a variety of possibilities. \pause Here are three:
+To sample from $p(\tau|y) \propto IG(\tau^2;a,b) Ca^+(0,b_\tau)$ (or equivalently $p(\sigma|y)$), we have a variety of possibilities. \pause Here are three:
 \begin{enumerate}[<+->]
-\item Rejection sampling with $\theta^*\sim IG(a,b)$ and thus $M^*_{opt} = Ca^+(0;0,b_\theta)$ and the acceptance probability is $Ca^+(\theta^*;0,b_\theta) / M^*_{opt}$.
-\item Independence Metropolis-Hastings with $\theta^*\sim IG(a,b)$ and thus the acceptance probability is $Ca^+(\theta^*;0,b_\theta)/Ca^+(\theta^t;0,b_\theta)$.
-\item Random-walk Metroplis-Hastings with $\theta^* \sim g(\cdot|\theta^t)$ and acceptance probability is $q(\theta^*|y)/q(\theta^t|y)$. 
+\item Rejection sampling with $(\tau^*)^2\sim IG(a,b)$ and thus $M^*_{opt} = Ca^+(0;0,b_\tau)$ and the acceptance probability is $Ca^+(\tau^*;0,b_\tau) / M^*_{opt}$.
+\item Independence Metropolis-Hastings with $(\tau^*)^2\sim IG(a,b)$ and thus the acceptance probability is $Ca^+(\tau^*;0,b_\tau)/Ca^+(\tau^{(t)};0,b_\tau)$.
+\item Random-walk Metroplis-Hastings with $\tau^* \sim g(\cdot|\tau^{(t)})$ and acceptance probability is $q(\tau^*|y)/q(\tau^{(t)}|y)$. 
 \end{enumerate}
 
 \end{frame}
@@ -506,7 +520,7 @@ Y_i&\stackrel{ind}{\sim} Bin(n_i,\theta_i) \pause \\
 p(\alpha,\beta) &\propto (\alpha+\beta)^{-5/2} \pause
 \end{array} \]
 
-We will use a Gibbs sampler to sample from $\theta_1,\ldots,\theta_n,\alpha,\beta$\pause, so we need to derive the following conditional distributions:\pause
+We will use a dependson to sample from $\theta_1,\ldots,\theta_n,\alpha,\beta$\pause, so we need to derive the following conditional distributions:\pause
 \begin{itemize}
 \item $\theta_i|\theta_1,\ldots,\theta_{i-1},\theta_{i+1},\ldots,\theta_n,\alpha,\beta,y$ \pause
 \item $\alpha|\theta_1,\ldots,\theta_n,\beta,y$ \pause 
@@ -604,7 +618,7 @@ log_fc_beta = function(theta, alpha, beta) {
 
 
 \begin{frame}[fragile]
-<<mcmc, echo=TRUE>>=
+<<mcmc, dependson='full_conditionals', echo=TRUE>>=
 mcmc = function(n_sims, dat, inits, tune) {
   n_groups = nrow(dat)
   alpha = inits$alpha
@@ -645,8 +659,8 @@ mcmc = function(n_sims, dat, inits, tune) {
  
  
 \begin{frame}[fragile]
-<<run_mcmc, echo=TRUE>>=
-d = read.csv("Ch05a-dawkins.csv")
+<<run_mcmc, dependson='mcmc', echo=TRUE>>=
+d = read.csv("../Ch05/Ch05a-dawkins.csv")
 dat=data.frame(y=d$made, n=d$attempt)
 inits = list(alpha=1, beta=1)
 
@@ -654,7 +668,7 @@ inits = list(alpha=1, beta=1)
 r = mcmc(2000, dat=dat, inits=inits, tune=list(alpha=1,beta=1))
 @
 
-<<mcmc_summary, fig.width=10>>=
+<<mcmc_summary, dependson='run_mcmc', fig.width=10>>=
 r_subset = r[r$parameter %in% c("alpha","beta"),]
 ddply(r_subset, .(parameter), summarize, 
       acceptance_rate = length(unique(value))/max(iteration))
@@ -706,8 +720,8 @@ where $u$ is an \alert{auxiliary variable}.
 
 \alert{Slice sampling} performs the following Gibbs sampler: \pause 
 \begin{enumerate}
-\item $u^t|\theta^{t-1},y \sim \mbox{Unif}\{u:0<u<p(\theta^{t-1}|y)\}$ \pause and
-\item $\theta^t|u^t,y \sim \mbox{Unif}\{\theta: u^t<p(\theta|y) \}$.
+\item $u^{(t)}|\theta^{(t-1)},y \sim \mbox{Unif}\{u:0<u<p(\theta^{(t-1)}|y)\}$ \pause and
+\item $\theta^{(t)}|u^{(t)},y \sim \mbox{Unif}\{\theta: u^{(t)}<p(\theta|y) \}$.
 \end{enumerate}
 \end{frame}
 
@@ -758,7 +772,7 @@ res = slice(10, 0.1, dexp, A)
 
 \begin{frame}[fragile]
 \frametitle{}
-<<slice_sampling_plot, fig.show='animate', warning=FALSE, echo=FALSE>>=
+<<slice_sampling_plot, dependson='slice_sampler', fig.show='animate', warning=FALSE, echo=FALSE>>=
 slice_sampling_animation = function(theta, u, ask=interactive()) {
   x = cbind(theta,u)
   for (i in 2:nrow(x)) {
@@ -798,7 +812,7 @@ with(res, slice_sampling_animation(theta,u))
 
 
 \begin{frame}[fragile]
-<<slice_sampling_histogram>>=
+<<slice_sampling_histogram, dependson='slice_sampler'>>=
 hist(slice(1e4, 0.1, dexp, A)$theta, freq=F, 100, main="Slice sampling approximation to Exp(1) distribution", xlab=expression(theta))
 curve(dexp, add=TRUE, col='red')
 @
