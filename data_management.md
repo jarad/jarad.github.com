@@ -7,7 +7,7 @@ description: ""
 
 # Data Management
 
-This page is devoted to helping scientists I interact with organize their data for reproducibility and ease of analysis. This page is primarily concerned with the creation and storage of [raw data](https://en.wikipedia.org/wiki/Raw_data) and not with the creationg or storage of derived data that will typically be used for data analysis. To construct derived data, you should be using a script in a software problem, e.g. [R](http://r-project.org/).
+This page is devoted to helping scientists I interact with organize their data for reproducibility and ease of analysis. This page is primarily concerned with the creation and storage of [raw data](https://en.wikipedia.org/wiki/Raw_data) and not with the creation or storage of tidy data that will typically be used for data analysis. To construct tidy data, you should be using a script in a software problem, e.g. [R](http://r-project.org/).
 
 To construct this page, I used many sources including 
 
@@ -55,7 +55,10 @@ The main goal with these tips are to simplify the raw data creation process in o
 
 - Include a single header row that describes the content in that column
 
-    Use informative variable names as the first row in the data file. 
+    Use informative variable names as the first row in the data file.  
+    These names should have no spaces, use an underscore instead. 
+    I suggest always using lowercase to ease future analyses.
+
     Multiple files with similar content should have the **exact** same header rows. 
 
 - Provide an identification to the original non-digital data
@@ -70,17 +73,16 @@ The main goal with these tips are to simplify the raw data creation process in o
 
 - Record full dates using standardized formats
 
-    In R, the only two Date formats that are recognized are "%Y-%m-%d" and "%Y/%m/%d". 
+    In R, the only two Date formats that are recognized (by default) are "%Y-%m-%d" and "%Y/%m/%d". 
+    I particularly like year followed by month followed by day because when alphabetical listing is equivalent to chronological listing.
 
-
-
-## What is derived data?
+## What is tidy data?
 
 For the purpose of this page,
 
-> derived data is any combination, summarization, or reshaping of your raw data.
+> tidy data is any combination, summarization, or reshaping of your raw data.
 
-Unlike the relatively strict ``rules'' for raw data, derived data can be any format you want. 
+Unlike the relatively strict ``rules'' for raw data, tidy data can be any format you want. 
 I know many individuals use Excel to produce summary statistics, figures, and tables.
 Although this is fine, I suggest a scripting language, e.g. R or SAS, that will allow you to easily recreate those statistics, figures, and tables if errors in the raw data are found. 
 
