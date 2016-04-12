@@ -129,7 +129,7 @@ and in classical regression analysis, we have
 For the error variance, in a default Bayesian regression, we have
   \[ \sigma^2|y \sim \mbox{Inv-}\chi^2(n-k,s^2) \]
 and in classical regression analysis, we have
-  \[ 1/s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2). \]
+  \[ s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2). \]
   
 \vspace{0.2in} \pause
 
@@ -229,7 +229,7 @@ Based on prior experience the prior $\beta_1\sim N(0,1)$ might be reasonable.
 \begin{frame}[fragile]
 \frametitle{Subjective Bayesian regression}
 <<subjective, echo=TRUE, warning=FALSE>>=
-m = arm::bayesglm(chirps~temp, 
+m = arm::bayesglm(chirps~temp,   # Default prior for \beta_0 is N(0,Inf)
                   prior.mean=0,  # E[\beta_1]
                   prior.scale=1, # V[\beta_1]
                   prior.df=Inf)  # normal prior
@@ -257,7 +257,7 @@ confint(tmp)
 
 \begin{frame}[fragile]
 \frametitle{Subjective vs Default}
-<<t-distribution_fit, message=FALSE, fig.width=8>>=
+<<t-distribution_fit, dependson='chirps_data', message=FALSE, fig.width=8>>=
 qplot(temp, chirps) +
   geom_smooth(method='lm',formula=y~x, se=FALSE, color='red', linetype=2, size=2) + 
   geom_abline(intercept=m$coefficients[1], slope=m$coefficients[2], color='blue', linetype=3, size=2)
@@ -267,7 +267,7 @@ qplot(temp, chirps) +
 
 \begin{frame}[fragile]
 \frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
-<<shrinkage, fig.width=8>>=
+<<shrinkage, dependson='chirps_data', fig.width=8>>=
 d = ddply(data.frame(V=10^seq(-2,2,by=0.2)), .(V), function(x) {
   m = bayesglm(chirps~temp, prior.mean=0, prior.scale=x$V, prior.df=Inf)
   data.frame(beta0=m$coefficients[1], beta1=m$coefficients[2])
@@ -282,7 +282,7 @@ ggplot(tmp, aes(V, estimate)) +
 
 \begin{frame}[fragile]
 \frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
-<<shrinkage2>>=
+<<shrinkage2, dependson=c('shrinkage','chirps_data')>>=
 ggplot(data.frame(chirps=chirps, temperature=temp), aes(temp, chirps)) + 
   geom_point() + 
   geom_abline(data=d, aes(intercept=beta0, slope=beta1, color=V)) + 
@@ -310,7 +310,7 @@ ggplot(data.frame(chirps=chirps, temperature=temp), aes(temp, chirps)) +
   \[ \begin{array}{rl}
   p(\gamma|y) &= \int \int p(\gamma|\beta,\sigma^2,y) p(\beta|\sigma^2,y) p(\sigma^2|y) d\beta d\sigma^2 \pause \\
   &= \int \int p(\gamma|\beta,\sigma^2) p(\beta|\sigma^2,y) p(\sigma^2|y) d\beta d\sigma^2 \pause \\
-  &= \int \int \delta(\gamma-f(\beta,\sigma^2)) p(\beta|\sigma^2,y) p(\sigma^2|y) d\beta d\sigma^2 \\
+  &= \int \int \I(\gamma=f(\beta,\sigma^2)) p(\beta|\sigma^2,y) p(\sigma^2|y) d\beta d\sigma^2 \\
   \end{array} \]
   \pause by adding the step  
   \begin{enumerate}
@@ -526,7 +526,7 @@ Assuming this quadratic curve is correct, the maximum occurs at $\gamma=-\beta_1
 <<potato_max, fig.width=8, echo=TRUE>>=
 m = LearnBayes::blinreg(d$yield, cbind(1,d$N.rate, d$N.rate^2), 1e4)
 beta1 = m$beta[,2]; beta2 = m$beta[,3]; gamma = -beta1/(2*beta2)
-quantile(gamma, c(.025,.5,.975))
+round(quantile(gamma, c(.025,.5,.975)))
 @
 This does not require any data asymptotics or approximations, e.g. delta method.
 \end{frame}
