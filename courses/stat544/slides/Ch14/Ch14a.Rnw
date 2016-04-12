@@ -93,7 +93,7 @@ set.seed(2)
   \vspace{0.2in} \pause
   
   What is the sampling distribution for $s^2$? 
-  \[ \frac{[n-k]s^2}{\sigma^2} \sim \chi^2_{n-k} \pause \implies 1/s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2) \]
+  \[ \frac{[n-k]s^2}{\sigma^2} \sim \chi^2_{n-k} \pause \implies \frac{1}{s^2} \sim \mbox{Inv-}\chi^2(n-k,\sigma^2) \]
 
 \end{frame}
 
@@ -129,7 +129,7 @@ and in classical regression analysis, we have
 For the error variance, in a default Bayesian regression, we have
   \[ \sigma^2|y \sim \mbox{Inv-}\chi^2(n-k,s^2) \]
 and in classical regression analysis, we have
-  \[ s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2). \]
+  \[ 1/s^2 \sim \mbox{Inv-}\chi^2(n-k,\sigma^2). \]
   
 \vspace{0.2in} \pause
 
@@ -320,80 +320,6 @@ ggplot(data.frame(chirps=chirps, temperature=temp), aes(temp, chirps)) +
 \end{frame}
 
 
-\frame{\frametitle{Computation}
-  For numerical stability and efficiency, the QR decomposition can be used to calculate posterior quantities. \pause 
-  \begin{definition}
-	For an $n\times k$ matrix $X$, a \alert{QR decomposition} is $X = QR$ for an $n\times k$ matrix $Q$ with orthonormal columns and a $k\times k$ upper triangular matrix $R$. 
-	\end{definition}
-	
-	\pause The quantities of interest are 
-	\[ \begin{array}{rl}
-	V_\beta &= (X'X)^{-1} \pause = ([QR]'QR)^{-1} \pause = (R'Q'QR)^{-1} \pause = (R'R)^{-1} \pause \\
-	&= R^{-1}[R']^{-1} \pause \\
-	\\
-	\hat{\beta} &= (X'X)^{-1}X'y \pause = R^{-1}[R']^{-1}R'Q'y \pause = R^{-1}Q'y \pause \\
-	R\hat{\beta} &= Q'y
-	\end{array} \]
-	\pause The last equation is useful because R is upper triangular and therefore the system of linear equations can be solved without requiring the inverse of R.
-}
-
-
-\begin{frame}[fragile]
-\frametitle{Cricket chirps}
-<<regression, echo=TRUE>>=
-library(MASS)
-X = cbind(1,temp)
-n = nrow(X)
-k = ncol(X)
-y = matrix(chirps,n,1)
-
-qr = qr(X); Q = qr.Q(qr); R = qr.R(qr)
-stopifnot(all.equal(X, Q%*%R),  
-          all.equal(rep(1,k), colSums(Q^2)),
-          all.equal(diag(nrow=k), t(Q)%*%Q))
-
-# Check for posterior propriety
-stopifnot(n>k,qr$rank==k) 
-
-# Calculate posterior hyperparameters
-Rinv = solve(qr.R(qr))
-vbeta = Rinv%*%t(Rinv)
-betahat = qr.solve(qr,y)
-df = n-k
-e = qr.resid(qr,y)
-s2 = sum(e^2)/df
-
-# Simulate from the posterior
-n.sims = 10000
-sigma = sqrt(1/rgamma(n.sims, df/2, df*s2/2))
-beta = matrix(betahat, n.sims, k, byrow=T) + sigma * mvrnorm(n.sims, rep(0,k), vbeta)
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Cricket chirps}
-<<posterior_simulations, message=FALSE>>=
-ggplot(melt(data.frame(sigma=sigma, intercept=beta[,1], chirps=beta[,2])), 
-       aes(x=value, y=..density..)) +
-  geom_histogram() + 
-  facet_wrap(~variable, scales='free')
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Monte Carlo error}
-<<quantiles, echo=TRUE>>=
-# sigma^2
-sqrt(df*s2/qchisq(c(.975,.025),df)) # Exact
-quantile(sigma,c(.025,.975)) # MC
-
-# beta
-confint(lm(chirps~temp)) # Exact
-t(apply(beta, 2, quantile, probs=c(.025,.975))) # MC 
-@
-\end{frame}
-
 <<potato_data>>=
 d = structure(list(site = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 
 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 
@@ -547,6 +473,83 @@ This does not require any data asymptotics or approximations, e.g. delta method.
 \end{itemize}
 
 \end{frame}
+
+
+
+\frame{\frametitle{Computation}
+  For numerical stability and efficiency, the QR decomposition can be used to calculate posterior quantities. \pause 
+  \begin{definition}
+  For an $n\times k$ matrix $X$, a \alert{QR decomposition} is $X = QR$ for an $n\times k$ matrix $Q$ with orthonormal columns and a $k\times k$ upper triangular matrix $R$. 
+	\end{definition}
+	
+	\pause The quantities of interest are 
+	\[ \begin{array}{rl}
+	V_\beta &= (X'X)^{-1} \pause = ([QR]'QR)^{-1} \pause = (R'Q'QR)^{-1} \pause = (R'R)^{-1} \pause \\
+	&= R^{-1}[R']^{-1} \pause \\
+	\\
+	\hat{\beta} &= (X'X)^{-1}X'y \pause = R^{-1}[R']^{-1}R'Q'y \pause = R^{-1}Q'y \pause \\
+	R\hat{\beta} &= Q'y
+	\end{array} \]
+	\pause The last equation is useful because R is upper triangular and therefore the system of linear equations can be solved without requiring the inverse of R.
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Cricket chirps}
+<<regression, echo=TRUE>>=
+library(MASS)
+X = cbind(1,temp)
+n = nrow(X)
+k = ncol(X)
+y = matrix(chirps,n,1)
+
+qr = qr(X); Q = qr.Q(qr); R = qr.R(qr)
+stopifnot(all.equal(X, Q%*%R),  
+          all.equal(rep(1,k), colSums(Q^2)),
+          all.equal(diag(nrow=k), t(Q)%*%Q))
+
+# Check for posterior propriety
+stopifnot(n>k,qr$rank==k) 
+
+# Calculate posterior hyperparameters
+Rinv = solve(qr.R(qr))
+vbeta = Rinv%*%t(Rinv)
+betahat = qr.solve(qr,y)
+df = n-k
+e = qr.resid(qr,y)
+s2 = sum(e^2)/df
+
+# Simulate from the posterior
+n.sims = 10000
+sigma = sqrt(1/rgamma(n.sims, df/2, df*s2/2))
+beta = matrix(betahat, n.sims, k, byrow=T) + sigma * mvrnorm(n.sims, rep(0,k), vbeta)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Cricket chirps}
+<<posterior_simulations, message=FALSE>>=
+ggplot(melt(data.frame(sigma=sigma, intercept=beta[,1], chirps=beta[,2])), 
+       aes(x=value, y=..density..)) +
+  geom_histogram() + 
+  facet_wrap(~variable, scales='free')
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Monte Carlo error}
+<<quantiles, echo=TRUE>>=
+# sigma^2
+sqrt(df*s2/qchisq(c(.975,.025),df)) # Exact
+quantile(sigma,c(.025,.975)) # MC
+
+# beta
+confint(lm(chirps~temp)) # Exact
+t(apply(beta, 2, quantile, probs=c(.025,.975))) # MC 
+@
+\end{frame}
+
 
 
 
