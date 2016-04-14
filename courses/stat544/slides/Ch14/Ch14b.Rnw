@@ -97,8 +97,8 @@ Suppose
 \vspace{0.2in} \pause
 
 This looks like -2 times the log posterior when using independent normal priors centered at zero with a common variance ($c_0$) for $\beta$: \pause 
-\[ -2\log p(\beta,\sigma|y) = C + \frac{1}{\sigma^2} (y-X\beta)'(y-X\beta) + \frac{1}{B_0} \beta'\beta  \]
-where $g=\sigma^2/B_0$.
+\[ -2\log p(\beta,\sigma|y) = C + \frac{1}{\sigma^2} (y-X\beta)'(y-X\beta) + \frac{1}{c_0} \beta'\beta  \]
+where $g=\sigma^2/c_0$.
 
 \end{frame}
 
@@ -141,14 +141,14 @@ summary(lm(y~X))
 
 <<echo=TRUE>>=
 library(MASS)
-lambdas = seq(0,0.1, .0001)
-m = lm.ridge(GNP.deflator ~ ., longley, lambda = lambdas) 
+gs = seq(0,0.1, .0001)
+m = lm.ridge(GNP.deflator ~ ., longley, lambda = gs) 
 
 # Choose the ridge penalty
 select(m)
 
 # Estimates
-est = data.frame(lambda = lambdas, t(m$coef))
+est = data.frame(lambda = gs, t(m$coef))
 est[round(est$lambda,4) %in% c(.0068,.0053,.0057),]
 @
 \end{frame}
@@ -225,9 +225,9 @@ summary(m)
 
 
 \begin{frame}
-\frametitle{Bayes Factors' for regression model comparison}
+\frametitle{Bayes Factors for regression model comparison}
 
-Consider two models with design matrices $X^1$and $X^2$ (not including an intercept) and corresponding dimensions $(n,p_1)$ and $(n,p_2)$.  \pause Zellner's g-prior provides a relatively simple way to construct default (but not improper) priors for model comparison. \pause Formally, we compare
+Consider two models with design matrices $X^1$and $X^2$ (not including an intercept) and corresponding dimensions $(n,p_1)$ and $(n,p_2)$.  \pause Zellner's g-prior provides a relatively simple way to construct default  priors for model comparison. \pause Formally, we compare
 
 \[ \begin{array}{rl}
 y &\sim N(\alpha 1_n + X^1 \beta^1, \sigma^2 \I) \\
@@ -246,13 +246,13 @@ p(\alpha,\sigma^2) &\propto 1/\sigma^2
 
 
 \begin{frame}[fragile]
-\frametitle{Bayes Factors' for regression model comparison}
+\frametitle{Bayes Factors for regression model comparison}
 
 The Bayes Factor for comparing these two models is 
 {\tiny
 \[ B_{12}(y) = \frac{(g_1+1)^{-p_1/2}\left[ (n-p_1-1)s_1^2 +\left(\hat{\beta}_1-b_1\right)'(X^1)'X^1\left(\hat{\beta}_1-b_1\right)/(g_1+1)\right]^{-(n-1)/2}}{(g_2+1)^{-p_2/2}\left[ (n-p_2-1)s_2^2 +\left(\hat{\beta}_2-b_2\right)'(X^2)'X^2\left(\hat{\beta}_2-b_2\right)/(g_2+1)\right]^{-(n-1)/2}} \]
 }
-Now, we can set $g_1=g_2$ and calculate Bayes Factors'. \pause 
+Now, we can set $g_1=g_2$ and calculate Bayes Factors. \pause 
 
 <<echo=TRUE, warning=FALSE, message=FALSE>>=
 library(bayess)
