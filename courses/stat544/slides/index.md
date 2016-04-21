@@ -33,13 +33,13 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 ||Markov chains|[Ch11c.Rnw](Ch11/Ch11c.Rnw)|[Ch11c.pdf](Ch11/Ch11c.pdf)|
 ||Markov chain Monte Carlo|[Ch11d.Rnw](Ch11/Ch11d.Rnw)|[Ch11d.pdf](Ch11/Ch11d.pdf)|
 |14|Bayesian regression|[Ch14a.Rnw](Ch14/Ch14a.Rnw)|[Ch14a.pdf](Ch14/Ch14a.pdf)|
-|14|Bayesian regression (cont.)|[Ch14b.Rnw](Ch14/Ch14b.Rnw)|[Ch14a.pdf](Ch14/Ch14b.pdf)|
+||Bayesian regression (cont.)|[Ch14b.Rnw](Ch14/Ch14b.Rnw)|[Ch14a.pdf](Ch14/Ch14b.pdf)|
+|15|Hierarchical linear models|[Ch15a.Rnw](Ch15/Ch15a.Rnw)|[Ch15a.pdf](Ch15/Ch15a.pdf)|
+||Hierarchical linear models (cont.)|[Ch15b.Rnw](Ch15/Ch15b.Rnw)|[Ch15b.pdf](Ch15/Ch15b.pdf)|
 
   
 Below are to be organized:
   
-- [Chapter 15a](Ch15/Ch15a.Rnw)
-- [Chapter 15b](Ch15/Ch15b.Rnw)
 - [Chapter 16a](Ch16/Ch16a.Rnw)
 - [Chapter 16b](Ch16/Ch16b.Rnw)
 
