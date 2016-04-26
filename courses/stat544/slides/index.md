@@ -36,11 +36,11 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 ||Bayesian regression (cont.)|[Ch14b.Rnw](Ch14/Ch14b.Rnw)|[Ch14a.pdf](Ch14/Ch14b.pdf)|
 |15|Hierarchical linear models|[Ch15a.Rnw](Ch15/Ch15a.Rnw)|[Ch15a.pdf](Ch15/Ch15a.pdf)|
 ||Hierarchical linear models (cont.)|[Ch15b.Rnw](Ch15/Ch15b.Rnw)|[Ch15b.pdf](Ch15/Ch15b.pdf)|
+|16|Hierarchical linear models|[Ch16a.Rnw](Ch16/Ch16a.Rnw)|[Ch16a.pdf](Ch16/Ch16a.pdf)|
 
   
 Below are to be organized:
   
-- [Chapter 16a](Ch16/Ch16a.Rnw)
 - [Chapter 16b](Ch16/Ch16b.Rnw)
 
 
