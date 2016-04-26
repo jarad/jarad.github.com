@@ -11,7 +11,7 @@ From [this post](http://andrewgelman.com/2016/04/23/what-is-the-true-prior-distr
 
 # My prior
 
-My current working definition (which is admittedly poor) is a prior is the additional assumption a Bayesian requires to perform inference that a non-Bayesian would not. 
+My current working definition (which is admittedly poor) is ``a prior is the additional assumption a Bayesian requires to perform inference that a non-Bayesian does not require.'' 
 The main point here is that a hierarchical distribution, e.g. a distribution for a random effect, is NOT a prior but rather part of the model assumptions. 
 If the distribution is normal with zero mean, then part of the prior is the distributional assumption given to the variance in the model. 
 
