@@ -6,6 +6,8 @@
 \title{Mixed effect probit regression}
 \subtitle{Genotypic fungal resistance}
 
+\newcommand{\Zaug}{\zeta}
+
 \begin{document}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
@@ -25,12 +27,7 @@ library(reshape2)
 library(plyr)
 library(dplyr)
 library(ggplot2)
-library(xtable)
-library(rstan)
-library(mcmcse)
-library(coda)
 library(lme4)
-library(BayesLogit)
 library(MASS)
 @
 
@@ -137,14 +134,14 @@ p(\beta|y) &\propto p(y|\beta)p(\beta) \\
 \frametitle{Data augmentation}
 An alternative construction of the model is 
 \[ \begin{array}{rl}
-Y_i &= \I(Z_i>0) \pause \\
-Z_i &\stackrel{ind}{\sim} N(X_i'\beta,1)
+Y_i &= \I(\Zaug_i>0) \pause \\
+\Zaug_i &\stackrel{ind}{\sim} N(X_i'\beta,1)
 \end{array} \]
 \pause Note that 
 \[ \begin{array}{rll}
 \theta_i 
 &= P(Y_i=1) \pause\\
-&= P(Z_i>0) \pause\\
+&= P(\Zaug_i>0) \pause\\
 &= P(X_i'\beta+\epsilon>0) & \epsilon \sim N(0,1) \pause\\
 &= P(\epsilon>-X_i'\beta) \pause\\
 &= P(\epsilon<X_i'\beta) & \mbox{symmetry of standard normal} \pause\\
@@ -160,17 +157,17 @@ Z_i &\stackrel{ind}{\sim} N(X_i'\beta,1)
 \frametitle{Posterior distribution}
 
 Now, the likelihood is 
-\[ p(y|Z) \propto \prod_{i=1}^n \left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] \]
+\[ p(y|\Zaug) \propto \prod_{i=1}^n \left[\I(\Zaug_i>0)\I(y_i=1)+\I(\Zaug_i\le 0)\I(y_i=0)\right] \]
 \pause and 
-\[ Z_i \stackrel{ind}{\sim} N(X_i'\beta,1) \qquad \beta\sim N(b,B) \]
+\[ \Zaug_i \stackrel{ind}{\sim} N(X_i'\beta,1) \qquad \beta\sim N(b,B) \]
 Therefore the \emph{complete data likelihood} is
-\[ p(y,Z|\beta) \propto \prod_{i=1}^n N(Z_i|X_i'\beta,1)\left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] \]
+\[ p(y,\Zaug|\beta) \propto \prod_{i=1}^n N(\Zaug_i|X_i'\beta,1)\left[\I(\Zaug_i>0)\I(y_i=1)+\I(\Zaug_i\le 0)\I(y_i=0)\right] \]
 
 \pause 
 
 Thus the posterior distribution is 
-\[ p(\beta,Z|y) \propto p(y|Z,\beta) p(Z,\beta) \pause = p(y|Z) p(Z|\beta) p(\beta) \pause = p(y,Z|\beta)p(\beta) \]
-\pause and we will derive the full conditionals for $p(\beta|Z,y)$ and $p(Z|\beta,y)$. 
+\[ p(\beta,\Zaug|y) \propto p(y|\Zaug,\beta) p(\Zaug,\beta) \pause = p(y|\Zaug) p(\Zaug|\beta) p(\beta) \pause = p(y,\Zaug|\beta)p(\beta) \]
+\pause and we will derive the full conditionals for $p(\beta|\Zaug,y)$ and $p(\Zaug|\beta,y)$. 
 \end{frame}
 
 
@@ -179,34 +176,34 @@ Thus the posterior distribution is
 
 The full conditional for $\beta$ is 
 \[ \begin{array}{rl}
-p(\beta|\ldots) \propto& p(y|Z) p(Z|\beta) p(\beta) \pause \\
-\propto& p(Z|\beta)p(\beta) \\
-=& \left[\prod_{i=1}^n N(Z_i|X_i'\beta,1)\right] N(\beta|b,B) \pause \\
-=& N(Z|X\beta,\I) N(\beta|b,B)  
+p(\beta|\ldots) \propto& p(y|\Zaug) p(\Zaug|\beta) p(\beta) \pause \\
+\propto& p(\Zaug|\beta)p(\beta) \\
+=& \left[\prod_{i=1}^n N(\Zaug_i|X_i'\beta,1)\right] N(\beta|b,B) \pause \\
+=& N(\Zaug|X\beta,\I) N(\beta|b,B)  
 \end{array} \]
 \pause and thus 
 $\beta|\ldots \sim N(\hat{\beta},\hat{\mySigma}_\beta)$ \pause with 
 
 \[ \begin{array}{rl}
 \hat{\mySigma}_\beta &= [B^{-1} + X^\top X]^{-1} \pause \\
-\hat{\beta} &= \hat{\mySigma}_\beta [B^{-1}b + X^\top Z]
+\hat{\beta} &= \hat{\mySigma}_\beta [B^{-1}b + X^\top \Zaug]
 \end{array} \]
 
 \end{frame}
 
 \begin{frame}
-\frametitle{Full conditional for $Z$}
+\frametitle{Full conditional for $\Zaug$}
 
-The full conditional for $Z$ is 
+The full conditional for $\Zaug$ is 
 \[ \begin{array}{rl}
-p(Z|\ldots) \propto& p(y|Z) p(Z|\beta) p(\beta) \pause \\
-\propto& p(y|Z)p(Z|\beta) \\
-=& \prod_{i=1}^n N(Z_i|X_i'\beta,1)\left[\I(Z_i>0)\I(y_i=1)+\I(Z_i\le 0)\I(y_i=0)\right] 
+p(\Zaug|\ldots) \propto& p(y|\Zaug) p(\Zaug|\beta) p(\beta) \pause \\
+\propto& p(y|\Zaug)p(\Zaug|\beta) \\
+=& \prod_{i=1}^n N(\Zaug_i|X_i'\beta,1)\left[\I(\Zaug_i>0)\I(y_i=1)+\I(\Zaug_i\le 0)\I(y_i=0)\right] 
 \end{array} \]
-\pause  Thus the $Z_i$ are conditionally independent \pause with distribution 
-\[ p(Z_i|y_i,\beta) = \left\{ \begin{array}{rl}
-N(Z_i|X_i'\beta,1)\I(Z_i>0) & \mbox{if } y_i=1 \\
-N(Z_i|X_i'\beta,1)\I(Z_i\le 0) & \mbox{if } y_i=0
+\pause  Thus the $\Zaug_i$ are conditionally independent \pause with distribution 
+\[ p(\Zaug_i|y_i,\beta) = \left\{ \begin{array}{rl}
+N(\Zaug_i|X_i'\beta,1)\I(\Zaug_i>0) & \mbox{if } y_i=1 \\
+N(\Zaug_i|X_i'\beta,1)\I(\Zaug_i\le 0) & \mbox{if } y_i=0
 \end{array} \right. \]
 \pause
 These can be drawn using the modified inverse cdf method.
@@ -231,33 +228,33 @@ mcmc = function(n_iter, y, X, beta0, Sigma_beta) {
   
   # Saving structures
   beta_keep       = matrix(NA, n_iter, p)
-  Z_keep          = matrix(NA, n_iter, n)
+  zeta_keep          = matrix(NA, n_iter, n)
   
   # Initial values
   m = glm(y~X-1, family=binomial(probit))
   beta = coef(m)
-  Z = rep(NA,n)
+  zeta = rep(NA,n)
   
   for (i in 1:n_iter) {
-    # Sample Z
+    # Sample zeta
     Xb = X%*%beta
     cut = pnorm(0,Xb)
-    Z[ y] = qnorm(runif(n1, cut[ y], 1), Xb[ y], 1)
-    Z[!y] = qnorm(runif(n0, 0, cut[!y]), Xb[!y], 1)
+    zeta[ y] = qnorm(runif(n1, cut[ y], 1), Xb[ y], 1)
+    zeta[!y] = qnorm(runif(n0, 0, cut[!y]), Xb[!y], 1)
     
     # Sample beta
     S_hat = solve(Si+XX)
-    b_hat = S_hat %*% (Sib+t(X)%*%Z)
+    b_hat = S_hat %*% (Sib+t(X)%*%zeta)
     beta = mvrnorm(1, b_hat, S_hat)
     
     # Record values
     beta_keep[i,] = beta
-    Z_keep[i,]    = Z
+    zeta_keep[i,]    = zeta
   }
   
   return(data.frame(iteration = 1:n_iter,
                     beta = beta_keep,
-                    Z    = Z_keep))
+                    zeta    = zeta_keep))
 }
 @
 \end{frame}
@@ -305,7 +302,7 @@ par(opar)
 betas[,-1] %>%
   melt() %>%
   group_by(variable) %>%
-  summarize(ess = round(ess(value)),
+  summarize(ess = round(mcmcse::ess(value)),
             lb = round(quantile(value, .025),2),
             ub = round(quantile(value, .975),2))
 @
@@ -319,13 +316,13 @@ betas[,-1] %>%
 \frametitle{Probit regression with random effects}
 Consider the probit regression model 
 \[ \begin{array}{rl}
-Y_i &= \I(Z_i>0) \\
-Z &\sim N(\tilde{X}\tilde{\beta}, 1)
+Y_i &= \I(\Zaug_i>0) \\
+\Zaug &\sim N(\tilde{X}\tilde{\beta}, 1)
 \end{array} \]
 \pause where 
 \[ \tilde{X} = [X\quad Zm] \qquad \tilde{\beta} = (\beta, \alpha)^\top \]
 where $X$ is the design matrix for fixed effects and $Zm$ is the design matrix for the random effects. 
-\pause A common assumption is that the random effects are $u\sim N(0,\sigma^2 \I)$. \pause Thus the distribution on $\tilde{\beta}$ is 
+\pause A common assumption is that the random effects are $\alpha\sim N(0,\sigma^2 \I)$. \pause Thus the distribution on $\tilde{\beta}$ is 
 \[ \tilde{\beta} = 
 \left( \begin{array}{c} \beta \\ \alpha 
 \end{array} \right) \sim 
@@ -345,7 +342,7 @@ where the precision is
 
 The full posterior is 
 \[ 
-p(Z,\beta,\alpha,\sigma^2|y) \propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) 
+p(\Zaug,\beta,\alpha,\sigma^2|y) \propto p(y|\Zaug)p(\Zaug|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) 
 \]
 
 \pause
@@ -353,7 +350,7 @@ p(Z,\beta,\alpha,\sigma^2|y) \propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\si
 We have already derived the full conditionals 
 \begin{itemize}
 \item $p(\tilde{\beta}|\ldots)$
-\item $p(Z|\ldots)$
+\item $p(\Zaug|\ldots)$
 \end{itemize}
 \pause 
 but we need the full conditional for $\sigma^2$ to implement a Gibbs sampler.
@@ -367,7 +364,7 @@ If we choose $\sigma\sim Unif(0,10)$ and there are $U$ random effects, then
 \pause 
 
 \[ \begin{array}{rl}
-p(\sigma^2|\ldots) &\propto p(y|Z)p(Z|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) \pause \\
+p(\sigma^2|\ldots) &\propto p(y|\Zaug)p(\Zaug|\tilde{\beta})p(\tilde{\beta}|\sigma^2)p(\sigma^2) \pause \\
 &= p(\tilde{\beta}|\sigma^2)p(\sigma^2) \pause \\
 %&= p(\tilde{\beta})p(u|\sigma^2)p(\sigma^2) \\
 &\propto p(\alpha|\sigma^2)p(\sigma^2) \pause \\
@@ -419,12 +416,12 @@ mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
   require(Matrix)
   n = nrow(X)
   p = ncol(X) 
-  q = ncol(Z)
+  q = ncol(Zm)
   
   # Initial values
   m = glm(y~0+X, family=binomial(probit))
   beta = c(coef(m),rnorm(q))
-  Z = rep(NA,n)
+  zeta = rep(NA,n)
   
   # Precalculate quantities
   y = (as.numeric(y)==1)
@@ -442,11 +439,11 @@ mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
   sigma_keep = rep(NA, n_iter)
   
   for (i in 1:n_iter) {
-    # Sample Z
+    # Sample zeta
     Xb = X%*%beta
     cut = pnorm(0,as.numeric(Xb))
-    Z[ y] = qnorm(runif(n1, cut[ y], 1), Xb[ y], 1)
-    Z[!y] = qnorm(runif(n0, 0, cut[!y]), Xb[!y], 1)
+    zeta[ y] = qnorm(runif(n1, cut[ y], 1), Xb[ y], 1)
+    zeta[!y] = qnorm(runif(n0, 0, cut[!y]), Xb[!y], 1)
     
     # Sample sigma
     alpha = beta[p+1:q]
@@ -456,7 +453,7 @@ mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
     # Sample beta
     SSi = bdiag(Si,diag(q)/sigma2)
     S_hat = solve(SSi+XX)
-    b_hat = S_hat %*% (rbind(Sib,matrix(0,q,1))+t(X)%*%Z)
+    b_hat = S_hat %*% (rbind(Sib,matrix(0,q,1))+t(X)%*%zeta)
     beta = mvrnorm(1, b_hat, S_hat)
     
     # Record values
@@ -523,7 +520,7 @@ par(opar)
 betas[,-1] %>%
   melt() %>%
   group_by(variable) %>%
-  summarize(ess = round(ess(value)),
+  summarize(ess = round(mcmcse::ess(value)),
             lb = round(quantile(value, .025),2),
             ub = round(quantile(value, .975),2))
 @
@@ -544,7 +541,7 @@ t(with(betas, data.frame("X-Y" = quantile(genotypeX-genotypeY, c(.025,.975)),
 \frametitle{$t$ priors}
 
 Suppose we want $\beta_j \stackrel{ind}{\sim} t_{v_j}(b_j,B_j)$. \pause We can write this prior hierarchically via 
-\[ \beta_j|\tau_j^2 \stackrel{ind}{\sim} N(b_j,\tau_j^2), \qquad \tau_j^2\sim \mbox{Inv}(v_j,B_j). \]
+\[ \beta_j|\tau_j^2 \stackrel{ind}{\sim} N(b_j,\tau_j^2), \qquad \tau_j^2\sim \mbox{Inv}-\chi^2(v_j,B_j). \]
 \pause
 Now the MCMC can proceed exactly as before, but with the additional full conditional for $(\tau_1^2,\ldots,\tau_J^2)$ which will be independent inverse $\chi^2$ distributions.
 
@@ -557,7 +554,7 @@ Now the MCMC can proceed exactly as before, but with the additional full conditi
 <<data_augmentation, fig.width=8, echo=FALSE>>=
 par(mfrow=c(1,1))
 curve(dnorm(x,1), -3, 3, main="Latent variable for binary response", 
-      xlab="Z", ylab="density")
+      xlab=expression(Zeta), ylab="density")
 segments(1,0,1,dnorm(0), lty=2)
 text(1,0,expression(mu),pos=4)
 abline(v=0, lwd=2)
@@ -572,7 +569,7 @@ text(0.7,0.2, "1", cex=2)
 <<data_augmentation2, fig.width=8, echo=FALSE>>=
 par(mfrow=c(1,1))
 curve(dnorm(x,1), -3, 3, main="Latent variable for ordinal response", 
-      xlab="Z", ylab="density")
+      xlab=expression(Zeta), ylab="density")
 segments(1,0,1,dnorm(0), lty=2)
 text(1,0,expression(mu),pos=4)
 abline(v=0, lwd=2)
@@ -593,9 +590,9 @@ Suppose $Y_i$ is random variable with support $1,\ldots,K$ and
 
 \vspace{0.2in} \pause 
 
-We can model this using data augmentation by introducing a latent utility $Z_{ik}$ for each shopper-fruit combination. \pause Then the response is 
-\[ Y_i = \mbox{argmax}_k Z_{ik} \]
-\pause and there is great flexibility in how the $Z_{ik}$ are modeled. 
+We can model this using data augmentation by introducing a latent utility $\Zaug_{ik}$ for each shopper-fruit combination. \pause Then the response is 
+\[ Y_i = \mbox{argmax}_k \Zaug_{ik} \]
+\pause and there is great flexibility in how the $\Zaug_{ik}$ are modeled. 
 \end{frame}
 
 
@@ -604,8 +601,8 @@ We can model this using data augmentation by introducing a latent utility $Z_{ik
 \frametitle{Bayesian logistic regression}
 
 \[ \begin{array}{rl}
-Y_i &= \I(Z_i>0) \pause \\
-Z_i &\stackrel{ind}{\sim} Logistic(X_i'\beta,1)
+Y_i &= \I(\Zaug_i>0) \pause \\
+\Zaug_i &\stackrel{ind}{\sim} Logistic(X_i'\beta,1)
 \end{array} \]
 
 \pause
