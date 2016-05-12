@@ -1,52 +1,26 @@
 ---
 layout: page
-title: "Set up Git"
+title: "Tenure"
 description: ""
 group: 
 ---
 {% include JB/setup %}
 
-I use [Git](https://git-scm.com/) for version control on all my projects: courses, papers, etc. 
-Typically I use [GitHub](https://github.com/) to host my repository since GitHub provides unlimited open source repositories, unlimited private repositories with the personal plan ($7/month) or an academic discount. 
-An alternative is [Bitbucket](https://bitbucket.org/) which provides unlimited private repositories, but you must pay for public repositories. 
-In the event you wanted to make a repository public that was housed at Bitbucket, you could export the repository to GitHub.
-For those affiliated with Iowa State, there are two GitLab repositories available: [EcE](https://git.ece.iastate.edu/) and [LAS](https://git.linux.iastate.edu/).
+This page is dedicated to helping newer faculty understand what the tenure process timeline is in the Statistics department. 
+I am creating this page as I go through the process. 
+All dates are approximations based on deadlines I was given. 
 
-To [set up Git](https://help.github.com/articles/set-up-git/) you need to 1) [install Git](https://git-scm.com/downloads) and 2) configure Git.
-Configuring Git involves these two steps
+This process starts at the end of your 5th year unless you were given an extension or are going up earlier. 
+The departmental P&T committee will likely meet the week after finals week to set a timeline and determine who your contact is. 
 
-    git config --global user.name "YOUR NAME"
-    git config --global user.email "YOUR EMAIL ADDRESS"
-    git config --global push.default simple
+## List of 6 reviewer names (mid-May)
 
-as well as setting up your authentication. 
-For authentication, I use SSH and thus I [generate an SSH key](https://help.github.com/articles/generating-an-ssh-key/)  on each computer I use and for each remote destination I use. 
-Make sure to [test the SSH connection](https://help.github.com/articles/testing-your-ssh-connection/). 
+The first thing the contact will want is a list of 6 reviewer names from you. 
+The departmental P&T committee will come up with their own list and, I believe, 3 names are chosen from each list. 
+These individuals are contacted and asked if they agree to be a reviewer. 
+If they decline, I assume others are pulled from the two lists. 
 
-I typically use Git through [RStudio](https://www.rstudio.com/), but on computation clusters you will need to know Git commands. 
-This [cheat sheet](https://www.git-tower.com/blog/git-cheat-sheet/) provides perhaps too many commands. 
-The things to remember are 
+The reviewers are expected to be full professors from [Peer Institutions](http://www.ir.iastate.edu/peers.html) or better. 
 
-    git clone git@github.com:<username>/<repo>.git
-   
-to create a local of the desired repository. Always 
 
-    git pull
-    
-whenever you start working in a repository, 
-
-    git add <filename>
-   
-to stage changes to <filename> for committing,
-
-    git status
-    
-to check what files might need to be staged,
-
-    git commit -m "message"
-    
-to commit the changes, and
-
-    git push
-    
-to push those changes to the remote repository. 
+## LAS P&T Template (20 June)
