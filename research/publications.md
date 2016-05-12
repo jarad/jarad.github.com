@@ -1,7 +1,7 @@
 ---
 layout: page
-title : Publications
-header : Publications
+title: Publications
+header: Publications
 group: 
 ---
 {% include JB/setup %}

@@ -1,10 +1,13 @@
 ---
 layout: page
-title : Students
-header : Students
+title: Students
+header: Students
 group: 
 ---
 {% include JB/setup %}
+
+
+Here are some [resources](resources.html) for current graduate students. 
 
 ## Preparing future faculty (PFF) mentees
 
@@ -17,19 +20,18 @@ group:
 ## Current advisees
 
 - Ignacio Alvarez-Castro 
-- Adam Martin-Schwarze
-- [Will Landau](http://will-landau.com/)
+- Adam Martin-Schwarze (co-advised with [Philip Dixon](http://www.public.iastate.edu/~pdixon/))
 - [Nick Michaud](http://www.public.iastate.edu/~michaud/homepage.html)
 - Eric Mittman 
 
 ![](student_figs/ialvarez.jpg)
 ![](student_figs/adamms.jpg)
-![](student_figs/landau.jpg)
 ![](student_figs/michaud.jpg)
 ![](student_figs/emittman.jpg)
 
 ## Former advisees
 
+- [Will Landau](http://will-landau.com/) (PhD, ISU)
 - [Matt Simpson](http://www.themattsimpson.com/) (PhD, ISU)
 - Casey Oliver (MS, ISU)
 - Danny Sheinson (MS & PhD, UCSB)
