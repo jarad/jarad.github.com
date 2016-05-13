@@ -9,7 +9,7 @@ group:
 I interact a lot with the IT staff in the statistics department. So here is a page of my advice when working with StatIT. I hope they will agree with the advice given here. 
 
 
-## Use stat-tech@iastate.edu
+## Use stat-tech@iastate
 
 If you have a problem you want solved, email stat-tech@iastate.edu. 
 This will create a ticket, which will get emailed back to you, and the ticket will get forwarded to the IT staff in statistics as well as their boss. 
@@ -36,10 +36,16 @@ You can also use this site to add information to a request.
 
 
 
-## Use statit@iastate.edu
+## Use statit@iastate
 
 Generally you should not be using this email address. 
 But if you just want to ask a quick question that really isn't an "incident" and you don't want to generate a ticket, then you could use this address.
 As far as I'm aware, this gets forwarded to the IT staff in the department. 
 
 
+## Use researchit@iastate
+
+When using the cluster (at least this is where I experience this), some of the requests should go to [Research IT](http://it.las.iastate.edu/research-it-software-archive) rather than StatIT. 
+In particular, anything dealing with modules is a ResearchIT and requests should be sent to them. 
+When in doubt, send the ticket to StatIT. 
+If it should go to Research IT, Stat IT will either let you know or initiate a ticket on your behalf with Research IT. 
