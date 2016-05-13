@@ -15,8 +15,10 @@ The main purpose of this page is to provide one location for myself and others i
 
 # Students
 
-- [Set up Git](git.html)
+- [Git/GitHub - version control and backup](git.html)
+- [Department cluster](smaster.html)
 
 # Other/Both
 
+- [StatIT](statit.html)
 - [Amazon shiny server](amazon.html)
