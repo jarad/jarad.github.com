@@ -20,11 +20,9 @@ Thus these files will only exist in your home folder.
 
 ### Backing up with `rsync`
 
-If you are worried about the home folder disappearing (which certainly has happened in the past), use rsync to back it up, e.g.
+If you are worried about the home folder disappearing (which certainly has happened in the past), use [rsync](http://linux.die.net/man/1/rsync) ([some examples](http://www.tecmint.com/rsync-local-remote-file-synchronization-commands/)) to back it up, e.g.
 
-    rsync -avzh /home/niemi/examples /home/niemi/work/backup/
-
-(I get some `chgrp` errors when using this, but I think this has to do with Windows(Myfiles)/Linux differences.)
+    rsync -avz --no-perms --no-owner --no-group --delete /home/niemi/examples /home/niemi/work/backup/
 
 It is probably best to back up a folder, e.g. examples/, rather than your whole home directory (to avoid backing up unnecessary files, e.g. my R/ directory), but you could create one folder in your home directory that contains all your git repos and then backing up this folder will backup all your work.
 
