@@ -28,6 +28,7 @@ If you are worried about the home folder disappearing (which certainly has happe
 
 It is probably best to back up a folder, e.g. examples/, rather than your whole home directory (to avoid backing up unnecessary files, e.g. my R/ directory), but you could create one folder in your home directory that contains all your git repos and then backing up this folder will backup all your work.
 
+If you want to automate this process, you could run the script on logout by adding the command to your `~/.bash_logout` file. 
 
 ## Resources
 
