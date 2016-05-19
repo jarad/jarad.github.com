@@ -15,6 +15,7 @@ The main purpose of this page is to provide one location for myself and others i
 
 # Students
 
+- [Utility scripts](utility.html)
 - [Git/GitHub - version control and backup](git.html)
 - [Department cluster](smaster.html)
 
