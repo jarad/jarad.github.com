@@ -22,8 +22,9 @@ Thus these files will only exist in your home folder.
 
 If you are worried about the home folder disappearing (which certainly has happened in the past), use [rsync](http://linux.die.net/man/1/rsync) ([some examples](http://www.tecmint.com/rsync-local-remote-file-synchronization-commands/)) to back it up, e.g.
 
-    rsync -avz --no-perms --no-owner --no-group --delete /home/niemi/examples /home/niemi/work/backup/
+    rsync -avz --no-perms --no-owner --no-group --delete /home/niemi/examples /net/my.files.iastate.edu/ifs/isu/las/dept/stat/ds/niemi/backup/
 
+This destination is equivalent to `/home/niemi/work` but that symbolic link sometimes breaks so this version is more stable.
 It is probably best to back up a folder, e.g. examples/, rather than your whole home directory (to avoid backing up unnecessary files, e.g. my R/ directory), but you could create one folder in your home directory that contains all your git repos and then backing up this folder will backup all your work.
 
 If you want to automate this process, you could run the script on logout by adding the command to your `~/.bash_logout` file. 
