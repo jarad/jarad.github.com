@@ -30,6 +30,12 @@ Then it will be a simple matter of running a script to count the number of each 
 In addition to keeping your Dossier up to date, you should keep your CV up to date. 
 If you have databases for various activities, you can use an Rscript to automatically include these in your CV. Then whenever something happens, e.g. a paper gets published, you up date the database and then rerun the script to update your CV. 
 
+### Annual review
+
+Every year in the fall you will need to update paperwork in prepration for your annual review. 
+The department will meet to discuss your case and then you will meet with the chair (usually in the spring) to discuss the results of the department meeting and his/her own thoughts. 
+Our current chair, Max Morris, has his own form to complete which should be relatively easy to complete if you are keeping your Dossier, CV, and databases up to date. 
+
 ### Probationary review (after 3rd year)
 
 This review is an internal review aimed at determining whether you are on course for obtaining tenure. 
