@@ -13,6 +13,8 @@ The main purpose of this page is to provide one location for myself and others i
 - [Governance documents](governance.html)
 - [Tenure process](tenure.html)
 
+- [LAS New Faculty Resources](https://www.las.iastate.edu/faculty-staff/new-faculty-resources/)
+
 # Students
 
 - [Utility scripts](utility.html)
