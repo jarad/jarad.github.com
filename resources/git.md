@@ -20,6 +20,7 @@ In the event you wanted to make a repository public that was housed at Bitbucket
 For those affiliated with Iowa State, there are two GitLab repositories available: [EcE](https://git.ece.iastate.edu/) and [LAS](https://git.linux.iastate.edu/).
 
 
+
 ## Setting Git up from a new computer. 
 
 To [set up Git](https://help.github.com/articles/set-up-git/) you need to 1) [install Git](https://git-scm.com/downloads) and 2) configure Git.
@@ -32,6 +33,15 @@ Configuring Git involves these two steps
 as well as setting up your authentication. 
 For authentication, I use SSH and thus I [generate an SSH key](https://help.github.com/articles/generating-an-ssh-key/)  on each computer I use and for each remote destination I use. 
 Make sure to [test the SSH connection](https://help.github.com/articles/testing-your-ssh-connection/). 
+
+
+
+## How to write Git commits
+
+I found [this page](http://chris.beams.io/posts/git-commit/) useful in understanding how to write Git commits. 
+Basically, the subject should finish the sentence "If this commit is accepted, it will ...".
+Then the body of the message tells that what and why (not the how since that is already in the code).
+
 
 
 ##  Git from the command line
@@ -65,9 +75,5 @@ to commit the changes, and
 to push those changes to the remote repository. 
 
 
-## How to write Git commits
 
-I found [this page] useful in understanding how to write Git commits. 
-Basically, the subject should finish the sentence "If this commit is accepted, it will ...".
-Then the body of the message tells that what and why (not the how since that is already in the code).
 
