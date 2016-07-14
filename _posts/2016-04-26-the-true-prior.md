@@ -3,7 +3,7 @@ layout: post
 title: "The True Prior"
 description: ""
 category: 
-tags:
+tags: [probability-interpretation]
 ---
 {% include JB/setup %}
 
