@@ -16,6 +16,8 @@ I am creating this page as I go through the process and trying to remember what 
 
 Before discussing the Promotion to Associate Professor with tenure review, I thought I would focus on what you can do now to prepare for this review.
 
+### P&T Dossier
+
 I highly recommend you download and start using the [P&T Dossier template](https://iastate.app.box.com/s/rjytm28n1eerp63fnxc8ghi85nyxtwrd/1/3225096350) (use Word, see below) that you will need for promotion.
 If you update "Tab 2" at least every year, for your annual review, you will then have less to do (and are less likely to forget content) when it comes time to prepare your P&T Dossier.
 I keep my classes and student evaluations updated in this Dossier as soon as I receive them. 
@@ -28,7 +30,7 @@ For example, you could have a csv file that has all of your papers with an addit
 Then it will be a simple matter of running a script to count the number of each type of paper. 
 
 In addition to keeping your Dossier up to date, you should keep your CV up to date. 
-If you have databases for various activities, you can use an Rscript to automatically include these in your CV. Then whenever something happens, e.g. a paper gets published, you up date the database and then rerun the script to update your CV. 
+If you have databases for various activities, you can use an R script to automatically include these in your CV. Then whenever something happens, e.g. a paper gets published, you update the database and then rerun the script to update your CV. 
 
 ### Annual review
 
@@ -51,7 +53,8 @@ The departmental P&T committee will likely meet the week after finals week to se
 The quick timeline is provided here with the subsections providing more detailed information. The dates listed here are dates provided to me and therefore should be used only as a rough guide for when your own deadlines will be. 
 
 - 23 May: List of 5 reviewer names
-- 20 June: P&T Dossier
+- 20 June: P&T Dossier to departmental P&T committee
+- 8 July: P&T Dossier to reviewers
 
 ### List of 5 reviewer names (23 May)
 
@@ -70,4 +73,12 @@ At this time, you will also be asked to provide a CV. I believe this CV is then 
 The departmental P&T committee will request that you send them your completed P&T Dossier. 
 You will need to complete this document by downloading the newest version of the [LAS P&T Template](https://iastate.app.box.com/s/rjytm28n1eerp63fnxc8ghi85nyxtwrd/1/3225096350) in Word format. (If you do this in anything other than Word, you may be asked to redo it all in Word and therefore I suggest just doing it in Word.)
 
-If you have been collecting information as it becomes available (as suggested above), then you will likely only need to provide updated statements for teaching, research, service, etc. 
+If you have been collecting information as it becomes available (as suggested above), then you will likely only need to provide updated statements for teaching, research, service, etc. Nonetheless, you will likely not have followed all the best practices. Here are the relevant best practices:
+
+- [LAS](https://iastate.app.box.com/s/rjytm28n1eerp63fnxc8ghi85nyxtwrd/1/3225096350/26510719327/1) ([CyBox folder](https://iastate.app.box.com/s/rjytm28n1eerp63fnxc8ghi85nyxtwrd/0/3225096350))
+- [Provost](http://www.provost.iastate.edu/sites/default/files/uploads/faculty%20resources/advancement%26review/Best%20Practices%20P%26T.pdf) ([page](http://www.provost.iastate.edu/faculty-and-staff-resources/advancement))
+
+
+### P&T Dossier sent to reviewers (8 July)
+
+After receiving feedback from the P&T committee and anybody else, you will revise your P&T Dossier so that it can be sent to reviewers. 
