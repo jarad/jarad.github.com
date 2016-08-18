@@ -29,6 +29,35 @@ It is probably best to back up a folder, e.g. examples/, rather than your whole 
 
 If you want to automate this process, you could run the script on logout by adding the command to your `~/.bash_logout` file. 
 
+### workflowHelper on smaster
+
+Will Landau, an alumni, created a package to help manage simulation studies and real data analysis that utilize makefiles (specifically the remake R package) called [workflowHelper](https://github.com/wlandau/workflowHelper). 
+This package is useful when simulating data, performing an analysis, or calculating summary statistics is time consuming.
+It is also useful when you want to easily re-run a simulation study due to bugs in code or add an additional analysis to the study. 
+
+
+To use this package on smaster, I changed two things
+
+    1. Add `begin = c("SHELL=srun\n.SHELLFLAGS= -N1 -n1 bash -c\n\n")` to `workflow.R`. 
+    1. Add `module load R` to your `~/.bash_profile` on smaster. 
+    
+Basically to get parallelization on the SLURM cluster, we run each job through its own `srun` command. 
+This gets accomplished by changing the `SHELL` in the makefile.
+But every time we send a job to a node, we need the node to execute `module load R` to make sure we have access to R. 
+This gets accomplished by the additional line in the `.bash_profile` that gets executed when logging into the node.
+
+There are probably alternative approaches but this is what I got to work.
+Also, you can modify the flags for whatever is appropriate in your application.
+
+To run this, you will use `make` with parallelization `-j`. 
+For example, to run 4 parallel jobs use 
+
+    make -j 4 > test.out 2> err.out
+    
+which will send standard output to `test.out` and standard error to `err.out`. 
+For some reason, much more goes to standard error than would be expected on this server. 
+
+
 ## Resources
 
 - [ISU Slurm basics](http://researchit.las.iastate.edu/slurm-basics)
