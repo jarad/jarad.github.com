@@ -6,7 +6,7 @@ group:
 ---
 {% include JB/setup %}
 
-The statistics department at ISU has a department cluster with 
+The statistics department at ISU has a department cluster with a Simple Linux Utility for Resource Management ([SLURM controller](http://it.las.iastate.edu/slurm-simple-linux-utility-resource-management)). 
 
 ## Storage
 
@@ -31,4 +31,6 @@ If you want to automate this process, you could run the script on logout by addi
 
 ## Resources
 
+- [ISU Slurm basics](http://researchit.las.iastate.edu/slurm-basics)
+- [ISU Slurm for Statistics](http://it.las.iastate.edu/slurm-simple-linux-utility-resource-management)
 - [Harvard SLURM](https://rc.fas.harvard.edu/resources/running-jobs/)
