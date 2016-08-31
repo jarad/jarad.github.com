@@ -7,4 +7,5 @@ group: navigation
 {% include JB/setup %}
 
 - [Publications](publications.html)
+- [Presentations](presentations.html)
 - [Students](students.html)
