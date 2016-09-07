@@ -14,6 +14,7 @@ This is currently a stub to organize consulting files.
 
 ## Meetings
 
+- [Simplifying time series](meetings/20160907.html)
 - [Offset when coefficient is not 1](meetings/20160824.html)
 - [Extrapolation](meetings/20160712b.html)
 - [Zero-inflated Prediction](meetings/20160712a.html)
