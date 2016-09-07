@@ -11,6 +11,7 @@ This is currently a stub to organize consulting files.
 ## Resources
 
 - [Ten Simple Rules for Effective Statistical Practice](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004961)
+- [ASA Statement on p-values](http://amstat.tandfonline.com/doi/abs/10.1080/00031305.2016.1154108)
 
 ## Meetings
 
