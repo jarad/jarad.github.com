@@ -15,6 +15,9 @@ This is currently a stub to organize consulting files.
 
 ## Meetings
 
+Reverse chronological order (newer on top)
+
+- [Multivariate count data](meetings/20160921.html)
 - [Simplifying time series](meetings/20160907.html)
 - [Offset when coefficient is not 1](meetings/20160824.html)
 - [Extrapolation](meetings/20160712b.html)
