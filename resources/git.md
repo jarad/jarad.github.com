@@ -35,7 +35,6 @@ For authentication, I use SSH and thus I [generate an SSH key](https://help.gith
 Make sure to [test the SSH connection](https://help.github.com/articles/testing-your-ssh-connection/). 
 
 
-
 ## How to write Git commits
 
 I found [this page](http://chris.beams.io/posts/git-commit/) useful in understanding how to write Git commits. 
@@ -76,4 +75,20 @@ to push those changes to the remote repository.
 
 
 
+## How to start an R package in RStudio with a Git repository
+
+The instructions are from [here](http://stackoverflow.com/questions/17521300/start-new-r-package-development-on-github/17526158#17526158):
+
+
+1. Create empty repository on github (I will use name rpackage in this example)
+1. Create package locally using devtools, create("rpackage") (this will create rpackage folder)
+1. Create new project in RStudio (Create project from: Existing directory) and choose rpackage directory
+1. In RStudio go to Tools/Shell... and type git init
+1. Reopen the project (this will refresh the Git tab)
+1. Start Git/More/Shell and type
+
+    git add *
+    git commit -m "first commit"
+    git remote add origin git@github.com:[username]/rpackage.git
+    git push -u origin master
 
