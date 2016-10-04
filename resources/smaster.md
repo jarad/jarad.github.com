@@ -44,7 +44,8 @@ To use this package on smaster, I changed two things
 Basically to get parallelization on the SLURM cluster, we run each job through its own `srun` command. 
 This gets accomplished by changing the `SHELL` in the makefile.
 But every time we send a job to a node, we need the node to execute `module load R` to make sure we have access to R. 
-This gets accomplished by the additional line in the `.bash_profile` that gets executed when logging into the node.
+This gets accomplished by the additional line in the `.bash_profile` that gets executed when logging into the node. 
+(Nacho tells me that he did not need to add this to his .bash_profile.)
 
 There are probably alternative approaches but this is what I got to work.
 Also, you can modify the flags for whatever is appropriate in your application.
@@ -52,7 +53,7 @@ Also, you can modify the flags for whatever is appropriate in your application.
 To run this, you will use `make` with parallelization `-j`. 
 For example, to run 4 parallel jobs use 
 
-    make -j 4 > test.out 2> err.out
+    nohup make -j 4 > test.out 2> err.out &
     
 which will send standard output to `test.out` and standard error to `err.out`. 
 For some reason, much more goes to standard error than would be expected on this server. 
