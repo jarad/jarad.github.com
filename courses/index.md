@@ -8,6 +8,8 @@ group: navigation
 
 ## Regular courses
 
+- Fall 2016
+  - STAT 330
 - Spring 2016
   - [STAT 544](stat544)
 - Fall 2015
