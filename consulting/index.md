@@ -17,6 +17,7 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [Complicated design](meetings/20161005.html)
 - [Multivariate count data](meetings/20160921.html)
 - [Simplifying time series](meetings/20160907.html)
 - [Offset when coefficient is not 1](meetings/20160824.html)
