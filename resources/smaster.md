@@ -29,9 +29,9 @@ It is probably best to back up a folder, e.g. examples/, rather than your whole 
 
 If you want to automate this process, you could run the script on logout by adding the command to your `~/.bash_logout` file. 
 
-### workflowHelper on smaster
+### remakeGenerator on smaster
 
-Will Landau, an alumni, created a package to help manage simulation studies and real data analysis that utilize makefiles (specifically the remake R package) called [workflowHelper](https://github.com/wlandau/workflowHelper). 
+Will Landau, an alumni, created a package to help manage simulation studies and real data analysis that utilize makefiles (specifically the remake R package) called [remakeGenerator](https://github.com/wlandau/remakeGenerator). 
 This package is useful when simulating data, performing an analysis, or calculating summary statistics is time consuming.
 It is also useful when you want to easily re-run a simulation study due to bugs in code or add an additional analysis to the study. 
 
