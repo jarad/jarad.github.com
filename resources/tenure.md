@@ -38,10 +38,15 @@ Every year in the fall you will need to update paperwork in prepration for your 
 The department will meet to discuss your case and then you will meet with the chair (usually in the spring) to discuss the results of the department meeting and his/her own thoughts. 
 Our current chair, Max Morris, has his own form to complete which should be relatively easy to complete if you are keeping your Dossier, CV, and databases up to date. 
 
-### Probationary review (after 3rd year)
+### Preliminary review (after 3rd year)
 
 This review is an internal review aimed at determining whether you are on course for obtaining tenure. 
-The primary document used for this review is the P&T Dossier, so if you have kept it up to date every year this will be a relatively painless review.
+The primary document used for this is similar to the P&T Dossier (tab1 & tab2), so if you have kept it up to date every year this will be a relatively painless review.
+Currently the document can be found [here](https://las.iastate.edu/faculty-staff/new-faculty-resources/). 
+
+This document will be reviewed by the P&T committee in October and by the 
+department in November. 
+
 
 
 
