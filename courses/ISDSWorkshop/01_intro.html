@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Jarad Niemi" />
+
+<meta name="date" content="2016-11-29" />
+
+<title>Introduction to R</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to R</h1>
+<h4 class="author"><em>Jarad Niemi</em></h4>
+<h4 class="date"><em>2016-11-29</em></h4>
+
+
+
+<div id="introduction-to-r" class="section level1">
+<h1><a name="intro"></a> Introduction to R</h1>
+<div id="detailed-introduction" class="section level2">
+<h2>Detailed introduction</h2>
+<p>For an extremely detailed introduction, please see</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help.start</span>()</code></pre></div>
+<p>In this documentation, the above command will be executed at the command prompt, see below.</p>
+</div>
+<div id="brief-introduction-to-r" class="section level2">
+<h2>Brief introduction to R</h2>
+<p>From <code>help.start()</code>:</p>
+<blockquote>
+<p>R is an integrated suite of software facilities for data manipulation, calculation and graphical display.</p>
+</blockquote>
+<p>and from <a href="https://www.rstudio.com/products/RStudio/" class="uri">https://www.rstudio.com/products/RStudio/</a>:</p>
+<blockquote>
+<p>RStudio is an integrated development environment (IDE) for R.</p>
+</blockquote>
+<div id="r-interface" class="section level3">
+<h3>R interface</h3>
+<p>In contrast to many other statistical software packages that use a point-and-click interface, e.g. SPSS, JMP, Stata, etc, R has a command-line interface. The command line has a command prompt, e.g. <code>&gt;</code>, see below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">&gt;</code></pre></div>
+<p>This means, that you will be entering commands on this command line and hitting enter to execute them, e.g.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help</span>()</code></pre></div>
+<p>Use the <strong>up arrow</strong> to recover past commands.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hepl</span>()
+<span class="kw">help</span>() <span class="co"># Use up arrow and fix</span></code></pre></div>
+</div>
+<div id="r-gui-or-rstudio" class="section level3">
+<h3>R GUI (or <a href="http://www.rstudio.com/">RStudio</a>)</h3>
+<p>Most likely, you are using a graphical user interface (GUI) and therefore, in addition, to the command line, you also have a windowed version of R with some point-and-click options, e.g. File, Edit, and Help.</p>
+<p>In particular, there is an editor to create a new R script. So rather than entering commands on the command line, you will write commands in a script and then send those commands to the command line using <code>Ctrl-R</code> (PC) or <code>Command-Enter</code> (Mac).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a =<span class="st"> </span><span class="dv">1</span> 
+b =<span class="st"> </span><span class="dv">2</span>
+a+b</code></pre></div>
+<pre><code>## [1] 3</code></pre>
+<p>Multiple lines can be run in sequence by selecting them and then using <code>Ctrl-R</code> (PC) or <code>Command-Enter</code> (Mac).</p>
+</div>
+<div id="intro-activity" class="section level3">
+<h3>Intro Activity</h3>
+<p>One of the most effective ways to use this documentation is to cut-and-paste the commands into a script and then execute them.</p>
+<p>Cut-and-paste the following commands into a <strong>new script</strong> and then run those commands directly from the script using <code>Ctrl-R</code> (PC) or <code>Command-Enter</code> (Mac).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x =<span class="st"> </span><span class="dv">1</span>:<span class="dv">10</span>
+y =<span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">each=</span><span class="dv">5</span>)
+m =<span class="st"> </span><span class="kw">lm</span>(y~x)
+s =<span class="st"> </span><span class="kw">summary</span>(m)</code></pre></div>
+<p>Now, look at the result of each line</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x
+y
+m
+s
+s$r.squared</code></pre></div>
+<p>When you have completed the activity, compare your results to the <a href="01_intro-solution.html#introduction">solutions</a>.</p>
+</div>
+</div>
+<div id="using-r-as-a-calculator" class="section level2">
+<h2><a name="calculator"></a> Using R as a calculator</h2>
+<div id="basic-calculator-operations" class="section level3">
+<h3>Basic calculator operations</h3>
+<p>All basic calculator operations can be performed in R.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1+2</span></code></pre></div>
+<pre><code>## [1] 3</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1-2</span></code></pre></div>
+<pre><code>## [1] -1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1</span>/<span class="dv">2</span></code></pre></div>
+<pre><code>## [1] 0.5</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1</span>*<span class="dv">2</span></code></pre></div>
+<pre><code>## [1] 2</code></pre>
+<p>For now, you can ignore the [1] at the beginning of the line, we’ll learn about that when we get to vectors.</p>
+</div>
+<div id="advanced-calculator-operations" class="section level3">
+<h3>Advanced calculator operations</h3>
+<p>Many advanced calculator operations are also available.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(<span class="dv">1+3</span>)*<span class="dv">2</span> +<span class="st"> </span><span class="dv">100</span>^<span class="dv">2</span>  <span class="co"># standard order of operations</span></code></pre></div>
+<pre><code>## [1] 10008</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sin</span>(<span class="dv">2</span>*pi)        <span class="co"># the result is in scientific notation, i.e. -2.449294 x 10^-16 </span></code></pre></div>
+<pre><code>## [1] -2.449294e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sqrt</span>(<span class="dv">4</span>)</code></pre></div>
+<pre><code>## [1] 2</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">10</span>^<span class="dv">2</span></code></pre></div>
+<pre><code>## [1] 100</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">log</span>(<span class="dv">10</span>)          <span class="co"># the default is base e</span></code></pre></div>
+<pre><code>## [1] 2.302585</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">log</span>(<span class="dv">10</span>, <span class="dt">base=</span><span class="dv">10</span>)</code></pre></div>
+<pre><code>## [1] 1</code></pre>
+</div>
+<div id="using-variables" class="section level3">
+<h3>Using variables</h3>
+<p>A real advantage to using R rather than a calculator (or calculator app) is the ability to store quantities using variables.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a =<span class="st"> </span><span class="dv">1</span>
+b =<span class="st"> </span><span class="dv">2</span>
+a+b</code></pre></div>
+<pre><code>## [1] 3</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a-b</code></pre></div>
+<pre><code>## [1] -1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a/b</code></pre></div>
+<pre><code>## [1] 0.5</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a*b</code></pre></div>
+<pre><code>## [1] 2</code></pre>
+</div>
+<div id="assignment-operators---and--" class="section level3">
+<h3>Assignment operators =, &lt;-, and -&gt;</h3>
+<p>When assigning variables values, you can also use arrows &lt;- and -&gt; and you will often see this in code, e.g.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a &lt;-<span class="st"> </span><span class="dv">1</span>
+<span class="dv">2</span> -&gt;<span class="st"> </span>b
+c =<span class="st"> </span><span class="dv">3</span>  <span class="co"># is the same as &lt;-</span></code></pre></div>
+<p>Now print them.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a</code></pre></div>
+<pre><code>## [1] 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">b</code></pre></div>
+<pre><code>## [1] 2</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c</code></pre></div>
+<pre><code>## [1] 3</code></pre>
+</div>
+<div id="using-informative-variable-names" class="section level3">
+<h3>Using informative variable names</h3>
+<p>While using variables alone is useful, it is much more useful to use informative variables names.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">population =<span class="st"> </span><span class="dv">1000</span>
+number_infected =<span class="st"> </span><span class="dv">200</span>
+deaths =<span class="st"> </span><span class="dv">3</span>
+
+death_rate =<span class="st"> </span>deaths /<span class="st"> </span>number_infected
+attack_rate =<span class="st"> </span>number_infected /<span class="st"> </span>population
+
+death_rate</code></pre></div>
+<pre><code>## [1] 0.015</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">attack_rate</code></pre></div>
+<pre><code>## [1] 0.2</code></pre>
+</div>
+<div id="calculator-activity" class="section level3">
+<h3>Calculator Activity</h3>
+<div id="bayes-rule" class="section level4">
+<h4><a href="http://en.wikipedia.org/wiki/Bayes%27_theorem">Bayes’ Rule</a></h4>
+<p>Suppose an individual tests positive for a disease, what is the probability the individual has the disease? Let</p>
+<ul>
+<li><span class="math inline">\(D\)</span> indicates the individual has the disease</li>
+<li><span class="math inline">\(N\)</span> means the individual does not have the disease</li>
+<li><span class="math inline">\(+\)</span> indicates a positive test result</li>
+<li><span class="math inline">\(-\)</span> indicates a negative test</li>
+</ul>
+<p>The above probability can be calculated using <a href="http://en.wikipedia.org/wiki/Bayes%27_rule">Bayes’ Rule</a>:</p>
+<p><span class="math display">\[ P(D|+) = \frac{P(+|D)P(D)}{P(+|D)P(D)+P(+|N)P(N)} = 
+\frac{P(+|D)P(D)}{P(+|D)P(D)+(1-P(-|N))\times(1-P(D))} \]</span></p>
+<p>where</p>
+<ul>
+<li><span class="math inline">\(P(+|D)\)</span> is the <a href="http://en.wikipedia.org/wiki/Sensitivity_and_specificity">sensitivity</a> of the test</li>
+<li><span class="math inline">\(P(-|N)\)</span> is the <a href="http://en.wikipedia.org/wiki/Sensitivity_and_specificity">specificity</a> of the test</li>
+<li><span class="math inline">\(P(D)\)</span> is the <a href="http://en.wikipedia.org/wiki/Prevalence">prevalence</a> of the disease</li>
+</ul>
+<p>Calculate the probability the individual has the disease if the test is positive when</p>
+<ul>
+<li>the specificity of the test is 0.95,</li>
+<li>the sensitivity of the test is 0.99, and</li>
+<li>the prevalence of the disease is 0.001.</li>
+</ul>
+<p>When you have completed the activity, compare your results to the <a href="01_intro-solution.html#calculator">solutions</a>.</p>
+</div>
+</div>
+</div>
+<div id="reading-data-into-r" class="section level2">
+<h2><a name="reading">Reading data into R</a></h2>
+<p>In this section, we will learn how to read in csv or Excel files into R. We focus on csv files because they are simplest to import, they can be easily exported from Excel (or other software), and they are portable, i.e. they can be used in other software.</p>
+<div id="changing-your-working-directory" class="section level3">
+<h3><a name="working_directory">Changing your working directory</a></h3>
+<p>One of the first tasks after starting R is to change the working directory. To set,</p>
+<ul>
+<li>in RStudio: Session &gt; Set Working Directory &gt; Choose Directory… (Ctrl + Shift + H)</li>
+<li>in R GUI (Windows): File &gt; Change Dir…</li>
+<li>in R GUI (Mac): Misc &gt; Change Working Directory…</li>
+</ul>
+<p>Or, you can just run the following command</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setwd</span>(<span class="kw">choose.dir</span>(<span class="kw">getwd</span>()))</code></pre></div>
+<p>Make sure you have write access to this directory.</p>
+</div>
+<div id="installing-and-loading-a-package" class="section level3">
+<h3>Installing and loading a package</h3>
+<p>Much of the functionality of R is contained in packages. The first time these packages are used, they need to be installed, e.g. to install a package from <a href="http://cran.r-project.org/web/packages/">CRAN</a> use</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">'dplyr'</span>)</code></pre></div>
+<p>Once installed, a package needs to be loaded into each R session where the package is used.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">'dplyr'</span>)</code></pre></div>
+</div>
+<div id="load-and-start-this-workshop" class="section level3">
+<h3>Load and start this workshop</h3>
+<p>First load the package</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">'ISDSWorkshop'</span>)</code></pre></div>
+<p>This package contains a function to help you get started, so run that function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">workshop</span>()</code></pre></div>
+<p>This function did three things:</p>
+<ol style="list-style-type: decimal">
+<li>It opened the workshop outline in a web browser.</li>
+<li>It created a set of .csv data files in your working directory.</li>
+<li>It created a set of .R scripts in your working directory.</li>
+</ol>
+</div>
+<div id="open-an-r-script" class="section level3">
+<h3>Open an R script</h3>
+<p>As we progress through the workshop, the code for a particular module will be available in the R script for that module.</p>
+<p>In R/RStudio, open the module called <code>01_intro.R</code> and scroll down to the <code>workshop()</code> command. From here on out, as I run commands you should run the commands as well by using Ctrl-R (Windows) or Command-Enter (Mac) with the appropriate line(s) highlighted.</p>
+<p>You will notice that nothing after a <code>#</code> will be evaluated by R. That is because the <code>#</code> character indicates a comment in the code. For example,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># This is just a comment. </span>
+<span class="dv">1+1</span> <span class="co"># So is this</span></code></pre></div>
+<pre><code>## [1] 2</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 1+2</span></code></pre></div>
+</div>
+<div id="reading-data-into-r-1" class="section level3">
+<h3>Reading data into R</h3>
+<p>Data are stored in many different formats. I will focus on data stored in a csv file, but mention approaches to reading in data stored in Excel, SAS, Stata, SPSS, and database formats.</p>
+<div id="reading-a-csv-file-into-r" class="section level4">
+<h4>Reading a csv file into R</h4>
+<p>The most common way I read data into R is through a csv file. csv stands for comma-separated value file and is a standard file format for data. The utils package (which is installed and loaded with base R) has a function called <code>read.csv</code> for reading csv files into R. For example,</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI =<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;GI.csv&quot;</span>)</code></pre></div>
+<p>This created a <code>data.frame</code> object in R called GI.</p>
+<p>The utils package has the <code>read.table()</code> function which is a more general function for reading data into R and it has many options. We could have gotten the same results if we had used the following code:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI2 =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;GI.csv&quot;</span>, 
+                 <span class="dt">header=</span><span class="ot">TRUE</span>, <span class="co"># There is a header.</span>
+                 <span class="dt">sep=</span><span class="st">&quot;,&quot;</span>)     <span class="co"># The column delimiter is a comma.</span></code></pre></div>
+<p>To check if the two data sets are equal, use the following</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(GI, GI2)</code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<p>The <code>read.csv</code> function is available in base R, but these days I will often use the <code>read_csv</code> function in the <a href="https://cran.r-project.org/web/packages/readr/index.html">readr</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;readr&quot;</span>) <span class="co"># run this command if the readr package is not installed</span>
+<span class="kw">library</span>(<span class="st">'readr'</span>)
+GI &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;GI.csv&quot;</span>)</code></pre></div>
+</div>
+</div>
+<div id="read-excel-xlsx-file" class="section level3">
+<h3><a name="excel">Read Excel xlsx file</a></h3>
+<p>My main suggestion for reading Excel files into R is to</p>
+<ol style="list-style-type: decimal">
+<li>Save the Excel file as a csv</li>
+<li>Read the csv file into R using <code>read.csv</code></li>
+</ol>
+<p>This approach will work regardless of any changes Excel makes in its document structure.</p>
+<p>Reading an Excel xlsx file into R is done using the <code>read.xlsx</code> function from the <a href="http://cran.r-project.org/web/packages/xlsx/index.html">xlsx</a> R package. Unfortunately many scenarios can cause this process to not work. Thus, we do not focus on it in an introductory R course. When it works, it looks like this</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">'xlsx'</span>)
+<span class="kw">library</span>(<span class="st">'xlsx'</span>)
+d =<span class="st"> </span><span class="kw">read.xlsx</span>(<span class="st">&quot;filename.xlsx&quot;</span>, <span class="dt">sheetIndex=</span><span class="dv">1</span>) <span class="co"># or</span>
+d =<span class="st"> </span><span class="kw">read.xlsx</span>(<span class="st">&quot;filename.xlsx&quot;</span>, <span class="dt">sheetName=</span><span class="st">&quot;sheetName&quot;</span>)</code></pre></div>
+<p>Again, if these approaches don’t work, you can <code>Save as...</code> a csv file in Excel.</p>
+</div>
+<div id="read-sas-stata-or-spss-data-files" class="section level3">
+<h3>Read SAS, Stata, or SPSS data files</h3>
+<p>The <code>haven</code> package provides functionality to read in SAS, Stata, and SPSS files. An example of reading a SAS file is</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">'haven'</span>)
+<span class="kw">library</span>(<span class="st">'haven'</span>)
+d =<span class="st"> </span><span class="kw">read_sas</span>(<span class="st">'filename.sas7bdat'</span>)</code></pre></div>
+<div id="read-a-database-file" class="section level4">
+<h4>Read a database file</h4>
+<p>There are many different types of databases, so the code you will need will be specific to the type of database you are trying to access.</p>
+<p>The <a href="https://cran.r-project.org/web/packages/dplyr/index.html">dplyr</a> package,<br />
+which we will discussing today, has a <a href="https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html">number of functions to read from some databases</a>. The code will look something like</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">'dplyr'</span>)
+my_db &lt;-<span class="st"> </span><span class="kw">src_sqlite</span>(<span class="st">&quot;my_db.sqlite3&quot;</span>, <span class="dt">create =</span> T)</code></pre></div>
+<p>The <a href="https://cran.r-project.org/web/packages/RODBC/index.html">RODBC</a> package has a <a href="http://www.statmethods.net/input/dbinterface.html">number of functions to read from some databases</a>. The code might look something like</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;RODBC&quot;</span>)
+<span class="kw">library</span>(<span class="st">'RODBC'</span>)
+
+<span class="co"># RODBC Example</span>
+<span class="co"># import 2 tables (Crime and Punishment) from a DBMS</span>
+<span class="co"># into R data frames (and call them crimedat and pundat)</span>
+
+<span class="kw">library</span>(RODBC)
+myconn &lt;-<span class="kw">odbcConnect</span>(<span class="st">&quot;mydsn&quot;</span>, <span class="dt">uid=</span><span class="st">&quot;Rob&quot;</span>, <span class="dt">pwd=</span><span class="st">&quot;aardvark&quot;</span>)
+crimedat &lt;-<span class="st"> </span><span class="kw">sqlFetch</span>(myconn, <span class="st">&quot;Crime&quot;</span>)
+pundat &lt;-<span class="st"> </span><span class="kw">sqlQuery</span>(myconn, <span class="st">&quot;select * from Punishment&quot;</span>)
+<span class="kw">close</span>(myconn)</code></pre></div>
+</div>
+</div>
+<div id="exploring-the-data-set" class="section level3">
+<h3>Exploring the data set</h3>
+<p>There are a number of functions that will provide information about a <code>data.frame</code>. Here are a few:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(GI)</code></pre></div>
+<pre><code>## [1] 21244     9</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nrow</span>(GI)</code></pre></div>
+<pre><code>## [1] 21244</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ncol</span>(GI)</code></pre></div>
+<pre><code>## [1] 9</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(GI) <span class="co"># column names</span></code></pre></div>
+<pre><code>## [1] &quot;id&quot;              &quot;date&quot;            &quot;facility&quot;        &quot;icd9&quot;           
+## [5] &quot;age&quot;             &quot;zipcode&quot;         &quot;chief_complaint&quot; &quot;syndrome&quot;       
+## [9] &quot;gender&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(GI, <span class="dt">n=</span><span class="dv">5</span>) <span class="co"># first 5 rows of the data.frame</span></code></pre></div>
+<pre><code>##           id       date facility   icd9 age zipcode chief_complaint
+## 1 1001301988 2005-02-28       67 787.01   7   21075        Abd Pain
+## 2 1001829757 2005-02-28       67 558.90  41   20721   upset stomach
+## 3 1001581758 2005-02-28      123 787.91   2   22152        diarrhea
+## 4 1001950471 2005-02-28      123 787.91  71   22060        ABD PAIN
+## 5 1001076304 2005-02-28      309 558.90  28   21702   LOWER AD PAIN
+##   syndrome gender
+## 1       GI   Male
+## 2       GI Female
+## 3       GI   Male
+## 4       GI   Male
+## 5       GI Female</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(GI, <span class="dt">n=</span><span class="dv">5</span>) <span class="co"># last5 rows of the data.frame</span></code></pre></div>
+<pre><code>##               id       date facility   icd9 age zipcode
+## 21240 1001392877 2008-12-30      123 787.01   6   22153
+## 21241 1001887911 2008-12-30       37 535.50  72   22033
+## 21242 1001196061 2008-12-30     6200 536.20  59   20155
+## 21243 1001067104 2008-12-30       67 558.90  80   22202
+## 21244 1001396039 2008-12-30      123 787.03  12   20112
+##                     chief_complaint syndrome gender
+## 21240                         N/V/D       GI   Male
+## 21241               VOMITING CHILLS       GI   Male
+## 21242 LEFT CHEST AND ABDOMINAL PAIN       GI   Male
+## 21243                      ABD PAIN       GI Female
+## 21244                      Diarrhea       GI   Male</code></pre>
+</div>
+<div id="activity" class="section level3">
+<h3>Activity</h3>
+<p>If you brought your own Excel file, open it and save a sheet as a csv file in your working directory. If you brought your own csv file, save it in your working directory. If you did not bring your own file, use the <code>fluTrends.csv</code> file in your working directory.</p>
+<p>Try to use the read.csv function to read the file into R. There are a number of different options in the <code>read.table()</code> function that may be useful:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d =<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;filename.csv&quot;</span>, <span class="co"># Make sure to change filename&gt;to your filename and </span>
+                               <span class="co"># make sure you use the extension, e.g. .csv. </span>
+               <span class="dt">header =</span> <span class="ot">TRUE</span>,  <span class="co"># If there is no header column, change TRUE to FALSE.</span>
+               <span class="dt">sep =</span><span class="st">&quot;,&quot;</span>,       <span class="co"># The column delimiter is a comma.</span>
+               <span class="dt">skip =</span> <span class="dv">0</span>        <span class="co"># Skip this many lines before starting to read the file</span>
+               )</code></pre></div>
+<p>You may also need to look at the help file for <code>read.table()</code> to find additional options that you need.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">?read.table</code></pre></div>
+<p>When you have completed the activity, compare your results to the <a href="01_intro-solution.html#read">solutions</a>.</p>
+</div>
+</div>
+<div id="descriptive-statistics" class="section level2">
+<h2><a name="descriptive"></a> Descriptive statistics</h2>
+<p>When reading your data set into R, you will likely want to perform some descriptive statistics. The single most useful command to assess the whole data set is the <code>summary()</code> command:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(GI)</code></pre></div>
+<pre><code>##        id                    date          facility         icd9        
+##  Min.   :1.001e+09   2007-01-31:   57   Min.   :  37   Min.   :    3.0  
+##  1st Qu.:1.001e+09   2007-01-29:   55   1st Qu.:  66   1st Qu.:  558.9  
+##  Median :1.001e+09   2007-01-16:   52   Median :  67   Median :  787.0  
+##  Mean   :1.001e+09   2007-02-28:   52   Mean   :1102   Mean   : 1043.2  
+##  3rd Qu.:1.002e+09   2007-01-24:   50   3rd Qu.: 309   3rd Qu.:  787.3  
+##  Max.   :1.002e+09   2007-01-17:   45   Max.   :7298   Max.   :78791.0  
+##                      (Other)   :20933                                   
+##       age            zipcode            chief_complaint  syndrome  
+##  Min.   :  0.00   Min.   :20001   Abd Pain      : 1390   GI:21244  
+##  1st Qu.:  8.00   1st Qu.:20747   ABD PAIN      : 1074             
+##  Median : 27.00   Median :21740   Vomiting      :  661             
+##  Mean   : 29.98   Mean   :21420   VOMITING      :  563             
+##  3rd Qu.: 47.00   3rd Qu.:22182   ABDOMINAL PAIN:  452             
+##  Max.   :157.00   Max.   :22556   vomiting      :  423             
+##                                   (Other)       :16681             
+##     gender     
+##  Female:10653  
+##  Male  :10591  
+##                
+##                
+##                
+##                
+## </code></pre>
+<div id="descriptive-statistics-for-continuous-numeric-variables" class="section level3">
+<h3>Descriptive statistics for continuous (numeric) variables</h3>
+<p>To access a single column in the <code>data.frame</code> use a dollar sign ($).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI$age     <span class="co"># or</span>
+GI[,<span class="st">'age'</span>] <span class="co"># or</span>
+GI[,<span class="dv">5</span>]     <span class="co"># since age is the 5th column</span></code></pre></div>
+<p>Here are a number of descriptive statistics for <em>age</em>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">min</span>(GI$age)</code></pre></div>
+<pre><code>## [1] 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">max</span>(GI$age)</code></pre></div>
+<pre><code>## [1] 157</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(GI$age)</code></pre></div>
+<pre><code>## [1] 29.98221</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">median</span>(GI$age)</code></pre></div>
+<pre><code>## [1] 27</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">quantile</span>(GI$age, <span class="kw">c</span>(.<span class="dv">025</span>,.<span class="dv">25</span>,.<span class="dv">5</span>,.<span class="dv">75</span>,.<span class="dv">975</span>))</code></pre></div>
+<pre><code>##   2.5%    25%    50%    75%  97.5% 
+##  0.075  8.000 27.000 47.000 81.000</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(GI$age)</code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    0.00    8.00   27.00   29.98   47.00  157.00</code></pre>
+<p>Anything look odd here?</p>
+</div>
+<div id="descriptive-statistics-for-categorical-non-numeric-variables" class="section level3">
+<h3>Descriptive statistics for categorical (non-numeric) variables</h3>
+<p>The <code>table()</code> function provides the number of observations at each level of a categorical variable.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(GI$gender)</code></pre></div>
+<pre><code>## 
+## Female   Male 
+##  10653  10591</code></pre>
+<p>which is the same as <code>summary()</code> if the variable is not coded as numeric</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(GI$gender)</code></pre></div>
+<pre><code>## Female   Male 
+##  10653  10591</code></pre>
+<p>If the variable is coded as numeric, but is really a categorical variable, then you can still use table, but summary won’t give you the correct result.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">table</span>(GI$facility)</code></pre></div>
+<pre><code>## 
+##   37   66   67  123  255  256  259  309  390  413  420  522  703 6200 6201 
+## 3571 2950 4281 4408   41  575    1  325  661  668  100   67  178 1423 1928 
+## 7298 
+##   67</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(GI$facility)</code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      37      66      67    1102     309    7298</code></pre>
+<p>Apparently there is only 1 observation from facility 259, was that a typo?</p>
+</div>
+<div id="filtering-the-data" class="section level3">
+<h3><a name="subsetting">Filtering the data</a></h3>
+<p>Rather than having descriptive statistics for the dataset as a whole, we may be interested in descriptive statistics for a subset of the data, i.e. you want to <code>filter()</code> the data.</p>
+<p>The following code creates a new <code>data.frame()</code> that only contains observations from facility 37:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">'dplyr'</span>)
+
+GI_37 &lt;-<span class="st"> </span>GI %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(facility ==<span class="st"> </span><span class="dv">37</span>) <span class="co"># Notice the double equal sign!</span>
+
+<span class="kw">nrow</span>(GI_37)              <span class="co"># Number of rows (observations) in the new data set</span></code></pre></div>
+<pre><code>## [1] 3571</code></pre>
+<p>The following code creates a new <code>data.frame</code> that only contains observations with chief_complaint “Abd Pain”:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI_AbdPain &lt;-<span class="st"> </span>GI %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(chief_complaint ==<span class="st"> &quot;Abd Pain&quot;</span>) <span class="co"># Need to quote non-numeric variable level</span>
+
+<span class="kw">nrow</span>(GI_AbdPain)</code></pre></div>
+<pre><code>## [1] 1390</code></pre>
+<div id="alternative-ways-to-filter" class="section level4">
+<h4>Alternative ways to filter</h4>
+<p>There are many other ways to subset/filter the data, but these days I almost exclusively use <code>dplyr::filter()</code> as I find the code is much easier to read.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI_37a =<span class="st"> </span>GI[GI$facility==<span class="dv">37</span>,]
+<span class="kw">all.equal</span>(GI_37, GI_37a)</code></pre></div>
+<pre><code>## [1] &quot;Attributes: &lt; Component \&quot;row.names\&quot;: Mean relative difference: 4.978973 &gt;&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI_37b =<span class="st"> </span><span class="kw">subset</span>(GI, facility==<span class="dv">37</span>)
+<span class="kw">all.equal</span>(GI_37, GI_37b)</code></pre></div>
+<pre><code>## [1] &quot;Attributes: &lt; Component \&quot;row.names\&quot;: Mean relative difference: 4.978973 &gt;&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI_AbdPain1 =<span class="st"> </span>GI[GI$chief_complaint ==<span class="st"> &quot;Abd Pain&quot;</span>,]
+<span class="kw">all.equal</span>(GI_AbdPain, GI_AbdPain1)</code></pre></div>
+<pre><code>## [1] &quot;Attributes: &lt; Component \&quot;row.names\&quot;: Mean relative difference: 13.83397 &gt;&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI_AbdPain2 =<span class="st"> </span><span class="kw">subset</span>(GI, chief_complaint ==<span class="st"> &quot;Abd Pain&quot;</span>)
+<span class="kw">all.equal</span>(GI_AbdPain, GI_AbdPain2)</code></pre></div>
+<pre><code>## [1] &quot;Attributes: &lt; Component \&quot;row.names\&quot;: Mean relative difference: 13.83397 &gt;&quot;</code></pre>
+</div>
+<div id="advanced-filtering" class="section level4">
+<h4>Advanced filtering</h4>
+<p>We can subset continuous variables using other logical statements.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI %&gt;%<span class="st"> </span><span class="kw">filter</span>(age &lt;<span class="st">   </span><span class="dv">5</span>)
+GI %&gt;%<span class="st"> </span><span class="kw">filter</span>(age &gt;=<span class="st"> </span><span class="dv">60</span>)
+GI %&gt;%<span class="st"> </span><span class="kw">filter</span>(chief_complaint %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Abd Pain&quot;</span>,<span class="st">&quot;ABD PAIN&quot;</span>)) <span class="co"># Abd Pain or ABD PAIN</span>
+GI %&gt;%<span class="st"> </span><span class="kw">filter</span>(<span class="kw">tolower</span>(chief_complaint) ==<span class="st"> &quot;abd pain&quot;</span>)        <span class="co"># any capitalization pattern</span>
+GI %&gt;%<span class="st"> </span><span class="kw">filter</span>(!(facility %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">37</span>,<span class="dv">66</span>)))                     <span class="co"># facility is NOT 37 or 66</span></code></pre></div>
+</div>
+</div>
+<div id="descriptive-statistics-on-the-subset" class="section level3">
+<h3>Descriptive statistics on the subset</h3>
+<p>Now we can calculate descriptive statistics on this subset, e.g.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(GI_37$age)</code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     3.0    19.0    36.0    39.3    58.0   139.0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(GI_AbdPain$age)</code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    0.00    7.00   27.00   28.61   45.00  157.00</code></pre>
+</div>
+<div id="activity-1" class="section level3">
+<h3>Activity</h3>
+<p>Find the min, max, mean, and median age for zipcode 20032.</p>
+<p>When you have completed the activity, compare your results to the <a href="01_intro-solution.html#descriptive">solutions</a>.</p>
+</div>
+</div>
+<div id="graphical-statistics" class="section level2">
+<h2><a name="graphical"></a> Graphical statistics</h2>
+<p>Here we focus on the graphical options available in the base package <code>graphics</code>.</p>
+<ul>
+<li>Histograms (<code>hist()</code>)</li>
+<li>Boxplots (<code>boxplot()</code>)</li>
+<li>Scatter plots (<code>plot()</code>)</li>
+<li>Bar charts (<code>barplot()</code>)</li>
+</ul>
+<p>Although I sometimes use these base graphics, I end up switching to <code>ggplot2</code> graphics very quickly.</p>
+<div id="histograms" class="section level3">
+<h3>Histograms</h3>
+<p>For continuous variables, histograms are useful for visualizing the distribution of the variable.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(GI$age)</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+<p>When there is a lot of data, you will typically want more bins</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(GI$age, <span class="dv">50</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+<p>You can also specify your own bins</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">hist</span>(GI$age, <span class="dv">0</span>:<span class="dv">158</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+</div>
+<div id="boxplots" class="section level3">
+<h3>Boxplots</h3>
+<p>Boxplots are another way to visualize the distribution for continuous variables.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(GI$age)</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+<p>Now we can see the outliers.</p>
+<div id="multiple-boxplots" class="section level4">
+<h4>Multiple boxplots</h4>
+<p>Here we create separate boxplots for each facility and label the x and y axes.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">boxplot</span>(age ~<span class="st"> </span>facility, <span class="dt">data  =</span> GI, <span class="dt">xlab =</span> <span class="st">&quot;Facility&quot;</span>, <span class="dt">ylab =</span> <span class="st">&quot;Age&quot;</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+</div>
+</div>
+<div id="scatterplots" class="section level3">
+<h3>Scatterplots</h3>
+<p>Scatterplots are useful for looking at the relationship of two continuous variables.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GI$date =<span class="st"> </span><span class="kw">as.Date</span>(GI$date)
+<span class="kw">plot</span>(age ~<span class="st"> </span>date, <span class="dt">data =</span> GI)</code></pre></div>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAC9FBMVEUAAAABAQECAgIDAwMEBAQFBQUGBgYHBwcICAgJCQkKCgoLCwsMDAwNDQ0ODg4PDw8QEBARERESEhITExMUFBQVFRUWFhYXFxcYGBgZGRkaGhobGxscHBwdHR0eHh4fHx8gICAhISEiIiIjIyMkJCQlJSUmJiYnJycoKCgpKSkqKiorKyssLCwtLS0uLi4vLy8wMDAxMTEyMjIzMzM0NDQ1NTU2NjY3Nzc4ODg5OTk6Ojo7Ozs8PDw9PT0+Pj4/Pz9AQEBBQUFCQkJDQ0NERERFRUVGRkZHR0dISEhJSUlKSkpLS0tMTExNTU1OTk5PT09QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1dYWFhZWVlaWlpbW1tcXFxdXV1eXl5fX19gYGBhYWFiYmJjY2NkZGRlZWVmZmZnZ2doaGhpaWlqampra2tsbGxtbW1ubm5vb29wcHBxcXFycnJzc3N0dHR1dXV2dnZ3d3d4eHh5eXl6enp7e3t8fHx9fX1/f3+AgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpKTk5OUlJSVlZWWlpaXl5eYmJiZmZmampqbm5ucnJydnZ2enp6fn5+goKChoaGioqKjo6OkpKSlpaWmpqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrKzs7O0tLS1tbW2tra3t7e4uLi5ubm6urq7u7u9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXHx8fIyMjJycnKysrLy8vMzMzNzc3Ozs7Pz8/R0dHS0tLT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb29vc3Nzd3d3e3t7f39/g4ODh4eHi4uLj4+Pk5OTl5eXm5ubn5+fo6Ojp6enq6urr6+vs7Ozt7e3u7u7v7+/w8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7///+2SALpAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAQkklEQVR4nO2deXwTVR7A32SSJs3RI216U1raJj0o23IUFhCxgC7oFregAoWW+9BVFzxAzl1kF1gVtgK1FheKC6ysgrXK4cFSQFEOZaEKUhZRChWklbMF8v7ZmSS1LdvkN5kck/Tz+34+nXmZ9+b1976dKzOvbwhFHEKkDsDXQUEAKAgABQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCAFAQAAoCQEEATgr6fnavWEVk9gunPRKML+KcoM+V96+v+rJqQ57ukIfi8TmcE9SvyGxNzLzXA7H4JM4J0m6zJfYEtV9gVg/fISutq/3M/uc9Iqj7HFtiea/2C/RZd9BH2DdGlx6TWGovO+VLjwiqkD114Memi188H/CuHUGfOlWfBxk96hKlOyKP2Mnu5hlBtCpPQwhRPbzbTr7PCKqJvMHPisfayfeUIErNDacum+3m+oygijzL7KtMO/meE+QYnxG0K9cy259jJ99DgmYfoPT63ERd3+12CviMoIawU/xs+jw7+R4SRMoonRb3jy9WBL7XfgGfEURLOm88e3iy6bKdbM8Juin/mEss7Nl6sfmnZnqKF/Rdxa6Lolduh73D4rLn/mwv13OCzpCrXOIDTevFu0ObYYqdqq+Fm49H5t0fsVzk2s7jKUGl9FbYQS6xslv7BbRlTtXXwu/zG7iNKFvs6k7jKUEkbmAid2LYEvLH9guIFXQt+BI/22/vrOx2PCTo1K7VM/P6UGooutV+ATGCTm7afOp4miXZpHB+dXF4+Drokr0M5wU1zYgZPSp6YoTl4vNcuKhwRCDVhaLzgmbncWea+t9EbeE/zJvg3nDs4zeCbuu/52c1+sjnd+8al1zr3nDs4zeC6gzWeciJZwc+8Jdr7o3GAR4SVN1C+wWcFnRDc52fXVHbOep7Cg8JyiG/0H4B549BD73ET5eMdHY9F/HULraSHHWY77yg04mF77w9Jvmss+u5iKcENSrdLYheW54/4uXrTq/mIh47SL9W5zBb9FcNu1x/sW/qiM/dXav/nMUgGjIL9le/EbfWzdV2HEGLLJeOJ8Ia3FxvhxHUd49lNminm+vtMIKyrM9t8t9xc70dRlDBq/y0MfaEm+vtMIIORu2m9OeifDdX23EE0V3JGQPCptq9tyyWjiOI3jq650e3V9qRBHkGFASAggBQEECHEWR293cMGx1E0A9jtUFRSxvdWqeVjiHop4SFP9NvhxZwySv1rZe7fu+6Ywh6cQo3OfWGfsMn3XXBqVttSzclhWp773exap8WdPWg3QvjCz9dO9vSf+2hCmqeG1WYrldtNtM9KeWWhasyPqN33o7e51qgPizoSBLDMgmf/d/y6tJX5sfr5bLwkBebDzq/fZeW9ChZPqTz8If5FeN4dU3hry0vP0f/Oci1QKUXdPHk7XZLfKNJ+thc01X9VfOCMzNy7vvT1Tt/iJ2aq+pmKNsZ94+hk2xZSybSzqEFM1XM/tCD3GEosoZb9m5A7nNjI177Wdte5bdPCu1i5F1BN37pfqx+nftYv2HRgqyw5JAlTdbspnf+VPJtc9lBjKGL4dUGzXDb590Ri3c+mx05f0DD7YhjWSZKK7OLtauta9Z3GS87VD2kkJUHREVk6eTqGZdvxkVyGTWddtp6steuXbTpqq2qW0tDE7XR8+10KjtavGj2wrIfbJ+8K+jTXzqws3+ldHvMI9NVIVv2DdPGFfOPA4+lDV4wLXKJtehuuZHSr3sv7mO4Tc8eb6LmlA83Rv4uW0kGLcqWj+oafIEuYaakZyY81id7ymlaa2LUcc+uUyWFH4qKfiapYdqADwZE8U1b1f9BS3V/jxi/cHh8Fa376ga9kpfzWtSYx1Th75trTnCb75HRXe/9yw1biHeejhsRrFYGBRTdlkBQC9wuds7wGX10cC9Wv+6AbtA9jfRW6nou40JqhaVAbsyvuOlqmYpVBqgTQpZUJxyLXB+x7AOGYfRsgEwzqaiTcqNBIZPFrfqzoYoOHZ6oy2TTFKH53R5ht1Jzxr3dp3d+v/HKrIDDfG2Ho/ktc4cuVmvUxTKEJTlTXigYEBSbmBKx5s2YkqOVvSJWnrP83tX9z8X07mtiNYzqVbM4QeY1/SOr51S6LOjVSXQjYRWEBH50/44H/3ZkZfIn/KOi5XGmzIJTNHSS6gzdbOwil8kCw+UPDhjade78lA/paSILVjIZLFFFaVk9I2eDX4peszGDjovVZy1ilIQhjIxE6RgiC+oXnqEOykzJSXn4UzpzcfWXjceTZN1HR+pV6RqZjASHD5apZ9G6t7pqjjeOVWh1iRGT7+uUU5z+3pb0IFamGK4NyFwuTtA6dhapfpxsdVBYkKDnllUxygDL4+nQ9T1lcq5RqmH/rdRH9dZpmd7hR0LClhr6y0iX8mPRL8tkDBM2K/6HkVrCBDGZzY+1WWaQTKEJNihLdUTOfZbzgtR8DsPVFsKOmibP+ezE+k4rE5RavVobH6TqFUJirWuOTg4IHP3rwJhAZqWKiQsZqolXRIcoCBMczyqTikM1Q2RPhzWJEtTtBUqqzePs/JeKcEEvP2FkucZwTSJEEcKqVPGxodz2EszGxcSy3KLsMEtLA43xASzXIP6DLCyIMC2P/YnCqoKxpUhbFESuCAuOi+k3iWFZlreilCvZ5lJMKMOtxOjDGCb0sSeVfHltgIrzyhAtmx7YpxMbnXRClCDVTk4Q3apxUFiQoJpwhYyPVMuHrGbZBL6JMkbGErWS23cYS0u4yZNjSPtweVwF3C7FWuS1zbSJyLgn+pFhrExuW3pXoTZ1Wdax/VJt1heKGEPQGVGCTG/ygl5Jc1UQzW8TobW5MstGw81abQ5y0pa7P9+95bRI4n5UagNrL/+uOrg/T1iW7e8Sr2H1DympKEFrMr4lhyt1f3dV0IG4ti0LIPx2bv0jyxm7rfYQ1k1I39q2TCtOkHlDd41hYIVLfnhBM59sd4O3HlIC3dl2IbJjf/n1zbBEIU6QW+AEjX7Cfrhy+/uNU9g95oBw3wPlpF5SQTMD3OLAU/Bux4kSZF1fHtVjtQt38DhBT0vafgGwRHtWjKC9cXP37p+f9PG6zrNdEpQstQCYESViBP1uHj+dN5Z+or7jiiC11M2HyV0kRlDIDn66PZxeId+5IihU6ubDKErFCEpdxk+XJdPj5Krd4gIE5UrdfBjZdjGCVmnLL17aoH2lZuBvRPvhBb0udfMFsFbUheLqGEIMK+68+ajjjqyQoL7iL1K8xmSR10EXz9v/j3ihgq6qMuEApSZf/IVi42kXBdWGqqRuPgRD5okSVM//j0q5zkVBt9RCvmVLzDdiBG2yHDvYGS4Kop2lbj0MI+qrRtq0emPdhWx7w6UIFqSXuvkwAU1iBCkr6NSP6KZcVwX5wUmM2SpGUHQZXbWA7nX1GES9fUtMBMxjYgTlpR/aZzr/eLLD4tAoeP4hiPQTI+ho+EJzAVHbGVrKCjgKnp8IGizqNH/zMqV1jv+zDRwFjxMkdeOFMNJTdxTBUfD8RNDvPSUIHAXPP85i5H1PCQJHweMERUjdegHckGwUPP+45Uq+8/IoeHWlzahKaJDUrRfAi15+7POfqc0oVtA4qVsvgHGSjYLH7WI5cHySI+pKWlBpaBQ8TlC41K0XQKGXR8FrI8gPbgeRKV4eBa+NIKkbL4T5Eo6Cd0nqxguhTMJR8H6UuvFCeFPKUfCkbrwQxN20dwJHo+D5w+0Ojx2kQThBd3c19EWKpRTkD181KqQUFC916wUwXEpBvt0Dz0q2hIIa/eEg/WsJBZ2TuvFC6CmhoBtSN14ICVIeg6RuvBC6oiDHDEJBjkFBACgIwGNPVoUI8ofroAUoyDFP4C7mmHtRkGOiUZBjjCjIMR6/5epA0DWpGy+Ev+K3ecc86jFBcCfOW1I3XggxnhIkoBOnXwhSe0qQgE6cfrGLab3cifPk7GYCiq9L3Xgh9PVyJ86zS5uJ+MAvTvOrJOvE2edTqpG69QK4JeWrjL/w/W+rZRK+ynhOaenCWDhEKVHPKy0tjZXoQrHM2pdz8vgJ4ydNLCosLBw/sahowvipEwsnFhZNKigYP7lw8oQJBaNy1SZTSqrRaEpNNdoSaSYjlzZxS1KNqWl8kpubDHpTckoytyiZWyHZaDIa09KspbiUyWhK5j9wS43qGG6SbFlgNHZJNaalpnA1pRhT+LKmtFRurVS+oClgJB/hU0JHGXazIKHsGSCw4OL5Ags+IPTVJCnOvYECBQGgIAAUBICCAFAQAAoCQEEAEgnaL/Tf85cuEljwwY8FFkyrEVjQikSCzHY7Et/FdaEvQPhJ6LhiQscstyGRIP8BBQGgIAAUBICCAFAQAAoCQEEAKAgABQGgIAAUBICCALwlaO09usQ/8y9meq+Hrt/ntHXiq6Ehadscruxkjdf+EKMvuOCmwL0kaAMpem9F8DJKq2Szt45Tft8qcSx4+rvPsE6Pb+mgxqcSyv/V8wE3Re4lQb2GmCldl0xp3lOUmofMbpWYwr/pccR0N9YYuZ3SU8TOe9icxUuC+q3hJrs11Kw5wCXW9WpJ0BB+r/jmIzfWGLmb0lo/E8Rze9Qw2kD4V6NXxbYkrpLK/jrjK6LeM9B+jfS5X32074E8N0XtPUFnfht5ktvy+bcXfqloSdSQxPKDa/Ur3Fcj/TGYENk3bgrbW4KaFqtG1lJ6mfC3hKsiWxLnyV4u8YbJfTXS/mNqa0f3cFPgXhJ0pW9n3gM1q/jBdTZktyRuy/iOKJ+3+1ZQcTVe5Pe1OssO5wa8JGhKqu0xxsPPc5O8Oa0SA9/iEsty3FfjFaaa0q/JFfdE7h1BN1X5ZTzceUf5UtUsXU2rxPtBSyrnBTj78klHNY7M2LQlazhchyC8I+hrW+83Lrmtp24Avy+0JN7qrunhcAxiZ2usnxalLxT64A0Cv4sBoCAAFASAggBQEAAKAkBBACgIAAUBoCAAFASAggBQEAAKAkBBACgIAAUBoCAAFASAggBQEAAKAkBBACgIAAUBoCAAHxZU7ROx+UQQ7dNGUKWbOms4jb8IItUSRYGCAHxT0J57groU7eNi+8/wGFXGZmoZOY6aS1IDs9bbH/7KI/ikoL1M/uYtY4IIvWlIf71iGltPa0lVLd2QXr5jDlvi3Vh8UlDuBH46hdDLCw9RWs/vXvxP92+5pbP6ezcWnxQU+m9+upuLzbxv9TRjsyDrAISR3o3FJwUZLIL+zcVWYFrwYV2zIMPhah7vxuKTggaP56dTCa0j5ym90CxoYCW3ST0+B1rbvfikoP1M/j/fLuhE6HX1E/s2Z7PljZRdeYhW6FZsKyTO9od1EZ8UxJ3mgxOmHuRi25akve/wDO1p+owmlNI3UtU93vFyKL4pyIdAQQAoCAAFAaAgABQEgIIAUBAACgJAQQAoCAAFAaAgABQEgIIAUBAACgJAQQAoCAAFAaAgABQEgIIAUBAACgL4H4QtAv2vwajpAAAAAElFTkSuQmCC" alt /><!-- --></p>
+<p>We will talk more later about dealing with dates later.</p>
+</div>
+<div id="bar-charts" class="section level3">
+<h3>Bar charts</h3>
+<p>For looking at the counts of categorical variables, we use bar charts.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">counts =<span class="st"> </span><span class="kw">table</span>(GI$facility)
+<span class="kw">barplot</span>(counts, 
+        <span class="dt">xlab =</span> <span class="st">&quot;Facility&quot;</span>, 
+        <span class="dt">ylab =</span> <span class="st">&quot;Count&quot;</span>, 
+        <span class="dt">main =</span> <span class="st">&quot;Number of observations at each facility&quot;</span>)</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+</div>
+<div id="activity-2" class="section level3">
+<h3>Activity</h3>
+<p>Construct a histogram and boxplot for age at facility 37.</p>
+<p>Construct a bar chart for the zipcode at facility 37.</p>
+<p>When you have completed the activity, compare your results to the <a href="01_intro-solution.html#graphical">solutions</a>.</p>
+</div>
+</div>
+<div id="getting-help" class="section level2">
+<h2><a name="help"></a> Getting help</h2>
+<p>As you work with R, there will be many times when you need to get help.</p>
+<p>My basic approach is</p>
+<ol style="list-style-type: decimal">
+<li>Use the help contained within R</li>
+<li>Perform an internet search for an answer</li>
+<li>Find somebody else who knows</li>
+</ol>
+<p>In all cases, knowing the R keywords, e.g. a function name, will be extremely helpful.</p>
+<div id="help-within-r-i" class="section level3">
+<h3>Help within R I</h3>
+<p>If you know the function name, then you can use <code>?&lt;function&gt;</code>, e.g.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">?mean</code></pre></div>
+<p>The structure of help is - Description: quick description of what the function does - Usage: the arguments, their order, and default values (if any) - Arguments: more thorough description about the arguments - Value: what the funtion returns - See Also: similar functions - Examples: examples of how to use the function</p>
+</div>
+<div id="help-within-r-ii" class="section level3">
+<h3>Help within R II</h3>
+<p>If you cannot remember the function name, then you can use <code>help.search(&quot;&lt;something&gt;&quot;)</code>, e.g.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help.search</span>(<span class="st">&quot;mean&quot;</span>)</code></pre></div>
+<p>Depending on how many packages you have installed, you will find a lot or a little here.</p>
+</div>
+<div id="internet-search-for-r-help" class="section level3">
+<h3>Internet search for R help</h3>
+<p>I google for <code>&lt;something&gt; R</code>, e.g.</p>
+<pre><code>calculate mean R</code></pre>
+<p>Some useful sites are</p>
+<ul>
+<li><a href="http://www.cookbook-r.com/" class="uri">http://www.cookbook-r.com/</a></li>
+<li><a href="http://www.r-tutor.com/r-introduction" class="uri">http://www.r-tutor.com/r-introduction</a></li>
+<li><a href="http://www.statmethods.net/" class="uri">http://www.statmethods.net/</a></li>
+<li><a href="http://stackoverflow.com/questions/tagged/r" class="uri">http://stackoverflow.com/questions/tagged/r</a></li>
+<li><a href="http://www.ats.ucla.edu/stat/r/" class="uri">http://www.ats.ucla.edu/stat/r/</a></li>
+<li><a href="https://sites.google.com/site/rapplicationforbiosurveillance/home/discussions" class="uri">https://sites.google.com/site/rapplicationforbiosurveillance/home/discussions</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
