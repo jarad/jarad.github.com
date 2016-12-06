@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Jarad Niemi" />
+
+<meta name="date" content="2016-11-29" />
+
+<title>Introduction to R - Activity Solutions</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to R - Activity Solutions</h1>
+<h4 class="author"><em>Jarad Niemi</em></h4>
+<h4 class="date"><em>2016-11-29</em></h4>
+
+
+
+<div id="introduction-to-r---activity-solutions" class="section level1">
+<h1>Introduction to R - Activity Solutions</h1>
+<div id="introduction" class="section level2">
+<h2><a name="introduction"></a> Introduction</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x =<span class="st"> </span><span class="dv">1</span>:<span class="dv">10</span>
+y =<span class="st"> </span><span class="kw">rep</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dt">each =</span> <span class="dv">5</span>)
+m =<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x)
+s =<span class="st"> </span><span class="kw">summary</span>(m)</code></pre></div>
+<p>Now, look at the result of each line</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x</code></pre></div>
+<pre><code>##  [1]  1  2  3  4  5  6  7  8  9 10</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">y</code></pre></div>
+<pre><code>##  [1] 1 1 1 1 1 2 2 2 2 2</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x)
+## 
+## Coefficients:
+## (Intercept)            x  
+##      0.6667       0.1515</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -0.4242 -0.1667  0.0000  0.1667  0.4242 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)   
+## (Intercept)   0.6667     0.1880   3.546  0.00756 **
+## x             0.1515     0.0303   5.000  0.00105 **
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.2752 on 8 degrees of freedom
+## Multiple R-squared:  0.7576, Adjusted R-squared:  0.7273 
+## F-statistic:    25 on 1 and 8 DF,  p-value: 0.001053</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s$r.squared</code></pre></div>
+<pre><code>## [1] 0.7575758</code></pre>
+<p>For those who are familiar with linear regression, this may look familiar.</p>
+</div>
+<div id="calculator" class="section level2">
+<h2><a name="calculator"></a> Calculator</h2>
+<p>Calculate the probability the individual has the disease if the test is positive when</p>
+<ul>
+<li>the specificity of the test is 0.95,</li>
+<li>the sensistivity of the test is 0.99, and</li>
+<li>the prevalence of the disease is 0.001.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">specificity =<span class="st"> </span><span class="fl">0.95</span>
+sensitivity =<span class="st"> </span><span class="fl">0.99</span>
+prevalence =<span class="st"> </span><span class="fl">0.001</span>
+probability =<span class="st"> </span>(sensitivity*prevalence) /<span class="st"> </span>(sensitivity*prevalence +<span class="st"> </span>(<span class="dv">1</span>-specificity)*(<span class="dv">1</span>-prevalence))
+probability</code></pre></div>
+<pre><code>## [1] 0.01943463</code></pre>
+<p>Yes, it is only about 2%!</p>
+</div>
+<div id="read-csv-file" class="section level2">
+<h2><a name="read"></a> Read csv file</h2>
+<p>Read in the <code>fluTrends.csv</code> file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Read in the csv file</span>
+fluTrends =<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">'fluTrends.csv'</span>)
+<span class="kw">names</span>(fluTrends)</code></pre></div>
+<pre><code>##   [1] &quot;Date&quot;                                         
+##   [2] &quot;United.States&quot;                                
+##   [3] &quot;Alabama&quot;                                      
+##   [4] &quot;Alaska&quot;                                       
+##   [5] &quot;Arizona&quot;                                      
+##   [6] &quot;Arkansas&quot;                                     
+##   [7] &quot;California&quot;                                   
+##   [8] &quot;Colorado&quot;                                     
+##   [9] &quot;Connecticut&quot;                                  
+##  [10] &quot;Delaware&quot;                                     
+##  [11] &quot;District.of.Columbia&quot;                         
+##  [12] &quot;Florida&quot;                                      
+##  [13] &quot;Georgia&quot;                                      
+##  [14] &quot;Hawaii&quot;                                       
+##  [15] &quot;Idaho&quot;                                        
+##  [16] &quot;Illinois&quot;                                     
+##  [17] &quot;Indiana&quot;                                      
+##  [18] &quot;Iowa&quot;                                         
+##  [19] &quot;Kansas&quot;                                       
+##  [20] &quot;Kentucky&quot;                                     
+##  [21] &quot;Louisiana&quot;                                    
+##  [22] &quot;Maine&quot;                                        
+##  [23] &quot;Maryland&quot;                                     
+##  [24] &quot;Massachusetts&quot;                                
+##  [25] &quot;Michigan&quot;                                     
+##  [26] &quot;Minnesota&quot;                                    
+##  [27] &quot;Mississippi&quot;                                  
+##  [28] &quot;Missouri&quot;                                     
+##  [29] &quot;Montana&quot;                                      
+##  [30] &quot;Nebraska&quot;                                     
+##  [31] &quot;Nevada&quot;                                       
+##  [32] &quot;New.Hampshire&quot;                                
+##  [33] &quot;New.Jersey&quot;                                   
+##  [34] &quot;New.Mexico&quot;                                   
+##  [35] &quot;New.York&quot;                                     
+##  [36] &quot;North.Carolina&quot;                               
+##  [37] &quot;North.Dakota&quot;                                 
+##  [38] &quot;Ohio&quot;                                         
+##  [39] &quot;Oklahoma&quot;                                     
+##  [40] &quot;Oregon&quot;                                       
+##  [41] &quot;Pennsylvania&quot;                                 
+##  [42] &quot;Rhode.Island&quot;                                 
+##  [43] &quot;South.Carolina&quot;                               
+##  [44] &quot;South.Dakota&quot;                                 
+##  [45] &quot;Tennessee&quot;                                    
+##  [46] &quot;Texas&quot;                                        
+##  [47] &quot;Utah&quot;                                         
+##  [48] &quot;Vermont&quot;                                      
+##  [49] &quot;Virginia&quot;                                     
+##  [50] &quot;Washington&quot;                                   
+##  [51] &quot;West.Virginia&quot;                                
+##  [52] &quot;Wisconsin&quot;                                    
+##  [53] &quot;Wyoming&quot;                                      
+##  [54] &quot;HHS.Region.1..CT..ME..MA..NH..RI..VT.&quot;        
+##  [55] &quot;HHS.Region.2..NJ..NY.&quot;                        
+##  [56] &quot;HHS.Region.3..DE..DC..MD..PA..VA..WV.&quot;        
+##  [57] &quot;HHS.Region.4..AL..FL..GA..KY..MS..NC..SC..TN.&quot;
+##  [58] &quot;HHS.Region.5..IL..IN..MI..MN..OH..WI.&quot;        
+##  [59] &quot;HHS.Region.6..AR..LA..NM..OK..TX.&quot;            
+##  [60] &quot;HHS.Region.7..IA..KS..MO..NE.&quot;                
+##  [61] &quot;HHS.Region.8..CO..MT..ND..SD..UT..WY.&quot;        
+##  [62] &quot;HHS.Region.9..AZ..CA..HI..NV.&quot;                
+##  [63] &quot;HHS.Region.10..AK..ID..OR..WA.&quot;               
+##  [64] &quot;Anchorage..AK&quot;                                
+##  [65] &quot;Birmingham..AL&quot;                               
+##  [66] &quot;Little.Rock..AR&quot;                              
+##  [67] &quot;Mesa..AZ&quot;                                     
+##  [68] &quot;Phoenix..AZ&quot;                                  
+##  [69] &quot;Scottsdale..AZ&quot;                               
+##  [70] &quot;Tempe..AZ&quot;                                    
+##  [71] &quot;Tucson..AZ&quot;                                   
+##  [72] &quot;Berkeley..CA&quot;                                 
+##  [73] &quot;Fresno..CA&quot;                                   
+##  [74] &quot;Irvine..CA&quot;                                   
+##  [75] &quot;Los.Angeles..CA&quot;                              
+##  [76] &quot;Oakland..CA&quot;                                  
+##  [77] &quot;Sacramento..CA&quot;                               
+##  [78] &quot;San.Diego..CA&quot;                                
+##  [79] &quot;San.Francisco..CA&quot;                            
+##  [80] &quot;San.Jose..CA&quot;                                 
+##  [81] &quot;Santa.Clara..CA&quot;                              
+##  [82] &quot;Sunnyvale..CA&quot;                                
+##  [83] &quot;Colorado.Springs..CO&quot;                         
+##  [84] &quot;Denver..CO&quot;                                   
+##  [85] &quot;Washington..DC&quot;                               
+##  [86] &quot;Gainesville..FL&quot;                              
+##  [87] &quot;Jacksonville..FL&quot;                             
+##  [88] &quot;Miami..FL&quot;                                    
+##  [89] &quot;Orlando..FL&quot;                                  
+##  [90] &quot;Tampa..FL&quot;                                    
+##  [91] &quot;Atlanta..GA&quot;                                  
+##  [92] &quot;Roswell..GA&quot;                                  
+##  [93] &quot;Honolulu..HI&quot;                                 
+##  [94] &quot;Des.Moines..IA&quot;                               
+##  [95] &quot;Boise..ID&quot;                                    
+##  [96] &quot;Chicago..IL&quot;                                  
+##  [97] &quot;Indianapolis..IN&quot;                             
+##  [98] &quot;Wichita..KS&quot;                                  
+##  [99] &quot;Lexington..KY&quot;                                
+## [100] &quot;Baton.Rouge..LA&quot;                              
+## [101] &quot;New.Orleans..LA&quot;                              
+## [102] &quot;Boston..MA&quot;                                   
+## [103] &quot;Somerville..MA&quot;                               
+## [104] &quot;Baltimore..MD&quot;                                
+## [105] &quot;Grand.Rapids..MI&quot;                             
+## [106] &quot;St.Paul..MN&quot;                                  
+## [107] &quot;Kansas.City..MO&quot;                              
+## [108] &quot;Springfield..MO&quot;                              
+## [109] &quot;St.Louis..MO&quot;                                 
+## [110] &quot;Jackson..MS&quot;                                  
+## [111] &quot;Cary..NC&quot;                                     
+## [112] &quot;Charlotte..NC&quot;                                
+## [113] &quot;Durham..NC&quot;                                   
+## [114] &quot;Greensboro..NC&quot;                               
+## [115] &quot;Raleigh..NC&quot;                                  
+## [116] &quot;Lincoln..NE&quot;                                  
+## [117] &quot;Omaha..NE&quot;                                    
+## [118] &quot;Newark..NJ&quot;                                   
+## [119] &quot;Albuquerque..NM&quot;                              
+## [120] &quot;Las.Vegas..NV&quot;                                
+## [121] &quot;Reno..NV&quot;                                     
+## [122] &quot;Albany..NY&quot;                                   
+## [123] &quot;Buffalo..NY&quot;                                  
+## [124] &quot;New.York..NY&quot;                                 
+## [125] &quot;Rochester..NY&quot;                                
+## [126] &quot;Cleveland..OH&quot;                                
+## [127] &quot;Columbus..OH&quot;                                 
+## [128] &quot;Dayton..OH&quot;                                   
+## [129] &quot;Oklahoma.City..OK&quot;                            
+## [130] &quot;Tulsa..OK&quot;                                    
+## [131] &quot;Beaverton..OR&quot;                                
+## [132] &quot;Eugene..OR&quot;                                   
+## [133] &quot;Portland..OR&quot;                                 
+## [134] &quot;Philadelphia..PA&quot;                             
+## [135] &quot;Pittsburgh..PA&quot;                               
+## [136] &quot;State.College..PA&quot;                            
+## [137] &quot;Providence..RI&quot;                               
+## [138] &quot;Columbia..SC&quot;                                 
+## [139] &quot;Greenville..SC&quot;                               
+## [140] &quot;Knoxville..TN&quot;                                
+## [141] &quot;Memphis..TN&quot;                                  
+## [142] &quot;Nashville..TN&quot;                                
+## [143] &quot;Austin..TX&quot;                                   
+## [144] &quot;Dallas..TX&quot;                                   
+## [145] &quot;Ft.Worth..TX&quot;                                 
+## [146] &quot;Houston..TX&quot;                                  
+## [147] &quot;Irving..TX&quot;                                   
+## [148] &quot;Lubbock..TX&quot;                                  
+## [149] &quot;Plano..TX&quot;                                    
+## [150] &quot;San.Antonio..TX&quot;                              
+## [151] &quot;Salt.Lake.City..UT&quot;                           
+## [152] &quot;Arlington..VA&quot;                                
+## [153] &quot;Norfolk..VA&quot;                                  
+## [154] &quot;Reston..VA&quot;                                   
+## [155] &quot;Richmond..VA&quot;                                 
+## [156] &quot;Bellevue..WA&quot;                                 
+## [157] &quot;Seattle..WA&quot;                                  
+## [158] &quot;Spokane..WA&quot;                                  
+## [159] &quot;Madison..WI&quot;                                  
+## [160] &quot;Milwaukee..WI&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># To maintain pretty column names, use </span>
+fluTrends =<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">'fluTrends.csv'</span>, <span class="dt">check.names =</span> <span class="ot">FALSE</span>)
+<span class="kw">names</span>(fluTrends)</code></pre></div>
+<pre><code>##   [1] &quot;Date&quot;                                         
+##   [2] &quot;United States&quot;                                
+##   [3] &quot;Alabama&quot;                                      
+##   [4] &quot;Alaska&quot;                                       
+##   [5] &quot;Arizona&quot;                                      
+##   [6] &quot;Arkansas&quot;                                     
+##   [7] &quot;California&quot;                                   
+##   [8] &quot;Colorado&quot;                                     
+##   [9] &quot;Connecticut&quot;                                  
+##  [10] &quot;Delaware&quot;                                     
+##  [11] &quot;District of Columbia&quot;                         
+##  [12] &quot;Florida&quot;                                      
+##  [13] &quot;Georgia&quot;                                      
+##  [14] &quot;Hawaii&quot;                                       
+##  [15] &quot;Idaho&quot;                                        
+##  [16] &quot;Illinois&quot;                                     
+##  [17] &quot;Indiana&quot;                                      
+##  [18] &quot;Iowa&quot;                                         
+##  [19] &quot;Kansas&quot;                                       
+##  [20] &quot;Kentucky&quot;                                     
+##  [21] &quot;Louisiana&quot;                                    
+##  [22] &quot;Maine&quot;                                        
+##  [23] &quot;Maryland&quot;                                     
+##  [24] &quot;Massachusetts&quot;                                
+##  [25] &quot;Michigan&quot;                                     
+##  [26] &quot;Minnesota&quot;                                    
+##  [27] &quot;Mississippi&quot;                                  
+##  [28] &quot;Missouri&quot;                                     
+##  [29] &quot;Montana&quot;                                      
+##  [30] &quot;Nebraska&quot;                                     
+##  [31] &quot;Nevada&quot;                                       
+##  [32] &quot;New Hampshire&quot;                                
+##  [33] &quot;New Jersey&quot;                                   
+##  [34] &quot;New Mexico&quot;                                   
+##  [35] &quot;New York&quot;                                     
+##  [36] &quot;North Carolina&quot;                               
+##  [37] &quot;North Dakota&quot;                                 
+##  [38] &quot;Ohio&quot;                                         
+##  [39] &quot;Oklahoma&quot;                                     
+##  [40] &quot;Oregon&quot;                                       
+##  [41] &quot;Pennsylvania&quot;                                 
+##  [42] &quot;Rhode Island&quot;                                 
+##  [43] &quot;South Carolina&quot;                               
+##  [44] &quot;South Dakota&quot;                                 
+##  [45] &quot;Tennessee&quot;                                    
+##  [46] &quot;Texas&quot;                                        
+##  [47] &quot;Utah&quot;                                         
+##  [48] &quot;Vermont&quot;                                      
+##  [49] &quot;Virginia&quot;                                     
+##  [50] &quot;Washington&quot;                                   
+##  [51] &quot;West Virginia&quot;                                
+##  [52] &quot;Wisconsin&quot;                                    
+##  [53] &quot;Wyoming&quot;                                      
+##  [54] &quot;HHS Region 1 (CT, ME, MA, NH, RI, VT)&quot;        
+##  [55] &quot;HHS Region 2 (NJ, NY)&quot;                        
+##  [56] &quot;HHS Region 3 (DE, DC, MD, PA, VA, WV)&quot;        
+##  [57] &quot;HHS Region 4 (AL, FL, GA, KY, MS, NC, SC, TN)&quot;
+##  [58] &quot;HHS Region 5 (IL, IN, MI, MN, OH, WI)&quot;        
+##  [59] &quot;HHS Region 6 (AR, LA, NM, OK, TX)&quot;            
+##  [60] &quot;HHS Region 7 (IA, KS, MO, NE)&quot;                
+##  [61] &quot;HHS Region 8 (CO, MT, ND, SD, UT, WY)&quot;        
+##  [62] &quot;HHS Region 9 (AZ, CA, HI, NV)&quot;                
+##  [63] &quot;HHS Region 10 (AK, ID, OR, WA)&quot;               
+##  [64] &quot;Anchorage, AK&quot;                                
+##  [65] &quot;Birmingham, AL&quot;                               
+##  [66] &quot;Little Rock, AR&quot;                              
+##  [67] &quot;Mesa, AZ&quot;                                     
+##  [68] &quot;Phoenix, AZ&quot;                                  
+##  [69] &quot;Scottsdale, AZ&quot;                               
+##  [70] &quot;Tempe, AZ&quot;                                    
+##  [71] &quot;Tucson, AZ&quot;                                   
+##  [72] &quot;Berkeley, CA&quot;                                 
+##  [73] &quot;Fresno, CA&quot;                                   
+##  [74] &quot;Irvine, CA&quot;                                   
+##  [75] &quot;Los Angeles, CA&quot;                              
+##  [76] &quot;Oakland, CA&quot;                                  
+##  [77] &quot;Sacramento, CA&quot;                               
+##  [78] &quot;San Diego, CA&quot;                                
+##  [79] &quot;San Francisco, CA&quot;                            
+##  [80] &quot;San Jose, CA&quot;                                 
+##  [81] &quot;Santa Clara, CA&quot;                              
+##  [82] &quot;Sunnyvale, CA&quot;                                
+##  [83] &quot;Colorado Springs, CO&quot;                         
+##  [84] &quot;Denver, CO&quot;                                   
+##  [85] &quot;Washington, DC&quot;                               
+##  [86] &quot;Gainesville, FL&quot;                              
+##  [87] &quot;Jacksonville, FL&quot;                             
+##  [88] &quot;Miami, FL&quot;                                    
+##  [89] &quot;Orlando, FL&quot;                                  
+##  [90] &quot;Tampa, FL&quot;                                    
+##  [91] &quot;Atlanta, GA&quot;                                  
+##  [92] &quot;Roswell, GA&quot;                                  
+##  [93] &quot;Honolulu, HI&quot;                                 
+##  [94] &quot;Des Moines, IA&quot;                               
+##  [95] &quot;Boise, ID&quot;                                    
+##  [96] &quot;Chicago, IL&quot;                                  
+##  [97] &quot;Indianapolis, IN&quot;                             
+##  [98] &quot;Wichita, KS&quot;                                  
+##  [99] &quot;Lexington, KY&quot;                                
+## [100] &quot;Baton Rouge, LA&quot;                              
+## [101] &quot;New Orleans, LA&quot;                              
+## [102] &quot;Boston, MA&quot;                                   
+## [103] &quot;Somerville, MA&quot;                               
+## [104] &quot;Baltimore, MD&quot;                                
+## [105] &quot;Grand Rapids, MI&quot;                             
+## [106] &quot;St Paul, MN&quot;                                  
+## [107] &quot;Kansas City, MO&quot;                              
+## [108] &quot;Springfield, MO&quot;                              
+## [109] &quot;St Louis, MO&quot;                                 
+## [110] &quot;Jackson, MS&quot;                                  
+## [111] &quot;Cary, NC&quot;                                     
+## [112] &quot;Charlotte, NC&quot;                                
+## [113] &quot;Durham, NC&quot;                                   
+## [114] &quot;Greensboro, NC&quot;                               
+## [115] &quot;Raleigh, NC&quot;                                  
+## [116] &quot;Lincoln, NE&quot;                                  
+## [117] &quot;Omaha, NE&quot;                                    
+## [118] &quot;Newark, NJ&quot;                                   
+## [119] &quot;Albuquerque, NM&quot;                              
+## [120] &quot;Las Vegas, NV&quot;                                
+## [121] &quot;Reno, NV&quot;                                     
+## [122] &quot;Albany, NY&quot;                                   
+## [123] &quot;Buffalo, NY&quot;                                  
+## [124] &quot;New York, NY&quot;                                 
+## [125] &quot;Rochester, NY&quot;                                
+## [126] &quot;Cleveland, OH&quot;                                
+## [127] &quot;Columbus, OH&quot;                                 
+## [128] &quot;Dayton, OH&quot;                                   
+## [129] &quot;Oklahoma City, OK&quot;                            
+## [130] &quot;Tulsa, OK&quot;                                    
+## [131] &quot;Beaverton, OR&quot;                                
+## [132] &quot;Eugene, OR&quot;                                   
+## [133] &quot;Portland, OR&quot;                                 
+## [134] &quot;Philadelphia, PA&quot;                             
+## [135] &quot;Pittsburgh, PA&quot;                               
+## [136] &quot;State College, PA&quot;                            
+## [137] &quot;Providence, RI&quot;                               
+## [138] &quot;Columbia, SC&quot;                                 
+## [139] &quot;Greenville, SC&quot;                               
+## [140] &quot;Knoxville, TN&quot;                                
+## [141] &quot;Memphis, TN&quot;                                  
+## [142] &quot;Nashville, TN&quot;                                
+## [143] &quot;Austin, TX&quot;                                   
+## [144] &quot;Dallas, TX&quot;                                   
+## [145] &quot;Ft Worth, TX&quot;                                 
+## [146] &quot;Houston, TX&quot;                                  
+## [147] &quot;Irving, TX&quot;                                   
+## [148] &quot;Lubbock, TX&quot;                                  
+## [149] &quot;Plano, TX&quot;                                    
+## [150] &quot;San Antonio, TX&quot;                              
+## [151] &quot;Salt Lake City, UT&quot;                           
+## [152] &quot;Arlington, VA&quot;                                
+## [153] &quot;Norfolk, VA&quot;                                  
+## [154] &quot;Reston, VA&quot;                                   
+## [155] &quot;Richmond, VA&quot;                                 
+## [156] &quot;Bellevue, WA&quot;                                 
+## [157] &quot;Seattle, WA&quot;                                  
+## [158] &quot;Spokane, WA&quot;                                  
+## [159] &quot;Madison, WI&quot;                                  
+## [160] &quot;Milwaukee, WI&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># unfortunately these names won't work with the </span>
+<span class="co"># fluTrends$colname syntax, but you can use back-ticks</span>
+<span class="kw">summary</span>(fluTrends$<span class="st">`</span><span class="dt">United States</span><span class="st">`</span>)</code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     576     940    1481    1814    2131   10560</code></pre>
+</div>
+<div id="descriptive-statistics" class="section level2">
+<h2><a name="descriptive"></a> Descriptive statistics</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Min, max, mean, and median age for zipcode 20032.</span>
+GI_20032 &lt;-<span class="st"> </span>GI %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(zipcode ==<span class="st"> </span><span class="dv">20032</span>)
+
+<span class="kw">min</span>(   GI_20032$age)</code></pre></div>
+<pre><code>## [1] 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">max</span>(   GI_20032$age)</code></pre></div>
+<pre><code>## [1] 93</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(  GI_20032$age)</code></pre></div>
+<pre><code>## [1] 28.47843</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">median</span>(GI_20032$age)</code></pre></div>
+<pre><code>## [1] 26.5</code></pre>
+<p>Alternatively</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(GI_20032$age)</code></pre></div>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    0.00    9.00   26.50   28.48   41.00   93.00</code></pre>
+</div>
+<div id="graphical-statistics" class="section level2">
+<h2><a name="graphical"></a> Graphical statistics</h2>
+<p>Construct a histogram and boxplot for age at facility 37.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Construct a histogram and boxplot for age at facility 37.</span>
+GI_37 &lt;-<span class="st"> </span>GI %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(facility ==<span class="st"> </span><span class="dv">37</span>) 
+
+<span class="kw">hist</span>(GI_37$age)</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Construct a boxplot for age at facility 37.</span>
+<span class="kw">boxplot</span>(GI_37$age)</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+<p>Construct a bar chart for the zipcode at facility 37.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Construct a bar chart for the zipcode at facility 37.</span>
+<span class="kw">barplot</span>(<span class="kw">table</span>(GI_37$zipcode))</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+<p>Perhaps this plot isn’t so useful. Maybe it would be better to just use the first 3 zipcode digits</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Construct a bar chart for the first three digits of zipcode at facility 37.</span>
+<span class="kw">barplot</span>(<span class="kw">table</span>(<span class="kw">trunc</span>(GI_37$zipcode/<span class="dv">100</span>)))</code></pre></div>
+<p><img src="data:image/png;base64,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" alt /><!-- --></p>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
