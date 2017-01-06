@@ -57,7 +57,7 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 
 ## Reading schedule
 
-TBD
+See [slides page](slides)
 
 ## Faculty Senate Recommendations
 
