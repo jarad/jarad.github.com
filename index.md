@@ -23,8 +23,8 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
 
 ## Spring 2017 Courses ([all courses](courses))
 
-  - [STAT 401D (Engineering)](stat401Eng)
-  - [STAT 544](stat544)
+  - [STAT 401D (Engineering)](courses/stat401Eng)
+  - [STAT 544](courses/stat544)
 
 ## Contact
 
