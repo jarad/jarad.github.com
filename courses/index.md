@@ -8,6 +8,9 @@ group: navigation
 
 ## Regular courses
 
+- Spring 2017
+  - [STAT 401D (Engineering)](stat401Eng)
+  - [STAT 544](stat544)
 - Fall 2016
   - STAT 330
 - Spring 2016
@@ -20,12 +23,12 @@ group: navigation
   - [STAT 401A](stat401A)
   - STAT 330
 - Spring 2014
-  - STAT 544
+  - [STAT 544](stat544)
 - Fall 2013
   - STAT 401A
-  - STAT 615
+  - [STAT 615](stat615)
 - Spring 2013
-  - STAT 544
+  - [STAT 544](stat544)
 
 
 ## Short courses
