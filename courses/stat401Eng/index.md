@@ -10,7 +10,7 @@ Statistical Methods for Research Workers at
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Yue Zhang
+- TA: Yue Zhang (<yzhang1@iastate.edu>)
 
 This course meets
 
@@ -20,7 +20,7 @@ This course meets
 Office hours are
 
 - Instructor: TBD
-- TA: TBD
+- TA: M 9-10, T 1-2, R 1-2 @ Snedecor 2404
 
 
 ## Textbook
@@ -33,12 +33,15 @@ Here are some free resources that will be used:
 - [Introduction to R for Data Science](https://www.edx.org/course/introduction-r-data-science-microsoft-dat204x-3)
 - [Coursera Data Science Specialization](https://www.coursera.org/specializations/jhu-data-science)
 - [Introduction to Linear Regression Analysis (5) by Montgomery, Peck, and Vining](http://iowa-primo.hosted.exlibrisgroup.com/01IASU:ComboPrimocentral:01IASU_ALMA51248876230002756)
+- [Steve Vardeman's Notes](http://www.public.iastate.edu/~vardeman/stat401/401BNotes.pdf)
+
 
 Other resources:
 
 - [The Statistical Sleuth](http://amzn.to/2jkdmct)
 - [Data Collection and Analysis](http://amzn.to/2iR692T)
-
+- [Data Analysis for Scientists and Engineers](http://amzn.to/2j0yuUI)
+- [An Introduction to Statistical Learning](http://amzn.to/2jasyWb)
 
 ## Software 
 
