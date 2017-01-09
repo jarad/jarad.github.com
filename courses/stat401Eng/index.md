@@ -93,9 +93,12 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 
 
 
-## Reading schedule
+## Schedule
 
-TBD
+|Week|Topic|Reading|
+|----|-----|-------|
+|   1|Data |       |
+|   2|Probability| |
 
 ## Faculty Senate Recommendations
 
