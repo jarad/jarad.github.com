@@ -52,6 +52,7 @@ Although both will be available on lab computers, I suggest you install
 on your own laptop or desktop (or both).
 
 Install links:
+
 - [R](https://mirror.las.iastate.edu/CRAN/)
 - [RStudio](https://www.rstudio.com/products/rstudio/download/) 
 
