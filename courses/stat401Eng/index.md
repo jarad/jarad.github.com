@@ -106,8 +106,8 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 |   7|         | |
 |   8|         | |
 |   9|         | |
-|  10|         | |
 |    |spring break| |
+|  10|         | |
 |  11|         | |
 |  12|         | |
 |  13|         | |
