@@ -7,7 +7,14 @@ description: ""
 
 # Data Management
 
-This page is devoted to helping scientists I interact with organize their data for reproducibility and ease of analysis. This page is primarily concerned with the creation and storage of [raw data](https://en.wikipedia.org/wiki/Raw_data) and not with the creation or storage of tidy data that will typically be used for data analysis. To construct tidy data, you should be using a script in a software problem, e.g. [R](http://r-project.org/).
+This page is devoted to helping scientists I interact with organize their data 
+for reproducibility and ease of analysis. 
+This page is primarily concerned with the creation and storage of 
+[raw data](https://en.wikipedia.org/wiki/Raw_data) and not with the creation or 
+storage of tidy data that will typically be used for data analysis. 
+To construct tidy data, 
+you should be using a script in a software program, 
+e.g. [R](http://r-project.org/).
 
 To construct this page, I used many sources including 
 
