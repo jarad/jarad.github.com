@@ -99,6 +99,22 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 |----|-----|-------|
 |   1|Data |       |
 |   2|Probability| |
+|   3|Distributions| |
+|   4|Modeling| |
+|   5|Inference| |
+|   6|         | |
+|   7|         | |
+|   8|         | |
+|   9|         | |
+|  10|         | |
+|    |spring break| |
+|  10|         | |
+|  11|         | |
+|  12|         | |
+|  13|         | |
+|  14|         | |
+|  15|         | |
+|    |final exam| |
 
 ## Faculty Senate Recommendations
 
