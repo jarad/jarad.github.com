@@ -103,9 +103,9 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 |   4|Modeling| |
 |   5|Inference| |
 |   6|         | |
-|   7|         | |
+|   7|Regression| |
 |   8|         | |
-|   9|         | |
+|   9|midterm| |
 |    |spring break| |
 |  10|         | |
 |  11|         | |
