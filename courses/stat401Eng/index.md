@@ -28,10 +28,10 @@ Office hours are
 There is no required textbook for this course. 
 Here are some free resources that will be used:
 
+- [Coursera Data Science Specialization](https://www.coursera.org/specializations/jhu-data-science)
 - [R for Data Science](http://r4ds.had.co.nz/)
 - [Data Camp](https://www.datacamp.com/)
 - [Introduction to R for Data Science](https://www.edx.org/course/introduction-r-data-science-microsoft-dat204x-3)
-- [Coursera Data Science Specialization](https://www.coursera.org/specializations/jhu-data-science)
 - [Introduction to Linear Regression Analysis (5) by Montgomery, Peck, and Vining](http://iowa-primo.hosted.exlibrisgroup.com/01IASU:ComboPrimocentral:01IASU_ALMA51248876230002756)
 - [Steve Vardeman's Notes](http://www.public.iastate.edu/~vardeman/stat401/401BNotes.pdf)
 
@@ -59,6 +59,7 @@ Install links:
 
 ## Relevant course pages
 
+- [Labs](https://github.com/jarad/STAT401EngLab)
 - [Slides](slides)
 - [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 
