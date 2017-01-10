@@ -13,7 +13,7 @@ This website is designed to host course material for [STAT 544 - Bayesian Statis
 
 This course meets
 
-- TR 8-9:20 Gilman 3121
+- TR 8-9:20 Snedecor 3121
 
 Office hours are
 
