@@ -13,7 +13,7 @@ This website is designed to host course material for [STAT 544 - Bayesian Statis
 
 This course meets
 
-- TR 8-9:20 Gilman 3121
+- TR 8-9:20 Snedecor 3121
 
 Office hours are
 
@@ -61,5 +61,5 @@ See [slides page](slides)
 
 ## Faculty Senate Recommendations
 
-This course abides by the Faculty Senate Recommendations provided at <http://www.celt.iastate.edu/teaching/syllabus_inclusion.html>.
+This course abides by the Faculty Senate Recommendations provided at <http://www.celt.iastate.edu/teaching/preparing-to-teach/recommended-iowa-state-university-syllabus-statements>.
 

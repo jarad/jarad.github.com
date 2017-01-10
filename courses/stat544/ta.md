@@ -11,6 +11,7 @@ tagline: TA responsibilities
   - No credit if problem is not attempted
   - 0.1 off for minor mistakes, e.g. typos
   - 0.5 off for major mistakes indicating lack of understanding
+  - post grades to blackboard
 - Post solutions on Blackboard
   - create solutions as needed
   - on homework due date unless instructor indicates otherwise via email
