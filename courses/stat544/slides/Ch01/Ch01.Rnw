@@ -22,12 +22,9 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(plyr)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
-library(xtable)
-library(Sleuth3)
-library(reshape2)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -116,23 +113,7 @@ set.seed(2)
 	\end{itemize}
 }
 
-\frame{\frametitle{Partition}
-  \begin{definition}
-  A set of events, $\{A_1,A_2,\ldots\}$, is a \alert{partition} of the sample space $\Omega$ \pause if and only if 
-  \begin{itemize}[<+->]
-  \item the events in $\{A_1,A_2,\ldots\}$ are pairwise disjoint and
-  \item $\cup_{i=1}^\infty A_i = \Omega$.
-  \end{itemize}
-  \end{definition}
-  
-  \vspace{0.2in} \pause 
-  
-  Craps partition examples:
-	\begin{itemize}[<+->]
-  \item Win ($A_1$), Loss ($A_2$), Point ($A_3$)
-  \item $A_1 = (1,1), A_2 = (1,2), \ldots, A_6 = (1,6), A_7 = (2,1), \ldots, A_{12} = (2,6), \ldots, A_{36} = (6,6)$
-	\end{itemize}
-}
+
 
 \subsection{Axioms of probability}
 \frame{\frametitle{Kolmogorov's axioms of probability}
@@ -147,7 +128,8 @@ set.seed(2)
 }
 
 \frame{\frametitle{Craps come-out roll probabilities}
-  The following table provides the probability mass function for the sum of the two dice (assuming the probability of each elementary outcome is equal):
+The following table provides the probability mass function for the sum of the 
+two dice if we \emph{believe} the probability of each elementary outcome is equal:
   
   \vspace{0.1in} \pause
   
@@ -171,30 +153,91 @@ set.seed(2)
 	\end{itemize}
 }
 
+
+\frame{\frametitle{Partition}
+  \begin{definition}
+  A set of events, $\{A_1,A_2,\ldots\}$, is a \alert{partition} of the sample space $\Omega$ \pause if and only if 
+  \begin{itemize}[<+->]
+  \item the events in $\{A_1,A_2,\ldots\}$ are pairwise disjoint and
+  \item $\cup_{i=1}^\infty A_i = \Omega$.
+  \end{itemize}
+  \end{definition}
+  
+  \vspace{0.2in} \pause 
+  
+  Craps partition examples:
+	\begin{itemize}[<+->]
+  \item Win ($A_1$), Loss ($A_2$), Point ($A_3$)
+  \item $A_1 = (1,1), A_2 = (1,2), \ldots, A_6 = (1,6), A_7 = (2,1), \ldots, A_{12} = (2,6), \ldots, A_{36} = (6,6)$
+	\end{itemize}
+}
+
+
+
+
+
 \subsection{Conditional probability}
 \frame{\frametitle{Conditional probability}
 	\begin{definition}
-	If $A$ and $B$ are events in $F$, and $P(B)>0$, \pause then the \alert{conditional probability of A given B}, written $P(A|B)$, \pause is 
+	If $A$ and $B$ are events in $F$, and $P(B)>0$, \pause then the 
+	\alert{conditional probability of A given B}, written $P(A|B)$, \pause is 
 	\[ P(A|B) = \frac{P(A \mbox{ and } B)}{P(B)} \]
 	\end{definition}
 	
 	\vspace{0.2in} \pause
 
-	Craps conditional probability example:
-	\[ P(7|\mbox{Win}) = \frac{P(7\mbox{ and Win})}{P(\mbox{Win})} = \frac{P(7)}{P(\mbox{Win})} = \frac{6/36}{8/36} = \frac{6}{8} \]
+  \begin{example}[Craps conditional probability]
+	\[ P(7|\mbox{Win}) \pause
+	= \frac{P(7\mbox{ and Win})}{P(\mbox{Win})} = \frac{P(7)}{P(\mbox{Win})} = \frac{6/36}{8/36} = \frac{6}{8} \]
+	\end{example}
 }
+
+
+\begin{frame}
+\frametitle{Law of Total Probability}
+
+\begin{corollary}[Law of Total Probability]
+Let $A_1,A_2,\ldots$ be a partition of $\Omega$ and $B$ is another event in 
+$\Omega$. \pause
+The \alert{Law of Total Probability} states that 
+\[ 
+P(B) = \sum_{i=1}^\infty P(B\mbox{ and }A_i) = \sum_{i=1}^\infty P(B|A_i)P(A_i).
+\]
+\end{corollary}
+
+\pause
+
+\begin{example}[Craps Win Probability]
+Let $A_i$ be the event that the sum of two die rolls is $i$. 
+\pause
+Then 
+\[ 
+P(\mbox{Win}) \pause = \sum_{i=2}^{12} P(\mbox{Win} \mbox{ and }A_i) 
+ = P(7) + P(11) 
+ = \frac{6}{36} + \frac{2}{36} 
+ = \frac{8}{36} 
+ = \frac{2}{9}.
+\]
+\end{example}
+
+\end{frame}
+
+
 
 \subsection{Bayes' rule}
 \frame{\frametitle{Bayes' rule}
-	\begin{theorem}
+	\begin{theorem}[Bayes' rule]
 	If $A$ and $B$ are events in $F$, \pause then \alert{Bayes' rule} states
 	\[ P(A|B) = \frac{P(B|A)P(A)}{P(B)}\onslide<4->{= \frac{P(B|A)P(A)}{P(B|A)P(A)+P(B|A^c)P(A^c)}} \]
 	\end{theorem}
 	
 	\vspace{0.48in} \pause
 	
-  Craps Bayes' rule example:
-	\[ P(7|\mbox{Win}) = \frac{P(\mbox{Win}|7)P(7)}{P(\mbox{Win})} = \frac{1\cdot P(7)}{P(\mbox{Win})} = \frac{6/36}{8/36} = \frac{6}{8} \]
+	\begin{example}[Craps Bayes' rule]
+	\[ P(7|\mbox{Win}) 
+	\pause = \frac{P(\mbox{Win}|7)P(7)}{P(\mbox{Win})} 
+	= \frac{1\cdot P(7)}{P(\mbox{Win})} = \frac{6/36}{8/36} = \frac{6}{8} \]
+	\end{example}
 }
 
 
@@ -221,7 +264,7 @@ set.seed(2)
 
 \section{Bayesian statistics}
 \begin{frame}
-\frametitle{A Bayesian statistics}
+\frametitle{A Bayesian statistician}
 
 Let 
 \begin{itemize}[<+->]
@@ -361,10 +404,11 @@ d = data.frame(x = seq(0,3,by=0.1)) %>%
          "normalized likelihood" = dgamma(x, 1, y),
          posterior = dgamma(x, a+length(y), b+sum(y)))
 
-m = melt(d, id.var='x', variable.name="Distribution", value.name="density")
+m <- d %>% gather(Distribution, density, -x)
 
 ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
-  geom_line() 
+  geom_line() +
+  theme_bw()
   
 # 
 # opar = par(mar=c(5,4,0,0)+.1)
@@ -425,10 +469,11 @@ d = data.frame(x = seq(0,5,by=0.1)) %>%
          "normalized likelihood" = dgamma(x, length(y), sum(y)),
          posterior = dgamma(x, a+length(y), b+sum(y)))
 
-m = melt(d, id.var='x', variable.name="Distribution", value.name="density")
+m <- d %>% gather(Distribution, density, -x)
 
 ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
-  geom_line() 
+  geom_line() +
+  theme_bw()
 @
 \end{frame}
 
@@ -672,7 +717,8 @@ Why do a Bayesian analysis?
 \begin{itemize}[<+->]
 \item Incorporate prior knowledge via $p(\theta)$
 \item Coherent, i.e. everything follows from specifying $p(\theta|y)$
-\item Interpretability of results, e.g. the probability the parameter is in $(L,U)$ is 95\%
+\item Interpretability of results, e.g. the probability the parameter is in 
+$(L,U)$ is 95\%
 \end{itemize}
 
 \vspace{0.2in} \pause
@@ -681,7 +727,9 @@ Why not do a Bayesian analysis?
 \begin{itemize}[<+->]
 \item Need to specify $p(\theta)$ 
 \item Computational cost
-\item Does not guarantee coverage, i.e. how well do the procedures work over all their uses
+\item Does not guarantee coverage, i.e. how well do the procedures work over all 
+their uses (although \emph{frequentist matching} priors are specifically 
+designed to ensure frequentist properties, e.g. coverage)
 \end{itemize}
 \end{frame}
 
