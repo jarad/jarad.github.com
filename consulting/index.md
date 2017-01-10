@@ -17,6 +17,8 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [RANDOM vs REPEATED in SAS](meetings/20170110b.html)
+- [Regression assumptions (QTL)](meetings/20170110.html)
 - [Complicated design](meetings/20161005.html)
 - [Multivariate count data](meetings/20160921.html)
 - [Simplifying time series](meetings/20160907.html)
