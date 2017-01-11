@@ -72,9 +72,12 @@ We believe that this situation may be improved by an approach that allows a comp
 \begin{frame}
 \frametitle{KISS Data Management}
 
-\begin{itemize}
-\item Create a process \pause and stick to it!
-\end{itemize}
+\begin{center}
+{\Large
+\alert{Create a process \pause and stick to it!}
+}
+\end{center}
+
 
 \vspace{0.1in} \pause
 
@@ -104,6 +107,7 @@ digitized version.
 \pause
 
 For example,
+
 \includegraphics{0624}
 
 \end{frame}
@@ -132,7 +136,8 @@ When making it digital, \alert{BE CONSISTENT}! \pause
 
 \pause
 
-It is okay if it isn't perfect as once it is digital, you can change it later.
+It is okay if it isn't perfect. \pause 
+Once it is digital, you can change it later.
 \pause
 As long as you were consistent.
 
@@ -172,8 +177,8 @@ The photo/scan/etc and the digital version are your \alert{raw data}.
 
 Your raw data should be 
 \begin{itemize}
-\item Backed up in 2 physically different locations
-\item Routinely given to your PI
+\item in 2 physically different locations \pause and, separately,
+\item routinely given to your PI.
 \end{itemize}
 
 \vspace{0.1in} \pause
@@ -187,7 +192,7 @@ This may be hard as a student with limited resources for storage. But if you can
 
 \url{http://researchdata.wisc.edu/news/top-5-data-management-tips-for-graduate-students/}
 \begin{quote}
-Let’s add on to that. 3-2-1-0. 0 USBs used as a form of storage hardware. A USB is easy to lose, misplace, and drop – it happens all the time. A USB is simply not a good form of backup. You can explore options available to you on our resources page.
+Let’s add on to that. 3-2-1-0. 0 USBs used as a form of storage hardware. A USB is easy to lose, misplace, and drop - it happens all the time. A USB is simply not a good form of backup. 
 \end{quote}
 
 \end{frame}
@@ -197,6 +202,8 @@ Let’s add on to that. 3-2-1-0. 0 USBs used as a form of storage hardware. A US
 
 \begin{frame}
 \frametitle{Backup raw data - options}
+
+\scriptsize
 
 IASTATE file storage: \url{https://www.it.iastate.edu/services/storage}
 
@@ -220,12 +227,19 @@ Backup GitHub.com: \url{https://addyosmani.com/blog/backing-up-a-github-account/
 \frametitle{Use scripts to create tidy data}
 
 \begin{definition}
-\alert{Tidy data} are raw data that have been cleaned/munged/wrangled to remove
-errors an inconsistencies and then put in a form usable for statistical 
-analyses.
+\alert{Tidy data} are raw data that have been 
+\begin{itemize}
+\item cleaned/munged/wrangled \pause
+\item collated/joined/processed
+\end{itemize} 
+\pause
+so that the data are ready for statistical analyses, e.g. making
+\begin{itemize}
+\item figures
+\item tables
+\item reports
+\end{itemize}
 \end{definition}
-
-\vspace{0.1in} \pause
 
 \end{frame}
 
@@ -236,39 +250,143 @@ analyses.
 \frametitle{Use scripts to create tidy data - example}
 
 \tiny
-
+Use this gist:
 \url{https://gist.github.com/jarad/8f3b79b33489828ab8244e82a4a0c5b3}:
 
+\vspace{0.1in} \pause
+
+Then for a particular set of files:
 <<eval=FALSE, echo=TRUE>>=
-library(dplyr)
-library(tidyr)
+source("https://gist.githubusercontent.com/jarad/8f3b79b33489828ab8244e82a4a0c5b3/raw/494db9bffb10ed6d1928c1d13f6748991a9415ac/read_dir")
 
-my_read_csv = function(f, into) {
-  readr::read_csv(f) %>%
-    mutate(file=f) %>%
-    separate(file, into) 
-}
-
-read_dir = function(path, pattern, into) {
-  files = list.files(path = path,
-                   pattern = pattern,
-                   recursive = TRUE,
-                   full.names = TRUE)
-  plyr::ldply(files, my_read_csv, into = into)
-}
-@
-
-then for a particular set of files:
-<<eval=FALSE, echo=TRUE>>=
-d = read_dir(path = "2015", 
+bpc = read_dir(path = "../raw/bpc/2015", 
              pattern = "*.csv", 
-             into = c("year","month","day","observer","property","field","station","start_time","extension")) %>%
-  dplyr::select(-extension) %>%
-  
-  # In order to combine with surveys.csv we need to create a `date` variable with format YYYYMMDD
-  mutate(date = as.numeric(paste0(year,month,day))) %>%
-  left_join(readr::read_csv("surveys.csv"))
+             into = c(
+               "blank",
+               "raw",
+               "bpc",
+               "year",
+               "month",
+               "day",
+               "observer",
+               "property",
+               "field",
+               "station",
+               "start_time",
+               "extension")) %>%
+  dplyr::select(-blank,-raw,-bpc,-extension)
+
+readr::write_csv(bpc, path="bpc.csv")
+
 @
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Use scripts to perform analyses}
+
+The scripts should use the tidy data to create
+\begin{itemize}
+\item figures,
+\item tables,
+\item reports, and/or
+\item manuscripts. 
+\end{itemize}
+
+\vspace{0.1in} \pause
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Use scripts to perform analyses - example}
+<<eval=FALSE,echo=TRUE>>=
+library(dplyr)
+
+d <- read.csv("bpc.csv")
+
+d %>% 
+  group_by(species) %>%
+  summarize(count = n()) %>%
+  arrange(-count)
+
+# # A tibble: 21 x 2
+#    species count
+#     <fctr> <int>
+# 1     DICK    11
+# 2     RWBL     9
+# 3     EAME     7
+# 4     KILL     6
+# 5     AMRO     4
+# 6     COYE     4
+# 7     RPHE     4
+# 8     BHCO     2
+# 9     INBU     2
+# 10    NOCA     2
+# # ... with 11 more rows
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{An iterative process}
+
+Although presented as a series of steps, data management is an iterative 
+process.
+\pause
+This usually only comes to light once you start doing (basic) statistical 
+analyses. 
+\pause
+At that point you might need to 
+\begin{itemize}
+\item fix errors in raw non-digital data (if you can)
+\item fix errors in raw digital data
+\item fix errors in tidying scripts
+\item fix errors analysis scripts
+\item update the raw non-digital format
+\item update the tidying scripts
+\item update the analysis scripts
+\item $\vdots$
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+You should also plan time to 
+\begin{itemize}
+\item document your process
+\item review (annually) your process and make improvements.
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Examples}
+
+STRIPS project:
+\begin{itemize}
+\item \url{https://github.com/ISU-STRIPS/STRIPS}
+\item \url{https://github.com/ISU-STRIPS/STRIPSMeta}
+\item \url{https://github.com/ISU-STRIPS/STRIPSONeal}
+\item \url{https://github.com/ISU-STRIPS/STRIPSLiebman}
+\item \url{https://github.com/ISU-STRIPS/STRIPSSchulte/blob/master/tests/testthat/test-counts.R}
+\item \url{https://github.com/ISU-STRIPS/STRIPSSchulte/blob/master/R/data.R}
+\end{itemize}
+
+\vspace{0.1in}
+
+Gas mileage:
+\begin{itemize}
+\item \url{https://github.com/jarad/ToyotaSiennaGasMileage}
+\end{itemize}
+
+\vspace{0.1in}
+
+Flash card data:
+\begin{itemize}
+\item \url{https://github.com/jarad/flashcardData}
+\end{itemize}
 
 \end{frame}
 
