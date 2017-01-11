@@ -4,6 +4,8 @@
 \input{../frontmatter}
 \input{../commands}
 
+%\graphicspath{{include/}}
+
 \title{Set01 - Data Management}
 
 \begin{document}
@@ -68,16 +70,220 @@ We believe that this situation may be improved by an approach that allows a comp
 
 
 \begin{frame}
-\frametitle{Data Science Pipeline}
+\frametitle{KISS Data Management}
 
-\begin{enumerate}
-\item Organize data
-  \begin{enumerate}
-  \item Collect raw data
-  \item (Scripted) data munging/wrangling/tidying
-\end{enumerate}
+\begin{itemize}
+\item Create a process \pause and stick to it!
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Suggested process
+\begin{itemize}[<+->]
+\item Take a picture/scan/etc
+\item Digitize data 
+\item Back it up
+\item Use scripts to tidy it
+\item Use scripts to analyze it
+\end{itemize}
 
 \end{frame}
+
+
+
+\begin{frame}
+\frametitle{Take a picture/scan/etc}
+\setkeys{Gin}{width=0.4\textwidth}
+
+\small
+
+To make sure you always have access to the actual raw data (when it is not 
+digital), take a picture/scan/etc and save it wherever you will be saving the 
+digitized version.
+
+\pause
+
+For example,
+\includegraphics{0624}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{KISS Digitize data}
+
+Either
+\begin{itemize}
+\item your data is already digital or
+\item you need to make it digital.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+When making it digital, \alert{BE CONSISTENT}! \pause
+
+\begin{itemize}
+\item Directory structure
+\item File names
+\item Data file structure
+\item Column names in data file
+\end{itemize}
+
+\pause
+
+It is okay if it isn't perfect as once it is digital, you can change it later.
+\pause
+As long as you were consistent.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{KISS Digitize data - example}
+
+\small
+
+\begin{columns}[t]
+\begin{column}{0.4\textwidth}
+\setkeys{Gin}{width=\textwidth}
+bpc/2015/06/25/JD/0624.pdf:
+\includegraphics{0624}
+\end{column}
+\begin{column}{0.5\textwidth}
+bpc/2015/06/25/JD/0624.csv:
+<<echo=TRUE>>=
+read.csv("0624.csv")
+@
+\end{column}
+\end{columns}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Backup raw data}
+
+\begin{definition}
+The photo/scan/etc and the digital version are your \alert{raw data}.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Your raw data should be 
+\begin{itemize}
+\item Backed up in 2 physically different locations
+\item Routinely given to your PI
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+\tiny
+
+\url{http://researchdata.wisc.edu/storing-data/top-5-data-management-tips-for-undergraduates/}:
+\begin{quote}
+This may be hard as a student with limited resources for storage. But if you can, try to practice 3-2-1. 3 copies of your data, in 2 different locations, on more than 1 type of storage hardware. This may seem excessive, but it can help protect you from the perfect storm of hardware malfunctions or physical accidents like flooding. UW offers Box and a number of other storage options depending on whether you are storing personal data or university data.
+\end{quote}
+
+\url{http://researchdata.wisc.edu/news/top-5-data-management-tips-for-graduate-students/}
+\begin{quote}
+Let’s add on to that. 3-2-1-0. 0 USBs used as a form of storage hardware. A USB is easy to lose, misplace, and drop – it happens all the time. A USB is simply not a good form of backup. You can explore options available to you on our resources page.
+\end{quote}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Backup raw data - options}
+
+IASTATE file storage: \url{https://www.it.iastate.edu/services/storage}
+
+\begin{itemize}
+\item CyBox \url{https://www.it.iastate.edu/services/storage/cybox}
+\item myfiles \url{https://www.it.iastate.edu/services/storage/myfiles}
+\item ResearchFiles \url{https://www.it.iastate.edu/services/storage/researchfiles}
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Git/GitHub.com: Have the same repository (set of files) in multiple places.
+
+Backup GitHub.com: \url{https://addyosmani.com/blog/backing-up-a-github-account/}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Use scripts to create tidy data}
+
+\begin{definition}
+\alert{Tidy data} are raw data that have been cleaned/munged/wrangled to remove
+errors an inconsistencies and then put in a form usable for statistical 
+analyses.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Use scripts to create tidy data - example}
+
+\tiny
+
+\url{https://gist.github.com/jarad/8f3b79b33489828ab8244e82a4a0c5b3}:
+
+<<eval=FALSE, echo=TRUE>>=
+library(dplyr)
+library(tidyr)
+
+my_read_csv = function(f, into) {
+  readr::read_csv(f) %>%
+    mutate(file=f) %>%
+    separate(file, into) 
+}
+
+read_dir = function(path, pattern, into) {
+  files = list.files(path = path,
+                   pattern = pattern,
+                   recursive = TRUE,
+                   full.names = TRUE)
+  plyr::ldply(files, my_read_csv, into = into)
+}
+@
+
+then for a particular set of files:
+<<eval=FALSE, echo=TRUE>>=
+d = read_dir(path = "2015", 
+             pattern = "*.csv", 
+             into = c("year","month","day","observer","property","field","station","start_time","extension")) %>%
+  dplyr::select(-extension) %>%
+  
+  # In order to combine with surveys.csv we need to create a `date` variable with format YYYYMMDD
+  mutate(date = as.numeric(paste0(year,month,day))) %>%
+  left_join(readr::read_csv("surveys.csv"))
+@
+
+\end{frame}
+
+
+% \begin{frame}
+% \frametitle{Data Science Pipeline}
+% 
+% \begin{enumerate}
+% \item Organize data
+%   \begin{enumerate}
+%   \item Collect raw data
+%   \item (Scripted) data munging/wrangling/tidying
+% \end{enumerate}
+% 
+% \end{frame}
 
 
 
