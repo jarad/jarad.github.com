@@ -44,7 +44,7 @@ set.seed(2)
 \item Quick review of probability
   \begin{itemize}
   \item Kolmogorov's axioms
-  \item Bayes' rule
+  \item Bayes' Rule
   \item Application to Down's syndrome screening
   \end{itemize}
 \item Bayesian statistics
@@ -224,16 +224,16 @@ P(\mbox{Win}) \pause = \sum_{i=2}^{12} P(\mbox{Win} \mbox{ and }A_i)
 
 
 
-\subsection{Bayes' rule}
-\frame{\frametitle{Bayes' rule}
-	\begin{theorem}[Bayes' rule]
-	If $A$ and $B$ are events in $F$, \pause then \alert{Bayes' rule} states
+\subsection{Bayes' Rule}
+\frame{\frametitle{Bayes' Rule}
+	\begin{theorem}[Bayes' Rule]
+	If $A$ and $B$ are events in $F$, \pause then \alert{Bayes' Rule} states
 	\[ P(A|B) = \frac{P(B|A)P(A)}{P(B)}\onslide<4->{= \frac{P(B|A)P(A)}{P(B|A)P(A)+P(B|A^c)P(A^c)}} \]
 	\end{theorem}
 	
 	\vspace{0.48in} \pause
 	
-	\begin{example}[Craps Bayes' rule]
+	\begin{example}[Craps Bayes' Rule]
 	\[ P(7|\mbox{Win}) 
 	\pause = \frac{P(\mbox{Win}|7)P(7)}{P(\mbox{Win})} 
 	= \frac{1\cdot P(7)}{P(\mbox{Win})} = \frac{6/36}{8/36} = \frac{6}{8} \]
@@ -327,7 +327,7 @@ where $\tilde{y}$ is unobserved data and $y$ and $\tilde{y}$ are both assumed to
 \frametitle{Bayes' Rule}
 
 Bayes' Rule applied to a partition $P=\{A_1,A_2,\ldots\}$, 
-\[ P(A_i|B) = \frac{P(B|A_i)P(A_i)}{P(B)} \frac{P(B|A_i)P(A_i)}{\sum_{i=1}^\infty P(B|A_i)P(A_i)} \]
+\[ P(A_i|B) = \frac{P(B|A_i)P(A_i)}{P(B)} = \frac{P(B|A_i)P(A_i)}{\sum_{i=1}^\infty P(B|A_i)P(A_i)} \]
 
 \vspace{0.2in} \pause
 
@@ -482,13 +482,16 @@ ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= 
 \begin{frame}
 \frametitle{Bayesian learning (in parameter estimation)}
 % Update slide
-So, Bayes' rule provides a formula for updating from prior beliefs to our posterior beliefs based on the data we observe, \pause i.e.
+So, Bayes' Rule provides a formula for updating from prior beliefs to our posterior beliefs based on the data we observe, \pause i.e.
 
 \[ p(\theta|y) = \frac{p(y|\theta)}{p(y)}p(\theta) \propto p(y|\theta)p(\theta) \]
 
 \pause Suppose we gather $y_1,\ldots,y_n$ sequentially (and we assume $y_i$ independent conditional on $\theta$), \pause then we have 
 
-\[ p(\theta|y_1) \propto p(y_1|\theta)p(\theta) \]
+\[ \begin{array}{rl}
+p(\theta|y_1) & \propto p(y_1|\theta)p(\theta) \pause \\
+p(\theta|y_1,y_2) & \propto p(y_2|\theta)p(\theta|y_1) 
+\end{array} \]
 \pause 
 and 
 \[ p(\theta|y_1,\ldots,y_i) \propto p(y_i|\theta)p(\theta|y_1,\ldots,y_{i-1}) \]
@@ -543,8 +546,8 @@ From previous, let $y_i \stackrel{ind}{\sim} Exp(\theta)$ and $\theta \sim Ga(a,
 \[ \begin{array}{rl}
 p(\tilde{y}|y) 
 &= \int p(\tilde{y}|\theta) p(\theta|y) d\theta \pause \\
-&= \int \theta e^{-\theta\tilde{y}} \frac{(b+n\overline{y})^{a+n}}{\mathrm{\Gamma}(a+1)} \theta^{a+n} e^{-\theta (b+n\overline{y})} d\theta \pause \\
-&= \frac{(b+n\overline{y})^{a+n}}{\mathrm{\Gamma}(a+n)} \int \theta^{a+n+1} e^{-\theta (b+n\overline{y}+\tilde{y})} d\theta \pause \\
+&= \int \theta e^{-\theta\tilde{y}} \frac{(b+n\overline{y})^{a+n}}{\mathrm{\Gamma}(a+1)} \theta^{a+n-1} e^{-\theta (b+n\overline{y})} d\theta \pause \\
+&= \frac{(b+n\overline{y})^{a+n}}{\mathrm{\Gamma}(a+n)} \int \theta^{a+n+1-1} e^{-\theta (b+n\overline{y}+\tilde{y})} d\theta \pause \\
 &= \frac{(b+n\overline{y})^{a+n}}{\mathrm{\Gamma}(a+n)} \frac{\mathrm{\Gamma}(a+n+1)}{(b+n\overline{y}+\tilde{y})^{a+n+1}} \pause \\
 &= \frac{(a+n)(b+n\overline{y})^{a+n}}{(\tilde{y}+b+n\overline{y})^{a+n+1}}
 \end{array} \]
