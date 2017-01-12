@@ -1,0 +1,391 @@
+\documentclass[handout]{beamer}
+
+
+\input{../frontmatter}
+\input{../commands}
+
+%\graphicspath{{include/}}
+
+\title{Set02 - Data}
+
+\begin{document}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=TRUE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library(dplyr)
+library(plotrix)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+
+\section{Statistical inference}
+
+\subsection{Population vs sample}
+\begin{frame}
+\frametitle{Population vs sample}
+
+\begin{definition}
+A \alert{population} is any entire collection of objects we are interested in
+and would like to make statements about.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\begin{definition}
+A \alert{sample} is a group of units selected from the population.
+\end{definition}
+
+\vspace{0.1in} \pause 
+
+{\tiny Modified from \url{http://www.stats.gla.ac.uk/steps/glossary/basic_definitions.html}}
+
+\vspace{0.1in} \pause 
+
+Our typical goal as scientists and engineers is to take a sample to make a 
+statement about the population.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Examples of populations}
+
+Examples of populations
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item all labs in the world
+\item all iPhone 5s
+\item all diamonds bits for machine cutting
+\item all watersheds in Iowa
+\item $\vdots$
+\end{itemize}
+
+\vspace{0.1in} \pause 
+
+\alert{What are some examples of populations from your research?}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Inference to this population}
+
+\begin{definition}
+An \alert{inference} is a conclusion that patterns in the data are present in 
+some broader context.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Remark:
+A (statistically valid) \alert{inference to a population} can be drawn from a 
+random sample from that population, 
+but not otherwise.
+
+\vspace{0.1in} \pause
+
+\begin{definition}
+A \alert{simple random sample} of size $n$ from a population is a subset of the 
+population consisting of $n$ members selected in such a way that every subset of 
+size $n$ is afforded the same chance of being selected.
+\end{definition}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Using R to obtain a simple random sample}
+
+<<>>=
+# Get 10 random numbers from 1 to 100 
+sample(100, size = 10)
+@
+
+<<eval=FALSE>>=
+# Take a data set and extract 10 random rows
+n = nrow(mydata)
+mydataSRS = mydata[sample(n,10),]
+@
+
+\pause
+
+<<>>=
+# To make it reproducible use `set.seed()`
+seed = 20170112
+set.seed(seed)
+sample(100, size = 10)
+sample(100, size = 10) # not the same so reset the seed
+set.seed(seed)
+sample(100, size = 10) # this is the same
+@
+
+\end{frame}
+
+
+
+
+
+\subsection{Randomized experiments vs observational studies}
+
+\small
+
+\begin{frame}
+\frametitle{Randomized experiments vs observational studies}
+
+\begin{definition}
+An \alert{experimental unit} is the object which is actually studied by a 
+researcher; 
+the basic objects upon which measurements are taken.
+\end{definition}
+
+\pause
+
+\begin{definition}
+An \alert{experiment} is any process or study which results in the collection of 
+data, 
+the outcome of which is unknown. 
+\pause 
+A \alert{randomized experiment} is an experiment where the investigator controls 
+the assignment of experimental units to groups and uses a {\bf chance mechanism} 
+to make the assignment. 
+\pause
+In an \alert{observational study}, 
+the group status of the subjects is not controlled by the investigator.
+\end{definition}
+
+\vspace{0.1in} \pause 
+
+Remark:
+Statistical inference of \alert{cause-and-effect} relationships can be drawn 
+from randomized experiments, 
+but not from observational studies.
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Use R to assign treatments}
+
+<<>>=
+set.seed(20170113)
+n <- 12
+blocks     <- c("B1","B2")
+treatments <- c("Trt1","Trt2")
+data.frame(experimental_unit = paste0("EU",1:n),
+           block             = rep(blocks, each = n/2)) %>%
+  mutate(random              = sample(treatments, n, replace = TRUE),
+         balanced            = sample(rep(treatments, each = n/2))) %>%
+  group_by(block) %>%
+  mutate(blocked             = sample(treatments, n/2, replace=TRUE),
+         blocked_balanced    = sample(rep(treatments, each = n/4)))
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Graphical representation}
+
+\small
+
+Within the box is the population and colors are the treatment. 
+
+<<experiments, echo=FALSE, warning=FALSE, out.width='0.6\\textwidth', fig.align='center'>>=
+library(plotrix)
+
+set.seed(1)
+n = 20
+x = runif(n,0,1)
+y = runif(n,0,1)
+
+ox = c(0,0,1,1)
+oy = c(0,1,0,1)
+
+par(mar=rep(0,4))
+plot(0,0,type="n",axes=F,xlim=c(0,2), ylim=c(0,2), xlab="", ylab="")
+
+points(x+rep(ox,each=n),y+rep(oy,each=n), pch=19)
+
+xr = .08
+yr = .08
+of = .8
+rect(xr+ox,yr+oy,xr+ox+of,yr+oy+of)
+
+points(x,y+1, pch=19, col=c(rep(2,5), rep(4,5)))
+text(0.5,yr+of+1.05,"Observational Study",pos=3)
+text(0.04,1.8,"Non-random selection",pos=2,srt=90)
+draw.ellipse(.60,1.7,a=.05,b=.25,angle=-55)
+
+
+points(x,y, pch=19, col=c(rep(2,5), rep(4,5)))
+text(0.04,0.7,"Random selection",pos=2,srt=90)
+id = c(2,3,8,9)
+points(x[id], y[id], cex=2)
+
+
+points(x[c(3,15,16,17)]+1,y[c(3,15,16,17)]+1, 
+       pch=19,, col=c(2,4))
+text(1.5,yr+of+1.05,"Randomized Experiment",pos=3)
+draw.ellipse(1.6,1.7,a=.05,b=.25,angle=-55)
+
+wh = which(x>xr & x<xr+of & y>yr & y<yr+of)
+id = sample(wh,4)
+points(x[id]+1,y[id], pch=19, col=c(2,2,4,4))
+points(x[id]+1, y[id], cex=2)
+
+
+
+# ## ggplot2 attempt below
+# library(ggplot2)
+# library(plyr)
+# 
+# set.seed(1)
+# n = 30
+# x = runif(n,0,1)
+# y = runif(n,0,1)
+# trt = c("A","B")
+# 
+# d = ddply(expand.grid(type = factor(c("Observational Study","Randomized Experiment"),ordered=T),
+#                 sam = factor(c("Non-random Sample","Random Sample"),ordered=T)), 
+#           .(type,sam), 
+#           data.frame,x=x,y=y,Treatment=trt)
+# d$Treatment[d$sam=="Random Sample"     & d$type=="Randomized Experiment"][sample(n,20)] = NA
+# d$Treatment[d$sam=="Non-random Sample" & d$type=="Randomized Experiment" & (d$x<.5 | d$y<.5)] = NA
+# 
+# p = ggplot(d, aes(x=x,y=y,color=Treatment))+facet_grid(type~sam)+geom_point()+geom_rect(data=data.frame(variable=1:3), aes(xmin=.5,xmax=1,ymin=.5,ymax=1), fill=NA)
+#            
+# print(p)
+@
+\end{frame}
+
+
+
+
+\frame{\frametitle{Statistical inference}
+  \begin{center}
+	\begin{tabular}{|l||l|l|}
+	\hline
+	& Observational & Randomized \\
+	& Study & Experiment \\
+	\hline 
+	\hline
+	Non-random  & & Causal Inference \\
+	Selection & & \\
+	\hline
+	Random & Inference & Causal Inference  \\
+	Selection & to Population & to Population \\
+	\hline
+	\end{tabular}
+	\end{center}
+  
+  \vspace{0.1in} \pause 
+  
+  \begin{itemize}
+  \item Random sampling $\to$ inference to population
+	\item Random treatment assignment $\to$ causal inference
+	\end{itemize}
+}
+
+
+
+\begin{frame}
+\frametitle{ZMapp therapy for Ebola}
+
+{\tiny Current Ebola status: \url{http://www.cdc.gov/vhf/ebola/outbreaks/guinea/}
+
+\vspace{0.1in}
+
+from: \url{http://en.wikipedia.org/wiki/ZMapp}
+
+\begin{quotation}
+In 2014, Samaritan's Purse worked with the FDA and Mapp Biopharmaceutical to make the drug available to two of its health workers, who were infected by Ebola during their work in Liberia, under the Expanded access program. At the time, there were only a few doses of ZMapp in existence. According to news reports, Kent Brantly received the first dose of ZMapp nine days after falling ill. According to Samaritan's Purse, Brantly received a blood transfusion from a 14-year old boy who survived an Ebola virus infection before being treated with the ZMapp serum. Nancy Writebol, working alongside Brantly, was also treated with Zmapp. The condition of both health workers improved, especially in Brantly's case, before being transported back to the United States, to Emory University Hospital, specialized for Ebola treatment. Writebol and Brantly were released from hospital on August 21, 2014. \\ 
+
+A Roman Catholic priest, 75-year-old Miguel Pajares, was flown back to Spain from Monrovia on 7 August after being infected with Ebola. With the permission of Spain’s drug safety agency, he was given ZMapp. He died on August 12, two days after receiving the drug. \\
+
+The west African nation of Liberia, which has been affected by the 2014 outbreak, has secured enough ZMapp to treat three individual Liberians with the disease. One of the three to receive the drug, Dr. Abraham Borbor, a Liberian doctor and deputy chief physician at Liberia's largest hospital, died August 25th, 2014. \\ 
+
+William Pooley, a British male nurse who contracted Ebola while working in Sierra Leone, was also treated with ZMapp in August 2014.
+\end{quotation}
+
+\vspace{0.1in} \pause
+
+Question: Is ZMapp an effective therapeutic for the treatment of Ebola and prevention of death?}
+
+\end{frame}
+
+
+
+\section{Probability and Statistics}
+\begin{frame}
+\frametitle{Uncertainty/Randomness}
+
+\begin{definition}
+\alert{Uncertainty} is a lack of certainty, a state of having limited knowledge where it is impossible to exactly describe current state or future outcome, (or the existence of more than one possible outcome).
+\end{definition}
+
+\pause
+
+\begin{example}
+\begin{itemize}[<+->]
+\item Will I be able to reach \url{news.google.com}?
+\item Will Pok\'emon Go load on my iPhone4S?
+\item Will the client appreciate my beautifully abstract code even if it doesn't quite do what it is expected to do?
+
+\vspace{0.1in}
+
+\item How many minutes will it take to load \url{news.google.com}?
+\item What hardware platforms will Pok\'emon Go load on? Does this depend on anything else?
+\item How many hours will it take me to write code to solve problem X?
+\end{itemize}
+\end{example}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Probability and Statistics}
+
+We want to study physical processes that are not completely deterministic. Using probability and statistics to understand the random components of such processes can help us do this. \pause
+
+\vspace{0.2in}
+
+\begin{itemize}
+\item \alert{Probability}: mathematical theory for modeling \emph{data} where outcomes occur randomly. \pause
+\item \alert{Statistics}: use data to make inferences about questions of interest
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Because statistical inference makes use of probability models, 
+probability is a foundation for statistics. 
+\end{frame}
+
+
+
+
+
+\end{document}
