@@ -24,7 +24,7 @@ Office hours are
 
 ## Relevant course pages
 
-- [Labs](https://github.com/jarad/STAT401EngLab)
+- [Labs](labs)
 - [Slides](slides)
 - [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 
