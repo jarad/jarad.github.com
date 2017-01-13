@@ -22,6 +22,12 @@ Office hours are
 - Instructor: R 3-5 @ Snedecor 2208
 - TA: M 9-10, T 1-2, R 1-2 @ Snedecor 2404
 
+## Relevant course pages
+
+- [Labs](https://github.com/jarad/STAT401EngLab)
+- [Slides](slides)
+- [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
+
 
 ## Textbook
 
@@ -57,12 +63,6 @@ Install links:
 - [RStudio](https://www.rstudio.com/products/rstudio/download/) 
 
 
-
-## Relevant course pages
-
-- [Labs](https://github.com/jarad/STAT401EngLab)
-- [Slides](slides)
-- [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 
 
 ## Course Description
