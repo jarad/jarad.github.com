@@ -18,7 +18,7 @@ This course meets
 Office hours are
 
 - Instructor: TBD
-- TA: TBD
+- TA: W 1-3
 
 ## Textbook
 
