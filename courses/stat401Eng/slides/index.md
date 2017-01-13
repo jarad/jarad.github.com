@@ -1,6 +1,6 @@
 ---
 layout: page
-title: STAT 544
+title: STAT 401 (Engineering)
 tagline: slides
 ---
 {% include JB/setup %}

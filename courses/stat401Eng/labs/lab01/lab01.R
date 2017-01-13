@@ -1,18 +1,15 @@
 ## ---- eval=FALSE---------------------------------------------------------
-#  system.file("doc", "lab01.R", package="STAT401EngLab")
+## help.start()
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  help.start()
+## >
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  >
+## help()
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  help()
-
-## ---- eval=FALSE---------------------------------------------------------
-#  hepl()
-#  help() # Use up arrow and fix
+## hepl()
+## help() # Use up arrow and fix
 
 ## ------------------------------------------------------------------------
 a = 1 
@@ -26,11 +23,11 @@ m = lm(y~x)
 s = summary(m)
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  x
-#  y
-#  m
-#  s
-#  s$r.squared
+## x
+## y
+## m
+## s
+## s$r.squared
 
 ## ------------------------------------------------------------------------
 1+2
@@ -230,12 +227,12 @@ Exp %>%
   head(n = 2)
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  # Approach 1
-#  head(select(Exp, rep, n_players, n_owls), n = 2)
-#  
-#  # Approach 2
-#  Exp_select <- select(Exp, rep, n_players, n_owls)
-#  head(Exp_select, n = 2)
+## # Approach 1
+## head(select(Exp, rep, n_players, n_owls), n = 2)
+## 
+## # Approach 2
+## Exp_select <- select(Exp, rep, n_players, n_owls)
+## head(Exp_select, n = 2)
 
 ## ------------------------------------------------------------------------
 str(Exp)
@@ -270,7 +267,7 @@ library('ggplot2')
 ggplot(data = Exp, aes(x = n_cards_played)) + geom_histogram(binwidth = 1)
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  qplot(data = Exp, x = age, geom = "histogram", binwidth = 1)
+## qplot(data = Exp, x = age, geom = "histogram", binwidth = 1)
 
 ## ------------------------------------------------------------------------
 ggplot(data = Exp, aes(x = 1, y = n_cards_played)) + geom_boxplot()
@@ -288,18 +285,18 @@ ggplot(Exp, aes(x=n_owls, y = n_cards_played)) + geom_jitter(width=0.2, height=0
 ggplot(Exp, aes(x=n_cards_played)) + geom_bar()
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  # Construct bar chart for the number of suns played.
-#  
-#  # Construct a jittered scatter plot for the number of suns played as a function
-#  # of the number of owls.
+## # Construct bar chart for the number of suns played.
+## 
+## # Construct a jittered scatter plot for the number of suns played as a function
+## # of the number of owls.
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  ?mean
+## ?mean
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  help.search("mean")
+## help.search("mean")
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  ?ggplot
-#  ?geom_point
+## ?ggplot
+## ?geom_point
 
