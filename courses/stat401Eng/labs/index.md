@@ -9,3 +9,4 @@ tagline: Statistical Methods for Research Workers
 ## Schedule
 
  - [Lab01](lab01/lab01.html) - Introduction to R
+ - [Lab02](lab02/lab02.html) - Probability distributions in R
