@@ -240,16 +240,155 @@ To start running some statistics on the `data.frame` a quick function is the
 summary(experiments)
 ```
 
-### Combining `data.frame`s
+Notice (under `win` column) that R will tell you if any observations are 
+`Not Available` using `NA`.
+
+
+### Subsetting a `data.frame`
 
 First, let's make sure the `dplyr` package is loaded 
-and the two `data.frame`s are read into R. 
+and `experiments` is loaded.
 
 ```{r}
 library("dplyr")
 experiments     <- read.csv("experiments.csv")
-treatment_codes <- read.csv("treatment_codes.csv")
 ```
+
+There are numerous ways in `dplyr` to subset observations:
+
+- `filter()`
+- `distinct()`
+- `sample_frac()`
+- `sample_n()`
+- `slice()`
+- `top_n()`
+
+By far the most common one for me is to `filter()`.
+This function will return all rows that match a set of logical criteria. 
+For example, perhaps we want to extract all observations with treatment code
+`AI`.
+
+```{r}
+experiments %>%
+  filter(code == "AI") # notice the double equal
+```
+
+You can also filter by multiple criteria. 
+
+```{r}
+experiments %>%
+  filter(win, n_cards_played > 30) %>% # win is already logical
+  summary
+```
+
+
+
+#### Activity
+
+Use the `treatment_codes` `data.frame` to keep only observations that used the
+`random` strategy and 6 owls. 
+If you get done with this quickly, keep only observations that used 2 or more
+owls but less than 6. 
+
+<div id="filter_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+treatment_codes %>%
+  filter(strategy == "random", n_owls == 6) %>%
+  summary
+
+treatment_codes %>%
+  filter(n_owls >= 2, n_owls < 6) %>%
+  summary
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('filter_activity_solution') .style.display=='none') {document.getElementById('filter_activity_solution') .style.display=''}else{document.getElementById('filter_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+If we want to subset the columns, we use the `select()` function. 
+If used by itself, then it will keep any named columns and remove any names 
+pre-fixed with a "-". 
+
+```{r}
+experiments %>% 
+  select(n_cards_played, n_suns_played, n_owls_left) %>%
+  names
+
+experiments %>%
+  select(-code, -rep, -win, -owl_score)
+```
+
+Since there are still many rows here, I only print out the column names.
+
+Sometimes, it would be more efficient to perform some *fuzzy* matching using 
+one of these functions:
+
+- `contains()`
+- `ends_with()`
+- `everything()`
+- `matches()`
+- `num_range()`
+- `one_of()`
+- `starts_with()`
+
+For example, keep only columns that start with "n_"
+
+```{r}
+experiments %>% 
+  select(starts_with("n_")) %>%
+  names
+```
+
+
+
+#### Activity
+
+Use the `treatment_codes` `data.frame` to extract all the codes (and only codes)
+for treatments that had two players and three owls. 
+
+<div id="filterselect_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+treatment_codes %>%
+  filter(n_players == 2, n_owls == 3) %>%
+  select(code)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('filterselect_activity_solution') .style.display=='none') {document.getElementById('filterselect_activity_solution') .style.display=''}else{document.getElementById('filterselect_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+### Making new variables
+
+Proper data management requires that raw data remain raw and that scripts are
+written to create analyzable data sets. 
+These scripts will often need to construct new variables for future analyses.
+The `dplyr` mutate function can be used to add new columns to the `data.frame`.
+
+```{r}
+experiments %>% 
+  mutate(n_non_sun_cards_played = n_cards_played - n_suns_played,
+         suns_spots_remaining   = 13 - n_suns_played,             # there are 13 sun spots
+         average_owl_position   = owl_score / n_owls_left) %>% 
+  head
+```
+
+Notice the `NaN` when we divided by zero. 
+If there are no owls left, then it makes more sense that the average owl 
+position is zero (which indicates the nest). 
+
+```{r}
+experiments %>% 
+  mutate(n_non_sun_cards_played = n_cards_played - n_suns_played,
+         suns_spots_remaining   = 13 - n_suns_played,
+         average_owl_position   = owl_score / n_owls_left,
+         average_owl_position   = ifelse(is.nan(average_owl_position), 
+                                         0,                            # return 0 if NaN
+                                         average_owl_position)) %>%    # otherwise leave alone
+  head
+```
+
+### Combining `data.frame`s
+
+
 
 These two `data.frame`s have the `code` column in common:
 
@@ -279,7 +418,6 @@ There are other ways of joining `data.frame`s in R, but `left_join` is by far
 the one that I use the most often. 
 
 
-### Filtering a `data.frame`
 
 
 
