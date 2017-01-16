@@ -315,7 +315,8 @@ experiments %>%
   names
 
 experiments %>%
-  select(-code, -rep, -win, -owl_score)
+  select(-code, -rep, -win, -owl_score) %>%
+  names
 ```
 
 Since there are still many rows here, I only print out the column names.
@@ -389,7 +390,6 @@ experiments %>%
 
 For each observation, calculate the number of non sun cards played.
 
-
 <div id="mutate_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
 experiments %>% 
@@ -401,9 +401,58 @@ experiments %>%
 
 
 
+### Summarizing data
+
+We will often want to summarize large `data.frame`s. 
+The `dplyr` `summarize` function will allow us to do this summarization. 
+
+```{r}
+experiments %>%
+  summarize(proportion_wins     = mean(win),
+            mean_cards_played   = mean(  n_cards_played),
+            median_cards_played = median(n_cards_played),
+            min_cards_played    = min(   n_cards_played),
+            max_cards_played    = max(   n_cards_played),
+            sd_cards_played     = sd(    n_cards_played),
+            var_cards_played    = var(   n_cards_played))
+```
+
+Often, we will want to perform these summarizations on groups. 
+In order to do this we will first
+
+1. Group the `data.frame` and then
+1. Perform the summarization within each group
+
+```{r}
+experiments %>%
+  group_by(win) %>%
+  summarize(mean_cards_played   = mean(  n_cards_played),
+            median_cards_played = median(n_cards_played)) %>%
+  ungroup()  # this isn't necessary here, but there may be times when you want to ungroup
+```
+
+#### Activity
+
+Calculate the average number of cards played after grouping by the 
+number of owls left.
+
+<div id="summarize_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+experiments %>%
+  group_by(n_owls_left) %>%
+  summarize(mean_cards_played   = mean(  n_cards_played),
+            median_cards_played = median(n_cards_played))
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('summarize_activity_solution') .style.display=='none') {document.getElementById('summarize_activity_solution') .style.display=''}else{document.getElementById('summarize_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
 ### Combining `data.frame`s
 
-
+The `experiment` `data.frame` is set up with *blinding*. 
+In order to *unblind* these data, we will combine it with the `treatment_codes`
+`data.frame`. 
 
 These two `data.frame`s have the `code` column in common:
 
@@ -429,11 +478,63 @@ results2 <- experiments %>%
 all.equal(results, results2)
 ```
 
+
+The warning here is not important, although it is annoying. 
+To avoid these warnings, I often use 
+
+```{r}
+treatment_codes <- read.csv("treatment_codes.csv", stringsAsFactors = FALSE)
+experiments     <- read.csv("experiments.csv",     stringsAsFactors = FALSE)
+```
+
+or, using the 
+[readr](https://cran.r-project.org/web/packages/readr/index.html) package. 
+
+```{r, eval=FALSE}
+library(readr)
+treatment_codes <- read_csv("treatment_codes.csv")
+experiments     <- read_csv("experiments.csv")
+```
+
+
+
 There are other ways of joining `data.frame`s in R, but `left_join` is by far
 the one that I use the most often. 
 
 
 
+#### Activity - Putting it all together
 
+Perform the following:
+
+1. Combine the `experiment` and `treatment` `data.frame`s by column `code`.
+1. Remove the `code` column (as it is no longer needed).
+1. Subset to only include only observations are used 
+
+  - the "last owl farthest" strategy
+  - four or more owls
+  - three players
+  
+1. Calculate the number of games and win proportion after grouping by 
+
+  - number of owls
+  - number of players
+  - number of cards per player
+
+<div id="everything_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+experiments %>%
+  left_join(treatment_codes, by="code") %>%
+  select(-code) %>%
+  filter(strategy == "last_owl_farthest", 
+         n_owls >= 4,
+         n_players == 3) %>%
+  group_by(n_players, n_owls, n_cards_per_player) %>%
+  summarize(
+    n_games = n(),
+    win_proportion = mean(win))
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('everything_activity_solution') .style.display=='none') {document.getElementById('everything_activity_solution') .style.display=''}else{document.getElementById('everything_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
