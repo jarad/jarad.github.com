@@ -7,7 +7,8 @@ library(dplyr)
 # Create blinded treatments
 set.seed(20170116)
 blinded_treatments <- expand.grid(first = LETTERS, second = LETTERS) %>%
-  mutate(treatment_code <- paste0(first,second))
+  mutate(treatment_code = paste0(first,second)) %>%
+  filter(treatment_code != "NA")
 
 treatments <- expand.grid(n_players = 2:4, 
                          n_owls = 1:6,
