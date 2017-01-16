@@ -8,13 +8,13 @@ output:
 ---
 
 
-(Do this after chanexperimentsng your working directory, see below.)
+(Do this after changing your working directory, see below.)
 To follow along, use the [lab02 code](lab02.R)
 and download [experiments.csv](experiments.csv) and 
 [treatment_codes.csv](treatment_codes.csv).
 
 
-## <a name="reading">Importing Data</a>
+## <a name="reading">Reading Data into R</a>
 
 In this section, we will learn how to read in csv or Excel files into R. 
 We focus on csv files because they are simplest to import, 
@@ -22,7 +22,7 @@ they can be easily exported from Excel (or other software),
 and they are portable, 
 i.e. they can be used in other software.
 
-### <a name="working_directory">Chanexperimentsng your working directory</a>
+### <a name="working_directory">Changing your working directory</a>
 
 One of the first tasks after starting R is to change the working directory. 
 To set,
@@ -86,6 +86,7 @@ all.equal(experiments, experiments2)
 The `read.csv` function is available in base R, but these days I will often
 use the `read_csv` function in the 
 [readr](https://cran.r-project.org/web/packages/readr/index.html).
+See below for how to install packages using the `install.packages` function.
 
 ```{r, eval=FALSE}
 install.packages("readr") # run this command if the readr package is not installed
@@ -191,6 +192,95 @@ crimedat <- sqlFetch(myconn, "Crime")
 pundat <- sqlQuery(myconn, "select * from Punishment")
 close(myconn)
 ```
+
+
+
+## Manipulating `data.frame`s in R
+
+Some basic `data.frame` information is available using base R functions. 
+But manipulating the `data.frame` becomes a lot easier using the 
+[dplyr](https://cran.r-project.org/web/packages/dplyr/index.html).
+
+You can check to see if a package is installed, by running
+
+```{r}
+library("dplyr")
+```
+
+If you get an error, you will likely need to install the package. 
+
+```{r, eval=FALSE}
+install.packages("dplyr")
+```
+
+
+### Basic `data.frame` information
+
+The dimensions of the `data.frame` can be found using `dim`, `nrow`, and `ncol`.
+
+```{r}
+dim(experiments)
+nrow(experiments)
+ncol(experiments)
+```
+
+The contents of the `data.frame` can be assessed using the following functions:
+
+```{r}
+names(experiments)
+head(experiments)
+tail(experiments)
+str(experiments)
+```
+
+To start running some statistics on the `data.frame` a quick function is the 
+`summary` function:
+
+```{r}
+summary(experiments)
+```
+
+### Combining `data.frame`s
+
+First, let's make sure the `dplyr` package is loaded 
+and the two `data.frame`s are read into R. 
+
+```{r}
+library("dplyr")
+experiments     <- read.csv("experiments.csv")
+treatment_codes <- read.csv("treatment_codes.csv")
+```
+
+These two `data.frame`s have the `code` column in common:
+
+```{r}
+names(experiments)
+names(treatment_codes)
+```
+
+So, now let's create a new `data.frame` that has combines the information in 
+both of the other `data.frame`s. 
+
+```{r}
+results <- experiments %>%
+  left_join(treatment_codes) # Keeps all rows in experiments and only the relevant rows in treatment_codes
+```
+
+You were told that it was combining by code (which is correct), but you might
+have wanted to enforce that yourself.
+
+```{r}
+results2 <- experiments %>%
+  left_join(treatment_codes, by="code")
+all.equal(results, results2)
+```
+
+There are other ways of joining `data.frame`s in R, but `left_join` is by far
+the one that I use the most often. 
+
+
+### Filtering a `data.frame`
+
 
 
 
