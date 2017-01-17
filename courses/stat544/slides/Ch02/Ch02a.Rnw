@@ -23,12 +23,12 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(plyr)
+#library(plyr)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
-library(xtable)
-library(Sleuth3)
-library(reshape2)
+#library(xtable)
+#library(Sleuth3)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -120,7 +120,7 @@ set.seed(2)
 	&= \frac{\theta^{a+y-1} (1-\theta)^{b+n-y-1}}{\mbox{Beta}(a+y,b+n-y)}
 	\end{array} \]
 \pause
-Thus $\theta|y \sim Be(\theta|a+y, b+n-y)$.
+Thus $\theta|y \sim Be(a+y, b+n-y)$.
 	
 }
 
@@ -132,7 +132,7 @@ Thus $\theta|y \sim Be(\theta|a+y, b+n-y)$.
 	&= \theta^{a+y-1} (1-\theta)^{b+n-y-1} \pause \\
 	\end{array} \]
 \pause
-Thus $\theta|y \sim Be(\theta|a+y, b+n-y)$.
+Thus $\theta|y \sim Be(a+y, b+n-y)$.
 }
 
 
@@ -165,11 +165,13 @@ d = data.frame(x = seq(0,1,by=0.01)) %>%
          "normalized likelihood" = dbeta(x, y, n-y),
          posterior = dbeta(x, a+y, b+n-y))
 
-m = melt(d, id.var='x', variable.name="Distribution", value.name="density")
+m <- d %>%
+  tidyr::gather(Distribution, density, -x)
 
 ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
   geom_line() +
-    theme(legend.position="bottom")
+  theme_bw() + 
+  theme(legend.position="bottom") 
 @
 {\tiny Try it yourself at \url{https://jaradniemi.shinyapps.io/one_parameter_conjugate/}.}
 \end{frame}
@@ -211,7 +213,7 @@ ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= 
 	\begin{itemize}
 	\item Mean: $\hat{\theta}_{Bayes} = E[\theta|y]$ minimizes $L\!\left(\theta,\hat{\theta}\right) = \left(\theta-\hat{\theta}\right)^2$ \pause
 	\item Median: $\int_{\hat{\theta}_{Bayes}}^\infty p(\theta|y) d\theta = \frac{1}{2}$ minimizes $L\!\left(\theta,\hat{\theta}\right) = \left|\theta-\hat{\theta}\right|$ \pause
-	\item Mode: $\hat{\theta}_{Bayes} = \mbox{argmax}_\theta \, p(\theta|y)$ is obtained by minimizing $L\!\left(\theta,\hat{\theta}\right) = -\I\left(|\theta| - \hat{\theta}|<\epsilon\right)$ as $\epsilon \to 0$, \pause also called \alert{maximum a posterior (MAP)} estimator.
+	\item Mode: $\hat{\theta}_{Bayes} = \mbox{argmax}_\theta \, p(\theta|y)$ is obtained by minimizing $L\!\left(\theta,\hat{\theta}\right) = -\I\left(|\theta - \hat{\theta}|<\epsilon\right)$ as $\epsilon \to 0$, \pause also called \alert{maximum a posterior (MAP)} estimator.
 	\end{itemize}
 }
 
@@ -247,11 +249,11 @@ estimates = data.frame(mean = (a+y)/(a+b+n),
 
 ggplot(d, aes(x, posterior, group = 1)) +
   geom_line() +
-  geom_vline(data = melt(estimates,variable.name='estimator', 
-                         measure.vars = c('mean','median','mode')), 
+  geom_vline(data = estimates %>% gather(estimator, value), 
              aes(xintercept=value, color=estimator, linetype=estimator),
              show.legend = TRUE) +
-    theme(legend.position="bottom")
+  theme_bw() +
+  theme(legend.position="bottom")
 @
 
 \end{frame}
@@ -316,11 +318,12 @@ ggplot(d, aes(x, posterior, group=1)) +
 
 An estimate of the full posterior can be obtained via simulation, i.e. 
 
-<<simulation, dependson='data'>>=
+<<simulation, dependson='data', fig.width=7>>=
 sim = data.frame(x = rbeta(10000, a+y, b+n-y))
 ggplot(sim, aes(x=x)) + 
   geom_histogram(aes(y=..density..), binwidth=.01) + 
-  stat_function(color = 'red', fun=dbeta, args=list(shape1=a+y, shape2=b+n-y))
+  stat_function(color = 'red', fun=dbeta, args=list(shape1=a+y, shape2=b+n-y)) +
+  theme_bw()
 @
 
 \end{frame}
@@ -407,12 +410,10 @@ dd = data.frame(theta = seq(0.01, 0.99, by=0.01)) %>%
          posterior = prior * dbinom(y, n, theta),
          posterior = posterior / sum(posterior))
 
-ggplot(melt(dd, 
-            id.var='theta', 
-            variable.name = 'distribution', 
-            value.name = 'density'),
-       aes(theta, density, color = distribution, linetype = distribution)) +
+ggplot(dd %>% gather(Distribution, density, -theta),
+       aes(theta, density, color = Distribution, linetype = Distribution)) +
   geom_point() +
+  theme_bw() +
   theme(legend.position="bottom") 
 @
 \end{frame}
@@ -568,11 +569,13 @@ d = data.frame(x = seq(0,1,by=0.01)) %>%
          "normalized likelihood" = dbeta(x, y, n-y),
          posterior = dbeta(x, a+y, b+n-y))
 
-m = melt(d, id.var='x', variable.name="Distribution", value.name="density")
+m <- d %>%
+  gather(Distribution, density, -x)
 
 ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
   geom_line() +
-    theme(legend.position="bottom")
+  theme_bw() +
+  theme(legend.position="bottom")
 @
 \end{frame}
 
