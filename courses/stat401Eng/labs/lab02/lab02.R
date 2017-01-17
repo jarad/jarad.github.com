@@ -21,11 +21,6 @@ all.equal(experiments, experiments2)
 ## experiments <- read_csv("experiments.csv")
 
 ## ---- eval=FALSE---------------------------------------------------------
-## install.packages("readr") # only need to do this once
-## library("readr")          # need to do this every R session
-## treatment_codes <- read_csv("treatment_codes.csv")
-
-## ---- eval=FALSE---------------------------------------------------------
 ## install.packages('readxl')
 ## library('xl')
 ## d = read_excel("filename.xlsx", sheet = 1) # or
@@ -134,6 +129,9 @@ experiments %>%
   ungroup()  # this isn't necessary here, but there may be times when you want to ungroup
 
 ## ------------------------------------------------------------------------
+# Read in the data if you haven't already
+treatment_codes <- read.csv("treatment_codes.csv")
+
 names(experiments)
 names(treatment_codes)
 
