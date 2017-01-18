@@ -326,52 +326,6 @@ P( \text{ WiFi down and ISP down}) &=P(\bar A\intersection \bar B) = P(\overline
 \section{Probability}
 \subsection{Conditional probability}
 
-\begin{frame}[fragile]
-\frametitle{Computer CPU example}
-
-A box has 5 CPUs and 2 are defective. \pause 
-Two CPUs are selected from the box, one at a time. \pause
-What is the probability the second CPU is defective? 
-
-\vspace{0.1in} \pause
-
-Let $A$ be the event \emph{the second CPU is defective}. \pause Assuming each draw is equally likely, we have
-
-\[ 
-P(A) = \frac{|A|}{|\mOmega|} \pause = \frac{2\times 4}{P(5,2)} = 0.4
-\]
-
-\pause
-
-Monte Carlo:
-<<monte_carlo_computer_cpu_example, echo=TRUE>>=
-CPUs = c("d","d","g","g","g") # d = defective, g = good
-sims = replicate(1e5, sample(CPUs, 2))
-mean(sims[2,] == "d")
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Computer CPU example (cont.)}
-
-Suppose you know the first CPU is good. \pause
-Now what is the probability the second CPU is defective? 
-
-\vspace{0.1in} \pause
-
-Let $A$ be the event \emph{the second CPU is defective}, but the sample space ($\mOmega$) has also changed. \pause Assuming each draw is equally likely, we have
-
-\[ 
-P(A) = \frac{|A|}{|\mOmega|} \pause = \frac{3 \times 2}{3 \times P(4,1)} = 0.5
-\]
-
-Monte Carlo:
-<<monte_carlo_cpu_continued, dependson="monte_carlo_computer_cpu_example", echo=TRUE>>=
-mean(sims[2, sims[1,] == "g"] == "d")
-@
-\end{frame}
 
 
 \begin{frame}
@@ -399,66 +353,44 @@ P(A\cap B) = P(A|B)P(B) = P(B|A)P(A).
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Computer CPU example (cont.)}
-
-Let 
-\begin{itemize}
-\item $A$ be the event the second CPU is defective and 
-\item $B$ be the event the first CPU is good. 
-\end{itemize}
-
-\pause
-
-Thus 
-\begin{itemize}
-\item $|A\cap B| = 3\times 2$ because we first pick a good CPU and then pick a defective CPU, \pause
-\item $|B| = 3\times 4$ because we first pick a good CPU and then pick any other CPU, \pause and
-\item $|\mOmega| = P(5,2)$ because we are choosing 2 objects out of 5 ordered without replacement. 
-\end{itemize}
-
-which implies
-\[ 
-P(A|B) = \frac{P(A\cap B)}{P(B)} = \frac{|A\cap B|/|\mOmega|}{|B|/|\mOmega|} = \frac{|A\cap B|}{|B|} = \frac{3\times 2}{3\times 4} = 0.5.
-\]
-
-\end{frame}
-
 
 \begin{frame}
-\frametitle{More CPUs}
-{\small
-A box has 500 computer CPUs with a speed of 1.8 GHz and 500 with a speed of 2.0 GHz. The numbers of good (G) and defective (D) CPUs at the two different speeds are as shown below.
+\frametitle{Random CPUs}
+{\scriptsize
+A box has 500 CPUs with a speed of 1.8 GHz and 500 with a speed of 2.0 GHz. 
+The numbers of good (G) and defective (D) CPUs at the two different speeds are 
+as shown below.
 \begin{center}
 \begin{tabular}{c|c|c|c}
-& 1.8 GHz & 2.0 GHz & \\
+& 1.8 GHz & 2.0 GHz & Total\\
 \hline 
 G & 480 & 490 & 970  \\
 D & 20 & 10 & 30  \\
 \hline
-& 500 & 500 & Total=1000    
+Total & 500 & 500 & 1000    
 \end{tabular}
 \end{center}
 
 \pause
 
-We select a CPU at random and observe its speed. What is the probability that the CPU is defective given that its speed is 1.8 GHz?
+We select a CPU at random and observe its speed. What is the probability that 
+the CPU is defective given that its speed is 1.8 GHz?
 
 \pause
 
 Let 
 \begin{itemize}
-\item $A$ be the event the CPU is defective and
-\item $B$ be the event the CPU speed is 1.8 GHz.
+\item $D$ be the event the CPU is defective and
+\item $S$ be the event the CPU speed is 1.8 GHz.
 \end{itemize}
 
 \pause
 
 Then 
 \begin{itemize}
-\item $P(A) = 30/1000 = 0.03$
-\item $P(B) = 500/1000 = 0.5$
-\item $P(A|B) = P(A\cap B)/P(B) = |A\cap B|/|B| = 20/500 = 0.04$. 
+\item $P(S) = 500/1000 = 0.5$
+\item $P(S\cap D) = 20/1000 = 0.02$.
+\item $P(D|S) = P(S\cap D)/P(S) = 0.02/0.5 = 0.04$. 
 \end{itemize}
 }
 \end{frame}
@@ -513,7 +445,7 @@ What is the probability we can connect to the internet?
 
 Since we have independence, we know
 \[ 
-P(A \cap B) = P(A)\times P(B) = 0.6 \times 0.9. 
+P(A \cap B) = P(A)\times P(B) = 0.6 \times 0.9 = 0.54. 
 \]
 
 \end{frame}
@@ -558,16 +490,24 @@ P(A \cap B) = P(A)\times P(B) = 0.6 \times 0.9.
 \begin{frame}
 \frametitle{Parallel system}
 \begin{definition}
-A \alert{parallel} system consists of $K$ components $c_{1}, \ldots, c_{K}$ arranged in such a way that the system works if {\bf at least one} of the $K$ components functions properly.
+A \alert{parallel} system consists of $K$ components $c_{1}, \ldots, c_{K}$ 
+arranged in such a way that the system works if {\bf at least one} of the $K$ 
+components functions properly.
 \end{definition}
 \centerline{\includegraphics{parallel-system}}
 \end{frame}
 
 \begin{frame}
 \frametitle{Serial system}
+\setkeys{Gin}{width=\textwidth}
 \begin{definition}
-A \alert{serial} system consists of $K$ components $c_{1}, \ldots, c_{K}$ arranged in such a way that the system works if and only if {\bf all} of the components function properly.
+A \alert{serial} system consists of $K$ components $c_{1}, \ldots, c_{K}$ 
+arranged in such a way that the system works if and only if {\bf all} of the 
+components function properly.
 \end{definition}
+
+\vspace{0.2in} \pause
+
 \centerline{\includegraphics{series-system}}
 \end{frame}
 
@@ -593,7 +533,7 @@ The reliability of the WiFi-ISP network (assuming independence) is 0.54
 \frametitle{Reliability of parallel systems with independent components}
 
 Let $c_{1}, \ldots, c_{K}$ denote the $K$ components in a \alert{parallel} system. \pause
-Assume the $K$ components operate independently and $P(c_{k} \text{ works })=p_{k}$. \pause
+Assume the $K$ components operate independently and $P(c_{k} \text{ works})=p_{k}$. \pause
 What is the reliability of the system?
 
 \pause
@@ -602,7 +542,7 @@ What is the reliability of the system?
 P(\text{ system works }) &= P(\text{ at least one component works }) \\
 &= 1-P(\text{ all components fail }) \\
 &= 1-P(c_{1} \text{ fails and } c_{2} \text{ fails } \ldots \text{ and } c_{k} \text{ fails }) \\
-&=1- \prod_{k=1}^K P(c_j \text{ fails}) \\
+&=1- \prod_{k=1}^K P(c_k \text{ fails}) \\
 &= 1- \prod_{k=1}^K(1-p_{k}).
 \end{array} \]
 
@@ -619,8 +559,8 @@ What is the reliability of the system?
 \pause
 
 \[ \begin{array}{rl}
-P(\text{ system works }) &= P(\text{ all component works }) \\
-&= \prod_{k=1}^K P(c_j \text{ works }) \\
+P(\text{ system works }) &= P(\text{ all components work}) \\
+&= \prod_{k=1}^K P(c_k \text{ works}) \\
 &= \prod_{k=1}^K p_{k}.
 \end{array} \]
 
@@ -630,7 +570,8 @@ P(\text{ system works }) &= P(\text{ all component works }) \\
 \begin{frame}
 \frametitle{Reliability example}
 \small
-Each component in the system shown below is opearable with probability 0.92 independently of other components. Calculate the reliability.
+Each component in the system shown below is opearable with probability 0.92 
+independently of other components. Calculate the reliability.
 
 \begin{center}
 \includegraphics*[scale=.25]{circuit1}
@@ -679,7 +620,129 @@ Updated circuit:
 
 
 
+\subsection{Bayes' Rule}
+\begin{frame}
+\frametitle{Partition}
+\setkeys{Gin}{width=0.3\textwidth}
+\begin{definition}
+A collection of events $B_{1}, \ldots B_{K}$ is called a \alert{partition} (or \alert{cover}) of $\mOmega$ if 
+\begin{itemize}
+\item the events are mutually exclusive (i.e., $B_{i}\intersection B_{j} = \emptyset$ for $i\neq j$)\pause, and
+\item the union of the events is $\mOmega$ (i.e., $\bigcup_{k=1}^{K}B_{k} = \mOmega$).
+\end{itemize}
+\end{definition}
 
+\begin{center}
+\includegraphics{cover}
+\end{center}
+
+\pause
+
+The branches of our tree $(B_1,B_2,B_3)$ formed a partition. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Law of Total Probability}
+
+\begin{theorem}[Law of Total Probability]
+If  the collection of events $B_{1}, \ldots, B_{K}$ is a partition of $\mOmega$, and $A$ is an event, then 
+\[ P(A) = \sum_{k=1}^{K}P(A|B_{k})P(B_{k}). \]
+\end{theorem}
+\pause
+\begin{proof}
+\[ \begin{array}{rll}
+P(A) &= P\left( \bigcup_{k=1}^K A\intersection B_k \right) & \mbox{$B_1,\ldots,B_K$ is a partition} \pause \\
+&= \sum_{k=1}^K P(A\intersection B_k) & \mbox{$A\intersection B_1,\ldots,A\intersection B_K$ are disjoint} \pause \\
+&= \sum_{k=1}^K P(A|B_k)P(B_k) & \mbox{definition of conditional probability}
+\end{array} \]
+\end{proof}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Law of Total Probability graphic}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\begin{center}
+\includegraphics{total-prob}
+\end{center}
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Bayes' rule}
+
+\begin{theorem}[Bayes' Rule]
+If $B_{1}, \ldots, B_{K}$ is a partition of $\mOmega$, and $A$ is an event, then 
+\[
+P(B_k|A) = \frac{P(A|B_k)P(B_k)}{\sum_{k=1}^{K}P(A|B_k)P(B_k)}.
+\]
+\end{theorem}
+
+\pause
+
+\begin{proof}
+\[ \begin{array}{rll}
+P(B_k|A) &= \frac{P(A\intersection B_k)}{P(A)} & \mbox{by definition of conditional probability} \pause \\
+&= \frac{P(A|B_k)P(B_k)}{P(A)} & \mbox{by definition of conditional probability} \pause \\
+&= \frac{P(A|B_k)P(B_k)}{\sum_{k=1}^K P(A|B_k)P(B_k)} & \mbox{by Law of Total Probability} 
+\end{array} \]
+\end{proof}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{CPU testing}
+\begin{example}
+A given lot of CPUs contains 2\%  defective CPUs. \pause
+Each CPU is tested before delivery. \pause
+However, the tester is not wholly reliable: \pause
+\[ \begin{array}{rl}
+    P(\text{ tester says CPU is good } | \text{  CPU is good }) &= 0.95 \pause \\
+    P(\text{ tester says CPU is defective } | \text{ CPU is defective }) &=  0.94
+\end{array} \]
+\pause
+If the test device says the CPU is defective, what is the probability that the CPU actually is defective?
+\end{example}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{CPU testing (cont.)}
+
+Let
+\begin{itemize}
+\item $C_g$ ($C_d$) be the event the CPU is good (defective) \pause
+\item $T_g$ ($T_d$) be the event the tester says the CPU is good (defective)
+\end{itemize}
+
+We know \pause
+
+\begin{itemize}
+\item $0.02 = P(C_d) \phantom{|C_g} = 1-P(C_g)$
+\item $0.95 = P(T_g|C_g) = 1-P(T_d|C_g)$
+\item $0.94 = P(T_d|C_d) = 1-P(T_g|C_d)$
+\end{itemize}
+
+\pause
+Using Bayes' Rule, we have 
+
+\[ \begin{array}{rl}
+P(C_d|T_d) &= \frac{P(T_d|C_d)P(C_d)}{P(T_d|C_d)P(C_d)+P(T_d|C_g)P(C_g)} \pause \\
+&= \frac{P(T_d|C_d)P(C_d)}{P(T_d|C_d)P(C_d)+[1-P(T_g|C_g)][1-P(C_d)]} \pause \\
+&= \frac{0.94\times 0.02}{0.94\times 0.02 + [1-0.95]\times[1-0.02]} \pause \\
+&= 0.28
+\end{array} \]
+\end{frame}
 
 
 
