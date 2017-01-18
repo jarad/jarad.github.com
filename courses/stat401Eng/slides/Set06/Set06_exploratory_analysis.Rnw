@@ -1,0 +1,505 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\newtheorem{principle}[theorem]{Principle}
+
+\title{Set03 - Descriptive statistics}
+
+\begin{document}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+@
+
+<<set_seed>>=
+set.seed(2)
+@
+
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Descriptive statistics}
+\begin{frame}
+\frametitle{Statistics}
+\begin{definition}
+The \alert{field of statistics} is the study of the collection, analysis, interpretation, 
+presentation, and organization of data.
+
+{\tiny \url{https://en.wikipedia.org/wiki/Statistics}}
+\end{definition}
+
+\vspace{0.1in} \pause
+
+There are two different phases of statistics: \pause
+\begin{itemize}
+\item descriptive statistics \pause 
+	\begin{itemize}
+	\item statistics
+	\item graphical statistics
+	\end{itemize}
+\item inferential statistics.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\subsection{Sample}
+\begin{frame}
+\frametitle{Population and sample}
+\begin{definition}
+The \alert{population} consists of all units of interest. \pause 
+Any numerical characteristic of a population is a \alert{parameter}. \pause
+The \alert{sample} consists of observed units collected from the population. 
+\pause
+Any function of a sample is called a \alert{statistic}.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\begin{example}
+
+Consider the population of all in-use routers by undergraduate students 
+at Iowa State University. \pause
+We are interested in what proportion have Gigabit speed. \pause
+We collect data from students in STAT 401 (our sample) and record the 
+proportion (a statistic) that have Gigabit routers. 
+\end{example}
+\end{frame}
+
+
+
+\subsection{Random sample}
+\begin{frame}
+\frametitle{Simple random sampling}
+\begin{definition}
+A \alert{simple random sample} is a sample from the population where all subsets
+of the same size are equally likely to be sampled. \pause
+Simple random samples ensure that statistical conclusions will be valid.
+\end{definition}
+
+\vspace{0.1in} \pause 
+
+\begin{example}
+Consider the population of all in-use routers by undergraduate students 
+at Iowa State University. \pause
+We are interested in what proportion have Gigabit speed. \pause
+A pseudo-random number generator gives each student a Unif(0,1) number and the
+lowest 100 are contacted (our sample) and the proportion (a statistic) of these 
+students who have Gigabit routers is recorded.
+\end{example}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Sampling and non-sampling errors}
+
+\begin{definition}
+\alert{Sampling errors} are caused by the mere fact that only a sample, a 
+portion of a population, is observed.
+\pause 
+For most reasonable statistical procedures, sampling errors decrease (and 
+converge to zero) as the sample size increases.
+
+\vspace{0.1in} \pause
+
+\alert{Non-sampling errors} are caused by inappropriate sampling schemes and
+wrong statistical techniques. \pause 
+Often, no statistical technique can rescue a poorly collected sample of data. 
+\end{definition}
+
+\pause
+\begin{example}
+In our example, no statistical technique can help us estimate
+the proportion of students at ISU who have Gigabit routers based on our 
+convenience sample of STAT 401 students who have a Gigabit router.
+\end{example}
+
+\end{frame}
+
+
+\subsection{Statistics}
+\begin{frame}
+\frametitle{Descriptive statistics}
+\begin{definition}
+A \alert{statistic} is any function of the data. 
+\end{definition}
+
+\pause
+
+\begin{example}
+Statistics:
+\begin{itemize}
+\item Sample mean
+\item Sample median
+\item Sample mode
+\item Sample quantile
+\item Sample variance
+\item Sample standard deviation
+\end{itemize}
+\end{example}
+
+\pause
+
+Most statistics are developed to estimate the corresponding population 
+parameter.
+
+\end{frame}
+
+
+
+\subsection{Mean and variance}
+\begin{frame}
+\frametitle{Sample mean}
+
+Let $X_1,\ldots,X_n$ be a sample from a distribution with 
+\[ E[X_i] = \mu \qquad \mbox{ and } \qquad Var[X_i] = \sigma^2 \] 
+where we assume independence between the $X_i$. 
+
+\vspace{0.1in} \pause
+
+The sample mean is 
+\[ 
+\overline{X} = \frac{1}{n} \sum_{i=1}^n X_i
+\]
+\pause
+and estimates the population mean $\mu$. 
+
+\vspace{0.1in} \pause
+
+The sample variance is 
+\[ 
+S^2 = \frac{1}{n-1} \sum_{i=1}^n (X_i-\overline{X})^2 
+= \frac{\sum_{i=1}^n X_i^2 - n\overline{X}^2}{n-1}
+\]
+and estimates the population variance $\sigma^2$. \pause 
+The sample standard deviation  is $S = \sqrt{S^2}$.
+
+\end{frame}
+
+
+
+\subsection{Unbiased}
+\begin{frame}
+\frametitle{Unbiased}
+
+\begin{definition}
+An estimator is \alert{unbiased} for a parameter if its expectation equals the
+parameter. 
+\end{definition}
+
+\pause
+
+\begin{example}
+The sample mean is unbiased for $\mu$ since
+\[ 
+E\left[\,\overline{X}\,\right] = E\left[\frac{1}{n} \sum_{i=1}^n X_i \right]
+= \frac{1}{n} \sum_{i=1}^n E[X_i] = \mu.
+\]
+and the sample variance is unbiased for $\sigma^2$.
+\end{example}
+\end{frame}
+
+
+
+\subsection{Consistent}
+\begin{frame}
+\frametitle{Consistent}
+
+\begin{definition}
+An estimator $\hat{\theta}$, or $\hat{\theta}(x)$, is \alert{consistent} for a parameter $\theta$ if 
+the probability of its sampling error of any magnitude converges to 0 as the
+sample size increases to infinity, \pause i.e.
+\[ 
+P\left( |\hat{\theta}(x)-\theta|>\epsilon \right) \to 0 \mbox{ as } n\to\infty
+\]
+for any $\epsilon>0$.
+\end{definition}
+
+\pause 
+
+\begin{example}
+The sample mean is consistent for $\mu$ since $Var[\overline{X}] = \sigma^2/n$
+and 
+\[ 
+P\left(|\overline{X} - \mu| > \epsilon \right) \le 
+\frac{Var[\overline{X}]}{\epsilon^2} = \frac{\sigma^2/n}{\epsilon^2} \to 0
+\]
+where the inequality is from Chevyshev's inequality on pg 54 of Baron. 
+\end{example}
+\end{frame}
+
+
+
+\subsection{Quantiles}
+\begin{frame}
+\frametitle{Quantiles}
+\begin{definition}
+A \alert{$p$-quantile} of a population is such a number $x$ that solves
+\[ 
+P(X<x) \le p \quad \mbox{and} \quad P(X>x) \le 1-p.
+\]
+\pause
+A \alert{sample $p$-quantile} is any number that exceeds at most $100p$\% of the
+smample, and is exceeded by at most $100(1-p)$\% of the sample.  \pause
+A \alert{$100p$-percentile} is a $p$-quantile. 
+\pause
+First, second, and third \alert{quartiles} are the 25th, 50th, and 75th 
+percentiles. 
+They split a population or a sample into four equal parts.
+\pause
+A \alert{median} is a 0.5-quantile, 50th percentile, and 2nd quartile.
+\pause
+The \alert{interquartile range} is the third quartile minus the first quartile,
+i.e.
+\[ 
+IQR = Q_3 - Q_1
+\]
+and the \alert{sample interquartile range} is the third sample quartile minus
+the first sample quartile, i.e.
+\[ 
+\hat{IQR} = \hat{Q}_3 - \hat{Q}_1
+\]
+\end{definition}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Standard normal quartiles}
+<<quantiles, fig.height=4, echo=TRUE>>=
+curve(expr = dnorm, from = -3, to = 3, ylab = "f(x)")
+quantiles = c(.25,.50,.75)
+abline(v = qnorm(p = c(.25,.50,.75))) # default is standard normal
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Sample quartiles from a standard normal}
+<<sample_quantiles, dependson='quantiles', fig.height=4, echo=TRUE>>=
+n = 1000
+sample = rnorm(n)
+hist(x = sample, breaks = 101, probability = TRUE, border = "gray", col = "gray")
+curve(expr = dnorm, from = -3, to = 3, ylab = "f(x)", col = "black", add = TRUE)
+abline(v = qnorm(p = quantiles), col = "black")
+abline(v = quantile(sample, prob = quantiles), col = "gray")
+legend("topright", c("sample","population"), lty=1, col=c("gray","black"))
+@
+\end{frame}
+
+
+
+\subsection{Standard error}
+\begin{frame}
+\frametitle{Standard error}
+\begin{definition}
+The \alert{standard error} of a statistic $\hat{\theta}$ is the standard
+deviation of that statistic (when the data are considered random).
+\end{definition}
+\pause
+\begin{example}
+The standard error of the sample mean is $\sigma/\sqrt{n}$ since (if the $X_i$
+are independent) we have
+\[
+Var[\overline{X}] = Var\left[ \frac{1}{n} \sum_{i=1}^n X_i \right] =
+\frac{1}{n^2} \sum_{i=1}^n Var[X_i] = \frac{1}{n^2} \sum_{i=1}^n \sigma^2 =
+\sigma^2/n
+\]
+\pause
+and thus
+\[
+SD[\overline{X}] = \sqrt{Var[\overline{X}]} = \sigma/\sqrt{n}.
+\]
+\end{example}
+\end{frame}
+
+
+
+
+\subsection{Binomial example}
+\begin{frame}
+\frametitle{Server uptime}
+\small
+
+We are interested in the random variable $X\sim Ber(\theta)$ with
+$\theta\in(0,1)$ that represents whether or not a server is up. 
+\pause
+At random times and sufficiently far apart that we can reasonably assume
+independence, we ping the server to determine whether it is responding. 
+\pause
+\begin{itemize}
+\item The population here is the server status across all times and the relevant 
+population quantity is $\theta$, the proportion of time the server is up. 
+\pause
+\item The sample $X_i \stackrel{ind}{\sim} Ber(\theta)$ are the server status when
+you pinged the server. \pause From the description, it isn't entirely clear 
+whether or not this can be viewed as a simple random sample. 
+\item The sample mean is an estimator of the population mean, i.e. 
+\[
+\hat{\theta} = \frac{1}{n} \sum_{i=1}^n X_i
+\]
+and it is unbiased and consistent \pause since
+\[ 
+E[\hat{\theta}] = \theta \quad \mbox{and} \quad
+Var[\hat{\theta}] = \theta(1-\theta)/n. 
+\]
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item Statistics are functions of data.
+\item Statistics have some properties:
+	\begin{itemize}
+	\item Standard error
+	\end{itemize}
+\item Statistics often try to estimate population parameters and are then called
+estimators.
+\item Estimators may have these properties relative to the population parameter
+they are trying to estimate:
+\begin{itemize}
+\item Unbiased
+\item Consistent 
+\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+% 
+% \foilhead[-.8in]{\textcolor{blue}{An example}}
+% 
+% \no  {\textcolor{magenta}{The share of the credit card market by issuers:} this is a descriptive summary of some numerical information \\[.1in]
+% \no  \begin{figure}[h]
+%   \centering
+%   \epsfig{file=f1.pdf, height=9cm}
+% 
+% \end{figure}
+% 
+% \foilhead[-.8in]{\textcolor{blue}{Fundamental elements of statistics (a)}}
+% \no  {\textcolor{magenta}{Population and sample:}  \\[.1in]
+% \no $\heartsuit$ {\textcolor{red}{Population}}: all possible measurements or outcomes that are of interest to us in a particular study \\[.1in]
+% \no $\heartsuit$ {\textcolor{red}{Sample}}: a portion of the population that is representative of the population from which it was selected \\[.1in]
+% \no $\spadesuit$ What is the difference?  \\[.1in]
+% \no Thinking about an example where we want to know the average height of all people in the world, how can we do that? Can we do that?   \\[.1in]
+% \no  $\spadesuit$  A {\textcolor{magenta}{population}} basically has all units of interest; while all of them cannot be observed, a selected subset can be observed and forms the {\textcolor{magenta}{sample}}. \\[.1in]
+% \no $\clubsuit$ Sample is used to make statement(s) about the whole population.
+% 
+% \foilhead[-.8in]{\textcolor{blue}{Fundamental elements of statistics (b)}}\vspace{.1cm}
+% \no  {\textcolor{magenta}{Statistical inference:} is the process of drawing conclusions from data that are subject to random variation, for instance, observational errors or sampling variation. \\[.1in]
+% \no {\textcolor{magenta}{Example:} A large paint retailer has had numerous complaints from customers about underfilled paint cans. As a result, the retailer has begun inspecting incoming shipments of paint from the supplier. A recent shipment contained 2440 gallon-sized cans. The retailer randomly samples 100 cans and weighed each on a scale capable of measuring weight to four decimal places. A properly filled can weighs 10 pounds.   \\[.1in]
+% \no $\diamondsuit$ What is the population? 2440 cans (NOT all cans in the world!)\\[.1in]
+% \no $\diamondsuit$ What is the variable of interest? Weight\\[.1in]
+% \no $\diamondsuit$ What is the sample? the 100 selected cans\\[.1in]
+% \no $\diamondsuit$ What possible inference can be made? Using $W_1, \cdots, W_{100}$, we can calculate the empirical probability: $P(W<10)$ (how?)
+% 
+% \foilhead[-.8in]{\textcolor{blue}{Fundamental elements of statistics (c)}}
+% \no  {\textcolor{magenta}{Simple random sampling:} is a sampling design where a subset of units are selected from the entire population, in such a way that all subsets of the same size are equally likely to be sampled. \\[.05in]
+% \no $\clubsuit$ The main benefit of simple random sampling is that {\textcolor{red}{it guarantees that the sample chosen is representative of the population.} This ensures that the statistical conclusions will be valid.\\[.05in]
+% \no {\textcolor{magenta}{Example:} To appreciate its customers, a company decides to get a simple random sample of 1000 each month out of all its customers and give away each selected candidate a 50 dollar gift card. \\[.05in]
+% \no $\heartsuit$ Sampling may cause errors: sampling errors (decrease if we enlarge sample size), and non-sampling errors (wrong scheme or inappropriate statistical techniques)\\[.05in]
+% \no {\textcolor{magenta}{Wrong Example (Sampling from a wrong population:)} On a market research study to determine why people like a type of soup, we sample 25 ISU students.
+% 
+% \foilhead[-.8in]{\textcolor{blue}{Descriptive Statistics}}
+% \no $\clubsuit$ Suppose we draw a random sample from {\textcolor{magenta}{a population}}; let the random variables $X_1,\cdots, X_n$ represent the sample values. The sample size is $n$. \\[.1in]
+% \no What properties of the population can we describe based on these? \\[.1in]
+% \no $\clubsuit$ Any function $W(X_1,X_2,\cdots,X_n)$ of the data is called a {\textcolor{magenta}{statistic}}.\\[.1in]
+% \no $\spadesuit$  We may be interested in: mean, median, quantiles, variance, standard deviation, and range.\\[.1in]
+% \no {\textcolor{magenta}{Population mean:} $\mu=E(X)$\\[.1in]
+% \no  {\textcolor{magenta}{Sample mean:}
+% $$\bar{X}=\frac{X_1+\cdots+X_n}n$$
+% 
+% \no $\diamondsuit$ Note that $\bar{X}$ is also a random variable since it is a function of $X_1,\cdots, X_n$.
+% 
+% \foilhead[-.8in]{\textcolor{blue}{Descriptive Statistics (Cont'd)}}
+% \no  $\clubsuit$ If we denote the sample values we obtained (i.e., the observations) by $x_1,x_2,\ldots,x_n$, the sample mean is 
+% $\bar{x}=(x_1+\cdots+x_n)/n$\\[.1in]
+% \no  $\spadesuit$ $\bar{X}$ will tell us something about $\mu$\\[.1in]
+% \no {\textcolor{magenta}{Population variance:}} $\sigma^2=\text{Var}(X)$\\[.1in]
+% \no {\textcolor{magenta}{Sample variance:}}
+% The sample variance of $X_1,\cdots, X_n$ is\\[.15in]
+% \hspace*{1.5in} $S^2=\frac{\sum\limits_{i=1}^n (X_i-\bar{X})^2}{n-1}=\frac{\sum\limits_{i=1}^n X_i^2-n\bar{X}^2}{n-1}$\\[.15in]
+% \no where $\bar{X}$ is the sample mean and $n$ is the sample size\\[.1in]
+% \no $\diamondsuit$ Note that $S^2$ is also a random variable since it is a function of $X_1,\cdots, X_n$.
+% \no Again, using the sample values, the sample variance of  $x_1,x_2,\ldots,x_n$, is \\[.1in]
+% \hspace*{1.5in} $s^2=\frac{\sum\limits_{i=1}^n (x_i-\bar{x})^2}{n-1}$\\[.1in]
+% \no  $\spadesuit$ $s^2$ tells us something about $\sigma^2$
+% 
+% 
+% 
+% \foilhead[-.8in]{\textcolor{blue}{Descriptive Statistics (Cont'd}}
+% \no  {\textcolor{magenta}{Population median:} $M$ is a number that is exceeded with probability no greater than 0.5 and is preceded with probability no greater than 0.5, i.e.
+% $P(X>M)\leq 0.5, \ P(X<M)\leq 0.5$\\[.1in]
+% \no $\clubsuit$ Comparing the mean and median, it helps to tell the shape of the distribution.
+% $$\text{Symmetric}\Rightarrow M=\mu$$
+% $$\text{Right-Skewed}\Rightarrow M<\mu$$
+% $$\text{Left-Skewed}\Rightarrow M>\mu$$
+% \begin{figure}[h]
+%   \centering
+%   \epsfig{file=f2.pdf, height=5cm}
+% \end{figure}
+% \foilhead[-.8in]{\textcolor{blue}{Descriptive Statistics (Cont'd)}}
+% \no $\spadesuit$ For continuous random variable, $M$ is given by $F(M)=0.5$.
+% 
+% \no {\textcolor{cyan}{Example:} Uniform random variable on $(a,b)$; what is the median? \\[.1in]
+% \no {\textcolor{cyan}{Solution:} The cdf is $F(x)=\frac{x-a}{b-a}$ for $x\in (a,b)$. Then $F(M)=0.5$ yields $M=\frac{a+b}2$, since $F(M)=1/2$ and $P(X<M)=P(X>M)=1/2$. We know $\mu=(a+b)/2$ so $\mu=M$ that implies uniform is symmetric.
+% 
+% \no {\textcolor{cyan}{Example:} Exponential random variable with $\lambda$; what is the median? \\[.1in]
+% \no {\textcolor{cyan}{Solution:} Solve $F(M)=0.5$, we have $1-e^{-\lambda x}=0.5$ so $M=\ln 2/\lambda$. Notice $\mu=E(X)=1/\lambda>M$ so, exponential is right-skewed.\\
+% \no {\textcolor{cyan}{Example:} Consider Bin$(5,0.5)$, then for all $x\in (2,3)$, $P(X<x)=F(2)=P(X>x)=1-F(2)=0.5$ so that any number in $(2,3)$ is a median.\\[.1in]
+% \no {\textcolor{magenta}{Sample median:} Sample median $\hat{M}$ is a number that is exceeded by at most a half of observations and is preceded by at most a half of observations.
+% 
+% \foilhead[-.8in]{\textcolor{blue}{Descriptive Statistics (Cont'd)}}
+% \no Denote the ordered sample (ascending) as $x_{(1)}\leq x_{(2)}\leq \cdots\leq x_{(n)}$\\[.1in]
+% \no {\textcolor{cyan}{Example:} Suppose the ordered sample is $1.6,2.3,3.5,4.1,5.7$; the median is clearly $3.5$; what if the sample is $1.6,2.3,3.5,4.1$ then?\\[.1in]
+% \no $\spadesuit$ If the sample size is odd, then the sample median is $x_{((n+1)/2)}$, if the sample size is even, then the sample median is (defined as) $(x_{(n/2)}+x_{(n/2+1)})/2$. \\[.1in]
+% \no $\diamondsuit$ {\textcolor{red}{If the sample size is even, the sample median is not a value in the sample!}\\[.1in]
+% \no {\textcolor{cyan}{Example:} $\{-1,5,8,4,-2\}$ then the ordered sample is $\{-2,-1,4,5,8\}$. So the sample median $\hat{M}=x_{((5+1)/2)}=x_{(3)}=4$. \\[.1in]
+% \no {\textcolor{cyan}{Example:} $\{-1,5,4,-2\}$ then the ordered sample is $\{-2,-1,4,5\}$. So $\hat{M}=(x_{(4/2)}+x_{(4/2+1)})/2=(-1+4)/2=1.5$.\\[.1in]
+% \no {\textcolor{magenta}{Range:} The range of a sample is $x_{(n)}-x_{(1)}$, that is the difference between maximum value and minimum value of the sample.
+% 
+% \foilhead[-.8in]{\textcolor{blue}{Examples:}}
+% \no {\textcolor{cyan}{Example 1:} The CPU time for $n=10$ randomly chosen tasks (in seconds) are
+% $70,36,43,49,82,48,34,62,35,15$. What is the sample mean, median, variance, and range? \\[.15in]
+% \no $\clubsuit$ The sample mean is $\bar{x}=\frac{x_1+\cdots +x_{10}}{10}=47.4$\\[.15in]
+% \no $\clubsuit$ The sample variance is $s^2=\frac{\sum\limits_{i=1}^{10} (x_i-\bar{x})^2}{10-1}
+% =\frac{\sum\limits_{i=1}^{10}x_i^2-10\cdot \bar{x}^2}{9}=384.0444$\\[.15in]
+% \no $\clubsuit$ The sample median: first order the sample as
+% $15, 34, 35, 36, 43, 48, 49, 62, 70, 82$ then the sample median is
+% $(x_{5}+x_{6})/2=45.5$.\\[.15in]
+% \no $\clubsuit$ The sample range is: $82-15=67$. 
+
+
+
+\end{document}
+
+
+
