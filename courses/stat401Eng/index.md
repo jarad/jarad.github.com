@@ -34,7 +34,6 @@ Office hours are
 There is no required textbook for this course. 
 Here are some free resources that will be used:
 
-- [Coursera Data Science Specialization](https://www.coursera.org/specializations/jhu-data-science)
 - [R for Data Science](http://r4ds.had.co.nz/)
 - [Data Camp](https://www.datacamp.com/)
 - [Introduction to R for Data Science](https://www.edx.org/course/introduction-r-data-science-microsoft-dat204x-3)
@@ -44,6 +43,7 @@ Here are some free resources that will be used:
 
 Other resources:
 
+- [Coursera Data Science Specialization](https://www.coursera.org/specializations/jhu-data-science)
 - [The Statistical Sleuth](http://amzn.to/2jkdmct)
 - [Data Collection and Analysis](http://amzn.to/2iR692T)
 - [Data Analysis for Scientists and Engineers](http://amzn.to/2j0yuUI)
