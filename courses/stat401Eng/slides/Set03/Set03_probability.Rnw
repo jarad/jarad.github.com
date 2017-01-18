@@ -1,0 +1,937 @@
+\documentclass[handout]{beamer}
+
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set03 - Probability}
+
+\begin{document}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(dplyr)
+library(ggplot2)
+@
+
+<<set_seed>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\section{Probability}
+\subsection{Set operations}
+\begin{frame}
+\frametitle{Probability}
+
+\begin{example}
+\begin{itemize}[<+->]
+\item Consider the event C: a successful connection to the internet from
+a laptop.
+
+\item From our experience with the wireless network and our internet service 
+provider, we believe the probability we successfully connect is 90 \%.
+
+\item We write: $P(C) = 0.9$
+
+\item To be able to work with probabilities, in particular, 
+to be able to compute \alert{probabilities of events},
+a mathematical foundation is necessary.
+\end{itemize}
+\end{example}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Set comparison, operations, terminology}
+\begin{enumerate}[<+->]
+\item Review symbols $\in, \notin, \subset, \subseteq, \supset, \supseteq$.
+
+  For example,
+  \begin{itemize}
+  \item if a is a member of B, this is denoted $a  \in B$ and
+  \item if every member of set A is also a member of set B, 
+  then A is said to be a subset of B, 
+  written $A \subseteq B$ (A is said to be contained in B).
+  \end{itemize}
+
+\item \alert{Union} ($\union$): 
+A union of events is an event consisting of all the outcomes in these events.
+\[ A\union B = \{\omega\mid \omega \in A \text{ or } \omega \in B\} \]
+
+\item \alert{Intersection} ($\intersection$): 
+An intersection of events is an event consisting of the common outcomes in these events.
+\[ A\intersection B = \{\omega\mid \omega \in A \text{ and } \omega \in B\} \]
+
+\item \alert{Complement} ($\bar A$): 
+A complement of an event $A$ is an event that occurs when event $A$ does not happen.
+\[ \bar A = \{\omega \mid \omega \notin A\} \]
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Set comparison, operations, terminology (cont.)}
+\begin{enumerate}[<+->]
+\setcounter{enumi}{4}
+\item \alert{Set difference} ($A\setminus B$):
+All elements in $A$ that are not in $B$, i.e. 
+\[ 
+A\setminus B = \{\omega| \omega\in A \mbox{ and } \omega\notin B\}
+\]
+
+\item \alert{Empty Set} $\emptyset$ is a set having no elements, i.e. $\{\}$.
+The empty set is a subset of every set:
+\[ \emptyset \subseteq A \]
+
+\item \alert{Disjoint sets}: Sets $A, B$ are disjoint if their intersection is empty:
+\[ A\intersection B = \emptyset \]
+
+\item \alert{Mutually exclusive sets}: Sets $A_1, A_2, \ldots$ are
+  mutually exclusive if any two of these events are disjoint:
+\[ A_i\intersection A_j  = \emptyset \text{ for any } i\neq j \]
+
+\item \alert{De Morgan's Laws}:
+\[
+(\overline{A\union B}) = \bar A\intersection \bar B 
+\qquad \mbox{and} \qquad
+(\overline{A\intersection B}) = \bar A\union \bar B 
+\]
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Venn diagrams}
+
+\vspace{-0.2in}
+
+<<venn_setup, out.width='0.8\\textwidth'>>=
+l = 101
+circle = data.frame(
+  loc = c(rep("top", l),rep("bot",l)),
+  x   = c(seq(-1, 1, length=l), seq(1, -1, length=l))) %>%
+  mutate(y   = sqrt(1-x^2)*ifelse(loc=="bot",-1,1))
+  
+indent = circle %>%
+  mutate(x = x-0.5,
+         x = ifelse(x>0,-x,x))
+
+yint = sqrt(1-.5^2)
+
+Aonly = indent %>% mutate(set="Aonly")
+Bonly = indent %>% mutate(x=-x, set="Bonly")
+
+AandB = data.frame(loc=c(rep("left",l),rep("right",l)),
+                   y = c(seq(-yint,yint,length=l), seq(yint,-yint,length=l))) %>%
+  mutate(set="AandB",
+         x = (sqrt(1-y^2)-.5)*ifelse(loc=="left",-1,1))
+
+# ggplot(Bonly, aes(x,y,fill=set)) + 
+#   geom_polygon(color="black") + 
+#   coord_fixed() +
+#   theme_minimal()
+  
+
+all = rbind(Aonly,Bonly,AandB) %>%
+  mutate(union = TRUE,
+         intersection = set == "AandB",
+         difference = set == "Aonly",
+         complement = set == "Bonly") %>%
+  tidyr::gather(operation,value,union,intersection,complement,difference) %>%
+  mutate(operation = factor(operation, 
+                            levels=c("union","intersection","complement","difference")))
+
+
+ggplot(all, aes(x,y, group=set, fill=value)) + 
+  geom_rect(data = all %>% filter(operation == "complement"), fill="red", 
+            xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = 0.3) + 
+  geom_polygon(color="black") + 
+#  geom_polygon(data=all %>% filter(set=="Aonly"), color="black") + 
+  facet_wrap(~operation) + 
+  coord_fixed() +
+#  theme_minimal() +
+  scale_fill_manual(values=c("gray","red")) + 
+  annotate("text", label="A", x=-1, y=.5,size=8) + 
+  annotate("text", label="B", x= 1, y=.5,size=8) +
+  theme(axis.line=element_blank(),
+      axis.text.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      legend.position="none",
+      panel.background=element_blank(),
+      panel.border=element_blank(),
+      panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),
+      plot.background=element_blank())
+@
+\end{frame}
+
+
+\subsection{Kolmogorov's Axioms}
+\begin{frame}
+\frametitle{Kolmogorov's Axioms}
+
+To be able to work with probabilities properly - to compute with 
+them - one must lay down a set of postulates.
+
+\vspace{0.2in} \pause
+
+A system of probabilities (\alert{a probability model}) is an assignment of 
+numbers $P(A)$ to events $A \subset \mOmega$ \pause such that
+
+\begin{itemize}[<+->]
+    \item[(i)]  $0 \le P(A) \le 1$ for all $A$ 
+    \item[(ii)] $P(\mOmega) = 1$. 
+    \item[(iii)]  if $A_{1},A_{2}, \ldots$ are (possibly, infinite many)
+      mutually exclusive events 
+    (i.e. $A_{i} \intersection A_{j} = \emptyset$ for all $i\neq j$) then 
+    \[
+    P(A_{1} \union A_{2} \union \ldots ) = P(A_{1}) + P(A_{2}) + \ldots = 
+    \sum_{i}P(A_{i}).
+    \]
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Kolmogorov's Axioms (cont.)}
+These are the basic rules of operation of a probability model
+\begin{itemize}
+\item every valid model must obey these,
+\item any system that does, is a valid model.
+\end{itemize}
+\pause
+Whether or not a particular model is appropriate for a 
+specific application is another question.
+
+\vspace{0.2in} \pause
+
+
+Example: Draw a single card from a standard deck of playing cards:
+$\mOmega = \{ \textcolor{red}{red}, black \}$
+Two different, equally valid probability models are:
+\begin{center}
+{\small
+\begin{tabular}{l@{\extracolsep{.5in}}l}
+    \underline{Model 1} & \underline{Model 2} \\
+%    $P(0) = 0$ & $P(0) = 0$ \\
+    $P(\mOmega) = 1$ & $P(\mOmega) = 1$ \\
+    $P(\textcolor{red}{red}) = 0.5$ &  $P(\textcolor{red}{red}) = 0.3$ \\
+    $P(black) = 0.5$ &  $P(black) = 0.7$
+\end{tabular}}
+\end{center}
+
+\pause
+
+Mathematically, both schemes are equally valid. 
+But, of course, our real world experience would favor to pick model 1 
+over model 2 as the `correct' model.
+
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Useful Consequences of Kolmogorov's Axioms}
+Let $A,\,B\subset\mOmega$. 
+
+\vspace{0.2in} \pause
+
+\begin{itemize}
+\item Probability of the Complementary Event: 
+$ P(\overline{A}) = 1-P(A)$ \pause
+
+{\textcolor{red}{Corollary:}} $P(\emptyset)=0$ \pause
+
+\item Addition Rule of Probability 
+
+\[ P(A \union B) = P(A) + P(B) - P(A \intersection B) \]
+
+\item If $A\subset B$, then $P(A)\leq P(B)$.
+
+{\textcolor{red}{Corollary:}} For any $A$, $P(A)\leq 1$. 
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Example: Using Kolmogorov's Axioms}
+We attempt to access the internet from a laptop at home. \pause
+We connect successfully if and only if the wireless (WiFi) network works \emph{ and } the internet service provider (ISP) network works. \pause
+Assume 
+\begin{eqnarray*}
+P(\text{ WiFi up } ) &=& .9   \\ 
+P(\text{ ISP up } ) &=& .6, \mbox{ and } \\ 
+P(\text{ WiFi up and ISP up } ) &=& .55.
+\end{eqnarray*}
+
+\pause
+
+\begin{enumerate}[<+->]
+\item What is the probability that the WiFi is up or the ISP is up?
+\item What is the probability that both the WiFi and the ISP are down? 
+\item What is the probability that we fail to connect?
+%\item What is the probability that only the WiFi is up?
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Solution}
+Let  $A\equiv \text{WiFi up};\ B\equiv \text{ISP up}$ \pause
+\begin{enumerate}[<+->]
+\item What is the probability that the WiFi is up or the ISP is up?
+\[ P( \text{ WiFi up or ISP up}) =P(A\union B) = 0.9 + 0.6 - 0.55 = 0.95 \]
+\item  What is the probability that both the WiFi and the ISP are down?
+\[ \begin{array}{rl}
+P( \text{ WiFi down and ISP down}) &=P(\bar A\intersection \bar B) = P(\overline{A\union B}) \\
+&=1-.95=.05
+\end{array} \]
+\item What is the probability that we fail to connect?
+\[ \begin{array}{rl}
+\multicolumn{2}{l}{P( \text{ WiFi down or ISP down})} \\
+ &=P(\bar A\union \bar B)=P(\bar A) + P(\bar B) -P(\bar A\intersection \bar B) \\
+&=P(\bar A\union \bar B) =(1-.9)+(1-.6)-.05=.1+.4-.05=.45
+\end{array} \]
+\end{enumerate}
+
+\end{frame}
+
+
+
+
+
+
+
+
+\section{Probability}
+\subsection{Conditional probability}
+
+\begin{frame}[fragile]
+\frametitle{Computer CPU example}
+
+A box has 5 CPUs and 2 are defective. \pause 
+Two CPUs are selected from the box, one at a time. \pause
+What is the probability the second CPU is defective? 
+
+\vspace{0.1in} \pause
+
+Let $A$ be the event \emph{the second CPU is defective}. \pause Assuming each draw is equally likely, we have
+
+\[ 
+P(A) = \frac{|A|}{|\mOmega|} \pause = \frac{2\times 4}{P(5,2)} = 0.4
+\]
+
+\pause
+
+Monte Carlo:
+<<monte_carlo_computer_cpu_example, echo=TRUE>>=
+CPUs = c("d","d","g","g","g") # d = defective, g = good
+sims = replicate(1e5, sample(CPUs, 2))
+mean(sims[2,] == "d")
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Computer CPU example (cont.)}
+
+Suppose you know the first CPU is good. \pause
+Now what is the probability the second CPU is defective? 
+
+\vspace{0.1in} \pause
+
+Let $A$ be the event \emph{the second CPU is defective}, but the sample space ($\mOmega$) has also changed. \pause Assuming each draw is equally likely, we have
+
+\[ 
+P(A) = \frac{|A|}{|\mOmega|} \pause = \frac{3 \times 2}{3 \times P(4,1)} = 0.5
+\]
+
+Monte Carlo:
+<<monte_carlo_cpu_continued, dependson="monte_carlo_computer_cpu_example", echo=TRUE>>=
+mean(sims[2, sims[1,] == "g"] == "d")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Conditional probability}
+
+\begin{definition}
+The \alert{conditional probability} of an event $A$ given an event $B$ is 
+\[ 
+P(A|B) = \frac{P(A\cap B)}{P(B)}
+\]
+if $P(B) > 0$. 
+\end{definition}
+
+\pause
+
+Intuitively, the fraction of outcomes in $B$ that are also in $A$. 
+
+\pause
+
+\begin{corollary} 
+\[ 
+P(A\cap B) = P(A|B)P(B) = P(B|A)P(A).
+\]
+\end{corollary}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Computer CPU example (cont.)}
+
+Let 
+\begin{itemize}
+\item $A$ be the event the second CPU is defective and 
+\item $B$ be the event the first CPU is good. 
+\end{itemize}
+
+\pause
+
+Thus 
+\begin{itemize}
+\item $|A\cap B| = 3\times 2$ because we first pick a good CPU and then pick a defective CPU, \pause
+\item $|B| = 3\times 4$ because we first pick a good CPU and then pick any other CPU, \pause and
+\item $|\mOmega| = P(5,2)$ because we are choosing 2 objects out of 5 ordered without replacement. 
+\end{itemize}
+
+which implies
+\[ 
+P(A|B) = \frac{P(A\cap B)}{P(B)} = \frac{|A\cap B|/|\mOmega|}{|B|/|\mOmega|} = \frac{|A\cap B|}{|B|} = \frac{3\times 2}{3\times 4} = 0.5.
+\]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{More CPUs}
+{\small
+A box has 500 computer CPUs with a speed of 1.8 GHz and 500 with a speed of 2.0 GHz. The numbers of good (G) and defective (D) CPUs at the two different speeds are as shown below.
+\begin{center}
+\begin{tabular}{c|c|c|c}
+& 1.8 GHz & 2.0 GHz & \\
+\hline 
+G & 480 & 490 & 970  \\
+D & 20 & 10 & 30  \\
+\hline
+& 500 & 500 & Total=1000    
+\end{tabular}
+\end{center}
+
+\pause
+
+We select a CPU at random and observe its speed. What is the probability that the CPU is defective given that its speed is 1.8 GHz?
+
+\pause
+
+Let 
+\begin{itemize}
+\item $A$ be the event the CPU is defective and
+\item $B$ be the event the CPU speed is 1.8 GHz.
+\end{itemize}
+
+\pause
+
+Then 
+\begin{itemize}
+\item $P(A) = 30/1000 = 0.03$
+\item $P(B) = 500/1000 = 0.5$
+\item $P(A|B) = P(A\cap B)/P(B) = |A\cap B|/|B| = 20/500 = 0.04$. 
+\end{itemize}
+}
+\end{frame}
+
+
+\subsection{Independence}
+
+\begin{frame}
+\frametitle{Statistical independence}
+
+\begin{definition}
+Events $A$ and $B$ are statistically \alert{independent} if 
+\[ 
+P(A\cap B) = P(A) \times P(B)
+\]
+\pause
+or, equivalently,
+\[ 
+P(A|B) = P(A). 
+\]
+\end{definition}
+
+\pause
+
+Intuitively, the occurrence of one event does not affect the probability of the other. 
+
+\pause
+
+\begin{example}
+If I toss a fair coin and it comes up tails, does that affect the probability the next coin flip is a head?
+\end{example}
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{WiFi example}
+
+In trying to connect my laptop to the internet, I need 
+\begin{itemize}
+\item my WiFi network to be up (event $A$) and
+\item the ISP network to be up (event $B$). 
+\end{itemize}
+
+\pause
+
+Independently, assume the probability the WiFi network is up is 0.6 and the ISP network is up is 0.9. \pause
+What is the probability we can connect to the internet?
+
+\vspace{0.1in} \pause
+
+Since we have independence, we know
+\[ 
+P(A \cap B) = P(A)\times P(B) = 0.6 \times 0.9. 
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Independence and disjoint}
+\small
+
+\alert{Warning:} Independence and disjointedness are two very different concepts!
+
+\vspace{0.1in} \pause
+
+\begin{columns}[t]
+\begin{column}{0.5\textwidth}
+{\textcolor{cyan}{Disjointedness:}}   
+    \centerline{\includegraphics[width=1.5in]{disjoint}}
+
+    If $A$ and $B$ are disjoint, their intersection is empty, has 
+    therefore probability 0:
+    \[
+    P(A \cap B) = P(\emptyset) = 0.
+    \]
+\end{column}
+
+\pause
+
+\begin{column}{0.5\textwidth}
+{\textcolor{cyan}{Independence: }}
+    \centerline{\includegraphics[width=1.5in]{intersection}}    
+    If $A$ and $B$ are independent events, the probability of their 
+    intersection can be computed as the product of their individual 
+    probabilities: $P(A \cap B) = P(A) \cdot P(B)$\\[.01in]
+    The probability for the intersection is zero only if $A$ or $B$ is empty.
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\subsection{Reliability}
+\begin{frame}
+\frametitle{Parallel system}
+\begin{definition}
+A \alert{parallel} system consists of $K$ components $c_{1}, \ldots, c_{K}$ arranged in such a way that the system works if {\bf at least one} of the $K$ components functions properly.
+\end{definition}
+\centerline{\includegraphics{parallel-system}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Serial system}
+\begin{definition}
+A \alert{serial} system consists of $K$ components $c_{1}, \ldots, c_{K}$ arranged in such a way that the system works if and only if {\bf all} of the components function properly.
+\end{definition}
+\centerline{\includegraphics{series-system}}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Reliability}
+
+\begin{definition}
+\alert{Reliability} of a system is the probability the system works. 
+\end{definition}
+
+\pause
+
+\begin{example}
+The reliability of the WiFi-ISP network (assuming independence) is 0.54
+\end{example}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Reliability of parallel systems with independent components}
+
+Let $c_{1}, \ldots, c_{K}$ denote the $K$ components in a \alert{parallel} system. \pause
+Assume the $K$ components operate independently and $P(c_{k} \text{ works })=p_{k}$. \pause
+What is the reliability of the system?
+
+\pause
+
+\[ \begin{array}{rl}
+P(\text{ system works }) &= P(\text{ at least one component works }) \\
+&= 1-P(\text{ all components fail }) \\
+&= 1-P(c_{1} \text{ fails and } c_{2} \text{ fails } \ldots \text{ and } c_{k} \text{ fails }) \\
+&=1- \prod_{k=1}^K P(c_j \text{ fails}) \\
+&= 1- \prod_{k=1}^K(1-p_{k}).
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Reliability of serial systems with independent components}
+
+Let $c_{1}, \ldots, c_{K}$ denote the $K$ components in a \alert{serial} system. \pause
+Assume the $K$ components operate independently and $P(c_{k} \text{ works })=p_{k}$. \pause
+What is the reliability of the system?
+
+\pause
+
+\[ \begin{array}{rl}
+P(\text{ system works }) &= P(\text{ all component works }) \\
+&= \prod_{k=1}^K P(c_j \text{ works }) \\
+&= \prod_{k=1}^K p_{k}.
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Reliability example}
+\small
+Each component in the system shown below is opearable with probability 0.92 independently of other components. Calculate the reliability.
+
+\begin{center}
+\includegraphics*[scale=.25]{circuit1}
+\end{center}
+
+\pause
+
+\begin{enumerate}
+\item Serial components A B can be replaced by a component F that operates with probability $P(A\cap B)=(0.92)^2=0.8464$.
+\item Parallel components D and E can be replaced by component G that operates with probability $P(D\cup E)=1-(1-0.92)^2=0.9936$.
+\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Reliability example (cont.)}
+\small
+Updated circuit:
+
+\begin{center}
+\includegraphics{circuit2}
+\end{center}
+
+\begin{enumerate}
+\setcounter{enumi}{2}
+\item Serial components C and G connected can be replaced by a component H that operates with probability $P(C\cap G)=(0.92)(0.9936)=0.9141$.
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Reliability example (cont.)}
+
+Updated circuit:
+
+\begin{center}
+\includegraphics{circuit3}
+\end{center}
+
+\begin{enumerate}
+\setcounter{enumi}{3}
+\item  Parallel componenents F and H are in parallel, so the reliability of the system is $P(F\cup H)=1-(1-0.8424)(1-0.9141)=0.9868$.
+\end{enumerate}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+% 
+% 
+% \end{document}
+% 
+% 
+% 
+% 
+% 
+% 
+% \section{Kolmogorov's Axioms}
+% Example:
+% \begin{enumerate}
+%     \item[3.]
+% From my experience with the network provider, I can decide that the 
+% chance that my next message gets through is 90 \%.
+% 
+% Write: $P(D) = 0.9$
+% \end{enumerate}
+% 
+% To be able to work with probabilities properly - to compute with 
+% them - one must lay down a set of postulates:
+% 
+% \paragraph*{Kolmogorov's Axioms}
+% 
+% A system of probabilities ( a probability model) is an assignment of 
+% numbers $P(A)$ to events $A \subset \mOmega$ in such a manner that
+% \begin{itemize}
+%     \item[(i)]  \notiz{the probability of any event $A$ 
+%     is a real number between 0 and 1}
+%     $0 \le P(A) \le 1$ for all $A$ 
+%     \item[(ii)] \notiz{the sum of pro\-ba\-bi\-li\-ties of all 
+%     events in the sample space is 1}
+%     $P(\mOmega) = 1$. 
+%     \item[(iii)]  \notiz{the pro\-ba\-bi\-lity of a disjoint union of events is equal to the 
+%     sum of the individual pro\-ba\-bi\-li\-ties}
+%     if $A_{1},A_{2}, \ldots$ are (possibly, infinite many) disjoint events 
+%     (i.e. $A_{i} \intersection A_{j} = \emptyset$ for all $i, j$) then 
+%     \[
+%     P(A_{1} \union A_{2} \union \ldots ) = P(A_{1}) + P(A_{2}) + \ldots = 
+%     \sum_{i}P(A_{i}).
+%     \]
+%    
+% \end{itemize}
+% 
+% These are the basic rules of operation of a probability model:
+% \begin{itemize}
+%     \item every valid model must obey these,
+%     \item any system that does, is a valid model
+% \end{itemize}
+% Whether or not a particular model is realistic or appropriate for a 
+% specific application is another question.
+% 
+% \begin{xpl}{}
+% Draw a single card from a standard deck of playing cards
+% \[
+% \mOmega = \{ \textcolor{ red, black } \}
+% \]
+% Two different, equally valid probability models are:
+% 
+% \begin{center}
+% \begin{tabular}{ll}
+%     \underline{Model 1} & \underline{Model 2} \\
+% %    $P(0) = 0$ & $P(0) = 0$ \\
+%     $P(\mOmega) = 1$ & $P(\mOmega) = 1$ \\
+%     $P(\textcolor{red}{red}) = 0.5$ &  $P(\textcolor{red}{red}) = 0.3$ \\
+%     $P(black) = 0.5$ &  $P(\textcolor{ black }) = 0.7$
+% \end{tabular}
+% \end{center}
+% 
+% Mathematically, both schemes are equally valid. But, of course, our real world experience would favor to pick model 1 over model 2 as the `correct' model.
+% \end{xpl}
+% This is a very important point: even though the math of a problem might be completely correct, it might not reflect the real world in any way. {\bf We} have to make sure that a model we pick describes a real world situation correctly, or at least as well as we can. 
+% 
+% 
+% 
+% Beginning from the axioms of probability one can prove a number of 
+% useful theorems about how a probability model must operate.
+% 
+% We start with the probability of $\mOmega$ and derive others from that.
+% 
+% \begin{satz}\label{complement}
+%     Let $A$ be an event in $\mOmega$, then 
+%     \[
+%     P(\bar{A}) = 1 - P(A) \textcolor{ for all } A \subset \mOmega.
+%     \]
+% \end{satz}
+% 
+% \begin{bew}
+%     For the proof we need to consider three main facts and piece them 
+%     together appropriately:
+%     \begin{enumerate}
+% 	\item We know that $P(\mOmega) = 1$ because of axiom (ii)
+% 	\item $\mOmega$ can be written as $\mOmega = A \union \bar{A}$ because of 
+% 	the definition of an event's complement.
+% 	\item $A$ and $\bar{A}$ are disjoint and therefore the probability of 
+% 	their union equals the sum of the individual probabilities (axiom iii).
+%     \end{enumerate}
+%     All together:
+%     \[
+%     1 \stackrel{(1)}{=} P(\mOmega) \stackrel{(2)}{=} P(A \union \bar{A}) 
+%     \stackrel{(3)}{=} P(A) + P(\bar{A}).
+%     \]
+%     This yields the statement.
+% \end{bew}
+% 
+% \begin{xpl}{}
+% \begin{itemize}
+%     \item[3.] If I believe that the probability that a message gets 
+%     through is 0.9, I also \em{must} believe that it fails with 
+%     probability 0.1
+% \end{itemize}
+% \end{xpl}
+% 
+% \begin{kor}
+%     The probability of the empty set $P(\emptyset)$ is zero.
+% \end{kor}
+% \begin{bew}
+%     For a proof of the above statement we exploit that the empty set 
+%     is the complement of $\mOmega$. Then we can apply Theorem \ref{complement}.
+%     \[
+%     P(\emptyset) = P(\bar{\mOmega}) \stackrel{\textcolor{Thm \ref{complement}}}{=} 
+%     1 - P({\mOmega}) = 1 - 1 =0.
+%     \]
+% \end{bew}
+% 
+% \begin{xsatz}{Addition Rule of Probability}
+% \begin{minipage}[b]{3in}
+%     \mbox{}
+%     Let $A$ and $B$ be two events of $\mOmega$, then:
+%     \[
+%     P(A \union B) = P(A) + P(B) - P(A \intersection B)
+%     \]
+%     
+%     \vfill
+%     
+% \end{minipage}
+% \hfill
+% \begin{minipage}[b]{2in}
+%     \mbox{}
+%     \centerline{\includegraphics[width=1.5in]{ps/addition}}
+% \end{minipage}
+% \end{xsatz}    
+% To see why this makes sense, think of probability as the area in the 
+% Venn diagram: By simply adding $P(A)$ and $P(B)$, $P(A \intersection B)$ gets 
+% counted twice and must be subtracted off to get $P(A \union B)$.
+% 
+% \begin{xpl}{}
+% \begin{enumerate}
+%     \item AOL dial-up:
+%     
+%     If I judge: 
+%     \begin{eqnarray*}
+% 	P( \textcolor{ WiFi up }) &=& 0.9 \\
+% 	P( \textcolor{ network up }) &=& 0.6 \\
+% 	P( \textcolor{ WiFi up, network up }) &=& 0.55 \\
+%     \end{eqnarray*}
+% {\it    then
+%     
+%     $P( \textcolor{ WiFi up or network up}) = 0.9 + 0.6 - 0.55 = 0.95$
+%   
+%     diagram:
+%     
+%     \begin{center}
+% 	\begin{tabular}{lr|cc|c}
+% 	    && \multicolumn{2}{c}{WiFi} \\
+% 	    && up & down & \\ \hline
+% 	 network   & up & .55 & .05 & .60 \\
+% 	    & down & .35 & .05 & .40 \\ \hline
+% 	    && .90 & .10 & 1
+% 	\end{tabular}
+%     \end{center}
+%     }
+% \end{enumerate}
+% \end{xpl}
+% %
+% \begin{xpl}{}
+% A box contains 4 chips, 1 of them is defective.
+% 
+% A person draws one chip at random.
+% 
+% What is a suitable probability that the person draws the defective 
+% chip?
+% 
+% {\it Common sense tells us, that since one out of the four chips is 
+% defective, the person has a chance of 25\% to draw the defective chip.
+% 
+% Just for training, we will write this down in terms of probability 
+% theory:
+% 
+% One possible sample space $\mOmega$ is: $\mOmega = \{ g_{1}, g_{2}, g_{3}, d \}$
+% (i.e. we distinguish the good chips, which may be a bit artificial. It 
+% will become obvious, why that is a good idea anyway, later on.) 
+% 
+% The event to draw the defective chip is then $A  = \{ d \}$.
+% 
+% We can write the probability to draw the defective chip by comparing 
+% the sizes of $A$ and $\mOmega$:
+% \[
+% P(A) = \frac{|A|}{|\mOmega|} = \frac{|\{d\}|}{|\{ g_{1}, g_{2}, g_{3}, d 
+% \}|} = 0.25.
+% \]
+% }
+% \end{xpl}
+% 
+% Be careful, though! The above method to compute probabilities is only 
+% valid in a special case:
+% \begin{satz}\label{equally.likely}
+%     If all elementary events in a sample space are equally likely (i.e. 
+%     $P(\{ \omega_{i} \}) = $ const for all $\omega \in \mOmega$), the 
+%     probability of an event $A$ is given by:
+%     \[
+%     P(A) = \frac{|A|}{|\mOmega|},
+%     \]
+%     where $|A|$ gives the number of elements in $A$.
+% \end{satz}
+% 
+% \begin{xpl}{{continued}}
+% The person now draws two chips. 
+% What is the probability that the defective chip is among them?
+% 
+% {\it 
+% We need to set up a new sample space containing all possibilities for 
+% drawing two chips:
+% 
+% \begin{eqnarray*}
+% \mOmega &=& \{ \{g_{1}, g_{2}\},  \{g_{1}, g_{3}\}, \{g_{1}, d\}, \\
+%        &&  \ \  \{g_{2}, g_{3}\}, \{g_{2}, d\}, \\
+%        &&  \ \  \{g_{3}, d\} \} 
+% \end{eqnarray*}
+% \begin{eqnarray*}
+% E &=& \textcolor{ `` defective chip is among the two chips drawn'' }= \\
+%  &=& \{ \{g_{1}, d\}, \{g_{2}, d\}, \{g_{3}, d\} \}.
+% \end{eqnarray*}
+% Then
+% \[
+% P(E) = \frac{|E|}{|\mOmega|} = \frac{3}{6} = 0.5.
+% \]
+% }
+% \end{xpl}
+% 
+% Finding $P(E)$ involves counting the number of outcomes in $E$. 
+% Counting by hand is sometimes not feasible if $\mOmega$ is large.
+% 
+% Therefore, we need some standard counting methods.
+
+
+
+\end{document}
