@@ -16,6 +16,7 @@ Instructions for compiling the Rnw files can be found below.
 |Data Management|[Set01.Rnw](Set01/Set01_data_management.Rnw)|[Set01.pdf](Set01/Set01_data_management.pdf)|
 |Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
 |Probability|[Set03.Rnw](Set03/Set03_probability.Rnw)|[Set03.pdf](Set03/Set03_probability.pdf)|
+|Discrete distributions|[Set04.Rnw](Set04/Set04_discrete_distributions.Rnw)|[Set04.pdf](Set04/Set04_discrete_distributions.pdf)|
 
   
 
