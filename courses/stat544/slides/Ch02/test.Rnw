@@ -2,7 +2,13 @@
 
 \begin{document}
 
-<<test, echo=FALSE, cache=TRUE>>=
+<<packages>>=
+library("rstan")
+library("extrafont")
+loadfonts(device="postscript")
+@
+
+<<test, echo=FALSE, results='hide'>>=
 library("rstan")
 model = "
 data {
@@ -32,8 +38,16 @@ schools_dat <- list(J = 8,
 
 fit <- stan(model_code = model, data = schools_dat, 
             iter = 1000, chains = 4)
-plot(fit)
 @
 
+<<plot, dependson='mcmc'>>=
+p <- plot(fit)
+p
+@
+
+
+<<sessionInfo>>=
+sessionInfo()
+@
 
 \end{document}
