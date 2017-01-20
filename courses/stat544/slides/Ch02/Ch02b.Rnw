@@ -22,9 +22,13 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(MCMCpack)
-library(rjags)
-library(rstan)
+library("MCMCpack")
+library("rjags")
+library("rstan")
+
+# In order to have Arial font (default of stan_plot) 
+library("extrafont")
+loadfonts(device="postscript")
 @
 
 <<set_seed>>=
@@ -551,7 +555,7 @@ r = sampling(m, data=dat)
 \begin{frame}[fragile]
 \frametitle{Stan - Binomial model}
 
-<<stan_binomial_results, dependson='stan_binomial_sampling', echo=TRUE>>=
+<<stan_binomial_results, dependson='stan_binomial_sampling', echo=TRUE, message=FALSE>>=
 r
 @
 \end{frame}
@@ -588,8 +592,8 @@ data {
 transformed data {      # run once
   real<lower=0> s;
   real<lower=0> sqrtC;
-  s     <- sqrt(s2);
-  sqrtC <- sqrt(C);
+  s     = sqrt(s2);
+  sqrtC = sqrt(C);
 }
 parameters {
   real mu;              # if used alone, implies a uniform prior 
@@ -654,7 +658,7 @@ parameters {
 }
 transformed parameters {    # deterministic function of parameters
   real<lower=0> sigma;
-  sigma <- sqrt(sigma2);
+  sigma = sqrt(sigma2);
 }
 model {
   y  ~ normal(m,sigma); 
