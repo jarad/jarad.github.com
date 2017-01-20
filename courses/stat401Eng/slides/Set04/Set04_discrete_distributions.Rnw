@@ -1,0 +1,1147 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set04 - Discrete Distributions}
+
+\begin{document}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+@
+
+<<set_seed>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\section{Random variables}
+\begin{frame}
+\frametitle{Random variables}
+\setkeys{Gin}{width=0.15\textwidth}
+
+\begin{definition}
+A \alert{random variable} $X$ is a function $X:\mOmega \mapsto \mathbb{R}$.
+\end{definition}
+\pause
+Intuitive idea:  
+\textcolor{cyan}{If the value of a numerical variable depends on the outcome 
+of an experiment, we call the variable a {\it random variable}.}
+
+\vspace{0.1in} \pause
+
+Examples of random variables from HootOwlHoot:
+\begin{itemize}[<+->]
+\item Win (1) or Loss (0)
+\item Number of cards played
+\item Number of suns played
+\item Number of owls remaining
+\item Owl score
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Generally, we will use an upper case Roman letter to indicate a random variable
+and a lower case Roman letters to indicate a realized value of the random
+variable.
+
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{8 bit example}
+
+\begin{example}
+Suppose, 8 bits are sent through a communication channel.
+Each bit has a certain probability to be received incorrectly. 
+We are interested in the number of bits that are received incorrectly.
+\end{example}
+
+\pause 
+\begin{itemize}
+\item Let $X$ be the number of incorrect bits received. \pause 
+\item The possible values for $X$ are $\{0,1,2,3,4,5,6,7,8\}$. \pause
+\item Example events: 
+	\begin{itemize}
+	\item No incorrect bits received: \pause $\{X=0\}$. \pause
+	\item At least one incorrect bit received: \pause $\{X\ge 1\}$. \pause
+	\item Exactly two incorrect bits received: \pause $\{X=2\}$. \pause
+	\item Between two and seven (inclusive) incorrect bits received: \pause $\{2\le X \le 7\}$.
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+
+
+\subsection{Image}
+\begin{frame}
+\frametitle{Image of random variables}
+
+\begin{definition}
+The \alert{image} of a random variable $X$ is defined as 
+\[ 
+Im(X) := \{x: x=X(\omega) \text{ for some }\omega \in \mOmega \}
+\]
+\pause
+If the image is finite or countable, we have a \alert{discrete} random variable. \pause
+If the image is uncountably infinite, we have a \alert{continuous} random variable.
+\end{definition}
+
+\pause
+
+\begin{example}
+\begin{itemize}
+\item Put a hard drive into service, measure $Y$ = ``time till the first major failure'' \pause and thus
+		$Im(Y) = (0, \infty)$. \pause Image of $Y$ is an interval (uncountable image), so $Y$ is a
+  continuous random variable.
+\item Communication channel: $X$ = ``\# of incorrectly received bits'' \pause with 
+		$Im(X) = \{ 0,1,2,3,4,5,6,7,8 \}$. \pause Image of $X$ is a finite set, so $X$ is
+	a discrete random variable.
+\end{itemize}
+\end{example}
+\end{frame}
+
+
+
+\section{Discrete random variables}
+\subsection{Distribution}
+\begin{frame}
+\frametitle{Distribution}
+
+\begin{definition}
+The collection of all the probabilities related to $X$ is the 
+\alert{distribution} of $X$. 
+\end{definition}
+
+\vspace{0.1in} \pause 
+
+For a discrete random variable, the function
+\[ 
+p_X(x) = P(X=x) 
+\]
+is the \alert{probability mass function} (pmf) 
+\pause 
+and the \alert{cumulative distribution function} (cdf) is 
+\[ 
+F(x) = P(X\le x) =\sum_{y\le x} P(y).
+\]
+\pause 
+The set of possible values of $X$ is called the \alert{support} of the 
+distribution $F$ and is the same as the image of $X$. 
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Examples}
+A probability mass function is valid if it defines a valid set of probabilities, i.e. 
+\begin{itemize}
+\item the probabilities are non-negative,
+\item the probabilities sum to 1. 
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+\begin{example}
+Which of the following functions are a valid probability mass functions?
+\begin{itemize}[<+->]
+\item
+    	\begin{tabular}{c|ccccc}
+		$x$ & -3 & -1 & 0 & 5 & 7  \\
+		\hline
+		$P_{X}(x)$ & 0.1 & 0.45 & 0.15 & 0.25 & 0.05  \\
+	\end{tabular}
+    \item
+    	\begin{tabular}{c|ccccc}
+		$y$ & -1 & 0 & 1.5 & 3 & 4.5 \\
+		\hline
+		$P_{Y}(y)$ & 0.1 & 0.45 & 0.25 & -0.05 & 0.25  \\
+	\end{tabular}
+    \item
+    	\begin{tabular}{c|ccccc}
+		$z$ & 0 & 1 & 3 & 5 & 7  \\
+		\hline
+		$P_{Z}(z)$ & 0.22 & 0.18 & 0.24 & 0.17 & 0.18  \\
+	\end{tabular}
+\end{itemize}
+\end{example}
+\end{frame}
+
+
+\subsection{Die rolling}
+\begin{frame}[fragile]
+\frametitle{Rolling fair 6-sided fair dice}
+\begin{example}
+Let $Y$ be the number of pips on the upturned face of a die. \pause 
+The image of $Y$ is  \pause $\{1,2,3,4,5,6\}$.	\pause
+If we believe the die has equal probability for each face, 
+then the probability mass function for $Y$ is 
+\[ \arraycolsep=2pt\def\arraystretch{2.2} 
+\begin{array}{c|cccccc}
+\hline
+y & 1 & 2 & 3 & 4 & 5 & 6 \pause \\
+\hline
+P(Y=y) & \frac{1}{6} & \frac{1}{6} & \frac{1}{6} & \frac{1}{6} & \frac{1}{6}  & \frac{1}{6} \pause \\ 
+P(Y\le y) & \frac{1}{6} & \frac{2}{6} & \frac{3}{6} & \frac{4}{6} & \frac{5}{6}  & \frac{6}{6} \\
+\hline
+\end{array} \]
+\end{example}
+\end{frame}
+
+
+\subsection{Dragonwood}
+\begin{frame}[fragile]
+\frametitle{Dragonwood}
+\begin{example}
+Dragonwood has 6-sided dice with the following \# on the 6 sides: $\{1,2,2,3,3,4\}$. 
+
+\vspace{0.1in} \pause
+
+What is the image, pmf, and cdf for the sum of the upturned numbers when rolling 3 Dragonwood dice? \pause
+<<dragonwood, echo=TRUE, tidy=FALSE>>=
+# Three dice
+die   = c(1,2,2,3,3,4)
+rolls = expand.grid(die1 = die, die2 = die, die3 = die)
+sum   = rowSums(rolls); tsum = table(sum)
+dragonwood3 = data.frame(x   = round(as.numeric(names(tsum)),3),
+                         pmf = round(as.numeric(table(sum)/length(sum)),3)) %>%
+	mutate(cdf = cumsum(pmf))
+
+t(dragonwood3)
+# round(dragonwood3$pmf,3)
+# round(dragonwood3$cdf,3)
+@
+\end{example}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Dragonwood - pmf and cdf}
+
+<<dragonwood_plots, dependson='dragonwood', fig.width=8>>=
+g_pmf = ggplot(dragonwood3, aes(x=x, y=pmf)) + 
+	geom_point() + 
+	scale_x_continuous(breaks=3:12) + 
+	ylim(0,1)
+
+# set  up cdf plot
+cdf = bind_rows(data.frame(x=2,pmf=0,cdf=0), dragonwood3) %>% 
+	mutate(xend = c(x[-1],13))
+
+
+g_cdf = ggplot(cdf, aes(x=x, y=cdf, xend=xend, yend=cdf)) +
+	#      geom_vline(aes(xintercept=x), linetype=2, color="grey") +
+	geom_point() +  # Solid points to left
+	geom_point(aes(x=xend, y=cdf), shape=1) +  # Open points to right
+	geom_segment() + 
+	scale_x_continuous(breaks=3:12) +
+	coord_cartesian(xlim=c(3,12))
+
+grid.arrange(g_pmf,g_cdf, nrow=1)
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Properties of pmf and cdf}
+
+Properties of probability mass function $P(X=x)$:
+\begin{itemize}
+\item $0 \le P(X=x) \le 1$ for all $x \in \mathbb{R}$.
+\item $\sum_{x\in S} P(X=x) = 1$ where $S$ is the support.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Properties of cumulative distribution function $F_X(x)$:
+\begin{itemize}
+\item $0 \le F_{X}(x) \le 1$ for all $x \in \mathbb{R}$
+\item $F_{X}$ is nondecreasing, (i.e. if $x_{1} \le x_{2}$ then $F_{X}(x_{1}) \le F_{X}(x_{2})$.)
+\item $\lim_{x \rightarrow -\infty}F_{X}(x) = 0$ and $\lim_{x \rightarrow \infty}F_{X}(x) = 1$.
+\item %$F_{X}(t)$ has a positive jump equal to $p_{X}(x_{i})$ at $\{
+    %x_{1}, x_{2}, x_{3}, \ldots \}$; $F_{X}$ is constant in the interval $[x_{i},
+    %x_{i+1})$, i.e.
+    $F_X(x)$ is right continuous with respect to $x$
+\end{itemize}
+
+
+\end{frame}
+
+% \foilhead[-.8in]{\textcolor{blue}{Properties of $F_X$}}\vspace{.2cm}
+% %\no  {$F_X(x)=P(X\leq x)$ is cumulative distribution function, cdf }\\[.2in]
+% \no  \no {\textcolor{red}{Properties of $F_{X}$:} }   
+% The following properties hold for the cdf
+% $F_{X}$ of a  random variable $X$.
+%  \begin{itemize}
+%     \item $ 0 \le F_{X}(t) \le 1$ for all $t \in \mathbb{R}$
+%     \item $F_{X}$ is nondecreasing, (i.e. if $x_{1} \le x_{2}$
+%     then $F_{X}(x_{1}) \le F_{X}(x_{2})$.)
+%     \item $\lim_{t \rightarrow -\infty}F_{X}(t) = 0$ and $\lim_{t \rightarrow \infty}F_{X}(t) = 1$.
+%     \item %$F_{X}(t)$ has a positive jump equal to $p_{X}(x_{i})$ at $\{
+%     %x_{1}, x_{2}, x_{3}, \ldots \}$; $F_{X}$ is constant in the interval $[x_{i},
+%     %x_{i+1})$, i.e. 
+%     $F_X(t)$ is right continuous with respect to $t$
+% \end{itemize}
+% %\no If $x\leq y$, what how will $F_X(x)$ and $F_Y(y)$ be related? 
+
+ 
+\begin{frame}
+\frametitle{Dragonwood (cont.)}
+
+In Dragonwood, you capture monsters by rolling a sum equal to or greater than its defense. \pause
+Suppose you have 3 dice and the following monsters are available to be captured:
+\begin{itemize}
+\item A monster worth 1 victory point with a defense of 3.
+\item A monster worth 3 victory points with a defense of 7.
+\item A monster worth 4 victory points with a defense of 8. 
+\end{itemize}
+\pause
+Which monster should your attack?
+
+\vspace{0.1in} \pause
+
+We can calculate the probability of defeating each monster by computing one minus the cdf evaluated at ``defense minus 1''. \pause
+Let $X$ be the sum of the number on 3 Dragonwood dice. \pause
+Then
+\begin{itemize}
+\item $P(X\ge 3) = 1-P(X\le 2) = 1$
+\item $P(X\ge 7) = 1-P(X\le 6) = 0.722$.
+\item $P(X\ge 8) = 1-P(X\le 7) = 0.5$. 
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Expectation}
+\begin{frame}
+\frametitle{Expectation}
+
+\begin{definition}
+Let $X$ be a random variable and $h$ be some function. 
+The \alert{expected value} of a function of a (discrete) random variable is 
+\[ 
+E[h(X)] = \sum_i h(x_i) \cdot p_X(x_i).
+\]
+\pause
+If $h(x)=x$, then 
+\[ 
+E[X] = \sum_i x_i \cdot p_X(x_i)
+\]
+\pause
+and we call this the \alert{expectation} of $X$. 
+\end{definition}
+
+\pause
+
+Expected values are \emph{weighted averages} of the possible values weighted by their probability. 
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Dragonwood (cont.)}
+
+What is the expectation of the sum of 3 Dragonwood dice? 
+<<dragonwood_expectation, dependson='dragonwood', echo=TRUE>>=
+expectation = with(dragonwood3, sum(x*pmf))
+expectation
+@
+
+\pause
+
+The expectation can be thought of as the \alert{center of mass} 
+if we place mass $P(X=x)$ at corresponding points $x$. 
+
+\vspace{0.1in} \pause
+
+<<dragonwood_center_of_gravity, dependson='dragonwood_expectation', fig.height=2>>=
+ggplot(dragonwood3 %>% mutate(y=0), aes(x=x, xend=x, y=y, yend=pmf)) + 
+	geom_segment(size=2) + 
+  geom_point(data = data.frame(x=7.5,y=-0.01,pmf=0), aes(x,y), shape=24, color='red', fill='red') + 
+	scale_x_continuous(breaks=3:12) +
+  theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Biased coin}
+
+Suppose we have a biased coin represented by the following probability mass function:
+\[ \begin{array}{ccc}
+\hline
+y & 0 & 1 \\
+p_Y(y) & 1-p & p \\
+\hline
+\end{array} \]
+\pause
+What is the expected value? % E[Y] = p
+
+\vspace{0.1in} \pause
+
+If $p=0.9$, 
+<<biased_coin, fig.height=2>>=
+d = data.frame(x=c(0,1), pmf=c(0.1,0.9))
+
+ggplot(d %>% mutate(y=0), aes(x=x, xend=x, y=y, yend=pmf)) + 
+	geom_segment(size=2) + 
+  geom_point(data = data.frame(x=0.9,y=-0.04,pmf=0), aes(x,y), shape=24, color='red', fill='red') + 
+	scale_x_continuous(breaks=3:12) + 
+	labs(x='y', y='pmf')
+@
+\end{frame}
+
+
+\subsection{Properties of expectations}
+\begin{frame}
+\frametitle{Properties of expectations}
+
+\begin{theorem}
+Let $X$ and $Y$ be random variables and $a$, $b$, and $c$ be constants. \pause
+Then 
+\[ \begin{array}{rl}
+E[aX + bY+c] &= aE[X] + bE[Y] + c.
+\end{array} \]
+\end{theorem}
+
+\pause
+
+In particular
+\begin{corollary}
+\begin{itemize}[<+->]
+\item $E[X+Y] = E[X]+E[Y]$,
+\item $E[aX] = a E[X]$, and
+\item $E[c] = c$.
+\end{itemize}
+\end{corollary}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Dragonwood (cont.)}
+
+Enhancement cards in Dragonwood allow you to improve your rolls. \pause Here are two enhancement cards:
+\begin{itemize}
+\item \emph{Cloak of Darkness} adds 2 points to all capture attempts \pause and
+\item \emph{Friendly Bunny} allows you (once) to roll an extra die. 
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+What is the expected attack roll total if you had 3 Dragonwood dice, the Cloak of Darkness, and are using the Friendly Bunny? 
+
+\vspace{0.1in} \pause
+
+Let 
+\begin{itemize}
+\item $X$ be the sum of 3 Dragonwood dice (we know $E[X]=7.5$), 
+\item $Y$ be the sum of 1 Dragonwood die \pause which has $E[X] = 2.5$.
+\end{itemize}
+
+\pause
+
+Then the attack roll total is $X+Y+2$ and the \emph{expected} attack roll total is 
+\[ 
+E[X+Y+2] = E[X]+E[Y]+2 = 7.5+2.5+2 = 12,
+\]
+\pause
+or the attack roll is $4Y+2$ and the \emph{expected} attack roll total is 
+\[ 
+E[4Y+2] = 4E[Y]+2 = 12.
+\]
+
+\end{frame}
+
+
+
+\subsection{Variance}
+\begin{frame}
+\frametitle{Variance}
+
+\begin{definition}
+The \alert{variance} of a random variable is defined as the expected squared deviation from the mean. \pause 
+For discrete random variables, variance is
+\[
+Var[X] = E[(X-\mu)^2] = \sum_i (x_i-\mu)^2 \cdot p_X(x_i)
+\]
+where $\mu = E[X]$. \pause
+The symbol $\sigma^2$ is commonly used for the variance.
+\end{definition}
+The variance is analogous to \alert{moment of intertia} in classical mechanics.
+
+\pause
+
+\begin{definition}
+The \alert{standard deviation} is the positive square root of the variance
+\[
+SD[X] = \sqrt{Var[X]}.
+\]
+\pause
+The symbol $\sigma$ is commonly used for the standard deviation.
+\end{definition}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Dragonwood (cont.)}
+
+What is the variance for the sum of the 3 Dragonwood dice?
+
+<<dragonwood_variance, dependson='dragonwood_expectation', echo=TRUE>>=
+variance = with(dragonwood3, sum((x-expectation)^2*pmf))
+variance
+@
+
+\pause
+
+What is the standard deviation for the sum of the pips on 3 Dragonwood dice?
+<<dragonwood_standard_deviation, dependson='dragonwood_variance', echo=TRUE>>=
+sqrt(variance)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Biased coin}
+
+Suppose we have a biased coin represented by the following probability mass function:
+\[ \begin{array}{ccc}
+\hline
+y & 0 & 1 \\
+p_Y(y) & 1-p & p \\
+\hline
+\end{array} \]
+\pause
+What is the variance?
+
+\pause
+
+\begin{enumerate}
+\item $E[Y] = p$ 
+\item $V[y] = (0-p)^2(1-p) + (1-p)^2\times p = p-p^2 = p(1-p)$
+\end{enumerate}
+
+\pause
+When is this variance maximized?
+
+\pause
+<<biased_coin_variance, fig.height=2>>=
+opar = par(mar=c(4,4,1,0)+.1)
+variance = function(p) p*(1-p)
+curve(variance, xlab='y', ylab='variance')
+par(opar)
+@
+\end{frame}
+
+
+
+
+\section{Discrete distributions}
+\begin{frame}
+\frametitle{Special discrete distributions}
+
+\begin{itemize}
+\item Bernoulli 
+\item Binomial 
+\item Poisson 
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Note: The image is always finite or countable.
+
+\end{frame}
+
+
+\subsection{Bernoulli}
+\begin{frame}
+\frametitle{Bernoulli distribution}
+
+A Bernoulli experiment has only two outcomes: success/failure. 
+
+\vspace{0.1in} \pause
+
+Let 
+\begin{itemize}
+\item $X=1$ represent success and
+\item $X=0$ represent failure. 
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+The probability mass function $p_X(x)$ is 
+\[ 
+p_X(0) = 1-p \quad p_X(1) = p.
+\]
+
+\vspace{0.1in} \pause
+
+We use the notation $X\sim Ber(p)$ to denote a random variable $X$ that follows 
+a Bernoulli distribution with success probability $p$, i.e. $P(X=1)=p$. 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bernoulli experiment examples}
+
+\begin{example}
+\begin{itemize}
+\item Toss a coin: $\mOmega = \{H,T\}$
+\item Win/Loss outcome of a HootOwlHoot! game
+\item Throw a fair die and ask if the face value is a six: 
+$\mOmega = \{{\text{face value is a six},\text{face value is not a six}}\}$
+\item Send a message through a network and record whether or not it is received: 
+$\mOmega = \{ \text{successful transmission}, \text{ unsuccessful transmission}\}$
+\item Draw a part from an assembly line and record whether or not it is 
+defective: $\mOmega = \{\text{defective}, \text{ good}\}$
+\item Response to the question ``Are you in favor of the above measure''? 
+(in reference to a new tax levy to  be imposed on city residents): 
+$\mOmega = \{\text{yes}, \text{no}\}$
+\end{itemize}
+\end{example}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Bernoulli distribution (cont.)}
+
+The cdf of the Bernoulli distribution is
+\[
+F_X(t) =P(X\leq t)= \left \{
+\begin{array}{cl}
+    0 & t < 0 \\
+    1-p & 0 \le t < 1 \\
+    1 & 1 \le t
+\end{array}
+\right .
+\]
+
+\vspace{0.1in} \pause
+
+The expected value is 
+\[ 
+E[X]=\sum\limits_{x} p_X(x)=0(1-p)+1\cdot p=p.
+\]
+
+\vspace{0.1in} \pause
+
+The variance is 
+\[ Var[X]=\sum\limits_{x}(x-E[X])^2p_X(x)= (0-p)^2\cdot (1-p)+(1-p)^2 \cdot p = p (1-p). \]
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Sequence of Bernoulli experiments}
+
+A compound experiment consisting of $n$ \alert{independent and identically distributed} Bernoulli experiments. \pause
+E.g.
+\begin{itemize}
+\item Toss a coin $n$ times.
+\item Send 23 identical messages through the network independently.
+\item Draw 5 cards from a standard deck with replacement (and reshuffling) and record whether or not the card is a king.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+What does \alert{independent and identically distributed} mean? 
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Independent and identically distributed}
+
+Let $X_i$ represent the $i^{th}$ Bernoulli experiment. 
+
+\vspace{0.1in} \pause 
+
+\alert{Independence} means 
+
+\[ 
+P(X_1=x_1,\ldots,X_n=x_n) = \prod_{i=1}^n P(X_i=x_i),
+\]
+i.e. the joint probability is the product of the individual probabilities. 
+
+\vspace{0.1in} \pause
+
+\alert{Identically distributed} (for Bernoulli random variables) means 
+\[ 
+P(X_i=1) = p \quad \forall\, i,
+\]
+and more generally, the distribution is the same for all the random variables.
+
+\vspace{0.1in} \pause
+
+We will use $iid$ as a shorthand for \emph{independent and identically distributed}, although I will often use $ind$ to indicate \emph{independent} and let \emph{identically distributed} be clear from context. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sequences of Bernoulli experiments}
+
+Let $X_i$ denote the outcome of the $i^{th}$ Bernoulli experiment. \pause
+We use the notation 
+\[ 
+X_i \iid Ber(p), \quad \mbox{for }i=1,\ldots,n
+\]
+to indicate a sequence of $n$ independent and identically distributed Bernoulli experiments.
+
+\vspace{0.1in}\pause
+
+We could write this equivalently as 
+\[ 
+X_i \ind Ber(p), \quad \mbox{for }i=1,\ldots,n
+\]
+\pause
+but this is different than 
+\[ 
+X_i \ind Ber(p_i), \quad \mbox{for }i=1,\ldots,n
+\]
+as the latter has a different success probability for each experiment. 
+
+\end{frame}
+
+
+\subsection{Binomial}
+\begin{frame}
+\frametitle{Binomial distribution}
+
+Suppose we perform a sequence of $n$ $iid$ Bernoulli experiments and only record the number of successes, i.e. 
+\[ 
+Y = \sum_{i=1}^n X_i.
+\]
+
+\vspace{0.1in} \pause
+
+Then we use the notation $Y\sim Bin(n,p)$ to indicate a binomial distribution with 
+\begin{itemize}
+\item $n$ attempts and 
+\item probability of success $p$. 
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Binomial probability mass function}
+
+We need to obtain 
+\[ 
+p_Y(y) = P(Y=y) \quad \forall y\in \mOmega \pause = \{0,1,2,\ldots,n\}.
+\]
+
+\pause
+The probability of obtaining a particular sequence of $y$ success and $n-y$ failures is 
+\[ 
+p^y(1-p)^{n-y}
+\]
+since the experiments are $iid$ with success probability $p$. \pause But there are 
+\[
+{n\choose y} 
+\]
+ways of obtaining a sequence of $y$ success and $n-y$ failures. \pause Thus, the binomial probability mass function is 
+\[ 
+P_Y(y) = P(Y=y) = {n\choose y} p^y(1-p)^{n-y}.
+\]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Properties of the binomial distribution}
+
+The expected value is 
+\[ 
+E[Y] = E\left[ \sum_{i=1}^n X_i \right] \pause = \sum_{i=1}^n E[X_i] \pause= \sum_{i=1}^n p = np.
+\]
+
+\vspace{0.1in} \pause
+
+The variance is 
+\[ 
+Var[Y] = \sum_{i=1}^n Var[X_i] = np(1-p)
+\]
+since the $X_i$ are independent. 
+
+\vspace{0.1in} \pause
+
+The cumulative distribution function is 
+\[ 
+F_Y(y) = P(Y\le y) = \sum_{x=0}^{\lfloor y\rfloor} {n\choose x} p^x(1-p)^{n-x}.
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Component failure rate}
+
+Suppose a box contains 15 components that each have a failure rate of 5\%. 
+
+\vspace{0.1in} \pause
+
+What is the probability that 
+\begin{enumerate}
+	\item exactly two out of the fifteen components are defective?
+	\item at most two components are defective?
+	\item more than three components are defective?
+	\item more than 1 but less than 4 are defective?
+\end{enumerate}
+
+\vspace{0.1in} \pause
+
+Let $Y$ be the number of defective components 
+\pause 
+and assume $Y\sim Bin(15,0.05)$. 
+\pause
+
+{\small
+\[ \begin{array}{lll}
+1. & P(Y=2)&= P(Y=2) = {15\choose 2} (0.05)^2(1-0.05)^{15-2} \pause \\
+2. & P(Y\le 2) &= \sum_{x=0}^2 {15\choose x} (0.05)^x(1-0.05)^{15-x} \pause \\
+3. & P(Y>3) &= 1-P(Y\le 3) = 1-\sum_{x=0}^3 {15\choose x} (0.05)^x(1-0.05)^{15-x} \pause \\
+4. & P(1<Y<4) &= \sum_{x=2}^3 {15\choose x} (0.05)^x(1-0.05)^{15-x} \\
+\end{array} \]
+}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Component failure rate (solutions in R)}
+
+<<component_failure_rate,echo=TRUE>>=
+n = 15
+p = 0.05
+choose(15,2)
+dbinom(2,n,p)           # P(Y=2)
+pbinom(2,n,p)           # P(Y<=2)
+1-pbinom(3,n,p)         # P(Y>3) 
+sum(dbinom(c(2,3),n,p)) # P(1<Y<4) = P(Y=2)+P(Y=3)
+@
+
+\end{frame}
+
+
+
+% \foilhead[-.8in]{\textcolor{blue}{Binomial distribution: Example (Continued...)}}
+%  \begin{enumerate}
+% 	\item
+% 	$\displaystyle P( \text{exactly two out of the fifteen components are
+% 	defective} ) = p_X(2) = {15 \choose 2} 0.05^{2} 0.95^{13} = 0.1348.$
+% 	\item
+% 	$\displaystyle P( \text{at most two components are defective} ) = P(X \le 2) =
+% 	B_{15,0.05}(2) = 0.9638.$
+% 	\item $\displaystyle P(\text{ more than three components are defective }) = P(X > 3) =
+% 	1 - P( X \le 3) = 1 - 0.9945 = 0.0055.$
+% 	\item $\displaystyle P(\text{ more than 1 but less than 4 are defective }) = P( 1 <
+% 	X < 4) = P(X \le 3) - P(X \le 1) = 0.9945 - 0.8290 = 0.1655.$
+%     \end{enumerate}
+
+
+\subsection{Poisson}
+\begin{frame}
+\frametitle{Poisson distribution}
+
+Many experiments can be thought of as ``how many \emph{rare} events will occur in a certain amount of time or space?'' \pause 
+For example,
+{\small
+\begin{itemize}
+\item \# of alpha particles emitted from a polonium bar in an 8 minute period
+\item \# of flaws on a standard size piece of manufactured product, e.g., 100m coaxial cable, 100 sq.meter plastic sheeting
+\item \# of hits on a web page in a 24h period
+\end{itemize}
+}
+
+\pause
+
+These situations can be effectly modeled using a Poisson distribution. \pause
+The Poisson distribution has probability mass function 
+\[
+p(x) = \frac{e^{-\lambda}\lambda^{x}}{x!} \quad \text{ for } x = 0,1,2,3,\ldots
+\]
+where $\lambda$ is called the \alert{rate parameter}. \pause
+We write $X\sim Po(\lambda)$ to represent this random variable. \pause
+We can show that 
+\[ E[X] = Var[X] = \lambda. \]
+
+\end{frame}
+
+
+
+
+
+
+
+
+% \foilhead[-.75in]{\textcolor{blue}{Poisson pmf (cont'd)}}   
+% \no  {\textcolor{cyan}{Check that $p(x)$ defined above is actually a probability mass function. How?}} \\[.1in]
+% \no 1. Obviously, all values of $p(x)\geq 0$ for $x\geq 0$. \\[.1in]
+% \no 2. Do all probabilities sum to 1? 
+% $$\sum\limits_{x=0}^\infty p(x)=\sum\limits_{x=0}^\infty e^{-\lambda}\frac{\lambda^x}{x!}
+% =e^{-\lambda} \cdot \sum\limits_{x=0}^\infty \frac{\lambda^x}{x!} =e^{-\lambda}e^\lambda=1$$
+% \no Expected Value and Variance of $X \sim Po_{\lambda}$ are:}\\[.1in]
+% \no \h \h  \bul  $E[X]= \sum_{x=0}^{\infty} x\frac{e^{-\lambda}\lambda^{x}}{x!} = 0 + e^{-\lambda}\sum\limits_{\textcolor{magenta}{x=1}}^\infty\frac{\lambda^x}{(x-1)!}=e^{-\lambda}\lambda\sum\limits_{x=1}^\infty \frac{\lambda^{x-1}}{(x-1)!}$\\[.1in]
+% \no \hspace*{2in} $= e^{-\lambda}\lambda\sum\limits_{y=0}^\infty \frac{\lambda^y}{y!}=\lambda$\\[.1in]
+% \no \h \h  \bul $\text{Var}[X] = \ldots = \lambda$ (left as an exercise)
+
+
+\begin{frame}[fragile]
+\frametitle{Poisson distribution - example}
+
+Customers of an internet service provider initiate new accounts at the average rate of 10 accounts per day. \pause
+What is the probability that more than 8 new accounts will be initiated today? \pause
+
+\vspace{0.1in} 
+
+Let $X$ be the number of initiated accounts today. \pause 
+Assume $X\sim Po(10)$. \pause
+\[ P(X>8) = 1-P(X\le 8) = 1- \sum_{x=0}^8 \frac{\lambda^x e^{-\lambda}}{x!} \approx 1-0.333 = 0.667 \]
+\pause 
+In R, 
+<<echo=TRUE>>=
+# Using pmf
+1-sum(dpois(0:8, lambda=10))
+# Using cdf
+1-ppois(8, lambda=10)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sum of Poisson random variables}
+
+\begin{theorem}
+Let $X_i\ind Po(\lambda_i)$ for $i=1,\ldots,n$. \pause Then 
+\[ 
+Y = \sum_{i=1}^n X_i \sim Po\left( \sum_{i=1}^n \lambda_i \right).
+\]
+\end{theorem}
+\pause
+\begin{corollary}
+Let $X_i\iid Po(\lambda)$ for $i=1,\ldots,n$. \pause Then 
+\[ 
+Y = \sum_{i=1}^n X_i \sim Po\left( n\lambda \right).
+\]
+\end{corollary}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Poisson distribution - example}
+
+Customers of an internet service provider initiate new accounts at the average rate of 10 accounts per day. \pause
+What is the probability that more than 16 new accounts will be initiated in the next two days?
+
+\vspace{0.1in} \pause
+
+Since the rate is 10/day, then for two days we expect, on average, to have 20. \pause
+Let $Y$ be he number initiated in a two-day period and assume $Y\sim Po(20)$. \pause
+Then 
+\[ 
+P(Y>16) = 1-P(Y\le 16) = 1-\sum_{x=0}^{16} \frac{\lambda^x e^{-\lambda}}{x!} = 1-0.221 = 0.779.
+\]
+In R,
+<<echo=TRUE>>=
+# Using pmf
+1-sum(dpois(0:16, lambda=20))
+# Using cdf
+1-ppois(16, lambda=20)
+@
+
+\end{frame}
+
+
+
+\subsection{Poisson approximation to a binomial}
+\begin{frame}
+\frametitle{Manufacturing example}
+
+A manufacturer produces 100 chips per day and, on average, 1\% of these chips are defective. \pause
+What is the probability that no defectives are found in a particular day?
+
+\vspace{0.1in} \pause
+
+Let $X$ represent the number of defectives and assume $X\sim Bin(100,0.01)$. \pause
+Then 
+\[ 
+P(X=0) = {100\choose 0}(0.01)^0(1-0.01)^{100} \approx 0.366.
+\]
+\pause
+Alternatively,
+let $Y$ represent the number of defectives and assume $Y\sim Po(100\times 0.01)$. \pause
+Then 
+\[ 
+P(Y=0) = \frac{1^0 e^{-1}}{0!} \approx 0.368.
+\]
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Poisson approximation to the binomial}
+
+\begin{theorem}
+Let $\{X_n\}$ be a sequence of random variables such that $X_n\sim Bin(N_n, p_n)$ with $N_n\to \infty$ and $N_np_n\to \lambda \in (0,\infty)$, then 
+\[ X_n \to X \sim Po(\lambda)
+\]
+in distribution.
+\end{theorem}
+
+\pause
+
+
+For large $n$, the binomial dsitribution, $Bin(n,p)$, can be approximated by a Poisson distribution, $Po(np)$, since 
+\[ 
+{n \choose k} p^{k}(1-p)^{n-k} \approx e^{-np}\frac{(np)^{k}}{k!}.
+\]
+
+\vspace{0.1in} \pause
+
+Rule of thumb: use Poisson approximation if $n \ge 20$ and $p \le 0.05$.
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Example}
+Imagine you are supposed to proofread a paper. 
+Let us assume that there are on average 2 typos on a page and a page has 1000 words. \pause
+This gives a probability of 0.002 for each word to contain a typo. \pause
+What is the probability the page has no typos?
+
+\vspace{0.1in} \pause
+
+Let $X$ represent the number of typos on the page and assume $X\sim Bin(1000,0.002)$. \pause
+$P(X=0)$ using R is
+<<typo_binomial, echo=TRUE>>=
+n = 1000; p = 0.002
+dbinom(0, size=n, prob=p)
+@
+Alternatively, let $Y$ represent the number of defectives and assume $Y\sim Po(1000\times 0.002)$. \pause
+$P(Y=0)$ using R is
+<<typo_poisson, echo=TRUE, dependson='typo_binomial'>>=
+dpois(0, lambda=n*p)
+@
+\end{frame}
+
+
+
+
+% \begin{frame}
+% \frametitle{Multiple random variables}
+% 
+% \begin{definition}
+% The \alert{joint probability mass function} of two random variables $X$ and $Y$ is 
+% \[ 
+% p_{X,Y}(x,y) = P(X=x,Y=y).
+% \]
+% \pause
+% The \alert{joint probability mass function} of a random vector $X=(X_1,\ldots,X_p)$ is 
+% \[ 
+% P_X(x) = P(X=x). 
+% \]
+% \end{definition}
+% 
+% \end{frame}
+% 
+% 
+% \subsection{Covariance}
+% \begin{frame}
+% \frametitle{Covariance}
+% 
+% \begin{definition}
+% The \alert{covariance} between two random variables $X$ and $Y$ is 
+% \[ \begin{array}{rl}
+% Cov[X,Y] 
+% &= E\left[ (X-E[X])(Y-E[Y]) \right] \\
+% &= E[XY] - E[X]E[Y]
+% \end{array} \]
+% \end{definition}
+% 
+% \pause
+% 
+% \begin{definition}
+% The \alert{correlation} coefficient between two random variables $X$ and $Y$ is 
+% \[ \begin{array}{rl}
+% \rho = \frac{Cov[X,Y]}{\sqrt{Var[X] Var[Y]}} = \frac{Cov[X,Y]}{SD[X] SD[Y]}.
+% \end{array} \]
+% \pause
+% If $rho=0$, we say that $X$ and $Y$ are uncorrelated. 
+% \end{definition}
+% 
+% \end{frame}
+% 
+% 
+% 
+% 
+% 
+% \subsection{Properties of variances}
+% \begin{frame}
+% \frametitle{Properties of variance}
+% 
+% \begin{theorem}
+% Let $X$ and $Y$ be random variables and $a$, $b$, and $c$ be constants. \pause
+% Then 
+% \[ \begin{array}{rl}
+% Var[aX + bY+c] &= a^2Var[X] + b^2Var[Y] + 2ab Cov(X,Y).
+% \end{array} \]
+% \end{theorem}
+% 
+% \pause
+% 
+% % needs to be fixed
+% % In particular
+% % \begin{corollary}
+% % \begin{itemize}[<+->]
+% % \item $Var[X+Y] = Var[X]+Var[Y]$,
+% % \item $Var[aX] = a Var[X]$, and
+% % \item $Var[c] = c$.
+% % \end{itemize}
+% % \end{corollary}
+% 
+% \end{frame}
+
+
+\end{document}
