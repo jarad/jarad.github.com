@@ -20,11 +20,118 @@ Many of the standard probability distributions have functions in R to calculate:
 The letter after each indicates the letter the function will start with for 
 all distributions.
  
+
+### Discrete distributions
+
+If the support of the random variable is a finite or countably infinite number
+of values, then the random variable is discrete.
+Discrete random variables have a 
+[probability mass function (pmf)](https://en.wikipedia.org/wiki/Probability_mass_function).
+This pmf gives the probability that a random variable will take on each value 
+in its support. 
+The cumulative distribution function (cdf)](https://en.wikipedia.org/wiki/Cumulative_distribution_function)
+provides the probability the random variable is less than or equal to a particular
+value.
+The quantile function is the inverse of the cumulative distribution function, 
+i.e. you provide a probability and the quantile function returns the value of the
+random variable such the cdf will return that probability.
+
+#### Binomial distribution
+
+Whenever you repeat an experiment and you assume 
+
+1. the probability of success is the same each time and 
+1. each trial of the experiment is independent of the rest (as long as you know the probability of success).
+
+Then, if you record the number of success out of the total, you have a 
+[binomial distribution](https://en.wikipedia.org/wiki/Binomial_distribution).
+
+For example, consider an experiment with probability of success of 0.7 and 13
+trials, i.e. $X\simBin(13,0.7)$. 
+Here is the pmf using the `dbinom` function:
+
+```{r}
+n <- 13
+p <- 0.7
+x <- 0:n
+
+plot(x, dbinom(x, n, p))
+```
+ 
+Here is the cdf using the `pbinom` function:
+
+```{r}
+plot(x, pbinom(x, n, p), type="s")
+```
+
+For a discrete random variable, the cdf is a step function since the function 
+*jumps* whenever it comes across a value in the support for the random variable.
+
+Here is the quantile function using the `qbinom` function:
+
+```{r}
+p_seq <- seq(from = 0, to = 1, length = 101)
+plot(p_seq, qbinom(p_seq, n, p), type="s")
+```
+ 
+Finally, we can draw random values from this binomial distribution using the 
+`rbinom` function. 
+
+```{r}
+draws <- rbinom(100, n, p) # draw 100
+brks  <- (0:(n+1)) - 0.5
+hist(draws, breaks = brks) 
+```
+ 
+Rather than having the number of draws, we often want the percentage of draws. 
+For reference, we can add the true probabilities using the pmf 
+(shown in red).
+
+```{r}
+hist(draws, breaks = brks, probability = TRUE)
+points(x, dbinom(x, n, p), col="red")
+```
+
+
+#### Activity
+
+Plot the pdf, cdf, and quantile function for the binomial distribution with 
+probability of success 0.25 and 39 trials, i.e. $X\sim Bin(39,0.25)$. 
+Then sample 999 random binomials with 39 trials and probability of success 0.25
+and plot them on a histogram with the true probability mass function.
+
+<div id="binomial_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+n <- 39
+p <- 0.25
+x <- 0:n
+
+plot(x, dbinom(x, n, p),                     main = 'Probability mass function')
+plot(x, pbinom(x, n, p),         type = 's', main = 'Cumulative distribution function')
+plot(p_seq, qbinom(p_seq, n, p), type = 's', main = 'Quantile function')
+
+draws <- rbinom(100, n, p) # draw 100
+brks  <- (0:(n+1)) - 0.5
+hist(draws, breaks = brks, probability = TRUE)
+points(x, dbinom(x, n, p), col="red")
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('binomial_activity_solution') .style.display=='none') {document.getElementById('binomial_activity_solution') .style.display=''}else{document.getElementById('binomial_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+ 
+ 
+#### Poisson distribution
+
+
+ 
+ 
 ### Uniform distribution
  
 The uniform distribution is one of the easiest distributions to understand. 
 If Y is a random variable and it is uniformly distributed between a and b, 
-then we write $Y \sim Unif(a,b)$. 
+then we write $X\simUnif(a,b)$. 
  
 #### Probability density function
  
