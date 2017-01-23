@@ -797,11 +797,13 @@ p^y(1-p)^{n-y}
 \]
 since the experiments are $iid$ with success probability $p$. \pause But there are 
 \[
-{n\choose y} 
+{n\choose y} = \frac{n!}{y!(n-y)!}
 \]
-ways of obtaining a sequence of $y$ success and $n-y$ failures. \pause Thus, the binomial probability mass function is 
+ways of obtaining a sequence of $y$ success and $n-y$ failures. 
+\pause 
+Thus, the binomial probability mass function is 
 \[ 
-P_Y(y) = P(Y=y) = {n\choose y} p^y(1-p)^{n-y}.
+p_Y(y) = P(Y=y) = {n\choose y} p^y(1-p)^{n-y}.
 \]
 
 \end{frame}
@@ -812,7 +814,10 @@ P_Y(y) = P(Y=y) = {n\choose y} p^y(1-p)^{n-y}.
 
 The expected value is 
 \[ 
-E[Y] = E\left[ \sum_{i=1}^n X_i \right] \pause = \sum_{i=1}^n E[X_i] \pause= \sum_{i=1}^n p = np.
+E[Y] 
+= E\left[ \sum_{i=1}^n X_i \right] 
+\pause 
+= \sum_{i=1}^n E[X_i] \pause= \sum_{i=1}^n p = np.
 \]
 
 \vspace{0.1in} \pause
@@ -872,8 +877,8 @@ and assume $Y\sim Bin(15,0.05)$.
 \frametitle{Component failure rate (solutions in R)}
 
 <<component_failure_rate,echo=TRUE>>=
-n = 15
-p = 0.05
+n <- 15
+p <- 0.05
 choose(15,2)
 dbinom(2,n,p)           # P(Y=2)
 pbinom(2,n,p)           # P(Y<=2)
@@ -885,26 +890,14 @@ sum(dbinom(c(2,3),n,p)) # P(1<Y<4) = P(Y=2)+P(Y=3)
 
 
 
-% \foilhead[-.8in]{\textcolor{blue}{Binomial distribution: Example (Continued...)}}
-%  \begin{enumerate}
-% 	\item
-% 	$\displaystyle P( \text{exactly two out of the fifteen components are
-% 	defective} ) = p_X(2) = {15 \choose 2} 0.05^{2} 0.95^{13} = 0.1348.$
-% 	\item
-% 	$\displaystyle P( \text{at most two components are defective} ) = P(X \le 2) =
-% 	B_{15,0.05}(2) = 0.9638.$
-% 	\item $\displaystyle P(\text{ more than three components are defective }) = P(X > 3) =
-% 	1 - P( X \le 3) = 1 - 0.9945 = 0.0055.$
-% 	\item $\displaystyle P(\text{ more than 1 but less than 4 are defective }) = P( 1 <
-% 	X < 4) = P(X \le 3) - P(X \le 1) = 0.9945 - 0.8290 = 0.1655.$
-%     \end{enumerate}
-
 
 \subsection{Poisson}
 \begin{frame}
 \frametitle{Poisson distribution}
 
-Many experiments can be thought of as ``how many \emph{rare} events will occur in a certain amount of time or space?'' \pause 
+Many experiments can be thought of as 
+``how many \emph{rare} events will occur in a certain amount of time or space?'' 
+\pause 
 For example,
 {\small
 \begin{itemize}
@@ -935,22 +928,12 @@ We can show that
 
 
 
-% \foilhead[-.75in]{\textcolor{blue}{Poisson pmf (cont'd)}}   
-% \no  {\textcolor{cyan}{Check that $p(x)$ defined above is actually a probability mass function. How?}} \\[.1in]
-% \no 1. Obviously, all values of $p(x)\geq 0$ for $x\geq 0$. \\[.1in]
-% \no 2. Do all probabilities sum to 1? 
-% $$\sum\limits_{x=0}^\infty p(x)=\sum\limits_{x=0}^\infty e^{-\lambda}\frac{\lambda^x}{x!}
-% =e^{-\lambda} \cdot \sum\limits_{x=0}^\infty \frac{\lambda^x}{x!} =e^{-\lambda}e^\lambda=1$$
-% \no Expected Value and Variance of $X \sim Po_{\lambda}$ are:}\\[.1in]
-% \no \h \h  \bul  $E[X]= \sum_{x=0}^{\infty} x\frac{e^{-\lambda}\lambda^{x}}{x!} = 0 + e^{-\lambda}\sum\limits_{\textcolor{magenta}{x=1}}^\infty\frac{\lambda^x}{(x-1)!}=e^{-\lambda}\lambda\sum\limits_{x=1}^\infty \frac{\lambda^{x-1}}{(x-1)!}$\\[.1in]
-% \no \hspace*{2in} $= e^{-\lambda}\lambda\sum\limits_{y=0}^\infty \frac{\lambda^y}{y!}=\lambda$\\[.1in]
-% \no \h \h  \bul $\text{Var}[X] = \ldots = \lambda$ (left as an exercise)
-
 
 \begin{frame}[fragile]
 \frametitle{Poisson distribution - example}
 
-Customers of an internet service provider initiate new accounts at the average rate of 10 accounts per day. \pause
+Customers of an internet service provider initiate new accounts at the average 
+rate of 10 accounts per day. \pause
 What is the probability that more than 8 new accounts will be initiated today? \pause
 
 \vspace{0.1in} 
@@ -993,16 +976,22 @@ Y = \sum_{i=1}^n X_i \sim Po\left( n\lambda \right).
 \begin{frame}[fragile]
 \frametitle{Poisson distribution - example}
 
-Customers of an internet service provider initiate new accounts at the average rate of 10 accounts per day. \pause
-What is the probability that more than 16 new accounts will be initiated in the next two days?
+Customers of an internet service provider initiate new accounts at the average 
+rate of 10 accounts per day. \pause
+What is the probability that more than 16 new accounts will be initiated in the 
+next two days?
 
 \vspace{0.1in} \pause
 
-Since the rate is 10/day, then for two days we expect, on average, to have 20. \pause
-Let $Y$ be he number initiated in a two-day period and assume $Y\sim Po(20)$. \pause
+Since the rate is 10/day, then for two days we expect, on average, to have 20. 
+\pause
+Let $Y$ be he number initiated in a two-day period and assume $Y\sim Po(20)$. 
+\pause
 Then 
 \[ 
-P(Y>16) = 1-P(Y\le 16) = 1-\sum_{x=0}^{16} \frac{\lambda^x e^{-\lambda}}{x!} = 1-0.221 = 0.779.
+P(Y>16) = 1-P(Y\le 16) 
+= 1-\sum_{x=0}^{16} \frac{\lambda^x e^{-\lambda}}{x!} 
+= 1-0.221 = 0.779.
 \]
 In R,
 <<echo=TRUE>>=
