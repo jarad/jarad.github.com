@@ -8,7 +8,7 @@ output: html_document
 
 To follow along, use the [lab03 code](lab03.R).
 
-## Probability distributions in R
+# Probability distributions in R
 
 Many of the standard probability distributions have functions in R to calculate:
 
@@ -21,7 +21,7 @@ The letter after each indicates the letter the function will start with for
 all distributions.
  
 
-### Discrete distributions
+## Discrete distributions
 
 If the support of the random variable is a finite or countably infinite number
 of values, then the random variable is discrete.
@@ -36,7 +36,7 @@ The quantile function is the inverse of the cumulative distribution function,
 i.e. you provide a probability and the quantile function returns the value of the
 random variable such the cdf will return that probability.
 
-#### Binomial distribution
+### Binomial distribution
 
 Whenever you repeat an experiment and you assume 
 
@@ -122,7 +122,7 @@ points(x, dbinom(x, size = n, prob = p), col="red")
 
  
  
-#### Poisson distribution
+### Poisson distribution
 
 While the binomial distribution has an upper limit ($n$), 
 we sometimes run an experiment and are counting *successes* without any 
@@ -181,9 +181,9 @@ points(x, dpois(x, lambda = rate), col="red")
 
 #### Activity
 
-Plot the pdf, cdf, and quantile function for a Poisson distribution with rate
+Plot the pmf, cdf, and quantile function for a Poisson distribution with rate
 23, i.e. $X\sim Po(23)$. . 
-Then sample 999 random Poisson random variables with rate 23
+Then sample 999 Poisson random variables with rate 23
 and plot them on a histogram with the true probability mass function.
 
 <div id="binomial_activity_solution" style="display:none"> 
@@ -205,7 +205,7 @@ points(x, dpois(x, lambda = rate), col="red")
 
 
 
-### Continuous distributions
+## Continuous distributions
 
 In constrast to discrete random variables, 
 [continuous random variables](http://stattrek.com/probability-distributions/discrete-continuous.aspx?Tutorial=Stat)
@@ -228,8 +228,6 @@ If X is a random variable and it is uniformly distributed between a and b,
 then we write $X\sim Unif(a,b)$ and this means that X can take on any value 
 between a and b with equal probability. 
  
-#### Probability density function
- 
 The probability density function for a uniform random variable is zero outside
 of a and b (indicating that the random variable cannot take values below a
 or above b) and is constant at a value of 1/(b-a) from a to b. 
@@ -240,8 +238,6 @@ b <- 1
 curve(dunif(x, min = a, max = b), from = -1, to = 2,
       xlab='y', ylab='f(y)', main='Probability density function for Unif(0,1)')
 ```
- 
-#### Cumulative distribution function
  
 The cumulative distribution function is the integral from negative infinite 
 up to y of the probability density function. 
@@ -255,8 +251,6 @@ then a straight line from (a,0) up to (b,1) and then constant after that.
 curve(punif(x, min = a, max = b), from = -1, to = 2,
       xlab='y', ylab='f(y)', main='Cumulative distribution function for Unif(0,1)')
 ```
- 
-#### Quantile function
 
 The quantile function is the inverse of the cumulative distribution function.
 For a given probability p, it finds the value such that the 
@@ -267,8 +261,6 @@ curve(qunif(x, min = a, max = b), from = 0, to = 1,
       xlab='y', ylab='f(y)', main='Quantile function for Unif(0,1)')
 ```
 
-#### Random draw function
-
 To draw random values from the distribution, use the `r` version of the 
 function.
 For instance, here is 100 random Unif(a,b) draws represented as a histogram.
@@ -276,4 +268,171 @@ For instance, here is 100 random Unif(a,b) draws represented as a histogram.
 ```{r}
 random_uniforms <- runif(100, min = a, max = b)
 hist(random_uniforms, probability = TRUE, main = "Random draws from Unif(0,1)")
+curve(dunif(x, min = a, max = b), add = TRUE, col="red")
 ```
+
+
+#### Activity
+
+Plot the pdf, cdf, and quantile function for a uniform distribution on the 
+interval (13, 65), i.e. $X\sim Unif(13,65)$. 
+Then sample 999 random uniforms on the interval (13,65) and plot a histogram
+of these draws with the probability density function.
+
+
+<div id="uniform_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+a <- 13
+b <- 65
+
+opar = par(mfrow=c(2,2)) # Create a 2x2 grid of figures
+curve(dunif(x, min = a, max = b), from = a-1, to = b+1,
+      xlab='y', ylab='f(y)', main='Probability density function for Unif(13,65)')
+curve(punif(x, min = a, max = b), from = a-1, to = b+1,
+      xlab='y', ylab='f(y)', main='Cumulative distribution function for Unif(13,65)')
+curve(qunif(x, min = a, max = b), from = 0, to = 1,
+      xlab='y', ylab='f(y)', main='Quantile function for Unif(13,65)')
+random_uniforms <- runif(999, min = a, max = b)
+hist(random_uniforms, probability = TRUE, main = "Random draws from Unif(13,65)")
+curve(dunif(x, min = a, max = b), add=TRUE, col="red")
+par(opar)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('uniform_activity_solution') .style.display=='none') {document.getElementById('uniform_activity_solution') .style.display=''}else{document.getElementById('uniform_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+### Normal distribution
+
+The most important distribution for this course is the 
+[normal (Gaussian) distribution](https://en.wikipedia.org/wiki/Normal_distribution).
+The normal distribution has two parameters: the mean ($\mu$) and the variance 
+($\sigma^2$) and we write $X\sim N(\mu,\sigma^2)$.
+If $\mu=0$ and $\sigma^2=1$, we call the associated random variable a **standard
+normal**.
+The probability density function for the normal distribution is the well-known
+bell-shaped curve.
+
+```{r}
+mu    <- 0
+sigma <- 1 # standard deviation
+
+curve(dnorm(x, mean = mu, sd = sigma), # notice the 3rd argument is the sd
+      from = -4, to = 4,
+      main = "PDF for a standard normal")
+```
+
+The quantile function has a sigmoid shape.
+
+```{r}
+curve(pnorm(x, mean = mu, sd = sigma), 
+      from = -4, to = 4,
+      main = "CDF for a standard normal",
+      ylab = "F(x)")
+```
+
+The quantile function will be used later in the semester to help construct
+confidence/credible intervals.
+
+```{r}
+curve(qnorm(x, mean = mu, sd = sigma),
+      from = 0, to = 1, 
+      main = "Quantile function for a standard normal")
+```
+
+Then we can take random draws
+
+```{r}
+draws <- rnorm(100, mean = mu, sd = sigma)
+hist(draws, probability = TRUE)
+curve(dnorm(x, mean = mu, sd = sigma), add = TRUE, col = "red")
+```
+
+#### Activity
+
+Plot the pdf, cdf, and quantile function for a normal distribution with mean 
+-4 and variance 3, i.e. $X\sim N(-4,3)$. 
+Then sample 999 random N(-4,3) and plot a histogram
+of these draws with the probability density function.
+
+
+<div id="normal_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+mu    <- -4
+sigma <- sqrt(3) # standard deviation!!!
+
+opar = par(mfrow=c(2,2))
+curve(dnorm(x, mean = mu, sd = sigma), 
+      from = mu-4*sigma, to = mu+4*sigma,
+      main = "PDF for a normal")
+
+curve(pnorm(x, mean = mu, sd = sigma), 
+      from = mu-4*sigma, to = mu+4*sigma,
+      main = "CDF for a normal")
+
+curve(qnorm(x, mean = mu, sd = sigma),
+      from = 0, to = 1, 
+      main = "Quantile function for a normal")
+
+draws <- rnorm(999, mean = mu, sd = sigma)
+hist(draws, probability = TRUE)
+curve(dnorm(x, mean = mu, sd = sigma), add = TRUE, col = "red")
+par(opar)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('normal_activity_solution') .style.display=='none') {document.getElementById('normal_activity_solution') .style.display=''}else{document.getElementById('normal_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+#### Quantiles of a normal distribution
+
+For any normal random variable, determine the probability it is 
+
+- within 1 standard deviation of its mean
+- within 2 standard deviation of its mean
+- within 3 standard deviation of its mean
+
+<div id="normal_quantiles_activity_solution" style="display:none"> 
+Since this is apparently for any normal, we will just use the standard normal. 
+So if $X\sim N(\mu, \sigma^2)$, we must determine 
+$P(|X|<c) = P(-c < X < c) = P(X<c) - P(X< -c)$ for $c$ in 1,2,3.
+```{r, purl=FALSE}
+# Try any values for mu and sigma
+mu    <- 0
+sigma <- 1
+
+pnorm(mu+1*sigma, mean = mu, sd = sigma) - pnorm(mu-1*sigma, mean = mu, sd = sigma)
+pnorm(mu+2*sigma, mean = mu, sd = sigma) - pnorm(mu-2*sigma, mean = mu, sd = sigma)
+pnorm(mu+3*sigma, mean = mu, sd = sigma) - pnorm(mu-3*sigma, mean = mu, sd = sigma)
+
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('normal_quantiles_activity_solution') .style.display=='none') {document.getElementById('normal_quantiles_activity_solution') .style.display=''}else{document.getElementById('normal_quantiles_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+## Binomial questions of interest
+
+Suppose a manufacturing line produces temperature sensors and has a sensor
+failure proportion equal to 1.5%. 
+In a given day, the plant tests 70 sensors. 
+If we assume the sensors are independent (given the failure proportion), then 
+$X\sim Bin(70,0.15)$. 
+
+Answer the following questions:
+
+- What is the probability no sensors fail in one day?
+- What is the probability 3 or more sensors fail in one day?
+
+<div id="binomial_questions_activity_solution" style="display:none">
+
+The second question is tricky, because we need $P(X\ge 3) = 1-P(X<3) = 1-P(X\le 2)$. 
+
+```{r, purl=FALSE}
+n <- 70
+p <- 0.015
+
+dbinom(0, size = n, prob = p)
+1-pbinom(2, size = n, prob = p)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('binomial_questions_activity_solution') .style.display=='none') {document.getElementById('binomial_questions_activity_solution') .style.display=''}else{document.getElementById('binomial_questions_activity_solution') .style.display='none'}">Show/Hide Solution</button>
