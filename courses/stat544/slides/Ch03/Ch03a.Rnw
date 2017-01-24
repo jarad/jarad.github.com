@@ -388,7 +388,7 @@ text(x/2,dnorm(x), expression(sigma^2), pos=3)
   
   \[ 1-\alpha = P\left(-c \le T\le c\right) = P\left( \overline{Y} -\frac{cS}{\sqrt{n}} \le \mu \le \overline{Y} +\frac{cS}{\sqrt{n}} \right) \]
   
-  \pause and thus $\overline{y} \pm c S/\sqrt{n}$ is an equal-tail 95\% confidence interval where $c=t_{n-1}(1-\alpha/2)$ is the t-critical value.
+  \pause and thus $\overline{y} \pm c S/\sqrt{n}$ is an equal-tail 95\% confidence interval where $c=t_{n-1,1-\alpha/2}$ is the t-critical value.
 \end{frame}
   
 
@@ -421,7 +421,7 @@ p(\mu,\sigma^2|y) &\propto (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_
   
   An equal-tailed $100(1-\alpha)$\% credible inteval can be obtained via 
   \[ \overline{y} \pm c S/\sqrt{n} \]
-  where $c = t_{n-1}(1-\alpha)$ is the t-critical value from before. \pause This is exactly the same as the $100(1-\alpha)$\% confidence inteval.
+  where $c = t_{n-1,1-\alpha/2}$ is the t-critical value from before. \pause This is exactly the same as the $100(1-\alpha/2)$\% confidence inteval.
 \end{frame}
 
 
@@ -471,7 +471,7 @@ p(\mu,\sigma^2|y) &\propto (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_
   
   An equal-tailed $100(1-\alpha)$\% credible inteval can be obtained via 
   \[ m' \pm c s'/\sqrt{k'} \]
-  where $c = t_{v'}(1-\alpha)$ is the t-critical value from before. 
+  where $c = t_{v',1-\alpha/2}$ is the t-critical value from before. 
 \end{frame}
 
 
@@ -482,11 +482,11 @@ p(\mu,\sigma^2|y) &\propto (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_
 An alternative to deriving the closed form posterior for $\mu$ is to simulate from the distribution. \pause Recall that 
 \[  \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v',(s')^2) \]
 \pause
-To obtain a simulation from the posterior distribution $p(\mu,\sigma^2|y)$, do the following
+To obtain a simulation from the posterior distribution $p(\mu,\sigma^2|y)$, 
+calculate $m', k', v',$ and $s'$ and then 
 \begin{enumerate}[<+->]
-\item Calculate $m', k', v',$ and $s'$. 
-\item Simulate $\sigma^2 \sim \mbox{Inv-}\chi^2(v',(s')^2)$.
-\item Using this value, simulate $\mu\sim  N(m',\sigma^2/k')$. 
+\item simulate $\sigma^2 \sim \mbox{Inv-}\chi^2(v',(s')^2)$ and
+\item using the simulated $\sigma^2$, simulate $\mu\sim  N(m',\sigma^2/k')$. 
 \end{enumerate}
 \pause
 Not only does this provide a sample from the joint distribution for $\mu,\sigma$ but it also (therefore) provides a sample from the marginal distribution for $\mu$. \pause The integral was suggestive:
@@ -501,12 +501,12 @@ Not only does this provide a sample from the joint distribution for $\mu,\sigma$
 Similarly, we can obtain the predictive distribution via simulation. \pause Recall that 
 \[  p(\tilde{y}|y) = \int \int p(\tilde{y}|\mu,\sigma^2) p(\mu|\sigma^2,y) p(\sigma^2|y) d\mu d\sigma^2 \]
 \pause
-To obtain a simulation from the predictive distribution $p(\tilde{y}|y)$, do the following
+To obtain a simulation from the predictive distribution $p(\tilde{y}|y)$,
+calculate $m', k', v',$ and $s'$
 \begin{enumerate}[<+->]
-\item Calculate $m', k', v',$ and $s'$. 
-\item Simulate $\sigma^2 \sim \mbox{Inv-}\chi^2(v',(s')^2)$.
-\item Using this value, simulate $\mu\sim  N(m',\sigma^2/k')$.
-\item Using $\mu$ and $\sigma^2$ from above, simulate $\tilde{y}\sim N(\mu,\sigma^2)$.
+\item simulate $\sigma^2 \sim \mbox{Inv-}\chi^2(v',(s')^2)$,
+\item using this $\sigma^2$, simulate $\mu\sim  N(m',\sigma^2/k')$, and
+\item using these $\mu$ and $\sigma^2$, simulate $\tilde{y}\sim N(\mu,\sigma^2)$.
 \end{enumerate}
 \end{frame}
 
