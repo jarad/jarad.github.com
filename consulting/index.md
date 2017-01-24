@@ -17,6 +17,7 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [Cross-over behavioral experiment](meetings/20170124.html)
 - [RANDOM vs REPEATED in SAS](meetings/20170110b.html)
 - [Regression assumptions (QTL)](meetings/20170110.html)
 - [Complicated design](meetings/20161005.html)
