@@ -14,7 +14,7 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 |:-----:|-----|---|---|
 |1|Bayesian statistics|[Ch01.Rnw](Ch01/Ch01.Rnw)|[Ch01.pdf](Ch01/Ch01.pdf)|
 |2|Binomial model/priors|[Ch02a.Rnw](Ch02/Ch02a.Rnw)|[Ch02a.pdf](Ch02/Ch02a.pdf)|
-| |Normal model/computation|[Ch02b.Rnw](Ch02/Ch02b.Rnw)|[Ch02a.pdf](Ch02/Ch02b.pdf)|
+| |Normal model/computation|[Ch02b.Rnw](Ch02/Ch02b.Rnw)|[Ch02b.pdf](Ch02/Ch02b.pdf)|
 |3|Independent binomials/normal|[Ch03a.Rnw](Ch03/Ch03a.Rnw)|[Ch03a.pdf](Ch03/Ch03a.pdf)|
 | |Multinomial/multivariate normal|[Ch03b.Rnw](Ch03/Ch03b.Rnw)|[Ch03b.pdf](Ch03/Ch03b.pdf)|
 |4|Data asympotitics|[Ch04.Rnw](Ch04/Ch04.Rnw)|[Ch04.pdf](Ch04/Ch04.pdf)|
