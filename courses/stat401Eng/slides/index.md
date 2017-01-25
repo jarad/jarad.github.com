@@ -17,6 +17,7 @@ Instructions for compiling the Rnw files can be found below.
 |Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
 |Probability|[Set03.Rnw](Set03/Set03_probability.Rnw)|[Set03.pdf](Set03/Set03_probability.pdf)|
 |Discrete distributions|[Set04.Rnw](Set04/Set04_discrete_distributions.Rnw)|[Set04.pdf](Set04/Set04_discrete_distributions.pdf)|
+|Continuous distributions|[Set05.Rnw](Set05/Set05_continuous_distributions.Rnw)|[Set05.pdf](Set05/Set05_continuous_distributions.pdf)|
 
   
 
