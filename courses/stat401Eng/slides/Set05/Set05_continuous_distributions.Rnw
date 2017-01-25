@@ -1,0 +1,791 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set08 - Continuous random variables}
+
+\begin{document}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library(dplyr)
+@
+
+<<set_seed>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+\section{Continuous random variables}
+\subsection{Cumulative distribution function}
+\begin{frame}
+\frametitle{Cumulative distribution function}
+
+All properties of discrete random variables have direct counterparts for continuous random variables.
+
+\vspace{0.1in} \pause
+
+In particular, 
+\begin{definition}
+The \alert{cumulative distribution function} for a continuous random variable is 
+\[ 
+F_X(x) = P(X\le x) = P(X<x)
+\]
+since $P(X=x)=0$ for any $x$.
+\end{definition}
+
+we still have the properties 
+
+\begin{itemize}
+\item $ 0 \le F_{X}(x) \le 1$ for all $x \in \mathbb{R}$
+\item $F_{X}$ is monotone increasing, i.e. if $x_{1} \le x_{2}$ then $F_{X}(x_{1}) \le F_{X}(x_{2})$.
+\item $\lim_{x \to -\infty}F_{X}(x) = 0$ and $\lim_{x \to \infty}F_{X}(x) = 1$.
+\end{itemize}
+\pause
+\end{frame}
+
+
+
+
+\subsection{Probability density functions}
+\begin{frame}
+\frametitle{Probability density function}
+
+\pause
+
+\begin{definition}
+The \alert{probability density function (pdf)} for a continuous random variable is 
+\[ 
+f_X(x) = \frac{d}{dx} F_X(x)
+\]
+\pause
+and 
+\[ 
+F_X(x) = \int_{-\infty}^x f_X(t) dt.
+\]
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Thus, the probability density function has the following properties
+\begin{itemize}
+\item $f_X(x) \ge 0$ for all $x$ \pause and
+\item $\int_{-\infty}^\infty f(x) dx = 1.$
+\end{itemize}
+\end{frame}
+
+
+\subsection{Example}
+\begin{frame}
+\frametitle{Example}
+
+Let $X$ be a random variable with probability density function 
+\[ 
+f_X(x) = \left\{ \begin{array}{ll}
+3x^2 & \mbox{if }0<x<1 \\
+0& \mbox{otherwise.}
+\end{array} \right.
+\]
+
+\pause
+
+$f_X(x)$ defines a valid probability density function because $f_X(x) \ge 0$ for all $x$ \pause and
+\[ 
+\int_{-\infty}^\infty f_X(x) dx = \int_0^1 3x^2 dx = x^3 |_0^1 = 1.
+\]
+
+\pause
+The cumulative distribution function is 
+\[ 
+F_X(x) = \left\{ \begin{array}{ll}
+0 & x\le 0 \\
+x^3 & 0< x < 1 \\
+1 & x\ge 1
+\end{array} \right.
+\]
+
+\end{frame}
+
+
+\subsection{Expectation}
+\begin{frame}
+\frametitle{Expected value}
+
+\begin{definition}
+Let $X$ be a continuous random variable and $h$ be some function. 
+The \alert{expected value} of a function of a continuous random variable is 
+\[ 
+E[h(X)] = \int_{-\infty}^\infty h(x) \cdot f_X(x) dx.
+\]
+\pause
+If $h(x)=x$, then 
+\[ 
+E[X] = \int_{-\infty}^\infty x \cdot f_X(x) dx.
+\]
+\pause
+and we call this the \alert{expectation} of $X$. 
+\end{definition}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Example (cont.)}
+
+Let $X$ be a random variable with probability density function 
+\[ 
+f_X(x) = \left\{ \begin{array}{ll}
+3x^2 & \mbox{if }0<x<1 \\
+0& \mbox{otherwise.}
+\end{array} \right.
+\]
+
+\pause
+
+The expected value is 
+\[ \begin{array}{rl}
+E[X] &= \int_{-\infty}^\infty x \cdot f_X(x) dx \\
+&= \int_0^1 3x^3 dx \\
+&= 3\frac{x^4}{4} |_0^1 = \frac{3}{4}.
+\end{array} \]
+\end{frame}
+
+
+\subsection{Variance}
+\begin{frame}
+\frametitle{Variance}
+
+\begin{definition}
+The \alert{variance} of a random variable is defined as the expected squared deviation from the mean. \pause 
+For continuous random variables, variance is
+\[
+Var[X] = E[(X-\mu)^2] = \int_{-\infty}^\infty (x-\mu)^2 f_X(x) dx
+\]
+where $\mu = E[X]$. \pause
+The symbol $\sigma^2$ is commonly used for the variance.
+\end{definition}
+
+\pause
+
+\begin{definition}
+The \alert{standard deviation} is the positive square root of the variance
+\[
+SD[X] = \sqrt{Var[X]}.
+\]
+The symbol $\sigma$ is commonly used for the standard deviation.
+\end{definition}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Example (cont.)}
+
+Let $X$ be a random variable with probability density function 
+\[ 
+f_X(x) = \left\{ \begin{array}{ll}
+3x^2 & \mbox{if }0<x<1 \\
+0& \mbox{otherwise.}
+\end{array} \right.
+\]
+
+\pause
+
+The variance is 
+\[ \begin{array}{rl}
+Var[X] &= \int_{-\infty}^\infty \left(x-\mu\right)^2 f_X(x) dx \\
+&= \int_0^1 \left(x-\frac{3}{4}\right)^2 3x^2 dx \\
+&= \int_0^1 \left[x^2-\frac{3}{2}x + \frac{9}{16} \right] 3x^2 dx \\
+&= \int_0^1 3x^4-\frac{9}{2}x^3 + \frac{27}{16}x^2 dx \\
+&= \left[\frac{3}{5}x^5-\frac{9}{8}x^4 + \frac{9}{16}x^3\right]|_0^1 dx \\
+&= \frac{3}{5}-\frac{9}{8}+\frac{9}{16} \\
+&= \frac{3}{80}
+\end{array} \]
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Example (cont.)}
+
+The inverse of the cumulative distribution function is 
+\[ 
+F^{-1}_X(u) = u^{1/3}.
+\]
+\pause
+A uniform random number on the interval (0,1) evaluted with the inverse cdf produces a random draw of $X$. \pause
+So, in R
+
+<<echo=TRUE>>=
+inverse_cdf = function(u) u^(1/3)
+x = inverse_cdf(runif(1e6))
+mean(x)
+var(x); 3/80
+@
+
+\end{frame}
+
+
+\section{Comparison of discrete and continuous random variables}
+\begin{frame}
+\frametitle{Comparison of discrete and continuous random variables}
+
+For simplicity here and later, we drop the subscript $X$. \pause
+
+
+{\scriptsize
+\begin{center}
+\begin{tabular}{lcc}
+& discrete & continuous \pause \\
+\hline
+image & finite or countable & uncountable \pause \\ \\
+pmf &  $p(x) = P(X=x)$ & \pause \\ \\
+pdf && $p(x) = f(x) = F'(x)$ \pause \\ \\
+cdf & 
+$\begin{array}{rl}F(x) &= P(X\le x) \\
+                        &= \sum_{t\le x} p(x)\end{array} $ & 
+$\begin{array}{rl}F(x) &= P(X\le x) \\
+                        &= \int_{-\infty}^x p(t) dt\end{array} $
+\pause \\ \\
+expected value & $E[h(X)] = \sum_x h(x) p(x)$ & $E[h(X)] = \int_x h(x) p(x) dx$ \pause \\ \\
+expectation & $\mu = E[X] = \sum_x x \, p(x)$ & $\mu = E[X] = \int_x x \, p(x) dx$ \pause \\ \\
+variance & 
+$ \begin{array}{rl} Var[X] &= E[(X-\mu)^2] \\
+                            &= \sum_x (x-\mu)^2 p(x)
+\end{array} $ & 
+$ \begin{array}{rl}
+Var[X] &= E[(X-\mu)^2] \\
+       &= \int_x (x-\mu)^2 p(x) dx
+\end{array} $ \\ \\
+\hline
+\end{tabular}
+\end{center}
+}
+
+\vspace{0.05in}\pause
+
+Note: we replace summations with integrals when using continuous as opposed to discrete random variables
+\end{frame}
+
+
+
+\section{Continuous distributions}
+\begin{frame}
+\frametitle{Continuous distributions}
+\begin{itemize}
+\item Uniform
+\item Exponential 
+\item Gamma 
+\item Normal 
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Note: the image is always uncountably infinite.
+\end{frame}
+
+
+\subsection{Uniform}
+\begin{frame}
+\frametitle{Uniform distribution}
+
+One of the most basic continuous densities is the \alert{uniform} density. \pause
+The pdf is
+\[
+f(x) = \left \{ 
+\begin{array}{cl}
+    \frac{1}{b-a} & \text{ if } a < x < b \\
+    0 & \text{ otherwise}
+\end{array} \right .
+\]
+\pause
+
+We use $X \sim Unif(a,b)$ to denote the random variable $X$ is distributed as the \emph{uniform distribution with parameters $a$ and $b$}. \pause
+
+<<fig.width=11>>=
+curve(dunif, -1, 2, 10001, axes=F, frame=TRUE, ylab="f(x)")
+axis(1, c(0,1), c("a","b"))
+axis(2, 1, "1/(b-a)")
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Uniform properties}
+
+The cumulative distribution function is 
+\[ 
+F(x) = \left\{ \begin{array}{ll} 0 & x<a \\ \frac{x-a}{b-a} & a\le x \le b \\ 1 & x>b \end{array} \right.
+\]
+\pause
+i.e. it's a straight line. 
+
+\vspace{0.1in} \pause
+
+The expectation is 
+\[ 
+E[X] = \int_x x \, f(x) dx = \int_a^b  x \frac{1}{b-a} dx = \frac{x^2}{b-a} |_a^b = \frac{b^2}{b-a} - \frac{a^2}{b-a} = \frac{a+b}{2}.
+\]
+The variance is 
+\[ 
+V[X] = \int_x (x-\mu)^2 f(x) dx = \int_a^b \left( x - \frac{a+b}{2} \right)^2 \frac{1}{b-a} dx = \cdots = \frac{(b-a)^{2}}{12}.
+\]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Pseudo-random number generators}
+
+Pseudo-random number generators are typically designed to produce sequences of \alert{independent} Unif(0,1) random variables. 
+
+\vspace{0.1in} \pause
+
+What is the probability the next pseudo-random number is larger than 0.85? 
+
+\vspace{0.1in} \pause
+
+Let $X$ be the value of the next pseudo-random number \pause and assume $X\sim Unif(0,1)$. \pause
+\[ 
+P(X> 0.85)  = 1-P(X\le 0.85) = 1- \frac{0.85-0}{1-0} = 0.15.
+\]
+\pause
+
+Do these pseudo-random numbers appear independent?
+
+<<fig.width=20>>=
+plot(runif(1e3), pch=19, xlab="i", ylab=expression(X[i]))
+@
+
+\end{frame}
+
+
+
+\subsection{Exponential}
+\begin{frame}
+\frametitle{Exponential distribution}
+
+A distribution commonly used to model waiting times between occurrences of \emph{rare} events, e.g. lifetimes of electrical or mechanical devices, is the exponential distribution.
+
+\vspace{0.1in} \pause
+
+The pdf of an exponential random variable is
+\[
+f(x) = \left\{ 
+\begin{array}{cl}
+    \lambda e^{-\lambda x} & \text{ if } x\ge 0 \\
+    0 & \mbox{otherwise}
+\end{array} \right.
+\]
+\pause
+
+We use $X \sim Exp(\lambda)$ to denote the random variable $X$ has an exponential distribution with \alert{rate} parameter $\lambda$. 
+
+\vspace{0.1in} \pause
+
+You should check the following results:
+\[ \begin{array}{rl}
+F(x) &= \left\{ \begin{array}{ll} 0 & x<0 \\ 1-e^{-\lambda x} & x\ge 0 \end{array} \right. \\
+E[X] &= 1/\lambda \\
+Var[X] &= 1/\lambda^2
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Exponential pdfs}
+
+<<>>=
+d = data.frame(x = seq(0,3, length=101)) %>%
+  mutate(exp1 = dexp(x),
+         exp0.5 = dexp(x,rate=1/2),
+         exp2   = dexp(x,rate=2)) %>%
+  gather(rate, density, exp1, exp0.5, exp2) %>%
+  mutate(rate = gsub("exp","", rate))
+
+ggplot(d, aes(x, density, color=rate, linetype=rate)) + 
+  geom_line() +
+  theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Print jobs}
+
+Jobs are sent to a printer at an average of 3 jobs per hour. \pause
+\begin{enumerate}
+\item What is the expected time between jobs?
+\item What is the probability that the next job is sent within 5 minutes?
+\end{enumerate}
+
+\vspace{0.1in} \pause
+
+Let $T$ represent the time until the next job \pause and assume $T\sim Exp(\lambda)$ where $\lambda = 3$ jobs per hour. \pause
+\begin{enumerate}
+\item $E[T] = 1/\lambda = 1/3$ hours or, equivalently, 20 minutes. \pause
+\item First, 5 minutes = 1/12 hours. \pause  Then 
+\[ 
+P(T<1/12) = 1-e^{-3\times \frac{1}{12}} = 1-e^{-\frac{1}{4}} = 0.22
+\]
+or, in R,
+<<echo=TRUE>>=
+pexp(1/12, rate=3)
+@
+\end{enumerate}
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Webpage utilization}
+\scriptsize
+
+Suppose we are told that, on average, there are 2 hits per minute on a specific web page. \pause
+\begin{itemize}
+\item What is a reasonable distribution (model) for the time of the next hit? \pause
+\item What is the expected time until the next hit? \pause
+\item What is the probability we will have to wait at least a full minute before the next hit? \pause
+\item What is the probability we will have to wait at least 30 seconds before the next hit? \pause
+\end{itemize}
+
+\pause
+
+Let $Y$ be the time until the next hit. 
+\begin{itemize}
+\item A reasonable model is $Y\sim Exp(\lambda)$ where $\lambda$ = 2 hits per minute. \pause
+\item The expected time to the next hit is $E[Y] = 1/\lambda$ = 0.5 minutes. \pause
+\item The probability that we'll have to wait at least a minute is
+\[ P(Y>1) = 1-P(Y\le 1) = 1-[1-e^{-\lambda \cdot 1}] = e^{-\lambda} = e^{-2} \approx 0.14. \pause \] 
+\item Make sure to convert units, i.e. 30 seconds = 1/2 minute. \pause 
+\[ P(Y>1/2) = e^{-\lambda/2} = e^{-1} = 0.37\]
+\end{itemize}
+\end{frame}
+
+
+
+
+
+% \foilhead[-.75in]{\textcolor{blue}{Exponential Distribution: Example (continued...)}}\vspace{.01in}  
+% \no {\textcolor{cyan}{How long do we have to wait at most, to observe a first hit with 
+%     a probability of 0.9?}\\[.1in]  
+%     {\it This is the reverse of what we have computed  
+%     so far, because here we want to find a $t$, for which $P(Y \le t) = 0.9$:}
+%     \begin{eqnarray*}
+%     && P(Y \le t) = 0.9 \\
+%     && \iff 1 - e^{-2t} = 0.9 \\
+%     && \iff e^{-2t} = 0.1 \\
+%     && \iff t = -0.5 \ln{0.1} \approx 1.15 \text{ (min) - that's 
+%     approx. 69 seconds.}
+%     \end{eqnarray*}
+
+
+\begin{frame}
+\frametitle{Memoryless property of the exponential distribution}
+
+The exponential distribution has the \alert{memoryless property} since 
+\[ \begin{array}{rl}
+P(X\ge i+j|X\ge j) &= \frac{P(X\ge i+j,X\ge j)}{P(X\ge j)} = \frac{P(X\ge i+j)}{P(X\ge j)} \\
+&= \frac{e^{-\lambda(i+j)}}{e^{-\lambda j}} = \frac{e^{-\lambda i} e^{-\lambda j}}{e^{-\lambda j}} = e^{-\lambda i}  \\
+&= P(X\ge i)
+\end{array} \]
+
+\pause
+
+% Thus, when using the exponential distribution
+% \begin{itemize}
+% \item it does not matter when we start observing \pause and
+% \item it does not matter if we observe for a while and then restart the timer.
+% \end{itemize}
+
+Suppose $Y$ is the next web page hit and we assume $Y\sim Exp(\lambda)$. \pause
+If we have no hits in the first minute, what is the probability we will have a hit in the second minute? \pause
+
+\vspace{0.1in} \pause
+
+We have 
+\[ \begin{array}{rl}
+P(Y<2|Y\ge 1) &= 1- P(Y\ge 2|Y\ge 1) \\
+&= 1-P(Y\ge 1) = P(Y<1) \\
+&= 1-e^{-\lambda}
+\end{array} \]
+\end{frame}
+
+
+\subsection{Gamma}
+\begin{frame}
+\frametitle{Multiple waiting times}
+
+Now suppose, we ask how long it will take until we observe two hits. \pause
+\begin{itemize}
+\item Let $X_1$ be the time until the first hit and assume $X_1\sim Exp(\lambda)$. \pause 
+\item Let $X_2$ be the time after the first hit until the second hit and, due to the memoryless property of the exponential distribution, $X_2 \sim Exp(\lambda)$ independent of $X_1$. \pause
+\end{itemize}
+Now we are interested in
+\[ Y = X_1 + X_2. \]
+\pause
+More generally, if we ask how long it will take until we observe $\alpha$ hits, we are interested in 
+\[ 
+Y = X_1+X_2+\cdots+X_\alpha = \sum_{i=1}^\alpha X_i
+\]
+where $X_i\ind Exp(\lambda)$. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Gamma distribution}
+
+The sum of $\alpha$ independent exponential distributions with rate $\lambda$ is a gamma random variable. \pause
+A random variable $X$ has gamma density if 
+\[ 
+f(x) = \left\{ \begin{array}{ll} \frac{\lambda^\alpha}{\mGamma(\alpha)}x^{\alpha-1}e^{-\lambda x} & x>0 \\
+0 & \mbox{otherwise} \end{array} \right.
+\]
+with \alert{shape} parameter $\alpha>0$ and \alert{rate} parameter $\lambda>0$ 
+\pause
+where 
+\[ \mGamma(\alpha) = \int_0^\infty x^{\alpha-1}e^{-x} dx \]
+\pause 
+and when $\alpha$ is a positive integer
+\[ 
+\mGamma(\alpha) = (\alpha-1)!
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Gamma distribution properties}
+
+The mean and variance can be computed using the sum of $\alpha$ exponentials. \pause
+
+\[ \begin{array}{rl}
+E[X] &= \frac{\alpha}{\lambda}  \\
+Var[X] &= \frac{\alpha}{\lambda^2}  \pause \\ \\
+F(x) &= \int_0^x f(t)dt=\frac{\lambda^\alpha}{\mGamma(\alpha)}\int_0^x t^{\alpha-1}e^{-\lambda t} dt 
+\end{array} \]
+\pause
+Although the gamma distribution was motivated by the sum of $\alpha$ exponentials, there is no requirement for $\alpha$ to actually be an integer. \pause
+When $\alpha$ is an integer, this is also called the \alert{Erlang} distribution. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Gamma example}
+
+A online company that normally has 100 customers per day is offering a prize to the 1,000th customer. \pause
+Based on past experience, the company expects a 50\% increase in customers due to the competition. \pause
+
+\vspace{0.1in} \pause
+
+Let $Y$ be the time for the 1,000th customer and assume $Y\sim Ga(1000,150)$. \pause
+We could 
+\begin{itemize}
+\item provide the probability density function, 
+\item provide the cumulative distribution function,
+\item provide an interval that will contain the award time with some probability,
+\item $\ldots$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Gamma example (cont.)}
+
+<<gamma_example_data>>=
+alpha = 1000
+lambda = 150
+@
+
+<<gamma_example_plots, dependson="gamma_example_data", fig.width=8>>=
+xmin = 6; xmax = 7.5
+opar = par(mfrow=c(1,2))
+curve(dgamma(x, shape=alpha, rate=lambda), xmin, xmax, 
+			xlab="y", ylab="f(y)", main="Probability density function")
+curve(pgamma(x, shape=alpha, rate=lambda), xmin, xmax,
+			xlab="y", ylab="F(y)", main="Cumulative distribution function")
+par(opar)
+@
+
+<<gamma_example_interval, dependson="gamma_example_data", echo=TRUE>>=
+# 95% interval that contains the prize award time in days
+qgamma(c(0.025,.975), shape=alpha, rate=lambda) %>% round(1)
+@
+
+
+\end{frame}
+
+
+\subsection{Normal}
+\begin{frame}
+\frametitle{Normal distribution}
+
+The \alert{normal (or Gaussian) density} is a ``bell-shaped'' curve. \pause
+The density has two parameters: $\mu$ and $\sigma^{2}$ and is
+\[
+f(x) = \frac{1}{\sqrt{2 \pi \sigma^{2}}} 
+e^{-(x-\mu)^{2}/2 \sigma^{2}} \qquad \text{ for } -\infty<x<\infty
+\]
+\pause
+The expected value and variance of a normal distributed r.v. $X$ are:
+\[ \begin{array}{rll}
+E[X] &= \int_{-\infty}^{\infty} x\, f(x) dx               = \ldots &= \mu \\
+Var[X] &= \int_{-\infty}^{\infty} (x - \mu)^{2}\, f(x) dx = \ldots &= \sigma^{2}. \\
+\end{array} \]
+\pause
+Thus, the parameters $\mu$ and $\sigma^{2}$ are actually the mean and the variance of the $N(\mu,\sigma^2)$ distribution. 
+
+\vspace{0.1in} \pause
+
+There is no closed form cumulative distribution function for a normal random variable. 
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Example probability density functions}
+
+<<>>=
+d = data.frame(mu=c(0,0,1,1), sigma=c(1,2,1,2))
+d$legend_name = paste("mu=", d$mu, ", sigma=", d$sigma)
+plot(0,0, type="n", xlim=c(-4,4), ylim=c(0,0.5))
+for (i in 1:nrow(d)) {
+	mu = d$mu[i]; sigma = d$sigma[i]
+	curve(dnorm(x, mu, sigma), add=TRUE, lty=mu+1, col = sigma)
+}
+legend("topleft", legend = d$legend_name,
+			 lty=d$mu+1, col = d$sigma)
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Properties of the normal distribution}
+
+Let $Z\sim N(0,1)$, i.e. a \alert{standard normal} random variable. \pause
+Then for constants $m$ and $s$ 
+\[ 
+X = \mu+\sigma Z \sim N(\mu,\sigma^2).
+\]
+alternatively
+\[ 
+Z = \frac{X-\mu}{\sigma} \sim N(0,1)
+\]
+which is called \alert{standardizing}.
+
+\vspace{0.1in} \pause
+
+Let $X_i \ind N(\mu_i,\sigma_i^2)$. Then 
+\[
+Z_i = \frac{X_i-\mu_i}{\sigma_i} \iid N(0,1) \quad\mbox{for all } i
+\]
+and 
+\[ 
+Y = \sum_{i=1}^n X_i \sim N\left(\sum_{i=1}^n \mu_i, \sum_{i=1}^n \sigma_i^2 \right).
+\]
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Calculating the standard normal cumulative distribution function}
+
+If $Z\sim N(0,1)$, what is $P(Z\le 1.5)$? \pause 
+Although the cdf does not have a closed form, very good approximations exist and are available as tables or in software, \pause e.g.
+<<echo=TRUE>>=
+pnorm(1.5) # default is mean=0, sd=1
+@
+A standard normal random variable is often denoted $Z$, the standard normal cdf is often denoted $\mPhi(z)$, and tables are called \emph{standard normal tables} or \emph{Z tables}. \pause
+Sometimes these tables only have positive $z$ values, but we can still compute $\mPhi(z)$ for any $z$ since the normal distribution is \alert{symmetric}, i.e. $\mPhi(-z)=1-\mPhi(z)$. \pause
+Finally, these tables usually only extend to $|z|<4$, but that's okay since $P(Z<-4) = P(Z>4) \approx 0.00003$. 
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Calculating any normal cumulative distribution function}
+If $X\sim N(15,4)$ what is $P(X>18)$? \pause
+\[ \begin{array}{rl}
+P(X>18) &= 1-P(X\le 18) \\
+&= 1-P\left(\frac{X-15}{2} \le \frac{18-15}{2} \right) \\
+&= 1-P(Z\le 1.5) \\
+&\approx 1-0.933 = 0.067
+\end{array} \]
+
+<<echo=TRUE>>=
+1-pnorm(18, mean=15, sd=2)
+@
+
+\end{frame}
+
+
+
+% \foilhead[-.75in]{\textcolor{blue}{Example: pdf}}}\vspace{1mm}
+% \no {\textcolor{magenta}{Let $Y$ be the time until the first major failure of a new disk 
+%     drive.}}\\[.1in]
+% \no A possible density function for $Y$ is
+%     \[
+%     f(y) = \left \{ 
+%     \begin{array}{ll}
+% 	e^{-y} & y > 0\\
+% 	0 & \text{ otherwise}
+%     \end{array} \right .
+%     \]
+% \no {\textcolor{cyan}{
+%     First, we need to check, that $f(y)$ is actually a density 
+%     function. Obviously, $f(y)$ is a non-negative function on whole 
+%     of $\Re$.}}
+%     
+% \no {\textcolor{cyan}{ The second condition, $f$ must fulfill to be a density of $Y$ 
+%     is }}
+%     \[
+%     \int_{-\infty}^{\infty} f(y)dy = \int_{0}^{\infty} e^{-y}dy = - 
+%     e^{-y} |_{0}^{\infty} = 0 - (-1) = 1
+%     \]
+%   
+%   \foilhead[-.75in]{\textcolor{blue}{Continuing the disk drive example...}}\vspace{1mm}  
+% \no    {\textcolor{magenta}{What is the probability that the first major disk drive failure 
+%     occurs within the first year?}}\\[.1in]  
+%     \[
+%     P(Y \le 1) = \int_{0}^{1} e^{-y}dy = -e^{-y} |_{0}^{1} = 1 - 
+%     e^{-1} \approx 0.63.
+%     \]
+%     
+% \no {\textcolor{magenta} {What is the cumulative distribution function of $Y$?}}
+%    \[
+%     F_{Y}(t) = \int_{\infty}^{t} f(y) dy = \int_{0}^{t}e^{-y}dy = 1 - 
+%     e^{-t} \text{ for all } t \ge 0.
+%     \]
+% \foilhead[-.75in]{\textcolor{blue}{Continuing the disk drive example...}}\vspace{1mm}  
+% \no    {\textcolor{magenta}{Density and Distribution functions of the random variable $Y$.}\\[.1in]
+%   \centerline {\includegraphics[scale=.6]{density.pdf}}
+% 
+% 
+
+\end{document}
