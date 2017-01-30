@@ -1,0 +1,257 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set06 - Central Limit Theorem}
+
+\begin{document}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=7, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+@
+
+<<set_seed>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+\section{Central Limit Theorem}
+\begin{frame}
+\frametitle{Central Limit Theorem (CLT)}
+
+\alert{Main Idea}: Sums and averages of random variables from any distribution 
+have approximate normal distributions for sufficiently large sample sizes.
+
+\pause
+
+\begin{theorem}[Central Limit Theorem]
+Suppose $X_1,X_2,\ldots$ are iid random variables with 
+\[ E[X_i]=\mu \quad Var[X_i]=\sigma^2. \]
+\pause 
+Define 
+\[ \begin{array}{rl}
+\text{Sample Sum: } S_n &=X_1+X_2+\dots+X_n \\
+\text{Sample Average: } \overline{X}_n&=S_n/n.
+\end{array} \] 
+Then 
+\[ \begin{array}{rl}
+\overline{X}_n &\stackrel{d}{\to} N(\mu,\sigma^2/n) \\
+S_n &\stackrel{d}{\to} N(n\mu,n\sigma^2) 
+\end{array} \]
+as $n\to \infty$.
+\end{theorem}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Averages and sums of uniforms}
+
+Let $X_i \ind Unif(0,1)$.  
+\pause
+Then
+\[ \mu = E[X_i] = \pause \frac{1}{2} \quad \mbox{and} \quad
+\sigma^2 = Var[X_i] \pause = \frac{1}{12}. \]
+\pause
+Thus 
+\[ 
+\overline{X}_n \sim N\left( \frac{1}{2}, \frac{1}{12n}\right)
+\]
+\pause
+and 
+\[
+S_n \sim N\left( \frac{n}{2}, \frac{n}{12} \right).
+\]
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+
+<<echo = TRUE, fig.height=4>>=
+n_sims <- 10000
+n_obs  <- 1000
+d <- data.frame(rep = rep(1:n_sims, each = n_obs),
+                x   = runif(n_sims * n_obs)) %>%
+  group_by(rep) %>%
+  summarize(mean = mean(x),
+            sum  = sum(x))
+
+opar = par(mfrow=c(1,2))
+hist(d$mean, 50, probability = TRUE)
+curve(dnorm(x, mean = 1/2, sqrt(1/12/n_obs)), add = TRUE, col = "red")
+hist(d$sum,  50, probability = TRUE)
+curve(dnorm(x, mean = n_obs/2, sqrt(n_obs/12)), add = TRUE, col = "red")
+par(opar)
+@
+
+\end{frame}
+
+
+
+
+\subsection{Normal approximation to a binomial}
+\begin{frame}[fragile]
+\frametitle{Normal approximation to a binomial}
+
+Recall that a binomial distribution can be considered as a sum of iid Bernouli 
+random variables, i.e. if $Y=\sum_{i=1}^n X_i$ where $X_i\ind Ber(p)$, 
+then 
+\pause
+\[ 
+Y \sim Bin(n,p).
+\]
+\pause 
+For a binomial random variable, we have 
+\[ 
+E[Y] = \pause np \qquad \mbox{and} \qquad V[Y] = \pause np(1-p).
+\]
+\pause
+Now, if $n$ is large, 
+\[ 
+Y \dot{\sim} \pause N(np, np[1-p]).
+\]
+where $\dot{\sim}$ indicates \emph{appoximately distributed}.
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Roulette example}
+
+\small
+
+A European roulette wheel has 39 slots: one green, 19 black, and 19 red. \pause
+If I play black everytime, 
+what is the probability that I will have won more than I lost after 99 spins of 
+the wheel? 
+
+\vspace{0.1in} \pause
+
+Let $Y$ indicate the total number of wins 
+\pause 
+and assume $Y\sim Bin(n,p)$ with $n=99$ and $p=19/39$. 
+\pause
+The desired probability is $P(Y\ge 50)$. 
+\pause
+Then 
+\[ 
+P(Y\ge 50) = 1-P(Y<50) = 1-P(Y\le 49)
+ \]
+<<echo=TRUE>>=
+n = 99
+p = 19/39
+1-pbinom(49, n, p)
+@
+
+ \pause
+
+We can approximate $Y$ using $X\sim N(np, np(1-p))$. 
+
+\[ 
+P(Y\ge 50) \approx 1-P(X< 50) 
+\]
+
+<<echo=TRUE>>=
+1-pnorm(50, n*p, sqrt(n*p*(1-p)))
+@
+
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Astronomy example}
+\small
+
+\vspace{-0.05in}
+
+An astronomer wants to measure the distance, $d$, from the observatory to a star. \pause
+The astronomer takes 30 measurements that she believes are unbiased and finds the average of these measurements to be 29.4 parsecs and variance to be 4 parsecs$^2$.
+What is the probability the average is within 0.5 parsecs?
+
+\vspace{0.1in} \pause
+
+Let $X_i$ be the $i^{th}$ measurement. 
+\pause
+The astronomer assumes that $X_1,X_2,\ldots X_n$ are iid with 
+$E[X_i]=d$ (unbiased) and $Var[X_i]=\sigma^2=4$. 
+\pause
+The estimate of $d$ is
+\[ \overline{X}_n=\frac{(X_1+X_2+\dots+X_n)}{n} = 29.4. \]
+and, by the Central Limit Theorem, we believe $\overline{X}_n \sim N(d, \sigma^2/n)$ where $n=30$. \pause
+We want to find
+{\footnotesize
+\[ \begin{array}{rl}
+P\left(|\overline{X}_n-d|<0.5\right)
+&= P\left(-0.5 < \overline{X}_n-d < 0.5\right) \\
+&= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{\sigma/\sqrt{n}} \right) \\
+&= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < Z < \frac{0.5}{\sigma/\sqrt{n}} \right) \\
+&\approx P(-1.37 < Z < 1.37) \\
+&= P(Z<1.37) - P(Z<-1.37) \\
+& \approx 0.915 - 0.085 = 0.830
+\end{array} \]
+}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Astronomy example (cont.)}
+\small
+
+Suppose the astronomer wants to be within 0.5 parsecs with 95\% 
+probability. 
+How many more samples would she need to take?
+
+\vspace{0.1in} \pause
+
+We solve
+\[ \begin{array}{rll}
+0.95 \le P\left(\left|\overline{X}_n-d\right|<.5\right) 
+&= P\left(-0.5 < \overline{X}_n-d < 0.5 \right) \pause \\
+&= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{\sigma/\sqrt{n}} \right) \pause \\
+&= P(-z < Z < z) \pause \\
+&= 1 - [P(Z<-z) + P(Z>z) \pause \\
+&= 1-2P(Z<-z)
+\end{array} \]
+\pause
+where $z = 0.5/(\sigma/\sqrt{n}) = 1.96$ since
+<<echo = TRUE>>=
+-qnorm(.025)
+@
+
+\pause 
+and thus $n = 61.47$ which we round up to $n=62$ to unsure the probability is 
+\emph{at least} 0.95. 
+
+
+\end{frame}
+
+\end{document}   
