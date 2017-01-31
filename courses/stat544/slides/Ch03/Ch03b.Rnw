@@ -83,7 +83,8 @@ Multivariate count data:
 \frametitle{Multinomial distribution}
 
 Suppose there are $K$ categories and each individual independently chooses category $k$ with probability $\pi_k$ such that $\sum_{k=1}^K \pi_k=1$. \pause 
-Let $y_k$ be the number of individuals who choose category $k$ with $n = \sum_{k=1}^K y_k$ begin the total number of individuals.
+Let $y_k$ be the number of individuals who choose category $k$ with 
+$n = \sum_{k=1}^K y_k$ being the total number of individuals.
 
 \vspace{0.2in} \pause 
 
@@ -127,7 +128,9 @@ The probability density function (pdf) for $\pi$ is
 \[
 p(\pi) = \frac{1}{\Beta(a)} \prod_{k=1}^K \pi_k^{a_k-1}
 \]
-where Beta($a$) is the multinomial beta function, i.e. 
+with $\sum_{k=1}^K \pi_k = 1$ 
+\pause 
+and $Beta(a)$ is the multinomial beta function, i.e. 
 \[
 \Beta(a) = \frac{\prod_{k=1}^K \mG(a_k)}{\mG(\sum_{k=1}^K a_k)}.
 \]
@@ -222,9 +225,9 @@ p(y) = (2\pi)^{-k/2}|\mS|^{-1/2} \exp\left(-\frac{1}{2}(y-\mu)^\top \mS^{-1} (y-
 \]
 has the following properties: \pause
 \begin{itemize}
-\item $E[y_k] = \mu_k$
-\item $V[y_k] = \mS_{kk}$
-\item $Cov[y_k,y_{k'}] = \mS_{k,k'}$ \pause
+\item $E[Y_k] = \mu_k$
+\item $V[Y_k] = \mS_{kk}$
+\item $Cov[Y_k,Y_{k'}] = \mS_{k,k'}$ \pause
 \item Marginally, each component of a multivariate normal distribution is a normal distribution with $Y_k \sim N(\mu,\mS_{kk})$. 
 \item Conditional distributions are also normal, i.e. if 
 \[
@@ -247,11 +250,11 @@ Let $Y\sim N(\mu,\mS)$ with precision matrix $\mO = \mS^{-1}$. \pause
 \item If $\mO_{k,k'}=0$, then $Y_k$ and $Y_{k'}$ are conditionally independent of each other given $Y_j$ for $j\ne k,k'$.
 \end{itemize}
 
-\vspace{1in}
-
-Graphs
-
-\vspace{1in}
+% \vspace{1in}
+% 
+% Graphs
+% 
+% \vspace{1in}
 
 \end{frame}
 
@@ -273,7 +276,11 @@ where
 \pause
 This posterior is proper if $n\ge K$ and, in that case, is 
 \[ 
-\mu|y \sim N(\overline{y}, S/n).
+\mu|y \sim N\left(\overline{y}, \frac{1}{n}S\right).
+\]
+where this $\overline{y}$ has elements
+\[ 
+\overline{y}_k = \frac{1}{n} \sum_{i=1}^n \overline{y}_{ik}.
 \]
 \end{frame}
 
@@ -285,7 +292,7 @@ This posterior is proper if $n\ge K$ and, in that case, is
 Let $Y_i\ind N(\mu,S)$ with conjugate prior $\mu \sim N_K(m,C)$
 \[ \begin{array}{rl}
 p(\mu|y) \propto& p(y|\mu)p(\mu) \pause \\
-&\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right) \\
+\propto& \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right) \\
 &\times \exp\left(-\frac{1}{2}\mu-m)^\top C^{-1} (\mu-m) \right) \pause \\
 =& \exp\left(-\frac{1}{2} (\mu-m')^{\top}C'^{-1}(\mu-m') \right)
 \end{array} \]
@@ -326,7 +333,7 @@ p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \ri
 has the following properties:
 \begin{itemize}
 \item $E[\mS] = (v-K-1)^{-1} W$.
-\item Marginally, $\sigma_k^2 = \mS_{kk} \sim \chi^2(v,W_{kk})$.
+\item Marginally, $\sigma_k^2 = \mS_{kk} \sim Inv-\chi^2(v,W_{kk})$.
 \item If a $K\times K$ matrix $W$ has a Wishart distribution, i.e. $W\sim Wishart(v,S)$,  then $W^{-1} \sim IW(v,S^{-1})$. 
 \end{itemize}
 
