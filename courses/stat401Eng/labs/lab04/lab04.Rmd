@@ -279,6 +279,8 @@ With the prevalence of computers, statistics is increasingly utilizing methods
 based on simulations to answer scientific questions of interest.
 These methods are called Monte Carlo methods.
 
+### Monte Carlo integration
+
 Monte Carlo methods can be used to answer any integration question.
 For example, suppose we want to estimate the integral of the function 
 $f(x) = x^2$ evaluated from 0 to 1. 
@@ -382,3 +384,120 @@ m + c(-1,1)*s
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('integral_activity_solution') .style.display=='none') {document.getElementById('integral_activity_solution') .style.display=''}else{document.getElementById('integral_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+### Evaluating expectations
+
+Suppose we have a random variable with the probability mass function
+
+|x|0|1|2|3|
+|-|-|-|-|-|
+|p(x)|.5|.25|.1|.15|
+
+Now you are interested in estimating its expectation. 
+If you can simulate from this distribution, then you can just take an average
+of the simulated values.
+
+To simulate from a discrete random variable with finite support, 
+you can use the `sample()` function.
+
+```{r}
+x <- sample(0:3, size = 1e5, prob = c(.5,.25,.1,.15), replace = TRUE)
+```
+
+Now we can calculate the expectation and standard deviation (or variance) 
+of these values which are estimates of the expectation and standard deviation
+(or variance) of the random variable. 
+
+```{r}
+(m <- mean(x))
+(s <- sd(x))
+s^2 # variance
+```
+
+The CLT can be used to provide bounds. 
+For example a 90% interval is 
+
+```{r}
+m + c(-1,1) * pnorm(.95) * s / sqrt( length(x) )
+```
+
+
+#### Expectation activity
+
+Find the expectation for discrete random variable with the following pmf:
+
+|x|10|12|21|33|
+|-|-|-|-|-|
+|p(x)|.1|.2|.3|.4|
+
+Also find a 99% interval for this value using the CLT based on a million samples.
+
+<div id="expectation_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+x <- sample(c(10,12,21,33), size = 1e6, prob = c(.1,.2,.3,.4), replace = TRUE)
+m <- mean(x)
+s <- sd(x)
+m + c(-1,1) * pnorm(.995) * s / sqrt( length(x) )
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('expectation_activity_solution') .style.display=='none') {document.getElementById('expectation_activity_solution') .style.display=''}else{document.getElementById('expectation_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+
+### Estimating probabilities
+
+We can also use simulations to estimate probabilities. 
+Suppose we have a random variable $X\sim Unif(0,1)$ and a random variable 
+$Y\sim N(0,1)$ and we are interested in calculating the probability that 
+$X$ is larger than $Y$. 
+This is not an easy calculation to do. 
+But we can simply simulate a bunch of $X$ and $Y$ values and calculate the 
+number of times that an $X$ value is larger than an associated $Y$ value.
+Note that the event $X>Y$ will have a Bernoulli distribution, i.e. there is 
+some probability that $X>Y$ (precisely the probability we are trying to find).
+If we do this repeated for independent values of $X$ and $Y$ and record the 
+number of times that $X>Y$, this sum will have a binomial distribution.
+Thus we can use the CLT with mean $np$ and variance $np(1-p)$ or rather than 
+using the sum, we can take the average and use the CLT with mean $p$ and 
+$p(1-p)/n$. 
+Since we are trying to estimate $p$, the latter makes more sense.
+
+So here is the simulation
+
+```{r}
+n <- 1e5
+x <- runif(n)
+y <- rnorm(n)
+(p <- mean(x>y))
+```
+
+and a 95% interval based on the CLT
+
+```{r}
+p + c(-1,1) * pnorm(.975) * sqrt(p*(1-p)/n)
+```
+
+
+#### Probability activity
+
+Suppose $X\sim Bin(10,.5)$ and $Y\sim Po(5)$, calculate the probability that 
+$Y \ge X$. 
+Since these are discrete random variables, the equal to sign is important.
+As a reminder, to get *greater than or equal to* in R, use `>=`. 
+Provide a 95% interval based on a million samples.
+
+
+<div id="probability_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+n <- 1e6
+x <- rbinom(n, size = 10, prob = 0.5)
+y <- rpois(n, lambda = 5)
+p <- mean(y >= x)
+p + c(-1,1) * pnorm(.975) * sqrt(p*(1-p)/n)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('probability_activity_solution') .style.display=='none') {document.getElementById('probability_activity_solution') .style.display=''}else{document.getElementById('probability_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
