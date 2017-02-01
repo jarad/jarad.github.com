@@ -142,6 +142,8 @@ convenience sample of STAT 401 students who have a Gigabit router.
 \subsection{Statistics}
 \begin{frame}
 \frametitle{Descriptive statistics}
+\small
+
 \begin{definition}
 A \alert{statistic} is any function of the data. 
 \end{definition}
@@ -151,19 +153,18 @@ A \alert{statistic} is any function of the data.
 \begin{example}
 Statistics:
 \begin{itemize}
-\item Sample mean
-\item Sample median
-\item Sample mode
-\item Sample quantile
-\item Sample variance
-\item Sample standard deviation
+\item Sample mean, median, mode
+\item Sample quantiles
+\item Sample variance, standard deviation
 \end{itemize}
 \end{example}
 
 \pause
 
-Most statistics are developed to estimate the corresponding population 
-parameter.
+\begin{definition}
+When a statistics is meant to estimate a corresponding population parameter, we
+call that statistic an \alert{estimator}. 
+\end{definition}
 
 \end{frame}
 
@@ -205,8 +206,8 @@ The sample standard deviation  is $S = \sqrt{S^2}$.
 \frametitle{Unbiased}
 
 \begin{definition}
-An estimator is \alert{unbiased} for a parameter if its expectation equals the
-parameter. 
+An estimator is \alert{unbiased} for a parameter if its expectation 
+(when the data are considered random) equals the parameter. 
 \end{definition}
 
 \pause
@@ -232,7 +233,7 @@ An estimator $\hat{\theta}$, or $\hat{\theta}(x)$, is \alert{consistent} for a p
 the probability of its sampling error of any magnitude converges to 0 as the
 sample size increases to infinity, \pause i.e.
 \[ 
-P\left( |\hat{\theta}(x)-\theta|>\epsilon \right) \to 0 \mbox{ as } n\to\infty
+P\left( \left|\hat{\theta}(x)-\theta\right|>\epsilon \right) \to 0 \mbox{ as } n\to\infty
 \]
 for any $\epsilon>0$.
 \end{definition}
@@ -240,11 +241,11 @@ for any $\epsilon>0$.
 \pause 
 
 \begin{example}
-The sample mean is consistent for $\mu$ since $Var[\overline{X}] = \sigma^2/n$
+The sample mean is consistent for $\mu$ since $Var\left[\,\overline{X}\,\right] = \sigma^2/n$
 and 
 \[ 
-P\left(|\overline{X} - \mu| > \epsilon \right) \le 
-\frac{Var[\overline{X}]}{\epsilon^2} = \frac{\sigma^2/n}{\epsilon^2} \to 0
+P\left(\left|\overline{X} - \mu\right| > \epsilon \right) \le 
+\frac{Var\left[\,\overline{X}\,\right]}{\epsilon^2} = \frac{\sigma^2/n}{\epsilon^2} \to 0
 \]
 where the inequality is from Chevyshev's inequality on pg 54 of Baron. 
 \end{example}
@@ -290,8 +291,8 @@ the first sample quartile, i.e.
 \frametitle{Standard normal quartiles}
 <<quantiles, fig.height=4, echo=TRUE>>=
 curve(expr = dnorm, from = -3, to = 3, ylab = "f(x)")
-quantiles = c(.25,.50,.75)
-abline(v = qnorm(p = c(.25,.50,.75))) # default is standard normal
+quantiles = c(.025,.16,.84,.975)
+abline(v = qnorm(p = quantiles)) # default is standard normal
 @
 \end{frame}
 
@@ -325,14 +326,14 @@ deviation of that statistic (when the data are considered random).
 The standard error of the sample mean is $\sigma/\sqrt{n}$ since (if the $X_i$
 are independent) we have
 \[
-Var[\overline{X}] = Var\left[ \frac{1}{n} \sum_{i=1}^n X_i \right] =
+Var\left[\,\overline{X}\,\right] = Var\left[ \frac{1}{n} \sum_{i=1}^n X_i \right] =
 \frac{1}{n^2} \sum_{i=1}^n Var[X_i] = \frac{1}{n^2} \sum_{i=1}^n \sigma^2 =
 \sigma^2/n
 \]
 \pause
 and thus
 \[
-SD[\overline{X}] = \sqrt{Var[\overline{X}]} = \sigma/\sqrt{n}.
+SD\left[\,\overline{X}\,\right] = \sqrt{Var\left[\,\overline{X}\,\right]} = \sigma/\sqrt{n}.
 \]
 \end{example}
 \end{frame}
@@ -442,178 +443,6 @@ they are trying to estimate:
 
 
 
-\begin{frame}[fragile]
-\frametitle{Backblaze Hard drive failure data}
-
-\url{https://ucr.fbi.gov/crime-in-the-u.s/2013/crime-in-the-u.s.-2013/tables/1tabledatadecoverviewpdf/table_1_crime_in_the_united_states_by_volume_and_rate_per_100000_inhabitants_1994-2013.xls}
-
-<<harddrive_data>>=
-d <- readxl::read_excel("crime.xls") %>%
-  mutate(capacity = capacity_bytes * 1e-12) %>%
-  select(model, serial_number, capacity, failure)
-summary(d)
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Histogram}
-<<histogram, dependson="harddrive_data">>=
-ggplot(d, aes(x = capacity)) + 
-  geom_histogram(binwidth=.5) + 
-  labs(title = "Hard drive capacity (TB)") +
-  theme_bw()
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Histogram}
-<<histogram_density, dependson="harddrive_data">>=
-ggplot(d, aes(x = capacity)) + 
-  geom_histogram(aes(y=..density..), binwidth=1) + 
-  labs(title = "Hard drive capacity (TB)") +
-  theme_bw()
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Histogram}
-<<histogram_facet, dependson="harddrive_data">>=
-ggplot(d, aes(x = capacity)) + 
-  geom_histogram(binwidth=1) + 
-  facet_wrap(~failure) +
-  labs(title = "Hard drive capacity (TB)") +
-  theme_bw()
-@
-\end{frame}
-
-
-\subsection{Boxplot}
-\begin{frame}[fragile]
-\frametitle{Boxplot}
-<<boxplot_facet, dependson="harddrive_data">>=
-ggplot(d, aes(x = section, y = exam2)) + geom_boxplot()
-@
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Boxplot lines}
-
-By default in {\tt ggplot}, a boxplot will produce
-\begin{itemize}
-\item A box for the 1st and 3rd quartiles \pause with
-\item a line in the ``middle'' for the median \pause and 
-\item whiskers extending to the largest/smallest values within 1.5IQR, \pause and
-\item dots for data points farther out than that, i.e. ``outliers''. 
-\end{itemize}
-
-\vspace{0.1in} \pause
-
-There is no standard for boxplots, so be careful in interpreting a boxplot 
-unless you know how it is constructed. 
-
-\end{frame}
-
-
-
-
-\subsection{Scatter plots}
-\begin{frame}
-\frametitle{Scatter plots}
-When there are two continuous variables to plot at the same time, 
-use a scatter plot. 
-\pause
-The variable you believe would predict the other variable, should go on the 
-x-axis.
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Exam 2 vs homework subtotal}
-<<exam2_v_homework, dependson="harddrive_data">>=
-ggplot(d %>% filter(exam2>0, homework>0), aes(x = homework, y = exam2)) + 
-	geom_point()
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Exam 2 vs homework subtotal}
-<<exam2_v_homework_reg, dependson="harddrive_data">>=
-ggplot(d %>% filter(exam2>0, homework>0), aes(x = homework, y = exam2)) + 
-	geom_point() + geom_smooth(method='lm',formula=y~x)
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Exam 2 vs Exam 1 subtotal}
-<<exam2_v_exam1, dependson="harddrive_data">>=
-ggplot(d %>% filter(exam2>0, exam1>0), aes(x = exam1, y = exam2)) + 
-	geom_point()
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Exam 2 vs Exam 1 subtotal}
-<<exam2_v_exam1_reg, dependson="harddrive_data">>=
-ggplot(d %>% filter(exam2>0, exam1>0), aes(x = exam1, y = exam2)) + 
-	geom_point() + geom_smooth(method='lm',formula=y~x)
-@
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Exam 2 vs Exam 1 subtotal}
-<<exam2_v_exam1_scatter, dependson="harddrive_data">>=
-ggplot(d %>% filter(exam2>0, exam1>0), aes(x = exam1, y = exam2)) + 
-	geom_jitter()
-@
-\end{frame}
-
-
-\subsection{All-in-one plots}
-\begin{frame}
-\frametitle{All-in-one plots}
-<<>>=
-GGally::ggpairs(d)
-@
-\end{frame}
-
-
-
-\subsection{Two-dimensional histograms}
-\begin{frame}[fragile]
-\frametitle{Two-dimensional histograms}
-
-Sometimes there are so many points that you cannot see a relationship in a 
-scatterplot, \pause e.g. 
-<<bigdata>>=
-n = 1e4; r = runif(n, 0, 2*pi)
-normal = data.frame(x = rnorm(2*n), y = rnorm(2*n))
-circle = data.frame(x = sin(r)/2, y = cos(r)/2)
-big_data = bind_rows(normal,circle)
-ggplot(big_data, aes(x,y)) + geom_point()
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Hexbin plot}
-
-<<hexbin, dependson="bigdata">>=
-ggplot(big_data, aes(x,y)) + stat_binhex()
-@
-
-\end{frame}
-
 
 \begin{frame}
 \frametitle{Principles of professional statistical graphics}
@@ -646,7 +475,7 @@ ggplot(big_data, aes(x,y)) + stat_binhex()
 \begin{frame}
 \frametitle{Stock market return}
 \begin{center}
-\includegraphics{triangle}
+\includegraphics{market_return}
 \end{center}
 {\tiny \url{http://www.nytimes.com/interactive/2011/01/02/business/20110102-metrics-graphic.html?_r=0}}
 \end{frame}
