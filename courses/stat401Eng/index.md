@@ -34,6 +34,7 @@ Office hours are
 There is no required textbook for this course. 
 Here are some free resources that will be used:
 
+- [Online Statistics Education](http://onlinestatbook.com/2/)
 - [R for Data Science](http://r4ds.had.co.nz/)
 - [Data Camp](https://www.datacamp.com/)
 - [Introduction to R for Data Science](https://www.edx.org/course/introduction-r-data-science-microsoft-dat204x-3)
