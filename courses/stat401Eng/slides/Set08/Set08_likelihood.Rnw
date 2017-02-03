@@ -1,0 +1,376 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\newtheorem{principle}[theorem]{Principle}
+
+\title{Set08 - Likelihood}
+
+\begin{document}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+@
+
+<<set_seed>>=
+set.seed(2)
+@
+
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Modeling}
+\begin{frame}
+\frametitle{Statistical modeling}
+
+\begin{definition}
+A \alert{statistical model} is a pair $(\mathcal{S}, \mathcal{P})$ where 
+$\mathcal{S}$ is the set of possible observations, i.e. the sample space, and 
+$\mathcal{P}$ is a set of probability distributions on $\mathcal{S}$.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Typically, we will assume the data have a specific form, say $p(y|\theta)$, 
+\pause
+but the parameter (vector) $\theta$ is unknown. 
+\pause
+Thus $p(y|\theta)$ for all allowable values for $\theta$ provide the set 
+$\mathcal{P}$. 
+
+
+\end{frame}
+
+
+\subsection{Binomial}
+\begin{frame}
+\frametitle{Binomial model}
+
+Suppose our data are 
+\begin{itemize}
+\item the number of success $y$ 
+\item out of some number of attempts $n$ 
+\item where each attempt is independent 
+\item given a common probability of success $\theta$.
+\end{itemize}
+\pause
+Then a reasonable statistical model is 
+\[ 
+Y \sim Bin(n,\theta)
+\]
+\pause 
+since for any $0<\theta<1$ this model provides positive probability over the 
+entire sample space, i.e. all possible observations.
+
+\vspace{0.1in} \pause
+
+Formally, 
+
+\begin{itemize}
+\item $\mathcal{S} = \{0,1,2,\ldots,n\}$ 
+\item $\mathcal{P} = \{ Bin(n,\theta): 0<\theta<1 \}$.
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Normal}
+\begin{frame}
+\frametitle{Normal model}
+\small
+
+Suppose our data are
+\begin{itemize}
+\item a set of real numbers, i.e. between $-\infty$ and $\infty$,
+\item the population mean is $\mu$ and population variance is $\sigma^2$,
+\item the probability density function is reasonably approximated by a bell-shaped curve,
+\item and each observation is independent of the others.
+\end{itemize}
+\pause
+Then a reasonable statistical model is 
+\[
+Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)
+\]
+\pause
+since for $-\infty<\mu<\infty, 0<\sigma^2<\infty$  this model provides 
+positive density over the entire sample space, i.e. all possible obserations.
+
+\vspace{0.1in} \pause
+
+Formally, 
+
+\begin{itemize}
+\item $\mathcal{S} = \{y:y\in\mathbb{R}^n\}$ 
+\item $\mathcal{P} = \{ N(\mu,\sigma^2): -\infty<\mu<\infty, 0<\sigma^2<\infty \}$ 
+where $\theta = (\mu,\sigma^2)$.
+\end{itemize}
+
+\end{frame}
+
+
+\section{Likelihood}
+\begin{frame}
+\frametitle{Likelihood}
+
+\small
+
+\begin{definition}
+The \alert{likelihood function}, or simply \alert{likelihood}, is the joint 
+probability mass/density function
+for fixed data when viewed as a function of the parameter vector $\theta$.
+\pause
+Generally, we will write the joint probability mass or density function as 
+$p(y|\theta)$ and thus the likelihood is 
+\[ 
+L(\theta) = p(y|\theta)
+\]
+\pause
+but where $y$ is fixed and known, i.e. it is your data.
+
+\vspace{0.1in} \pause
+
+The \alert{log-likelihood} is the (natural) logarithm of the likelihood, i.e. 
+\[ 
+\ell(\theta) = \log L(\theta).
+\]
+
+\end{definition}
+
+\vspace{0.1in} \pause
+
+The likelihood describes the relative support in the data for different values 
+for your parameter, i.e. the larger the likelihood is the more consistent 
+that parameter value is with the data.
+
+\end{frame}
+
+
+\subsection{Binomial}
+\begin{frame}
+\frametitle{Binomial likelihood}
+
+Suppose $Y\sim Bin(n,\theta)$, then 
+\[ 
+p(y|\theta) = {n\choose y} \theta^y (1-\theta)^{n-y}.
+\]
+\pause
+where $\theta$ is considered fixed (but often unknown) and the argument to this
+function is $y$.
+
+\vspace{0.1in} \pause
+
+Thus the likelihood is 
+\[ 
+L(\theta) = {n\choose y} \theta^y (1-\theta)^{n-y}
+\]
+\pause
+where $y$ is considered fixed and known and the argument to this function is
+$\theta$.
+
+\vspace{0.1in} \pause
+
+Not that I write $L(\theta)$ without any condition, e.g. on $y$, so that you 
+don't confuse this with a probability mass (or density) function.
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial likelihood}
+
+<<binomial_likelihood, fig.height=4.5>>=
+d <- data.frame(theta = seq(0,1,by=0.01)) %>%
+  mutate(`y=3, n=10` = dbinom(3,10,prob=theta),
+         `y=6, n=10` = dbinom(6,10,prob=theta)) %>%
+  gather(data,likelihood,-theta) 
+
+ggplot(d, aes(theta, likelihood, color=data, linetype=data)) +
+  geom_line() +
+  theme_bw()
+@
+\end{frame}
+
+
+\subsection{Independent observations}
+\begin{frame}
+\frametitle{Likelihood for independent observations}
+
+Suppose $Y_i$ are independent with marginal probability mass/density function
+$p(y_i|\theta)$. 
+
+\vspace{0.1in} \pause
+
+The joint distribution for $y=(y_1,\ldots,y_n)$ is 
+\[ 
+p(y|\theta) = \prod_{i=1}^n p(y_i|\theta).
+\]
+
+\vspace{0.1in} \pause
+
+The likelihood for $\theta$ is 
+\[ 
+L(\theta) = \prod_{i=1}^n p(y_i|\theta)
+\]
+where we are thinking about this as a function  of $\theta$ for fixed $y$.
+
+\end{frame}
+
+
+\subsection{Normal}
+\begin{frame}
+\frametitle{Normal model}
+
+Suppose $Y_i\ind N(\mu,\sigma^2)$, \pause then 
+\[
+p(y_i|\mu,\sigma^2) = \frac{1}{2\pi\sigma^2} e^{-\frac{1}{2\sigma^2}(y_i-\mu)^2}
+\]
+and 
+\[ \begin{array}{rl}
+p(y|\mu,\sigma^2) 
+&= \prod_{i=1}^n p(y_i|\mu,\sigma^2) \\ 
+&= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{1}{2\sigma^2}(y_i-\mu)^2} \\
+&= \frac{1}{(2\pi\sigma^2)^{n/2}} e^{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\mu)^2} 
+\end{array} \]
+where $\mu$ and $\sigma^2$ are fixed (but often unknown) and the argument to 
+this function is $y=(y_1,\ldots,y_n)$.
+
+\vspace{0.1in} \pause
+
+The likelihood is 
+\[
+L(\mu,\sigma) = p(y|\mu,\sigma^2) 
+= \frac{1}{(2\pi\sigma^2)^{n/2}} e^{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\mu)^2}
+\]
+where $y$ is fixed and known and $\mu$ and $\sigma^2$ are the arguments to this
+function.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Normal likelihood}
+
+<<normal_likelihood, fig.height=4.5>>=
+y <- rnorm(3)
+
+d <- expand.grid(mu = seq(-2,2,length=100),
+                 sigma = seq(0,2,length=100)) %>%
+  mutate(density = dnorm(y[1], mu, sigma)*dnorm(y[2], mu, sigma)*dnorm(y[3], mu, sigma))
+
+ggplot(d, aes(mu,sigma,z=density)) +
+  geom_contour() +
+  theme_bw()
+@
+
+\end{frame}
+
+
+\section{MLE}
+\begin{frame}
+\frametitle{Maximum likelihood estimator}
+
+\begin{definition}
+The \alert{maximum likelihood estimator (MLE)}, $\hat{\theta}_{MLE}$ 
+is the parameter value $\theta$ that maximizes the likelihood function\pause,
+i.e. 
+\[ 
+\hat{\theta}_{MLE} = \mbox{argmax}_\theta L(\theta).
+\]
+\end{definition}
+
+
+\vspace{0.1in} \pause
+
+When the data are discrete, the MLE is parameter value that maximizes the 
+probability of the observed data.
+
+\end{frame}
+
+
+
+\subsection{Binomial}
+\begin{frame}
+\frametitle{Binomial MLE}
+
+If $Y\sim Bin(n,\theta)$, then 
+\[ 
+L(\theta) = {n\choose y} \theta^y (1-\theta)^{n-y}.
+\]
+
+\pause
+
+To find the MLE, 
+\begin{enumerate}
+\item Take the derivative of $\ell(\theta)$ with respect to $\theta$.
+\item Set it equal to zero and solve for $\theta$.
+\end{enumerate}
+
+\pause
+\[ \begin{array}{rl}
+\ell(\theta) &= \log {n\choose y} + y\log(\theta) + (n-y)\log(1-\theta) \pause \\
+\frac{d}{d\theta} \ell(\theta) &= \frac{y}{\theta} - \frac{n-y}{1-\theta} \pause \stackrel{set}{=} 0 \pause \implies \\
+\hat{\theta}_{MLE} &= y/n \pause 
+\end{array} \]
+
+Take the second derivative of $\ell(\theta)$ with respect to $\theta$ and 
+check to make sure it is negative.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial MLE}
+
+<<binomial_mle, fig.height=4.5>>=
+y <- 3
+n <- 10
+d <- data.frame(theta = seq(0,1,by=0.01)) %>%
+  mutate(likelihood = dbinom(y,n,prob=theta)) 
+
+ggplot(d, aes(theta, likelihood)) +
+  geom_line() +
+  geom_vline(xintercept = y/n) +
+  theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Numerical maximization}
+
+<<binomial_mle_numerical, echo=TRUE>>=
+likelihood <- function(theta) {
+  dbinom(3, size = 10, prob = theta)
+}
+
+optim(0.5, likelihood, lower = 0, upper = 1, method='L-BFGS-B',
+      control = list(fnscale = -1)) # maximize
+@
+\end{frame}
+
+
+\end{document}
+
+
+

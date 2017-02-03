@@ -20,6 +20,7 @@ Instructions for compiling the Rnw files can be found below.
 |Continuous distributions|[Set05.Rnw](Set05/Set05_continuous_distributions.Rnw)|[Set05.pdf](Set05/Set05_continuous_distributions.pdf)|
 |Central limit theorem|[Set06.Rnw](Set06/Set06_central_limit_theorem.Rnw)|[Set06.pdf](Set06/Set06_central_limit_theorem.pdf)|
 |Statistics|[Set07.Rnw](Set07/Set07_Statistics.Rnw)|[Set07.pdf](Set07/Set07_Statistics.pdf)|
+|Likelihood|[Set08.Rnw](Set08/Set08_likelihood.Rnw)|[Set08.pdf](Set08/Set08_likelihood.pdf)|
 
   
 
