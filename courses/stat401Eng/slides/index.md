@@ -10,6 +10,7 @@ Instructions for compiling the Rnw files can be found below.
 
 ## Chapter slide source files
 
+### Probability
 
 |Topic|Source|Handouts|
 |---|---|---|
@@ -20,8 +21,13 @@ Instructions for compiling the Rnw files can be found below.
 |Continuous distributions|[Set05.Rnw](Set05/Set05_continuous_distributions.Rnw)|[Set05.pdf](Set05/Set05_continuous_distributions.pdf)|
 |Central limit theorem|[Set06.Rnw](Set06/Set06_central_limit_theorem.Rnw)|[Set06.pdf](Set06/Set06_central_limit_theorem.pdf)|
 |Statistics|[Set07.Rnw](Set07/Set07_Statistics.Rnw)|[Set07.pdf](Set07/Set07_Statistics.pdf)|
+
+### Inference
+
+|Topic|Source|Handouts|
+|---|---|---|
 |Likelihood|[Set08.Rnw](Set08/Set08_likelihood.Rnw)|[Set08.pdf](Set08/Set08_likelihood.pdf)|
-|Likelihood|[Set09.Rnw](Set09/Set09_Bayesian_statistics.Rnw)|[Set09.pdf](Set09/Set09_Bayesian_statistics.pdf)|
+|Bayesian statistics|[Set09.Rnw](Set09/Set09_Bayesian_statistics.Rnw)|[Set09.pdf](Set09/Set09_Bayesian_statistics.pdf)|
 
   
 
