@@ -7,8 +7,8 @@
 
 \title{Set 09 - Bayesian statistics}
 
-\newenvironment{remark}[1][Remark]{\begin{trivlist}
-\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+% \newenvironment{remark}[1][Remark]{\begin{trivlist}
+% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -41,13 +41,12 @@ set.seed(2)
 \begin{frame}
 \frametitle{Outline}
 \begin{itemize}
-\item Bayesian statistics
+\item Bayesian parameter estimation
   \begin{itemize}
   \item Condition on what is known
   \item Describe uncertainty using probability
-  \item Exponential example
+  \item Binomial example
   \end{itemize}
-\item Why or why not Bayesian?
 \end{itemize}
 \end{frame}
 
@@ -119,56 +118,199 @@ If $y$ is discrete (continuous),
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Binomial model}
 
-% Add binomial example
+Suppose $Y\sim Bin(n,\theta)$, then 
+\[ 
+p(y|\theta) = {n\choose y} \theta^y (1-\theta)^{n-y}.
+\]
+A reasonable default prior is the uniform distribution on the interval $(0,1)$
+\pause 
+\[ 
+p(\theta) = \I(0<\theta<1).
+\]
+\pause
+Using Bayes Rule, you can find 
+\[
+\theta|y \sim Be(1+y, 1+n-y).
+\]
+\end{frame}
 
 
 \begin{frame}
-\frametitle{Bayesian learning (in parameter estimation)}
-% Update slide
-So, Bayes' Rule provides a formula for updating from prior beliefs to our posterior beliefs based on the data we observe, \pause i.e.
+\frametitle{Beta distribution}
 
-\[ p(\theta|y) = \frac{p(y|\theta)}{p(y)}p(\theta) \propto p(y|\theta)p(\theta) \]
-
-\pause Suppose we gather $y_1,\ldots,y_n$ sequentially (and we assume $y_i$ independent conditional on $\theta$), \pause then we have 
-
-\[ \begin{array}{rl}
-p(\theta|y_1) & \propto p(y_1|\theta)p(\theta) \pause \\
-p(\theta|y_1,y_2) & \propto p(y_2|\theta)p(\theta|y_1) 
-\end{array} \]
-\pause 
-and 
-\[ p(\theta|y_1,\ldots,y_i) \propto p(y_i|\theta)p(\theta|y_1,\ldots,y_{i-1}) \]
-
+\begin{definition}
+The \alert{beta distribution} defines a distribution for a probability, 
+i.e. a number on the interval (0,1). 
+The probability density function is 
+\[ 
+p(\theta) = \frac{\theta^{a-1}(1-\theta)^{b-1}}{Beta(a,b)}\I(0<\theta<1)
+\]
+where $a,b>0$ and $Beta$ is the beta function, \pause 
+i.e. 
+\[ 
+Beta(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)} 
+\quad\mbox{and} \quad
+\Gamma(a) = \int_0^\infty x^{a-1}e^{-x} dx.
+\]
 \pause
-So Bayesian learning is 
-\[ p(\theta) \to p(\theta|y_1) \to p(\theta|y_1,y_2) \to \cdots \to p(\theta|y_1,\ldots,y_n). \]
+The beta distribution has the following properties:
+\begin{itemize}
+\item $E[\theta] = \frac{a}{a+b}$
+\item $Var[\theta] = \frac{ab}{(a+b)^2(a+b+1)}$.
+\end{itemize}
+\end{definition}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{}
+
+<<>>=
+my_dbeta <- function(x) {
+  data.frame(theta = seq(0, 1, length=101)) %>%
+    mutate(density = dbeta(theta, x$a, x$b))
+}
+
+d <- expand.grid(a = c(.5,1,2, 10),
+            b = c(.5,1,2, 10)) %>%
+  group_by(a,b) %>%
+  do(my_dbeta(.)) %>%
+  ungroup() %>%
+  mutate(a = factor(paste0("a = ", a), levels=paste0("a = ", c(.5,1,2,10))),
+         b = factor(paste0("b = ", b), levels=paste0("b = ", c(.5,1,2,10))))
+
+ggplot(d, aes(x=theta, y=density)) +
+  geom_line() +
+  facet_grid(a~b) +
+  theme_bw() +
+  ylim(0,5)
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Beta posterior}
+
+Suppose we have made 100 sensors according to a particular protocol and 2 have 
+a sensitivity below a pre-determined threshold. 
+\pause
+Let $Y$ be the number below the threshold.
+Assume $Y\sim Bin(n,\theta)$ with $n=100$ \pause and 
+$\theta \sim Unif(0,1)\stackrel{d}{=} Be(1,1)$, 
+\pause 
+then 
+\[ 
+\theta|y \sim Be(1+y,1+n-y) \stackrel{d}{=} Be(3,99).
+\]
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior density}
+<<echo=TRUE, fig.height=3.5>>=
+n <- 100
+y <- 2
+curve(dbeta(x, 1+y, 1+n-y), 0, 0.1,
+      main = "Posterior density",
+      xlab = expression(theta),
+      ylab = expression(paste("p(",theta,"|y)")))
+@
 \end{frame}
 
 
 
-\section{Why or why not Bayesian?}
+\begin{frame}[fragile]
+\frametitle{Posterior expectation}
+
+Often times it is inconvenient to provide a full posterior and so we often 
+summarize using a point estimate from the posterior. 
+\pause
+For a point estimate, we can use the posterior expectation:
+\pause
+\[
+\hat{\theta}_{Bayes} = E[\theta|y] \pause 
+= \frac{1+y}{(1+y)+(1+n-y)} \pause
+= \frac{1+y}{1+n}
+\]
+
+<<echo=TRUE>>=
+(1+y)/(2+n)
+@
+\pause
+Not that this is close, but not exactly equal to $\hat{\theta}_{MLE} = y/n$. 
+\pause
+Since the MLE is unbiased, this posterior expectation will generally be biased
+but it is still consistent since $\hat{\theta}_{Bayes} \to \hat{\theta}_{MLE}$. 
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+
+\begin{definition}
+A \alert{$100(1-\alpha)$\% credible interval} is any interval $(L,U)$ such that
+
+\[ 
+1-\alpha = \int_L^U p(\theta|y) d\theta.
+\]
+\pause
+An \alert{equal-tail $100(1-\alpha)$\% credible interval} is the interval 
+$L,U)$ such that 
+\[ 
+\alpha/2 = \int_{-\infty}^L p(\theta|y) d\theta = \int_U^\infty p(\theta|y) d\theta.
+\]
+\end{definition}
+\pause
+
+<<>>=
+# 95% credible interval is 
+ci = qbeta(c(.025,.975), 1+y, 1+n-y) 
+round(ci, 3)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Equal-tail 95\% credible interval}
+<<echo=FALSE>>=
+curve(dbeta(x, 1+y, 1+n-y), 0, 0.1,
+      main = "Posterior density",
+      xlab = expression(theta),
+      ylab = expression(paste("p(",theta,"|y)")))
+
+ci_area <- data.frame(x = seq(ci[1],ci[2],length=101)) %>%
+  mutate(y = dbeta(x, 1+y, 1+n-y)) %>%
+  bind_rows(data.frame(x = ci[2:1], y = 0))
+
+polygon(ci_area$x, ci_area$y, col='red', border=NA)
+@
+\end{frame}
+
+
 \begin{frame}
-\frametitle{Why or why not Bayesian?}
+\frametitle{Summary}
 
-Why do a Bayesian analysis?
-\begin{itemize}[<+->]
-\item Incorporate prior knowledge via $p(\theta)$
-\item Coherent, i.e. everything follows from specifying $p(\theta|y)$
-\item Interpretability of results, e.g. the probability the parameter is in 
-$(L,U)$ is 95\%
-\end{itemize}
+Bayesian parameter estimation involves
+\begin{enumerate}[<+->]
+\item Specifying a model $p(y|\theta)$ for your data.
+\item Specifying a prior $p(\theta)$ for the parameter. 
+\item Deriving the posterior 
+\[
+p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)} \propto p(y|\theta)p(\theta).
+\]
+\item Calculating quantities of interest, e.g.
+  \begin{itemize}
+  \item Posterior expectation, $E[\theta|y]$
+  \item Credible interval
+  \end{itemize}
+\end{enumerate}
 
-\vspace{0.2in} \pause
-
-Why not do a Bayesian analysis?
-\begin{itemize}[<+->]
-\item Need to specify $p(\theta)$ 
-\item Computational cost
-\item Does not guarantee coverage, i.e. how well do the procedures work over all 
-their uses (although \emph{frequentist matching} priors are specifically 
-designed to ensure frequentist properties, e.g. coverage)
-\end{itemize}
 \end{frame}
 
 \end{document}
