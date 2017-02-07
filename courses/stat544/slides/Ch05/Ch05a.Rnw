@@ -155,7 +155,8 @@ ggplot(d,
   geom_segment(lwd=1) +
   scale_color_brewer(palette='Set1') + 
   labs(x=expression(theta), title='95% Credible Intervals') + 
-  scale_y_reverse()
+  scale_y_reverse() +
+  theme_bw()
 @
 \end{frame}
 
@@ -327,7 +328,7 @@ cor(prior_draws$alpha, prior_draws$beta)
 
 \section{Stan}
 \begin{frame}[fragile]
-\frametitle{Stan}
+\frametitle{}
 <<stan, echo=TRUE>>=
 model_informative_prior = "
 data {
@@ -348,8 +349,8 @@ transformed parameters {
   real<lower=0> alpha;
   real<lower=0> beta;
 
-  alpha <- eta*   mu ;
-  beta  <- eta*(1-mu);
+  alpha = eta*   mu ;
+  beta  = eta*(1-mu);
 }
 model {
   mu    ~ beta(a,b);
@@ -368,7 +369,7 @@ model {
 <<stan_run, dependson=c('informative_prior','stan'), echo=TRUE, results='hide'>>=
 dat = list(y=d$made, n=d$attempts, N=nrow(d),a=a, b=b, m=m, C=C)
 m = stan_model(model_code=model_informative_prior)
-r = sampling(m, dat, c("mu","eta","alpha","beta","theta"))
+r = sampling(m, dat, c("mu","eta","alpha","beta","theta"), iter = 10000)
 @
 \end{frame}
 
@@ -417,7 +418,8 @@ ggplot(rbind(d, new_d), aes(x=lcl,
   geom_segment(lwd=1, alpha=0.5) + 
   labs(x=expression(theta), y="game", title='95% Credible Intervals') +
   scale_color_brewer(palette='Set1') + 
-  scale_y_reverse()
+  scale_y_reverse() +
+  theme_bw()
 @
 \end{frame}
 
@@ -462,7 +464,7 @@ parameters {
 
 model {
   # default prior
-  increment_log_prob(-5*log(alpha+beta)/2);
+  target += -5*log(alpha+beta)/2;
 
   # implicit joint distributions
   theta ~ beta(alpha,beta); 
@@ -471,7 +473,8 @@ model {
 "
 
 m2 = stan_model(model_code=model_default_prior)
-r2 = sampling(m2, dat, c("alpha","beta","theta"), iter=10000)
+r2 = sampling(m2, dat, c("alpha","beta","theta"), iter=10000,
+              control = list(adapt_delta = 0.9))
 @
 \end{frame}
 
@@ -525,7 +528,8 @@ ggplot(bind_d,
   geom_segment(lwd=1, alpha=0.5) + 
   labs(x=expression(theta), y="game", title='95% Credible Intervals') + 
   scale_color_brewer(palette='Set1') + 
-  scale_y_reverse()
+  scale_y_reverse() +
+  theme_bw()
 @
 \end{frame}
 
@@ -565,7 +569,7 @@ parameters {
   real<lower=0> beta;
 }
 model {
-  increment_log_prob(-5*log(alpha+beta)/2);
+  target += -5*log(alpha+beta)/2;
   y     ~ beta_binomial(n,alpha,beta);
 }
 "
@@ -655,8 +659,8 @@ parameters {
 transformed parameters {
   real<lower=0> alpha;
   real<lower=0> beta;
-  alpha <- eta *    mu;
-  beta  <- eta * (1-mu);
+  alpha = eta *    mu;
+  beta  = eta * (1-mu);
 }
 model {
   mu  ~ beta(a,b);
@@ -665,7 +669,7 @@ model {
 }
 generated quantities {
   real<lower=0,upper=1> theta[N];
-  for (i in 1:N) theta[i] <- beta_rng(alpha+y[i], beta+n[i]-y[i]);
+  for (i in 1:N) theta[i] = beta_rng(alpha+y[i], beta+n[i]-y[i]);
 }
 "
 
@@ -692,7 +696,8 @@ r_seasons
 posterior = melt(extract(r_seasons, "theta")[[1]])
 names(posterior)[2] = "season"
 posterior$season = factor(posterior$season)
-ggplot(posterior, aes(x=value, fill=season)) + geom_density(alpha=0.5)
+ggplot(posterior, aes(x=value, fill=season)) + geom_density(alpha=0.5) +
+  theme_bw()
 @
 
 \end{frame}
