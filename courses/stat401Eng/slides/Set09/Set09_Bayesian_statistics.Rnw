@@ -1,0 +1,174 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set 09 - Bayesian statistics}
+
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Outline}
+\begin{itemize}
+\item Bayesian statistics
+  \begin{itemize}
+  \item Condition on what is known
+  \item Describe uncertainty using probability
+  \item Exponential example
+  \end{itemize}
+\item Why or why not Bayesian?
+\end{itemize}
+\end{frame}
+
+
+
+\section{Bayesian statistics}
+\begin{frame}
+\frametitle{A Bayesian statistician}
+
+Let 
+\begin{itemize}[<+->]
+\item $y$ be the data we will collect from an experiment, 
+\item $K$ be everything we know for certain about the world (aside from $y$), and
+\item $\theta$ be anything we don't know for certain.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+My definition of a Bayesian statistician is an individual who makes decisions based on the probability distribution of those things we don't know conditional on what we know, \pause i.e. 
+\[ p(\theta|y, K). \]
+\pause
+Typically, the $K$ is dropped from the notation.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bayes' Rule}
+
+Bayes' Rule applied to a partition $P=\{A_1,A_2,\ldots\}$, 
+\[ P(A_i|B) = \frac{P(B|A_i)P(A_i)}{P(B)} = \frac{P(B|A_i)P(A_i)}{\sum_{i=1}^\infty P(B|A_i)P(A_i)} \]
+
+\vspace{0.2in} \pause
+
+Bayes' Rule also applies to probability density (or mass) functions, e.g. 
+\[ p(\theta|y) =\frac{p(y|\theta)p(\theta)}{p(y)} = \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta}  \]
+where the integral plays the role of the sum in the previous statement.
+\end{frame}
+
+
+
+\subsection{Parameter estimation}
+\begin{frame}
+\frametitle{Parameter estimation}
+Let $y$ be data from some model with unknown parameter $\theta$. \pause Then
+\[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)}= \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta} \]
+\pause and we use the following terminology 
+\begin{center}
+\begin{tabular}{ll}
+Terminology & Notation \\
+\hline 
+Posterior & $p(\theta|y)$ \\
+Prior & $p(\theta)$ \\
+Model & $p(y|\theta)$ \\
+Prior predictive distribution & $p(y)$ \\
+(marginal likelihood) & \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.1in} \pause
+
+If $\theta$ is discrete (continuous), 
+
+\hspace{0.2in} then $p(\theta)$ and $p(\theta|y)$ are probability mass (density) functions.
+
+If $y$ is discrete (continuous), 
+
+\hspace{0.2in}  then $p(y|\theta)$ and $p(y)$ are probability mass (density) functions.
+\end{frame}
+
+
+
+% Add binomial example
+
+
+\begin{frame}
+\frametitle{Bayesian learning (in parameter estimation)}
+% Update slide
+So, Bayes' Rule provides a formula for updating from prior beliefs to our posterior beliefs based on the data we observe, \pause i.e.
+
+\[ p(\theta|y) = \frac{p(y|\theta)}{p(y)}p(\theta) \propto p(y|\theta)p(\theta) \]
+
+\pause Suppose we gather $y_1,\ldots,y_n$ sequentially (and we assume $y_i$ independent conditional on $\theta$), \pause then we have 
+
+\[ \begin{array}{rl}
+p(\theta|y_1) & \propto p(y_1|\theta)p(\theta) \pause \\
+p(\theta|y_1,y_2) & \propto p(y_2|\theta)p(\theta|y_1) 
+\end{array} \]
+\pause 
+and 
+\[ p(\theta|y_1,\ldots,y_i) \propto p(y_i|\theta)p(\theta|y_1,\ldots,y_{i-1}) \]
+
+\pause
+So Bayesian learning is 
+\[ p(\theta) \to p(\theta|y_1) \to p(\theta|y_1,y_2) \to \cdots \to p(\theta|y_1,\ldots,y_n). \]
+\end{frame}
+
+
+
+\section{Why or why not Bayesian?}
+\begin{frame}
+\frametitle{Why or why not Bayesian?}
+
+Why do a Bayesian analysis?
+\begin{itemize}[<+->]
+\item Incorporate prior knowledge via $p(\theta)$
+\item Coherent, i.e. everything follows from specifying $p(\theta|y)$
+\item Interpretability of results, e.g. the probability the parameter is in 
+$(L,U)$ is 95\%
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Why not do a Bayesian analysis?
+\begin{itemize}[<+->]
+\item Need to specify $p(\theta)$ 
+\item Computational cost
+\item Does not guarantee coverage, i.e. how well do the procedures work over all 
+their uses (although \emph{frequentist matching} priors are specifically 
+designed to ensure frequentist properties, e.g. coverage)
+\end{itemize}
+\end{frame}
+
+\end{document}
