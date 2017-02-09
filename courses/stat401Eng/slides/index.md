@@ -20,14 +20,15 @@ Instructions for compiling the Rnw files can be found below.
 |Discrete distributions|[Set04.Rnw](Set04/Set04_discrete_distributions.Rnw)|[Set04.pdf](Set04/Set04_discrete_distributions.pdf)|
 |Continuous distributions|[Set05.Rnw](Set05/Set05_continuous_distributions.Rnw)|[Set05.pdf](Set05/Set05_continuous_distributions.pdf)|
 |Central limit theorem|[Set06.Rnw](Set06/Set06_central_limit_theorem.Rnw)|[Set06.pdf](Set06/Set06_central_limit_theorem.pdf)|
-|Statistics|[Set07.Rnw](Set07/Set07_Statistics.Rnw)|[Set07.pdf](Set07/Set07_Statistics.pdf)|
+|Multiple random variables|[Set07.Rnw](Set07/Set07_multiple_random_variables.Rnw)|[Set07.pdf](Set07/Set07_multiple_random_variables.pdf)|
 
 ### Inference
 
 |Topic|Source|Handouts|
 |---|---|---|
-|Likelihood|[Set08.Rnw](Set08/Set08_likelihood.Rnw)|[Set08.pdf](Set08/Set08_likelihood.pdf)|
-|Bayesian statistics|[Set09.Rnw](Set09/Set09_Bayesian_statistics.Rnw)|[Set09.pdf](Set09/Set09_Bayesian_statistics.pdf)|
+|Statistics|[Set08.Rnw](Set08/Set08_Statistics.Rnw)|[Set08.pdf](Set08/Set08_Statistics.pdf)|
+|Likelihood|[Set09.Rnw](Set09/Set09_likelihood.Rnw)|[Set09.pdf](Set09/Set09_likelihood.pdf)|
+|Bayesian statistics|[Set10.Rnw](Set10/Set10_Bayesian_statistics.Rnw)|[Set10.pdf](Set10/Set10_Bayesian_statistics.pdf)|
 
   
 
