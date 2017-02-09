@@ -88,7 +88,7 @@ set.seed(1)
 	\begin{proof}
 	Let $y_i \stackrel{iid}{\sim} p(y)$\pause, then 
 	\[ 
-	p(y_1,\ldots,y_n) \pause = \prod_{j=1}^n p(y_i) \pause = \prod_{j=1}^n p(y_{\pi_i}) \pause = p(y_{\pi_1},\ldots,y_{\pi_n})
+	p(y_1,\ldots,y_n) \pause = \prod_{i=1}^n p(y_i) \pause = \prod_{i=1}^n p(y_{\pi_i}) \pause = p(y_{\pi_1},\ldots,y_{\pi_n})
 	\]
 	\end{proof}
 
@@ -104,7 +104,7 @@ set.seed(1)
 \small
 	\begin{theorem}
 	A sequence of random variables ($y_1,y_2,\ldots$) is infinitely exchangeable iff\pause, for all $n$, 
-	\[ p(y_1,y_2,\ldots,y_n) = \int \prod_{j=1}^n p(y_i|\theta) P(d\theta), \]
+	\[ p(y_1,y_2,\ldots,y_n) = \int \prod_{i=1}^n p(y_i|\theta) P(d\theta), \]
 	for some measure $P$ on $\theta$. 
 	\end{theorem}
 	\pause If the distribution on $\theta$ has a density, we can replace $P(d\theta)$ with $p(\theta)d\theta$. 
@@ -174,13 +174,18 @@ set.seed(1)
 	\[ \begin{array}{rl}
 	y_{ij} &\stackrel{ind}{\sim} N(\theta_i, \sigma^2) \pause \\
 	\theta_i &\stackrel{iid}{\sim} N(\mu,\tau^2) \pause \\
-	p(\mu,\tau) &\propto p(\mu|\tau)p(\tau)
+	
 	\end{array} \]
 	\pause with $j=1,\ldots,n_i$, $i=1,\ldots,\I$, and $n=\sum_{i=1}^J n_i$. \pause This is a normal hierarchical model. 
 	
 	\vspace{0.2in} \pause
 	
-	For the moment, we assume $\sigma^2=s^2$ is known for computational reasons.
+	Make the following assumptions for computational reasons:
+	\begin{itemize}
+	\item Let $\sigma^2=s^2$ be known.
+	\item Assume $p(\mu,\tau) &\propto p(\mu|\tau)p(\tau) \propto p(\tau)$, 
+	i.e. assume an improper uniform prior on $\mu$. 
+	\end{itemize}
 }
 
 \subsection{Posterior}
@@ -264,7 +269,10 @@ df = rbind(data.frame(group = factor(group),
 
 \begin{frame}[fragile]
 <<data_plot, dependson='data'>>=
-ggplot(df, aes(x=group, y=y, color=group)) + geom_point() + facet_wrap(~simulation)
+ggplot(df, aes(x=group, y=y, color=group)) + 
+  geom_point() + 
+  facet_wrap(~simulation) +
+  theme_bw()
 @
 \end{frame}
 
@@ -326,7 +334,10 @@ post = ddply(d_sum, .(simulation), function(d) {
          f = exp(V_tau_log_posterior(x, d$mean, d$sd^2)),
          p = f/(sum(f)*2*h))
 })
-ggplot(post, aes(x=x-h,y=p)) + geom_step() + facet_wrap(~simulation)
+ggplot(post, aes(x=x-h,y=p)) + 
+  geom_step() + 
+  facet_wrap(~simulation) +
+  theme_bw()
 @
 \end{frame}
 
@@ -384,7 +395,8 @@ ggplot(melt(ldply(res, function(l) { data.frame(tau=l$tau, mu=l$mu) }),
             id.vars = "simulation"), 
        aes(x=value)) +
   geom_histogram(aes(y=..density..), binwidth=0.1) +
-  facet_grid(simulation~variable, scales="free_x")
+  facet_grid(simulation~variable, scales="free_x") +
+  theme_bw()
 @
 \end{frame}
 
@@ -419,10 +431,11 @@ m$model = "hierarchical"
 \begin{frame}[fragile]
 \frametitle{Group-specific means}
 Recall $\theta_i \stackrel{ind}{\sim} N(\mu,\tau^2)$:
-<<theta, fig.width=8, echo=FALSE>>=
+<<theta, fig.width=8, echo=FALSE, dependson=c("data")>>=
 ggplot(rbind(m[,c(1,3,2,4)],independent), aes(x=value,fill=variable)) +
   geom_density(alpha=0.5) +
-  facet_grid(model~simulation)
+  facet_grid(model~simulation) +
+  theme_bw()
 @
 \end{frame}
 

@@ -97,8 +97,8 @@ set.seed(1)
   \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \]
   where 
   \begin{itemize}[<+->]
-  \item $n_i$ are the number of 3-pointers attempted in game $i$ and
-  \item $\theta_i$ is the probability of making a 3-pointer in game $i$.
+  \item $n_i$ are the number of 3-pointers attempted in \alert{game} $i$ and
+  \item $\theta_i$ is the probability of making a 3-pointer in \alert{game} $i$.
   \end{itemize}
   
   \vspace{0.2in} \pause
@@ -197,7 +197,9 @@ d = subset(d, opponent!="Total")
 	The joint posterior distribution of interest in hierarchical models is 
 {\small
 	\[ \begin{array}{rl}
-  p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause = p(y|\theta)p(\theta|\phi)p(\phi)\pause = \left[ \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi)\right] p(\phi). 
+  p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause = 
+  p(y|\theta)p(\theta|\phi)p(\phi)\pause = 
+  \Big[ \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi)\Big] p(\phi). 
   \end{array} \]
 }
 	\pause The joint posterior distribution can be decomposed via 
@@ -259,7 +261,8 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
 
 
 \subsection{Prior}
-\frame{\frametitle{A prior distribution for $\alpha$ and $\beta$}
+\begin{frame}
+\frametitle{A prior distribution for $\alpha$ and $\beta$}
   Recall the interpretation: \pause
   \begin{itemize}[<+->]
   \item $\alpha$: prior successes
@@ -281,28 +284,34 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
   \item $\mbox{logit } \mu = \log(\mu/[1-\mu]) = \log(\alpha/\beta)$
   \item $\log \eta$
   \end{itemize}
-}
+\end{frame}
 
-\frame{\frametitle{A prior distribution for $\alpha$ and $\beta$}
+\begin{frame}[fragile]
+\frametitle{A prior distribution for $\alpha$ and $\beta$}
   It seems reasonable to assume the mean ($\mu$) and size ($\eta$) are independent \emph{a priori}:
   \[ p(\mu,\eta) = p(\mu)p(\eta) \]
   
-  \vspace{0.2in} \pause
+    \vspace{0.1in} \pause
   
-<<informative_prior>>=
+<<informative_prior, echo=TRUE>>=
 a = 20
 b = 30
 m = 0
 C = 3
 @
   
+  \vspace{0.1in} \pause
+  
   Let's assume an informative prior for $\mu$ and $\eta$ \pause perhaps
   \begin{itemize}
   \item $\mu \sim Be(\Sexpr{a},\Sexpr{b})$
-  \item $\eta \sim LN(\Sexpr{m},\Sexpr{C})$
+  \item $\eta \sim LN(\Sexpr{m},\Sexpr{C}^2)$
   \end{itemize}
   \pause where $LN(\Sexpr{m},\Sexpr{C})$ is a log-normal distribution, i.e. $\log(\eta) \sim N(\Sexpr{m},\Sexpr{C})$.
-}
+  
+
+  
+\end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Prior draws}
