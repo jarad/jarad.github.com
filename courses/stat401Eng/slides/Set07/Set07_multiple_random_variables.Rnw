@@ -1,0 +1,378 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set07 - Multiple random variables}
+
+\begin{document}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=7, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+@
+
+<<set_seed>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+\section{Multiple random variables}
+\subsection{Discrete}
+\begin{frame}
+\frametitle{Multiple discrete random variables}
+
+Real problems very seldom concern a single random variable. As soon
+as more than 1 variable is involved it is not sufficient to think of
+modeling them only individually - their joint behavior is
+important.   
+
+\vspace{0.1in} \pause
+
+\begin{definition}
+If $X$ and $Y$ are two discrete variables. \pause
+Their \alert{joint probability mass function} is defined as
+\[
+p_{X,Y}(x,y) = P( X = x \cap Y = y) = P( X = x, Y = y) .
+\]
+% If $X\in \mathbb{R}^n$ is a discrete random vector. 
+% Its \alert{joint probability mass function} is defined as 
+% \[ 
+% p_X(x) = P(X=x) = P(X_1=x_1, X_2=x_2, \ldots, X_n=x_n).
+% \]
+\end{definition}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Example}
+A box contains 5 unmarked PowerPC G4 processors of different speeds:
+\begin{center}
+\begin{tabular}{cc}
+\# & speed\\
+\hline
+2 & 400 mHz \\
+1 & 450 mHz \\
+2 & 500 mHz
+\end{tabular}
+\end{center}
+\pause
+Select two processors out of the box (without replacement) and let
+\begin{itemize}
+\item $X$ be speed of the first selected processor
+\item $Y$ be speed of the second selected processor
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Example (cont.)}
+
+Enumerate all the equal probability events:
+
+\begin{center}
+\begin{tabular}{l|lccccc}
+	&	\multicolumn{5}{c}{1st processor ($X$)}\\
+&	$\Omega$ & $400_{1}$ & $400_{2}$ & $450$ & $500_{1}$ & $500_{2}$
+\\ \hline
+&	$400_{1} $ & - & x & x & x & x  \\
+&	$400_{2} $ & x & - & x & x & x  \\
+	2nd processor ($Y$) &	$450$ & x & x & - & x & x  \\
+&	$500_{1}$ &   x & x & x & - & x \\
+&	$500_{2}$ & x & x & x & x & -
+\end{tabular}
+\end{center}
+
+\pause
+
+Probability mass function:
+\begin{center}
+\begin{tabular}{ll|ccc}
+& & \multicolumn{3}{c}{1st processor ($X$)} \\
+ & mHz  & 400 & 450 & 500  \\ \hline
+&  400 & 2/20 & 2/20 & 4/20 \\
+2nd processor ($Y$) & 450 & 2/20 & 0/20 & 2/20 \\
+&  500  & 4/20 & 2/20 & 2/20
+\end{tabular}
+\end{center}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Example (cont.)}
+
+What is the probability of $X=Y$?
+
+\vspace{0.1in} \pause
+
+\[ \begin{array}{rl}
+P(X=Y) &= p_{X,Y}(400,400) + p_{X,Y}(450, 450) + p_{X,Y}(500,500) \\
+&= 2/20+0/20+2/20 = 4/20 = 0.2
+\end{array} \]
+
+\vspace{0.1in} \pause
+
+What is the probability of $X>Y$?
+
+\[ \begin{array}{rl}
+P(X>Y) &= p_{X,Y}(450,400) + p_{X,Y}(500, 400)+ p_{X,Y}(500, 450)  \\
+&= 2/20+4/20+2/20 = 8/20 = 0.4
+\end{array} \]
+
+\end{frame}
+
+
+
+\subsection{Marginal distribution}
+\begin{frame}
+\frametitle{Marginal distribution}
+
+\begin{definition}
+For discrete random variables $X$ and $Y$, the \alert{marginal probability mass functions} are 
+\[ \begin{array}{rl}
+p_X(x) &= \sum_y p_{X,Y}(x,y) \\
+p_Y(y) &= \sum_x p_{X,Y}(x,y) \\
+\end{array} \]
+\pause
+% For discrete random vector $X$, the \alert{marginal probability mass function} are 
+% \[ 
+% \begin{array}{rl}
+% p_
+% \end{array} \]
+\end{definition}
+
+\pause
+
+In the CPU example, we have 
+    \[
+    \begin{array}{c||ccc}
+	x & 400 & 450 & 500 \text{ (mHz)} \\ \hline
+	p_{X}(x) & 0.4 & 0.2 & 0.4 \\
+    \end{array} \]
+    
+    \[ 
+    \begin{array}{c||ccc}
+	y & 400 & 450 & 500 \text{ (mHz)} \\ \hline
+	p_{Y}(y) & 0.4 & 0.2 & 0.4 \\
+    \end{array}
+    \]
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Expectation}
+
+\begin{definition}
+The \alert{expected value} of a function $h(x,y)$ is 
+\[ 
+E[h(X,Y)] = \sum_{x,y} h(x,y) p_{X,Y}(x,y).
+\]
+\end{definition}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Example (cont.)}
+
+What is $E[|X-Y|]$ (the average speed difference)?
+
+\vspace{0.1in} \pause
+
+Here, we have the situation $E[|X-Y|] = E[h(X,Y)]$, with $h(X,Y) = |X - Y|$.
+Thus, we have 
+\[ \begin{array}{rcl}
+	E[|X-Y|] &=& \sum_{x,y} |x-y| p_{X,Y}(x,y) = \pause \\ \\
+	&=& |400 - 400| \cdot 0.1 + |400 - 450| \cdot 0.1 + |400 - 500| \cdot
+	0.2 \\
+	&+& |450 - 400| \cdot 0.1 + |450 - 450| \cdot 0.0 + |450 - 500| \cdot
+	0.1 \\
+	&+& |500 - 400| \cdot 0.2 + |500 - 450| \cdot 0.1 +  |500 - 500| \cdot
+	0.1 \pause \\ \\
+	&=& 0 + 5 + 20 + 5 + 0 + 5 + 20 + 5 + 0 = 60.
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Covariance}
+
+The most important cases for $h(X,Y)$ in this context are linear combinations of $X$ and $Y$. \pause
+
+\begin{definition}
+The \alert{covariance} between two random variables $X$ and $Y$ is
+\[ Cov(X,Y) = E[ (X-E[X]) (Y-E[Y]) ].\]
+\end{definition}
+\pause
+This definition looks very much like the definition for the variance of a single random variable. \pause
+In fact, if we set $Y = X$ in the above definition, then $Cov (X,X) = Var(X)$.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Correlation}
+\begin{definition}
+The \alert{correlation} between two variables $X$ and $Y$ is
+\[ 
+\rho = \frac{Cov(X,Y)}{\sqrt{Var(X) \cdot Var(Y)}}.
+\]
+\end{definition}
+\pause
+
+Properties:
+\begin{itemize}
+\item $\rho$ is between -1 and 1 \pause
+\item if $\rho$ = 1 or -1, $Y$ is  a linear function of $X$ \pause
+    \begin{tabular}{ll}
+	$\rho = \phantom{-}1$ & $\rightarrow Y = aX + b$ with $a > 0$, \\
+	$\rho = -1$ & $\rightarrow Y = aX + b$ with $a < 0$, \\
+    \end{tabular} \pause
+\item $\rho$ is a measure of linear association between $X$ and $Y$ \pause
+\item $\rho$ near $\pm 1$ indicates a strong linear relationship, $\rho$
+near 0 indicates lack of linear association.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Example (cont.)}
+
+What is $\rho(X,Y)$ in our box with five chips? 
+
+\vspace{0.1in} \pause
+
+Use marginal pmfs to compute:
+\begin{itemize}
+\item $E[X] = E[Y] = 450$ \pause
+\item $Var[X] = Var[Y] = 2000$ \pause
+\end{itemize}
+\pause
+The covariance between $X$ and $Y$ is:
+{\small
+\[ \begin{array}{rcl}
+Cov(X,Y) &=& \sum_{x,y} (x-E[X])(y-E[Y]) p_{X,Y}(x,y) = \\
+&=& (400 - 450)(400-450) \cdot 0.1 + (450 - 450)(400-450) \cdot 0.1+\\
+&& \cdots +   (500-450)(500-450) \cdot 0.1 \\
+&=& 250 + 0 - 500 + 0 + 0 + 0 -500 + 250 + 0 = -500.
+\end{array} \]
+}
+\pause
+The correlation there is 
+    \[
+    \rho = \frac{Cov(X,Y)}{\sqrt{Var(X) Var(Y)}} =
+    \frac{-500}{2000} = -0.25,
+    \]
+    \pause
+and thus there is a weak negative (linear) association.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Example (cont.)} 
+
+\begin{definition}
+Two discrete random variables are \alert{independent} if 
+\[ 
+P(X=x,Y=y) = P(X=x)P(Y=y).
+\]
+\end{definition}
+\pause
+
+
+Are $X$ and $Y$ independent? 
+
+\vspace{0.1in} \pause
+
+Intuition: No, since if we know $X$ then it will change what we think about $Y$. 
+
+\vspace{0.2in} \pause
+
+Definition: independence if $p_{x,y}(x,y) = p_X(x)p_Y(y)$ for all $x$ and $y$. \pause
+
+\vspace{0.1in} \pause
+
+Since 
+\[ 
+p_{X,Y}(450,450) = 0 \neq 0.2 \cdot 0.2 = p_{X}(450) \cdot p_{Y}(450)
+\]
+they are {\bf not} independent. 
+
+\end{frame}
+
+
+\subsection{Continuous random variables}
+\begin{frame}
+\frametitle{Continuous random variables}
+\small
+
+All the properties have continuous analogs. \pause
+
+\begin{definition}
+Suppose $X$ and $Y$ are two continuous random variables with \alert{joint probability density function} $p_{X,Y}(x,y)$. \pause
+Then the \alert{marginal probability density functions} are 
+\[ \begin{array}{rl}
+p_X(x) &= \int p_{X,Y}(x,y) dy \\
+p_Y(y) &= \int p_{X,Y}(x,y) dx.
+\end{array} \]
+\pause
+Two continuous random variables are \alert{independent} if 
+\[ 
+p_{X,Y}(x,y) = p_X(x)p_Y(y).
+\]
+\pause
+The expected value is 
+\[ 
+E[h(X,Y)] = \int \int p_{X,Y}(x,y) dx dy.
+\]
+
+\end{definition}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Properties of variances and covariances}
+
+For any random variables $X$, $Y$, $W$ and $Z$,
+\[ \begin{array}{rl}
+Var(aX+bY+c) &= a^2 Var(X) + b^2Var(Y) + 2ab Cov(X,Y) \pause \\
+Cov(aX+bY,cZ+dW) &= acCov(X,Z) + adCov(X,W) \\
+&+ bc Cov(Y,Z) + bd Cov(Y,W) \pause \\
+Cov(X,Y) &= Cov(Y,X) \\
+\rho(X,Y) &= \rho(Y,X)
+\end{array} \]
+
+\pause
+If $X$ and $Y$ are independent, then 
+\[ \begin{array}{rl}
+Cov(X,Y) &= 0 \\
+Var(X+Y) &= Var(X) + Var(Y).
+\end{array} \]
+
+\end{frame}
+
+\end{document}
