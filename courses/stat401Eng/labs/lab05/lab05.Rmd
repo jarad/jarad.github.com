@@ -1,0 +1,195 @@
+---
+title: "Lab05 - Bayesian parameter estimation in R"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+To follow along, use the [lab05 code](lab05.R).
+
+## Parameter estimation
+
+Recall that estimators have the properties
+
+- [Bias](https://en.wikipedia.org/wiki/Bias_of_an_estimator)
+- [Consistency](https://en.wikipedia.org/wiki/Consistent_estimator)
+
+### Bias
+
+The bias of an estimator is the expected value of the estimator minus the true
+value. 
+Generally, we don't know the true value, but we can simulate data with a known 
+truth.
+We can estimate the bias, by performing repeated simulations and taking the 
+average value of the estimator across those simulations.
+This average value is an estimate of the expected value.
+If we take enough values in the average, then the Central Limit Theorem tells 
+us the distribution of this average. 
+Specifically
+
+\[\overline{x} \sim N(\mu,\sigma^2/n)\]
+where $\mu=E[\overline{x}]$ and we estimate $\sigma^2$ with the sample variance.
+
+#### Binomial model
+
+Let's let $y_i\stackrel{ind}{\sim} Bin(n,\theta)$. 
+Recall that the MLE is $\hat{\theta}_{MLE} = \frac{y_i}{n}$.
+If we assume the prior $\theta \sim Be(a,b)$, then the posterior is 
+$\theta|y \sim Be(a+y_i,b+n-y_i)$
+and the posterior expectation is 
+\[ \hat{\theta}_{Bayes} = E[\theta|y] = \frac{a+y_i}{a+b+n}. \] 
+
+Now we are going to use simulations, i.e. Monte Carlo, to estimate the bias 
+of the MLE and Bayes estimator. 
+To do this, we are going to repeatedly 
+
+1. simulate binomial random variables with $n=10$ and $\theta=0.5$,
+2. compute the MLE and Bayes estimator
+
+Then we will 
+
+1. take an average of all the MLE estimates and subtract 0.5
+2. take an average of all the Bayes estimates and subtract 0.5
+
+
+```{r}
+n <- 10
+theta <- 0.5
+
+n_reps <- 1e4
+mle <- numeric(n_reps)
+bayes <- numeric(n_reps)
+
+for (i in 1:n_reps) {
+  y <- rbinom(1, size = n, prob = theta)
+  mle[i] <- y/n
+  bayes[i] <- (1+y)/(2+n)
+}
+
+
+mean(mle)  -0.5 # estimate of MLE bias
+mean(bayes)-0.5 # estimate of Bayes bias
+```
+Now, we probably want some idea of how close we are to the true bias.
+We will use the CLT. 
+\[ \overline{\hat{\theta}} \pm z_{0.025} SE(\overline{\hat{\theta}}) \]
+where the $SE(\overline{\hat{\theta}})$ is estimated by the sample standard 
+deviation of $\hat{\theta}$ divided by the square root of the number of values
+in the average, i.e. the sample size.
+The formula is then 
+\[ \overline{\hat{\theta}} \pm z_{0.025} s_{\hat{\theta}}/\sqrt{n} \]
+
+```{r}
+mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
+mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
+```
+
+We could have written the code a bit more succinctly (and, perhaps, obtusely).
+
+```{r}
+y <- rbinom(n_reps, size = n, prob = theta)
+mle   <- y/n
+bayes <- (1+y)/(2+n)
+
+mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
+mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
+```
+
+
+
+#### Binomial bias activity
+
+Repeat the simulation procedure we had above, but using $n=5$ and $\theta=0.2$.
+What do you find for the bias of the MLE and the Bayes estimator?
+
+<div id="binomial_bias_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+n <- 5
+theta <- 0.2
+
+y <- rbinom(n_reps, size = n, prob = theta)
+mle   <- y/n
+bayes <- (1+y)/(2+n)
+
+mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
+mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
+```
+So the Bayes estimator appears to be quite biased.
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('binomial_bias_activity_solution') .style.display=='none') {document.getElementById('binomial_bias_activity_solution') .style.display=''}else{document.getElementById('binomial_bias_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+#### Binomial bias simulation study
+
+Let's study what happens to the bias of the Bayes estimator as we change $n$ 
+and $\theta$. 
+The following will look at $n=1,10,100,1000$ and $\theta$ from $0$ to $1$ in 
+increments of 0.1. 
+
+```{r}
+settings <- expand.grid(n = 10^(0:3),
+                        theta = seq(0,1,by=0.1))
+```
+
+We will use the [plyr](https://cran.r-project.org/web/packages/plyr/index.html)
+to help us iterate over all of these values of $n$ and $\theta$. 
+If the `plyr` package isn't installed, you will need to install it using the
+command below:
+
+```{r, eval=FALSE}
+install.packages("plyr")
+```
+
+Then make sure to load the package using 
+
+```{r}
+library("plyr")
+```
+
+The `plyr` package has a function called `ddply` which expects a `data.frame` 
+as input (thus the first d) and returns a `data.frame` as output (thus the 
+second d).
+
+Check the help file to learn about the function.
+
+```{r, eval=FALSE}
+?plyr
+```
+
+We will use the first three arguments to loop over $n$ and $\theta$ and to 
+perform our simulation study. 
+
+```{r}
+sim_study <- ddply(settings, .(n, theta), function(x) {
+  y     <- rbinom(1e4, size = x$n, prob = x$theta)
+  mle   <- y/x$n
+  bayes <- (1+y)/(2+x$n)
+  
+  d <- data.frame(
+    estimator = c("mle", "bayes"),
+    bias      = c(mean(mle), mean(bayes)) - x$theta,
+    se        = c(sd(  mle), sd(  bayes)) / sqrt(x$n))
+  
+  d$lower <- d$bias-qnorm(.975)*d$se
+  d$upper <- d$bias+qnorm(.975)*d$se
+  
+  return(d)
+})
+```
+
+To plot this, we will use the 
+[ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html)
+package which you may need to install.
+
+```{r}
+library("ggplot2")
+
+ggplot(sim_study, aes(x=theta, y=bias, color=estimator)) +
+  geom_line() +
+  facet_wrap(~n) + 
+  theme_bw()
+```
+
+
+
