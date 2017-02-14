@@ -8,6 +8,56 @@ output: html_document
 
 To follow along, use the [lab05 code](lab05.R).
 
+## Binomial probability of success estimation
+
+Let's let $y_i\stackrel{ind}{\sim} Bin(n,\theta)$. 
+Recall that the MLE is $\hat{\theta}_{MLE} = \frac{y_i}{n}$.
+If we assume the prior $\theta \sim Be(a,b)$, then the posterior is 
+$\theta|y \sim Be(a+y_i,b+n-y_i)$
+and the posterior expectation is 
+\[ \hat{\theta}_{Bayes} = E[\theta|y] = \frac{a+y_i}{a+b+n}. \] 
+
+Suppose you randomly sample 22 buildings in Ames and find that 15 of them are 
+residential buildings.
+Then the MLE for the probability of a building in Ames being residential is 
+```{r}
+n <- 22
+y <- 15
+(mle <- y/n)
+```
+the Bayes estimator is 
+```{r}
+(bayes <- (1+y)/(2+n))
+```
+and a 95\% credible interval is 
+
+```{r}
+qbeta(c(.025,.975), 1+y, 1+n-y)
+```
+
+#### Binomial posterior activity
+
+Suppose that you take a larger sample of buildings and find that out of 
+222 buildings 135 of them are residential. 
+Calculate the MLE, Bayes estimator, and a 90\% interval for the probability of 
+a house in Ames being residential.
+
+<div id="copypaste_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+n <- 22
+y <- 15
+(mle <- y/n)
+(bayes <- (1+y)/(2+n))
+qbeta(c(.05,.95), 1+y, 1+n-y) 
+```
+Can you calculate a posterior median?
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('copypaste_activity_solution') .style.display=='none') {document.getElementById('copypaste_activity_solution') .style.display=''}else{document.getElementById('copypaste_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+
+
 ## Parameter estimation
 
 Recall that estimators have the properties
@@ -33,14 +83,7 @@ where $\mu=E[\overline{x}]$ and we estimate $\sigma^2$ with the sample variance.
 
 #### Binomial model
 
-Let's let $y_i\stackrel{ind}{\sim} Bin(n,\theta)$. 
-Recall that the MLE is $\hat{\theta}_{MLE} = \frac{y_i}{n}$.
-If we assume the prior $\theta \sim Be(a,b)$, then the posterior is 
-$\theta|y \sim Be(a+y_i,b+n-y_i)$
-and the posterior expectation is 
-\[ \hat{\theta}_{Bayes} = E[\theta|y] = \frac{a+y_i}{a+b+n}. \] 
-
-Now we are going to use simulations, i.e. Monte Carlo, to estimate the bias 
+Let's use simulations, i.e. Monte Carlo, to estimate the bias 
 of the MLE and Bayes estimator. 
 To do this, we are going to repeatedly 
 
@@ -169,10 +212,11 @@ sim_study <- ddply(settings, .(n, theta), function(x) {
   d <- data.frame(
     estimator = c("mle", "bayes"),
     bias      = c(mean(mle), mean(bayes)) - x$theta,
-    se        = c(sd(  mle), sd(  bayes)) / sqrt(x$n))
+    var       = c(var(  mle), var(  bayes)))
   
-  d$lower <- d$bias-qnorm(.975)*d$se
-  d$upper <- d$bias+qnorm(.975)*d$se
+  # d$se    <- sqrt(d$var / x$n)
+  # d$lower <- d$bias-qnorm(.975)*d$se
+  # d$upper <- d$bias+qnorm(.975)*d$se
   
   return(d)
 })
@@ -191,5 +235,55 @@ ggplot(sim_study, aes(x=theta, y=bias, color=estimator)) +
   theme_bw()
 ```
 
+But the variance of the Bayes estimator is smaller than the variance of the 
+MLE estimator.
+
+```{r}
+library("ggplot2")
+
+ggplot(sim_study, aes(x=theta, y=var, color=estimator)) +
+  geom_line() +
+  facet_wrap(~n) + 
+  theme_bw()
+```
+
+Thus, we often use a new property of an estimator called the 
+[mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error):
+\[ MSE(\hat{\theta}) = 
+E[(\hat\theta-\theta)^2] = 
+Var(\hat{\theta}) + Bias(\hat{\theta},\theta)^2 \]
+
+```{r}
+sim_study$mse <- sim_study$var + sim_study$bias^2
+
+ggplot(sim_study, aes(x=theta, y=mse, color=estimator)) +
+  geom_line() +
+  facet_wrap(~n) + 
+  theme_bw()
+```
 
 
+#### Binomial MSE activity
+
+Calculate an estimate of the MSE for the MLE and Bayes estimators for a 
+binomial probability of success when $n=13$ and $\theta=0.05$.
+
+<div id="binomial_mse_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+n <- 13
+theta <- 0.05
+
+y     <- rbinom(1e4, size = n, prob = theta)
+mle   <- y/n
+bayes <- (1+y)/(2+n)
+
+var(mle  ) + mean(mle  -theta)^2
+var(bayes) + mean(bayes-theta)^2
+
+# alternatively
+mean( (mle   - theta)^2 )
+mean( (bayes - theta)^2 )
+```
+Why does the alternative approach give the same answer?
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('binomial_mse_activity_solution') .style.display=='none') {document.getElementById('binomial_mse_activity_solution') .style.display=''}else{document.getElementById('binomial_mse_activity_solution') .style.display='none'}">Show/Hide Solution</button>
