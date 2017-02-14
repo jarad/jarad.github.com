@@ -98,6 +98,7 @@ ggplot(d, aes(x=xx,y=yy,col=type, linetype=type)) +
   geom_line() +
   facet_wrap(~n, scales='free') + 
   labs(x=expression(theta), y=expression(paste("p(",theta,"|y)"))) +
+  theme_bw() +
   theme(legend.position="bottom")
 @
 \end{frame}
@@ -173,6 +174,7 @@ df = data.frame(x = seq(0,20-h, by=h)+h/2) %>%
 ggplot(df, aes(x, density, color=variable, linetype=variable, group=variable)) +
   geom_line() + 
   facet_wrap(~Distribution, scales='free') +
+  theme_bw() + 
   theme(legend.position="bottom")
 @
 \end{frame}
@@ -307,6 +309,7 @@ if (id==20) {
 ggplot(rep, aes(x=fatal_accidents, fill=factor(1))) + 
   geom_histogram(binwidth=1) +
   facet_wrap(~.n) +
+  theme_bw() +
   theme(legend.position="none")
 @
 \end{frame}
@@ -318,6 +321,7 @@ ggplot(rep, aes(x=fatal_accidents, fill=factor(1))) +
 ggplot(rep, aes(x=fatal_accidents, fill=.n==id)) + 
   geom_histogram(binwidth=1) +
   facet_wrap(~.n) +
+  theme_bw() +
   theme(legend.position="none")
 @
 \end{frame}
@@ -354,6 +358,7 @@ rep$.n[rep$.n==21    ] = id
 g = ggplot(rep, aes(x=year, y=fatal_accidents, col=factor(1))) + 
   geom_point() + 
   facet_wrap(~.n) +
+  theme_bw() +
   theme(legend.position="none")
 g
 @
@@ -435,7 +440,9 @@ observed_slope = coefficients(lm(fatal_accidents~year,d))[2]
 \begin{frame}[fragile]
 <<slope_plot, dependson="slope", fig.width=8, echo=TRUE>>=
 mean(rep$beta1>observed_slope) 
-ggplot(rep, aes(x=beta1)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=observed_slope, color="red")
+ggplot(rep, aes(x=beta1)) + geom_histogram(binwidth=0.1) + 
+  geom_vline(xintercept=observed_slope, color="red") +
+  theme_bw()
 @
 \end{frame}
 
@@ -474,14 +481,14 @@ data {
 }
 transformed data {
   vector[n] log_x;
-  log_x <- log(x); # both x and logx need to be vectors 
+  log_x = log(x); # both x and logx need to be vectors 
 }
 parameters {
   real beta[2];
 }
 transformed parameters {
   vector[n] log_lambda;
-  for (i in 1:n) log_lambda[i] <- beta[1] + beta[2]*i;
+  for (i in 1:n) log_lambda[i] = beta[1] + beta[2]*i;
 }
 model {
   y ~ poisson_log(log_x + log_lambda); # _log indicates mean on log scale
@@ -522,7 +529,8 @@ mean(rep_slopes>observed_slope)
 <<fig.width=8, dependson='stan_rep'>>=
 ggplot(data.frame(slopes=rep_slopes), aes(x=slopes)) + 
   geom_histogram(binwidth=0.1) + 
-  geom_vline(xintercept = observed_slope, color='red')
+  geom_vline(xintercept = observed_slope, color='red') +
+  theme_bw()
 @
 \end{frame}
 
