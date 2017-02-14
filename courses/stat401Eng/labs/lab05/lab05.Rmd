@@ -44,8 +44,8 @@ a house in Ames being residential.
 
 <div id="binomial_posterior_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
-n <- 22
-y <- 15
+n <- 222
+y <- 153
 (mle <- y/n)
 (bayes <- (1+y)/(2+n))
 qbeta(c(.05,.95), 1+y, 1+n-y) 
@@ -125,7 +125,7 @@ We will use the CLT.
 where the $SE(\overline{\hat{\theta}})$ is estimated by the sample standard 
 deviation of $\hat{\theta}$ divided by the square root of the number of values
 in the average, i.e. the sample size.
-The formula is then 
+The formula for a 95% interval is then 
 \[ \overline{\hat{\theta}} \pm z_{0.025} s_{\hat{\theta}}/\sqrt{n} \]
 
 ```{r}
@@ -270,24 +270,32 @@ ggplot(sim_study, aes(x=theta, y=mse, color=estimator)) +
 
 #### Binomial MSE activity
 
-Calculate an estimate of the MSE for the MLE and Bayes estimators for a 
-binomial probability of success when $n=13$ and $\theta=0.09$.
+Generate a curve for the MSE for the MLE and Bayes estimators for a 
+binomial probability of success when $n=13$ for various values of $\theta$.
 
 <div id="binomial_mse_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
-n <- 13
-theta <- 0.09
+settings <- expand.grid(n = 13,
+                        theta = seq(0,1,by=0.1))
 
-y     <- rbinom(1e4, size = n, prob = theta)
-mle   <- y/n
-bayes <- (1+y)/(2+n)
+sim_study <- ddply(settings, .(n, theta), function(x) {
+  y     <- rbinom(1e4, size = x$n, prob = x$theta)
+  mle   <- y/x$n
+  bayes <- (1+y)/(2+x$n)
+  
+  d <- data.frame(
+    estimator = c("mle", "bayes"),
+    bias      = c(mean(mle), mean(bayes)) - x$theta,
+    var       = c(var( mle), var( bayes)))
+  d$mse <- d$var + d$bias^2
+  
+  return(d)
+})
 
-var(mle  ) + mean(mle  -theta)^2
-var(bayes) + mean(bayes-theta)^2
-
-# alternatively
-mean( (mle   - theta)^2 )
-mean( (bayes - theta)^2 )
+ggplot(sim_study, aes(x=theta, y=mse, color=estimator)) +
+  geom_line() +
+  facet_wrap(~n) + # This line isn't necessary
+  theme_bw()
 ```
 Why does the alternative approach give the same answer?
 </div> 
@@ -457,6 +465,9 @@ Now try with $\theta=0.01$.
 Let's now look at coverage across a wide range of $n$ and $\theta$. 
 
 ```{r}
+settings <- expand.grid(n = 10^(0:3),
+                        theta = seq(0,1,by=0.1))
+
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n

@@ -143,6 +143,9 @@ p <- mean( lower < theta & theta < upper)
 p + c(-1,1)*qnorm(.975)*sqrt(p*(1-p)/n_reps)
 
 ## ------------------------------------------------------------------------
+settings <- expand.grid(n = 10^(0:3),
+                        theta = seq(0,1,by=0.1))
+
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
