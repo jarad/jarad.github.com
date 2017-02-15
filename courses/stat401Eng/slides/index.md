@@ -8,7 +8,10 @@ tagline: slides
 Below are source (Rnw) and handouts for all course lectures. 
 Instructions for compiling the Rnw files can be found below.
 
-## Chapter slide source files
+## Chapter slide set files
+
+If the files are ever not available here, 
+you should be able to find them [here](https://github.com/jarad/jarad.github.com/tree/master/courses/stat401Eng/slides).
 
 ### Probability
 
