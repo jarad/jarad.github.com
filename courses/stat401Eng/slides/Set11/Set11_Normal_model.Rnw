@@ -1,0 +1,377 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set 11 - Normal model}
+
+% \newenvironment{remark}[1][Remark]{\begin{trivlist}
+% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Outline}
+\begin{itemize}
+\item Normal model with known variance
+\item Normal model with known mean
+\item Normal model
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+\section{Normal model with known variance}
+\begin{frame}
+\frametitle{Normal model with known variance}
+
+Suppose $Y_i \ind N(\mu,s^2)$ and we assume the default prior $p(\mu)\propto 1$. 
+
+\vspace{0.1in} \pause
+
+This ``prior'' is actually not a distribution at all, since its integral is not
+finite. \pause Nonetheless, we can still use it to derive a posterior. 
+
+\vspace{0.1in} \pause
+
+If you work through the math (lots of algebra and a little calculus), 
+\pause 
+you will find 
+\[ 
+\mu|y \sim N(\overline{y}, s^2/n).
+\]
+\pause
+This looks exactly like the likelihood, but now it is normalized, i.e. it 
+integrates to 1 and therefore it is a valid probability density function.
+
+\vspace{0.1in} \pause
+
+The Bayes estimator is 
+\[ 
+E[\mu|y] = \pause \overline{y}.
+\]
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE, fig.height=4>>=
+n <- 9
+y <- rnorm(n) # default is mean is 0 and sd is 1
+curve(dnorm(x, mean = mean(y), sd = sqrt(1/n)), -2, 2, 
+      xlab = expression(mu),
+      ylab = expression(paste("p(",mu,"|y)")),
+      main = "Posterior")
+abline(v=mean(y), col='red')
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+
+We can obtain credible intevals directly.
+<<echo=TRUE>>=
+a <- .05
+qnorm(c(a/2,1-a/2), mean(y), sd = sqrt(1/n))
+@
+
+Or we can use the fact that 
+\[ 
+\frac{\mu-\overline{y}}{s/\sqrt{n}} \pause = Z \sim N(0,1)
+\]
+to construct the interval using 
+\[ 
+\overline{y} \pm z_{.025} s/\sqrt{n}
+\]
+where $a = \int_{z_a}^{\infty} \frac{1}{\sqrt{2\pi}}e^{-x^2/2} dx$, 
+i.e. the area to the right of $z_a$ under the pdf of a standard normal is $a$.
+
+\pause
+
+<<echo=TRUE>>=
+mean(y) + c(-1,1)*qnorm(.975)*sqrt(1/n)
+@
+
+\end{frame}
+
+
+
+\subsection{Normal model with known mean}
+\begin{frame}
+\frametitle{Normal model with known mean}
+
+Suppose $Y_i \ind N(m,\sigma^2)$ and we assume the default prior 
+$p(\sigma^2)\propto \frac{1}{\sigma^2} \I(\sigma^2>0)$. 
+
+\vspace{0.1in} \pause
+
+Again, this ``prior'' is actually not a distribution at all, 
+since its integral is not
+finite. 
+\pause 
+Nonetheless, we can still use it to derive a posterior. 
+
+\vspace{0.1in} \pause
+
+If you work through the math (lots of algebra and a little calculus), 
+\pause 
+you will find 
+\[ 
+\sigma^2|y \sim IG\left(\frac{n}{2}, \frac{\sum_{i=1}^n(y_i-m)^2}{2}\right)
+\]
+\pause
+where $IG$ indicates an \href{https://en.wikipedia.org/wiki/Inverse-gamma_distribution}{inverse gamma} distribution.
+
+\vspace{0.1in} \pause
+
+The Bayes estimator is 
+\[ 
+E[\sigma^2|y] = \frac{\frac{\sum_{i=1}^n(y_i-m)^2}{2}}{\frac{n}{2}-1} =
+\frac{\sum_{i=1}^n(y_i-m)^2}{n-2}
+\mbox{ for }n>2
+\]
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<echo=TRUE, fig.height=4>>=
+s <- sum((y-0)^2)
+curve(MCMCpack::dinvgamma(x, shape = n/2, scale = s/2), 0, 4,
+      xlab = expression(sigma^2),
+      ylab = expression(paste("p(",sigma^2,"|y)")),
+      main = "Posterior")
+abline(v = (s/2)/((n/2)-1), col='red')
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+
+We don't have a quantile function for this inverse gamma distribution.
+\pause
+So we'll obtain estimates of the interval endpoints by taking a bunch of 
+simulated draws from the inverse gamma distribution and finding their sample
+quantiles.
+
+<<echo=TRUE>>=
+draws <- MCMCpack::rinvgamma(1e5, shape = s/2, scale = n/2)
+quantile(draws, c(a/2, 1-a/2))
+@
+
+If you don't have the MCMCpack library, you can draw from the gamma distribution and 
+then invert the draws. 
+\pause
+It is slightly confusing because the `scale` parameter for the inverse gamma
+is the `rate` parameter for the gamma.
+
+<<echo=TRUE>>=
+draws <- rgamma(1e5, shape = s/2, rate = n/2)
+quantile( 1/draws, c(a/2, 1-a/2))
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Normal model}
+
+\small
+
+Suppose $Y_i \ind N(\mu,\sigma^2)$ and we assume the default prior 
+$p(\mu,\sigma^2)\propto \frac{1}{\sigma^2} \I(\sigma^2>0)$. 
+
+\vspace{0.1in} \pause
+
+Again, this ``prior'' is actually not a distribution at all, 
+since its integral is not finite. 
+\pause 
+Nonetheless, we can still use it to derive a posterior. 
+
+\vspace{0.1in} \pause
+
+If you work through the math (lots of algebra and a little calculus), 
+\pause 
+you will find 
+\[ \begin{array}{rl}
+\mu|\sigma^2,y &\sim N(\overline{y}, \sigma^2/n) \\
+\sigma^2|y &\sim IG\left(\frac{n-1}{2}, \frac{\sum_{i=1}^n(y_i-\overline{y})^2}{2}\right)
+\end{array} \]
+\pause
+
+The joint posterior is obtained using 
+\[ 
+p(\mu,\sigma^2|y) = p(\mu|\sigma^2,y)p(\sigma^2|y).
+\]
+
+\vspace{0.1in} \pause
+
+The Bayes estimator is
+\[ \begin{array}{rl}
+E[\mu|y] &= \overline{y} \\
+E[\sigma^2|y] &= \frac{\frac{\sum_{i=1}^n(y_i-\overline{y})^2}{2}}{\frac{n-1}{2}-1} =
+\frac{\sum_{i=1}^n(y_i-\overline{y})^2}{n-3}
+\mbox{ for }n>3
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Focusing on $\mu$}
+
+Typically, the main quantity of interest in the normal model is the mean, $\mu$.
+\pause
+Thus, we are typically interested in marginal posterior for $\mu$: 
+\pause
+\[
+p(\mu|y) = \pause \int p(\mu|\sigma^2,y)p(\sigma^2|y) d\sigma^2.
+\]
+\pause
+If 
+\[
+\mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) \quad \mbox{and} \quad
+\sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{\sum_{i=1}^n(y_i-\overline{y})^2}{2}\right),
+\]
+then 
+\[ 
+\mu|y \sim t_{n-1}(\overline{y}, S^2/n) \quad \mbox{where} \quad
+S^2 = \frac{1}{n-1}\sum_{i=1}^n (y_i-\overline{y})^2
+\]
+\pause 
+that is, $\mu|y$ has a $t$ distribution with $n-1$ degrees of freedom, location
+parameter $\overline{y}$ and scale parameter $S^2/n$.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{$t$ distribution}
+
+\begin{definition}
+A $t$ distributed random variable, $T\sim t_v(m,s^2)$ has probability density function
+\[ f_T(t) = \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}s}\left(1+\frac{1}{v}\left[\frac{x-m}{s}\right]^2\right)^{-(v+1)/2} \]
+\pause
+with degrees of freedom $v$, location $m$, and scale $s^2$.
+\pause
+It has 
+\[ \begin{array}{rll}
+E[T] &= m & v>1 \\
+Var[T] &= s^2 \frac{v}{v-2} & v>2.
+\end{array} \]
+\pause
+In addition, 
+\[ 
+t_v(m,s^2) \stackrel{d}{\to} N(m,s^2) \quad \mbox{as} \quad 
+v\to\infty.
+\]
+
+\end{definition}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{$t$ distribution as $v$ changes}
+<<t_distribution, fig.height=4.5, warning=FALSE>>=
+dtms = function(x,v,m=0,s=1) dt((x-m)/s,v)/s
+#opar = par(mar=c(5,4,0,0)+.1, mfrow=c(1,2))
+
+d = ddply(data.frame(v=c(1,10,100)), .(v), function(x) {
+  data.frame(t = seq(-3,6,by=.1)) %>%
+    mutate(density = dtms(t, x$v))
+})
+d$v = factor(d$v)
+
+ggplot(d, aes(x=t,y=density, group=v, linetype=v, color=v)) +
+  geom_line() + 
+  theme(legend.position='bottom') +
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+
+In R, there is no way to obtain $t$ credible intervals directly.
+\pause
+Thus we can use the fact that 
+\[ 
+\frac{\mu-\overline{y}}{S/\sqrt{n}} \pause = t \sim t_{n-1}(0,1)
+\]
+to construct the interval using 
+\[ 
+\overline{y} \pm t_{n-1,.025} S/\sqrt{n}
+\]
+where the area to the right of $t_{n-1,a}$ under the pdf of a 
+standard $t$ is $a$.
+
+\pause
+
+<<echo=TRUE>>=
+mean(y) + c(-1,1)*qt(.975, df=n-1)*sd(y)/sqrt(n)
+@
+
+\end{frame}
+
+
+% \begin{frame}
+% \frametitle{Corn yield}
+% 
+% In evaluating corn yield for a particular year, 
+% the yield on a number of fields is measured. \pause
+% (For simplicity, assume that fields are standardized in size.)
+% \pause
+% We measure 100 randomly selected fields in Iowa and 
+% find the average is 198 bushels per acre and the 
+% sample standard deviation is 20 bushels per acre. 
+% \pause
+% Provide a 95\% credible interval for the 
+% 
+% 
+% 
+% \end{frame}
+
+
+
+\end{document}
