@@ -51,6 +51,29 @@ set.seed(2)
 
 
 
+\begin{frame}
+\frametitle{Corn yield}
+
+For the following examples, we will consider measuring corn yield 
+on fields. 
+We will base our analyses of the following values:
+\begin{itemize}
+\item Mean yield per field is 200 bushels per acre
+\item Standard deviation of yield per field is 20 bushels per acre
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+In the following analyses, we will be assuming
+\begin{itemize}
+\item Mean is unknown while SD is known to be 20
+\item Mean is known to be 200 while SD is unknown
+\item Both are mean and standard deviation are unknown
+\end{itemize}
+
+\end{frame}
+
+
 
 
 \section{Normal model with known variance}
@@ -88,9 +111,11 @@ E[\mu|y] = \pause \overline{y}.
 
 \begin{frame}[fragile]
 <<echo=TRUE, fig.height=4>>=
+m <- 200
+s <- 20
 n <- 9
-y <- rnorm(n) # default is mean is 0 and sd is 1
-curve(dnorm(x, mean = mean(y), sd = sqrt(1/n)), -2, 2, 
+y <- rnorm(n, mean = m, sd = s)
+curve(dnorm(x, mean = mean(y), sd = s/sqrt(n)), mean(y)-3*s/sqrt(n), mean(y)+3*s/sqrt(n), 
       xlab = expression(mu),
       ylab = expression(paste("p(",mu,"|y)")),
       main = "Posterior")
@@ -171,19 +196,19 @@ E[\sigma^2|y] = \frac{\frac{\sum_{i=1}^n(y_i-m)^2}{2}}{\frac{n}{2}-1} =
 \begin{frame}[fragile]
 \frametitle{}
 <<echo=TRUE, fig.height=4>>=
-s <- sum((y-0)^2)
-curve(MCMCpack::dinvgamma(x, shape = n/2, scale = s/2), 0, 4,
+S <- sum((y-m)^2)
+curve(MCMCpack::dinvgamma(x, shape = n/2, scale = S/2), 0, 3*S/n,
       xlab = expression(sigma^2),
       ylab = expression(paste("p(",sigma^2,"|y)")),
       main = "Posterior")
-abline(v = (s/2)/((n/2)-1), col='red')
+abline(v = (S/2)/((n/2)-1), col='red')
 @
 \end{frame}
 
 
 
 \begin{frame}[fragile]
-\frametitle{Credible intervals}
+\frametitle{Credible intervals for variance}
 
 We don't have a quantile function for this inverse gamma distribution.
 \pause
@@ -192,7 +217,7 @@ simulated draws from the inverse gamma distribution and finding their sample
 quantiles.
 
 <<echo=TRUE>>=
-draws <- MCMCpack::rinvgamma(1e5, shape = s/2, scale = n/2)
+draws <- MCMCpack::rinvgamma(1e5, shape = n/2, scale = S/2)
 quantile(draws, c(a/2, 1-a/2))
 @
 
@@ -203,8 +228,25 @@ It is slightly confusing because the `scale` parameter for the inverse gamma
 is the `rate` parameter for the gamma.
 
 <<echo=TRUE>>=
-draws <- rgamma(1e5, shape = s/2, rate = n/2)
+draws <- rgamma(1e5, shape = n/2, rate = S/2)
 quantile( 1/draws, c(a/2, 1-a/2))
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals for standard deviation}
+
+\vspace{-0.05in}
+
+<<echo=TRUE, fig.height=3.5>>=
+draws <- sqrt( 1/rgamma(1e5, shape = n/2, rate = S/2) )
+quantile( draws, c(a/2, 1-a/2))
+hist(draws, 1001, 
+     xlab = expression(sigma), 
+     ylab = expression(paste("p(",sigma,"|y)")),
+     main = "Posterior for standard deviation")
 @
 
 \end{frame}
@@ -385,13 +427,29 @@ where $n=100$, $\overline{y}=198$, and $S=20$.
 \pause
 A 90\% interval is 
 <<echo=TRUE>>=
-n    <- 100
-ybar <- 198
-s    <- 20
 a    <- 0.1
 
-ybar +c(-1,1)*qt(1-a/2, df=n-1)*s/sqrt(n)
+mean(y) +c(-1,1)*qt(1-a/2, df=n-1)*sd(y)/sqrt(n)
 @
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Analysis in R}
+
+\small
+
+There is no reason that you need to do this all yourself. 
+In R, the function {\tt t.test} will provide you with the relevant information.
+
+<<echo=TRUE>>=
+t <- t.test(y, conf.level = 1-a)
+t$parameter # n-1 (degrees of freedom)
+t$estimate  # Mean
+t$conf.int  # Credible interval
+@
+
 \end{frame}
 
 
