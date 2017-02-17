@@ -236,7 +236,7 @@ quantile( 1/draws, c(a/2, 1-a/2))
 
 
 \begin{frame}[fragile]
-\frametitle{Credible intervals for standard deviation}
+\frametitle{Posterior and credible intervals for standard deviation}
 
 \vspace{-0.05in}
 
@@ -408,8 +408,8 @@ the yield on a number of fields is measured. \pause
 (For simplicity, assume that fields are standardized in size.)
 \pause
 We measure 100 randomly selected fields in Iowa and
-find the average is 198 bushels per acre and the
-sample standard deviation is 20 bushels per acre.
+find the average is \Sexpr{round(mean(y))} bushels per acre and the
+sample standard deviation is \Sexpr{round(sd(y))} bushels per acre.
 \pause
 Provide a 90\% credible interval for the mean yield across all fields in Iowa.
 
@@ -435,35 +435,99 @@ mean(y) +c(-1,1)*qt(1-a/2, df=n-1)*sd(y)/sqrt(n)
 
 
 
+% \begin{frame}[fragile]
+% \frametitle{Analysis in R}
+% 
+% \small
+% 
+% There is no reason that you need to do this all yourself. 
+% In R, the function {\tt t.test} will provide you with the relevant information.
+% 
+% <<echo=TRUE>>=
+% t <- t.test(y, conf.level = 1-a)
+% t$parameter # n-1 (degrees of freedom)
+% t$estimate  # Mean
+% t$conf.int  # Credible interval
+% @
+% 
+% \end{frame}
+
+
+\subsection{Informative Bayesian analysis}
 \begin{frame}[fragile]
-\frametitle{Analysis in R}
+\frametitle{Informative Bayesian analysis when variance is known}
 
-\small
-
-There is no reason that you need to do this all yourself. 
-In R, the function {\tt t.test} will provide you with the relevant information.
+Let $Y_i$ be the corn yield (in bushels/ac) from field $i$. 
+Assume
+\[ 
+Y_i \ind N(\mu,s^2) \quad \mbox{and} \quad
+\mu \sim N(m,C).
+\]
+\pause
+Then
+\[ \begin{array}{rl}
+\mu|y &\sim N(m',C') \pause \\
+C' &= \left[ \frac{1}{C} + \frac{n}{s^2} \right]^{-1} \pause \\
+m' &= C' \left[ \frac{1}{C}m + \frac{n}{s^2}\overline{y} \right] \pause 
+= \frac{1/C}{1/C+n/s^2} m + \frac{n/s^2}{1/C+n/s^2}\overline{y}
+\end{array} \]
+\pause
 
 <<echo=TRUE>>=
-t <- t.test(y, conf.level = 1-a)
-t$parameter # n-1 (degrees of freedom)
-t$estimate  # Mean
-t$conf.int  # Credible interval
+m = 200
+C = 33^2
+Cp = 1/(1/C+n/s^2)
+mp = Cp*(m/C+n*mean(y)/s^2)
+@
+
+So if we assume $m=200$ and $C=33^2$ and combine this with our observed data 
+$n=$\Sexpr{length(y)} and $\overline{y}=$\Sexpr{round(mean(y))}, 
+\pause
+then we have the posterior $\mu|y\sim N(\Sexpr{round(mp)},\Sexpr{round(sqrt(Cp))}^2)$.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Comparison of default vs informative Bayesian analysis}
+
+\vspace{-0.1in}
+
+<<echo=TRUE, fig.height=3.5>>=
+ybar = mean(y)
+se = s/sqrt(n)
+curve(dnorm(x, mean=ybar, sd=se), ybar-3*se, ybar+3*se,
+      xlab=expression(mu),
+      ylab=expression(paste("p(",mu,"|y)")),
+      main="Default vs informative Bayesian analysis")
+curve(dnorm(x, mean=mp, sd=sqrt(Cp)), col='red', lty=2, add=TRUE)
+legend("topleft", c("Default","Informative"), col=c("black","red"),
+       lty = 1:2)
 @
 
 \end{frame}
 
 
-\subsection{Informative Bayesian analysis}
+
 \begin{frame}
 \frametitle{Informative Bayesian analysis}
+  The joint conjugate prior for $\mu$ and $\sigma^2$ is 
+  \[ \mu|\sigma^2\phantom{,y} \sim N(m,\sigma^2/k) \qquad \sigma^2\phantom{,y} \sim \mbox{Inv-}\chi^2(v,s^2) \]
+  \pause where $s^2$ serves as a prior guess about $\sigma^2$ and $v$ controls how certain we are about that guess. 
+  
+  \vspace{0.2in} \pause 
 
-Let $Y_i$ be the corn yield (in bushels/ac) from field $i$. 
-Assume
-\[ 
-Y_i \ind N()
-\]
-
+  The posterior under this prior is 
+  \[ \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v',(s')^2) \]
+  \pause where 
+  \[ \begin{array}{rl}
+  k' &= k+n \\
+  m' &= [km + n\overline{y}]/k' \\
+  v' &= v+n \\
+  v'(s')^2 &= vs^2 + (n-1)S^2 + \frac{kn}{k'}(\overline{y}-m)^2
+  \end{array} \]
 \end{frame}
+
+
 
 
 \end{document}
