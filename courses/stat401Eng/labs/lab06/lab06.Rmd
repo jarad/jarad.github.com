@@ -7,6 +7,8 @@ output: html_document
 
 
 To follow along, use the [lab06 code](lab06.R).
+You can also save [creativity.csv](creativity.csv) into your working directory
+if you want.
 
 ## Binomial data
 
@@ -245,17 +247,173 @@ tt$estimate
 tt$conf.int
 ```
 
+### Using the `lm()` function
+
+An alternative to `t.test()` that will be extremely useful throughout the 
+remainder of the semester is the `lm()` function.
+The `lm` stands for linear model and regression is a special case.
+
+```{r}
+lm(y~1) # The 1 stands for a single group, i.e. just an intercept
+```
+
+This function is sophisticated enough that very little is reported when you 
+just run the function.
+Instead, most of the information is in the `summary()` function.
+
+```{r}
+m <- lm(y~1)
+summary(m)
+```
+
+At this point, some of this should start to become familiar. 
+The Estimate is the sample mean, the Std. Error is the standard error
+of this mean, and the t value is the ratio of these two. 
+The residual standard error is the MLE for $\sigma$ and the degrees of freedom
+is the number of observations minus the number of parameters for the mean (n-1 
+in this case).
+
+The `confint()` function will produce the confidence/credible intervals
+
+```{r}
+confint(m)
+```
+
 #### Activity
 
+Using the following data, compare the point estimate and confidence/credible
+intervals obtained using the `t.test()` and `lm()` functions to estimates and 
+intervals you create yourself
 
+```{r}
+set.seed(1)
+y <- rnorm(1001, mean = 256, sd = 34.6)
+```
 
 <div id="normal_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
-x
-y
-m
-s
-s$r.squared
+t.test(y)
+(m <- lm(y~1))
+confint(m)
+mean(y) + c(-1,1)*qt(.975, df = length(y)-1)*sd(y)/sqrt(length(y))
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('normal_activity_solution') .style.display=='none') {document.getElementById('normal_activity_solution') .style.display=''}else{document.getElementById('normal_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+
+## Reading data from files
+
+First, let's write some data to files. 
+
+```{r}
+# Generate some simulated data
+n <- 100
+d <- data.frame(rep = 1:n,
+                response = sample(c("Yes","No"), n, replace=TRUE, prob = c(.2,.8)),
+                measurement = rnorm(n, mean = 55, sd = 12))
+
+# Write it to a file
+# make sure you have set your working directory to someplace where you want this
+# file to be written
+write.csv(d, 
+          file = "data.csv",
+          row.names = FALSE)
+```
+
+Alternatively, you could use the `write_csv()` function in the 
+[readr](https://cran.r-project.org/web/packages/readr/index.html) package. 
+
+```{r, eval=FALSE}
+install.packages("readr")
+library("readr") 
+write_csv(d, path = "data.csv")
+```
+
+Now let's read this data back in. 
+
+```{r}
+my_data <- read.csv("data.csv")
+```
+
+Take a look at the data to make sure it looks correct:
+
+```{r}
+head(my_data)
+str(my_data)
+```
+
+### Binomial data
+
+To use `prop.test()` and `binom.test()`, 
+you need to calculate the number of successes and the number of attempts.
+
+```{r}
+y <- sum(my_data$response == "Yes")
+n <- length(my_data$response)
+prop.test(y, n)
+binom.test(y, n)
+```
+
+### Normal data
+
+To analyze the normal data, you can just use `t.test()` directly.
+
+```{r}
+t.test(my_data$measurement)
+```
+
+The data are already located in a `data.frame`. 
+You can use this in the `lm()` function. 
+
+```{r}
+m <- lm(measurement~1, data = my_data)
+summary(m)
+confint(m)
+```
+
+
+#### Online activity
+
+Read in the data at [creativity.csv](creativity.csv) 
+and then construct confidence/credible intervals for mean creativity score
+for both the Intrinsic and Extrinsic groups. 
+
+<div id="online_activity_solution" style="display:none"> 
+
+There are a variety of ways to do this. 
+I will construct two new data frames to contain the Intrinsic and Extrinsic 
+data and then construct the intervals.
+
+```{r, purl=FALSE}
+creativity <- read.csv("http://www.jarad.me/courses/stat401Eng/labs/lab06/creativity.csv")
+
+library(dplyr)
+intrinsic <- creativity %>% filter(Treatment == "Intrinsic")
+extrinsic <- creativity %>% filter(Treatment == "Extrinsic")
+
+confint(lm(Score~1, data = intrinsic))
+confint(lm(Score~1, data = extrinsic))
+```
+
+An alternative approach is to use the `subset` argument
+
+```{r}
+confint(lm(Score~1, data = creativity, subset = Treatment == "Intrinsic"))
+confint(lm(Score~1, data = creativity, subset = Treatment == "Extrinsic"))
+```
+
+If you want to find out more about these data, 
+take a look at the help file for `case0101` in the 
+[Sleuth3](https://cran.r-project.org/web/packages/Sleuth3/index.html) package.
+
+```{r, eval=FALSE}
+install.packages("Sleuth3")
+library("Sleuth3")
+?case0101
+```
+
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('online_activity_solution') .style.display=='none') {document.getElementById('online_activity_solution') .style.display=''}else{document.getElementById('online_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
