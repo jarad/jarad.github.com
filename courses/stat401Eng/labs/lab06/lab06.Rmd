@@ -1,0 +1,261 @@
+---
+title: "Lab06 - Built-in analyses in R"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+To follow along, use the [lab06 code](lab06.R).
+
+## Binomial data
+
+### Bayesian analysis
+
+Let $Y\sim Bin(n,\theta)$.
+Recall that our default prior for $\theta$ is $\theta \sim Be(1,1)$, which is
+equivalent to a $Unif(0,1)$ prior.
+The posterior under this prior is $\theta|y \sim Be(1+y,1+n-y)$. 
+In order to perform this analysis, 
+we simply use the beta distribution in R. 
+
+Suppose you observe 9 successes out of 13 attempts. 
+
+```{r}
+a <- b <- 1
+n <- 13
+y <- 9
+```
+
+The posterior is 
+
+```{r}
+curve(dbeta(x, a+y, b+n-y))
+```
+
+The posterior expectation is 
+
+```{r}
+(a+y)/(b+n-y)
+```
+
+A 95\% equal-tail credible interval is 
+
+```{r}
+qbeta(c(.025,.975), a+y, b+n-y)
+```
+
+The probability that $\theta$ is greater than 0.5, i.e. $P(\theta>0.5|y)$ is 
+
+```{r}
+1-pbeta(0.5, a+y, b+n-y)
+```
+
+#### Jeffreys prior activity
+
+An alternative prior is called Jeffreys prior and it corresponds to a 
+Be(0.5,0.5) prior. 
+Suppose you observed 17 of 20 successes and you are willing to assume 
+independence and a common probability of success.
+Use Jeffreys prior on this probability of success to do the following 
+
+- Plot the posterior
+- Calculate the posterior median
+- Calculate a one-sided upper 95% credible interval
+- Calculate the probability that the probability of success is greater than 0.9.
+
+
+<div id="beta_jeffreys_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+a <- b <- 0.5
+n <- 20
+y <- 17
+curve(dbeta(x, a+y, b+n-y))
+qbeta(0.5, a+y, b+n-y)
+c(qbeta(0.05, a+y, b+n-y), 1)
+1-pbeta(0.9, a+y, b+n-y)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('beta_jeffreys_activity_solution') .style.display=='none') {document.getElementById('beta_jeffreys_activity_solution') .style.display=''}else{document.getElementById('beta_jeffreys_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+### Non-Bayesian analysis
+
+Fortunately many analysis have built in functions in R. 
+If you observe 78 successes out of 100 attempts, 
+then you can use the `prop.test()` function to generate a number of statistics
+automatically.
+
+```{r}
+n <- 100
+y <- 78
+prop.test(y,n)
+```
+
+Sometimes you want all of this output, 
+but other times you want to extract exactly what you want.
+To do this we will save the object created by `prop.test()` 
+and use the `names()` or `str()` function to determine what is in this object.
+
+```{r}
+pt <- prop.test(y,n)
+names(pt)
+str(pt)
+```
+Then we can use the `$` to extract what we want.
+The estimate is 
+
+```{r}
+pt$estimate
+```
+
+An approximate 95\% confidence interval is 
+
+```{r}
+pt$conf.int
+```
+
+If we wanted an aproximate 90\% one-sided lower confidence interval, 
+we can obtain it using 
+
+```{r}
+prop.test(y, n, alternative = "less", conf.level = 0.9)$conf.int
+```
+
+#### Activity
+
+Suppose you observed 694 success out of 934 attempts. 
+Compute a 95\% equal-tail confidence interval using `prop.test` 
+and compare this to a 95\% equal-tail confidence interval you construct using
+the Central Limit Theorem.
+
+<div id="binomial_clt_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+y <- 694
+n <- 934
+prop.test(y, n)$conf.int
+
+p <- y/n
+p +c(-1,1)*qnorm(.975)*sqrt(p*(1-p)/n)
+
+# If you turn off the continuity correction, you will get closer
+prop.test(y, n, correct = FALSE)$conf.int
+```
+If you really want to figure out what the function is doing, 
+you can look at the function by just typing `prop.test` and hitting enter.
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('binomial_clt_activity_solution') .style.display=='none') {document.getElementById('binomial_clt_activity_solution') .style.display=''}else{document.getElementById('binomial_clt_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+### Small sample sizes
+
+The `prop.test` function uses the Central Limit Theorem to perform its analysis.
+When n is small, you should instead use the `binom.test` function.
+
+Suppose you observe 9 successes out of 13 attempts. 
+
+```{r}
+n <- 13
+y <- 9
+binom.test(y, n)
+```
+
+#### Activity
+
+Suppose you observe 0 success out of 77 attempts. 
+Compare 95% confidence intervals given by `prop.test` and `binom.test` to 
+an interval you construct based on the CLT and to 95% credible intervals.
+
+<div id="binom_ci_comparison_activity_solution" style="display:none"> 
+
+So this is a bit of a trick question since there was 0 successes. 
+When you run `prop.test` and `binom.test` you are given one-sided confidence 
+intervals.
+The CLT interval doesn't exist since the standard error is zero.
+The appropriate credible interval to use is a one-sided interval.
+
+```{r, purl=FALSE}
+y <- 0
+n <- 77
+prop.test(y, n)$conf.int
+binom.test(y, n)$conf.int
+qbeta(c(0,.95), 1+y, 1+n-y)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('binom_ci_comparison_activity_solution') .style.display=='none') {document.getElementById('binom_ci_comparison_activity_solution') .style.display=''}else{document.getElementById('binom_ci_comparison_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+
+
+## Normal data
+
+Suppose $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$. 
+Recall that a Bayesian analysis with the default prior 
+$p(\mu,\sigma^2) \propto 1/\sigma^2$ provides the same analysis for $\mu$ as a
+non-Bayesian analysis. 
+That is 
+
+- MLE and Bayes estimator for $\mu$ are the same
+- confidence and credible intervals for $\mu$ are exactly the same
+
+This is because the posterior for $\mu$ is 
+$$
+\mu|y \sim t_{n-1}(\overline{y}, S^2/n)
+$$
+which means that 
+$$
+\left.\frac{\mu-\overline{y}}{s/\sqrt{n}} \right|y \sim t_{n-1}(0,1).
+$$
+while the sampling distribution for $\overline{y}$ is such that 
+$$
+T=\left.\frac{\overline{Y}-\mu}{S/\sqrt{n}} \right|y \sim t_{n-1}(0,1).
+$$
+Suppose you observe the following data
+```{r}
+(y <- rnorm(10, mean = 3.2, sd = 1.1))
+```
+Then you can manually construct an MLE and Bayesian posterior using `mean()`.
+
+```{r}
+(ybar <- mean(y))
+```
+
+and a 95% credible/confidence interval using
+
+```{r}
+n <- length(y)
+s <- sd(y)
+
+ybar + c(-1,1)*qt(.975, df = n-1)*s/sqrt(n)
+```
+
+### Built-in analysis
+
+You can use the `t.test()` function to perform this for you.
+
+```{r}
+t.test(y)
+```
+
+and extract quantities using
+
+```{r}
+tt <- t.test(y)
+tt$estimate
+tt$conf.int
+```
+
+#### Activity
+
+
+
+<div id="normal_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+x
+y
+m
+s
+s$r.squared
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('normal_activity_solution') .style.display=='none') {document.getElementById('normal_activity_solution') .style.display=''}else{document.getElementById('normal_activity_solution') .style.display='none'}">Show/Hide Solution</button>
