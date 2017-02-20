@@ -13,4 +13,4 @@ tagline: Statistical Methods for Research Workers
  - [Lab03](lab03/lab03.html) - Probability Distributions in R
  - [Lab04](lab04/lab04.html) - Monte Carlo Methods in R
  - [Lab05](lab05/lab05.html) - Estimator evaluation
- - [Lab06](lab06/lab06.html) - Built-in analyses in R
+ - [Lab06](lab06/lab06.html) - Built-in analyses in R ([creativity.csv](lab06/creativity.csv))
