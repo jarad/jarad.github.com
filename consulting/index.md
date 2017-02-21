@@ -17,6 +17,7 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [Include covariate in cross-over experiment?](meetings/20170221.html)
 - [Cross-over behavioral experiment](meetings/20170124.html)
 - [RANDOM vs REPEATED in SAS](meetings/20170110b.html)
 - [Regression assumptions (QTL)](meetings/20170110.html)
