@@ -145,7 +145,8 @@ d3$method = "Likelihood ratio test pvalue"
 # Both plots
 ggplot(rbind(d2[,-3],d3[,-3]), aes(x=ybar, y=statistic, col=factor(n))) + 
   geom_line() + 
-  facet_grid(~method)
+  facet_grid(~method) +
+  theme_bw()
 @
 \end{frame}
 
@@ -180,7 +181,9 @@ It appears the Bayesian and LRT pvalue completely disagree!
 paradox = expand.grid(n=10^(seq(0,5,by=0.1)), ybar=0.49)
 paradox = ddply(paradox, .(n,ybar), summarize, pvalue=pvalue(lrt(n,ybar)), post_prob=post_prob(bf(n,ybar)))
 m = melt(paradox, id=c("n","ybar"))
-p = ggplot(m, aes(log10(n),value,col=variable))+geom_line() 
+p = ggplot(m, aes(log10(n),value,col=variable)) + 
+  geom_line() +
+  theme_bw()
 print(p)
 @
 \end{frame}
