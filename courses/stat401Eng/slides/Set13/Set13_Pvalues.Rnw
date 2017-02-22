@@ -78,7 +78,7 @@ In this case, the
 \begin{itemize}
 \item test statistic is $Y$,
 \item its sampling distribution \emph{when the null hypothesis is true is $Y\sim Bin(n,\theta_0)$}, and
-\item the \emph{as or more extreme} region is values farther from $n\theta_0$ then $Y$.
+\item the \emph{as or more extreme} region is values farther from $n\theta_0$ than $y$.
 \end{itemize}
 So the pvalue is 
 \[
@@ -127,9 +127,135 @@ greater than \Sexpr{p}.
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{{\tt binom.test}}
 
+The R function `binom.test` can perform this test for us:
+<<echo=TRUE>>=
+binom.test(2,13)
+@
+
+\end{frame}
+
+
+
+\subsection{One-sided pvalues}
 \begin{frame}
-\frametitle{Large sample }
+\frametitle{One-sided pvalues}
+If $Y\sim Bin(n,\theta)$, a one-sided hypothesis test is
+\begin{itemize}
+\item $H_0: \theta\ge\theta_0=0.5$ and 
+\item $H_A: \theta< \theta_0$.
+\end{itemize}
+
+\pause
+
+In this case, the 
+\begin{itemize}
+\item test statistic is $Y$,
+\item its sampling distribution \emph{when the null hypothesis is true is $Y\sim Bin(n,\theta_0)$}, and
+\item the \emph{as or more extreme} region is values farther from $n\theta_0$ than $y$ in the direction of $H_A$. 
+\end{itemize}
+So the pvalue is 
+\[
+pvalue = P(Y-n\theta_0\le y-n\theta_0) = P(Y\le y)
+\]
+where $y$ is the observed successes.
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{}
+
+<<echo=TRUE, fig.height=3.5>>=
+library(dplyr); library(ggplot2)
+n <- 13; y <- 2; theta0 <- 0.5
+d <- data.frame(Y = 0:n) %>%
+  mutate(pmf = dbinom(Y, n, theta0),
+         as_or_more_extreme = Y <= y)
+
+ggplot(d, aes(Y, pmf, fill=as_or_more_extreme)) + geom_bar(stat = "identity") + 
+  theme_bw() + theme(legend.position="bottom")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial example}
+
+If $Y\sim Bin(n,\theta)$ with $n=13$ and $y=2$ and we are testing 
+\begin{itemize}
+\item $H_0: \theta\ge 0.5$ versus
+\item $H_A: \theta< 0.5$,
+\end{itemize}
+\pause
+then the pvalue is 
+\[ 
+pvalue = \sum_{y=0}^2 P(Y=y|\theta=0.5)
+\]
+which is 
+<<echo=TRUE>>=
+(p <- sum(dbinom(0:2, size = 13, prob = 0.5)))
+@
+Thus, we would \emph{reject the null hypothesis} for any significance level 
+greater than \Sexpr{p}.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{{\tt binom.test()}}
+
+The R function `binom.test()` can perform this test for us:
+<<echo=TRUE>>=
+binom.test(2, 13, alternative="less")
+@
+
+\end{frame}
+
+
+
+\subsection{Asymptotic pvalues}
+\begin{frame}
+\frametitle{Asymptotic pvalues}
+
+If we have an asymptotically normal estimator $\hat\theta=\hat\theta(Y)$, i.e. 
+\[ 
+\hat\theta(Y) \stackrel{\cdot}{\sim} N(E[\hat\theta], SE[\hat\theta])
+\]
+\pause
+then we can calculate pvalues using this approximate sampling distribution.
+
+\vspace{0.1in}
+
+\begin{itemize}
+\item $H_0: \theta = \theta_0 \implies p=P(|\hat\theta(Y)-E[\hat\theta]| \ge |\hat\theta(y)-E[\hat\theta]|)$
+\item $H_0: \theta \ge \theta_0 \implies p=P(\hat\theta(Y) \le \hat\theta(y))$
+\item $H_0: \theta \le \theta_0 \implies p=P(\hat\theta(Y) \ge \hat\theta(y))$
+\end{itemize}
+where 
+\begin{itemize}
+\item $\hat\theta(Y)$ is the random estimator and 
+\item $\hat\theta(y)$ is the observed estimator.
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{{\tt prop.test()}}
+
+For the binomial distribution, 
+the {\tt prop.test()} function performs these hypothesis tests. 
+\pause
+For example, if $Y\sim Bin(n,\theta)$ and you want to test $H_0: \theta \le 0.4$
+vs $H_A: \theta > 0.4$ when observing $y=345$ successes out of $n=789$ attempts,
+\pause the code is
+
+<<echo=TRUE>>=
+prop.test(345, 789, p = 0.4, alternative = "greater")
+@
 \end{frame}
 
 
