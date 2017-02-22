@@ -1,0 +1,140 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set 13 - pvalues}
+
+% \newenvironment{remark}[1][Remark]{\begin{trivlist}
+% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+
+\section{Statistical hypothesis testing}
+\begin{frame}
+\frametitle{Statistical hypothesis testing}
+
+\begin{definition}
+A (classical) \alert{hypothesis test} consists of two hypotheses:
+\begin{itemize}
+\item null hypothesis ($H_0$) and
+\item an alternative hypothesis ($H_A$)
+\end{itemize}
+which make a claim about parameters in a model \pause 
+and a decision to either
+\begin{itemize}
+\item reject the null hypothesis or 
+\item fail to reject the null hypothesis.
+\end{itemize}
+We reject the null hypothesis if our pvalue is less than a pre-determined 
+\alert{significance level} $a$ where the \alert{pvalue} is the probability
+\emph{when the data are considered random} of observing a test statistic as or 
+more extreme than that observed if the null hypothesis is true.
+\end{definition}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Binomial model}
+If $Y\sim Bin(n,\theta)$, then the standard hypotheses are 
+\begin{itemize}
+\item $H_0: \theta=\theta_0=0.5$ and 
+\item $H_A: \theta\ne \theta_0$.
+\end{itemize}
+
+\pause
+
+In this case, the 
+\begin{itemize}
+\item test statistic is $Y$,
+\item its sampling distribution \emph{when the null hypothesis is true is $Y\sim Bin(n,\theta_0)$}, and
+\item the \emph{as or more extreme} region is values farther from $n\theta_0$ then $Y$.
+\end{itemize}
+So the pvalue is 
+\[
+pvalue = P(|Y-n\theta_0|\ge |y-n\theta_0|)
+\]
+where $y$ is the observed successes.
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{}
+
+<<echo=TRUE, fig.height=3.5>>=
+library(dplyr); library(ggplot2)
+n <- 13; y <- 2; theta0 <- 0.5
+d <- data.frame(Y = 0:n) %>%
+  mutate(pmf = dbinom(Y, n, theta0),
+         as_or_more_extreme = abs(Y-n*theta0) >= abs(y-n*theta0))
+
+ggplot(d, aes(Y, pmf, fill=as_or_more_extreme)) + geom_bar(stat = "identity") + 
+  theme_bw() + theme(legend.position="bottom")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial example}
+
+If $Y\sim Bin(n,\theta)$ with $n=13$ and $y=2$ and we are testing 
+\begin{itemize}
+\item $H_0: \theta=0.5$ versus
+\item $H_A: \theta\ne 0.5$,
+\end{itemize}
+\pause
+then the pvalue is 
+\[ 
+pvalue = \sum_{y=0}^2 P(Y=y|\theta=0.5) + \sum_{11}^{13} P(Y=y|\theta=0.5)
+\]
+which is 
+<<echo=TRUE>>=
+(p <- sum(dbinom(c(0:2,11:13), size = 13, prob = 0.5)))
+@
+Thus, we would \emph{reject the null hypothesis} for any significance level 
+greater than \Sexpr{p}.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Large sample }
+\end{frame}
+
+
+
+\end{document}
+
+
+
