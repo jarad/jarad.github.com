@@ -34,6 +34,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Bayesian statistics|[Set10.Rnw](Set10/Set10_Bayesian_statistics.Rnw)|[Set10.pdf](Set10/Set10_Bayesian_statistics.pdf)|
 |Normal model|[Set11.Rnw](Set11/Set11_Normal_model.Rnw)|[Set11.pdf](Set11/Set11_Normal_model.pdf)|
 |Confidence intervals|[Set12.Rnw](Set12/Set12_Confidence_intervals.Rnw)|[Set12.pdf](Set12/Set12_Confidence_intervals.pdf)|
+|Pvalues|[Set13.Rnw](Set13/Set13_Pvalues.Rnw)|[Set13.pdf](Set13/Set13_Pvalues.pdf)|
 
   
 
