@@ -285,8 +285,13 @@ binomial_model = "
 data {
   int <lower=1> n;
   int <lower=1> n_products;
-  int <lower=0,upper=4> z[n];
+  int <lower=1,upper=5> stars[n];
   int <lower=1,upper=n_products> id[n];
+}
+
+transformed data {
+  int <lower=0, upper=4> z[n];
+  for (i in 1:n) z[i] = stars[i]-1;
 }
 
 parameters {
@@ -318,7 +323,7 @@ model {
 m = stan_model(model_code = binomial_model)
 dat = list(n = nrow(d),
            n_products = nlevels(d$product_id),
-           z = d$stars-1,
+           stars = d$stars,
            id = as.numeric(d$product_id))
 r = sampling(m, dat)
 @
@@ -376,8 +381,9 @@ So
 
 But we might want to show results on the original scale (stars), \pause so the expected number of stars for a new product is 
 \[  \begin{array}{rl}
-E[\mbox{stars}_{*j}|\alpha,\beta] &= E[\mbox{y}_{*j}+1|\alpha,\beta] \pause = E[\mbox{y}_{*j}|\alpha,\beta] + 1 \pause \\
-&= E[E[y_{*j}|\theta^*]|\alpha,\beta]+1 \pause = E[4\theta^*|\alpha,\beta]+1 \pause \\
+E[\mbox{stars}_{*j}|\alpha,\beta] &= E[z_{*j}+1|\alpha,\beta] \pause 
+= E[z_{*j}|\alpha,\beta] + 1 \pause \\
+&= E[E[z_{*j}|\theta^*]|\alpha,\beta]+1 \pause = E[4\theta^*|\alpha,\beta]+1 \pause \\
 &= 4\frac{\alpha}{\alpha+\beta} + 1
 \end{array} \]
 
@@ -444,15 +450,15 @@ To assess this model fit, we will simulate posterior predictive star ratings for
 print(xtable(for_table[2,1:7]), include.rownames=FALSE)
 @
 \pause
-Let $\tilde{y}_2$ be all the predictive data for product 2, i.e. $\tilde{y}_2 = (\tilde{y}_{21},\ldots,\tilde{y}_{2J})$ with $J=526$ where $\tilde{y}_{2j}$ is the $j$th predictive star rating minus 1 for review $j$ of product 2. \pause Then 
+Let $\tilde{z}_2$ be all the predictive data for product 2, i.e. $\tilde{z}_2 = (\tilde{z}_{21},\ldots,\tilde{z}_{2J})$ with $J=526$ where $\tilde{z}_{2j}$ is the $j$th predictive star rating minus 1 for review $j$ of product 2. \pause Then 
 
-\[ p(\tilde{y}_2|y) = \int \left[\prod_{j=1}^J p(\tilde{y}_{2j}|\theta_2)\right] p(\theta_2|y) d\theta_2 \]
+\[ p(\tilde{z}_2|z) = \int \left[\prod_{j=1}^J p(\tilde{z}_{2j}|\theta_2)\right] p(\theta_2|z) d\theta_2 \]
 
 \pause Thus the following procedure will simulation from the joint distribution for the predictive ratings:
 \begin{enumerate}
-\item $\theta_2 \sim p(\theta_2|y)$, 
-\item For $j=1,\ldots,526$, $y_{2j} \stackrel{ind}{\sim} Bin(4,\theta_2)$, and
-\item star$_{2j} = y_{2j}+1$. 
+\item $\theta_2 \sim p(\theta_2|z)$, 
+\item For $j=1,\ldots,526$, $z_{2j} \stackrel{ind}{\sim} Bin(4,\theta_2)$, and
+\item star$_{2j} = z_{2j}+1$. 
 \end{enumerate}
 
 \end{frame}
@@ -465,15 +471,15 @@ Let $\tilde{y}_2$ be all the predictive data for product 2, i.e. $\tilde{y}_2 = 
 
 <<posterior_predictive_binomial, dependson='run_binomial_model', echo=TRUE>>=
 theta2 = as.numeric(draws$theta[,2])
-ytilde2 = adply(theta2, 1, function(x) {
-  ytilde = rbinom(526, 4, x) + 1
-  data.frame(n1 = sum(ytilde==1),
-             n2 = sum(ytilde==2),
-             n3 = sum(ytilde==3),
-             n4 = sum(ytilde==4),
-             n5 = sum(ytilde==5))
+ztilde2 = adply(theta2, 1, function(x) {
+  ztilde = rbinom(526, 4, x) + 1
+  data.frame(n1 = sum(ztilde==1),
+             n2 = sum(ztilde==2),
+             n3 = sum(ztilde==3),
+             n4 = sum(ztilde==4),
+             n5 = sum(ztilde==5))
 })
-head(ytilde2)
+head(ztilde2)
 @
 
 \end{frame}
@@ -483,11 +489,11 @@ head(ytilde2)
 \frametitle{Posterior predictive distribution in R}
 
 <<>>=
-ytilde2_m = melt(ytilde2, id.vars="X1")
+ztilde2_m = melt(ztilde2, id.vars="X1")
 truth = data.frame(variable = paste("n",1:5,sep=""),
                    observed = as.numeric(for_table[2,2:6]))
 
-ggplot(ytilde2_m, aes(x=value)) + 
+ggplot(ztilde2_m, aes(x=value)) + 
   geom_histogram(aes(y=..density..), binwidth=1) + 
   facet_wrap(~variable, scales="free") + 
   geom_vline(data=truth, aes(xintercept=observed), color="red") +
@@ -502,9 +508,10 @@ ggplot(ytilde2_m, aes(x=value)) +
 \begin{frame}
 \frametitle{Ordinal data model}
 
-Let $y_i = (y_{i1},\ldots,y_{i5})$ be the vector of 1-star to 5-star ratings, \pause assume
+Let $s_i = (s_{i1},\ldots,s_{i5})$ be the vector of the number of 
+1-star to 5-star ratings for product $i$, \pause assume
 \begin{align*}
-Y_{i} \stackrel{ind}{\sim} Mult(n_i,\theta_i)
+S_{i} \stackrel{ind}{\sim} Mult(n_i,\theta_i)
 \end{align*}
 where $\theta_i$ is a probability vector \pause
 \[ \theta_{ik} = \int_{\alpha_{k-1}}^{\alpha_k} N(x|\mu_i,1) dx = \mathrm{\Phi}(\alpha_k-\mu_i) - \mathrm{\Phi}(\alpha_{k-1}-\mu_i) \]
@@ -554,7 +561,7 @@ with a prior
 ordinal_model = "
 data {
   int <lower=1> n_products;
-  int <lower=0> y[n_products,5]; // summarized count by product
+  int <lower=0> s[n_products,5]; // summarized count by product
 }
 
 parameters {
@@ -581,7 +588,7 @@ transformed parameters {
 model {
   tau ~ cauchy(0,1);
   mu ~ normal(eta, tau);
-  for (p in 1:n_products) y[p] ~ multinomial(theta[p]); // n_reviews[p] is implicit
+  for (p in 1:n_products) s[p] ~ multinomial(theta[p]); // n_reviews[p] is implicit
 }
 "
 @
@@ -595,7 +602,7 @@ model {
 <<run_ordinal_model, echo=TRUE, dependson='ordinal_model'>>=
 m = stan_model(model_code = ordinal_model)
 dat = list(n_products = nrow(for_table),
-           y = as.matrix(for_table[,2:6]))
+           s = as.matrix(for_table[,2:6]))
 r = sampling(m, dat, pars = c("alpha","eta","tau","mu"))
 @
 \end{frame}
