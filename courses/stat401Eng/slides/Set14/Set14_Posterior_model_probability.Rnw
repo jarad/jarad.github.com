@@ -1,0 +1,306 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set 14 - Posterior model probability}
+
+% \newenvironment{remark}[1][Remark]{\begin{trivlist}
+% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Posterior model probabilities}
+\begin{frame}
+\frametitle{Hypothesis test decisions}
+
+A pvalue can loosely be interpreted as ``the probability of observing this
+data if the null hypothesis is true''\pause,i.e. 
+\[ 
+p(y|H_0),
+\]
+\pause
+But what we really want is ``the probability the null hypothesis is true, 
+given that we observed this data''\pause,i.e.
+\[
+p(H_0|y) \pause = \frac{p(y|H_0)p(H_0)}{p(y)}.
+\]
+\pause
+If there are only two hypotheses (say $H_0$ and $H_A$), 
+\pause
+then we have 
+\[
+p(H_0|y) = \frac{p(y|H_0)p(H_0)}{p(y|H_0)p(H_0)+p(y|H_A)p(H_A)} 
+\pause
+= \frac{1}{1+\frac{p(y|H_A)p(H_A)}{p(y|H_0)p(H_0)}}.
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Point null hypotheses}
+
+If $H_0: \theta=\theta_0$ and $H_A: \theta\ne \theta_0$, 
+\pause 
+then 
+\[ \begin{array}{rl}
+p(y|H_0) &= p(y|\theta_0) \pause \\
+p(y|H_A) 
+&= \int p(y,\theta|H_A) d\theta \pause \\
+&= \int p(y|\theta,H_A)p(\theta|H_A) d\theta \pause \\
+&= \int p(y|\theta)p(\theta|H_A) d\theta
+\end{array} \]
+\pause 
+where $p(\theta|H_A)$ is the distribution of the parameter $\theta$ when the 
+alternative hypothesis is true.
+
+\pause
+
+\begin{example}
+If $Y_i\ind N(\mu,1)$ and we have the hypotheses $H_0: \mu=0$ vs $H_A: \mu\ne 0$
+\pause 
+with $\theta|H_A \sim N(0,1)$,
+\pause
+then 
+\[ \begin{array}{rl}
+y|H_0 &\sim N(0,1) \pause \\
+y|H_A &\sim N(0,2).
+\end{array} \]
+\end{example}
+\end{frame}
+
+\subsection{Relative frequency interpretation}
+\begin{frame}
+\frametitle{Relative frequency interpretation}
+
+\small
+
+Suppose you have a model $p(y|\theta)$\pause,
+hypotheses $H_0: \theta=\theta_0$ and $H_A:\theta\ne \theta_0$\pause,
+and you observe a pvalue equal to 0.05.
+\pause 
+Now you want to understand what that means in terms of whether the null
+hypothesis is true or not. 
+\pause 
+That is you want 
+\[
+p(H_0|pvalue = 0.05) = 
+\left[ 1+\frac{p(pvalue=0.05|H_A)}{p(pvalue= 0.05|H_0)}
+\frac{p(H_A)}{p(H_0)}\right]^{-1}
+\]
+If we are using a relative frequency interpretation of probability, 
+\pause
+then the answer depends on 
+\begin{itemize}
+\item the relative frequency of the null hypothesis being true $p(H_0) = 1-p(H_A)$\pause and
+\item the ratio of the relative frequency of seeing $pvalue=0.05$ under the null and the 
+alternative which depends on the distribution for $\theta$ under the alternative because
+\end{itemize}
+\[
+p(pvalue=0.05|H_A) = \int p(pvalue = 0.05|\theta)p(\theta|H_A) d\theta.
+\]
+
+\end{frame}
+
+
+
+\subsection{Bayesian hypothesis tests}
+\begin{frame}
+\frametitle{Bayesian hypothesis tests}
+
+To conduct a Bayesian hypothesis test, 
+\pause
+you need to specify 
+\begin{itemize}
+\item $p(H_j)$ \pause and 
+\item $p(\theta|H_j)$ 
+\end{itemize}
+for every hypothesis $j=1,\ldots,J$.
+\pause
+Then, you can calculate 
+\[ 
+p(H_j|y) = \frac{p(y|H_j)p(H_j)}{\sum_{k=1}^J p(y|H_k)p(H_k)} \pause
+= \left[ \sum_{k=1}^J \frac{p(y|H_k)}{p(y|H_j)}\frac{p(H_k)}{p(H_j)} \right]^{-1}
+\]
+\pause
+where 
+\[
+BF(H_k:H_j) = \frac{p(y|H_k)}{p(y|H_j)} 
+\]
+\pause 
+are the \alert{Bayes factor} for hypothesis $H_k$ compared to hypothesis $H_j$ \pause 
+and
+\[
+p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta
+\]
+for all $j$.
+
+\end{frame}
+
+\subsection{Normal example}
+\begin{frame}
+\frametitle{Normal example}
+
+Let $Y \sim N(\mu,1)$ and consider the hypotheses $H_0:\theta = 0$ and 
+$H_A:\theta \ne 0$ with $\theta|H_A\sim N(0,C)$ and, for simplicity, 
+$p(H_0) = p(H_A) = 0.5$.
+\pause 
+Then the two hypotheses are really 
+\begin{itemize}
+\item $Y \sim N(0,1)$ and
+\item $Y \sim N(0,1+C)$.
+\end{itemize}
+
+\vspace{0.1in} \pause 
+
+Thus 
+\[
+p(H_0|y) = \left[ \frac{p(y|H_0)}{p(y|H_A)}  \right]^{-1} \pause 
+= \left[ \frac{N(y;0,1)}{N(y;0,1+C)}  \right]^{-1}
+\]
+\pause
+where $N(y;\mu,\sigma^2)$ is evaluating the probability density function for 
+a normal distribution with mean $\mu$ and variance $\sigma^2$ at the value $y$.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Normal example}
+<<normal_bayes_factor, fig.width=8>>=
+d = ddply(expand.grid(y=seq(0,5,by=1), C=10^seq(0,4,by=0.1)), .(y,C), summarize,
+          post_prob_H0 = 1/(1+1/exp(dnorm(y,0,1,log=TRUE)-dnorm(y,0,1+C,log=TRUE))))
+
+ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) + 
+  geom_line() + 
+  labs(x = expression(sqrt(C)), y = expression(paste("p(",H[0],"|y)"))) + 
+  scale_color_discrete(name="y") +
+  theme_bw()
+@
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Do pvalues and posterior probabilities agree?}
+Suppose $\sim Bin(n,\theta)$ and we have the hypotheses 
+$H_0:\theta=0.5$ and $H_A:\theta\ne 0.5$ \pause
+We observe $n=10,000$ and $y=4,900$ and find the pvalue is 
+\[ pvalue \approx 2P(Y\le 4900) = 0.0466 \]
+\pause so we would reject $H_0$ at the 0.05 level. 
+
+\vspace{0.1in} \pause
+
+The posterior probability of $H_0$ if we assume $\theta|H_A \sim Unif(0,1)$ and 
+$p(H_0) = p(H_A) = 0.5$ is 
+\[ p(H_0|y) \approx \frac{1}{1+1/10.8} = 0.96, \]
+\pause so the probability of $H_0$ being true is 96\%. 
+
+\vspace{0.1in} \pause 
+
+It appears the Bayesian and pvalue completely disagree!
+\end{frame}
+
+% \begin{frame}[fragile]
+% \frametitle{Binomial $\overline{y}=0.49$ with $n\to\infty$} 
+% <<paradox,fig.width=8>>=
+% paradox = expand.grid(n=10^(seq(0,5,by=0.1)), ybar=0.49)
+% paradox = ddply(paradox, .(n,ybar), summarize, pvalue=pvalue(lrt(n,ybar)), post_prob=post_prob(bf(n,ybar)))
+% m = melt(paradox, id=c("n","ybar"))
+% p = ggplot(m, aes(log10(n),value,col=variable)) + 
+%   geom_line() +
+%   theme_bw()
+% print(p)
+% @
+% \end{frame}
+
+\subsection{Jeffrey-Lindley Paradox}
+\frame{\frametitle{Jeffrey-Lindley Paradox}
+  \begin{definition}
+  The \alert{Jeffrey-Lindley Paradox} concerns a situation when comparing two hypotheses $H_0$ and $H_1$ given data $y$ \pause and find
+  \begin{itemize}[<+->]\small
+  \item a frequentist test result is significant leading to rejection of $H_0$, but
+  \item the posterior probability of $H_0$ is high. 
+  \end{itemize}
+  \end{definition}
+  
+  \vspace{0.2in} \pause
+  
+  This can happen when 
+  \begin{itemize}[<+->]\small
+  \item the effect size is small, 
+  \item $n$ is large, 
+  \item $H_0$ is relatively precise, 
+  \item $H_1$ is relative diffuse, and
+  \item the prior model odds is $\approx 1$. 
+  \end{itemize}
+}
+
+
+\begin{frame}
+\frametitle{No real paradox}
+
+\pause
+
+Pvalues:
+\begin{itemize}[<+->]
+\item Pvalues measure how incompatible your data are with the null hypothesis.
+\item The smaller the pvalue, the more incompatible.
+\item But they say nothing about how likely the alternative is.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Posterior model probabilities:
+\begin{itemize}[<+->]
+\item Bayesian posterior probabilities measure how likely the data are under 
+the predictive distribution for each hypothesis.
+\item The larger the posterior probability, the more predictive that hypothesis 
+was compared to the other hypotheses.
+\item But this requires you to at least two well-thought out models\pause, i.e. 
+no vague priors.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Thus, these two statistics provide completely different measures of model 
+adequecy.
+\end{frame}
+
+\end{document}
+
+
+
