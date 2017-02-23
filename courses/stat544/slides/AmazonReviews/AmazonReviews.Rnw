@@ -169,7 +169,10 @@ theta = draws$theta
 colnames(theta) = paste("theta_",1:ncol(theta), sep="")
 theta_m = melt(theta, varnames=c("iterations", "theta"))
 theta_m$product = levels(d$product_id)[theta_m$theta]
-ggplot(theta_m, aes(x=value, fill=product)) +  geom_density(alpha=0.5)
+
+ggplot(theta_m, aes(x=value, fill=product)) +  
+  geom_density(alpha=0.5) +
+  theme_bw()
 @
 
 \end{frame}
@@ -192,9 +195,9 @@ prior = rbind(data.frame(x = seq(1.3,1.5,by=0.001),
 ggplot(other, aes(x=value)) +  
   geom_histogram(aes(y=..density..)) + 
   geom_line(data=prior, aes(x=x,y=y), color='red') +
-  facet_wrap(~parameter, scales="free")  +
-  theme(legend.position="none") +
-  theme_bw()
+  facet_wrap(~parameter, scales="free") +
+  theme_bw() +
+  theme(legend.position="none") 
 @
 
 \end{frame}
@@ -204,7 +207,11 @@ ggplot(other, aes(x=value)) +
 \begin{frame}
 \frametitle{A quick rating}
 
-Suppose a new vacuum cleaner comes on the market and there are two Amazon reviews both with 5 stars. \pause What do you think the averaging star rating will be (in the future) for this new product? 
+Suppose a new vacuum cleaner comes on the market and there are two Amazon 
+reviews both with 5 stars. 
+\pause 
+What do you think the average star rating will be (in the future) for this new 
+product? 
 
 \vspace{0.2in} \pause 
 
@@ -264,7 +271,8 @@ An alternative model is
 where $z_{ij}=y_{ij}-1$ is the $j$th star rating minus 1 of product $i$ \pause and 
 \[ \theta_i \sim Be(\alpha,\beta) \pause \qquad \mbox{and} \qquad p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}. \]
 \pause
-The idea behind this model would be that product $i$ has an independent, but common probability ($\theta_i$) of earning each star.
+The idea behind this model would be that product $i$ the probability of earning
+each star is $\theta_i$ and each star is independent.
 
 \end{frame}
 
@@ -405,7 +413,9 @@ This binomial model has the proper support $\{0,1,2,3,4\}$ for stars minus 1, \p
 
 \vspace{0.2in} \pause
 
-As an example, $\hat{\theta}_2 = 0.81$ (and a 95\% CI is (0.79, 0.83)). \pause Thus, we would expect 
+As an example, $\hat{\theta}_2 = 0.81$. 
+\pause 
+Thus, we would expect if we used $\hat{\theta}_2$
 
 <<results='asis'>>=
 tmp = data.frame(stars = 1:5,
@@ -415,7 +425,8 @@ print(xtable(tmp, digits=c(NA, 0, 3, 3)), include.rownames=FALSE)
 @
 
 \pause
-But this ignores the uncertainty in $\theta_2$, so perhaps this difference is due to this uncertainty. 
+But this ignores the uncertainty in $\theta_2$ (95\% CI is (0.79, 0.83)), 
+so perhaps this difference is due to this uncertainty. 
 
 \end{frame}
 
@@ -626,10 +637,12 @@ ggplot(mu_m, aes(x=value, fill=product)) +
 other = data.frame("alpha" = as.matrix(draws$alpha),
               "eta" = as.numeric(draws$eta),
               "tau" = as.numeric(draws$tau))
+
 ggplot(melt(other), aes(x=value)) +  
   geom_histogram(aes(y=..density..)) + 
   facet_wrap(~variable, scales="free")  +
-  theme(legend.position="none")
+  theme(legend.position="none") +
+  theme_bw()
 @
 
 \end{frame}
