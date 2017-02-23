@@ -12,7 +12,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=6, fig.height=4.5, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -161,7 +161,7 @@ r
 
 
 \begin{frame}[fragile]
-\frametitle{Movie mean posteriors ($\theta_i$)}
+\frametitle{Vacuum cleaner mean posteriors ($\theta_i$)}
 
 <<dependson='run_normal_model'>>=
 draws = extract(r)
@@ -188,11 +188,13 @@ prior = rbind(data.frame(x = seq(1.3,1.5,by=0.001),
               data.frame(x = seq(0,3,by=0.01), 
                          parameter = "tau",   
                          y = 2*dcauchy(seq(0,3,by=0.01))))
+
 ggplot(other, aes(x=value)) +  
   geom_histogram(aes(y=..density..)) + 
-  geom_line(data=prior, aes(x=x,y=y, color='red')) +
+  geom_line(data=prior, aes(x=x,y=y), color='red') +
   facet_wrap(~parameter, scales="free")  +
-  theme(legend.position="none")
+  theme(legend.position="none") +
+  theme_bw()
 @
 
 \end{frame}
@@ -287,7 +289,7 @@ parameters {
 
 model {
   // Prior
-  increment_log_prob(-5*log(alpha+beta)/2); // improper prior
+  target += -5*log(alpha+beta)/2; // improper prior
 
   // Hierarchical model
   theta ~ beta(alpha,beta);
@@ -336,7 +338,10 @@ theta = draws$theta
 colnames(theta) = paste("theta_",1:ncol(theta), sep="")
 theta_m = melt(theta, varnames=c("iterations", "theta"))
 theta_m$product = levels(d$product_id)[theta_m$theta]
-ggplot(theta_m, aes(x=value, fill=product)) +  geom_density(alpha=0.5)
+
+ggplot(theta_m, aes(x=value, fill=product)) +  
+  geom_density(alpha=0.5) +
+  theme_bw()
 @
 
 \end{frame}
@@ -380,10 +385,12 @@ other = rbind(data.frame(parameter = "alpha", value = as.numeric(draws$alpha)),
               data.frame(parameter = "prior_sample_size",   value = as.numeric(draws$alpha+draws$beta)),
               data.frame(parameter = "prior_mean",   value = as.numeric(draws$alpha/(draws$alpha+draws$beta))),
               data.frame(parameter = "prior_stars",   value = 1+4*as.numeric(draws$alpha/(draws$alpha+draws$beta))))
+
 ggplot(other, aes(x=value)) +  
   geom_histogram(aes(y=..density..)) + 
   facet_wrap(~parameter, scales="free")  +
-  theme(legend.position="none")
+  theme(legend.position="none") +
+  theme_bw()
 @
 
 \end{frame}
@@ -468,11 +475,12 @@ head(ytilde2)
 ytilde2_m = melt(ytilde2, id.vars="X1")
 truth = data.frame(variable = paste("n",1:5,sep=""),
                    observed = as.numeric(for_table[2,2:6]))
+
 ggplot(ytilde2_m, aes(x=value)) + 
   geom_histogram(aes(y=..density..), binwidth=1) + 
   facet_wrap(~variable, scales="free") + 
-  geom_vline(data=truth, aes(xintercept=observed), color="red")
-  
+  geom_vline(data=truth, aes(xintercept=observed), color="red") +
+  theme_bw()
 @
 
 \end{frame}
@@ -549,13 +557,13 @@ transformed parameters {
   ordered[4] alpha;             // cut points
   simplex[5] theta[n_products]; // each theta vector sums to 1
 
-  alpha[1] <- 0; for (i in 1:3) alpha[i+1] <- alpha[i] + alpha_diff[i];
+  alpha[1] = 0; for (i in 1:3) alpha[i+1] = alpha[i] + alpha_diff[i];
 
   for (p in 1:n_products) {
-    theta[p,1] <- Phi(-mu[p]);
+    theta[p,1] = Phi(-mu[p]);
     for (j in 2:4) 
-      theta[p,j] <- Phi(alpha[j]-mu[p]) - Phi(alpha[j-1]-mu[p]);
-    theta[p,5] <- 1-Phi(alpha[4]-mu[p]);
+      theta[p,j] = Phi(alpha[j]-mu[p]) - Phi(alpha[j-1]-mu[p]);
+    theta[p,5] = 1-Phi(alpha[4]-mu[p]);
   }
 }
 
@@ -601,7 +609,10 @@ mu = draws$mu
 colnames(mu) = paste("mu_",1:ncol(mu), sep="")
 mu_m = melt(mu, varnames=c("iterations", "mu"))
 mu_m$product = levels(d$product_id)[mu_m$mu]
-ggplot(mu_m, aes(x=value, fill=product)) +  geom_density(alpha=0.5)
+
+ggplot(mu_m, aes(x=value, fill=product)) +  
+  geom_density(alpha=0.5) +
+  theme_bw()
 @
 
 \end{frame}
