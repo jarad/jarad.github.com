@@ -1,0 +1,332 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set 15 - Comparing probabilities}
+
+% \newenvironment{remark}[1][Remark]{\begin{trivlist}
+% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Comparing probabilities}
+\subsection{One probability}
+\begin{frame}
+\frametitle{One probability}
+
+Consider the model $Y\sim Bin(n,\theta)$ or, equivalently, 
+$Y_i \ind Ber(\theta)$. 
+\pause
+We have discussed a number of statistical procedures to draw inferences about
+$\theta$: \pause
+\begin{itemize}
+\item pvalue for a hypothesis test, e.g. $H_0: \theta=\theta_0$, \pause
+\item confidence interval for $\theta$, \pause
+\item credible interval for $\theta$, \pause
+\item posterior model probability, e.g. $p(H_0|y)$, \pause and
+\item probability statements, e.g. $P(\theta<\theta_0|y)$. 
+\end{itemize}
+\pause
+Now, we will consider what happens when you have multiple $\theta$s. 
+
+\end{frame}
+
+
+\subsection{Two probabilities}
+\begin{frame}
+\frametitle{Two probabilities}
+
+Consider the model 
+\[ Y_i \sim Bin(n_i,\theta_i)\] 
+for $i=1,2$ 
+\pause 
+and you are interested in the relationship between $\theta_1$ and $\theta_2$. 
+\pause
+We can perform the following statistical procedures:
+\begin{itemize}
+\item pvalue for a hypothesis test, e.g. $H_0: \theta_1=\theta_2$, \pause
+\item confidence interval for $\theta_1-\theta_2$, \pause
+\item credible interval for $\theta_1-\theta_2$, \pause
+\item posterior model probability, e.g. $p(H_0|y)$, \pause and
+\item probability statements, e.g. $P(\theta_1<\theta_2|y)$. 
+\end{itemize}
+where $y=(y_1,y_2)$. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Data example}
+
+Suppose you have two manufacturing processes and you are interested in which
+process has the larger probability of being within the specifications. 
+
+\vspace{0.1in} \pause
+
+So you run the two processes and record the number of successful products 
+produced:
+\pause
+\begin{itemize}
+\item Process 1: 135 successful products out of 140 attempts
+\item Process 2: 216 successful products out of 230 attempts
+\end{itemize}
+
+\pause
+
+In R, you can code this as two vectors: 
+<<>>=
+successes = c(135,216)
+attempts  = c(140,230)
+@
+
+\pause
+or, better yet, as a data.frame:
+<<>>=
+d = data.frame(process   = factor(1:2),
+               successes = successes,
+               attempts  = attempts)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Pvalues and confidence intervals}
+
+Because there is no indicating that you expect one of the two manufacturing 
+processes to have a higher probability, 
+you should perform a two-sided hypothesis test and calculate a two-sided
+confidence interval.
+
+\pause
+
+<<>>=
+(pt <- prop.test(d$successes, d$attempts))
+pt$p.value; pt$conf.int
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Posteriors}
+
+<<fig.height=3>>=
+posterior <- function(d) {
+  data.frame(theta = seq(.85,1,length=101)) %>%
+       mutate(density = dbeta(theta, 1+d$successes, 1+d$attempts-d$successes))
+}
+
+dp <- d %>% group_by(process) %>% do(posterior(.))
+  
+ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=process)) + 
+  geom_line() + theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible interval for the difference}
+
+To obtain statistical inference on the difference, 
+we draw samples from the posterior and then calculate the difference:
+
+<<>>=
+n      <- 1e5
+theta1 <- rbeta(n, 1+d$success[1], 1+d$attempts[1] - d$success[1])
+theta2 <- rbeta(n, 1+d$success[2], 1+d$attempts[2] - d$success[2])
+diff   <- theta1 - theta2
+
+# Bayes estimate for the difference
+mean(diff)
+
+# Estimated 95% equal-tail credible interval
+quantile(diff, c(.025,.975))
+
+# Estimate of the probability that theta1 is larger than theta2
+mean(diff > 0)
+@
+
+\end{frame}
+
+
+
+\subsection{Multiple probabilities}
+\begin{frame}
+\frametitle{Multiple probabilities}
+
+Now, let's consider the more general problem of 
+\[ Y_i \sim Bin(n_i,\theta_i)\] 
+for $i=1,2,\ldots,J$ 
+\pause
+and you are interested in the relationship amongst the $\theta_j$. 
+
+\vspace{0.1in} \pause
+
+We can perform the following statistical procedures:
+\begin{itemize}
+\item pvalue for a hypothesis test, e.g. $H_0: \theta_i=\theta$ for all $i$, \pause
+\item confidence interval for $\theta_i-\theta_j$ for a specified $i$ and $j$, \pause
+\item credible interval for $\theta_i-\theta_j$ for a specified $i$ and $j$, \pause
+\item posterior model probability, e.g. $p(H_0|y)$, \pause and
+\item probability statements, e.g. $P(\theta_i<\theta_i|y)$ for a specified $i$ and $j$. 
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Data example}
+
+Suppose you have two manufacturing processes and you are interested in which
+process has the larger probability of being within the specifications. 
+
+\vspace{0.1in} \pause
+
+So you run the two processes and record the number of successful products 
+produced:
+\pause
+\begin{itemize}
+\item Process 1: 135 successful products out of 140 attempts
+\item Process 2: 216 successful products out of 230 attempts
+\item Process 3: 10 successful products out of 10 attempts
+\end{itemize}
+
+\pause
+
+In R, you can code this as two vectors: 
+<<>>=
+successes = c(135,216,10)
+attempts  = c(140,230,10)
+@
+
+\pause
+or, better yet, as a data.frame:
+<<>>=
+d = data.frame(process   = factor(1:3),
+               successes = successes,
+               attempts  = attempts)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Pvalues and confidence intervals}
+
+Because there is no indicating that you expect one of the two manufacturing 
+processes to have a higher probability, 
+you should perform a two-sided hypothesis test and calculate a two-sided
+confidence interval.
+
+\pause
+
+<<>>=
+prop.test(d$successes, d$attempts)
+prop.test(d$successes[c(1,3)], d$attempts[c(1,3)])$conf.int
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{An alternative test}
+
+An alternative test for equality amongst the proportions uses {\tt chisq.test()}.
+
+<<>>=
+d$failures <- d$attempts - d$successes
+chisq.test(d[c("successes","failures")])
+chisq.test(d[c("successes","failures")], simulate.p.value = TRUE)
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Posteriors}
+
+<<fig.height=3>>=
+posterior <- function(d) {
+  data.frame(theta = seq(.85,1,length=101)) %>%
+       mutate(density = dbeta(theta, 1+d$successes, 1+d$attempts-d$successes))
+}
+
+dp <- d %>% group_by(process) %>% do(posterior(.))
+  
+ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=process)) + 
+  geom_line() + theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible interval for the difference}
+
+To compare the probabilities, 
+we draw samples from the posterior and compare them.
+
+<<>>=
+posterior_samples <- function(d) {
+  data.frame(
+    rep = 1:1e5,
+    name = paste0("theta", d$process),
+    theta = rbeta(1e5, 1+d$successes, 1+d$attempts-d$successes),
+    stringsAsFactors = FALSE) 
+}
+
+draws <- d %>% group_by(process) %>% do(posterior_samples(.)) %>% ungroup() %>%
+  select(-process) %>% tidyr::spread(name, theta)
+
+# Estimate of the comparison probabilities
+draws %>% 
+  summarize(`P(theta1>theta2|y)` = mean(draws$theta1 > draws$theta2),
+            `P(theta1>theta3|y)` = mean(draws$theta1 > draws$theta3),
+            `P(theta2>theta3|y)` = mean(draws$theta2 > draws$theta3)) %>%
+  gather(comparison, probability)
+@
+
+\end{frame}
+
+
+
+\end{document}
+
+
+

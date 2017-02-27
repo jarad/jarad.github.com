@@ -36,6 +36,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Confidence intervals|[Set12.Rnw](Set12/Set12_Confidence_intervals.Rnw)|[Set12.pdf](Set12/Set12_Confidence_intervals.pdf)|
 |Pvalues|[Set13.Rnw](Set13/Set13_Pvalues.Rnw)|[Set13.pdf](Set13/Set13_Pvalues.pdf)|
 |Posterior model probabilities|[Set14.Rnw](Set14/Set14_Posterior_model_probabilities.Rnw)|[Set14.pdf](Set14/Set14_Posterior_model_probabilities.pdf)|
+|Comparing probabilities|[Set15.Rnw](Set15/Set15_Comparing_probabilities.Rnw)|[Set15.pdf](Set15/Set15_Comparing_probabilities.pdf)|
 
   
 
