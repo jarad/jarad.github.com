@@ -25,7 +25,7 @@ Below are source (Rnw) and handouts for all course lectures. Instructions for co
 | |Comparison to LRTs|[Ch07b.Rnw](Ch07/Ch07b.Rnw)|[Ch07b.pdf](Ch07/Ch07b.pdf)|
 |9|Decision theory|[Ch09.Rnw](Ch09/Ch09.Rnw)|[Ch09.pdf](Ch09/Ch09.pdf)|
 |R|Amazon reviews analysis|[AmazonReview.Rnw](AmazonReviews/AmazonReviews.Rnw)|[AmazonReview.pdf](AmazonReviews/AmazonReviews.pdf)|
-| |Midterm review|[MidtermReview.Rnw](MidtermReview/midterm_review.Rnw)|[MidtermReview.pdf](MidtermReview/midterm_review.pdf)|
+| |Midterm review|[MidtermReview.Rnw](MidtermReview/MidtermReview.Rnw)|[MidtermReview.pdf](MidtermReview/MidtermReview.pdf)|
 |10|Bayesian computation|[Ch10a.Rnw](Ch10/Ch10a.Rnw)|[Ch10a.pdf](Ch10/Ch10a.pdf)|
 ||ARS and Importance sampling|[Ch10b.Rnw](Ch10/Ch10b.Rnw)|[Ch10a.pdf](Ch10/Ch10b.pdf)|
 |11|Metropolis-Hastings|[Ch11a.Rnw](Ch11/Ch11a.Rnw)|[Ch11a.pdf](Ch11/Ch11a.pdf)|
