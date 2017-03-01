@@ -1,0 +1,374 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set 16 - Comparing means}
+
+% \newenvironment{remark}[1][Remark]{\begin{trivlist}
+% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Comparing means}
+\subsection{One mean}
+\begin{frame}
+\frametitle{One mean}
+
+Consider the model $Y_i \ind N(\mu,\sigma^2)$. 
+\pause
+We have discussed a number of statistical procedures to draw inferences about
+$\mu$: \pause
+\begin{itemize}
+\item pvalue for a hypothesis test, e.g. $H_0: \mu=\mu_0$, \pause
+\item confidence interval for $\mu$, \pause
+\item credible interval for $\mu$, \pause
+\item posterior model probability, e.g. $p(H_0|y)$, \pause and
+\item probability statements, e.g. $P(\mu<\mu_0|y)$. 
+\end{itemize}
+\pause
+Now, we will consider what happens when you have multiple $\mu$s. 
+
+\end{frame}
+
+
+\subsection{Two means}
+\begin{frame}
+\frametitle{Two means}
+
+Consider the model 
+\[ Y_{i,j} \sim N(\mu_i,\sigma_i^2)\] 
+for $i=1,2$ and $j=1,\ldots,n_i$.  
+\pause 
+and you are interested in the relationship between $\mu_1$ and $\mu_2$. 
+\pause
+We can perform the following statistical procedures:
+\begin{itemize}
+\item pvalue for a hypothesis test, e.g. $H_0: \mu_1=\mu_2$, \pause
+\item confidence interval for $\mu_1-\mu_2$, \pause
+\item credible interval for $\mu_1-\mu_2$, \pause
+\item posterior model probability, e.g. $p(H_0|y)$, \pause and
+\item probability statements, e.g. $P(\mu_1<\mu_2|y)$. 
+\end{itemize}
+where $y=(y_1,y_2)$. 
+
+\end{frame}
+
+<<data, echo=FALSE>>=
+set.seed(20170301)
+d <- bind_rows(
+  data.frame(process = 1, sensitivity = rnorm(22,  7.8, 2.3)),
+  data.frame(process = 2, sensitivity = rnorm(34,  9.3, 3.5)),
+  data.frame(process = 3, sensitivity = rnorm( 7, 10.0, 5.0))) %>%
+  mutate(process = factor(process))
+
+readr::write_csv(d, path="sensitivity.csv")
+@
+
+
+\begin{frame}[fragile]
+\frametitle{Data example}
+
+Suppose you have two manufacturing processes to produce sensors and 
+you are interested in the average sensitivity of the sensors.
+
+\vspace{0.1in} \pause
+
+So you run the two processes and record the sensitivity of each sensor in units 
+of mV/V/mm Hg (\url{http://www.ni.com/white-paper/14860/en/}).
+\pause
+And you have the following summary statistics:
+<<summary, dependson="data">>=
+d <- readr::read_csv("sensitivity.csv")
+sm <- d %>%
+  group_by(process) %>%
+  summarize(
+    n    = n(),
+    mean = mean(sensitivity),
+    sd   = sd(sensitivity)
+  ) 
+sm %>% filter(process <= 2)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Pvalues and confidence intervals}
+
+Because there is no indication that you have any expectation of the 
+sensitivities in process 1 compared to process 2, we will conduct a two-sided
+two-sample t-test assuming the variances are not equal:
+
+\pause
+
+<<>>=
+t.test(sensitivity ~ process, data = d %>% filter(process <= 2))
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Posteriors for $\mu$}
+
+Recall that 
+\[ 
+\mu_i|y_i \sim t_{n_i-1}(\overline{y}_i, s_i/\sqrt{n_i})
+\]
+\pause
+and that a draw for $\mu_i$ can be obtained by taking 
+\[ 
+\overline{y}_i + T_{n_i-1} s_i/\sqrt{n_i}, \quad T_{n_i-1} \sim t_{n_i-1}(0,1).
+\]
+\pause
+
+
+<<mu_draws, dependson="summary">>=
+nr = 1e5
+mu1 <- sm$mean[1] + rt(nr, df = sm$n[1]) * sm$sd[1] / sqrt(sm$n[1])
+mu2 <- sm$mean[2] + rt(nr, df = sm$n[2]) * sm$sd[2] / sqrt(sm$n[2])
+@
+
+
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{We can use these draws to compare the posteriors}
+
+We can obtain posteriors for $\mu$ and plot histograms (or smoothed histograms) 
+to compare the posteriors.
+\pause
+
+<<mu_posteriors, dependson="mu_draws", fig.height=3.5>>=
+plot(density(mu1), main = "Posteriors", xlab=expression(mu))
+lines(density(mu2), col='red', lty=2)
+legend("topleft", paste("Process", 1:2), col=c("black","red"), lty=1:2)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Credible interval for the difference}
+
+To obtain statistical inference on the difference, 
+we use the samples and take the difference
+
+<<mu_difference, dependson="mu_draws">>=
+diff = mu1 - mu2
+
+# Bayes estimate for the difference
+mean(diff)
+
+# Estimated 95% equal-tail credible interval
+quantile(diff, c(.025,.975))
+
+# Estimate of the probability that mu1 is larger than mu2
+mean(diff > 0)
+@
+
+\end{frame}
+
+
+
+\subsection{Multiple means}
+\begin{frame}
+\frametitle{Multiple means}
+
+Now, let's consider the more general problem of 
+\[ Y_i \sim N(\mu_i,\sigma_i^2)\] 
+for $i=1,2,\ldots,J$ 
+\pause
+and you are interested in the relationship amongst the $\mu_j$. 
+
+\vspace{0.1in} \pause
+
+We can perform the following statistical procedures:
+\begin{itemize}
+\item pvalue for a hypothesis test, e.g. $H_0: \mu_i=\mu$ for all $i$, \pause
+\item confidence interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
+\item credible interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
+\item posterior model probability, e.g. $p(H_0|y)$, \pause and
+\item probability statements, e.g. $P(\mu_i<\mu_i|y)$ for a specified $i$ and $j$. 
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Data example}
+
+Suppose you have three manufacturing processes to produce sensors and 
+you are interested in the average sensitivity of the sensors.
+
+\vspace{0.1in} \pause
+
+So you run the three processes and record the sensitivity of each sensor in units 
+of mV/V/mm Hg (\url{http://www.ni.com/white-paper/14860/en/}).
+\pause
+And you have the following summary statistics:
+<<summary2, dependson="summary">>=
+sm
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Pvalues and confidence intervals}
+
+\small
+
+When there are lots of means, the first null hypothesis is typically 
+\[
+H_0: \mu_i = \mu \, \forall \, i 
+\]
+
+\pause
+
+<<ftest, dependson="data">>=
+m <- lm(sensitivity ~ process, data = d)
+anova(m)
+@
+
+\pause
+
+Then we typically want to look at pairwise differences:
+
+<<lsmeans, dependson="ftest">>=
+pairwise.t.test(d$sensitivity, d$process, pool.sd = FALSE, p.adjust.method = "none")
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Posteriors for $\mu$}
+
+Recall that 
+\[ 
+\mu_i|y_i \sim t_{n_i-1}(\overline{y}_i, s_i/\sqrt{n_i})
+\]
+\pause
+and that a draw for $\mu_i$ can be obtained by taking 
+\[ 
+\overline{y}_i + T_{n_i-1} s_i/\sqrt{n_i}, \quad T_{n_i-1} \sim t_{n_i-1}(0,1).
+\]
+\pause
+
+
+<<mu3_draws, dependson="summary">>=
+posterior_samples <- function(d) {
+  data.frame(
+    rep = 1:1e5,
+    parameter = paste0("mu", d$process),
+    value = d$mean + rt(1e5, df = d$n) * d$sd / sqrt(d$n),
+    stringsAsFactors = FALSE) 
+}
+
+draws <- sm %>% group_by(process) %>% do(posterior_samples(.)) %>% ungroup() %>%
+  select(-process)
+@
+
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{We can use these draws to compare the posteriors}
+
+We can obtain posteriors for $\mu$ and plot histograms (or smoothed histograms) 
+to compare the posteriors.
+\pause
+
+<<mu3_posteriors, dependson="mu3_draws", fig.height=3.5, warning=FALSE>>=
+ggplot(draws, aes(x=value, color = parameter, linetype = parameter)) + 
+  geom_density() + theme_bw() + xlim(6,16)
+@
+
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Credible interval for the difference}
+
+To compare the means, 
+we compare the samples drawn from the posterior. 
+
+
+<<mu3_comparison, dependson="mu3_draws">>=
+# Estimate of the probability that one mean is larger than the rest
+draws %>% 
+  tidyr::spread(parameter, value) %>%
+  summarize(`P(mu1>mu2|y)` = mean(mu1 > mu2),
+            `P(mu1>mu3|y)` = mean(mu1 > mu3),
+            `P(mu2>mu3|y)` = mean(mu2 > mu3)) %>%
+  gather(comparison, probability)
+@
+
+\end{frame}
+
+
+
+
+\subsection{Common variance}
+\begin{frame}
+\frametitle{Common variance model}
+
+Especially when there is a small amount of data, 
+it is common to assume that each group has the same variability.
+\pause
+So we typically assume
+\[ 
+Y_{ij} \ind N(\mu_i,\sigma^2)
+\]
+
+\end{frame}
+
+
+\end{document}
+
+
+

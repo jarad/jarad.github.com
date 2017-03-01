@@ -37,6 +37,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Pvalues|[Set13.Rnw](Set13/Set13_Pvalues.Rnw)|[Set13.pdf](Set13/Set13_Pvalues.pdf)|
 |Posterior model probability|[Set14.Rnw](Set14/Set14_Posterior_model_probability.Rnw)|[Set14.pdf](Set14/Set14_Posterior_model_probability.pdf)|
 |Comparing probabilities|[Set15.Rnw](Set15/Set15_Comparing_probabilities.Rnw)|[Set15.pdf](Set15/Set15_Comparing_probabilities.pdf)|
+|Comparing means|[Set16.Rnw](Set16/Set16_Comparing_means.Rnw)|[Set16.pdf](Set16/Set16_Comparing_means.pdf)|
 
   
 
