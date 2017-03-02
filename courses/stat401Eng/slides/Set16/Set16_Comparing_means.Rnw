@@ -82,6 +82,9 @@ where $y=(y_1,y_2)$.
 
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Simulating data}
 <<data, echo=FALSE>>=
 set.seed(20170301)
 d <- bind_rows(
@@ -92,6 +95,7 @@ d <- bind_rows(
 
 readr::write_csv(d, path="sensitivity.csv")
 @
+\end{frame}
 
 
 \begin{frame}[fragile]
@@ -144,7 +148,7 @@ t.test(sensitivity ~ process, data = d %>% filter(process <= 2))
 
 Recall that 
 \[ 
-\mu_i|y_i \sim t_{n_i-1}(\overline{y}_i, s_i/\sqrt{n_i})
+\mu_i|y_i \sim t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
 \]
 \pause
 and that a draw for $\mu_i$ can be obtained by taking 
@@ -156,8 +160,8 @@ and that a draw for $\mu_i$ can be obtained by taking
 
 <<mu_draws, dependson="summary">>=
 nr = 1e5
-mu1 <- sm$mean[1] + rt(nr, df = sm$n[1]) * sm$sd[1] / sqrt(sm$n[1])
-mu2 <- sm$mean[2] + rt(nr, df = sm$n[2]) * sm$sd[2] / sqrt(sm$n[2])
+mu1 <- sm$mean[1] + rt(nr, df = sm$n[1]-1) * sm$sd[1] / sqrt(sm$n[1])
+mu2 <- sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2])
 @
 \end{frame}
 
@@ -207,8 +211,8 @@ mean(diff > 0)
 \frametitle{Multiple means}
 
 Now, let's consider the more general problem of 
-\[ Y_i \sim N(\mu_i,\sigma_i^2)\] 
-for $i=1,2,\ldots,I$ 
+\[ Y_{i,j} \sim N(\mu_i,\sigma_i^2)\] 
+for $i=1,2,\ldots,I$ and $j=1,\ldots,n_i$
 \pause
 and you are interested in the relationship amongst the $\mu_i$. 
 
@@ -306,7 +310,7 @@ pairwise.t.test(d$sensitivity, d$process, pool.sd = FALSE, p.adjust.method = "no
 
 Recall that 
 \[ 
-\mu_i|y_i \sim t_{n_i-1}(\overline{y}_i, s_i/\sqrt{n_i})
+\mu_i|y_i \sim t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
 \]
 \pause
 and that a draw for $\mu_i$ can be obtained by taking 
@@ -321,7 +325,7 @@ posterior_samples <- function(d) {
   data.frame(
     rep = 1:1e5,
     parameter = paste0("mu", d$process),
-    value = d$mean + rt(1e5, df = d$n) * d$sd / sqrt(d$n),
+    value = d$mean + rt(1e5, df = d$n-1) * d$sd / sqrt(d$n),
     stringsAsFactors = FALSE) 
 }
 
@@ -452,9 +456,9 @@ and thus, we obtain joint samples for the $\mu$ by performing the following
 <<mu2_draws, dependson="summary">>=
 nr = 1e5
 sigma <- 1/sqrt( rgamma(nr, shape = sum(sm$n-1)/2, scale = sum((sm$n-1)*sm$sd^2))/2 )
-mu1 <- sm$mean[1] + rt(nr, df = sm$n[1]) * sigma / sqrt(sm$n[1])
-mu2 <- sm$mean[2] + rt(nr, df = sm$n[2]) * sigma / sqrt(sm$n[2])
-mu3 <- sm$mean[3] + rt(nr, df = sm$n[3]) * sigma / sqrt(sm$n[3])
+mu1 <- rnorm(nr, sm$mean[1], sigma / sqrt(sm$n[1]))
+mu2 <- rnorm(nr, sm$mean[2], sigma / sqrt(sm$n[2]))
+mu3 <- rnorm(nr, sm$mean[3], sigma / sqrt(sm$n[3]))
 @
 
 
