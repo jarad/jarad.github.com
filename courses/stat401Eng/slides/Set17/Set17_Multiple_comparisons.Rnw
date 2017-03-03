@@ -1,0 +1,800 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set 17 - Multiple comparisons}
+
+% \newenvironment{remark}[1][Remark]{\begin{trivlist}
+% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Multiple Comparisons}
+\begin{frame}[fragile]
+\frametitle{SAS code and output for one-way ANOVA}
+
+Female mice were randomly assigned to six treatment groups to investigate 
+whether restricting dietary intake increases life expectancy. 
+Diet treatments were:
+
+\begin{itemize}
+\item NP - mice ate unlimited amount of nonpurified, standard diet
+\item N/N85 - mice fed normally before and after weaning. After weaning, ration was controlled at 85 kcal/wk
+\item N/R50 - normal diet before weaning and reduced calorie diet (50 kcal/wk) after weaning
+\item R/R50 - reduced calorie diet of 50 kcal/wk both before and after weaning
+\item N/R50 lopro - normal diet before weaning, restricted diet (50 kcal/wk) after weaning and dietary protein content decreased with advancing age
+\item N/R40 - normal diet before weaning and reduced diet (40 Kcal/wk) after weaning.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Exploratory analysis}
+
+<<>>=
+library("Sleuth3")
+# head(case0501)
+summary(case0501)
+case0501 <- case0501 %>% 
+  mutate(Diet = factor(Diet, c("NP","N/N85","N/R50","R/R50","lopro","N/R40")),
+         Diet = recode(Diet, lopro = "N/R50 lopro"))
+case0501 %>% group_by(Diet) %>% summarize(n=n(), mean = mean(Lifetime), sd = sd(Lifetime))
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{}
+
+<<fig.height=4>>=
+ggplot(case0501, aes(x=Diet, y=Lifetime)) +
+  geom_jitter(width=0.2) +
+  geom_boxplot(fill=NA, color='blue', outlier.color = NA) + 
+  coord_flip() +
+  theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Are the data compatible with a common mean?}
+
+Let $Y_{ij}$ represent the lifetime of mouse $j$ in diet $i$ for 
+$i=1,\ldots,I$ and $j=1,\ldots,n_i$. 
+\pause
+Assume $Y_{ij} \ind N(\mu_i,\sigma^2)$ and calculate a pvalue for 
+$H_0: \mu_i=\mu$ for all $i$. 
+
+\pause 
+
+<<>>=
+bartlett.test(Lifetime ~ Diet, data = case0501)
+oneway.test(Lifetime ~ Diet, data = case0501, var.equal = TRUE)
+oneway.test(Lifetime ~ Diet, data = case0501, var.equal = FALSE)
+@
+
+\end{frame}
+
+
+
+\subsection{Statistical testing errors}
+\begin{frame}
+\frametitle{Statistical testing errors}
+
+
+\begin{definition}
+A \alert{type I error} occurs when a true null hypothesis is rejected.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\begin{definition}
+A \alert{type II error} occurs when a false null hypothesis is not rejected. 
+\pause 
+\alert{Power} is one minus the type II error probability.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+We set our significance level $a$ to control the type I error probability. 
+\pause 
+If we set $a=0.05$, 
+then we will incorrectly reject a true null hypothesis 5\% of the time.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Statistical testing errors}
+
+\begin{center}
+\begin{tabular}{l|ll}
+& \multicolumn{2}{c}{Truth} \\
+Decision       & $H_0$ true   & $H_0$ false \\
+\hline
+$H_0$ not true & Type I error & Correct (power) \\
+$H_0$ true     & Correct      & Type II error \\
+\hline
+\end{tabular}
+\end{center}
+ 
+\vspace{0.1in} \pause
+
+\begin{definition}
+The \alert{familywise error rate} is the probability of rejecting at least one
+true null hypothesis.
+\end{definition}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Type I error for all pairwise comparisons of $J$ groups}
+  How many combinations when choosing 2 items out of $J$? \pause
+	\[ {J\choose 2} \pause = \frac{J!}{2!(J-2)!}. \]
+  If $J=6$, then there are 15 different comparison of means. 
+  \pause 
+  If we set $a=0.05$ as our significance level, 
+  then individually each test will only incorrectly reject 5\% of the time.
+
+	\vspace{0.2in} \pause
+
+  If we have 15 tests and use $a=0.05$, what is the familywise error rate? \pause
+	\[ 1-(1-0.05)^{15} \pause = 1-(0.95)^{15} = 1-0.46 = 0.54 \]
+
+	\pause
+
+  So there is a greater than 50\% probability of falsely rejecting at least one 
+  true null hypothesis!
+\end{frame}
+
+
+
+
+\subsection{Bonferroni correction}
+\begin{frame}[fragile]
+\frametitle{Bonferroni correction}
+
+\begin{definition}
+If we do $m$ tests and want the familywise error rate to be $a$, 
+the \alert{Bonferroni correction} uses $a/m$ for each individual test. 
+\pause 
+The familywise error rate, for independent tests, is $1-(1-a/m)^m$.
+\end{definition}
+\pause
+<<echo=FALSE, fig.height=3.5>>=
+m = 1:20
+plot(m, 1-(1-.05/m)^m, ylim=c(0,0.05), type="l", lwd=2,
+     xlab="Number of tests", ylab="Familywise error rate", 
+     main="Bonferroni familywise error rate")
+lines(m, 1-(1-.01/m)^m, lty=2, col=2, lwd=2)
+legend("right", paste("alpha=",c(.05,.01)), lwd=2, lty=1:2, col=1:2)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Pairwise comparisons}
+
+If we want to consider all pairwise comparisons of the average lifetimes on the
+6 diets, we have 15 tests. 
+\pause
+In order to maintain a familywise error rate of 0.05, 
+we need a significance level of 0.05/15 = \Sexpr{0.05/15}.
+\pause
+<<>>=
+pairwise.t.test(case0501$Lifetime, case0501$Diet, p.adjust.method = "none")
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Pairwise comparisons}
+
+If we want to consider all pairwise comparisons of the average lifetimes on the
+6 diets, we have 15 tests. 
+\pause
+Alternatively, you can let R do the adjusting for you, but now you need to 
+compare with the original significance level $a$. 
+\pause
+<<>>=
+pairwise.t.test(case0501$Lifetime, case0501$Diet, p.adjust.method = "bonferroni")
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Comments on the Bonferroni correction}
+
+
+The Bonferroni correction can be used in any situation. 
+\pause 
+In particular, it can be used on unadjusted pvalues reported in an article that 
+has many tests by comparing their pvalues to $a/m$ where $m$ is the number of 
+tests they perform.
+
+
+\vspace{0.2in} \pause
+
+
+The Bonferroni correction is (in general) the {\bf most} conservative multiple 
+comparison adjustment, i.e. it will lead to the least null hypothesis rejections.
+
+
+\end{frame}
+
+
+
+
+
+
+\subsection{Constructing multiple confidence intervals}
+\begin{frame}
+\frametitle{Constructing multiple confidence intervals}
+
+
+A $100(1-a)$\% confidence interval should contain the true value $100(1-a)$\% 
+of the time when used with different data sets.
+
+
+\vspace{0.2in} \pause
+
+
+An error occurs if the confidence interval does not contain the true value.
+
+
+\vspace{0.2in} \pause
+
+Just like the Type I error and familywise error rate, 
+we can ask what is the probability at least one confidence interval does not 
+cover the true value.
+
+\vspace{0.2in} \pause
+
+The procedures we will talk about for confidence intervals have equivalent 
+approaches for hypothesis testing (pvalues). 
+\pause 
+Within these procedures we still have the equivalence between pvalues and CIs.
+
+\end{frame}
+
+
+
+\frame{\frametitle{Constructing multiple confidence intervals}
+	Confidence interval for the difference between group $j$ and group $j'$:\pause
+	\[ \overline{Y}_j - \overline{Y}_{j'} \pm M \,s_p \sqrt{\frac{1}{n_j}+\frac{1}{n_{j'}}} \]
+	\pause where $M$ is a multiplier that depends on the adjustment procedure:
+
+	\vspace{0.2in} \pause
+
+	{\small
+	\begin{center}
+	\begin{tabular}{|l|c|l|}
+	\hline
+	Procedure & M & \multicolumn{1}{c|}{Use}  \\
+	\hline\pause
+	LSD & $t_{n-J}(1-a/2)$ & After significant $F$-test \\
+	&& (no adjustment) \pause \\
+	Dunnett & multivariate $t$ & Compare all groups to control \pause \\
+	Tukey-Kramer & $q_{J,n-J}(1-a)/\sqrt{2}$ & All pairwise comparisons \pause \\
+	Scheff\'e & $\sqrt{(J-1)F_{(J-1,n-J)}(1-a)}$ & All contrasts \pause \\
+	\alert{Bonferroni} & $t_{n-J}(1-(a/m)/2)$ &$m$ tests \\
+	&  & (most generic) \\
+	\hline
+	\end{tabular}
+	\end{center}
+	}
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Tukey for all pairwise comparisons}
+
+<<>>=
+TukeyHSD(aov(Lifetime ~ Diet, data = case0501))
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{False Discovery Rate}
+
+
+Not wanting to make a single mistake is pretty conservative.
+
+
+\pause
+
+In high-throughput fields a more common multiple comparison adjustment is false 
+discovery rate.
+
+\vspace{0.2in} \pause
+
+\begin{definition}
+\alert{False discovery rate} procedures try to control the expected proportion 
+of incorrectly rejected null hypotheses.
+\end{definition}
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{How to incorporate multiple comparison adjustments}
+
+\begin{enumerate}
+\item Determine what tests are going to be run (before looking at the data) or 
+what confidence intervals are going to be constructed.
+\item Determine which multiple comparison adjustment is the most relevant
+\item Use/state that adjustment and interpret your results
+\end{enumerate}
+
+\end{frame}
+
+
+% 
+% 
+% \section{Data analysis: sulfur effect on scab disease in potatoes}
+% \frame{\frametitle{Sulfur effect on scab disease in potatoes}
+% \begin{quote}
+% The experiment was conducted to investigate the effect of sulfur on controlling scab disease in potatoes. There were seven treatments: control, plus spring and fall application of 300, 600, 1200 lbs/acre of sulfur. The response variable was percentage of the potato surface area covered with scab averaged over 100 random selected potatoes. A completely randomized design was used with 8 replications of the control and 4 replications of the other treatments. 
+% \end{quote}
+% {\tiny 
+% Cochran and Cox. (1957) Experimental Design (2nd ed). pg96 and Agron. J. 80:712-718 (1988)
+% }
+% 
+% \vspace{0.2in} \pause
+% 
+% Scientific question:
+% \begin{itemize}[<+->]
+% \item Does sulfur have any impact at all?
+% \item Is there a difference between spring and fall?
+% \item Is there an effect of increased sulfur {\footnotesize (expect more sulfur causes less scab)}?
+% \end{itemize}
+% }
+% 
+% 
+% \subsection{Exploratory}
+% \begin{frame}[fragile]
+% \frametitle{Data}
+% <<echo=FALSE>>=
+% d = read.csv("potato.csv")
+% d
+% d$sulfur = as.numeric(gsub("\\D","",d$trt))*100
+% d$sulfur[is.na(d$sulfur)] = 0
+% d$application = NA
+% d$application[grep("F",d$trt)] = "fall"
+% d$application[grep("S",d$trt)] = "spring"
+% d$application = factor(d$application)
+% 
+% d$trt = factor(d$trt, levels=c("F12","F6","F3","O","S3","S6","S12"), ordered=TRUE)
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{Design}
+% <<echo=FALSE>>=
+% plot(0,0, xlab="Sulfur (lbs/acre)", ylab="Application", main="Treatment visualization",
+%      type="n", axes=F,
+%      xlim=c(-100,1500), ylim=c(.5,2.5))
+% axis(1, c(0,300,600,1200), lwd=0)
+% axis(2, c(1,2), c("spring","fall"), lwd=0)
+% xc = c(0,300,300,600,600,1200,1200)
+% yc = c(1.5,1,2,1,2,1,2)
+% rect(xc-100,yc-.4,xc+100,yc+.4)
+% text(xc,yc, c(8,rep(4,6)))
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% \frametitle{Design}
+% <<echo=FALSE>>=
+% plot(0,0, xlab="col", ylab="row", main="Completely randomized design\n potato scab experiment",
+%      xlim=range(d$col)+c(-.5,.5), ylim=range(d$row)+c(-.5,.5), axes=F, type="n")
+% text(d$col, d$row, d$trt)
+% axis(1, 1:8, lwd=0)
+% axis(2, 1:4, lwd=0)
+% segments(1:9-.5,0.5,1:9-.5,4.5)
+% segments(0.5,1:5-.5,8.5,1:5-.5)
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% \frametitle{Data}
+% <<echo=FALSE>>=
+% qplot(trt, inf, data=d, geom=c("boxplot","jitter"), xlab="Sulfur", ylab="Scab percent")
+% @
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% \frametitle{Data}
+% <<echo=FALSE>>=
+% qplot(sulfur, inf, data=d, color=application, geom="jitter", xlab="Sulfur", ylab="Scab percent")
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{Data}
+% <<echo=FALSE>>=
+% qplot(col, inf, data=d, color=application, geom="jitter", xlab="Column ID", ylab="Scab percent")
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{Data}
+% <<echo=FALSE>>=
+% qplot(row, inf, data=d, color=application, geom="jitter", xlab="Row ID", ylab="Scab percent")
+% @
+% \end{frame}
+% 
+% 
+% 
+% 
+% \subsection{Model}
+% \frame{\frametitle{Model}
+% $Y_{ij}$: avg \% of surface area covered with scab for plot $i$ in treatment $j$ for $j=1,\ldots,7$. 
+% 
+% \vspace{0.2in} \pause 
+% 
+% Assume $Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2)$. 
+% 
+% \vspace{0.2in} \pause
+% 
+% Hypotheses:
+% \begin{itemize}[<+->]
+% \item Difference amongst any means: One-way ANOVA F-test
+% \item \emph{Any effect}: Control vs sulfur
+% \item \emph{Fall vs spring}: Contrast comparing fall vs spring applications
+% \item \emph{Sulfur level}: Linear trend contrast
+% \end{itemize}
+% }
+% 
+% 
+% \begin{frame}
+% \frametitle{Control vs sulfur}
+% 
+% \[ \begin{array}{rl} 
+% \gamma &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12})- \mu_O \pause \\ \\
+%  &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12}- 6\mu_O)  
+% \end{array} \] 
+% 
+% \end{frame}
+% 
+% 
+% 
+% \frame{\frametitle{Fall vs spring contrast}
+% 
+% \begin{itemize}
+% \item \emph{Fall vs spring}: Contrast comparing fall vs spring applications \pause 
+% 
+% \[ \begin{array}{rl} 
+% \gamma &= \frac{1}{3} (\mu_{F12}+ \mu_{F6} + \mu_{F3})+ 0 \mu_O -\frac{1}{3} (\mu_{S3} + \mu_{S6} + \mu_{S12}) \pause \\ \\
+% &= \frac{1}{3} \mu_{F12} + \frac{1}{3} \mu_{F6} + \frac{1}{3} \mu_{F3} + 0 \mu_O -\frac{1}{3} \mu_{S3} -\frac{1}{3} \mu_{S6} -\frac{1}{3} \mu_{S12} \pause \\ \\
+% &= \frac{1}{3} \left[\mu_{F12} + \mu_{F6} + \mu_{F3} + 0 \mu_O -1 \mu_{S3} -1 \mu_{S6} -1 \mu_{S12} \right] 
+% \end{array} \] 
+% 
+% \end{itemize}	
+% }
+% 
+% 
+% \frame{\frametitle{Sulfur level: linear trend contrasts}
+% 
+% \begin{itemize}[<+->]
+% \item The unique sulfur levels ($X_i$) are 0, 3, 6, and 12. \pause 
+% \item So the linear trend contrast ($X_i-\overline{X}$) is
+% \[ \begin{array}{ccccc}
+% X_i & 0 & 3 & 6 & 12 \\
+% \hline
+% X_i-\overline{X} & -\frac{21}{4} & -\frac{9}{4} & \frac{3}{4} & \frac{27}{4} 
+% \end{array} \]
+% \item But 3, 6, and 12 are duplicated, so we need the average of the groups 
+% 
+% \pause
+% 
+% \[ \begin{array}{rl}
+% \gamma &= -\frac{21}{4} \mu_0 - \frac{9}{4} \mu_3 + \frac{3}{4} \mu_6 + \frac{27}{4} \mu_{12} \pause \\ \\
+% &= -\frac{21}{4} \mu_0 - \frac{9}{4} \left( \frac{\mu_{S3}+\mu_{F3}}{2} \right) + \frac{3}{4} \left( \frac{\mu_{S6}+\mu_{F6}}{2} \right) + \frac{27}{4} \left( \frac{\mu_{S12}+\mu_{F12}}{2} \right) \pause \\ \\
+% &= \frac{1}{8} \left[ -42\mu_0 -9\mu_{S3}-9\mu_{F3}  + 3 \mu_{S6}+ 3\mu_{F6}  + 27 \mu_{S12}+ 27 \mu_{F12} \right]
+% \end{array} \]
+% 	
+% \end{itemize}
+% 	
+% 
+% }
+% 
+% 
+% \begin{frame}
+% \frametitle{Contrasts}
+% 
+% \begin{center}
+% \begin{tabular}{c|ccccccc|c}
+% Trt & F12 & F6 & F3 & O & S3 & S6 & S12 & Div \\
+% \hline
+% Sulfur v control & 1 & 1 & 1 & -6 & 1  & 1 & 1 & 6 \\
+% Fall v Spring & 1 & 1 & 1 & 0 & -1  & -1 & -1 & 3 \\
+% Linear Trend & 27 & 3 & -9 & -42 & -9 & 3 & 27 & 8 \\
+% \hline  
+% \end{tabular}
+% \end{center}
+% 
+% 
+% \end{frame}
+% 
+% 
+% 
+% \frame[containsverbatim]{\frametitle{SAS code}
+% \tiny 
+% \begin{verbatim}
+% DATA d;
+%   INFILE 'potato.csv' DSD FIRSTOBS=2;
+%   INPUT scabp treatment $ row col;
+%   sulfur = 0;
+%   IF treatment in ("F3","S3") THEN sulfur=300;
+%   IF treatment in ("F6","S6") THEN sulfur=600;
+%   IF treatment in ("F12","S12") THEN sulfur=1200;
+%   application = "NA    ";
+%   IF treatment in ("F3","F6","F12") THEN application="fall";
+%   IF treatment in ("S3","S6","S12") THEN application="spring";
+% 
+% PROC PRINT DATA=d (OBS=10); RUN; 
+% 
+% PROC MEANS;
+%   CLASS treatment;
+%   VAR scabp;
+%   RUN;
+% \end{verbatim}
+% }
+% 
+% \frame[containsverbatim]{\frametitle{SAS code}
+% \tiny 
+% \begin{verbatim}
+%                 Obs    scabp    treatment    row    col    sulfur    application
+% 
+%                   1       9        F3         4      1       300       fall     
+%                   2      12        O          4      2         0       NA       
+%                   3      18        S6         4      3       600       spring   
+%                   4      10        F12        4      4      1200       fall     
+%                   5      24        S6         4      5       600       spring   
+%                   6      17        S12        4      6      1200       spring   
+%                   7      30        S3         4      7       300       spring   
+%                   8      16        F6         4      8       600       fall     
+%                   9      10        O          3      1         0       NA       
+%                  10       7        S3         3      2       300       spring   
+%                                          
+%                                          
+% 
+%                                        The MEANS Procedure
+% 
+%                                    Analysis Variable : scabp 
+%  
+%                     N
+%      treatment    Obs     N            Mean         Std Dev         Minimum         Maximum
+%      --------------------------------------------------------------------------------------
+%      F12            4     4       5.7500000       2.8722813       4.0000000      10.0000000
+%      F3             4     4       9.5000000       4.9328829       4.0000000      16.0000000
+%      F6             4     4      15.5000000       3.7859389      10.0000000      18.0000000
+%      O              8     8      22.6250000       8.3655330      10.0000000      32.0000000
+%      S12            4     4      14.2500000       4.8562674       7.0000000      17.0000000
+%      S3             4     4      16.7500000      10.7819293       7.0000000      30.0000000
+%      S6             4     4      18.2500000       4.9244289      12.0000000      24.0000000
+%      --------------------------------------------------------------------------------------
+% \end{verbatim}
+% }
+% 
+% 
+% 
+% 
+% \frame[containsverbatim]{\frametitle{SAS code}
+% \tiny 
+% \begin{verbatim}
+% PROC GLM DATA=d PLOTS=(DIAGNOSTICS RESIDUALS);
+%   CLASS treatment;
+%   MODEL scabp = treatment / CLPARM;
+%   LSMEANS treatment / CL;
+%   ESTIMATE 'sulfur - control' treatment 1 1 1 -6 1 1 1 / DIVISOR=6;
+%   ESTIMATE 'fall - spring' treatment 1 1 1 0 -1 -1 -1 / DIVISOR=3;
+%   ESTIMATE 'linear trend'  treatment 27 -9 3 -42 27 -9 3 / DIVISOR=8;
+%   OUTPUT OUT=dres P=predicted R=residuals;
+%   RUN;
+% 
+% PROC GPLOT DATA=dres;
+%   PLOT residuals*predicted;
+%   PLOT residuals*sulfur;
+%   PLOT residuals*application;
+%   PLOT residuals*row;
+%   PLOT residuals*col;
+%   RUN;
+% \end{verbatim}
+% }
+% 
+% 
+% 
+% \subsection{Diagnostics}
+% \frame{\frametitle{Diagnostics}
+% 	\begin{center}
+% 	\includegraphics{PotatoDiagnosticsPanel}
+% 	\end{center}
+% }
+% 
+% 
+% 
+% 
+% 
+% \subsection{Results}
+% \frame[containsverbatim]{\frametitle{SAS output}
+% \tiny 
+% \begin{verbatim}
+%                                         The GLM Procedure
+% 
+%                                      Class Level Information
+%  
+%                          Class          Levels    Values
+% 
+%                          treatment           7    F12 F3 F6 O S12 S3 S6 
+% 
+% 
+%                              Number of Observations Read          32
+%                              Number of Observations Used          32
+%                                         
+%                                         
+% 
+%  
+% Dependent Variable: scabp   
+% 
+%                                                Sum of
+%        Source                      DF         Squares     Mean Square    F Value    Pr > F
+%        Model                        6      972.343750      162.057292       3.61    0.0103
+%        Error                       25     1122.875000       44.915000                     
+%        Corrected Total             31     2095.218750                                     
+% 
+%                        R-Square     Coeff Var      Root MSE    scabp Mean
+%                        0.464077      42.80633      6.701865      15.65625
+% 
+% \end{verbatim}
+% }
+% 
+% 
+% 
+% \frame[containsverbatim]{\frametitle{SAS output}
+% \tiny 
+% \begin{verbatim}
+%                      treatment    scabp LSMEAN      95% Confidence Limits
+% 
+%                      F12              5.750000       -1.151375    12.651375
+%                      F3               9.500000        2.598625    16.401375
+%                      F6              15.500000        8.598625    22.401375
+%                      O               22.625000       17.744991    27.505009
+%                      S12             14.250000        7.348625    21.151375
+%                      S3              16.750000        9.848625    23.651375
+%                      S6              18.250000       11.348625    25.151375
+% 
+% 
+% 
+%                                         The GLM Procedure
+%  
+% Dependent Variable: scabp   
+% 
+%                                          Standard
+%  Parameter                 Estimate         Error  t Value  Pr > |t|    95% Confidence Limits
+%  sulfur - control        -9.2916667     2.7360251    -3.40    0.0023   -14.9266158   -3.6567175
+%  fall - spring           -6.1666667     2.7360251    -2.25    0.0332   -11.8016158   -0.5317175
+%  linear trend           -68.1562500    21.0269359    -3.24    0.0034  -111.4620350  -24.8504650
+% \end{verbatim}
+% }
+% 
+% 
+% 
+% \subsection{Analysis in R}
+% \begin{frame}[fragile]
+% \frametitle{}
+% <<potato_in_R>>=
+% library(multcomp)
+% K = rbind("sulfur - control" = c(1, 1, 1, -6, 1, 1, 1)/6,
+%           "fall - spring"    = c(1,1,1,0,-1,-1,-1)/3,
+%           "linear trend"     = c(27,3,-9,-42,-9,3,27)/8)
+% m = lm(inf~trt,d)
+% anova(m)
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{}
+% <<>>=
+% par(mfrow=c(2,3))
+% plot(m,1:6)
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{}
+% <<>>=
+% g = glht(lm(inf~trt-1,d), linfct=K) # notice the -1 in the model
+% summary(g, test=adjusted(type="none")) # unadjusted pvalues
+% confint(g, calpha=univariate_calpha()) # unadjusted confidence intervals
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{}
+% <<>>=
+% plot(d$col,residuals(m))
+% @
+% \end{frame}
+% 
+% 
+% 
+% 
+% 
+% 
+% \section{Summary}
+% \frame{\frametitle{Summary}
+% 	For this particular data analysis
+% 	\begin{itemize}[<+->]
+% 	\item Significant differences in means between the groups (ANOVA $F_{6,25}=3.61$ p=0.01)
+%   \item Sulfur had a significant impact on scab (p=0.002)
+% 	\item Fall was better than spring (p=0.03, 95\% CI (0.53, 11.8))
+% 	\item Linear trend in sulfur was significant(p=0.003) 
+% 	
+% 	\vspace{0.2in}\pause
+% 	
+% 	\item Concerned about spatial correlation among columns
+% 	\item Consider a transformation of the response 
+% 		\begin{itemize}
+% 		\item CI for F12 (-1.2, 12.7)
+% 		\item Non-constant variance (residuals vs predicted, sulfur, application)
+% 		\end{itemize}
+% 	\end{itemize}
+% }
+
+
+\end{document}
+
+
+

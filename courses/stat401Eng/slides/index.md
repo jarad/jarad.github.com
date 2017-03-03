@@ -38,6 +38,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Posterior model probability|[Set14.Rnw](Set14/Set14_Posterior_model_probability.Rnw)|[Set14.pdf](Set14/Set14_Posterior_model_probability.pdf)|
 |Comparing probabilities|[Set15.Rnw](Set15/Set15_Comparing_probabilities.Rnw)|[Set15.pdf](Set15/Set15_Comparing_probabilities.pdf)|
 |Comparing means|[Set16.Rnw](Set16/Set16_Comparing_means.Rnw)|[Set16.pdf](Set16/Set16_Comparing_means.pdf)|
+|Multiple comparisons|[Set17.Rnw](Set17/Set17_Multiple_comparisons.Rnw)|[Set17.pdf](Set17/Set17_Multiple_comparisons.pdf)|
 
   
 
