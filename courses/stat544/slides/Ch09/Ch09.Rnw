@@ -20,8 +20,6 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(tidyr)
-library(plyr)
 library(dplyr)
 library(ggplot2)
 @
@@ -34,12 +32,29 @@ set.seed(1)
 
 \frame{\maketitle}
 
+\begin{frame}
+\frametitle{Bayesian statistician}
 
+\begin{definition}
+A \alert{Bayesian statistician} is an individual who makes decisions based on 
+the probability distribution of those things we don't know conditional on what 
+we know, i.e. 
+\[ p(\theta|y, K). \]
+\end{definition}
+
+\end{frame}
+
+
+\section{Bayesian decision theory}
 \begin{frame}
 \frametitle{Bayesian decision theory}
 
-Suppose we have an unknown quantity $\theta$ which we believe follows a probability distribution $p(\theta)$ and a decision (or action) $\delta$. \pause
-For each decision, we have a loss function $L(\theta,\delta)$ that describes how much we lose if $\theta$ is the truth. \pause
+Suppose we have an unknown quantity $\theta$ which we believe follows a 
+probability distribution $p(\theta)$ and a decision (or action) $\delta$. 
+\pause
+For each decision, 
+we have a loss function $L(\theta,\delta)$ that describes how much we lose if 
+$\theta$ is the truth. \pause
 The expected loss is taken with respect to $\theta\sim p(\theta)$, i.e. 
 \[
 E_\theta[L(\theta,\delta)] = \int L(\theta,\delta) p(\theta) d\theta \pause = f(\delta).
@@ -67,15 +82,46 @@ d = data.frame(theta=seq(-2,2,by=0.1)) %>%
   
 ggplot(d, aes(theta, Loss, color=Decision, linetype=Decision)) +
   geom_line(size=2) +
-  theme(legend.position='bottom')
+  theme(legend.position='bottom') +
+  theme_bw()
 @
 
 \end{frame}
 
 
 
+\subsection{Parameter estimation}
+\begin{frame}
+\frametitle{Parameter estimation}
+
+\begin{definition}
+For a given loss function $L(\theta,\hat\theta)$ where $\hat\theta$ is an
+estimator for $\theta$, \pause
+the \alert{Bayes estimator} is the function $\hat\theta$ that minimizes the 
+expected loss, i.e. 
+\[ 
+\hat\theta = \mbox{argmin}_{\hat\theta}\,\, E_{\theta|y}\left[\left.L\left(\theta,\hat\theta\right)\right|y\right].
+\]
+\end{definition}
+
+\pause
+
+Recall that 
+\begin{itemize}[<+->]
+\item $\hat\theta = E[\theta|y]$ minimizes 
+$L(\theta,\hat\theta) = (\theta-\hat\theta)^2$
+\item $0.5 = \int_{-\infty}^{\hat\theta} p(\theta|y) d\theta$ minimizes 
+$L(\theta,\hat\theta) = |\theta-\hat\theta|$
+\item $\hat\theta = \mbox{argmax}_\theta p(\theta|y)$ is found as the minimizer 
+of the sequence of loss functions $L(\theta,\hat\theta) = -\I(|\theta-\hat\theta|<\epsilon)$ 
+as $\epsilon \to 0$
+\end{itemize}
+
+\end{frame}
 
 
+
+\subsection{Choosing a hand}
 \begin{frame}
 \frametitle{Which hand?}
 {\scriptsize
@@ -189,11 +235,13 @@ d = data.frame(theta=1:U) %>%
   mutate(probability_mass_function = dnorm(theta, mu, sigma),
          expected_utility = theta*probability_mass_function,
          expected_utility = expected_utility/sum(expected_utility)) %>%
-  melt(id.vars='theta', variable.name='fxn')
+  tidyr::gather(fxn, value, -theta)
+#  melt(id.vars='theta', variable.name='fxn')
 
 ggplot(d, aes(theta, value, color=fxn, linetype=fxn)) +
   geom_line(size=2) +
-  theme(legend.position='bottom')
+  theme(legend.position='bottom') +
+  theme_bw()
 @
 \end{frame}
 
@@ -255,6 +303,41 @@ Since $q$ must be positive, the answer is
 
 
 \end{frame}
+
+
+\subsection{Sequential decisions}
+\begin{frame}
+\frametitle{Sequential decisions}
+
+Consider a sequence of posteriors distributions $p(\theta_t|y_{1:t})$ that 
+describe your uncertainty about the current state of the world $\theta_t$ given
+the data up to the current time $y_{1:t} = (y_1,\ldots,y_t)$. 
+\pause
+You also have a loss function for the current time $L(\theta_t,\delta_t)$. 
+\pause
+No suppose you are allowed to make a decision $\delta_{t+1}$ at each time $t$ \pause
+and this decision can affect the future states of the world $\theta_{s}$ for 
+$s>t$. 
+
+\vspace{0.1in} \pause
+
+At each time point, 
+we have an optimal Bayes decision, i.e. 
+\[ 
+\mbox{argmin}_{\delta_{t+1}} \,\, 
+\sum_{s=t+1}^\infty E_{\theta_s,\delta_s|y_{1:t}}\left[\left. L\left(\theta_s,\delta_s\right)\right|y_{1:t}\right].
+\]
+
+\pause
+
+But because your decision can affect future states which, in turn, can affect
+future decisions, your current decision needs to integrate over future decisions.
+
+\end{frame}
+
+
+
+
 
 
 
