@@ -18,7 +18,7 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
-- [Steer diet-zinc analysis (obtaining relevant data summaries)](eetings/20170307.html)
+- [Steer diet-zinc analysis (obtaining relevant data summaries)](meetings/20170307.html)
 - [Genotype-treatment interaction (alpha lattice)](meetings/20170221a.html)
 - [Include covariate in cross-over experiment?](meetings/20170221.html)
 - [Cross-over behavioral experiment](meetings/20170124.html)
