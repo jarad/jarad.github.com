@@ -27,6 +27,7 @@ Office hours are
 - [Labs](labs)
 - [Slides](slides)
 - [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
+- [Next courses](../next_courses.html)
 
 
 ## Textbook
