@@ -10,6 +10,7 @@ This is currently a stub to organize consulting files.
 
 ## Resources
 
+- [Nature Medicine Points of Significance](http://www.nature.com/collections/qghhqm/pointsofsignificance)
 - [Ten Simple Rules for Effective Statistical Practice](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004961)
 - [ASA Statement on p-values](http://amstat.tandfonline.com/doi/abs/10.1080/00031305.2016.1154108)
 
@@ -17,6 +18,7 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [Steer diet-zinc analysis (obtaining relevant data summaries)](eetings/20170307.html)
 - [Genotype-treatment interaction (alpha lattice)](meetings/20170221a.html)
 - [Include covariate in cross-over experiment?](meetings/20170221.html)
 - [Cross-over behavioral experiment](meetings/20170124.html)
