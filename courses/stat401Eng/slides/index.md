@@ -40,7 +40,12 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Comparing means|[Set16.Rnw](Set16/Set16_Comparing_means.Rnw)|[Set16.pdf](Set16/Set16_Comparing_means.pdf)|
 |Multiple comparisons|[Set17.Rnw](Set17/Set17_Multiple_comparisons.Rnw)|[Set17.pdf](Set17/Set17_Multiple_comparisons.pdf)|
 
-  
+### Regression
+
+|Topic|Source|Handouts|
+|---|---|---|
+|Simple linear regression|[SetR01.Rnw](SetR01/SetR01_Simple_linear_regression.Rnw)|[SetR01.pdf](SetR01/SetR01_Simple_linear_regression.pdf)|  
+
 
 
 
