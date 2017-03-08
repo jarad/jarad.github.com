@@ -20,8 +20,8 @@ options(width=100)
 @
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
-library(reshape2)
-library(plyr)
+# library(reshape2)
+# library(plyr)
 library(dplyr)
 library(ggplot2)
 library(xtable)
@@ -32,6 +32,7 @@ set.seed(2)
 @
 
 \frame{\maketitle}
+
 
 
 \begin{frame}
@@ -46,6 +47,219 @@ set.seed(2)
 \end{itemize}
 
 \end{frame}
+
+
+\section{Bayesian Model Averaging}
+\begin{frame}
+\frametitle{Bayesian Model Averaging}
+
+The posterior predictive distribution 
+\[ 
+p(\tilde{y}|y) = \int p(\tilde{y}|\theta) p(\theta|y) d\theta
+\]
+assumes there is a true model $p(y|\theta)$ and accounts for the uncertainty in 
+$\theta$.
+
+\vspace{0.1in} \pause
+
+If you want to account for model uncertainty amongst some set of models 
+$M_1,\ldots,M_h$, 
+you can use the Bayesian model averaged posterior predictive distribution
+\[ 
+p(\tilde{y}|y) = \sum_{h=1}^H p(\tilde{y}|M_h, y) p(M_h|y)
+\]
+\pause
+where 
+\begin{itemize}[<+->]
+\item $p(M_h|y)$ is the posterior model probability and 
+\item $p(\tilde{y}|M_h,y)$ is the predictive distribution under model $M_h$. 
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Normal example}
+\begin{frame}
+\frametitle{Normal example}
+
+Suppose we have two models:
+\[ \begin{array}{rl}
+Y_i|M_0\phantom{,\mu} &\ind N(0,1) \\
+Y_i|M_1,\mu &\ind N(\mu,1),\,\mu|M_1 \sim N(0,1) 
+\end{array} \]
+
+\vspace{0.1in} \pause
+
+Thus, we have the following posterior predictive distributions \pause
+\[ \begin{array}{rl}
+\tilde{y}|y,M_0 &\sim N(0,1) \\
+\tilde{y}|y,M_1 &\sim N\!\left(n\overline{y}[n+1]^{-1},[n+1]^{-1}+1\right)
+\end{array} \]
+
+\pause
+and the following posterior model probabilities: \pause
+\[ \begin{array}{rl}
+p(M_0|y) &\propto N(\overline{y};0,1/n)p(M_0) \\
+p(M_1|y) &\propto N(\overline{y};0,2/n)p(M_0) \\
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}
+<<>>=
+n <- 10
+ybar_max <- 3
+
+post_predictive <- function(d) {
+  ybar <- d$ybar
+  
+  # Posterior model probabilities
+  pM0t <- dnorm(ybar, 0, sqrt(1/n))
+  pM1t <- dnorm(ybar, 0, sqrt(2/n))
+  pM0 <- pM0t/(pM0t+pM1t)
+  pM1 <- 1-pM0
+  
+  # Posterior predictive distributions
+  x <- seq(-3, ybar_max+3, by=0.1)
+  ppM0 <- dnorm(x, 0, 1)
+  ppM1 <- dnorm(x, n*ybar/(n+1), sqrt(1/(n+1)))
+  
+  data.frame(x = x,
+             density = pM0*ppM0 + pM1*ppM1)
+}
+
+d <- data.frame(ybar = 0:ybar_max) %>%
+  group_by(ybar) %>%
+  do(post_predictive(.)) %>%
+  ungroup() %>%
+  mutate(ybar = factor(ybar))
+
+ggplot(d, aes(x = x, y = density, color = ybar, linetype = ybar, group = ybar)) +
+  geom_line() + 
+  theme_bw() +
+  labs(title = paste0("Posterior predictive distribution (n=",n,")"))
+@
+\end{frame}
+
+
+
+
+
+
+
+\subsection{AIC/BIC model averaging}
+\begin{frame}
+\frametitle{AIC/BIC model averaging}
+
+The generic structure for model averaging is 
+\[ 
+p(\tilde{y}|y) = \sum_{h=1}^H p(\tilde{y}|M_h, y) w_h
+\]
+where $w_h$ is the \alert{weight} for model $h$. 
+
+\vspace{0.1in} \pause
+
+Here are some possible weights:
+\begin{itemize}
+\item Bayesian model averaging: $w_h = p(M_h|y)$ 
+\item AIC model averaging: $w_h = e^{-\Delta_h/2}$ where $\Delta_h = AIC_h - \min AIC$
+\item AICc model averaging: $w_h = e^{-\Delta_h/2}$ where $\Delta_h = AICc_h - \min AICc$
+\item BIC model averaging: $w_h = e^{-\Delta_h/2}$ where $\Delta_h = BIC_h - \min BIC$
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Information criterion}
+
+Recall that information criteria have the form:
+\[ 
+IC = -2 \log L(\hat\theta) + P
+\]
+where $P$ is a penalty.
+\pause 
+So if you take 
+\[ 
+w_h = e^{-\Delta_h/2} = e^{-(IC_h - \min IC)/2} \propto 
+e^{-IC_h/2} = L_h(\hat\theta)e^{P}.
+\]
+
+where, if $p$ is the number of parameters, 
+\pause 
+the penalty $P$ is 
+\begin{itemize}
+\item AIC: $2p$
+\item AICc: $2p + 2p(p+1)/(n-p-1)$
+\item BIC: $p \log(n)$ 
+\end{itemize}
+
+\pause
+
+The BIC is a large sample approximation to the marginal likelihood:
+\[
+-2 \log p(y) \approx -2 \log p(y|\theta) + p \log(n) + C
+\]
+
+
+\end{frame}
+
+
+
+\subsection{Regression BMA}
+\begin{frame}
+\frametitle{Regression BMA}
+
+A common place to perform Bayesian Model Averaging is in the
+regression framework:
+\[
+y \sim N(X_\gamma \beta_\gamma, \sigma_{\gamma}^2\I)
+\]
+where $\gamma$ is a vector indicator of what explanatory variables are included 
+in the model, e.g. 
+\[ 
+\gamma = (1,1,0,\ldots,0,1,0).
+\]
+
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{BIC model averaging in R}
+
+<<bic_ma, echo=TRUE>>=
+library(BMA)
+library(MASS)
+data(UScrime)
+x<- UScrime[,-16]
+y<- log(UScrime[,16])
+x[,-2]<- log(x[,-2])
+lma<- bicreg(x, y, strict = FALSE, OR = 20) 
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<summary_lma, dependson="bic_ma", echo=TRUE>>=
+summary(lma)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<imageplot_lma, dependson="bic_ma", echo=TRUE>>=
+imageplot.bma(lma)
+@
+\end{frame}
+
+
+
+
+\subsection{}
+
+
 
 \section{Posterior model probability}
 \begin{frame}
@@ -65,6 +279,7 @@ Then we obtain the \alert{posterior model probability} via Bayes' rule
 
 
 \begin{frame}
+
 \frametitle{Binomial model example}
 
 Suppose $Y\sim Bin(n,\theta)$ and we have models $M_k: \theta = (k-1)/10$ for $k=1,\ldots,K=11$. \pause We assume the prior model probability is 
