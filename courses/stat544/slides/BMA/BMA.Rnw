@@ -15,16 +15,14 @@ opts_chunk$set(fig.width=6,
                out.width='.8\\linewidth', 
                fig.align='center', 
                size='tiny',
-               echo=FALSE)
+               echo=FALSE,
+               cache=TRUE)
 options(width=100)
 @
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
-# library(reshape2)
-# library(plyr)
 library(dplyr)
 library(ggplot2)
-library(xtable)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -39,11 +37,12 @@ set.seed(2)
 \frametitle{Outline}
 
 \begin{itemize}
-\item Posterior model probability
-  \begin{itemize}
-  \item 
-  \end{itemize}
-\item 
+\item Bayesian model averaging
+\item BIC model averaging
+\item Model search
+\item Parameter averaging
+\item Posterior inclusion probability
+\item Model selection
 \end{itemize}
 
 \end{frame}
@@ -217,12 +216,13 @@ regression framework:
 \[
 y \sim N(X_\gamma \beta_\gamma, \sigma_{\gamma}^2\I)
 \]
-where $\gamma$ is a vector indicator of what explanatory variables are included 
-in the model, e.g. 
+where $\gamma$ is a vector indicator of which of the $p$ explanatory variables 
+are included in model $\gamma$, e.g. 
 \[ 
-\gamma = (1,1,0,\ldots,0,1,0).
+\gamma = (1,1,0,\ldots,0,1,0)
 \]
-
+indicates the first, second, $\ldots$, and penultimate explanatory variables
+are included. 
 
 \end{frame}
 
@@ -231,7 +231,7 @@ in the model, e.g.
 \begin{frame}[fragile]
 \frametitle{BIC model averaging in R}
 
-<<bic_ma, echo=TRUE>>=
+<<bic_ma, echo=TRUE, warning=FALSE>>=
 library(BMA)
 library(MASS)
 data(UScrime)
@@ -257,205 +257,447 @@ imageplot.bma(lma)
 
 
 
-\subsection{}
-
-
-
-\section{Posterior model probability}
+\subsection{Model search}
 \begin{frame}
-\frametitle{Posterior model probability}
+\frametitle{Model space}
 
-Consider a set of models 
-\[ M_1,\ldots,M_K \] 
-where we believe one of these models to be true \pause and that each $M_k$ corresponds to a prior predictive distribution 
-\[ p(y|M_k) = \int p(y|\theta,M_k) p(\theta|M_k) d\theta. \]
+For all subsets regression analysis with $p$ (continuous or binary) explanatory 
+variables, we have 
+\begin{itemize}[<+->]
+\item $2^p$ models with no interactions,
+\item $2^{p \choose 2}$ times as many models when considering first order interactions, 
+\item $2^{p \choose 3}$ times as many models when considering second order interactions,
+\item etc.
+\end{itemize}
+
 \pause
-The uncertainty here is which model is true \pause and thus we assign a \alert{prior model probability}
-\[ p(M_k) \quad \mbox{s.t.} \quad \sum_{k=1}^K p(M_k)= 1. \]
-\pause 
-Then we obtain the \alert{posterior model probability} via Bayes' rule
-\[ p(M_k|y) = \frac{p(y|M_k)p(M_k)}{p(y)} \pause = \frac{p(y|M_k)p(M_k)}{\sum_{j=1}^K p(y|M_j)p(M_j)} \pause \propto p(y|M_k)p(M_k).\]
-\end{frame}
 
+<<fig.height=2.5, warning = FALSE>>=
+library(scales)
+d = data.frame(p = 3:30) %>% 
+  mutate(`None` = 2^p,
+         `First order` = `None`*2^choose(p,2),
+         `Second order` = `First order`*2^choose(p,3)) %>%
+  tidyr::gather(Interactions, n, -p) %>%
+  mutate(Interactions = factor(Interactions, levels = c("None","First order", "Second order")))
 
-\begin{frame}
-
-\frametitle{Binomial model example}
-
-Suppose $Y\sim Bin(n,\theta)$ and we have models $M_k: \theta = (k-1)/10$ for $k=1,\ldots,K=11$. \pause We assume the prior model probability is 
-\[ p(M_k) = p_k. \]
-\pause 
-If we observe $y$ successes out of $n$ attempts, then our posterior model probability is 
-\[ p(M_k|y) \propto {n\choose y} \left( \frac{k-1}{10} \right)^y \left( 1 - \frac{k-1}{10} \right)^{n-y} p_k. \]
-and the normalizing constant is 
-\[ p(y) = \sum_{k=1}^K {n\choose y} \left( \frac{k-1}{10} \right)^y \left( 1 - \frac{k-1}{10} \right)^{n-y} p_k. \]
-\end{frame}
-
-
-\begin{frame}[fragile]
-<<>>=
-y = 3; n = 10
-theta = seq(0,1,by=0.1)
-prior = rep(1/length(theta),length(theta)) # uniform over the models
-posterior = dbinom(y,n,theta)*prior
-posterior = posterior/sum(posterior)
-ggplot(rbind(data.frame(belief = "prior", probability=prior, theta=theta),
-             data.frame(belief = "posterior", probability=posterior, theta=theta)),
-       aes(x=theta, y=probability, color=belief)) + 
+ggplot(d, aes(p,n, col=Interactions, shape=Interactions)) + 
   geom_point() + 
-  labs(title=paste(y,"successes out of",n,"attempts with uniform prior."))
+  scale_y_continuous(labels = comma, 
+                     breaks = 10^seq(3,12,by=3), 
+                     trans = "log10",
+                     limits = c(1,1e12)) +
+  # scale_y_log10() +
+  theme_bw() +
+  labs(x = "Number of explanatory variables",
+       y = "Number of models") 
 @
 \end{frame}
-
-
-\begin{frame}
-\frametitle{Prior predictive distributions}
-Recall that a prior predictive distribution is the statistical model integrated over the prior distribution, i.e. 
-\[ p(y|M_k) = \int p(y|\theta)p(\theta|M_k) d\theta \]
-\pause
-evaluation of this pdf (or pmf) at the observed data $y$ is the \alert{marginal likelihood}.
-
-\vspace{0.2in}
-
-Thus, we can write the posterior model probability as 
-\[ p(M_k|y) \propto p(y|M_k) p(M_k) = \left[ \int p(y|\theta)p(\theta|M_k) d\theta \right] p(M_k). \]
-\pause
-Recall that making $p(\theta|M_k)$ too diffuse will cause $p(y|\theta)$ to decrease.
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Binomial model example}
-Suppose $Y\sim Bin(n,\theta)$ and $\theta \sim Be(a,b)$, then 
-\[ p(y) = \int p(y|\theta) p(\theta) d\theta  = {n\choose y}\frac{B(a+y,b+n-y)}{B(a,b)},\]
-\pause
-i.e. a \href{http://en.wikipedia.org/wiki/Beta-binomial_distribution}{beta-binomial distribution}.
-
-\vspace{0.2in} \pause
-
-If we take $a=b\to 0$, we have $p(y)\to 0$ for $y\ne 0$ and $y\ne n$. 
-\end{frame}
-
-\begin{frame}[fragile]
-<<>>=
-beta_binomial = function(y,n,a,b) exp(lchoose(n,y)+lbeta(a+y,b+n-y)-lbeta(a,b))
-d = ddply(expand.grid(y=0:(n/2),a=10^seq(-5,0)), 
-          .(y,a), 
-          function(x) data.frame(prior_predictive = with(x, beta_binomial(y,n,a,a))))
-ggplot(d, aes(x=a,y=prior_predictive, color=factor(y))) + 
-  geom_line() +
-  scale_x_log10()
-@
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Impact of diffuse priors on posterior model probabilities}
-
-Suppose $Y\sim Bin(n,\theta)$ and we consider the two models $M_0: \theta=0.5$ and $M_1: \theta\ne 0.5$. \pause Under $M_1$, we choose $\theta\sim Be(a,b)$. \pause Then the prior predictive distributions are 
-\[ \begin{array}{rl}
-p(y|M_0) &= {n\choose y} 0.5^y(1-0.5)^{n-y} = {n\choose y} 0.5^n \\
-p(y|M_1) &= {n\choose y} \frac{B(a+y,b+n-y)}{B(a,b)} \\
-\end{array} \]
-\pause
-Thus the posterior model probability for $M_1$ is
-\[ p(M_1|y) = \frac{p(y|M_1)p(M_1)}{p(y|M_0)p(M_0) + p(y|M_1)p(M_1)} = \frac{\frac{B(a+y,b+n-y)}{B(a,b)}}{\frac{B(a+y,b+n-y)}{B(a,b)}+0.5^n},\]
-\pause
-For a fixed $y\ne 0$ and $y\ne n$, $p(M_1|y)\to 0$ as $a=b\to 0$. 
-
-\end{frame}
-
-
-\section{Bayesian model averaging}
-
-\begin{frame}
-\frametitle{Bayesian model averaging}
-
-Bayesian model averaging accounts for model uncertainty. \pause Suppose $\Delta$ is an unknown quantity of interest, e.g. prediction, effect size, utility, etc. \pause Then 
-\[ p(\Delta|y) = \sum_{k=1}^K p(\Delta|M_k,y) p(M_k|y) \]
-\pause 
-where $M_1,\ldots,M_K$ are the models under consideration. \pause This is just a weighted average of the posterior distributions for the quantity $\Delta$ under each model, $p(\Delta|M_k,y)$, weighted by the posterior probability of the models.
-
-\end{frame}
-
 
 
 \begin{frame}[fragile]
-\frametitle{Binomial model with discrete models for $\theta$}
+\frametitle{Model search in R}
 
-Let $Y\sim Bin(n,\theta)$ and $M_k:\theta=[k-1]/10$ for $k=1,\ldots,K=11$. \pause Suppose we are interested in predicting the next observation $\tilde{Y}\sim Ber(\theta)$ (conditionally independent of the previous observations). \pause Then 
-\[ p(\tilde{y}|y) = \sum_{k=1}^K p(\tilde{y}|M_k,y) p(M_k|y) \]
-\pause 
-in particular,
-\[ \begin{array}{rl}
-P(\tilde{Y}=1|y) &= \sum_{k=1}^K P(\tilde{Y}=1|M_k,y) \times P(M_k\mbox{ TRUE}|y) \\
-&= \sum_{k=1}^K \frac{k-1}{10} \times \frac{{n\choose y} \left(\frac{k-1}{10}\right)^{y} \left(1-\frac{k-1}{10}\right)^{n-y}}{\sum_{j=1}^K {n\choose y} \left(\frac{j-1}{10}\right)^{y} \left(1-\frac{j-1}{10}\right)^{n-y}}. 
-\end{array} \]
+When model enumeration isn't possible, 
+we resort to model search. 
 \pause
-<<echo=TRUE>>=
-c(y,n); sum(posterior*theta)
+There are many ways to search the model space, 
+but one common approach is to use Markov chain Monte Carlo. 
+
+\vspace{0.1in} \pause
+
+<<bms, echo=TRUE>>=
+library(BMS)
+data(datafls)
+
+
+bma1 = bms(datafls, 
+           burn = 10000, 
+           iter = 20000,
+           mprior = "uniform", # uniform prior over models
+           user.int = FALSE)
 @
 
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Binomial model with discrete and continuous models for $\theta$}
-
-Let $Y\sim Bin(n,\theta)$ and $M_0:\theta=0.5$ and $M_1:\theta \sim Be(a,b)$. \pause Again, we are interested in predicting the next observation 
-$\tilde{Y}\sim Ber(\theta)$ (conditionally independent of the previous observations). \pause Then
-\[ p(\tilde{y}|y) = p(\tilde{y}|M_0,y) p(M_0|y) + p(\tilde{y}|M_1,y) p(M_1|y) \]
-where $p(\tilde{y}|M_1,y)$ is the posterior predictive distribution under model $M_1$, i.e. 
-\[ p(\tilde{y}|M_1,y) = \int p(\tilde{y}|\theta)p(\theta|M_1,y) d\theta = \frac{B(a+y+\tilde{y},b+n-y+1-\tilde{y})}{B(a+y,b+n-y)}. \]
 \pause
-Thus {\tiny
-\[ P(\tilde{Y}=1|y) = 0.5 \times \frac{{n\choose y} 0.5^n}{{n\choose y} 0.5^n+{n\choose y} \frac{B(a+y,b+n-y)}{B(a,b)}} + \frac{B(a+y+1,b+n-y)}{B(a+y,b+n-y)} \times \frac{{n\choose y} \frac{B(a+y,b+n-y)}{B(a,b)}}{{n\choose y} 0.5^n+{n\choose y} \frac{B(a+y,b+n-y)}{B(a,b)}} \]
+
+\alert{
+If there is a uniform prior over models, 
+what is the prior over model size 
+(the number of explanatory variables included)?
 }
 \end{frame}
 
 
-\subsection{Normal model}
-\begin{frame}
-\frametitle{Normal model with discrete and continuous models for $\theta$}
-
-Let $Y_i\stackrel{ind}{\sim} N(\theta,1)$ \pause and $M_0:\theta=0$ and $M_1:\theta\sim N(0,1)$. \pause Again, we are interested in predicting the next observation $\tilde{Y} \sim N(\theta,1)$ (conditionally independent of the first observations). Then 
-\[ p(\tilde{y}|y) = p(\tilde{y}|M_0,y)p(M_0|y) + p(\tilde{y}|M_1,y)p(M_1|y)\]
-\pause
-where the posterior model probabilities are
-\[ \begin{array}{rl}
-p(M_0|y) \propto \left[ \prod_{i=1}^n N(y_i;0,1) \right] p(M_0|y) \\
-p(M_1|y) \propto \left[ \prod_{i=1}^n N(y_i;0,2) \right] p(M_1|y) 
-\end{array} \]
-\pause
-and the posterior predictive distributions are 
-\[ \begin{array}{rl}
-\tilde{y}|M_0,y &\sim N(0,1) \\
-\tilde{y}|M_1,y & \sim N([1+n]^{-1}[n\overline{y}],[1+n]^{-1}+1) 
-\end{array} \]
-
+\begin{frame}[fragile]
+<<dependson="bms", echo=TRUE>>=
+summary(bma1)
+@
 \end{frame}
+
+
+\begin{frame}[fragile]
+<<dependson="bms", echo=TRUE>>=
+plotModelsize(bma1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<dependson="bms", echo=TRUE>>=
+coef(bma1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<dependson="bms", echo=TRUE>>=
+density(bma1, reg="BlMktPm")
+@
+\end{frame}
+
 
 
 
 \begin{frame}[fragile]
-\frametitle{}
-
-<<echo=TRUE>>=
-n = 10
-y = rnorm(n); y - mean(y)
-prior_model_probability = c(0.5,0.5)
-log_likelihood = c(sum(dnorm(y,log=TRUE)), sum(dnorm(y,0,sqrt(2),log=TRUE)))
-posterior_model_probability = prior_model_probability + log_likelihood
-
-
-# d = ddply(data.frame(theta=c(0,2), .(theta), function(x) {
-#   
-# })
+<<dependson="bic_ma", echo=TRUE>>=
+plot(lma)
 @
+\end{frame}
+
+
+\subsection{Model averaged parameters}
+\begin{frame}
+\frametitle{Model averaged parameters}
+Consider the following set of 4 models with $Y_i \ind N(\mu_i,\sigma^2)$ where
+\[ \begin{array}{rlll}
+M_1: \mu_i &= \beta_0 \\
+M_2: \mu_i &= \beta_0 &+ \beta_1 X_{i,1} \\
+M_3: \mu_i &= \beta_0 &&+ \beta_2 X_{i,2} \\
+M_4: \mu_i &= \beta_0 &+ \beta_1 X_{i,1} &+ \beta_2 X_{i,2} \\
+\end{array} \]
+\pause
+It is tempting to want to obtain a model averaged posterior for the coefficients.
+\end{frame}
+
+\begin{frame}
+\frametitle{Model averaged parameters (cont.)}
+
+Perhaps we can write a model averaged posterior for a parameter as 
+\[ 
+p(\beta_1|y) = \sum_{h=1}^H p(\beta_1|y,M_h)p(M_h|y)\pause
+\]
+
+\vspace{0.1in} \pause 
+ 
+But $\beta_1$ means something entirely different in these models:
+\begin{itemize}
+\item In model $M_2$, $\beta_1$ is the effect of a one unit increase in 
+$X_{i,1}$ on the expected response. 
+\item In model $M_4$, $\beta_1$ is the effect of a one unit increase in 
+$X_{i,1}$ on the expected response \alert{after adjusting for $X_{i,2}$}.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{More accurate model}
+Consider the following set of 4 models with $Y_i \ind N(\mu_i,\sigma^2)$ where
+\[ \begin{array}{rlll}
+M_1: \mu_i &= \alpha_0 \\
+M_2: \mu_i &= \beta_0 &+ \beta_1 X_{i,1} \\
+M_3: \mu_i &= \gamma_0 &&+ \gamma_2 X_{i,2} \\
+M_4: \mu_i &= \delta_0 &+ \delta_1 X_{i,1} &+ \delta_2 X_{i,2} \\
+\end{array} \]
+\pause
+Now it seems clear that we cannot average these parameters.
+\end{frame}
+
+
+
+\subsection{Assessing explanatory variable importance}
+\begin{frame}
+\frametitle{Assessing explanatory variable importance}
+
+To obtain some measure of how important a particular explanatory variable is
+we can find its \alert{posterior inclusion probability}\pause,
+i.e. the probability it is non-zero:
+\pause
+\[
+p(\beta_j\ne 0) = \sum_{h:\beta_j\ne 0} p(M_h|y)
+\]
+\pause
+which is just the sum of the model probabilities for the models where $\beta_j$ 
+is not zero.
 
 \end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+summary(lma)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+coef(bma1)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Multiple posterior inclusion probability}
+
+If explanatory variables are correlated, 
+then it is possible to have low posterior incluion probability for the 
+correlated explanatory variable, but the probability of at least one of the 
+explanatory variables being included is high.
+
+\pause
+
+For example,
+\[
+P(\beta_i\ne 0 \mbox{ or } \beta_j\ne 0|y) = 
+\sum_{h:\beta_i\ne 0 \mbox{ or }\beta_j\ne 0} p(M_h|y)
+\]
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE, fig.height=4>>=
+imageplot.bma(lma)
+@
+
+\pause
+
+<<echo=TRUE>>=
+cor(UScrime$Po1, UScrime$Po2)
+@
+\end{frame}
+
+
+\subsection{Model selection}
+\begin{frame}
+\frametitle{Model selection}
+
+Sometimes, we will want to select a model. 
+\pause
+Selecting model $M_h$ is clearly justified if $p(M_h|y) \approx 1$.
+
+\vspace{0.1in} \pause
+
+If forced to choose a model, it might seem that choosing the model with the 
+highest $p(M_h|y)$ would be the way to go, 
+\pause
+but Barbieri and Berger (2004) show that if prediction is the goal, 
+then the \alert{median probability model} is better.
+\pause
+The \alert{median probability model} is the model that includes all 
+explanatory variables whose posterior inclusion probability is greater than 
+1/2. 
+
+
+\end{frame}
+
+
+% \section{Posterior model probability}
+% \begin{frame}
+% \frametitle{Posterior model probability}
+% 
+% Consider a set of models 
+% \[ M_1,\ldots,M_K \] 
+% where we believe one of these models to be true \pause and that each $M_k$ corresponds to a prior predictive distribution 
+% \[ p(y|M_k) = \int p(y|\theta,M_k) p(\theta|M_k) d\theta. \]
+% \pause
+% The uncertainty here is which model is true \pause and thus we assign a \alert{prior model probability}
+% \[ p(M_k) \quad \mbox{s.t.} \quad \sum_{k=1}^K p(M_k)= 1. \]
+% \pause 
+% Then we obtain the \alert{posterior model probability} via Bayes' rule
+% \[ p(M_k|y) = \frac{p(y|M_k)p(M_k)}{p(y)} \pause = \frac{p(y|M_k)p(M_k)}{\sum_{j=1}^K p(y|M_j)p(M_j)} \pause \propto p(y|M_k)p(M_k).\]
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% 
+% \frametitle{Binomial model example}
+% 
+% Suppose $Y\sim Bin(n,\theta)$ and we have models $M_k: \theta = (k-1)/10$ for $k=1,\ldots,K=11$. \pause We assume the prior model probability is 
+% \[ p(M_k) = p_k. \]
+% \pause 
+% If we observe $y$ successes out of $n$ attempts, then our posterior model probability is 
+% \[ p(M_k|y) \propto {n\choose y} \left( \frac{k-1}{10} \right)^y \left( 1 - \frac{k-1}{10} \right)^{n-y} p_k. \]
+% and the normalizing constant is 
+% \[ p(y) = \sum_{k=1}^K {n\choose y} \left( \frac{k-1}{10} \right)^y \left( 1 - \frac{k-1}{10} \right)^{n-y} p_k. \]
+% \end{frame}
+% 
+% 
+% \begin{frame}[fragile]
+% <<>>=
+% y = 3; n = 10
+% theta = seq(0,1,by=0.1)
+% prior = rep(1/length(theta),length(theta)) # uniform over the models
+% posterior = dbinom(y,n,theta)*prior
+% posterior = posterior/sum(posterior)
+% ggplot(rbind(data.frame(belief = "prior", probability=prior, theta=theta),
+%              data.frame(belief = "posterior", probability=posterior, theta=theta)),
+%        aes(x=theta, y=probability, color=belief)) + 
+%   geom_point() + 
+%   labs(title=paste(y,"successes out of",n,"attempts with uniform prior."))
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{Prior predictive distributions}
+% Recall that a prior predictive distribution is the statistical model integrated over the prior distribution, i.e. 
+% \[ p(y|M_k) = \int p(y|\theta)p(\theta|M_k) d\theta \]
+% \pause
+% evaluation of this pdf (or pmf) at the observed data $y$ is the \alert{marginal likelihood}.
+% 
+% \vspace{0.2in}
+% 
+% Thus, we can write the posterior model probability as 
+% \[ p(M_k|y) \propto p(y|M_k) p(M_k) = \left[ \int p(y|\theta)p(\theta|M_k) d\theta \right] p(M_k). \]
+% \pause
+% Recall that making $p(\theta|M_k)$ too diffuse will cause $p(y|\theta)$ to decrease.
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{Binomial model example}
+% Suppose $Y\sim Bin(n,\theta)$ and $\theta \sim Be(a,b)$, then 
+% \[ p(y) = \int p(y|\theta) p(\theta) d\theta  = {n\choose y}\frac{B(a+y,b+n-y)}{B(a,b)},\]
+% \pause
+% i.e. a \href{http://en.wikipedia.org/wiki/Beta-binomial_distribution}{beta-binomial distribution}.
+% 
+% \vspace{0.2in} \pause
+% 
+% If we take $a=b\to 0$, we have $p(y)\to 0$ for $y\ne 0$ and $y\ne n$. 
+% \end{frame}
+% 
+% \begin{frame}[fragile]
+% <<>>=
+% beta_binomial = function(y,n,a,b) exp(lchoose(n,y)+lbeta(a+y,b+n-y)-lbeta(a,b))
+% d = ddply(expand.grid(y=0:(n/2),a=10^seq(-5,0)), 
+%           .(y,a), 
+%           function(x) data.frame(prior_predictive = with(x, beta_binomial(y,n,a,a))))
+% ggplot(d, aes(x=a,y=prior_predictive, color=factor(y))) + 
+%   geom_line() +
+%   scale_x_log10()
+% @
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}
+% \frametitle{Impact of diffuse priors on posterior model probabilities}
+% 
+% Suppose $Y\sim Bin(n,\theta)$ and we consider the two models $M_0: \theta=0.5$ and $M_1: \theta\ne 0.5$. \pause Under $M_1$, we choose $\theta\sim Be(a,b)$. \pause Then the prior predictive distributions are 
+% \[ \begin{array}{rl}
+% p(y|M_0) &= {n\choose y} 0.5^y(1-0.5)^{n-y} = {n\choose y} 0.5^n \\
+% p(y|M_1) &= {n\choose y} \frac{B(a+y,b+n-y)}{B(a,b)} \\
+% \end{array} \]
+% \pause
+% Thus the posterior model probability for $M_1$ is
+% \[ p(M_1|y) = \frac{p(y|M_1)p(M_1)}{p(y|M_0)p(M_0) + p(y|M_1)p(M_1)} = \frac{\frac{B(a+y,b+n-y)}{B(a,b)}}{\frac{B(a+y,b+n-y)}{B(a,b)}+0.5^n},\]
+% \pause
+% For a fixed $y\ne 0$ and $y\ne n$, $p(M_1|y)\to 0$ as $a=b\to 0$. 
+% 
+% \end{frame}
+% 
+% 
+% \section{Bayesian model averaging}
+% 
+% \begin{frame}
+% \frametitle{Bayesian model averaging}
+% 
+% Bayesian model averaging accounts for model uncertainty. \pause Suppose $\Delta$ is an unknown quantity of interest, e.g. prediction, effect size, utility, etc. \pause Then 
+% \[ p(\Delta|y) = \sum_{k=1}^K p(\Delta|M_k,y) p(M_k|y) \]
+% \pause 
+% where $M_1,\ldots,M_K$ are the models under consideration. \pause This is just a weighted average of the posterior distributions for the quantity $\Delta$ under each model, $p(\Delta|M_k,y)$, weighted by the posterior probability of the models.
+% 
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{Binomial model with discrete models for $\theta$}
+% 
+% Let $Y\sim Bin(n,\theta)$ and $M_k:\theta=[k-1]/10$ for $k=1,\ldots,K=11$. \pause Suppose we are interested in predicting the next observation $\tilde{Y}\sim Ber(\theta)$ (conditionally independent of the previous observations). \pause Then 
+% \[ p(\tilde{y}|y) = \sum_{k=1}^K p(\tilde{y}|M_k,y) p(M_k|y) \]
+% \pause 
+% in particular,
+% \[ \begin{array}{rl}
+% P(\tilde{Y}=1|y) &= \sum_{k=1}^K P(\tilde{Y}=1|M_k,y) \times P(M_k\mbox{ TRUE}|y) \\
+% &= \sum_{k=1}^K \frac{k-1}{10} \times \frac{{n\choose y} \left(\frac{k-1}{10}\right)^{y} \left(1-\frac{k-1}{10}\right)^{n-y}}{\sum_{j=1}^K {n\choose y} \left(\frac{j-1}{10}\right)^{y} \left(1-\frac{j-1}{10}\right)^{n-y}}. 
+% \end{array} \]
+% \pause
+% <<echo=TRUE>>=
+% c(y,n); sum(posterior*theta)
+% @
+% 
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}
+% \frametitle{Binomial model with discrete and continuous models for $\theta$}
+% 
+% Let $Y\sim Bin(n,\theta)$ and $M_0:\theta=0.5$ and $M_1:\theta \sim Be(a,b)$. \pause Again, we are interested in predicting the next observation 
+% $\tilde{Y}\sim Ber(\theta)$ (conditionally independent of the previous observations). \pause Then
+% \[ p(\tilde{y}|y) = p(\tilde{y}|M_0,y) p(M_0|y) + p(\tilde{y}|M_1,y) p(M_1|y) \]
+% where $p(\tilde{y}|M_1,y)$ is the posterior predictive distribution under model $M_1$, i.e. 
+% \[ p(\tilde{y}|M_1,y) = \int p(\tilde{y}|\theta)p(\theta|M_1,y) d\theta = \frac{B(a+y+\tilde{y},b+n-y+1-\tilde{y})}{B(a+y,b+n-y)}. \]
+% \pause
+% Thus {\tiny
+% \[ P(\tilde{Y}=1|y) = 0.5 \times \frac{{n\choose y} 0.5^n}{{n\choose y} 0.5^n+{n\choose y} \frac{B(a+y,b+n-y)}{B(a,b)}} + \frac{B(a+y+1,b+n-y)}{B(a+y,b+n-y)} \times \frac{{n\choose y} \frac{B(a+y,b+n-y)}{B(a,b)}}{{n\choose y} 0.5^n+{n\choose y} \frac{B(a+y,b+n-y)}{B(a,b)}} \]
+% }
+% \end{frame}
+% 
+% 
+% \subsection{Normal model}
+% \begin{frame}
+% \frametitle{Normal model with discrete and continuous models for $\theta$}
+% 
+% Let $Y_i\stackrel{ind}{\sim} N(\theta,1)$ \pause and $M_0:\theta=0$ and $M_1:\theta\sim N(0,1)$. \pause Again, we are interested in predicting the next observation $\tilde{Y} \sim N(\theta,1)$ (conditionally independent of the first observations). Then 
+% \[ p(\tilde{y}|y) = p(\tilde{y}|M_0,y)p(M_0|y) + p(\tilde{y}|M_1,y)p(M_1|y)\]
+% \pause
+% where the posterior model probabilities are
+% \[ \begin{array}{rl}
+% p(M_0|y) \propto \left[ \prod_{i=1}^n N(y_i;0,1) \right] p(M_0|y) \\
+% p(M_1|y) \propto \left[ \prod_{i=1}^n N(y_i;0,2) \right] p(M_1|y) 
+% \end{array} \]
+% \pause
+% and the posterior predictive distributions are 
+% \[ \begin{array}{rl}
+% \tilde{y}|M_0,y &\sim N(0,1) \\
+% \tilde{y}|M_1,y & \sim N([1+n]^{-1}[n\overline{y}],[1+n]^{-1}+1) 
+% \end{array} \]
+% 
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{}
+% 
+% <<echo=TRUE>>=
+% n = 10
+% y = rnorm(n); y - mean(y)
+% prior_model_probability = c(0.5,0.5)
+% log_likelihood = c(sum(dnorm(y,log=TRUE)), sum(dnorm(y,0,sqrt(2),log=TRUE)))
+% posterior_model_probability = prior_model_probability + log_likelihood
+% 
+% 
+% # d = ddply(data.frame(theta=c(0,2), .(theta), function(x) {
+% #   
+% # })
+% @
+% 
+% \end{frame}
 
 
 
