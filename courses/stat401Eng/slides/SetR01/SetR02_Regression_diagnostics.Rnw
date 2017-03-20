@@ -1,0 +1,431 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set R01 - Simple linear regression}
+
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{All models are wrong!}
+
+George Box (Empirical Model-Building and Response Surfaces, 1987):
+\begin{quote}
+All models are wrong, but some are useful. 
+\end{quote}
+
+\vspace{0.2in} \pause
+
+{\tiny \url{http://stats.stackexchange.com/questions/57407/what-is-the-meaning-of-all-models-are-wrong-but-some-are-useful}}
+
+{\small
+\begin{quotation}
+``All models are wrong" that is, 
+every model is wrong because it is a simplification of reality. 
+Some models, especially in the "hard" sciences, 
+are only a little wrong. 
+They ignore things like friction or the gravitational 
+effect of tiny bodies. 
+Other models are a lot wrong - they ignore bigger things. 
+\pause \\
+
+``But some are useful" - simplifications of reality can be quite useful. 
+They can help us explain, 
+predict and understand the universe and all its various components.
+\pause \\
+
+This isn't just true in statistics! 
+Maps are a type of model; 
+they are wrong. 
+But good maps are very useful. 
+\end{quotation}
+}
+
+
+\end{frame}
+
+
+
+\frame{\frametitle{Regression}
+  The simpler linear regression model is 
+  \[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+	\pause this can be rewritten as 
+	\[ Y_i = \beta_0 + \beta_1 X_i + e_i \quad e_i \stackrel{iid}{\sim} N(0,\sigma^2) \]
+	\pause where we estimate the errors via the residuals
+	\[ r_i = \hat{e}_i = Y_i - (\hat{\beta}_0+\hat{\beta}_1 X_i). \]
+	
+	\vspace{0.1in} \pause
+	
+	Key assumptions are:
+	\begin{itemize}[<+->]
+  \item The errors are 
+    \begin{itemize}
+    \item normally distributed,
+    \item have constant variance, and
+    \item are independent of each other.
+    \end{itemize}
+  \item There is a linear relationship between the expected response and the
+  explanatory variables.
+	\end{itemize}
+}
+
+
+\begin{frame}[fragile]
+\frametitle{Telomere data}
+<<data, echo=FALSE, warning=FALSE>>=
+library("abd")
+ggplot(Telomeres, aes(years, telomere.length)) + 
+  geom_point() + 
+  stat_smooth(method = "lm") + 
+  theme_bw()
+@
+\end{frame}
+
+
+\section{Case statistics}
+\begin{frame}
+\frametitle{Case statistics}
+
+To evaluate these assumptions, 
+we will calculate a variety of \alert{case statistics}:
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item Fitted values
+\item Leverage
+\item Residuals
+  \begin{itemize}
+  \item Standardized residuals
+  \item Studentized residuals
+  \end{itemize}
+\item Cook's distance
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Default diagnostic plots in R}
+<<echo=FALSE>>=
+opar = par(mfrow=c(2,3))
+m <- lm(telomere.length ~ years, Telomeres)
+plot(m, 1:6, ask = FALSE)
+par(opar)
+@
+\end{frame}
+
+
+\subsection{Residuals}
+\begin{frame}
+\frametitle{Residuals and Fitted values}
+
+Another rewrite of a regression model is 
+\[ \begin{array}{rl}
+Y_i &\ind N(\mu_i,  \sigma^2) \\
+\mu_i &= \beta_0 + \beta_1 X_i
+\end{array} \]
+
+\pause
+
+A fitted value $\hat{Y}_i$ for an observation $i$ is 
+\[ 
+\hat{Y}_i = \hat\mu_i = \hat{\beta}_0+\hat{\beta}_1 X_i
+\]
+\pause
+and thus the residual is 
+\[ \begin{array}{rl}
+r_i &= Y_i - \hat{Y}_i \pause \\
+&= Y_i - \hat\mu_i \pause \\
+&= Y_i - (\hat{\beta}_0+\hat{\beta}_1 X_i) \pause \\
+&= Y_i - \hat{\beta}_0-\hat{\beta}_1 X_i \\
+\end{array} \]
+
+\end{frame}
+
+
+\subsection{Leverage}
+\begin{frame}
+\frametitle{Leverage}
+
+\begin{definition}
+The \alert{leverage} ($0\le h_i\le 1$) of an observation $i$ is a measure of
+how far away the observations explanatory variable value is away from the other
+observations. \pause
+Larger leverage indicates a larger \emph{potential} influence of a single 
+observation on the regression model.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+In simple linear regression, 
+\[
+h_i = \frac{1}{n} + \frac{(x_i-\overline{x})^2}{SXX}
+\]
+which is involved in the standard error for the line for a location $x_i$. 
+
+\vspace{0.1in} \pause
+
+The variability in the residuals is a function of the leverage, i.e. 
+\[
+Var(r_i) = \sigma^2(1-h_i)
+\]
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Telomere data}
+<<>>=
+m <- lm(telomere.length~years, Telomeres)
+
+cbind(Telomeres, leverage = hatvalues(m)) %>%
+  select(years, leverage) %>% 
+  unique() %>% 
+  arrange(-years)
+@
+\end{frame}
+
+\subsection{Standardized residuals}
+\begin{frame}
+\frametitle{Standardized residuals}
+
+Typically, we don't visualize residuals themselves, 
+but instead we standardize them, \pause i.e.
+
+\[
+\frac{r_i}{\sqrt{\widehat{Var(r_i)}}} = \frac{r_i}{\hat\sigma\sqrt{1-h_i}}
+\]
+
+\pause
+
+If $|r_i|$ is large, 
+it will have a large impact on $\hat\sigma^2 = \sum_{i=1}^n r_i^2/(n-2)$.
+\pause
+Thus, we can calculate a \alert{externally studentized residual}
+
+\[
+\frac{r_i}{\hat\sigma_{(i)}\sqrt{1-h_i}}
+\]
+
+where $\hat\sigma_{(i)} = \sum_{j\ne i} r_j^2/(n-3)$.
+
+\vspace{0.1in} \pause
+
+These residuals should generally be compared to a standard normal distribution.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Telomere data}
+<<>>=
+m <- lm(telomere.length~years, Telomeres)
+
+cbind(Telomeres, 
+      leverage     = hatvalues(m), 
+      residual     = residuals(m), 
+      standardized = rstandard(m),
+      studentized  = rstudent(m)) 
+@
+\end{frame}
+
+
+\subsection{Cook's distance}
+\begin{frame}
+\frametitle{Cook's distance}
+
+If a particular observation is highly influential in estimating the parameters
+of the regression model, 
+we can assess how influential it is by fitting the regression model with and
+without that observation and evaluating how the model parameters change.
+
+\pause
+
+\begin{definition}
+The \alert{Cook's distance} for an observation $i$ ($d_i>0$) is a measure of 
+how much the estimates of the regression parameters change when that observation
+is included versus when it is excluded.
+\end{definition}
+
+\pause
+
+Operationally, we might be concerned when $d_i$ is 
+\begin{itemize}
+\item larger than 1 or
+\item larger then 4/n.
+\end{itemize}
+
+\end{frame}
+
+
+
+\section{Default regression diagnostics in R}
+\subsection{Residuals vs fitted values}
+\begin{frame}
+\tiny
+<<echo=FALSE>>=
+plot(m, 1)
+@
+\pause
+\begin{tabular}{ll}
+Assumption & Violation \\
+\hline
+Linearity & Quadratic curve \\
+Constant variance & Funnel shape \\
+\hline
+\end{tabular}
+\end{frame}
+
+
+\subsection{QQ-plot}
+\begin{frame}
+\tiny
+<<echo=FALSE>>=
+plot(m, 2)
+@
+\pause
+\begin{tabular}{ll}
+Assumption & Violation \\
+\hline
+Normality & Points don't generally fall along the line \\
+\hline
+\end{tabular}
+\end{frame}
+
+
+\subsection{Absolute standardized residuals vs fitted values}
+\begin{frame}
+\tiny
+<<echo=FALSE>>=
+plot(m, 3)
+@
+\pause
+\begin{tabular}{ll}
+Assumption & Violation \\
+\hline
+Normality & Too many large values \\
+Constant variance & Increasing or decreasing trend \\
+\hline
+\end{tabular}
+\end{frame}
+
+
+
+\subsection{Cook's distance}
+\begin{frame}
+\tiny
+<<echo=FALSE>>=
+plot(m, 4)
+@
+\pause
+\begin{tabular}{ll}
+Outlier & Violation \\
+\hline
+Influential observation & Large Cook's distance \\
+\hline
+\end{tabular}
+\end{frame}
+
+
+
+\subsection{Residuals vs leverage}
+\begin{frame}
+\tiny
+<<echo=FALSE>>=
+plot(m, 5)
+@
+\pause
+\begin{tabular}{ll}
+Outlier & Violation \\
+\hline
+Influential observation & Points outside red dashed lines \\
+\hline
+\end{tabular}
+\end{frame}
+
+
+\subsection{Cook's distance vs leverage}
+\begin{frame}
+\tiny
+<<echo=FALSE>>=
+plot(m, 6)
+@
+\pause
+\begin{tabular}{ll}
+Outlier & Violation \\
+\hline
+Influential observation & Points outside red dashed lines \\
+\hline
+\end{tabular}
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+Case statistics:
+\begin{itemize}
+\item Fitted values
+\item Leverage
+\item Residuals
+  \begin{itemize}
+  \item Standardized residuals
+  \item Studentized residuals
+  \end{itemize}
+\item Cook's distance
+\end{itemize}
+
+\pause
+
+Model assumptions:
+	\begin{itemize}
+	\item Normality
+	\item Constant variance
+	\item Independence
+  \item Linearity
+	\end{itemize}
+	
+\pause
+
+Default plots in R do not assess all model assumptions.
+So we'll need to make more.
+\end{frame}
+
+\end{document}
+
+
+

@@ -45,6 +45,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Topic|Source|Handouts|
 |---|---|---|
 |Simple linear regression|[SetR01.Rnw](SetR01/SetR01_Simple_linear_regression.Rnw)|[SetR01.pdf](SetR01/SetR01_Simple_linear_regression.pdf)|  
+|Regression diagnostics|[SetR02.Rnw](SetR02/SetR02_Regression_diagnostics.Rnw)|[SetR02.pdf](SetR02/SetR02_Regression_diagnostics.pdf)|  
 
 
 
