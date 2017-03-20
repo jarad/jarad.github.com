@@ -1,15 +1,317 @@
 ---
-title: "Lab07 - Introduction to Regression in R"
+title: "Lab07 - Understanding regression diagnostics"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
 
-To follow along, use the [lab07 code](lab07.R).
+To follow along, use the [lab07 code](lab07.R) and make sure the following 
+packages are installed:
 
-## Regression
+- dplyr
+- ggplot2
+- tidyr
+
+You can use the following code to perform the installation:
+
+```{r install_packages, eval=FALSE}
+install.packages(c("dplyr","ggplot2","tidyr"))
+```
+
+Now load the packages
+
+```{r load_packages}
+library("dplyr")
+library("ggplot2")
+library("tidyr")
+```
+
+## Overview
+
+Recall that a regression model has the following 4 main assumptions:
+
+- Normality
+- Constant variance
+- Independence
+- Linearity
+
+Throughout this lab, we will investiage these assumptions by simulating data
+that violates the assumption and determining how the diagnostics (including
+plots) express this violation.
+
+### Simulation
+
+Throughout this lab, we will be 
+
+1. simulating data,
+1. running a regression with those data, and
+1. looking at the diagnostics. 
+
+#### Simulate data
+
+For fully reproducible results, we will set the seed. 
+
+```{r set_seed}
+set.seed(20170320)
+```
+
+```{r simulating_data}
+n <- 100 
+x <- rnorm(n)
+b0 <- 1
+b1 <- 2
+sigma <- 0.1
+error <- rnorm(n,0,sigma)
+y <- b0+b1*x+error
+
+d <- data.frame(x=x,y=y)
+```
+
+We can visualize the data 
+
+```{r visualize_data}
+plot(y ~ x, data = d)
+```
+
+or using `ggplot`
+
+```{r visualize_using_ggplot}
+library("ggplot2")
+ggplot(d, aes(x=x, y=y)) +
+  geom_point()
+```
+
+#### Run the regression
+
+```{r running_regression}
+m <- lm(y ~ x, data = d)
+```
+
+```{r}
+m
+summary(m)
+```
+
+Plot the line
+
+```{r}
+plot(y ~ x, data = d)
+abline(m, col='blue')
+```
+or using `ggplot`
+
+```{r}
+ggplot(d, aes(x=x, y=y)) +
+  geom_point() + 
+  stat_smooth(method = "lm", se = FALSE) +
+  theme_bw()
+```
+
+#### Look at diagnostics
+
+```{r}
+opar = par(mfrow=c(2,3))  # Create a 2x3 grid of plots and save the original settings
+plot(m, 1:6, ask=FALSE)   # Plot all 6 diagnostics plots
+par(opar)                 # Return to original graphics settings
+```
+These are what plots look like when all model assumptions are satisfied.
+
+#### Activity
+
+Simulate data the following data
+
+- There are 234 total observations.
+- Explanatory variable is a random uniform on (0,1).
+- Intercept is -0.5, slope is 25, variance is 9.
+
+Then run the regression diagnostic plots.
+
+<div id="simulation_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+n <- 234
+x <- runif(n)
+y <- -0.5 + 25*x + rnorm(n,0,sqrt(3))
+m <- lm(y~x)
+opar = par(mfrow=c(2,3))  # Create a 2x3 grid of plots and save the original settings
+plot(m, 1:6, ask=FALSE)   # Plot all 6 diagnostics plots
+par(opar)                 # Return to original graphics settings
+```
+Again, these plots satisfy all model assumptions.
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('simulation_activity_solution') .style.display=='none') {document.getElementById('simulation_activity_solution') .style.display=''}else{document.getElementById('simulation_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+## Normality
+
+There are many ways for the errors to not have a normal distribution.
+We will consider errors that are heavy-tailed, right-skewed, and left-skewed.
+
+```{r errors}
+n <- 100
+errors <- data.frame(rep = 1:n,
+                     normal       = rnorm(n),
+                     heavy_tailed = rt(n, df=5),
+                     right_skewed = exp(rnorm(n))) %>%
+  
+  mutate(right_skewed = right_skewed - exp(1/2),  # make sure errors have expectation of 0
+         left_skewed  = 1-right_skewed) 
+
+errors_long <- errors %>%
+  tidyr::gather(distribution,value,-rep) %>%
+  mutate(distribution = factor(distribution, 
+                               levels = c("normal",
+                                          "heavy_tailed",
+                                          "right_skewed",
+                                          "left_skewed")))
+```
+
+Before considering the regression, let's take a look at these errors
+
+```{r histograms}
+ggplot(errors_long, aes(x=value)) + 
+  geom_histogram() + 
+  facet_grid(. ~ distribution) + 
+  theme_bw()
+```
+
+```{r qqplot}
+ggplot(errors_long, aes(sample=value)) + 
+  stat_qq() + 
+  facet_grid(. ~ distribution) + 
+  theme_bw()
+```
+
+Or using base R
+
+```{r baser_qqplot}
+opar = par(mfrow=c(1,4))
+qqnorm(errors$normal, main="Normal")
+qqline(errors$normal)
+qqnorm(errors$heavy_tailed, main="Heavy-tailed")
+qqline(errors$heavy_tailed)
+qqnorm(errors$right_skewed, main="Right-skewed")
+qqline(errors$right_skewed)
+qqnorm(errors$left_skewed, main="Left-skewed")
+qqline(errors$left_skewed)
+par(opar)
+```
+
+### Regression
+
+Of course, we don't see these errors directly. 
+Instead, we obtain the residuals which are estimates of the errors.
+
+For simplicity, we will assume the true regression model has intercept 0 and 
+slope 0. 
+Thus the response is really just the errors themselves.
+
+```{r}
+y <- errors %>%
+  mutate(x = rnorm(n))
+
+models <- list()
+models[[1]] <- lm(normal       ~ x, data=y)
+models[[2]] <- lm(heavy_tailed ~ x, data=y)
+models[[3]] <- lm(right_skewed ~ x, data=y)
+models[[4]] <- lm(left_skewed  ~ x, data=y)
+names(models) <- c("normal","heavy_tailed","right_skewed","left_skewed")
+```
+
+#### Normal
+
+```{r}
+opar <- par(mfrow=c(2,3))
+plot(models$normal, 1:6, ask=FALSE)
+par(opar)
+```
+
+#### Heavy_tailed
+
+```{r}
+opar <- par(mfrow=c(2,3))
+plot(models$heavy_tailed, 1:6, ask=FALSE)
+par(opar)
+```
+
+#### Right_skewed
+
+```{r}
+opar <- par(mfrow=c(2,3))
+plot(models$right_skewed, 1:6, ask=FALSE)
+par(opar)
+```
+
+#### Left_skewed
+
+```{r}
+opar <- par(mfrow=c(2,3))
+plot(models$left_skewed, 1:6, ask=FALSE)
+par(opar)
+```
+
+#### QQ-plots
+
+Focusing on the qqplots
+
+```{r}
+opar = par(mfrow=c(1,4))
+for (i in 1:4) plot(models[[i]], 2, main=names(models)[i])
+par(opar)
+```
+
+
+#### Activity
+
+Using the same errors, 
+assume an intercept of 10 and a slope of -5. 
+Run the regression analysis and view the QQ-plots.
+
+<div id="normal_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+b0 <-  10
+b1 <- -5
+y_new <- y %>% 
+  mutate(y_normal       = b0+b1*x + normal,
+         y_heavy_tailed = b0+b1*x + heavy_tailed,
+         y_right_skewed = b0+b1*x + right_skewed,
+         y_left_skewed  = b0+b1*x + left_skewed)
+
+models <- list()
+models[[1]] <- lm(y_normal       ~ x, data=y_new)
+models[[2]] <- lm(y_heavy_tailed ~ x, data=y_new)
+models[[3]] <- lm(y_right_skewed ~ x, data=y_new)
+models[[4]] <- lm(y_left_skewed  ~ x, data=y_new)
+names(models) <- c("normal","heavy_tailed","right_skewed","left_skewed")
+
+opar = par(mfrow=c(1,4))
+for (i in 1:4) plot(models[[i]], 2, main=names(models)[i])
+par(opar)
+```
+
+If you have extra time, try changing the values in the distributions for the 
+errors, e.g. have a t distribution with a larger or smaller variance.
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('normal_activity_solution') .style.display=='none') {document.getElementById('normal_activity_solution') .style.display=''}else{document.getElementById('normal_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
 
-## Multiple regression
+## Constant variance
+
+## Indpendence
+
+## Linearity
+
+
+
+## Summary
+
+In this lab, we considered the 4 main regression assumptions how violation 
+of these assumptions get expressed in regression diagnostics. 
+Of course, there is no reason that only a single assumption is violated at a 
+time. 
+Thus, you may want to simulate data with a variety of violates and see how those
+combinations of violations express themselves in the diagnostics.
+In reality, all the assumptions are violated all the time and 
+we are trying to identify (via the diagnostics) when are the assumptions 
+violated so badly that the model is ineffective for its intended purpose.
+
