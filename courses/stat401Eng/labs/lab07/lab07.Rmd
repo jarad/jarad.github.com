@@ -297,6 +297,60 @@ errors, e.g. have a t distribution with a larger or smaller variance.
 
 ## Constant variance
 
+In this section, we will assume the errors are normally distributed but look 
+at what happens when the variance is not constant.
+The most common scenario is for the variance to increase as the expected
+response increases.
+If the slope is positive (negative), 
+this means as the explanatory variable increases (decreases).
+
+### Assume positive slope
+
+```{r}
+n  <- 100
+b0 <- 0
+b1 <- 1
+d  <- data.frame(x = runif(n)) %>%
+  mutate(error = rnorm(n,0,x),
+         y = b0+b1*x+error)
+  
+m <- lm(y~x, data=d)
+opar <- par(mfrow=c(2,3))
+plot(m, 1:6, ask=FALSE)
+par(opar)
+```
+
+### Assume negative slope
+
+```{r}
+b1 <- -1
+d  <- d %>%
+  mutate(error = rnorm(n,0,1-x), # sd is now related to 1-x
+         y = b0+b1*x+error)
+  
+m <- lm(y~x, data=d)
+opar <- par(mfrow=c(2,3))
+plot(m, 1:6, ask=FALSE)
+par(opar)
+```
+
+#### Activity
+
+Simulate explanatory variable values from a standard normal. 
+Then simulate errors from 
+
+<div id="copypaste_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+x
+y
+m
+s
+s$r.squared
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('copypaste_activity_solution') .style.display=='none') {document.getElementById('copypaste_activity_solution') .style.display=''}else{document.getElementById('copypaste_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
 ## Indpendence
 
 ## Linearity
