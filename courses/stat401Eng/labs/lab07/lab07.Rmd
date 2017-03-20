@@ -79,7 +79,8 @@ or using `ggplot`
 ```{r visualize_using_ggplot}
 library("ggplot2")
 ggplot(d, aes(x=x, y=y)) +
-  geom_point()
+  geom_point() +
+  theme_bw()
 ```
 
 #### Run the regression
@@ -320,40 +321,208 @@ plot(m, 1:6, ask=FALSE)
 par(opar)
 ```
 
-### Assume negative slope
+
+### Residuals vs fitted values
+
+A (side-ways) funnel pattern is observed in the residuals vs fitted values 
+plot.
 
 ```{r}
+plot(m, 1)
+```
+
+### Absolute residuals vs fitted values
+
+A half funnel pattern is observed in the absolute residuals vs fitted values 
+plot and the (red) smoother line indicates an increasing pattern.
+
+```{r}
+plot(m,3)
+```
+
+
+#### Activity
+
+Simulate data that has a negative slope and an error variance that increases
+with the fitted value.
+
+<div id="constant_variance_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
 b1 <- -1
 d  <- d %>%
   mutate(error = rnorm(n,0,1-x), # sd is now related to 1-x
          y = b0+b1*x+error)
   
 m <- lm(y~x, data=d)
+opar <- par(mfrow=c(1,2))
+plot(m, c(1,3), ask=FALSE)
+par(opar)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('constant_variance_activity_solution') .style.display=='none') {document.getElementById('constant_variance_activity_solution') .style.display=''}else{document.getElementById('constant_variance_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+## Independence
+
+There are many ways to violate the assume of independence of the errors in 
+linear regression.
+The most common way is for there to be serial correlation, i.e. that the errors
+are related due to the time the samples were obtained. 
+If you know when the samples were obtained, 
+you should plot the residuals vs that time. 
+Often the dataset does not have this information, 
+but typically the observations are recorded sequentially. 
+So, we can use the row number as a proxy for the observation time. 
+Thus at a minimum, I suggest you plot residuals vs row number. 
+
+Typically, you will have to create the row number (or index) variable.
+
+### Independent errors
+
+```{r}
+n <- 100
+b0 <-1 
+b1 <- 2
+d <- data.frame(x = rnorm(n)) %>%
+  mutate(
+    error =rnorm(n),
+    y = b0+b1*x + error)
+
+m <- lm(y ~ x, data = d)
+```
+
+The `m` object has several components take a look using the `names()` function.
+
+```{r}
+names(m)
+```
+
+The `residuals` component provides the fitted values in the same order as 
+they were in the data set, so plot these.
+
+```{r}
+plot(m$residuals)
+```
+
+### Serially correlated errors
+
+```{r}
+d <- d %>% 
+  mutate(error = sin(2*pi*(1:n)/n)+rnorm(n),
+         y = b0+b1*x+error)
+
+m <- lm(y ~ x, data = d)
+plot(m$residuals)
+```
+
+It is certainly not obvious that the errors have a sin wave structure, 
+but it is pretty clear something is wrong since the residuals for early 
+observations are positive and for later observations are negative.
+
+There is nothing obvious about the default diagnostic plots.
+
+```{r}
 opar <- par(mfrow=c(2,3))
 plot(m, 1:6, ask=FALSE)
 par(opar)
 ```
 
+
 #### Activity
 
-Simulate explanatory variable values from a standard normal. 
-Then simulate errors from 
+Simulate errors that have a positive trend, 
+fit the regression, 
+and plot the residuals vs index.
 
-<div id="copypaste_activity_solution" style="display:none"> 
+<div id="independence_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
-x
-y
-m
-s
-s$r.squared
+d <- d %>% 
+  mutate(error = (1:n)+rnorm(n), # This is a bit extreme
+         y = b0+b1*x+error)
+
+m <- lm(y ~ x, data = d)
+plot(m$residuals)
 ```
 </div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('copypaste_activity_solution') .style.display=='none') {document.getElementById('copypaste_activity_solution') .style.display=''}else{document.getElementById('copypaste_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+<button title="Show a solution" type="button" onclick="if(document.getElementById('independence_activity_solution') .style.display=='none') {document.getElementById('independence_activity_solution') .style.display=''}else{document.getElementById('independence_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
-
-## Indpendence
 
 ## Linearity
+
+The linearity assumption assumes a linear relationship between the expected
+response and the explanatory variable.
+Thus, the linearity assumption is best looked at by plotting the residuals vs the 
+explanatory variable and looking for a pattern.
+
+### Linear
+
+If the relationship is truly linear, this plot will not show any patterns.
+
+```{r}
+n <- 100
+b0 <- 1
+b1 <- 2
+d <- data.frame(x = rnorm(n)) %>%
+  mutate(y = b0+b1*x + rnorm(n))
+                
+m <- lm(y ~ x, data = d)
+
+d$residuals <- m$residuals
+plot(residuals ~ x, data = d)
+```
+
+# Non-linear relationship
+
+```{r}
+n <- 100
+b0 <- 1
+b1 <- 2
+d <- data.frame(x = rnorm(n)) %>%
+  mutate(y = b0+b1*x+x^2 + rnorm(n))
+                
+m <- lm(y ~ x, data = d)
+
+d$residuals <- m$residuals
+plot(residuals ~ x, data = d)
+```
+
+This will also show up in the two residuals vs fitted values plots.
+
+```{r}
+opar <- par(mfrow=c(2,3))
+plot(m, 1:6, ask=FALSE)
+par(opar)
+```
+
+But when the models get more complex, 
+this relationship might not be clear from these plots.
+Therefore, I suggest you plot residuals versus each explanatory variable.
+
+#### Activity 
+
+Simulate explanatory variables from a normal distribution with mean 1 and 
+standard deviation 0.1.
+Then simulate data with an intercept of 1, slope of 2, and error standard 
+deviation of 1. 
+Plot residuals vs the explanatory variable. 
+What pattern do you see?
+
+<div id="linearity_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+n <- 100
+b0 <- 1
+b1 <- 2
+d <- data.frame(x = rnorm(n, 1, 0.1)) %>%
+  mutate(y = b0+b1*x+x^2 + rnorm(n))
+                
+m <- lm(y ~ x, data = d)
+
+d$residuals <- m$residuals
+plot(residuals ~ x, data = d)
+```
+Even non-linear relationships can be *approximately* linear.
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('linearity_activity_solution') .style.display=='none') {document.getElementById('linearity_activity_solution') .style.display=''}else{document.getElementById('linearity_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
 
