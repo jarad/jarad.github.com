@@ -14,3 +14,4 @@ tagline: Statistical Methods for Research Workers
  - [Lab04](lab04/lab04.html) - Monte Carlo Methods in R
  - [Lab05](lab05/lab05.html) - Estimator evaluation
  - [Lab06](lab06/lab06.html) - Built-in analyses in R ([creativity.csv](lab06/creativity.csv))
+ - [Lab07](lab07/lab07.html) - Default Regression diagnostics
