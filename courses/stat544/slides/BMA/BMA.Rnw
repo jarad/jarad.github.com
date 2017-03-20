@@ -86,6 +86,7 @@ Suppose we have two models:
 Y_i|M_0\phantom{,\mu} &\ind N(0,1) \\
 Y_i|M_1,\mu &\ind N(\mu,1),\,\mu|M_1 \sim N(0,1) 
 \end{array} \]
+for $i=1,\ldots,n$.
 
 \vspace{0.1in} \pause
 
@@ -94,13 +95,15 @@ Thus, we have the following posterior predictive distributions \pause
 \tilde{y}|y,M_0 &\sim N(0,1) \\
 \tilde{y}|y,M_1 &\sim N\!\left(n\overline{y}[n+1]^{-1},[n+1]^{-1}+1\right)
 \end{array} \]
+for scalar $\tilde{y}$ independent of $y$, but from the same distribution.
 
 \pause
 and the following posterior model probabilities: \pause
 \[ \begin{array}{rl}
-p(M_0|y) &\propto N(\overline{y};0,1/n)p(M_0) \\
-p(M_1|y) &\propto N(\overline{y};0,2/n)p(M_0) \\
+p(M_0|y) &\propto N(y; 0, \I) \\
+p(M_1|y) &\propto N(y; 0, \I+ {\bf 1}{\bf 1}^\top ) \\
 \end{array} \]
+where ${\bf 1}$ is a vector of all 1s.
 
 \end{frame}
 
@@ -108,25 +111,34 @@ p(M_1|y) &\propto N(\overline{y};0,2/n)p(M_0) \\
 
 \begin{frame}
 <<>>=
-n <- 10
-ybar_max <- 3
+set.seed(1)
+n <- 4; y <- rnorm(n); y <- y-mean(y)
+ybar_max <- 2
 
 post_predictive <- function(d) {
-  ybar <- d$ybar
-  
+
+
   # Posterior model probabilities
-  pM0t <- dnorm(ybar, 0, sqrt(1/n))
-  pM1t <- dnorm(ybar, 0, sqrt(2/n))
-  pM0 <- pM0t/(pM0t+pM1t)
-  pM1 <- 1-pM0
-  
+  log_pM <- c(sum(dnorm(y+d$ybar, log=TRUE)),
+             mvtnorm::dmvnorm(y+d$ybar, sigma = matrix(1, nrow=n, ncol=n) + diag(n), log=TRUE))
+  log_pM <- log_pM - max(log_pM) # for numerical stability
+  pM <- exp(log_pM)/sum(exp(log_pM))
+
+
   # Posterior predictive distributions
   x <- seq(-3, ybar_max+3, by=0.1)
   ppM0 <- dnorm(x, 0, 1)
-  ppM1 <- dnorm(x, n*ybar/(n+1), sqrt(1/(n+1)))
-  
+  ppM1 <- dnorm(x, n*d$ybar/(n+1), sqrt(1/(n+1)+1))
+
   data.frame(x = x,
-             density = pM0*ppM0 + pM1*ppM1)
+             pM0 = pM[1]*ppM0,
+             pM1 = pM[2]*ppM1) %>%
+    mutate(pp = pM0 + pM1) %>%
+    tidyr::gather(Distribution, density, -x) %>%
+    mutate(Distribution = recode(Distribution,
+                                 "pM0" = "Weighted predictive for M0",
+                                 "pM1" = "Weighted predictive for M1",
+                                 "pp"  = "Model averaged predictive"))
 }
 
 d <- data.frame(ybar = 0:ybar_max) %>%
@@ -135,8 +147,9 @@ d <- data.frame(ybar = 0:ybar_max) %>%
   ungroup() %>%
   mutate(ybar = factor(ybar))
 
-ggplot(d, aes(x = x, y = density, color = ybar, linetype = ybar, group = ybar)) +
-  geom_line() + 
+ggplot(d, aes(x = x, y = density, color = Distribution, linetype = Distribution, group = Distribution)) +
+  geom_line() +
+  facet_wrap(~ybar) +
   theme_bw() +
   labs(title = paste0("Posterior predictive distribution (n=",n,")"))
 @
@@ -273,14 +286,15 @@ variables, we have
 \pause
 
 <<fig.height=2.5, warning = FALSE>>=
-library(scales)
 d = data.frame(p = 3:30) %>% 
   mutate(`None` = 2^p,
          `First order` = `None`*2^choose(p,2),
          `Second order` = `First order`*2^choose(p,3)) %>%
   tidyr::gather(Interactions, n, -p) %>%
-  mutate(Interactions = factor(Interactions, levels = c("None","First order", "Second order")))
+  mutate(Interactions = factor(Interactions, levels = c("None","First order", "Second order"))) %>%
+  filter(!is.infinite(n))
 
+library(scales)
 ggplot(d, aes(p,n, col=Interactions, shape=Interactions)) + 
   geom_point() + 
   scale_y_continuous(labels = comma, 
@@ -423,7 +437,7 @@ we can find its \alert{posterior inclusion probability}\pause,
 i.e. the probability it is non-zero:
 \pause
 \[
-p(\beta_j\ne 0) = \sum_{h:\beta_j\ne 0} p(M_h|y)
+p(\beta_j\ne 0|y) = \sum_{h:\beta_j\ne 0} p(M_h|y)
 \]
 \pause
 which is just the sum of the model probabilities for the models where $\beta_j$ 

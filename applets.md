@@ -36,3 +36,9 @@ group: navigation
   - [Central limit theorem for proportions](http://spark.rstudio.com/minebocek/CLT_prop/)
   - [Regression diagnostics](http://spark.rstudio.com/minebocek/slr_diag/)
 - [Missouri disease surveillance](http://spark.rstudio.com/ejahanpour/SampleData/)
+- Regression
+  - [Find intercept and slope](https://gallery.shinyapps.io/simple_regression/)
+  - [Guess the correlation](http://shiny.stat.calpoly.edu/Corr_Reg_Game/)
+  - [Regression diagnostics](http://spark.rstudio.com/minebocek/slr_diag/)
+  
+  
