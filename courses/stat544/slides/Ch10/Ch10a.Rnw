@@ -98,7 +98,7 @@ Approaches:
 
 
 \begin{frame}[fragile]
-\frametitle{Marginal likelihood }
+\frametitle{Normal-Cauchy: marginal likelihood }
 <<data, echo=TRUE>>=
 y = 1 # Data
 @
@@ -113,13 +113,13 @@ q = function(theta,y,log=FALSE) {
 # Find marginal likelihood for y
 w = 0.1
 theta = seq(-5,5,by=w)+y
-(py = sum(q(theta,y)*w))
-integrate(function(x) q(x,y), -Inf, Inf)
+(py = sum(q(theta,y)*w))                 # gridding based approach
+integrate(function(x) q(x,y), -Inf, Inf) # numerical integration
 @
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Example: Normal-Cauchy model}
+\frametitle{Normal-Cauchy: distribution}
 <<normal_cauchy_posterior_plot, dependson=c('data','normal_cauchy_posterior'), echo=TRUE, fig.width=8>>=
 curve(q(x,y), -5, 5, n=1001)
 points(theta,rep(0,length(theta)), cex=0.5, pch=19)
@@ -177,7 +177,8 @@ res = mutate(res, normal = y/2, "improper uniform" = y)
 ggplot(melt(res, id.var='y', variable.name = "prior"),
        aes(y,value,color=prior))+
   geom_line() + 
-  labs(y="Posterior expectation")
+  labs(y="Posterior expectation") +
+  theme_bw()
 @
 \end{frame}
 
@@ -195,7 +196,7 @@ ggplot(melt(res, id.var='y', variable.name = "prior"),
 	\item CLT: if $h^2$ has finite expectation, \pause then
 	\[ \hat{h}_J \stackrel{d}{\to} N(E[h(\theta)], v_J) \pause \]
 	where
-	\[ v_J = \frac{1}{J} V[h(\theta)] \pause \approx \frac{1}{J^2} \sum_{s=1}^J \left[ h\left(\theta^{(j)}\right) - \hat{h}_J \right]^2. \]
+	\[ v_J = \frac{1}{J} Var[h(\theta)] \pause \approx \frac{1}{J^2} \sum_{s=1}^J \left[ h\left(\theta^{(j)}\right) - \hat{h}_J \right]^2. \]
 	\end{itemize}
 \end{frame}
 
@@ -224,7 +225,7 @@ ggplot(melt(res, id.var='y', variable.name = "prior"),
 
 
 \begin{frame}[fragile]
-\frametitle{Strong law of large numbers}
+\frametitle{Monte Carlo sampling randomly infills}
 <<uniform>>=
 f = function(theta) exp(-theta^2/2)
 
@@ -379,16 +380,23 @@ post_expectation(1)
 
 \subsection{Inverse CDF method}
 \frame{\frametitle{Inverse cumulative distribution function}
-  \begin{definition}
-	The \alert{cumulative distribution function} of a random variable $X$ is defined by 
-	\[ F_X(x) = P_X(X\le x) \qquad\mbox{for all }x. \]
-	\end{definition}
+\begin{definition}
+The \alert{cumulative distribution function} (cdf) of a random variable $X$ is defined by 
+\[ F_X(x) = P_X(X\le x) \qquad\mbox{for all }x. \]
+\end{definition}
 	
-	\vspace{0.2in} \pause
+\vspace{0.2in} \pause
 	
-  Suppose you want to sample $X\sim f(x)$ and you have access to the inverse cdf of X, $F^{-1}(x)$, then 
-	\begin{lemma}
-	If $U\sim Unif(0,1)$, then $X=F^{-1}(U)$ is a simulation from $f(x)$. 	\end{lemma}
+\begin{lemma}
+Let $X$ be a random variable whose cdf is $F(x)$ \pause
+and you have access to the inverse cdf of $X$, i.e. if
+\[
+u = F(x) \quad \implies \quad x = F^{-1}(u).
+\]
+\pause
+If $U\sim Unif(0,1)$, then $X=F^{-1}(U)$ is a simulation from the distribution
+for $X$. 	
+\end{lemma}
 }
 
 
@@ -412,6 +420,9 @@ for (u in c(.1,.95)) plot_arrows(u)
 \begin{frame}[fragile]
 \frametitle{Exponential example}
 	For example, to sample $X\sim Exp(1)$, 
+	
+	\pause
+	
 	\begin{enumerate}
 	\item Sample $U\sim Unif(0,1)$. \pause
 	\item Set $X = -\log(1-U)$, \pause or $X=-\log(U)$.  
@@ -422,29 +433,38 @@ for (u in c(.1,.95)) plot_arrows(u)
 <<exponential, message=FALSE, fig.width=8>>=
 n.reps = 1e4
 d = data.frame(x = -log(runif(n.reps)))
-ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dexp, color="red")
+ggplot(d, aes(x=x)) + 
+  geom_histogram(aes(y=..density..)) + 
+  stat_function(fun=dexp, color="red") + 
+  theme_bw()
 @
 \end{frame}
 
 
 
 \frame{\frametitle{Sampling from a univariate truncated distribution}
-	Suppose you wish to sample from $X\sim N(\mu,\sigma^2)\mathrm{I}(a<X<b)$, i.e. a normal random variable with untruncated mean $\mu$ and variance $\sigma^2$, but truncated to the interval $(a,b)$. \pause Suppose the untruncated cdf is $F$ and inverse cdf is $F^{-1}$.  \pause 
+Suppose you wish to sample from $X\sim N(\mu,\sigma^2)\mathrm{I}(a<X<b)$,
+i.e. a normal random variable with untruncated mean $\mu$ and variance 
+$\sigma^2$, but truncated to the interval $(a,b)$. 
+\pause 
+Suppose the untruncated cdf is $F$ and inverse cdf is $F^{-1}$.  
+\pause 
 	
-	\begin{enumerate}[\,1.]
-	\item Calculate endpoints $p_a = F(a)$ and $p_b = F(b)$. \pause
-	\item Sample $U\sim Unif(p_a,p_b)$. \pause
-	\item Set $X=F^{-1}(U)$. \pause
-	\end{enumerate}	
+\begin{enumerate}[\,1.]
+\item Calculate endpoints $p_a = F(a)$ and $p_b = F(b)$. \pause
+\item Sample $U\sim Unif(p_a,p_b)$. \pause
+\item Set $X=F^{-1}(U)$. \pause
+\end{enumerate}	
   
-  \vspace{0.2in} \pause
+\vspace{0.2in} \pause
   
-  This just avoids having to recalculate the normalizing constant for the pdf, i.e. $1/(F^{-1}(b)-F^{-1}(a))$, which rescales 
+This just avoids having to recalculate the normalizing constant for the pdf, 
+i.e. $1/(F^{-1}(b)-F^{-1}(a))$.
 }
 
 
 \begin{frame}[fragile]
-\frametitle{Normal}
+\frametitle{Truncated normal}
 $X\sim N(5,9)\mathrm{I}(1\le X \le 6)$
 <<>>=
 mean = 5; sd = 9
@@ -465,13 +485,17 @@ plot_arrows(.5, mean=mean, sd=sd)
 
 
 \begin{frame}[fragile]
+\frametitle{Truncated normal}
 $X\sim N(5,9)\mathrm{I}(1\le X \le 6)$
 <<truncated_normal, message=FALSE, fig.width=8>>=
 d = data.frame(x= 5+3*qnorm(runif(n.reps, pnorm((1-5)/3), pnorm((6-5)/3))))
 dtnorm = function(x,mu=5,sigma=3,a=1,b=6) {
   dnorm(x,mu,sigma)/diff(pnorm(c(a,b),mu,sigma))
 } 
-ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dtnorm, color="red")
+ggplot(d, aes(x=x)) + 
+  geom_histogram(aes(y=..density..)) + 
+  stat_function(fun=dtnorm, color="red") +
+  theme_bw()
 @
 \end{frame}
 
@@ -490,38 +514,53 @@ ggplot(d, aes(x=x))+geom_histogram(aes(y=..density..))+stat_function(fun=dtnorm,
 
 \subsection{Rejection sampling}
 \frame{\frametitle{Rejection sampling}
-  Suppose you wish to obtain samples $\theta\sim p(\theta|y)$, \pause rejection sampling performs the following \pause 
-  \begin{enumerate}[\,1.]
-	\item Sample a proposal $\theta^*\sim g(\theta)$ \pause and $U\sim Unif(0,1)$. \pause 
-	\item Accept $\theta=\theta^*$ as a draw from $p(\theta|y)$ if $U\le p(\theta^*|y)/Mg(\theta^*)$\pause, otherwise return to step 1. \pause
-	\end{enumerate}
-	where $M$ satisfies $M\, g(\theta)\ge p(\theta|y)$ for all $\theta$. 
+Suppose you wish to obtain samples $\theta\sim p(\theta|y)$,
+\pause 
+rejection sampling performs the following 
+\pause 
+\begin{enumerate}[\,1.]
+\item Sample a proposal $\theta^*\sim g(\theta)$ \pause and $U\sim Unif(0,1)$. 
+\pause 
+\item Accept $\theta=\theta^*$ as a draw from $p(\theta|y)$ if 
+$U\le p(\theta^*|y)/Mg(\theta^*)$\pause, otherwise return to step 1. 
+\end{enumerate}
+\pause
+where $M$ satisfies $M\, g(\theta)\ge p(\theta|y)$ for all $\theta$. 
 	
-	\vspace{0.2in} \pause
+\vspace{0.2in} \pause
 	
-	\begin{itemize}[<+->]
-	\item For a given proposal distribution $g(\theta)$, the optimal $M$ is $M=\sup_\theta p(\theta|y)/g(\theta)$. 
-	\item The probability of acceptance is $1/M$.
-	\end{itemize}
-  \pause The accept-reject idea is to create an envelope, $M\, g(\theta)$, above $p(\theta|y)$.
+\begin{itemize}[<+->]
+\item For a given proposal distribution $g(\theta)$, 
+the optimal $M$ is $M=\sup_\theta p(\theta|y)/g(\theta)$. 
+\item The probability of acceptance is $1/M$.
+\end{itemize}
+\pause The accept-reject idea is to create an envelope, 
+$M\, g(\theta)$, above $p(\theta|y)$.
 }
 
 
 \frame{\frametitle{Rejection sampling with unnormalized density}
-  Suppose you wish to obtain samples $\theta\sim p(\theta|y)\propto q(\theta|y)$, \pause rejection sampling performs the following  
-  \begin{enumerate}[\,1.]
-	\item Sample a proposal $\theta^*\sim g(\theta)$ \pause and $U\sim Unif(0,1)$.  
-	\item Accept $\theta=\theta^*$ as a draw from $p(\theta|y)$ if $U\le q(\theta^*|y)/M^*g(\theta^*)$, otherwise return to step 1. 
-	\end{enumerate}
-	where $M^*$ satisfies $M^*\, g(\theta)\ge q(\theta|y)$ for all $\theta$. 
+Suppose you wish to obtain samples $\theta\sim p(\theta|y)\propto q(\theta|y)$, 
+\pause 
+rejection sampling performs the following  
+  
+\begin{enumerate}[\,1.]
+\item Sample a proposal $\theta^*\sim g(\theta)$ \pause and $U\sim Unif(0,1)$.  
+\item Accept $\theta=\theta^*$ as a draw from $p(\theta|y)$ if 
+$U\le q(\theta^*|y)/M^*g(\theta^*)$, otherwise return to step 1. 
+\end{enumerate}
+\pause
+where $M^*$ satisfies $M^*\, g(\theta)\ge q(\theta|y)$ for all $\theta$. 
 	
-	\vspace{0.2in} \pause
+\vspace{0.2in} \pause
 	
-	\begin{itemize}[<+->]
-	\item For a given proposal distribution $g(\theta)$, the optimal $M^*$ is $M^*=\sup_\theta q(\theta|y)/g(\theta)$. 
-  \item The acceptance probability is $1/M = p(y)/M^*$.
-	\end{itemize}
-  \pause The accept-reject idea is to create an envelope, $M\, g(\theta)$, above $q(\theta|y)$.
+\begin{itemize}[<+->]
+\item For a given proposal distribution $g(\theta)$, 
+the optimal $M^*$ is $M^*=\sup_\theta q(\theta|y)/g(\theta)$. 
+\item The acceptance probability is $1/M = p(y)/M^*$.
+\end{itemize}
+\pause 
+The accept-reject idea is to create an envelope, $M\, g(\theta)$, above $q(\theta|y)$.
 }
 
 \begin{frame}
@@ -563,8 +602,11 @@ dd = data.frame(x=xx,
 gg = ggplot(d, aes(x=x,y=u_scaled,col=accept)) +geom_point()
 clrs = unique(ggplot_build(gg)$data[[1]]$colour)
 gg + stat_function(fun=function(x) M*g(x,0), col=clrs[2]) +
-  stat_function(fun=function(x) q(x,0), col=clrs[1]) + labs(x="sample",y=expression(paste("u M g(",theta,")")))
-cat("Acceptance rate was",mean(d$accept))
+  stat_function(fun=function(x) q(x,0), col=clrs[1]) + 
+  labs(x="sample",y=expression(paste("u M g(",theta,")"))) +
+  theme_bw()
+
+cat("Observed acceptance rate was",mean(d$accept))
 @
 \end{frame}
 
