@@ -55,7 +55,7 @@ par(opar)                 # Return to original graphics settings
 n <- 100
 errors <- data.frame(rep = 1:n,
                      normal       = rnorm(n),
-                     heavy_tailed = rt(n, df=5),
+                     heavy_tailed = rt(n, df=3),
                      right_skewed = exp(rnorm(n))) %>%
   
   mutate(right_skewed = right_skewed - exp(1/2),  # make sure errors have expectation of 0

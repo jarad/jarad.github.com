@@ -100,6 +100,7 @@ Plot the line
 plot(y ~ x, data = d)
 abline(m, col='blue')
 ```
+
 or using `ggplot`
 
 ```{r}
@@ -151,7 +152,7 @@ We will consider errors that are heavy-tailed, right-skewed, and left-skewed.
 n <- 100
 errors <- data.frame(rep = 1:n,
                      normal       = rnorm(n),
-                     heavy_tailed = rt(n, df=5),
+                     heavy_tailed = rt(n, df=3),
                      right_skewed = exp(rnorm(n))) %>%
   
   mutate(right_skewed = right_skewed - exp(1/2),  # make sure errors have expectation of 0
@@ -182,7 +183,12 @@ ggplot(errors_long, aes(sample=value)) +
   theme_bw()
 ```
 
-Or using base R
+The `stat_qq()` function does not have an option to include the reference line,
+but this line can be added using 
+[this code](http://stackoverflow.com/a/4357932/3330025).
+
+In base R, we can use the `qqnorm()` and `qqline()` functions to manually
+create the qqplot.
 
 ```{r baser_qqplot}
 opar = par(mfrow=c(1,4))
