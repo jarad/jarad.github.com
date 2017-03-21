@@ -14,7 +14,7 @@ n <- 100
 x <- rnorm(n)
 b0 <- 1
 b1 <- 2
-sigma <- 0.1
+sigma <- 0.4
 error <- rnorm(n,0,sigma)
 y <- b0+b1*x+error
 
@@ -59,7 +59,7 @@ errors <- data.frame(rep = 1:n,
                      right_skewed = exp(rnorm(n))) %>%
   
   mutate(right_skewed = right_skewed - exp(1/2),  # make sure errors have expectation of 0
-         left_skewed  = 1-right_skewed) 
+         left_skewed  = 0 - right_skewed) 
 
 errors_long <- errors %>%
   tidyr::gather(distribution,value,-rep) %>%
@@ -166,12 +166,26 @@ names(m)
 plot(m$residuals)
 
 ## ------------------------------------------------------------------------
+dd <- data.frame(index = 1:length(m$residuals),
+                 residuals = m$residuals)
+ggplot(dd, aes(index, residuals)) +
+  geom_point() + 
+  stat_smooth(se = FALSE) +
+  theme_bw()
+
+## ------------------------------------------------------------------------
 d <- d %>% 
   mutate(error = sin(2*pi*(1:n)/n)+rnorm(n),
          y = b0+b1*x+error)
 
 m <- lm(y ~ x, data = d)
-plot(m$residuals)
+
+dd <- data.frame(index = 1:length(m$residuals),
+                 residuals = m$residuals)
+ggplot(dd, aes(index, residuals)) +
+  geom_point() + 
+  stat_smooth(se = FALSE) +
+  theme_bw()
 
 ## ------------------------------------------------------------------------
 opar <- par(mfrow=c(2,3))
@@ -188,7 +202,11 @@ d <- data.frame(x = rnorm(n)) %>%
 m <- lm(y ~ x, data = d)
 
 d$residuals <- m$residuals
-plot(residuals ~ x, data = d)
+
+ggplot(d, aes(x, residuals)) + 
+  geom_point() + 
+  stat_smooth(se = FALSE) + 
+  theme_bw()
 
 ## ------------------------------------------------------------------------
 n <- 100
@@ -200,7 +218,11 @@ d <- data.frame(x = rnorm(n)) %>%
 m <- lm(y ~ x, data = d)
 
 d$residuals <- m$residuals
-plot(residuals ~ x, data = d)
+
+ggplot(d, aes(x, residuals)) + 
+  geom_point() + 
+  stat_smooth(se = FALSE) + 
+  theme_bw()
 
 ## ------------------------------------------------------------------------
 opar <- par(mfrow=c(2,3))
