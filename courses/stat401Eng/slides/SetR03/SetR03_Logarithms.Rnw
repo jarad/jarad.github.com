@@ -1,0 +1,435 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set R03 - Logarithms}
+
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+% \begin{frame}
+% \frametitle{Reminder of logarithm operations}
+% 
+% Recall that $\log$ is a logarithm with base $e$, i.e. $\log_e$.
+% \pause
+% Here are some properties:
+% \[ \begin{array}{rl}
+% e^a e^b &= e^{a+b} \\
+% (e^a)^b &= e^ab \\
+% \log(ab) &= \log(a)+\log(b) \\
+% \log(a^b) &= b \log(a) \\
+% \log_e(x) &= \log_c(x)/\log_c(b) 
+% \end{array} \]
+% 
+% \end{frame}
+
+
+\section{Interpretations using logs}
+\begin{frame}
+\frametitle{Interpretations using logs}
+
+The most common transformation of either the response or explanatory variable(s) 
+is to take logarithms 
+\pause 
+because
+\begin{itemize}[<+->]
+\item linearity will often then be approximately true,
+\item the variance will likely be approximately constant, and
+\item there is a (relatively) convenient interpretation.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+We will talk about interpretation of $\beta_0$ and $\beta_1$ when
+\begin{itemize}[<+->]
+\item only the response is logged, 
+\item only the explanatory variable is logged, and
+\item when both are logged.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Neither response nor explanatory variable are logged}
+\begin{frame}
+\frametitle{Neither response nor explanatory variable are logged}
+
+If 
+\[ E[Y|X] = \beta_0 + \beta_1 X, \]
+\pause
+then
+\begin{itemize}[<+->]
+\item $\beta_0$ is the expected response when $X$ is zero and
+\item $\beta_1$ is the expected change in the response for a one unit increase in the explanatory variable.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+For the following discussion,
+\begin{itemize}[<+->]
+\item $Y$ is always going to be the original response and
+\item $X$ is always going to be the original explanatory variable.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Example}
+
+Suppose 
+\begin{itemize}
+\item $Y$ is corn yield per acre
+\item $X$ is fertilizer level in lbs/acre
+\end{itemize}
+
+\pause 
+
+Then, if 
+\[ E[Y|X] = \beta_0 + \beta_1 X \]
+
+\begin{itemize}[<+->]
+\item $\beta_0$ is the expected corn yield per acre when fertilizer level is zero and 
+\item $\beta_1$ is the expected change in corn yield per acre when fertilizer is increase by 1 lbs/acre. 
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+\subsection{Response is logged}
+\begin{frame}
+\frametitle{Response is logged}
+
+Then, if 
+\[ E[\log(Y)|X] = \beta_0 + \beta_1 X \]
+then
+\[ \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 X} \]
+\pause
+then
+\begin{itemize}[<+->]
+\item $\beta_0$ is the expected $\log(Y)$ when $X$ is zero and
+\item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in the explanatory variable. 
+\end{itemize}
+
+\pause 
+Alternatively,
+
+\begin{itemize}[<+->]
+\item $e^{\beta_0}$ is the median of $Y$ when $X$ is zero and 
+\item $e^{\beta_1}$ is the multiplicative effect on the median of $Y$ for a one unit increase in the explanatory variable.
+\end{itemize}
+
+since
+\[ 
+\mbox{Median}[Y|X=x+1] = e^{\beta_1}\mbox{Median}[Y|X=x+1].
+\]
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Response is logged}
+
+Suppose 
+\begin{itemize}
+\item $Y$ is corn yield per acre
+\item $X$ is fertilizer level in lbs/acre
+\end{itemize}
+
+\pause 
+
+Then, if 
+\[ E[\log(Y)|X] = \beta_0 + \beta_1 X \]
+then
+\[ \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 X} \]
+
+\begin{itemize}[<+->]
+\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 0 
+and 
+\item $e^{\beta_1}$ is the multiplicative effect in median corn yield per acre 
+when fertilizer is increased by 1 lbs/acre. 
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Explanatory variable is logged}
+\begin{frame}
+\frametitle{Explanatory variable is logged}
+
+If 
+\[ E[Y|X] = \beta_0 + \beta_1 \log(X),  \]
+\pause
+then
+\begin{itemize}[<+->]
+\item $\beta_0$ is the expected response when $\log(X)$ is zero and
+\item $\beta_1$ is the expected change in the response for a one unit increase 
+in $\log(X)$. 
+\end{itemize}
+
+\pause 
+Alternatively,
+
+\begin{itemize}[<+->]
+\item $\beta_0$ is the expected response when $X$ is 1 and 
+\item $\beta_1 \log(d)$ is the expected change in the response when $X$ increase 
+multiplicatively by $d$, e.g.
+  \begin{itemize}
+  \item $\beta_1 \log(2)$ is the expected change in the response for each 
+  doubling of $X$ or
+  \item $\beta_1 \log(10)$ is the expected change in the response for each 
+  ten-fold increase in $X$.
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Explanatory variable is logged}
+
+Suppose 
+\begin{itemize}
+\item $Y$ is corn yield per acre
+\item $X$ is fertilizer level in lbs/acre
+\end{itemize}
+
+\pause 
+
+Then, if 
+\[ E[Y|X] = \beta_0 + \beta_1 \log(X)  \]
+
+\begin{itemize}[<+->]
+\item $\beta_0$ is the expected corn yield per acre when fertilizer level is 1 lb/acre and 
+\item $\beta_1 \log(2)$ is the expected change in corn yield when fertilizer level is doubled. 
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Both response and explanatory variable are logged}
+\begin{frame}
+\frametitle{Both response and explanatory variable are logged}
+
+If 
+\[ E[\log(Y)|X] = \beta_0 + \beta_1 \log(X), \]
+then
+\[ 
+\mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1}, \]
+\pause
+and
+\begin{itemize}[<+->]
+\item $\beta_0$ is the expected $\log(Y)$ when $\log(X)$ is zero and
+\item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in $\log(X)$. 
+\end{itemize}
+
+\pause 
+Alternatively,
+
+\begin{itemize}[<+->]
+\item $e^{\beta_0}$ is the median of $Y$ when $X$ is 1 and 
+\item $d^{\beta_1}$ is the multiplicative change in the median of the response 
+when $X$ increase multiplicatively by $d$, e.g.
+  \begin{itemize}
+  \item $2^{\beta_1}$ is the multiplicative effect on the median of the response 
+  for each doubling of $X$ or
+  \item $10^{\beta_1}$ is the multiplicative effect on the median of the 
+  response for each ten-fold increase in $X$.
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Both response and explanatory variable are logged}
+
+Suppose 
+\begin{itemize}
+\item $Y$ is corn yield per acre
+\item $X$ is fertilizer level in lbs/acre
+\end{itemize}
+
+\pause 
+
+Then, if 
+\[ E[\log(Y)|X] = \beta_0 + \beta_1 \log(X) \quad \mbox{or} \quad \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1} \]
+
+\begin{itemize}[<+->]
+\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 1 lb/acre and 
+\item $2^{\beta_1}$ is the multiplicative effect on median corn yield per acre when fertilizer level doubles.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Summary of interpretations when using logarithms}
+
+\begin{itemize}[<+->]
+\item When using the log of the response, 
+  \begin{itemize}
+  \item $\beta_0$ will affect the median response
+  \item $\beta_1$ will affect the multiplicative change in the median response
+  \end{itemize}
+\item When using the log of the explanatory variable ($X$),
+  \begin{itemize}
+  \item $\beta_0$ will affect the response when $X=1$
+  \item $\beta_1$ will affect the change in the response when there is a 
+  multiplicative change in $X$
+  \end{itemize}
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+To construct confidence intervals for $e^\beta$, 
+find a confidence interval for $\beta$ and exponentiate the endpoints, 
+i.e. if $(L,U)$ is a confidence interval for $\beta$, 
+then $(e^L, e^U)$ is a confidence interval for $e^\beta$. 
+
+\end{frame}
+
+
+
+\subsection{Breakdown times example}
+\begin{frame}[fragile]
+\frametitle{Breakdown times}
+
+\begin{quote}
+In an industrial laboratory, under uniform conditions, 
+batches of electrical insulating fluid were subjected to constant voltages (kV)
+until the insulating property of the fluids broke down. 
+Seven different voltage levels were studied and the measured reponses were the 
+times (minutes) until breakdown.
+\end{quote}
+
+\pause
+
+<<>>=
+library("Sleuth3")
+summary(case0802)
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+<<echo=FALSE>>=
+ggplot(case0802, aes(Voltage, Time)) + 
+  geom_point() +
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Run the regression and look at diagnostics}
+<<>>=
+m <- lm(Time ~ Voltage, case0802)
+@
+
+<<echo=FALSE>>=
+opar = par(mfrow=c(2,3))
+plot(m, 1:6, ask=FALSE)
+par(opar)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Take log of time}
+<<echo=FALSE>>=
+ggplot(case0802, aes(Voltage, Time)) + 
+  geom_point() +
+  theme_bw() +
+  scale_y_log10()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Take log of time}
+
+<<>>=
+m <- lm(log(Time) ~ Voltage, case0802)
+@
+
+<<echo=FALSE>>=
+opar = par(mfrow=c(2,3))
+plot(m, 1:6, ask=FALSE)
+par(opar)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Summary}
+
+<<>>=
+m$coefficients %>% exp
+confint(m) %>% exp()
+lm(log(Time) ~ Voltage, case0802, subset= Time != 5.79) %>% confint() %>% exp() # remove first observation
+@
+
+<<echo=FALSE>>=
+b <- m$coefficients
+ci <- confint(m)
+@
+
+\pause
+
+Summary:
+
+Each 1 kV increase in voltage caused a multiplicative effect of 
+\Sexpr{exp(b[2]) %>% round(1)} (\Sexpr{exp(ci[2,1]) %>% round(1)},\Sexpr{exp(ci[2,2]) %>% round(1)})
+on median breakdown time. 
+
+\end{frame}
+
+
+\end{document}
+
+
+
