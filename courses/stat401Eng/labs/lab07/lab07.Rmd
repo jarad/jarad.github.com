@@ -61,7 +61,7 @@ n <- 100
 x <- rnorm(n)
 b0 <- 1
 b1 <- 2
-sigma <- 0.1
+sigma <- 0.4
 error <- rnorm(n,0,sigma)
 y <- b0+b1*x+error
 
@@ -156,7 +156,7 @@ errors <- data.frame(rep = 1:n,
                      right_skewed = exp(rnorm(n))) %>%
   
   mutate(right_skewed = right_skewed - exp(1/2),  # make sure errors have expectation of 0
-         left_skewed  = 1-right_skewed) 
+         left_skewed  = 0 - right_skewed) 
 
 errors_long <- errors %>%
   tidyr::gather(distribution,value,-rep) %>%
@@ -309,7 +309,8 @@ at what happens when the variance is not constant.
 The most common scenario is for the variance to increase as the expected
 response increases.
 If the slope is positive (negative), 
-this means as the explanatory variable increases (decreases).
+this means as the explanatory variable increases (decreases) 
+the error variance increases.
 
 ### Assume positive slope
 
@@ -410,6 +411,17 @@ they were in the data set, so plot these.
 plot(m$residuals)
 ```
 
+Alternatively with `ggplot` and an easy smoothing line
+
+```{r}
+dd <- data.frame(index = 1:length(m$residuals),
+                 residuals = m$residuals)
+ggplot(dd, aes(index, residuals)) +
+  geom_point() + 
+  stat_smooth(se = FALSE) +
+  theme_bw()
+```
+
 ### Serially correlated errors
 
 ```{r}
@@ -418,7 +430,13 @@ d <- d %>%
          y = b0+b1*x+error)
 
 m <- lm(y ~ x, data = d)
-plot(m$residuals)
+
+dd <- data.frame(index = 1:length(m$residuals),
+                 residuals = m$residuals)
+ggplot(dd, aes(index, residuals)) +
+  geom_point() + 
+  stat_smooth(se = FALSE) +
+  theme_bw()
 ```
 
 It is certainly not obvious that the errors have a sin wave structure, 
@@ -474,7 +492,11 @@ d <- data.frame(x = rnorm(n)) %>%
 m <- lm(y ~ x, data = d)
 
 d$residuals <- m$residuals
-plot(residuals ~ x, data = d)
+
+ggplot(d, aes(x, residuals)) + 
+  geom_point() + 
+  stat_smooth(se = FALSE) + 
+  theme_bw()
 ```
 
 # Non-linear relationship
@@ -489,7 +511,11 @@ d <- data.frame(x = rnorm(n)) %>%
 m <- lm(y ~ x, data = d)
 
 d$residuals <- m$residuals
-plot(residuals ~ x, data = d)
+
+ggplot(d, aes(x, residuals)) + 
+  geom_point() + 
+  stat_smooth(se = FALSE) + 
+  theme_bw()
 ```
 
 This will also show up in the two residuals vs fitted values plots.

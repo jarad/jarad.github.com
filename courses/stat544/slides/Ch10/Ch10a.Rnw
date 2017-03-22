@@ -113,7 +113,8 @@ q = function(theta,y,log=FALSE) {
 # Find marginal likelihood for y
 w = 0.1
 theta = seq(-5,5,by=w)+y
-(py = sum(q(theta,y)*w))                 # gridding based approach
+(qy = sum(q(theta,y)*w))                 # gridding based approach
+
 integrate(function(x) q(x,y), -Inf, Inf) # numerical integration
 @
 \end{frame}
@@ -130,10 +131,11 @@ segments(theta,0,theta,q(theta,y))
 
 \begin{frame}[fragile]
 \frametitle{Posterior expectation }
-\[ E[h(\theta)|y) \approx \sum_{s=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) = \sum_{s=1}^S w_s h\left(\theta^{(s)}\right) \frac{p\left(\left.\theta^{(s)}\right|y\right)}{p(y)} \]
+\[ E[h(\theta)|y) \approx \sum_{s=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) = \sum_{s=1}^S w_s h\left(\theta^{(s)}\right) \frac{q\left(\left.\theta^{(s)}\right|y\right)}{q(y)} \]
 <<normal_cauchy_posterior_expectation, dependson=c('data','normal_cauchy_posterior'), echo=TRUE>>=
 h = function(theta) theta
-sum(w*h(theta)*q(theta,y)/py)
+
+sum(w*h(theta)*q(theta,y)/qy)
 @
 
 \end{frame}
@@ -153,8 +155,8 @@ py = function(y,log=FALSE) {
 
 # Find posterior expectation when y=0
 post_expectation = function(y) {
-  py = py(y)
-  int = integrate(function(x) x*q(x,y)/py, -Inf, Inf)
+  qy = py(y)
+  int = integrate(function(x) x*q(x,y)/qy, -Inf, Inf)
     if (int$message!="OK") {
     warning(paste("Could not compute posterior expectation for y=", y, "\n"))
     return(NA)
@@ -184,21 +186,64 @@ ggplot(melt(res, id.var='y', variable.name = "prior"),
 
 \section{Monte Carlo methods}
 \begin{frame}
+\frametitle{Convergence review}
+
+\tiny
+
+Three main notions of convergence
+or a sequence or random variables $X_1,X_2,\ldots$ and a random variable $X$:
+\begin{itemize}[<+->]
+\item Convergence in distribution ($X_n \stackrel{d}{\to} X$):
+\[ \lim_{n\to\infty} F_n(X) = F(x). \]
+\item Convergence in probability (WLLN, $X_n \stackrel{p}{\to} X$):
+\[ \lim_{n\to\infty} P(|X_n-X|\ge \epsilon) = 0. \]
+\item Almost sure convergence (SLLN, $X_n \stackrel{a.s.}{\longrightarrow} X$):
+\[ P\left(\lim_{n\to\infty} X_n = X\right) = 1. \]
+\end{itemize}
+
+\pause
+
+Implications:
+\begin{itemize}[<+->]
+\item Almost sure convergence implies convergence in probability.
+\item Convergence in probability implies convergence in distribution.
+\end{itemize}
+
+\pause
+
+Here,
+\begin{itemize}[<+->]
+\item $X_n$ will be our approximation to an integral and 
+$X$ the true (constant) value of that integral \pause or
+\item $X_n$ will be a standardized approximation and $X$ will be $N(0,1)$.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
 \frametitle{Monte Carlo integration}
 \small
-  Consider evaluating the integral
-  \[ E[h(\theta)] = \int_{\Theta} h(\theta) p(\theta) d\theta \]
-	\pause using the Monte Carlo estimate
-	\[ \hat{h}_J = \frac{1}{J} \sum_{j=1}^J h\left(\theta^{(j)}\right) \]
-	\pause where $\theta^{(j)} \stackrel{ind}{\sim} g(\theta)$.  \pause We know
-	\begin{itemize}
-	\item SLLN: $\hat{h}_J$ converges almost surely to $E[h(\theta)]$. \pause
-	\item CLT: if $h^2$ has finite expectation, \pause then
-	\[ \hat{h}_J \stackrel{d}{\to} N(E[h(\theta)], v_J) \pause \]
-	where
-	\[ v_J = \frac{1}{J} Var[h(\theta)] \pause \approx \frac{1}{J^2} \sum_{s=1}^J \left[ h\left(\theta^{(j)}\right) - \hat{h}_J \right]^2. \]
-	\end{itemize}
+Consider evaluating the integral
+\[ E[h(\theta)] = \int_{\Theta} h(\theta) p(\theta) d\theta \]
+\pause using the Monte Carlo estimate
+\[ \hat{h}_J = \frac{1}{J} \sum_{j=1}^J h\left(\theta^{(j)}\right) \]
+\pause where $\theta^{(j)} \stackrel{ind}{\sim} g(\theta)$.  \pause We know
+\begin{itemize}
+\item SLLN: $\hat{h}_J$ converges almost surely to $E[h(\theta)]$. \pause
+\item CLT: if $h^2$ has finite expectation, \pause then
+\[ \frac{\hat{h}_J-E[h(\theta)]}{\sqrt{v_J/J}} \stackrel{d}{\to} N(0,1) 
+\pause \quad \mbox{where} \quad
+v_J = Var[h(\theta)] \pause \approx 
+\frac{1}{J} \sum_{j=1}^J \left[ h\left(\theta^{(j)}\right) - \hat{h}_J \right]^2 \]
+\pause
+or any other consistent estimator.
+\end{itemize}
 \end{frame}
+
+
+
+
 
 \subsection{Definite integral}
 \frame{\frametitle{Definite integral}
@@ -243,6 +288,8 @@ segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
 @
 \end{frame}
 
+
+
 \begin{frame}[fragile]
 \frametitle{Strong law of large numbers}
 <<uniform2, dependson='uniform'>>=
@@ -253,13 +300,15 @@ abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
 @
 \end{frame}
 
+
+
 \begin{frame}[fragile]
 \frametitle{Central limit theorem}
 <<uniform3, dependson='uniform2'>>=
 cumvar = function(theta) {
   J = length(theta)
   cumvar = numeric(J)
-  for (j in 1:J) { cumvar[j] = var(theta[1:j])/j }
+  for (j in 1:J) { cumvar[j] = var(f(theta[1:j]))/j }
   return(cumvar)
 }
 
@@ -346,6 +395,8 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
        lwd=c(2,2,1), lty=c(1,1,2), col=c("red","black","black"))
 @
 \end{frame}
+
+
 
 \subsection{Gridding}
 \frame{\frametitle{Monte Carlo approximation via gridding}
@@ -434,7 +485,7 @@ for (u in c(.1,.95)) plot_arrows(u)
 n.reps = 1e4
 d = data.frame(x = -log(runif(n.reps)))
 ggplot(d, aes(x=x)) + 
-  geom_histogram(aes(y=..density..)) + 
+  geom_histogram(aes(y=..density..), boundary=0) + 
   stat_function(fun=dexp, color="red") + 
   theme_bw()
 @
@@ -493,7 +544,7 @@ dtnorm = function(x,mu=5,sigma=3,a=1,b=6) {
   dnorm(x,mu,sigma)/diff(pnorm(c(a,b),mu,sigma))
 } 
 ggplot(d, aes(x=x)) + 
-  geom_histogram(aes(y=..density..)) + 
+  geom_histogram(aes(y=..density..), boundary = 1, binwidth = 0.1) + 
   stat_function(fun=dtnorm, color="red") +
   theme_bw()
 @
