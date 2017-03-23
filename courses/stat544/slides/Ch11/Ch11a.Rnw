@@ -96,10 +96,13 @@ The Metropolis-Hastings algorithm performs the following \pause
 \begin{enumerate}
 \item propose $\theta^*\sim g(\theta|\theta^{(t)})$ \pause 
 \item accept $\theta^{t+1}=\theta^*$ with probability $\min\{1,r\}$ \pause where 
+{\scriptsize
 \[ r = r(\theta^{(t)},\theta^*) \pause 
 = \frac{p(\theta^*|y)}{p(\theta^{(t)}|y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} \pause
 = \frac{q(\theta^*|y)/p(y)}{q(\theta^{(t)}|y)/p(y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})}\pause
-= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} \]
+= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} 
+\]
+}
 \pause otherwise, set $\theta^{t+1}=\theta^{(t)}$. 
 \end{enumerate}
 \end{frame}
@@ -259,8 +262,8 @@ d = expand.grid(current=-1:1, proposed=-1:1) %>%
 ggplot(d, aes(x=theta, y=0)) + 
   geom_point(aes(color=accept, shape=value), size=2) + 
   facet_grid(cv~pv, switch='y') +
-  geom_line(data=curves, aes(theta,density,linetype=distribution))
-
+  geom_line(data=curves, aes(theta,density,linetype=distribution)) +
+  theme_bw()
 @
 
 \end{frame}
@@ -297,7 +300,8 @@ d = mutate(data.frame(x = seq(-3,3,by=0.1)),
            proposal = g(x,1))
 
 ggplot(melt(d, id.vars='x', variable.name='density'), 
-       aes(x=x, y=value, color=density)) + geom_line()
+       aes(x=x, y=value, color=density)) + geom_line()+
+  theme_bw()
 @
 \end{frame}
 
@@ -318,7 +322,8 @@ for (i in 2:n) {
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 qplot(1:n, theta) +
-  labs(x="Iteration", y=expression(theta), title="Independence Metropolis-Hastings")
+  labs(x="Iteration", y=expression(theta), title="Independence Metropolis-Hastings") +
+  theme_bw()
 
 theta[1] = 10 # This line changed
 for (i in 2:n) {
@@ -327,7 +332,8 @@ for (i in 2:n) {
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 qplot(1:n, theta) +
-  labs(x="t", y=expression(theta), title="Independence Metropolis-Hastings (poor starting value)")
+  labs(x="t", y=expression(theta), title="Independence Metropolis-Hastings (poor starting value)") +
+  theme_bw()
 @
 \end{frame}
 
@@ -344,7 +350,10 @@ Recall that
 
 \vspace{0.2in} \pause
 
-Independence Metropolis-Hastings also requires heavy tailed proposals \pause since if $\theta^{(t)}$ is 
+Independence Metropolis-Hastings also requires heavy tailed proposals for
+efficiency
+\pause 
+since if $\theta^{(t)}$ is 
 \begin{itemize}
 \item in a region where $p(\theta^{(t)}|y)>>g(\theta^{(t)})$ \pause then
 \item any proposal $\theta^*$ such that $p(\theta^*|y)\approx g(\theta^*)$ \pause 
@@ -369,8 +378,10 @@ ggplot(melt(d[,c('x','target','proposal')],
             id.var='x', variable.name='density'),
        aes(x=x, y=value, color=density)) +
   geom_line() + 
-  theme(legend.position="none")
-ggplot(d, aes(x=x,y=log_ratio)) + geom_line()
+  theme(legend.position="none")+
+  theme_bw()
+ggplot(d, aes(x=x,y=log_ratio)) + geom_line()+
+  theme_bw()
 @
 
 \end{frame}
@@ -387,7 +398,7 @@ for (i in 2:n) {
          dnorm(theta[i-1],log=TRUE)-dnorm(proposed,log=TRUE)
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
-qplot(1:n, theta)+labs(x="t",y=expression(theta))
+qplot(1:n, theta)+labs(x="t",y=expression(theta)) +theme_bw()
 @
 
 \end{frame}
@@ -526,7 +537,8 @@ d = expand.grid(tau=c(1/10,10))
 r = ddply(d, .(tau), function(x) {
   random_walk(100, x$tau, 0, log_q)
 })
-ggplot(r, aes(x=iteration, y=theta, color=as.factor(tau)))+geom_point()
+ggplot(r, aes(x=iteration, y=theta, color=as.factor(tau)))+geom_point()+
+  theme_bw()
 @
 
 \end{frame}
@@ -694,7 +706,8 @@ var(samps) # Sigma_B
 samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
 ggplot(melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iteration, y=value)) + 
   geom_line() +
-  facet_wrap(~parameter, scales='free')
+  facet_wrap(~parameter, scales='free')+
+  theme_bw()
 @
 
 \end{frame}
@@ -731,11 +744,13 @@ samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 
 m = melt(samps, id.var='iteration', variable.name='parameter')
 ggplot(m, aes(x=iteration, y=value)) + 
   geom_line() +
-  facet_wrap(~parameter, scales='free')
+  facet_wrap(~parameter, scales='free')+
+  theme_bw()
 
 ggplot(m, aes(x=value, y=..density..)) + 
   geom_histogram(binwidth=0.1) +
-  facet_wrap(~parameter, scales='free')
+  facet_wrap(~parameter, scales='free')+
+  theme_bw()
 @
 
 \end{frame}
