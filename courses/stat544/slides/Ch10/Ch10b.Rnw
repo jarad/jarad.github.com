@@ -81,7 +81,7 @@ A function $f(x)$ is log-concave if $\log\, f(x)$ is concave. \pause A function 
 \vspace{0.2in}\pause
 
 For example, $X\sim N(0,1)$ has log-concave density since 
-\[ \frac{d^2}{dx^2} \log\, e^{-x^2/2} = \frac{d^2}{dx^2} -x^2/2 = \frac{d}{dx} -x = -1. \]
+\[ \frac{d^2}{dx^2} \log\, e^{-x^2/2} = \frac{d^2}{dx^2} \frac{-x^2}{2} = \frac{d}{dx} -x = -1. \]
 \end{frame}
 
 
@@ -197,7 +197,7 @@ There is a vast literature on adaptive rejection sampling. \pause To improve upo
 \begin{itemize}
 \item include a lower bound 
 \item avoid calculating derivatives
-\item incorporate a Metropolis step to deal with non-log-concave densitis
+\item incorporate a Metropolis step to deal with non-log-concave densities
 \end{itemize}
 
 \end{frame}
@@ -222,8 +222,12 @@ There is a vast literature on adaptive rejection sampling. \pause To improve upo
   \pause where $g(\theta)$ is a proposal distribution\pause, so that we approximate the expectation via 
   \[ E[h(\theta)|y] \approx \frac{\frac{1}{S} \sum_{s=1}^S w\left(\theta^{(s)}\right) h\left(\theta^{(s)}\right)}{\frac{1}{S} \sum_{s=1}^S w\left(\theta^{(s)}\right)} = \sum_{s=1}^S \tilde{w}\left(\theta^{(s)}\right) h\left(\theta^{(s)}\right) \]
   \pause where $\theta^{(s)} \stackrel{iid}{\sim} g(\theta)$ and 
-  \[ \tilde{w}\left(\theta^{(s)}\right) = \frac{w\left(\theta^{(s)}\right)}{\sum_{j=1}^S w(\theta^j)} \]
-  \pause is the \alert{normalized} importance weight. 
+\[
+\tilde{w}\left(\theta^{(s)}\right) = 
+\frac{w\left(\theta^{(s)}\right)}{\sum_{j=1}^S w\left(\theta^{(j)}\right)}
+\]
+\pause 
+is the \alert{normalized} importance weight. 
 }
 
 \begin{frame}
@@ -252,13 +256,23 @@ q = function(theta,y,log=FALSE) {
 }
 g = function(theta,y,log=FALSE) dnorm(theta,y,log=log)
 
+py = function(y,log=FALSE) {
+  int = integrate(function(x) q(x,y,log=FALSE),-Inf,Inf)
+  if (int$message!="OK") {
+    warning(paste("Could not compute marginal likelihood for y=", y, "\n"))
+    return(NA)
+  }
+  int$value
+}
+
 y = 1
 n = 1000
 theta = rnorm(n, y)
 weight = exp(q(theta,y,log=TRUE)-g(theta,y,log=TRUE))
 qplot(x=theta,y=weight/sum(weight)) +
   geom_point() +
-  labs(y="Normalized importance weight", x = expression(theta))
+  labs(y="Normalized importance weight", x = expression(theta)) +
+  theme_bw()
 @
 \end{frame}
 
@@ -307,17 +321,21 @@ whmax = which.max(weight)
 qplot(theta,weight/sum(weight),geom="point") + 
   ylim(0,max(weight)) + 
   xlim(-theta[whmax],theta[whmax]) + 
-  labs(x=expression(theta), y="Normalized importance weight")
+  labs(x=expression(theta), y="Normalized importance weight") +
+  theme_bw()
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Effective sample size}
-We can get a measure of how efficient the sample is by computing the effective sample size, i.e. how many independent unweighted draws do we effectively have:
-\[ S_{eff} = \frac{1}{\sum_{s=1}^S (\tilde{w}\left(\theta^{(s)}\right))^2} \]
+We can get a measure of how efficient the sample is by computing the effective 
+sample size (ESS), 
+i.e. how many independent unweighted draws do we effectively have:
+\[ ESS = \frac{1}{\sum_{s=1}^S (\tilde{w}\left(\theta^{(s)}\right))^2} \]
 <<effective_size, echo=TRUE>>=
-length(weight)
-1/sum(weight^2)
+(n <- length(weight))    # Number of samples
+(ess <- 1/sum(weight^2)) # Effective sample size
+ess/n                    # Effective sample proportion
 @
 \end{frame}
 
@@ -335,7 +353,8 @@ for (i in 1:length(lweight)) {
   cumulative_ess[i] = 1/sum(w^2)
 }
 qplot(x=1:length(cumulative_ess), y=cumulative_ess, geom="line") + 
-  labs(x="Number of samples", y="Effective sample size")
+  labs(x="Number of samples", y="Effective sample size") +
+  theme_bw()
 @
 \end{frame}
 
