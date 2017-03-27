@@ -1,0 +1,368 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set R04 - Categorical explanatory variables}
+
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Categorical explanatory variables}
+\subsection{Binary explanatory variable}
+\begin{frame}
+\frametitle{Binary explanatory variable}
+
+\small
+
+Recall the simple linear regression model 
+\[ 
+Y_i \ind N(\beta_0+\beta_1X_{i}, \sigma^2).
+\]
+\pause
+If we have a binary explanatory variable 
+\pause
+(i.e. the explanatory variable only has two values), 
+\pause
+we can code it as 
+\[ \begin{array}{rl} 
+X_i &=
+\left\{ 
+\begin{array}{rl} 
+1 & \mbox{obseration $i$ is one state} \\ 
+0 & \mbox{observation $i$ is the other state} 
+\end{array} 
+\right.
+\pause \\ \\
+&= \I(\mbox{observation $i$ is ``one state''})
+\end{array} \]
+where $\I(A)$ is an \alert{indicator function} that is 1 when $A$ is true and 
+0 otherwise.
+\pause 
+Then 
+\begin{itemize}[<+->]
+\item $\beta_0\phantom{+\beta_1}\,\,\,$ is the expected response for the ``other state'', 
+\item $\beta_0+\beta_1$ is the expected response for the ``one state'', and therefore
+\item $\beta_1$ is the expected difference (``one state'' minus ``other state'') in lifetimes.
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Mice lifetimes}
+
+Reconsider the mice lifetime data set but only consider the diets NP and 
+$N/R50$:
+\pause
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+opar = par(mar=c(5,5,0,0)+.1)
+plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
+     case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+     xaxt='n', pch=19, cex.lab=1.5, 
+     xlab="Diet", col='gray')
+axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
+
+# yy = with(case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+#           by(Lifetime, Diet, mean))
+# segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
+par(opar)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Regression model for mice lifetimes}
+
+Considering only the NP and N/R50 diets. 
+\pause
+Let 
+\[Y_i \ind N(\beta_0+\beta_1X_i,\sigma^2) \]
+\pause 
+where $Y_i$ is the lifetime of the $i$th mouse 
+\pause 
+and 
+\[ 
+X_i = \mathrm{I}(Diet_i == \mbox{N/R50}) = \left\{ 
+\begin{array}{rl} 
+1 & \mbox{$i$th mouse diet is N/R50} \\ 
+0 & \mbox{$i$th mouse diet is NP} 
+\end{array} 
+\right.
+\]
+\pause
+then 
+\[ \begin{array}{lll}
+E[\mbox{Lifetime}|\mbox{NP}] &= \pause E[Y_i|X_i=0] &= \pause \beta_0 \pause \\
+E[\mbox{Lifetime}|\mbox{N/R50}] &= \pause E[Y_i|X_i=1] &= \pause \beta_0 +\beta1 \pause 
+\end{array} \]
+\pause
+and 
+\[ \begin{array}{rl}
+E[\mbox{Lifetime difference}] 
+&= E[\mbox{Lifetime}|\mbox{N/R50}] - E[\mbox{Lifetime}|\mbox{NP}] \pause \\
+&= (\beta_0+\beta_1) - \beta_0 = \beta_1.
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code}
+
+<<>>=
+case0501$X <- case0501$Diet == "N/R50"
+(m <- lm(Lifetime ~ X, data = case0501, subset = Diet %in% c("NP","N/R50")))
+confint(m)
+predict(m, data.frame(X=TRUE), interval = "confidence") # Expected lifetime on N/R50
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Mice lifetimes}
+
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+opar = par(mar=c(5,5,0,0)+.1)
+plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
+     case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+     xaxt='n', pch=19, cex.lab=1.5, 
+     xlab="Diet", col='gray')
+axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
+
+yy = with(case0501 %>% filter(Diet %in% c("NP","N/R50")),
+          by(Lifetime, Diet, mean))
+segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
+par(opar)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Equivalence to model for two-sample t-test}
+
+Recall that our two-sample t-test had the model
+\[ 
+Y_{ij} \ind N(\mu_j, \sigma^2)
+\]
+for groups $j=0,1$. 
+\pause
+This is equivalent to our current regression model where
+\[ \begin{array}{rl}
+\mu_0 &= \beta_0 \\
+\mu_1 &= \beta_0 + \beta_1
+\end{array} \]
+\pause
+assuming 
+\begin{itemize}
+\item $\mu_0$ represents the mean for the NP group and 
+\item $\mu_1$ represents the mean for N/R50 group.
+\end{itemize}
+\pause
+When the models are effectively the same, but have different parameters we 
+call it a \alert{reparameterization}. 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Equivalence}
+
+<<>>=
+summary(m)$coefficients[2,4] # p-value
+confint(m)
+t.test(Lifetime ~ Diet, data = case0501, subset = Diet %in% c("NP","N/R50"), var.equal=TRUE)
+@
+
+\end{frame}
+
+
+\subsection{Many levels}
+\begin{frame}[fragile]
+\frametitle{Using a categorical variable as an explanatory variable.}
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+opar = par(mar=c(5,5,0,0)+.1)
+plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
+     case0501, 
+     xaxt='n', pch=19, cex.lab=1.5, 
+     xlab="Diet", col='gray')
+axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
+
+# yy = with(case0501, 
+#           by(Lifetime, Diet, mean))
+# segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
+par(opar)
+@
+\end{frame}
+
+\frame{\frametitle{Regression with a categorical variable}
+	\begin{itemize}
+	\item Choose one of the levels as the \alert{reference} level, e.g. N/N85 \pause
+	\item Construct dummy variables using indicator functions, i.e.  
+  \[ \I(A) = \left\{ \begin{array}{ll} 1 & A\mbox{ is TRUE} \\ 0 & A\mbox{ is FALSE} \end{array}\right.\]
+  
+  \pause 
+  
+  for the other levels, \pause e.g.
+	\[ \begin{array}{ll} 
+	X_{i,1} = \I(\mbox{diet for observation $i$ is N/R40})\pause \\
+	X_{i,2} = \I(\mbox{diet for observation $i$ is N/R50})\pause \\
+	X_{i,3} = \I(\mbox{diet for observation $i$ is NP})\pause \\
+	X_{i,4} = \I(\mbox{diet for observation $i$ is R/R50})\pause \\
+	X_{i,5} = \I(\mbox{diet for observation $i$ is lopro})\pause
+	\end{array} \] 
+	\item \pause Estimate the parameters of a multiple regression model using these dummy variables.
+	\end{itemize}
+}
+
+
+
+
+
+% \begin{frame}[fragile]
+% \frametitle{R code and output}
+% 
+% <<>>=
+% # by default, R uses the alphabetically first group as the reference level
+% case0501$Diet = relevel(case0501$Diet, ref='N/N85') 
+% 
+% m = lm(Lifetime~Diet, case0501)
+% summary(m)
+% @
+% 
+% \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code}
+<<>>=
+case0501 <- case0501 %>% 
+  mutate(X1 = Diet == "N/R40",
+         X2 = Diet == "N/R50",
+         X3 = Diet == "NP",
+         X4 = Diet == "R/R50",
+         X5 = Diet == "lopro")
+
+m <- lm(Lifetime ~ X1 + X2 + X3 + X4 + X5, data= case0501)
+m
+confint(m)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Interpretation}
+
+\begin{itemize}[<+->]
+\item $\beta_0 = E[Y_i| \mbox{reference level}]$, i.e. expected response for the reference level
+
+{\color{gray}
+Note: the only way $X_{i,1}=\cdots=X_{i,p}=0$ is if all indicators are zero, i.e. at the reference level. 
+}
+
+\item $\beta_p, p>0$: expected change in the response moving from the reference level to the level associated with the $p^{th}$ dummy variable
+
+{\color{gray}
+Note: the only way for $X_{i,p}$ to increase by one is if initially $X_{i,1}=\cdots=X_{i,p}=0$ and now $X_{i,p}=1$
+}
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+For example, 
+\begin{itemize}[<+->]
+\item The expected lifetime for mice on the N/N85 diet is 32.7 (31.0,34.4) weeks.
+\item The expected increase in lifetime for mice on the N/R40 diet compared to the N/N85 diet is 12.4 (10.0,14.9) weeks. 
+\item The model explains 45\% of the variability in mice lifetimes.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Using a categorical variable as an explanatory variable.}
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+case0501 <- Sleuth3::case0501
+opar = par(mar=c(5,5,0,4)+.1)
+plot(Lifetime~jitter(I(as.numeric(Diet)-1)), case0501, 
+     xaxt='n', pch=19, cex.lab=1.5, 
+     xlab="Diet", col='gray')
+axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
+
+yy = with(case0501, by(Lifetime, Diet, mean))
+axis(4, yy[1], expression(beta[0]), las=1, cex.axis=1.5)
+abline(h=yy[1], lwd=2)
+segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
+arrows(1:5,yy[1],1:5,yy[-1],col='red', lwd=4)
+text(1:5, (yy[2:6]+yy[1])/2, 
+     expression(beta[1],beta[2],beta[3],beta[4],beta[5]), 
+     pos=4, col='red', cex=1.5, offset=1)
+par(opar)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Equivalence to multiple group model}
+
+Recall that we had a multiple group model
+\[ 
+Y_{ij} \ind N(\mu_j, \sigma^2)
+\]
+for groups $j=0,1,2,\ldots,5$. 
+\pause
+This is equivalent to our current regression model where
+\[ \begin{array}{rl}
+\mu_0 &= \beta_0 \\
+\mu_1 &= \beta_0 + \beta_1 \\
+\mu_2 &= \beta_0 + \beta_2 \\
+\mu_3 &= \beta_0 + \beta_3 \\
+\mu_4 &= \beta_0 + \beta_4 \\
+\mu_5 &= \beta_0 + \beta_5 \\
+\end{array} \]
+\pause
+assuming the groups are labeled appropriately.
+\end{frame}
+
+
+\end{document}
+
+
+

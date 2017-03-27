@@ -47,6 +47,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Simple linear regression|[SetR01.Rnw](SetR01/SetR01_Simple_linear_regression.Rnw)|[SetR01.pdf](SetR01/SetR01_Simple_linear_regression.pdf)|  
 |Regression diagnostics|[SetR02.Rnw](SetR02/SetR02_Regression_diagnostics.Rnw)|[SetR02.pdf](SetR02/SetR02_Regression_diagnostics.pdf)|  
 |Logarithms|[SetR03.Rnw](SetR03/SetR03_Logarithms.Rnw)|[SetR03.pdf](SetR03/SetR03_Logarithms.pdf)|  
+|Categorical explanatory variables |[SetR04.Rnw](SetR04/SetR04_Categorical_explanatory_variables.Rnw)|[SetR04.pdf](SetR04/SetR04_Categorical_explanatory_variables.pdf)|  
 
 
 
