@@ -64,16 +64,16 @@ X_i &=
 \end{array} 
 \right.
 \pause \\ \\
-&= \I(\mbox{observation $i$ is ``one state''})
+&= \I(\mbox{observation $i$ is level 1})
 \end{array} \]
 where $\I(A)$ is an \alert{indicator function} that is 1 when $A$ is true and 
 0 otherwise.
 \pause 
 Then 
 \begin{itemize}[<+->]
-\item $\beta_0\phantom{+\beta_1}\,\,\,$ is the expected response for the ``other state'', 
-\item $\beta_0+\beta_1$ is the expected response for the ``one state'', and therefore
-\item $\beta_1$ is the expected difference (``one state'' minus ``other state'') in lifetimes.
+\item $\beta_0\phantom{+\beta_1}\,\,\,$ is the expected response for level 0, 
+\item $\beta_0+\beta_1$ is the expected response for level 1, and therefore
+\item $\beta_1$ is the expected difference in response (level 1 minus level 0).
 \end{itemize}
 
 \end{frame}
@@ -126,7 +126,7 @@ X_i = \mathrm{I}(Diet_i == \mbox{N/R50}) = \left\{
 then 
 \[ \begin{array}{lll}
 E[\mbox{Lifetime}|\mbox{NP}] &= \pause E[Y_i|X_i=0] &= \pause \beta_0 \pause \\
-E[\mbox{Lifetime}|\mbox{N/R50}] &= \pause E[Y_i|X_i=1] &= \pause \beta_0 +\beta1 \pause 
+E[\mbox{Lifetime}|\mbox{N/R50}] &= \pause E[Y_i|X_i=1] &= \pause \beta_0 +\beta_1 \pause 
 \end{array} \]
 \pause
 and 
@@ -144,10 +144,11 @@ E[\mbox{Lifetime difference}]
 \frametitle{R code}
 
 <<>>=
-case0501$X <- case0501$Diet == "N/R50"
+case0501$X <- ifelse(case0501$Diet == "N/R50", 1, 0)
+unique(case0501$X)
 (m <- lm(Lifetime ~ X, data = case0501, subset = Diet %in% c("NP","N/R50")))
 confint(m)
-predict(m, data.frame(X=TRUE), interval = "confidence") # Expected lifetime on N/R50
+predict(m, data.frame(X=1), interval = "confidence") # Expected lifetime on N/R50
 @
 
 \end{frame}
