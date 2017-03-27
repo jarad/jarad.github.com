@@ -10,11 +10,12 @@ To follow along, use the [lab08 code](lab08.R) and make sure the following
 packages are installed:
 
 - Sleuth3
+- readr
 
 You can use the following code to perform the installation:
 
 ```{r install_packages, eval=FALSE}
-install.packages(c("Sleuth3"))
+install.packages(c("Sleuth3","readr"))
 ```
 
 Now load the packages
@@ -107,12 +108,46 @@ Practice reading and writing files using `read.csv()` and `dlpyr::read_csv()`.
 Specifically, do the following
 
 1. Write `case0501` to a csv using `write.csv()`. Use the help file to ensure that you do not write the rownames.
-1. Read the created csv file in using both `read.csv()` and `dlpyr::read_csv()`. What differences are there?
-1. Use the help files for `read.csv()` and `dlpyr::read_csv()` to make the `data.frame`s equivalent. 
+1. Read the created csv file in using both `read.csv()` and `readr::read_csv()`. What differences are there?
+1. Use the help file for `read.csv()` to read in the data without converting Diet 
+to a factor.
+1. Convert Diet in the `readr::read_csv()` funtion to a factor. 
+1. Write `case0501` to a csv using `readr::write_csv()` and see what the differences are
+from the first step.
 
 <div id="readcsv_activity_solution" style="display:none"> 
-```{r, purl=FALSE}
+Here is what I would do
+```{r, purl=FALSE, eval=FALSE}
+# Write csv file
+write.csv(case0501, file = "tmp.csv", row.names = FALSE)
 
+# Read csv file
+d  <- read.csv("tmp.csv") 
+d2 <- readr::read_csv("tmp.csv") 
+
+# Don't convert to factor when reading in
+d  <- read.csv("tmp.csv", stringsAsFactors = FALSE)
+
+# Convert Diet into a factor
+d2 <- d2 %>%
+  mutate(Diet = factor(Diet))
+
+readr::write_csv(case0501, path = "tmp2.csv") # Automatically doesn't include rownames
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('readcsv_activity_solution') .style.display=='none') {document.getElementById('readcsv_activity_solution') .style.display=''}else{document.getElementById('readcsv_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+## Using categorical variables in a regression
+
+Let's perform the Lifetime-Diet ``regression'' using R.
+
+```{r}
+m <- lm(Lifetime ~ Diet, data = case0501)
+summary(m)
+```
+
+Notice that it automatically constructed all our indicator variables. 
+It automatically chose the N/N85 diet as the reference level (because it came
+first alphabetically). 
+
