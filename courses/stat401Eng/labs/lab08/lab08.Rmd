@@ -39,17 +39,81 @@ A factor is a special character variable that
 - a lookup table to find the values, and
 - an inherent ordering.
 
-When using characters are factors in a regression model in R, 
-the character will automatically be converted to a factor. 
+
+
+
+## Characters
+
+Let's create a test data set.
+
+```{r}
+n <- 12
+test <- data.frame(y = rnorm(n))
+test$char <- rep(c("a","b","A","B"), each=3)
+```
+
+If you look at the type of `char`, it will be a character (vector). 
+
+```{r}
+str(test$char)
+```
+
+If you try to run a `summary()`, 
+you won't get much.
+
+```{r}
+summary(test)
+summary(test$char)
+```
+
+Instead, you want to use the `table()` function.
+
+```{r}
+table(test$char)
+```
+
+When you use the `readr::read_csv()` function to read in data,
+character columns are left as characters.
+First we need to write the csv file.
+
+```{r}
+write.csv(test, file = "test.csv", row.names = FALSE)
+```
+
+Now let's read it in. 
+
+```{r}
+test2 <- readr::read_csv("test.csv")
+```
+```{r}
+summary(test2)
+```
+
+#### `readr::read_csv()` Activity
+
+Use the `case0501` data set from the `Sleuth3` package to practice 
+writing to a csv file and reading from the csv file.
+Verify that Diet is read in as a character vector. 
+
+<div id="readcsv_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+write.csv(Sleuth3::case0501, file = "case0501.csv", row.names = FALSE)
+tmp <- readr::read_csv("case0501.csv")
+summary(tmp)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('readcsv_activity_solution') .style.display=='none') {document.getElementById('readcsv_activity_solution') .style.display=''}else{document.getElementById('readcsv_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
 
 
 ## Factors
 
-Most `data.frame`s in R will have character variables automatically converted
-into factors. 
+When you read in data using the `read.csv()` function, 
+all character vectors will automatically be converted to factor vectors. 
 
 ```{r}
-str(case0501)
+case0501 <- read.csv(file = "case0501.csv") # We are overwriting the Sleuth3::case0501 data.frame
 ```
 
 Note that `Diet` is a factor. 
@@ -63,6 +127,7 @@ Although printing out this variable makes it look like a character:
 ```{r}
 case0501$Diet
 ```
+
 There is actually an internal representation via integers:
 
 ```{r}
@@ -83,35 +148,35 @@ R uses this ordering for displaying results:
 
 ```{r}
 summary(case0501$Diet)
-table(case0501$Diet)
+table(  case0501$Diet)
 ```
 
-You can convert characters to factors. 
+You can convert factors into characters
 
 ```{r}
-this <- as.factor(c("a","a","b","c"))
-this
+case0501$Diet_char <- as.character(case0501$Diet)
+str(case0501)
 ```
 
-You can also convert factors back to characters.
+and characters back to factors
 
 ```{r}
-as.character(this)
+case0501$Diet_fact <- as.factor(case0501$Diet_char)
+str(case0501)
+all.equal(case0501$Diet, case0501$Diet_fact)
 ```
 
-When reading data into R, `read.csv()` will automatically convert 
-characters into factors while `read_csv()` from the `dplyr` package doesn't. 
 
 #### Activity
 
 Practice reading and writing files using `read.csv()` and `readr::read_csv()`.
 Specifically, do the following
 
-1. Write `case0501` to a csv using `write.csv()`. Use the help file to ensure that you do not write the rownames.
-1. Read the created csv file in using both `read.csv()` and `readr::read_csv()`. What differences are there?
+1. Write `case0501` to a csv using `write.csv()`. Do not write the rownames.
+1. Read in the created csv file using both `read.csv()` and `readr::read_csv()`. What differences are there?
 1. Use the help file for `read.csv()` to read in the data without converting Diet 
 to a factor.
-1. Convert Diet in the `readr::read_csv()` funtion to a factor. 
+1. Convert Diet in the `readr::read_csv()` function to a factor. 
 1. Write `case0501` to a csv using `readr::write_csv()` and see what the differences are
 from the first step.
 
@@ -135,6 +200,10 @@ d2 <- d2 %>%
 readr::write_csv(case0501, path = "tmp2.csv") # Automatically doesn't include rownames
 ```
 </div> 
+
+Depending on your application, you may decide that `read.csv()` is what you 
+typically want to use or you may decide the `readr::read_csv()` is what you 
+typically want to use.
 <button title="Show a solution" type="button" onclick="if(document.getElementById('readcsv_activity_solution') .style.display=='none') {document.getElementById('readcsv_activity_solution') .style.display=''}else{document.getElementById('readcsv_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
@@ -158,40 +227,76 @@ table(newDiet) # compare to table(case0501$Diet)
 
 
 
-
 ## Using categorical variables in a regression
 
-Let's perform the Lifetime-Diet ``regression'' using R.
+Let's make sure we have the correct `data.frame` for the following. 
 
 ```{r}
-m <- lm(Lifetime ~ Diet, data = case0501)
+case0501 <- Sleuth3::case0501 %>%
+  mutate(Diet_char = as.character(Diet),
+         Diet_fact = as.factor(Diet_char))
+```
+
+### Using a character vector as the explanatory variable
+
+Let's perform the Lifetime-Diet ``regression'' using the character vector for
+Diet. 
+
+```{r}
+m <- lm(Lifetime ~ Diet_char, data = case0501)
 summary(m)
 ```
 
 Notice that it automatically constructed all our indicator variables. 
-It automatically chose the N/N85 diet as the reference level (because it came
+It automatically chose the lopro diet as the reference level (because it came
 first alphabetically). 
 
+If you leave Diet as a character vector then you cannot control the reference 
+level. 
 
-If you wanted an alternative level to be the reference level, 
-use `relevel()`.
+### Using a factor vector as the explanatory variable
+
+Let's perform the Lifetime-Diet ``regression'' using the factor vector for
+Diet. 
 
 ```{r}
-case0501$Diet <- relevel(case0501$Diet, ref = "NP")
-table(case0501$Diet)
+m <- lm(Lifetime ~ Diet_fact, data = case0501)
+summary(m)
 ```
 
-Notice how NP is now the first level. 
+These results are identical to the results using the character vector. 
 
-Now  when you run the regression the reference level will be NP. 
+### Adjusting the reference level
+
+Now suppose you want to run the regression using N/N85 (normal diet) as the 
+reference level. 
+Do this using the `relevel()` function and its `ref` argument.
 
 ```{r}
-m <- lm(Lifetime ~ Diet, data = case0501)
+case0501$Diet_fact <- relevel(case0501$Diet_fact, ref = "N/N85")
+table(case0501$Diet_fact)
+```
+
+Notice how N/N85 is now the first level. 
+
+Now  when you run the regression the reference level will be N/N85. 
+
+```{r}
+m <- lm(Lifetime ~ Diet_fact, data = case0501)
+summary(m)
+```
+
+The authors of the `Sleuth3` package had already made N/N85 the reference level
+so if you run the regression with the original data, N/N85 will be the 
+reference level.
+
+```{r}
+m <- lm(Lifetime ~ Diet, data = Sleuth3::case0501)
 summary(m)
 ```
 
 
-#### Activity
+#### Check the regression activity
 
 Verify that the regression is correct by constructing indicator variables for 
 the non-reference level explanatory variable levels and running the regression
@@ -211,5 +316,100 @@ summary(m2)
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('factor_activity_solution') .style.display=='none') {document.getElementById('factor_activity_solution') .style.display=''}else{document.getElementById('factor_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+#### Data analysis activity 
+
+Use the `ex0518` `data.frame` from the `Sleuth3` package.
+
+Adjust the order of the levels of treatment to have increasing CPFA and make
+"Control" the reference level. 
+Create a plot of protein versus treatment. 
+Run a regression of protein on treatment to determine which CPFA levels have 
+a mean protein level that is significantly different from the control. 
+Look at the diagnostic plots to determine if there are any clear violations of
+model assumptions.
+
+
+<div id="data_analysis_activity_solution" style="display:none"> 
+
+Get the data and adjust the levels of treatment. 
+
+```{r, purl=FALSE}
+d <- Sleuth3::ex0518 %>%
+  mutate(Treatment = factor(Treatment, 
+                            levels = c("Control","CPFA50","CPFA150",
+                                       "CPFA300","CPFA450","CPFA600")))
+```
+
+Now create the plot.
+
+```{r, purl=FALSE}
+library(ggplot2)
+ggplot(d, aes(Treatment, Protein)) +
+  geom_jitter() +
+  theme_bw()
+```
+
+Notice that the ordering on the x-axis is according to the ordering of the 
+levels of treatment. 
+
+Now run the regression. 
+
+```{r, purl=FALSE}
+m <- lm(Protein ~ Treatment, data = d)
+summary(m)
+```
+
+Based on this regression analysis, CPFA levels at 300 or above have 
+significantly different mean protein levels. 
+
+Finally look at the diagnostic plots.
+
+```{r, purl=FALSE}
+opar = par(mfrow=c(2,3))
+plot(m, 1:6, ask=FALSE)
+par(opar)
+```
+
+There is no clear violation here. 
+
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('data_analysis_activity_solution') .style.display=='none') {document.getElementById('data_analysis_activity_solution') .style.display=''}else{document.getElementById('data_analysis_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+#### Regression using continuous explanatory variable activity
+
+Use the previous data to construct a continuous explanatory variable that has 
+the CPFA level. 
+Then run a regression using this explanatory variable and assess model 
+assumptions using a diagnostic plot. 
+
+<div id="data_analysis2_activity_solution" style="display:none"> 
+
+I'm not necessarily expecting you to come up with this approach that uses 
+`gsub()` and `as.numeric()`. 
+
+```{r, purl=FALSE}
+d <- d %>%
+  mutate(cpfa = as.numeric(gsub("CPFA","", Treatment)),
+         cpfa = ifelse(Treatment == "Control", 0, cpfa))
+summary(d)
+```
+
+Run the regression 
+
+```{r, purl=FALSE}
+m <- lm(Protein ~ cpfa, data = d)
+
+opar = par(mfrow=c(2,3))
+plot(m, 1:6, ask = FALSE)
+par(opar)
+
+plot(d$cpfa, m$residuals)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('data_analysis2_activity_solution') .style.display=='none') {document.getElementById('data_analysis2_activity_solution') .style.display=''}else{document.getElementById('data_analysis2_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
