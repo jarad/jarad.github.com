@@ -1,0 +1,993 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set R05 - Multiple Regression}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+library(plyr)
+library(ggplot2)
+library(xtable)
+library(Sleuth3)
+library(reshape2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Multiple regression model}
+
+\frame{\frametitle{Multiple regression}
+  Recall the simple linear regression model is 
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+	
+	\vspace{0.2in} \pause
+	
+	The \alert{multiple regression model} is 
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
+	\pause where 
+  \begin{itemize}
+  \item $Y_i$ is the response for observation $i$ and 
+  \item $X_{i,p}$ is the $p^{th}$ explanatory variable for observation $i$. 
+  \end{itemize}
+  
+  \vspace{0.2in} \pause
+  
+  We may also write
+  \[ Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \quad\mbox{ or }\quad 
+     Y_i = \mu_i + e_i, e_i \stackrel{iid}{\sim} N(0,\sigma^2) \]
+  where 
+  \[ \mu_i=\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}. \]
+}
+
+
+
+\frame{\frametitle{Explanatory variables}
+  There is a lot of flexibility in the mean
+	\[ \mu_i = E[Y_i|X_{i,1},\ldots,X_{i,p}] = \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p} \]
+  as there are many possibilities for the explanatory variables $X_{i,1},\ldots,X_{i,p}$:
+
+  \vspace{0.2in} \pause
+  
+	\begin{itemize}[<+->]  
+  \item Higher order terms ($X^2$)
+	\item Additional explanatory variables ($X_1+X_2$)
+	\item Dummy variables for categorical variables ($X_1=\I()$)
+	\item Interactions ($X_1X_2$)
+    \begin{itemize}
+    \item Continuous-continuous
+    \item Continuous-categorical
+    \item Categorical-categorical
+    \end{itemize}
+	\end{itemize}
+}
+
+
+\frame{\frametitle{Interpretation}
+  Model:
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
+	
+	\vspace{0.2in} \pause
+	
+	\pause The interpretation is 
+	\begin{itemize}[<+->]
+	\item $\beta_0$ is the expected value of the response $Y_i$ when \alert{all} explanatory variables are zero.
+	\item $\beta_p,\,p\ne 0$ is the expected increase in the response for a one-unit increase in the $p^{th}$ explanatory variable \alert{when all other explanatory variables are held constant}. 
+	\item $R^2$ is the proportion of the variance in the response explained by the model
+	\end{itemize}
+}
+
+
+\begin{frame}
+\frametitle{Parameter estimation}
+
+\tiny
+
+Let 
+\[ 
+y = X\beta + \epsilon
+\]
+where 
+\begin{itemize}
+\item $y = (y_1,\ldots,y_n)^\top$
+\item $X$ is $n\times p$ with $i$th row $X_i = (X_{i,1},\ldots,X_{i,p})$
+\item $\beta = (\beta_1,\ldots,\beta_p)^\top$
+\item $\epsilon = (\epsilon_1,\ldots,\epsilon_n)^\top$
+\end{itemize}
+\pause
+Then we have 
+\[ \begin{array}{rl}
+\hat\beta &= (X^\top X)^{-1}X^\top y \\
+Var(\hat\beta) &= \sigma^2(X^\top X)^{-1} \\
+r &= y-X\hat\beta \\
+\hat\sigma^2 &= \frac{1}{n-p}r^\top r \\
+\end{array} \]
+\pause
+Confidence/credible intervals and pvalues are constructed using 
+\[
+\hat\beta_j \pm t_{n-p,1-a/2} SE(\hat\beta_j)
+\quad\mbox{and}\quad
+\mbox{pvalue} = \frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}
+\]
+where $SE(\hat\beta_j)$ is the $j$th diagonal element of 
+$\hat\sigma^2(X^\top X)^{-1}$.
+
+\end{frame}
+
+
+\subsection{Higher order terms ($X^2$)}
+\begin{frame}
+\frametitle{Higher order terms ($X^2$)}
+
+Let 
+\begin{itemize}
+\item $Y_i$ be the distance for the $i^{th}$ run of the experiment and
+\item $H_i$ be the height for the $i^{th}$ run of the experiment.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Simple linear regression assumes
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i\phantom{ +\beta_2 H_i^2 + \beta_3 H_i^3}, \sigma^2) \]
+\pause
+The quadratic multiple regression assumes
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2\phantom{+ \beta_3 H_i^3}, \sigma^2) \]
+\pause
+The cubic multiple regression assumes 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2 + \beta_3 H_i^3, \sigma^2) \]
+\end{frame}
+
+
+
+<<echo=FALSE>>=
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+@
+
+
+
+\begin{frame}
+\frametitle{Case1001}
+
+<<echo=FALSE>>=
+g = ggplot(case1001, aes(x=Height, y=Distance)) + geom_point(size=3)
+multiplot(
+  g,
+  g+stat_smooth(method="lm"),
+  g+stat_smooth(method="lm", formula=y~x+I(x^2)),
+  g+stat_smooth(method="lm", formula=y~x+I(x^2)+I(x^3)),
+  layout = matrix(1:4,2,byrow=TRUE)
+)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output}
+
+<<tidy=FALSE>>=
+# Construct the variables by hand
+case1001$Height2 = case1001$Height^2
+case1001$Height3 = case1001$Height^3
+
+m1 = lm(Distance~Height,                 case1001)
+m2 = lm(Distance~Height+Height2,         case1001)
+m3 = lm(Distance~Height+Height2+Height3, case1001)
+
+coefficients(m1)
+coefficients(m2)
+coefficients(m3)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output}
+
+<<tidy=FALSE>>=
+# Let R construct the variables for you
+m = lm(Distance~poly(Height, 3, raw=TRUE), case1001)
+summary(m)
+@
+
+\end{frame}
+
+
+
+
+
+
+\subsection{Additional explanatory variables ($X_1+X_2$)}
+\frame{\frametitle{Longnose Dace Abundance}
+From \url{http://udel.edu/~mcdonald/statmultreg.html}: 
+{\scriptsize
+	\begin{quote}
+I extracted some data from the Maryland Biological Stream Survey. ... The dependent variable is the number of Longnose Dace (Rhinichthys cataractae) per 75-meter section of [a] stream. The independent variables are the area (in acres) drained by the stream; the dissolved oxygen (in mg/liter); the maximum depth (in cm) of the 75-meter segment of stream; nitrate concentration (mg/liter); sulfate concentration (mg/liter); and the water temperature on the sampling date (in degrees C). 	
+	\end{quote}
+	}
+	
+	\pause
+	
+Consider the model 
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\beta_2 X_{i,2}, \sigma^2) \]
+	\pause where 
+	\begin{itemize}[<+->]
+	\item $Y_i$: count of Longnose Dace in stream $i$
+	\item $X_{i,1}$: maximum depth (in cm) of stream $i$
+	\item $X_{i,2}$: nitrate concentration (mg/liter) of stream $i$
+	\end{itemize}
+}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Exploratory}
+<<echo=FALSE>>=
+d = read.csv("longnosedace.csv")
+m = melt(d[,c("stream","count","acreage","no3","maxdepth")], 
+         id.vars=c("stream","count","acreage"))
+ggplot(m, aes(x=value,y=count))+geom_point(size=2)+facet_wrap(~variable, scales="free")
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output}
+<<>>=
+d = read.csv("longnosedace.csv")
+m = lm(count~no3+maxdepth,d)
+summary(m)
+@
+\end{frame}
+
+
+\frame{\frametitle{Interpretation}
+	\begin{itemize}[<+->]
+	\item Intercept ($\beta_0$): The expected count of Longnose Dace when maximum depth and nitrate concentration are both zero is -18. 
+	\item Coefficient for maxdepth ($\beta_1$): Holding nitrate concentration constant, each cm increase in maximum depth is associated with an additional 0.48 Longnose Dace counted on average.
+	\item Coefficient for no3 ($\beta_2$): Holding maximum depth constant, each mg/liter increase in nitrate concentration is associated with an addition 8.3 Longnose Dace counted on average.
+	\item Coefficient of determination ($R^2$): The model explains 19\% of the variability in the count of Longnose Dace.
+	\end{itemize}
+}
+
+
+
+\subsection{Categorical variables ($X_1=\I()$)}
+\begin{frame}[fragile]
+\frametitle{Using a categorical variable as an explanatory variable.}
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+opar = par(mar=c(5,5,0,0)+.1)
+plot(Lifetime~jitter(I(as.numeric(Diet)-1)), case0501, xaxt='n', pch=19, cex.lab=1.5, 
+     xlab="Diet", col='gray')
+axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
+
+yy = with(case0501, by(Lifetime, Diet, mean))
+segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
+par(opar)
+@
+\end{frame}
+
+\frame{\frametitle{Regression with a categorical variable}
+	\begin{itemize}
+	\item Choose one of the levels as the \alert{reference} level, e.g. N/N85 \pause
+	\item Construct dummy variables using indicator functions, i.e.  
+  \[ \I(A) = \left\{ \begin{array}{ll} 1 & A\mbox{ is TRUE} \\ 0 & A\mbox{ is FALSE} \end{array}\right.\]
+  
+  \pause 
+  
+  for the other levels, \pause e.g.
+	\[ \begin{array}{ll} 
+	X_{i,1} = \I(\mbox{diet for observation $i$ is N/R40})\pause \\
+	X_{i,2} = \I(\mbox{diet for observation $i$ is N/R50})\pause \\
+	X_{i,3} = \I(\mbox{diet for observation $i$ is NP})\pause \\
+	X_{i,4} = \I(\mbox{diet for observation $i$ is R/R50})\pause \\
+	X_{i,5} = \I(\mbox{diet for observation $i$ is lopro})\pause
+	\end{array} \] 
+	\item \pause Estimate the parameters of a multiple regression model using these dummy variables.
+	\end{itemize}
+}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output}
+
+<<>>=
+# by default, R uses the alphabetically first group as the reference level
+case0501$Diet = relevel(case0501$Diet, ref='N/N85') 
+
+m = lm(Lifetime~Diet, case0501)
+summary(m)
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpretation}
+
+\begin{itemize}[<+->]
+\item $\beta_0 = E[Y_i| \mbox{reference level}]$, i.e. expected response for the reference level
+
+{\color{gray}
+Note: the only way $X_{i,1}=\cdots=X_{i,p}=0$ is if all indicators are zero, i.e. at the reference level. 
+}
+
+\item $\beta_p, p>0$: expected change in the response moving from the reference level to the level associated with the $p^{th}$ dummy variable
+
+{\color{gray}
+Note: the only way for $X_{i,p}$ to increase by one and all other indicators to stay constant is if initially $X_{i,1}=\cdots=X_{i,p}=0$ and now $X_{i,p}=1$
+}
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+For example, 
+\begin{itemize}[<+->]
+\item The expected lifetime for mice on the N/N85 diet is 32.7 weeks.
+\item The expected increase in lifetime for mice on the N/R40 diet compared to the N/N85 diet is 12.4 weeks. 
+\item The model explains 45\% of the variability in mice lifetimes.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Using a categorical variable as an explanatory variable.}
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+opar = par(mar=c(5,5,0,4)+.1)
+plot(Lifetime~jitter(I(as.numeric(Diet)-1)), case0501, xaxt='n', pch=19, cex.lab=1.5, 
+     xlab="Diet", col='gray')
+axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
+
+axis(4, yy[1], expression(beta[0]), las=1, cex.axis=1.5)
+yy = with(case0501, by(Lifetime, Diet, mean))
+abline(h=yy[1], lwd=2)
+segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
+arrows(1:5,yy[1],1:5,yy[-1],col='red', lwd=4)
+text(1:5, (yy[2:6]+yy[1])/2, expression(beta[1],beta[2],beta[3],beta[4],beta[5]), pos=4, col='red', cex=1.5, offset=1)
+par(opar)
+@
+\end{frame}
+
+
+
+\subsection{Interactions ($X_1X_2$)}
+\begin{frame}
+\frametitle{Interactions}
+Why an interaction? \pause
+\begin{quote}
+Two explanatory variables are said to \alert{interact} if the effect that one 
+of them has on the mean response depends on the value of the other. 
+\end{quote}
+
+\vspace{0.2in} \pause
+
+For example, 
+\begin{itemize}[<+->]
+\item Longnose dace: The effect of nitrate (no3) on longnose dace count depends on the maxdepth. (Continuous-continuous)
+\item Case1002: The effect of mass on energy depends on the species type. (Continuous-categorical)
+\item Yield: the effect of tillage method depends on the fertilizer brand (Categorical-categorical)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Continuous-continuous interaction}
+
+For observation $i$, let 
+\begin{itemize}
+\item $Y_i$ be the response 
+\item $X_{i,1}$ be the first explanatory variable and
+\item $X_{i,2}$ be the second explanatory variable. 
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The mean containing only \alert{main effects} is 
+\[ \mu_i = \beta_0 + \beta_1X_{i,1}+\beta_2X_{i,2}.\phantom{+\beta_3X_{i,1}X_{i,2}} \]
+\pause
+The mean with the \alert{interaction} is 
+\[ \mu_i = \beta_0 + \beta_1X_{i,1}+\beta_2X_{i,2}+\beta_3X_{i,1}X_{i,2}.  \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Intepretation - main effects only}
+
+Let $X_{i,1}=x_1$ and $X_{i,2}=x_2$, then we can rewrite the line ($\mu$) as 
+
+\[ \mu = (\beta_0+\beta_2x_2) + \beta_1 x_1 \]
+which indicates that the intercept of the line for $x_1$ depends on the value of $x_2$. 
+
+\vspace{0.2in} \pause
+
+Similarly,
+
+\[ \mu = (\beta_0+\beta_1x_1) + \beta_2 x_2 \]
+which indicates that the intercept of the line for $x_2$ depends on the value of $x_1$.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Intepretation - with an interaction}
+
+Let $X_{i,1}=x_1$ and $X_{i,2}=x_2$, then we can rewrite the mean ($\mu$) as 
+
+\[ \mu = (\beta_0+\beta_2x_2) + (\beta_1+\beta_3x_2) x_1 \]
+which indicates that both the intercept and slope for $x_1$ depend on the value of $x_2$. 
+
+\vspace{0.2in} \pause
+
+Similarly,
+
+\[ \mu = (\beta_0+\beta_1x_1) + (\beta_2+\beta_3x_1) x_2 \]
+which indicates that both the intercept and slope for $x_2$ depend on the value of $x_1$.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the models}
+<<echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
+opar = par(mfrow=c(1,2))
+b = c(1,1,10,1)
+xx = seq(0,1,length=101)*10
+plot(0,0,type='n', xlim=range(xx), ylim=c(0,50), xlab=expression(x[1]), ylab=expression(mu), las=2,
+     main="Main effects only")
+x2s = 0:2
+for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2], col=i, lty=i, lwd=2)
+lgnd = c(bquote(x[2]==.(x2s[1])),
+         bquote(x[2]==.(x2s[2])),
+         bquote(x[2]==.(x2s[3])))
+legend("topleft", as.expression(lgnd), col=1:length(x2s), lty=1:length(x2s))
+
+plot(0,0,type='n', xlim=range(xx), ylim=c(0,50), xlab=expression(x[1]), ylab=expression(mu), las=2,
+     main="with an interaction")
+for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2]+b[4]*x2s[i], col=i, lty=i, lwd=2)
+par(opar)
+@
+\end{frame}
+
+
+% \begin{frame}
+% \begin{itemize}
+% \item $\beta_0$: expected response when explanatory variables are zero
+% \item $\beta_1+\beta_3x_2$: expected change in the response for each unit change in $X_{i,1}$ when \alert{$X_{i,2}=x_2$}
+% \item $\beta_2+\beta_3x_1$: expected change in the response for each unit change in $X_{i,2}$ when \alert{$X_{i,1}=x_1$}
+% \end{itemize}
+% 
+% \pause 
+% 
+% Proof:
+% \[ \begin{array}{l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
+% E[Y_i|X_{i,1}=&x_1+1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 (&x_1+1)&+ \beta_2x_2 &+ \beta_3 (&x_1+1)&x_2 \\
+% E[Y_i|X_{i,1}=&x_1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 & x_1 & + \beta_2 x_2 &+ \beta_3 & x_1 & x_2 \\
+% \hline
+% \multicolumn{3}{c}{\mbox{Diff}} &= &\beta_1 &&&+  \beta_3 &&x_2
+% \end{array} \]
+% \pause
+% \[ \begin{array}{l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
+% E[Y_i|X_{i,1}=x_1, X_{i,2}=&x_2+1&] &= \beta_0 +&\beta_1 x_1+ &\beta_2 (&x_2+1) &+ \beta_3 x_1& (&x_2+1) \\
+% E[Y_i|X_{i,1}=x_1, X_{i,2}=&x_2&] &= \beta_0 +&\beta_1 x_1  + &\beta_2 &x_2 &+ \beta_3 x_1 & &x_2 \\
+% \hline
+% \multicolumn{3}{c}{\mbox{Diff}}&= &&\beta_2 &&+  \beta_3 x_1
+% \end{array} \]
+% \end{frame}
+
+
+% \begin{frame}
+% \frametitle{Intepretation}
+% 
+% \begin{itemize}
+% \item $\beta_0$: expected response when explanatory variables are zero
+% \item $\beta_1+\beta_3x_2$: expected change in the response for each unit change in $X_{i,1}$ when \alert{$X_{i,2}=x_2$}
+% \item $\beta_2+\beta_3x_1$: expected change in the response for each unit change in $X_{i,2}$ when \alert{$X_{i,1}=x_1$}
+% %\item $\beta_3X_{i,2}$: expected change in the effect of $X_{i,1}$ on the response when \alert{$X_{i,2}$ is not zero}
+% %\item $\beta_3X_{i,1}$: expected change in the effect of $X_{i,2}$ on the response when \alert{$X_{i,1}$ is not zero}
+% \end{itemize}
+% 
+% \pause 
+% 
+% Proof:
+% \[ \begin{array}{l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
+% E[Y_i|X_{i,1}=&x_1+1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 (&x_1+1)&+ \beta_2x_2 &+ \beta_3 (&x_1+1)&x_2 \\
+% E[Y_i|X_{i,1}=&x_1&, X_{i,2}=x_2] &= \beta_0 +&\beta_1 & x_1 & + \beta_2 x_2 &+ \beta_3 & x_1 & x_2 \\
+% \hline
+% \multicolumn{3}{c}{\mbox{Diff}} &= &\beta_1 &&&+  \beta_3 &&x_2
+% \end{array} \]
+% \pause
+% \[ \begin{array}{l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l@{}l}
+% E[Y_i|X_{i,1}=x_1, X_{i,2}=&x_2+1&] &= \beta_0 +&\beta_1 x_1+ &\beta_2 (&x_2+1) &+ \beta_3 x_1& (&x_2+1) \\
+% E[Y_i|X_{i,1}=x_1, X_{i,2}=&x_2&] &= \beta_0 +&\beta_1 x_1  + &\beta_2 &x_2 &+ \beta_3 x_1 & &x_2 \\
+% \hline
+% \multicolumn{3}{c}{\mbox{Diff}}&= &&\beta_2 &&+  \beta_3 x_1
+% \end{array} \]
+% 
+% \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output - main effects only}
+
+<<>>=
+d = read.csv("longnosedace.csv")
+mM = lm(count ~ no3+maxdepth, d)
+summary(mM)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output - with an interaction}
+
+<<>>=
+mI = lm(count ~ no3*maxdepth, d)
+summary(mI)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the model}
+
+<<echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
+opar = par(mfrow=c(1,2))
+b = coef(mM)
+xx = d$no3
+x2s = c(26,63,160) # values to evaluate
+plot(0,0,type='n', xlim=range(d$no3), ylim=range(d$count), 
+     xlab='Nitrate (mg/L)', ylab="Expected longnose dace count", las=2,
+     main="Main effects only")
+for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2], col=i, lty=i, lwd=2)
+legend("topleft", paste("Maxdepth=",x2s,"(cm)"), col=1:length(x2s), lty=1:length(x2s))
+
+b = coef(mI)
+plot(0,0,type='n', xlim=range(d$no3), ylim=range(d$count), 
+     xlab='Nitrate (mg/L)', ylab="Expected longnose dace count", las=2,
+     main="with an interaction")
+for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2]+b[4]*x2s[i], col=i, lty=i, lwd=2)
+par(opar)
+@
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Continuous-categorical interaction}
+
+Let category A be the reference level. For observation $i$, let 
+\begin{itemize}
+\item $Y_i$ be the response 
+\item $X_{i,1}$ be the continuous explanatory variable, 
+\item $B_i$ be a dummy variable for category B, and 
+\item $C_i$ be a dummy variable for category C.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The mean containing only \alert{main effects} is 
+\[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i.\phantom{+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i} \]
+\pause
+The mean with the \alert{interaction} is 
+\[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i. \]
+\pause
+Think about this model as a different line for each level of the categorical explanatory variable.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpretation for the main effect model}
+
+The mean containing only \alert{main effects} is 
+\[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i.\phantom{+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i} \]
+
+\vspace{0.2in} \pause
+
+For each category, the line is 
+\[ \begin{array}{c|l@{}lll}
+\mbox{Category} & \multicolumn{4}{c}{\mbox{Line } (\mu)} \\
+\hline
+A & &\beta_0 &+ &\beta_1 X \\
+B & (&\beta_0 + \beta_2) &+ &\beta_1 X \\
+C & (&\beta_0 + \beta_3) &+ &\beta_1 X \\
+\hline
+\end{array} \]
+\pause
+Each category has a different intercept, but a common slope.
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Interpretation for the model with an interaction}
+
+The model with an \alert{interaction} is 
+\[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i \]
+
+\vspace{0.2in} \pause
+
+For each category, the line is
+\[ \begin{array}{c|l@{}ll@{}l@{}l}
+\mbox{Category} & \multicolumn{5}{c}{\mbox{Line } (\mu)} \\
+\hline
+A &  &\beta_0            &+  &\beta_1           &X \\
+B & (&\beta_0 + \beta_2) &+ (&\beta_1+\beta_4) &X \\
+C & (&\beta_0 + \beta_3) &+ (&\beta_1+\beta_5) &X \\
+\hline
+\end{array} \]
+\pause
+Each category has its own intercept and its own slope. 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the models}
+
+<<echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
+b = c(0,3,7)
+opar = par(mar=c(5,5,4,2)+.1, mfrow=c(1,2))
+
+plot(0, 0, type='n', xlim=c(0,10), ylim=c(0,15), axes=F, frame=TRUE, 
+     xlab="Continuous explanatory variable", ylab="Expected response",
+     main="Main effects only", xaxs='i')
+for (i in 1:length(b)) abline(b[i],1, col=i, lty=i, lwd=2)
+axis(2, b, expression(beta[0],beta[0]+beta[2],beta[0]+beta[3]), las=1)
+loc=c(1,3,6)
+arrows(loc[1],b[1]+loc[1], loc[1], b[2]+loc[1], code=3, length=0.1)
+text(loc[1], b[2]/2+loc[1], expression(beta[2]), pos=4)
+arrows(loc[2], b[1]+loc[2], loc[2], b[3]+loc[2], code=3, length=0.1)
+text(loc[2], mean(b[c(1,3)])+loc[2]+1, expression(beta[3]), pos=4)
+arrows(loc[3], b[2]+loc[3], loc[3], b[3]+loc[3], code=3, length=0.1)
+text(loc[3], mean(b[2:3])+loc[3], expression(beta[3]-beta[2]), pos=4)
+
+segments(5, 5, 8, 5)
+segments(8, 5, 8, 8)
+text(8, 6.5, expression(beta[1]), pos=4)
+
+b0 = c(0, 10, 13)
+b1 = c(1, .5, -0.3)
+plot(0, 0, type='n', xlim=c(0,10), ylim=c(0,15), axes=F, frame=TRUE, 
+     xlab="Continuous explanatory variable", ylab="",
+     main="with an interaction", xaxs='i')
+
+x1 = 5
+x2 = 8
+i = 1
+for (i in 1:length(b)) {
+  abline(b0[i],b1[i], col=i, lty=i, lwd=2)
+  segments(x1, b0[i]+b1[i]*x1, x2, b0[i]+b1[i]*x1, col=i, lty=i)
+  segments(x2, b0[i]+b1[i]*x1, x2, b0[i]+b1[i]*x2, col=i, lty=i)
+}
+axis(2, b0, expression(beta[0],beta[0]+beta[2],beta[0]+beta[3]), las=1)
+text(8, b0+b1*(x1+x2)/2, expression(beta[1], beta[1]+beta[4], beta[1]+beta[5]), pos=4)
+par(opar)
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output - main effects only}
+<<>>=
+case1002$Type = relevel(case1002$Type, ref='non-echolocating bats') # match SAS
+summary(mM <- lm(log(Energy)~log(Mass)+Type, case1002))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{R code and output - with an interaction}
+<<>>=
+summary(mI <- lm(log(Energy)~log(Mass)*Type, case1002))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the models}
+
+<<echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
+opar = par(mar=c(5,5,4,2)+.1, mfrow=c(1,2))
+
+plot(Energy~Mass, case1002, log='xy', 
+     pch=as.numeric(Type), col=as.numeric(Type), 
+     xlab="Mass (grams)", ylab="Energy (W)",
+     main="Main effects only")
+with(case1002, legend("topleft", legend=levels(Type), pch=1:nlevels(Type), col=1:nlevels(Type)))
+xrng = range(case1002$Mass)
+for (i in 1:3) {
+  yy = predict(mM, data.frame(Type=levels(case1002$Type)[i], Mass=xrng))
+  lines(xrng, exp(yy), col=i, lty=i, lwd=2)
+}
+
+
+b = coef(mI)
+plot(Energy~Mass, case1002, log='xy', 
+     pch=as.numeric(Type), col=as.numeric(Type), 
+     xlab="Mass (grams)", ylab="Energy (W)",
+     main="with an interaction")
+for (i in 1:3) {
+  yy = predict(mI, data.frame(Type=levels(case1002$Type)[i], Mass=xrng))
+  lines(xrng, exp(yy), col=i, lty=i, lwd=2)
+}
+par(opar)
+@
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Categorical-categorical}
+
+Let category A and type 0 be the reference level. For observation $i$, let 
+\begin{itemize}
+\item $Y_i$ be the response, 
+\item $1_i$ be a dummy variable for type 1, 
+\item $B_i$ be a dummy variable for category B, and 
+\item $C_i$ be a dummy variable for category C.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The mean containing only main effects is 
+\[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i.\phantom{ + \beta_4 1_i B_i + \beta_5 1_i C_i} \]
+\pause
+The mean with an interaction is 
+\[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i + \beta_4 1_i B_i + \beta_5 1_i C_i. \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpretation for the main effects model}
+
+The mean containing only main effects is 
+\[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i.\phantom{ + \beta_4 1_i B_i + \beta_5 1_i C_i} \]
+
+\vspace{0.2in} \pause
+
+\begin{itemize}
+\item $\beta_0$ is the expected response for category A and type 0
+\item $\beta_1$ is the change in response for moving from type 0 to type 1
+\item $\beta_2$ is the change in response for moving from category A to category B
+\item $\beta_3$ is the change in response for moving from category A to category C
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The means are then 
+\[ \begin{array}{c|ccc} 
+& \multicolumn{3}{c}{\mbox{Category}} \\
+\mbox{Type} & A & B & C \\
+\hline
+0 & \beta_0 \phantom{+\beta_1}\, & \beta_0 \phantom{+\beta_1}\,+\beta_2 & \beta_0 \phantom{+\beta_1}\,+\beta_3 \\
+1 & \beta_0+\beta_1 & \beta_0+\beta_1+\beta_2 & \beta_0+\beta_1+\beta_3 \\
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpretation for the model with an interaction}
+
+The mean with an interaction is 
+\[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i + \beta_4 1_i B_i + \beta_5 1_i C_i. \]
+
+ \pause
+
+{\tiny
+\begin{itemize}
+\item $\beta_0$ is the expected response for category A and type 0
+\item $\beta_1$ is the change in response for moving from type 0 to type 1 for category A
+\item $\beta_2$ is the change in response for moving from category A to category B for type 0
+\item $\beta_3$ is the change in response for moving from category A to category C for type 0
+\item $\beta_4$ is the difference in change in response for moving from category A to category B for type 1 compared to type 0
+\item $\beta_5$ is the difference in change in response for moving from category A to category C for type 1 compared to type 0
+\end{itemize}
+}
+\pause
+
+The means are then 
+\[ \begin{array}{c|ccc} 
+& \multicolumn{3}{c}{\mbox{Category}} \\
+\mbox{Type} & A & B & C \\
+\hline
+0 & \beta_0 \phantom{+\beta_1}\, & \beta_0 \phantom{+\beta_1}\,+\beta_2\phantom{+\beta_4} & \beta_0 \phantom{+\beta_1}\,+\beta_3\phantom{+\beta_5} \\
+1 & \beta_0+\beta_1 & \beta_0+\beta_1+\beta_2+\beta_4 & \beta_0+\beta_1+\beta_3+\beta_5 \\
+\end{array} \]
+This is referred to as the \alert{cell-means model}.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the models}
+
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+mus = function(b, cats=c("A","B","C"), types=c(0,1)) {
+  d = data.frame(type=rep(types, each=3),
+                 category = rep(cats, 2))
+  if (length(b) == 4) {
+  d$mu = c(b[1],      b[1]     +b[3], b[1]     +b[4],
+           b[1]+b[2], b[1]+b[2]+b[3], b[1]+b[2]+b[4])
+  } else {
+  d$mu = c(b[1],      b[1]     +b[3],      b[1]     +b[4],
+           b[1]+b[2], b[1]+b[2]+b[3]+b[5], b[1]+b[2]+b[4]+b[6])
+  }
+  d
+}
+opar = par(mfrow=c(1,2))
+d = mus(c(4,2,-5,-3))
+interaction.plot(d$category, d$type, d$mu, type='b', pch=1:2, lty=1:2, legend=FALSE,
+     xlab="Category", ylab=expression(mu), main="Main effect only", trace.label="Type")
+legend("topright",paste("Type=",0:1), lty=1:2, pch=1:2)
+d = mus(c(4,2,-1,-3, 2, -3))
+interaction.plot(d$category, d$type, d$mu, type='b', pch=1:2, lty=1:2, legend=FALSE,
+     xlab="Category", ylab=expression(mu), main="with interaction", trace.label="Type")
+par(opar)
+@
+
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output - main effects only}
+
+<<>>=
+# Set the reference levels
+case1301$Block = relevel(case1301$Block, ref='B1')
+case1301$Treat = relevel(case1301$Treat, ref='L' )
+summary(mM <- lm(Cover~Block+Treat, case1301, subset=Block %in% c("B1","B2") & Treat %in% c("L","Lf","LfF")))
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R code and output - with an interaction}
+
+<<>>=
+summary(mI <- lm(Cover~Block*Treat, case1301, subset=Block %in% c("B1","B2") & Treat %in% c("L","Lf","LfF")))
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualizing the models}
+
+<<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
+opar = par(mfrow=c(1,2))
+d = mus(coef(mM), cats=c("L","Lf","LfF"), types=c("B1","B2"))
+interaction.plot(d$category, d$type, d$mu, type='b', pch=1:2, lty=1:2, legend=FALSE,
+     xlab="Treatment", ylab=expression(mu), main="Main effect only", trace.label="Block")
+legend("topright",paste("Block=",levels(d$type)), lty=1:2, pch=1:2)
+d = mus(coef(mI), cats=c("L","Lf","LfF"), types=c("B1","B2"))
+interaction.plot(d$category, d$type, d$mu, type='b', pch=1:2, lty=1:2, legend=FALSE,
+     xlab="Treatment", ylab=expression(mu), main="with interaction", trace.label="Block")
+par(opar)
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{When to include interaction terms}
+
+From The Statistical Sleuth (3rd ed) page 250:
+\begin{itemize}
+\item when a question of interest pertains to an interaction
+\item when good reason exists to suspect an interaction or
+\item when interactions are proposed as a more general model for the purpose of examining the goodness of fit of a model without interaction.
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Multiple regression explanatory variables}
+
+The possibilities for explanatory variables are 
+  \begin{itemize}
+  \item Higher order terms ($X^2$)
+	\item Additional explanatory variables ($X_1$ and $X_2$)
+	\item Dummy variables for categorical variables ($X_1=\I()$)
+	\item Interactions ($X_1X_2$)
+    \begin{itemize}
+    \item Continuous-continuous
+    \item Continuous-categorical
+    \item Categorical-categorical
+    \end{itemize}
+	\end{itemize}
+  
+  \vspace{0.2in} \pause
+  
+  We can also combine these explanatory variables, e.g. 
+  \begin{itemize}[<+->]
+  \item including higher order terms for continuous variables along with dummy variables for categorical variables and 
+  \item including higher order interactions ($X_1X_2X_3$). 
+  \end{itemize}
+
+\end{frame}
+
+\end{document}
+
+
+
