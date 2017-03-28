@@ -43,7 +43,7 @@ When using characters are factors in a regression model in R,
 the character will automatically be converted to a factor. 
 
 
-## Characters vs factors
+## Factors
 
 Most `data.frame`s in R will have character variables automatically converted
 into factors. 
@@ -156,7 +156,8 @@ newDiet = factor(case0501$Diet,
 table(newDiet) # compare to table(case0501$Diet)
 ```
 
-You can also 
+
+
 
 ## Using categorical variables in a regression
 
@@ -170,4 +171,45 @@ summary(m)
 Notice that it automatically constructed all our indicator variables. 
 It automatically chose the N/N85 diet as the reference level (because it came
 first alphabetically). 
+
+
+If you wanted an alternative level to be the reference level, 
+use `relevel()`.
+
+```{r}
+case0501$Diet <- relevel(case0501$Diet, ref = "NP")
+table(case0501$Diet)
+```
+
+Notice how NP is now the first level. 
+
+Now  when you run the regression the reference level will be NP. 
+
+```{r}
+m <- lm(Lifetime ~ Diet, data = case0501)
+summary(m)
+```
+
+
+#### Activity
+
+Verify that the regression is correct by constructing indicator variables for 
+the non-reference level explanatory variable levels and running the regression
+to reproduce the results above.
+
+<div id="factor_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+d <- case0501 %>% 
+  mutate(X1 = Diet == "N/N85",
+         X2 = Diet == "N/R40",
+         X3 = Diet == "N/R50",
+         X4 = Diet == "R/R50",
+         X5 = Diet == "lopro")
+
+m2 <- lm(Lifetime ~ X1+X2+X3+X4+X5, data = d)
+summary(m2)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('factor_activity_solution') .style.display=='none') {document.getElementById('factor_activity_solution') .style.display=''}else{document.getElementById('factor_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
 
