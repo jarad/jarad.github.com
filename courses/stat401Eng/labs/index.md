@@ -12,6 +12,7 @@ tagline: Statistical Methods for Research Workers
  - [Lab02](lab02/lab02.html) - Data Management in R
  - [Lab03](lab03/lab03.html) - Probability Distributions in R
  - [Lab04](lab04/lab04.html) - Monte Carlo Methods in R
- - [Lab05](lab05/lab05.html) - Estimator evaluation
- - [Lab06](lab06/lab06.html) - Built-in analyses in R ([creativity.csv](lab06/creativity.csv))
- - [Lab07](lab07/lab07.html) - Default Regression diagnostics
+ - [Lab05](lab05/lab05.html) - Estimator Evaluation
+ - [Lab06](lab06/lab06.html) - Built-in Analyses in R ([creativity.csv](lab06/creativity.csv))
+ - [Lab07](lab07/lab07.html) - Default Regression Diagnostics
+ - [Lab08](lab08/lab08.html) - Regression with Factors
