@@ -643,8 +643,7 @@ par(opar)
 \frametitle{R code and output - main effects only}
 
 <<>>=
-d = read.csv("longnosedace.csv")
-mM = lm(count ~ no3+maxdepth, d)
+mM = lm(count ~ no3+maxdepth, longnosedace)
 summary(mM)
 @
 
@@ -655,7 +654,7 @@ summary(mM)
 \frametitle{R code and output - with an interaction}
 
 <<>>=
-mI = lm(count ~ no3*maxdepth, d)
+mI = lm(count ~ no3*maxdepth, longnosedace)
 summary(mI)
 @
 
@@ -668,16 +667,16 @@ summary(mI)
 <<echo=FALSE, fig.width=10, out.width='\\textwidth'>>=
 opar = par(mfrow=c(1,2))
 b = coef(mM)
-xx = d$no3
+xx = longnosedace$no3
 x2s = c(26,63,160) # values to evaluate
-plot(0,0,type='n', xlim=range(d$no3), ylim=range(d$count), 
+plot(0,0,type='n', xlim=range(longnosedace$no3), ylim=range(longnosedace$count), 
      xlab='Nitrate (mg/L)', ylab="Expected longnose dace count", las=2,
      main="Main effects only")
 for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2], col=i, lty=i, lwd=2)
 legend("topleft", paste("Maxdepth=",x2s,"(cm)"), col=1:length(x2s), lty=1:length(x2s))
 
 b = coef(mI)
-plot(0,0,type='n', xlim=range(d$no3), ylim=range(d$count), 
+plot(0,0,type='n', xlim=range(longnosedace$no3), ylim=range(longnosedace$count), 
      xlab='Nitrate (mg/L)', ylab="Expected longnose dace count", las=2,
      main="with an interaction")
 for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2]+b[4]*x2s[i], col=i, lty=i, lwd=2)
@@ -912,6 +911,8 @@ The means are then
 \begin{frame}
 \frametitle{Interpretation for the model with an interaction}
 
+\small
+
 The mean with an interaction is 
 \[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i + \beta_4 1_i B_i + \beta_5 1_i C_i. \]
 
@@ -937,7 +938,9 @@ The means are then
 0 & \beta_0 \phantom{+\beta_1}\, & \beta_0 \phantom{+\beta_1}\,+\beta_2\phantom{+\beta_4} & \beta_0 \phantom{+\beta_1}\,+\beta_3\phantom{+\beta_5} \\
 1 & \beta_0+\beta_1 & \beta_0+\beta_1+\beta_2+\beta_4 & \beta_0+\beta_1+\beta_3+\beta_5 \\
 \end{array} \]
-This is referred to as the \alert{cell-means model}.
+\pause
+This is equivalent to a \alert{cell-means model} where each combination has its
+own mean.
 \end{frame}
 
 
