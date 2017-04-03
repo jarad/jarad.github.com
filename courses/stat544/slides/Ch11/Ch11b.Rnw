@@ -89,8 +89,8 @@ set.seed(1)
 \frametitle{Two component Gibbs sampler}
   Suppose our target distribution is $p(\theta|y)$ with $\theta=(\theta_1,\theta_2)$  \pause and we can sample from $p\left(\theta_1|\theta_2,y\right)$ and $p\left(\theta_2|\theta_1, y\right)$\pause. Beginning with an initial value $\left(\theta_1^0, \theta_2^0\right)$\pause, an \alert{iteration} of the \alert{Gibbs sampler} involves
 	\begin{enumerate}[\quad1.]
-	\item Sampling $\theta_1^{t}\sim p\left(\theta_1|\theta_2^{(t-1)},y\right)$. \pause 
-	\item Sampling $\theta_2^{t}\sim p\left(\theta_2|\theta_1^{t},y\right)$.
+	\item Sampling $\theta_1^{(t)}\sim p\left(\theta_1|\theta_2^{(t-1)},y\right)$. \pause 
+	\item Sampling $\theta_2^{(t)}\sim p\left(\theta_2|\theta_1^{(t)},y\right)$.
 	\end{enumerate}
 	
 	By the Law of Large Numbers, $(\theta_1^{(t)},\theta_2^{(t)})$ converges to samples from $p(\theta|y)$. 
@@ -105,15 +105,15 @@ set.seed(1)
 
 
 
-% 	\vspace{0.2in} \pause
+% \vspace{0.1in} \pause
 % 	
 % 	Notes:
 % 	\begin{itemize}[<+->]
-%   \item The sequence $\{\theta^0,\theta^1,\ldots,\}$ is a Markov chain with transition distribution 
-%   \[ p(\theta^{t}|\theta^{(t-1)},y) = p(\theta_2^{t}|\theta_1^{t},y)p(\theta_1^{t}|\theta_2^{(t-1)},y). \]
-% 	\item $\theta^{t} \stackrel{d}{\rightarrow} \theta$ where $\theta \sim p\left(\theta|y\right)$.  
+%   \item The sequence $\{\theta^0,\theta^{(1)},\ldots,\}$ is a Markov chain with transition distribution 
+%   \[ p(\theta^{(t)}|\theta^{(t-1)},y) = p(\theta_2^{(t)}|\theta_1^{(t)},y)p(\theta_1^{(t)}|\theta_2^{(t-1)},y). \]
+% 	\item $\theta^{(t)} \stackrel{d}{\rightarrow} \theta$ where $\theta \sim p\left(\theta|y\right)$.  
 % %	\item 
-% %	\[  \frac{1}{J} \sum_{j=1}^J h\left(\theta^{t}\right) \rightarrow E_p[h(\theta)] = \int_{\Theta} h(\theta) f(\theta) d\theta  \]
+% %	\[  \frac{1}{J} \sum_{j=1}^J h\left(\theta^{(t)}\right) \rightarrow E_p[h(\theta)] = \int_{\Theta} h(\theta) f(\theta) d\theta  \]
 % 	\end{itemize}
 
 
@@ -150,15 +150,15 @@ set.seed(1)
 	\end{array} \]
 	are the conditional distributions. 
 	
-	\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 	
 	Assuming initial value $\left(\theta_1^{0}, \theta_2^{0}\right)$, the Gibbs sampler proceeds as follows:
 	\[ \begin{array}{ccc}
 	\mbox{Iteration} & \mbox{Sample }\theta_1 & \mbox{Sample }\theta_2 \pause \\
 	\hline 
-	1 & \theta_1^1\sim N\left(\rho\theta_2^{0}, [1-\rho^2]\right) &\theta_2^1 \sim N\left(\rho\theta_1^{1}, [1-\rho^2]\right) \pause \\
+	1 & \theta_1^{(1)}\sim N\left(\rho\theta_2^{0}, [1-\rho^2]\right) &\theta_2^{(1)} \sim N\left(\rho\theta_1^{(1)}, [1-\rho^2]\right) \pause \\
 	& \vdots & \\
-	t & \theta_1^{(t)}\sim N\left(\rho\theta_2^{(t-1)}, [1-\rho^2]\right) &\theta_2^{(t)} \sim N\left(\rho\theta_1^{t}, [1-\rho^2]\right) \pause \\
+	t & \theta_1^{(t)}\sim N\left(\rho\theta_2^{(t-1)}, [1-\rho^2]\right) &\theta_2^{(t)} \sim N\left(\rho\theta_1^{(t)}, [1-\rho^2]\right) \pause \\
 	& \vdots &
 	\end{array} \]	
 }
@@ -365,11 +365,13 @@ d = data.frame(mu=mu_keep, sigma=sigma_keep, t = 1:length(mu_keep))
 m = melt(d, id.vars='t', variable.name='parameter')
 ggplot(m, aes(x=t, y=value)) + 
   geom_line() + 
-  facet_wrap(~parameter, scales='free')
+  facet_wrap(~parameter, scales='free') +
+  theme_bw()
 
 ggplot(m, aes(x=value, y=..density..)) + 
   geom_histogram(binwidth=0.02) + 
-  facet_wrap(~parameter, scales='free')
+  facet_wrap(~parameter, scales='free') +
+  theme_bw()
 @
 
 \end{frame}
@@ -377,21 +379,27 @@ ggplot(m, aes(x=value, y=..density..)) +
 
 \section{$K$-component Gibbs sampler}
 \frame{\frametitle{$K$-component Gibbs sampler}
+
+\small
+
 	Suppose $\theta = (\theta_1,\ldots,\theta_K)$\pause, then an iteration of a $K$-component Gibbs sampler is  \pause
 	\[ \begin{array}{rl}
-	\theta_1^{t} &\sim p\left(\theta_1|\theta_2^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \pause \\ \\
-	\theta_2^{t} &\sim p\left(\theta_2|\theta_1^{t}, \theta_3^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \pause\\
+	\theta_1^{(t)} &\sim p\left(\theta_1|\theta_2^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \pause \\ \\
+	\theta_2^{(t)} &\sim p\left(\theta_2|\theta_1^{(t)}, \theta_3^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \pause\\
 	&\vdots \\
-	\theta_k^{t} &\sim p\left(\theta_k|\theta_1^{t}\ldots,\theta_{k-1}^{t}, \theta_{k+1}^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \\
+	\theta_k^{(t)} &\sim p\left(\theta_k|\theta_1^{(t)}\ldots,\theta_{k-1}^{(t)}, \theta_{k+1}^{(t-1)},\ldots, \theta_K^{(t-1)},y\right) \\
 	&\vdots \pause\\
-	\theta_K^{t} &\sim p\left(\theta_K|\theta_1^{t},\ldots, \theta_{K-1}^{t},y\right) \pause
+	\theta_K^{(t)} &\sim p\left(\theta_K|\theta_1^{(t)},\ldots, \theta_{K-1}^{(t)},y\right) \pause
 	\end{array} \]
 	
-	By the Law of Large Numbers, $(\theta_1^{(t)},\theta_2^{(t)})$ converges to samples from $p(\theta|y)$. 
+	By the Law of Large Numbers, $(\theta_1^{(t)},\theta_2^{(t)})$ converges to samples from $p(\theta|y)$.
+
+\vspace{0.1in} \pause
 	
-	\vspace{0.2in} \pause
-	
-	The distributions above are called the \alert{full conditional distributions}. \pause If some of the $\theta_k$ are vectors, then this is called a \alert{block} Gibbs sampler.
+	The distributions above are called the \alert{full conditional distributions}. 
+	\pause 
+	If some of the $\theta_k$ are vectors, 
+	then this is called a \alert{block} Gibbs sampler.
 }
 
 
@@ -428,7 +436,7 @@ p(\tau^2|\mu,\eta,\sigma^2,y) \pause &= IG(a_\tau+\mathrm{I}/2, b_\tau + \sum_{i
 	\item Gibbs sampling
 	\end{itemize}
 	
-	\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 	
 	Gibbs sampling assumed we can sample from $p(\theta_k|\theta_{-k},y)$ for all $k$\pause, but what if we cannot sample from all of these full conditional distributions? \pause For those $p(\theta_k|\theta_{-k})$ that cannot be sampled directly, a single iteration of the Metropolis-Hastings algorithm can be substituted. 
 }
@@ -526,7 +534,7 @@ We will use a dependson to sample from $\theta_1,\ldots,\theta_n,\alpha,\beta$\p
 \item $\alpha|\theta_1,\ldots,\theta_n,\beta,y$ \pause 
 \item $\beta|\theta_1,\ldots,\theta_n,\alpha,y$ \pause
 \end{itemize}
-For shorthand, we often use $\theta_i|\ldots$ where $\ldots$ indicates \emph{everything else}.
+For shorthand, I often use $\theta_i|\ldots$ where ``$\ldots$'' indicates \emph{everything else}.
 \end{frame}
 
 
@@ -672,7 +680,10 @@ r = mcmc(2000, dat=dat, inits=inits, tune=list(alpha=1,beta=1))
 r_subset = r[r$parameter %in% c("alpha","beta"),]
 ddply(r_subset, .(parameter), summarize, 
       acceptance_rate = length(unique(value))/max(iteration))
-ggplot(r_subset, aes(x=iteration, y=value))+geom_line()+facet_wrap(~parameter)
+ggplot(r_subset, aes(x=iteration, y=value)) +
+  geom_line() +
+  facet_wrap(~parameter) +
+  theme_bw()
 @
 \end{frame}
  

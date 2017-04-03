@@ -19,7 +19,7 @@ This course meets
 
 Office hours are
 
-- Instructor: R 3-5 @ Snedecor 2208
+- Instructor: R 3-5 @ Snedecor 1109
 - TA: M 9-10, T 1-2, R 1-2 @ Snedecor 2404
 
 ## Relevant course pages
