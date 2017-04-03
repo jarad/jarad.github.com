@@ -16,3 +16,4 @@ tagline: Statistical Methods for Research Workers
  - [Lab06](lab06/lab06.html) - Built-in Analyses in R ([creativity.csv](lab06/creativity.csv))
  - [Lab07](lab07/lab07.html) - Default Regression Diagnostics
  - [Lab08](lab08/lab08.html) - Regression with Factors
+ - [Lab08](lab09/lab09.html) - ANOVA and F-tests

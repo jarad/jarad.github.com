@@ -1,0 +1,251 @@
+---
+title: "Lab09 - ANOVA and F-tests"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+To follow along, use the [lab09 code](lab09.R) and make sure the following 
+packages are installed:
+
+- lsmeans
+
+You can use the following code to perform the installation:
+
+```{r install_packages, eval=FALSE}
+install.packages(c("lsmeans"))
+```
+
+Now load the packages
+
+```{r load_packages}
+library("dplyr")
+library("ggplot2")
+library("Sleuth3")
+```
+
+
+
+## ANOVA Table
+
+To run an ANOVA in R, use the `anova()` function on an `lm` object. 
+
+```{r}
+m <- lm(Lifetime ~ Diet, data = case0501)
+anova(m)
+```
+
+Note a few things about this table:
+
+- It provides an organization for the F-test.
+- The coefficient of determination is 12734/(12734+15297).
+- There are 6 diets (Df+1).
+- There are 349 observations (sum(Df)+1). 
+
+This F-test also shows up in the R regression output:
+
+```{r}
+summary(m)
+```
+
+where the last line provides the F-statistic, the numerator and denominator 
+degrees of freedom, and the associated p-value. 
+The two models being compared here are the intercept-only model and the model
+with all explanatory variables (in this case the indicator functions for all
+but one Diet). 
+
+This F-test can be constructed manually by fitting these two models and using
+the `anova()` function to compare the models. 
+
+```{r}
+m0 <- lm(Lifetime ~ 1, data = case0501) # 1 indicates intercept 
+anova(m0, m)
+```
+
+This table contains the information from the intercept-only model in row 1 and 
+the information from the model with Diet, as a categorical variable, in row 2. 
+
+
+
+#### Activity
+
+The `ex0920` data set contains information on the Kentucky Derby winners from
+1896-2011.
+Fit a multiple regression model of Speed on Starters and the 7 level version of 
+Track conditions.
+Verify that the F-statistic in the `summary()` output of this multiple 
+regression model compares the intercept-only model with the model with all 
+of the explanatory variables. 
+After completing this, take a look at the ANOVA table on the regression model 
+and see if you can figure out what the different lines represent. 
+
+<div id="anova_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+m0 <- lm(Speed ~ 1,                data = ex0920)
+m  <- lm(Speed ~ Starters + Track, data = ex0920)
+summary(m)
+anova(m0, m)
+```
+
+Now take a look at the ANOVA table
+
+```{r}
+anova(m)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('anova_activity_solution') .style.display=='none') {document.getElementById('anova_activity_solution') .style.display=''}else{document.getElementById('anova_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+### ANOVA with multiple explanatory variables
+
+The ANOVA table in the previous activity provides two different F-tests and the
+key is determining what these F-tests correspond to.
+To determine this we will fit a variety of different models.
+
+```{r}
+m0  <- lm(Speed ~ 1,                data = ex0920)
+mS  <- lm(Speed ~ Starters,         data = ex0920)
+mT  <- lm(Speed ~            Track, data = ex0920)
+mST <- lm(Speed ~ Starters + Track, data = ex0920)
+```
+
+The full ANOVA table does not correspond to any particular model comparison.
+
+```{r}
+anova(mST)
+```
+
+You might think it compares 
+
+1. intercept-only model to the model with Starters
+2. the Starters model to the Starters+Track model
+
+```{r}
+anova(m0, mS ) # we are looking to add (S)tarters to the model
+anova(mS, mST) # we are looking to add (T)rack    to the model
+```
+
+We get identical results for the second comparison but not for the first. 
+The reason is what estimate of the error variance, $\hat\sigma^2$, is used.
+If the models are all put together, then the error variance estimate is based 
+on the fullest model in the list.
+So the following will recreate the full ANOVA table.
+
+```{r}
+anova(m0, mS, mST)
+```
+
+#### Activity
+
+Recreate the following ANOVA table by fitting each model separately and using
+the `anova()` function to recreate the models. 
+
+```{r}
+m  <- lm(Speed ~ Track*Starters, data = Sleuth3::ex0920)
+anova(m)
+```
+
+<div id="track_activity_solution" style="display:none"> 
+
+We need to construct each model:
+
+```{r, purl=FALSE}
+m0  <- lm(Speed ~ Track*Starters, data = Sleuth3::ex0920)
+mT  <- lm(Speed ~ Track         , data = Sleuth3::ex0920)
+mTS <- lm(Speed ~ Track+Starters, data = Sleuth3::ex0920)
+m   <- lm(Speed ~ Track*Starters, data = Sleuth3::ex0920)
+```
+
+Then we use `anova()` to compare the models:
+
+```{r, purl=FALSE}
+anova(m0, mT, mTS, m)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('track_activity_solution') .style.display=='none') {document.getElementById('track_activity_solution') .style.display=''}else{document.getElementById('track_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+### Dropping one term
+
+The previous ANOVA table is often referred to as a sequential, or Type I, sum of
+squares because the tests are sequential, e.g. 
+
+1. should we add Track?
+1. should we add Starters (in addition to Track)?
+1. should we add the interaction between Track and Starters (in addition to 
+Track and Starters)?
+
+Often times we are interested in whether terms should be dropped from the full
+model. 
+
+In this situation, we always have a consistent full model and we are only 
+considering dropping a particular explanatory variable. 
+For example, consider the Kentucky Derby data with main effects for Track and 
+Starters and we want to consider dropping Track or dropping Starters. 
+
+```{r}
+m <- lm(Speed ~ Track + Starters, data = Sleuth3::ex0920)
+drop1(m, test="F")
+```
+
+Here the full model is the model with both Track and Starters. 
+There is a different reduced model for each line:
+
+- Track line has the reduced model that has no Track explanatory variable.
+- Starters line has the reduced model that has no Starters explanatory variable.
+
+So it is equivalent to the following two comparisons:
+
+```{r}
+mT  <- lm(Speed ~ Track,            data = Sleuth3::ex0920)
+mS  <- lm(Speed ~         Starters, data = Sleuth3::ex0920)
+mST <- lm(Speed ~ Track + Starters, data = Sleuth3::ex0920)
+anova(mS,mST) # Consider adding Track into the model that already has Starters
+anova(mT,mST) # Consider adding Starters into the model that already has Track
+```
+
+#### Activity - Recreating ANOVA table for model with interaction
+
+Recreate the following `drop1()` results:
+
+```{r}
+m <- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
+drop1(m)
+```
+
+<div id="drop1_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+mW  <- lm(Ingestion ~ Weight          , data = Sleuth3::ex0921)
+mO  <- lm(Ingestion ~          Organic, data = Sleuth3::ex0921)
+mWO <- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('drop1_activity_solution') .style.display=='none') {document.getElementById('drop1_activity_solution') .style.display=''}else{document.getElementById('drop1_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+### Including interactions
+
+When interactions are considered, 
+there is a *rule of thumb* that says that if an interaction is in the model, 
+you should keep the main effects in the model. 
+Thus, when you run drop1 on models with an interaction, 
+it will only attempt to drop the interaction.
+
+
+```{r}
+m <- lm(Ingestion ~ Weight * Organic, data = Sleuth3::ex0921)
+drop1(m)
+```
+
+
+## Model construction strategy
+
+When constructing a model, follow these prioritized rules
+
+1. Include explanatory variables that are part of the design
+1. Include explanatory variables that answer questions of scientific interest
+1. Include ``significant'' explanatory variables
+
+In particular, do NOT remove insignificant design variables. 
+
+
