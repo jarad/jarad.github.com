@@ -11,7 +11,7 @@
 
 <meta name="author" content="Jarad Niemi" />
 
-<meta name="date" content="2017-04-03" />
+<meta name="date" content="2017-04-04" />
 
 <title>Lab09 - ANOVA and F-tests</title>
 
@@ -119,17 +119,12 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">Lab09 - ANOVA and F-tests</h1>
 <h4 class="author"><em>Jarad Niemi</em></h4>
-<h4 class="date"><em>2017-04-03</em></h4>
+<h4 class="date"><em>2017-04-04</em></h4>
 
 </div>
 
 
-<p>To follow along, use the <a href="lab09.R">lab09 code</a> and make sure the following packages are installed:</p>
-<ul>
-<li>lsmeans</li>
-</ul>
-<p>You can use the following code to perform the installation:</p>
-<pre class="r"><code>install.packages(c(&quot;lsmeans&quot;))</code></pre>
+<p>To follow along, use the <a href="lab09.R">lab09 code</a>.</p>
 <p>Now load the packages</p>
 <pre class="r"><code>library(&quot;dplyr&quot;)</code></pre>
 <pre><code>## 
@@ -406,23 +401,43 @@ anova(mS,mST) # Consider adding Track into the model that already has Starters</
 ## 2    108 38.909  1    7.9408 22.041 7.88e-06 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
-<div id="activity---recreating-anova-table-for-model-with-interaction" class="section level4">
-<h4>Activity - Recreating ANOVA table for model with interaction</h4>
+<div id="activity---recreating-anova-table" class="section level4">
+<h4>Activity - Recreating ANOVA table</h4>
 <p>Recreate the following <code>drop1()</code> results:</p>
 <pre class="r"><code>m &lt;- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
-drop1(m)</code></pre>
+drop1(m, test='F')</code></pre>
 <pre><code>## Single term deletions
 ## 
 ## Model:
 ## Ingestion ~ Weight + Organic
-##         Df Sum of Sq      RSS    AIC
-## &lt;none&gt;               67301107 292.52
-## Weight   1  29525368 96826475 297.44
-## Organic  1   5833254 73134361 292.10</code></pre>
+##         Df Sum of Sq      RSS    AIC F value  Pr(&gt;F)  
+## &lt;none&gt;               67301107 292.52                  
+## Weight   1  29525368 96826475 297.44  7.0193 0.01749 *
+## Organic  1   5833254 73134361 292.10  1.3868 0.25617  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <div id="drop1_activity_solution" style="display:none">
 <pre class="r"><code>mW  &lt;- lm(Ingestion ~ Weight          , data = Sleuth3::ex0921)
 mO  &lt;- lm(Ingestion ~          Organic, data = Sleuth3::ex0921)
-mWO &lt;- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)</code></pre>
+mWO &lt;- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
+anova(mO,mWO)</code></pre>
+<pre><code>## Analysis of Variance Table
+## 
+## Model 1: Ingestion ~ Organic
+## Model 2: Ingestion ~ Weight + Organic
+##   Res.Df      RSS Df Sum of Sq      F  Pr(&gt;F)  
+## 1     17 96826475                              
+## 2     16 67301107  1  29525368 7.0193 0.01749 *
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<pre class="r"><code>anova(mW,mWO)</code></pre>
+<pre><code>## Analysis of Variance Table
+## 
+## Model 1: Ingestion ~ Weight
+## Model 2: Ingestion ~ Weight + Organic
+##   Res.Df      RSS Df Sum of Sq      F Pr(&gt;F)
+## 1     17 73134361                           
+## 2     16 67301107  1   5833254 1.3868 0.2562</code></pre>
 </div>
 <button title="Show a solution" type="button" onclick="if(document.getElementById('drop1_activity_solution') .style.display=='none') {document.getElementById('drop1_activity_solution') .style.display=''}else{document.getElementById('drop1_activity_solution') .style.display='none'}">
 Show/Hide Solution
@@ -433,15 +448,25 @@ Show/Hide Solution
 <h3>Including interactions</h3>
 <p>When interactions are considered, there is a <em>rule of thumb</em> that says that if an interaction is in the model, you should keep the main effects in the model. Thus, when you run drop1 on models with an interaction, it will only attempt to drop the interaction.</p>
 <pre class="r"><code>m &lt;- lm(Ingestion ~ Weight * Organic, data = Sleuth3::ex0921)
-drop1(m)</code></pre>
+drop1(m, test = 'F')</code></pre>
 <pre><code>## Single term deletions
 ## 
 ## Model:
 ## Ingestion ~ Weight * Organic
-##                Df Sum of Sq      RSS    AIC
-## &lt;none&gt;                      61739502 292.89
-## Weight:Organic  1   5561605 67301107 292.52</code></pre>
+##                Df Sum of Sq      RSS    AIC F value Pr(&gt;F)
+## &lt;none&gt;                      61739502 292.89               
+## Weight:Organic  1   5561605 67301107 292.52  1.3512 0.2632</code></pre>
 </div>
+</div>
+<div id="model-construction-strategy" class="section level2">
+<h2>Model construction strategy</h2>
+<p>When constructing a model, follow these prioritized rules</p>
+<ol style="list-style-type: decimal">
+<li>Include explanatory variables that are part of the design</li>
+<li>Include explanatory variables that answer questions of scientific interest</li>
+<li>Include ``significant’’ explanatory variables</li>
+</ol>
+<p>In particular, do NOT remove insignificant design variables.</p>
 </div>
 
 
