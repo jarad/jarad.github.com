@@ -6,16 +6,7 @@ output: html_document
 ---
 
 
-To follow along, use the [lab09 code](lab09.R) and make sure the following 
-packages are installed:
-
-- lsmeans
-
-You can use the following code to perform the installation:
-
-```{r install_packages, eval=FALSE}
-install.packages(c("lsmeans"))
-```
+To follow along, use the [lab09 code](lab09.R).
 
 Now load the packages
 
@@ -204,13 +195,13 @@ anova(mS,mST) # Consider adding Track into the model that already has Starters
 anova(mT,mST) # Consider adding Starters into the model that already has Track
 ```
 
-#### Activity - Recreating ANOVA table for model with interaction
+#### Activity - Recreating ANOVA table
 
 Recreate the following `drop1()` results:
 
 ```{r}
 m <- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
-drop1(m)
+drop1(m, test='F')
 ```
 
 <div id="drop1_activity_solution" style="display:none"> 
@@ -218,6 +209,8 @@ drop1(m)
 mW  <- lm(Ingestion ~ Weight          , data = Sleuth3::ex0921)
 mO  <- lm(Ingestion ~          Organic, data = Sleuth3::ex0921)
 mWO <- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
+anova(mO,mWO)
+anova(mW,mWO)
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('drop1_activity_solution') .style.display=='none') {document.getElementById('drop1_activity_solution') .style.display=''}else{document.getElementById('drop1_activity_solution') .style.display='none'}">Show/Hide Solution</button>
@@ -234,7 +227,7 @@ it will only attempt to drop the interaction.
 
 ```{r}
 m <- lm(Ingestion ~ Weight * Organic, data = Sleuth3::ex0921)
-drop1(m)
+drop1(m, test = 'F')
 ```
 
 

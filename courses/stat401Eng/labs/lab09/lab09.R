@@ -1,6 +1,3 @@
-## ----install_packages, eval=FALSE----------------------------------------
-## install.packages(c("lsmeans"))
-
 ## ----load_packages-------------------------------------------------------
 library("dplyr")
 library("ggplot2")
@@ -50,9 +47,9 @@ anova(mT,mST) # Consider adding Starters into the model that already has Track
 
 ## ------------------------------------------------------------------------
 m <- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
-drop1(m)
+drop1(m, test='F')
 
 ## ------------------------------------------------------------------------
 m <- lm(Ingestion ~ Weight * Organic, data = Sleuth3::ex0921)
-drop1(m)
+drop1(m, test = 'F')
 
