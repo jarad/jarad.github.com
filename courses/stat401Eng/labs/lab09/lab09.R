@@ -15,13 +15,14 @@ m0 <- lm(Lifetime ~ 1, data = case0501) # 1 indicates intercept
 anova(m0, m)
 
 ## ------------------------------------------------------------------------
+m <- lm(Speed ~ Starters + Track, data = ex0920)
+anova(m)
+
+## ------------------------------------------------------------------------
 m0  <- lm(Speed ~ 1,                data = ex0920)
 mS  <- lm(Speed ~ Starters,         data = ex0920)
 mT  <- lm(Speed ~            Track, data = ex0920)
 mST <- lm(Speed ~ Starters + Track, data = ex0920)
-
-## ------------------------------------------------------------------------
-anova(mST)
 
 ## ------------------------------------------------------------------------
 anova(m0, mS ) # we are looking to add (S)tarters to the model
