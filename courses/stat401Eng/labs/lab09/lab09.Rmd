@@ -89,9 +89,16 @@ anova(m)
 
 ### ANOVA with multiple explanatory variables
 
-The ANOVA table in the previous activity provides two different F-tests and the
-key is determining what these F-tests correspond to.
-To determine this we will fit a variety of different models.
+The ANOVA table when multiple explanatory variables are included differs from
+our one-way ANOVA table.
+
+```{r}
+m <- lm(Speed ~ Starters + Track, data = ex0920)
+anova(m)
+```
+
+To determine what full and reduced models are used in constructing this ANOVA 
+table, we will fit a variety of different models.
 
 ```{r}
 m0  <- lm(Speed ~ 1,                data = ex0920)
@@ -100,13 +107,7 @@ mT  <- lm(Speed ~            Track, data = ex0920)
 mST <- lm(Speed ~ Starters + Track, data = ex0920)
 ```
 
-The full ANOVA table does not correspond to any particular model comparison.
-
-```{r}
-anova(mST)
-```
-
-You might think it compares 
+You might think the ANOVA table compares 
 
 1. intercept-only model to the model with Starters
 2. the Starters model to the Starters+Track model
@@ -117,6 +118,7 @@ anova(mS, mST) # we are looking to add (T)rack    to the model
 ```
 
 We get identical results for the second comparison but not for the first. 
+
 The reason is what estimate of the error variance, $\hat\sigma^2$, is used.
 If the models are all put together, then the error variance estimate is based 
 on the fullest model in the list.
@@ -130,6 +132,7 @@ anova(m0, mS, mST)
 
 Recreate the following ANOVA table by fitting each model separately and using
 the `anova()` function to recreate the models. 
+Bonus: why is Df only 5 for the interaction?
 
 ```{r}
 m  <- lm(Speed ~ Track*Starters, data = Sleuth3::ex0920)

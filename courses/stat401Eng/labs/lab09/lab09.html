@@ -254,13 +254,9 @@ Show/Hide Solution
 </div>
 <div id="anova-with-multiple-explanatory-variables" class="section level3">
 <h3>ANOVA with multiple explanatory variables</h3>
-<p>The ANOVA table in the previous activity provides two different F-tests and the key is determining what these F-tests correspond to. To determine this we will fit a variety of different models.</p>
-<pre class="r"><code>m0  &lt;- lm(Speed ~ 1,                data = ex0920)
-mS  &lt;- lm(Speed ~ Starters,         data = ex0920)
-mT  &lt;- lm(Speed ~            Track, data = ex0920)
-mST &lt;- lm(Speed ~ Starters + Track, data = ex0920)</code></pre>
-<p>The full ANOVA table does not correspond to any particular model comparison.</p>
-<pre class="r"><code>anova(mST)</code></pre>
+<p>The ANOVA table when multiple explanatory variables are included differs from our one-way ANOVA table.</p>
+<pre class="r"><code>m &lt;- lm(Speed ~ Starters + Track, data = ex0920)
+anova(m)</code></pre>
 <pre><code>## Analysis of Variance Table
 ## 
 ## Response: Speed
@@ -270,7 +266,12 @@ mST &lt;- lm(Speed ~ Starters + Track, data = ex0920)</code></pre>
 ## Residuals 108 38.909  0.3603                      
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
-<p>You might think it compares</p>
+<p>To determine what full and reduced models are used in constructing this ANOVA table, we will fit a variety of different models.</p>
+<pre class="r"><code>m0  &lt;- lm(Speed ~ 1,                data = ex0920)
+mS  &lt;- lm(Speed ~ Starters,         data = ex0920)
+mT  &lt;- lm(Speed ~            Track, data = ex0920)
+mST &lt;- lm(Speed ~ Starters + Track, data = ex0920)</code></pre>
+<p>You might think the ANOVA table compares</p>
 <ol style="list-style-type: decimal">
 <li>intercept-only model to the model with Starters</li>
 <li>the Starters model to the Starters+Track model</li>
@@ -295,7 +296,8 @@ mST &lt;- lm(Speed ~ Starters + Track, data = ex0920)</code></pre>
 ## 2    108 38.909  6    38.063 17.609 3.914e-14 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
-<p>We get identical results for the second comparison but not for the first. The reason is what estimate of the error variance, <span class="math inline">\(\hat\sigma^2\)</span>, is used. If the models are all put together, then the error variance estimate is based on the fullest model in the list. So the following will recreate the full ANOVA table.</p>
+<p>We get identical results for the second comparison but not for the first.</p>
+<p>The reason is what estimate of the error variance, <span class="math inline">\(\hat\sigma^2\)</span>, is used. If the models are all put together, then the error variance estimate is based on the fullest model in the list. So the following will recreate the full ANOVA table.</p>
 <pre class="r"><code>anova(m0, mS, mST)</code></pre>
 <pre><code>## Analysis of Variance Table
 ## 
@@ -310,7 +312,7 @@ mST &lt;- lm(Speed ~ Starters + Track, data = ex0920)</code></pre>
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <div id="activity-1" class="section level4">
 <h4>Activity</h4>
-<p>Recreate the following ANOVA table by fitting each model separately and using the <code>anova()</code> function to recreate the models.</p>
+<p>Recreate the following ANOVA table by fitting each model separately and using the <code>anova()</code> function to recreate the models. Bonus: why is Df only 5 for the interaction?</p>
 <pre class="r"><code>m  &lt;- lm(Speed ~ Track*Starters, data = Sleuth3::ex0920)
 anova(m)</code></pre>
 <pre><code>## Analysis of Variance Table
@@ -325,7 +327,7 @@ anova(m)</code></pre>
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <div id="track_activity_solution" style="display:none">
 <p>We need to construct each model:</p>
-<pre class="r"><code>m0  &lt;- lm(Speed ~ Track*Starters, data = Sleuth3::ex0920)
+<pre class="r"><code>m0  &lt;- lm(Speed ~ 1, data = Sleuth3::ex0920)
 mT  &lt;- lm(Speed ~ Track         , data = Sleuth3::ex0920)
 mTS &lt;- lm(Speed ~ Track+Starters, data = Sleuth3::ex0920)
 m   &lt;- lm(Speed ~ Track*Starters, data = Sleuth3::ex0920)</code></pre>
@@ -333,15 +335,15 @@ m   &lt;- lm(Speed ~ Track*Starters, data = Sleuth3::ex0920)</code></pre>
 <pre class="r"><code>anova(m0, mT, mTS, m)</code></pre>
 <pre><code>## Analysis of Variance Table
 ## 
-## Model 1: Speed ~ Track * Starters
+## Model 1: Speed ~ 1
 ## Model 2: Speed ~ Track
 ## Model 3: Speed ~ Track + Starters
 ## Model 4: Speed ~ Track * Starters
 ##   Res.Df    RSS Df Sum of Sq       F    Pr(&gt;F)    
-## 1    103 37.574                                   
-## 2    109 46.850 -6   -9.2754  4.2377 0.0007463 ***
-## 3    108 38.909  1    7.9408 21.7675 9.284e-06 ***
-## 4    103 37.574  5    1.3346  0.7317 0.6012709    
+## 1    115 92.971                                   
+## 2    109 46.850  6    46.122 21.0717 5.382e-16 ***
+## 3    108 38.909  1     7.941 21.7675 9.284e-06 ***
+## 4    103 37.574  5     1.335  0.7317    0.6013    
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
