@@ -386,21 +386,20 @@ Hypotheses:
 \frame{\frametitle{Sulfur level: linear trend contrasts}
 
 \begin{itemize}[<+->]
-\item The unique sulfur levels ($X_i$) are 0, 3, 6, and 12. \pause 
+\item The group sulfur levels ($X_i$) are 12, 6, 3, 0, 3, 6, and 12 (100lbs/acre). \pause 
 \item So the linear trend contrast ($X_i-\overline{X}$) is
-\[ \begin{array}{ccccc}
-X_i & 0 & 3 & 6 & 12 \\
+\[ \begin{array}{cccccccc}
+X_i & 12 & 6 & 3&  0 & 3 & 6 & 12 \\
 \hline
-X_i-\overline{X} & -\frac{21}{4} & -\frac{9}{4} & \frac{3}{4} & \frac{27}{4} 
+X_i-\overline{X} & 6 & 0 & -3 & -6 & -3 & 0 & 6 
 \end{array} \]
-\item But 3, 6, and 12 are duplicated, so we need the average of the groups 
 
 \pause
 
 \[ \begin{array}{rl}
-\gamma &= -\frac{21}{4} \mu_0 - \frac{9}{4} \mu_3 + \frac{3}{4} \mu_6 + \frac{27}{4} \mu_{12} \pause \\ \\
-&= -\frac{21}{4} \mu_0 - \frac{9}{4} \left( \frac{\mu_{S3}+\mu_{F3}}{2} \right) + \frac{3}{4} \left( \frac{\mu_{S6}+\mu_{F6}}{2} \right) + \frac{27}{4} \left( \frac{\mu_{S12}+\mu_{F12}}{2} \right) \pause \\ \\
-&= \frac{1}{8} \left[ -42\mu_0 -9\mu_{S3}-9\mu_{F3}  + 3 \mu_{S6}+ 3\mu_{F6}  + 27 \mu_{S12}+ 27 \mu_{F12} \right]
+\gamma &= 6 \mu_{F12}+ 0 \mu_{F6} -3 \mu_{F3}-6 \mu_O -3\mu_{S3} + 0\mu_{S6} + 6\mu_{S12} 
+% \pause \\ \\
+% \gamma &= \frac{1}{6}\left(\mu_{F12}+ 0 \mu_{F6} -3 \mu_{F3}-6 \mu_O -3\mu_{S3} + 0\mu_{S6} + 6\mu_{S12})
 \end{array} \]
 	
 \end{itemize}
@@ -418,7 +417,7 @@ Trt & F12 & F6 & F3 & O & S3 & S6 & S12 & Div \\
 \hline
 Sulfur v control & 1 & 1 & 1 & -6 & 1  & 1 & 1 & 6 \\
 Fall v Spring & 1 & 1 & 1 & 0 & -1  & -1 & -1 & 3 \\
-Linear Trend & 27 & 3 & -9 & -42 & -9 & 3 & 27 & 8 \\
+Linear Trend & -6 & 0 & -3 & -6 & -3 & 0 & 6 & 1 \\
 \hline  
 \end{tabular}
 \end{center}
@@ -434,9 +433,9 @@ Linear Trend & 27 & 3 & -9 & -42 & -9 & 3 & 27 & 8 \\
 \frametitle{}
 <<potato_in_R>>=
 library(multcomp)
-K = rbind("sulfur - control" = c(1, 1, 1, -6, 1, 1, 1)/6,
-          "fall - spring"    = c(1,1,1,0,-1,-1,-1)/3,
-          "linear trend"     = c(27,3,-9,-42,-9,3,27)/8)
+K = rbind("sulfur - control" = c(1, 1, 1,-6, 1, 1, 1)/6,
+          "fall - spring"    = c(1, 1, 1, 0,-1,-1,-1)/3,
+          "linear trend"     = c(6, 0,-3,-6,-3, 0, 6)/1)
 m = lm(inf~trt,d)
 anova(m)
 @
@@ -479,16 +478,16 @@ plot(d$col,residuals(m))
 	For this particular data analysis
 	\begin{itemize}[<+->]
 	\item Significant differences in means between the groups (ANOVA $F_{6,25}=3.61$ p=0.01)
-  \item Sulfur had a significant impact on scab (p=0.002)
-	\item Fall was better than spring (p=0.03, 95\% CI (0.53, 11.8))
-	\item Linear trend in sulfur was significant(p=0.003) 
+  \item Having sulfur was associated with a reducted scab \% of 9 (4,15) compared to no sulfur
+	\item Fall application reduced scab \% by 6 (0.5,12) compared to spring application
+	\item Linear trend in sulfur was significant (p=0.01) 
 	
 	\vspace{0.2in}\pause
 	
 	\item Concerned about spatial correlation among columns
 	\item Consider a transformation of the response 
 		\begin{itemize}
-		\item CI for F12 (-1.2, 12.7)
+		\item CI for F12 (-1.2, 12.7) (not shown)
 		\item Non-constant variance (residuals vs predicted, sulfur, application)
 		\end{itemize}
 	\end{itemize}
