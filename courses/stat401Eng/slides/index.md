@@ -50,6 +50,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Categorical explanatory variables |[SetR04.Rnw](SetR04/SetR04_Categorical_explanatory_variables.Rnw)|[SetR04.pdf](SetR04/SetR04_Categorical_explanatory_variables.pdf)|  
 |Multiple regression|[SetR05.Rnw](SetR05/SetR05_Multiple_regression.Rnw)|[SetR05.pdf](SetR05/SetR05_Multiple_regression.pdf)| 
 |ANOVA/F-tests|[SetR06.Rnw](SetR06/SetR06_ANOVA_F-tests.Rnw)|[SetR06.pdf](SetR06/SetR06_ANOVA_F-tests.pdf)|  
+|Contrasts|[SetR07.Rnw](SetR07/SetR07_Contrasts.Rnw)|[SetR07.pdf](SetR07/SetR07_Contrasts.pdf)|  
 
 
 

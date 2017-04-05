@@ -1,0 +1,500 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set R07 - Contrasts}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+library("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Contrasts}
+\frame{\frametitle{Simple hypothesis}	
+	Consider the one-way ANOVA model: $Y_{ij} \sim N(\mu_j,\sigma^2)$ where $j=1,\ldots,J$.
+	
+	\vspace{0.2in} \pause
+	
+	Here are a few simple alternative hypotheses:
+  
+	\begin{enumerate}
+	\item Mean lifetimes for N/R50 and R/R50 diet are different. \pause
+	\item Mean lifetimes for N/R40 is different than for N/R50 and R/R50 combined. \pause
+	\item Mean lifetimes for high calorie (NP and N/N85) diets is different than for low calorie diets combined.
+	\end{enumerate}
+
+	\vspace{0.2in} \pause 
+	
+	$H_0: \gamma=0 \qquad H_1: \gamma \ne 0:$ \pause
+	\[ \begin{array}{rl}
+	\gamma_1 &=  \mu_{R/R50}-\mu_{N/R50} \pause\\
+	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
+	\gamma_3 &= \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro})-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
+	\end{array} \]
+}
+
+
+\begin{frame}
+\frametitle{Contrasts}
+
+\begin{definition}
+A \alert{linear combination} of group means has the form 
+\[ \gamma = C_1\mu_1+C_2\mu_2 +\ldots + C_J\mu_J  \]
+where $C_j$ are known coefficients and $\mu_j$ are the unknown population means.
+\end{definition}
+
+\vspace{0.2in} \pause 
+
+\begin{definition}
+A linear combination with $C_1+C_2+\cdots+C_J=0$ is a \alert{contrast}. 
+\end{definition}
+
+\vspace{0.2in} \pause 
+
+\begin{remark}
+Contrast interpretation is usually best if $|C_1|+|C_2|+\cdots+|C_J|=2$, 
+i.e. the positive coefficients sum to 1 and the negative coefficients sum to -1. 
+\end{remark}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Inference on contrasts}
+
+	\[ \gamma = C_1 \mu_1 + C_2 \mu_2 + \cdots + C_J \mu_J \] 
+	
+	\pause 
+	
+	Estimated by 
+	\[ g = C_1 \overline{Y}_1 + C_2 \overline{Y}_2 + \cdots + C_J \overline{Y}_J \] 
+	
+	\pause
+	
+	with standard error
+	\[ SE(g) = s_p \sqrt{\frac{C_1^2}{n_1}+\frac{C_2^2}{n_2}+\cdots+\frac{C_J^2}{n_J}} \]
+	
+	\pause
+	
+	t-statistic (compare to $t_{n-J}$) and CI:
+	\[ t = \frac{g}{SE(g)}  \pause \qquad g \pm t_{n-J,1-\alpha/2} SE(g) \]
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Contrasts for mice lifetime dataset}
+
+For these contrasts: 
+\begin{enumerate}
+	\item Mean lifetimes for N/R50 and R/R50 diet are different. 
+	\item Mean lifetimes for N/R40 is different than for N/R50 and R/R50 combined.
+	\item Mean lifetimes for high calorie (NP and N/N85) diets is different than for low calorie diets combined.
+\end{enumerate}
+
+\pause 
+	
+	$H_0: \gamma=0 \qquad H_1: \gamma \ne 0:$ 
+  \[ \begin{array}{rl}
+	\gamma_1 &=  \mu_{R/R50}-\mu_{N/R50} \pause\\
+	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
+	\gamma_3 &= \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro})-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
+	\end{array} \]
+
+\pause
+
+{\tiny
+<<echo=FALSE, results='asis'>>=
+K = rbind("early rest - none @ 50kcal"=c( 0, 0,-1, 0, 1, 0),
+          "40kcal/week - 50kcal/week" =c( 0, 2,-1, 0,-1, 0) / 2,
+          "lo cal - hi cal"           =c(-2, 1, 1,-2, 1, 1) / 4)
+colnames(K) = levels(case0501$Diet)
+print(xtable(K))
+@
+}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Mice lifetime examples}
+
+\small
+
+<<echo=FALSE,results='asis'>>=
+sm <- Sleuth3::case0501 %>%
+  group_by(Diet) %>%
+  summarize(n = n(),
+            mean = mean(Lifetime),
+            sd = sd(Lifetime))
+
+sm %>% xtable %>% print
+@
+
+\pause 
+
+Contrasts:
+<<echo=FALSE, results='asis'>>=
+m = lm(Lifetime~Diet, case0501)
+sp = summary(m)$sigma
+
+g = rowSums(K%*%sm$mean)
+SEg = rowSums(sp*sqrt(K^2%*%(1/sm$n)))
+
+df = sum(sm$n-1)
+t = g/SEg
+p = 2*pt(-abs(t),df)
+L = g-qt(.975,df)*SEg
+U = g+qt(.975,df)*SEg
+
+tests = data.frame(g=g,"SE(g)"=SEg,t=t,p=p,L=L,U=U, check.names=FALSE)
+
+print(xtable(tests))
+@
+\end{frame}
+
+
+
+
+
+\subsection{R}
+\begin{frame}[fragile]
+
+<<warning=FALSE>>=
+library(multcomp)
+m = lm(Lifetime~Diet-1, case0501) # The -1 indicates no intercept (see Ch 7)
+summary(m)
+K
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+
+<<warning=FALSE>>=
+t = glht(m, linfct=K)
+summary(t)
+confint(t, calpha=univariate_calpha())
+@
+
+\end{frame}
+
+
+
+
+
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+	\begin{itemize}
+	\item Contrasts are linear combinations of means where the coefficients sum to zero
+	\item t-test tools are used to calculate pvalues and confidence intervals 
+	\end{itemize}
+}
+
+
+
+
+
+\section{Data analysis: sulfur effect on scab disease in potatoes}
+\frame{\frametitle{Sulfur effect on scab disease in potatoes}
+\begin{quote}
+The experiment was conducted to investigate the effect of sulfur on controlling scab disease in potatoes. There were seven treatments: control, plus spring and fall application of 300, 600, 1200 lbs/acre of sulfur. The response variable was percentage of the potato surface area covered with scab averaged over 100 random selected potatoes. A completely randomized design was used with 8 replications of the control and 4 replications of the other treatments. 
+\end{quote}
+{\tiny 
+Cochran and Cox. (1957) Experimental Design (2nd ed). pg96 and Agron. J. 80:712-718 (1988)
+}
+
+\vspace{0.2in} \pause
+
+Scientific question:
+\begin{itemize}[<+->]
+\item Does sulfur have any impact at all?
+\item Is there a difference between spring and fall?
+\item Is there an effect of increased sulfur {\footnotesize (expect more sulfur causes less scab)}?
+\end{itemize}
+}
+
+
+\subsection{Exploratory}
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+d = structure(list(inf = c(9L, 12L, 18L, 10L, 24L, 17L, 30L, 16L, 
+10L, 7L, 4L, 10L, 21L, 24L, 29L, 12L, 9L, 7L, 18L, 30L, 18L, 
+16L, 16L, 4L, 9L, 18L, 17L, 19L, 32L, 5L, 26L, 4L), trt = structure(c(2L, 
+4L, 7L, 1L, 7L, 5L, 6L, 3L, 4L, 6L, 1L, 3L, 6L, 4L, 4L, 7L, 2L, 
+5L, 3L, 4L, 3L, 5L, 2L, 1L, 6L, 4L, 5L, 7L, 4L, 1L, 4L, 2L), .Label = c("F12", 
+"F3", "F6", "O", "S12", "S3", "S6"), class = "factor"), row = c(4L, 
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 2L, 
+2L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L), 
+    col = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 
+    6L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 1L, 2L, 3L, 4L, 
+    5L, 6L, 7L, 8L)), .Names = c("inf", "trt", "row", "col"), class = "data.frame", row.names = c(NA, 
+-32L))
+
+d
+d$sulfur = as.numeric(gsub("\\D","",d$trt))*100
+d$sulfur[is.na(d$sulfur)] = 0
+d$application = NA
+d$application[grep("F",d$trt)] = "fall"
+d$application[grep("S",d$trt)] = "spring"
+d$application = factor(d$application)
+
+d$trt = factor(d$trt, levels=c("F12","F6","F3","O","S3","S6","S12"), ordered=TRUE)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Design}
+<<echo=FALSE>>=
+plot(0,0, xlab="Sulfur (lbs/acre)", ylab="Application", 
+     main="Treatment visualization",
+     type="n", axes=F,
+     xlim=c(-100,1500), ylim=c(.5,2.5))
+axis(1, c(0,300,600,1200), lwd=0)
+axis(2, c(1,2), c("spring","fall"), lwd=0)
+xc = c(0,300,300,600,600,1200,1200)
+yc = c(1.5,1,2,1,2,1,2)
+rect(xc-100,yc-.4,xc+100,yc+.4)
+text(xc,yc, c(8,rep(4,6)))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Design}
+<<echo=FALSE>>=
+plot(0,0, xlab="col", ylab="row", 
+     main="Completely randomized design\n potato scab experiment",
+     xlim=range(d$col)+c(-.5,.5), ylim=range(d$row)+c(-.5,.5), axes=F, type="n")
+text(d$col, d$row, d$trt)
+axis(1, 1:8, lwd=0)
+axis(2, 1:4, lwd=0)
+segments(1:9-.5,0.5,1:9-.5,4.5)
+segments(0.5,1:5-.5,8.5,1:5-.5)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+ggplot(d, aes(trt, inf)) + 
+  geom_boxplot(color="gray") + 
+  geom_jitter(height=0) +
+  title(xlab = "Sulfur", ylab = "Scab percent") + 
+  theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+qplot(col, inf, data=d, color=application, geom="jitter", 
+      xlab="Column ID", ylab="Scab percent") + 
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+qplot(row, inf, data=d, color=application, geom="jitter", 
+      xlab="Row ID", ylab="Scab percent") + 
+  theme_bw()
+@
+\end{frame}
+
+
+
+
+\subsection{Model}
+\frame{\frametitle{Model}
+$Y_{ij}$: avg \% of surface area covered with scab for plot $i$ in treatment $j$ for $j=1,\ldots,7$. 
+
+\vspace{0.2in} \pause 
+
+Assume $Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2)$. 
+
+\vspace{0.2in} \pause
+
+Hypotheses:
+\begin{itemize}[<+->]
+\item Difference amongst any means: One-way ANOVA F-test
+\item \emph{Any effect}: Control vs sulfur
+\item \emph{Fall vs spring}: Contrast comparing fall vs spring applications
+\item \emph{Sulfur level}: Linear trend contrast
+\end{itemize}
+}
+
+
+\begin{frame}
+\frametitle{Control vs sulfur}
+
+\[ \begin{array}{rl} 
+\gamma &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12})- \mu_O \pause \\ \\
+ &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12}- 6\mu_O)  
+\end{array} \] 
+
+\end{frame}
+
+
+
+\frame{\frametitle{Fall vs spring contrast}
+
+\begin{itemize}
+\item \emph{Fall vs spring}: Contrast comparing fall vs spring applications \pause 
+
+\[ \begin{array}{rl} 
+\gamma &= \frac{1}{3} (\mu_{F12}+ \mu_{F6} + \mu_{F3})+ 0 \mu_O -\frac{1}{3} (\mu_{S3} + \mu_{S6} + \mu_{S12}) \pause \\ \\
+&= \frac{1}{3} \mu_{F12} + \frac{1}{3} \mu_{F6} + \frac{1}{3} \mu_{F3} + 0 \mu_O -\frac{1}{3} \mu_{S3} -\frac{1}{3} \mu_{S6} -\frac{1}{3} \mu_{S12} \pause \\ \\
+&= \frac{1}{3} \left[\mu_{F12} + \mu_{F6} + \mu_{F3} + 0 \mu_O -1 \mu_{S3} -1 \mu_{S6} -1 \mu_{S12} \right] 
+\end{array} \] 
+
+\end{itemize}	
+}
+
+
+\frame{\frametitle{Sulfur level: linear trend contrasts}
+
+\begin{itemize}[<+->]
+\item The unique sulfur levels ($X_i$) are 0, 3, 6, and 12. \pause 
+\item So the linear trend contrast ($X_i-\overline{X}$) is
+\[ \begin{array}{ccccc}
+X_i & 0 & 3 & 6 & 12 \\
+\hline
+X_i-\overline{X} & -\frac{21}{4} & -\frac{9}{4} & \frac{3}{4} & \frac{27}{4} 
+\end{array} \]
+\item But 3, 6, and 12 are duplicated, so we need the average of the groups 
+
+\pause
+
+\[ \begin{array}{rl}
+\gamma &= -\frac{21}{4} \mu_0 - \frac{9}{4} \mu_3 + \frac{3}{4} \mu_6 + \frac{27}{4} \mu_{12} \pause \\ \\
+&= -\frac{21}{4} \mu_0 - \frac{9}{4} \left( \frac{\mu_{S3}+\mu_{F3}}{2} \right) + \frac{3}{4} \left( \frac{\mu_{S6}+\mu_{F6}}{2} \right) + \frac{27}{4} \left( \frac{\mu_{S12}+\mu_{F12}}{2} \right) \pause \\ \\
+&= \frac{1}{8} \left[ -42\mu_0 -9\mu_{S3}-9\mu_{F3}  + 3 \mu_{S6}+ 3\mu_{F6}  + 27 \mu_{S12}+ 27 \mu_{F12} \right]
+\end{array} \]
+	
+\end{itemize}
+	
+
+}
+
+
+\begin{frame}
+\frametitle{Contrasts}
+
+\begin{center}
+\begin{tabular}{c|ccccccc|c}
+Trt & F12 & F6 & F3 & O & S3 & S6 & S12 & Div \\
+\hline
+Sulfur v control & 1 & 1 & 1 & -6 & 1  & 1 & 1 & 6 \\
+Fall v Spring & 1 & 1 & 1 & 0 & -1  & -1 & -1 & 3 \\
+Linear Trend & 27 & 3 & -9 & -42 & -9 & 3 & 27 & 8 \\
+\hline  
+\end{tabular}
+\end{center}
+
+
+\end{frame}
+
+
+
+
+\subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{}
+<<potato_in_R>>=
+library(multcomp)
+K = rbind("sulfur - control" = c(1, 1, 1, -6, 1, 1, 1)/6,
+          "fall - spring"    = c(1,1,1,0,-1,-1,-1)/3,
+          "linear trend"     = c(27,3,-9,-42,-9,3,27)/8)
+m = lm(inf~trt,d)
+anova(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<>>=
+par(mfrow=c(2,3))
+plot(m,1:6)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<>>=
+g = glht(lm(inf~trt-1,d), linfct=K) # notice the -1 in the model
+summary(g, test=adjusted(type="none")) # unadjusted pvalues
+confint(g, calpha=univariate_calpha()) # unadjusted confidence intervals
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<>>=
+plot(d$col,residuals(m))
+@
+\end{frame}
+
+
+
+
+
+
+\section{Summary}
+\frame{\frametitle{Summary}
+	For this particular data analysis
+	\begin{itemize}[<+->]
+	\item Significant differences in means between the groups (ANOVA $F_{6,25}=3.61$ p=0.01)
+  \item Sulfur had a significant impact on scab (p=0.002)
+	\item Fall was better than spring (p=0.03, 95\% CI (0.53, 11.8))
+	\item Linear trend in sulfur was significant(p=0.003) 
+	
+	\vspace{0.2in}\pause
+	
+	\item Concerned about spatial correlation among columns
+	\item Consider a transformation of the response 
+		\begin{itemize}
+		\item CI for F12 (-1.2, 12.7)
+		\item Non-constant variance (residuals vs predicted, sulfur, application)
+		\end{itemize}
+	\end{itemize}
+}
+
+\end{document}
+
+
+
