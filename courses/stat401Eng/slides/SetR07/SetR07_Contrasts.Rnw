@@ -95,7 +95,7 @@ i.e. the positive coefficients sum to 1 and the negative coefficients sum to -1.
 	\pause
 	
 	with standard error
-	\[ SE(g) = s_p \sqrt{\frac{C_1^2}{n_1}+\frac{C_2^2}{n_2}+\cdots+\frac{C_J^2}{n_J}} \]
+	\[ SE(g) = \hat\sigma \sqrt{\frac{C_1^2}{n_1}+\frac{C_2^2}{n_2}+\cdots+\frac{C_J^2}{n_J}} \]
 	
 	\pause
 	
@@ -304,14 +304,28 @@ segments(0.5,1:5-.5,8.5,1:5-.5)
 \begin{frame}[fragile]
 \frametitle{Data}
 <<echo=FALSE>>=
-ggplot(d, aes(trt, inf)) + 
+ggplot(d, 
+       aes(trt, inf)) + 
   geom_boxplot(color="gray") + 
   geom_jitter(height=0) +
-  labs(xlab = "Sulfur", ylab = "Scab percent") + 
+  labs(x = "Sulfur", y = "Average scab percent") + 
   theme_bw()
 @
 \end{frame}
 
+
+
+\begin{frame}[fragile]
+\frametitle{Data}
+<<echo=FALSE>>=
+ggplot(d %>% 
+         mutate(application = ifelse(is.na(application), "NA", application)), 
+       aes(sulfur, inf, shape=application, color=application)) + 
+  geom_jitter(height=0, width=10) +
+  labs(x = "Sulfur", y = "Average scab percent") + 
+  theme_bw()
+@
+\end{frame}
 
 
 \begin{frame}[fragile]
@@ -386,9 +400,9 @@ Hypotheses:
 \frame{\frametitle{Sulfur level: linear trend contrasts}
 
 \begin{itemize}[<+->]
-\item The group sulfur levels ($X_i$) are 12, 6, 3, 0, 3, 6, and 12 (100lbs/acre). \pause 
-\item So the linear trend contrast ($X_i-\overline{X}$) is
-\[ \begin{array}{cccccccc}
+\item The group sulfur levels ($X_j$) are 12, 6, 3, 0, 3, 6, and 12 (100 lbs/acre) \pause 
+\item and a linear trend contrast is $X_j-\overline{X}$
+\[ \begin{array}{c|rrrrrrr|}
 X_i & 12 & 6 & 3&  0 & 3 & 6 & 12 \\
 \hline
 X_i-\overline{X} & 6 & 0 & -3 & -6 & -3 & 0 & 6 
@@ -398,9 +412,11 @@ X_i-\overline{X} & 6 & 0 & -3 & -6 & -3 & 0 & 6
 
 \[ \begin{array}{rl}
 \gamma &= 6 \mu_{F12}+ 0 \mu_{F6} -3 \mu_{F3}-6 \mu_O -3\mu_{S3} + 0\mu_{S6} + 6\mu_{S12} 
-% \pause \\ \\
-% \gamma &= \frac{1}{6}\left(\mu_{F12}+ 0 \mu_{F6} -3 \mu_{F3}-6 \mu_O -3\mu_{S3} + 0\mu_{S6} + 6\mu_{S12})
 \end{array} \]
+
+% \pause
+% 
+% This will be proportional to the regression slope.
 	
 \end{itemize}
 	
