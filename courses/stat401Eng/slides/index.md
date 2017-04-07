@@ -51,6 +51,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Multiple regression|[SetR05.Rnw](SetR05/SetR05_Multiple_regression.Rnw)|[SetR05.pdf](SetR05/SetR05_Multiple_regression.pdf)| 
 |ANOVA/F-tests|[SetR06.Rnw](SetR06/SetR06_ANOVA_F-tests.Rnw)|[SetR06.pdf](SetR06/SetR06_ANOVA_F-tests.pdf)|  
 |Contrasts|[SetR07.Rnw](SetR07/SetR07_Contrasts.Rnw)|[SetR07.pdf](SetR07/SetR07_Contrasts.pdf)|  
+|Experimental design|[SetR08.Rnw](SetR08/SetR08_Experimental_design.Rnw)|[SetR08.pdf](SetR08/SetR08_Experimental_design.pdf)|  
 
 
 

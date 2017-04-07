@@ -1,0 +1,310 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set R08 - Experimental design}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+library("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}
+\frametitle{Strength of wood glue}
+\setkeys{Gin}{width=0.3\textwidth}
+
+You are interested in testing two different wood glues:
+
+\begin{itemize}
+\item Gorilla Wood Glue
+\item Titebond 1413 Wood glue
+\end{itemize}
+
+On a scarf joint:
+
+\begin{center}
+\includegraphics{scarf_stapled}
+\end{center}
+
+\pause 
+So you collect up some wood, glue the pieces together, and determine the force
+required to break the joint. 
+\pause
+(There are lots of details missing here.)
+
+\pause
+
+{\tiny Inspiration: \url{https://woodgears.ca/joint_strength/glue.html}}
+
+\end{frame}
+
+
+<<echo=FALSE>>=
+d <- data.frame(woodID = paste0("wood",1:8),
+                woodType = factor(rep(c("Spruce","Maple"), each=4), 
+                                  levels = c("Spruce","Maple"))) %>%
+  group_by(woodType) %>%
+  mutate(glue = sample(rep(c("Gorilla","Titebond"), each=2))) %>%
+  ungroup() %>%
+  mutate(psi = rnorm(n(), 250, 20) +
+           ifelse(glue == "Titebond", 40, 0) +
+           ifelse(woodType == "Maple", 20, 0))
+@
+
+
+\section{Completely Randomized Design (CRD)}
+\begin{frame}[fragile]
+\frametitle{Completely Randomized Design (CRD)}
+
+Suppose I have 8 pieces of wood laying around. 
+\pause
+I cut each piece and \alert{randomly} use either Gorilla or Titebond glue to 
+recombine the pieces.
+\pause
+I do the randomization in such a way that I have exactly 4  Gorilla and 4
+Titebond results,
+\pause
+e.g.
+<<echo=FALSE>>=
+d %>% select(-woodType, -psi)
+@
+
+This is called a \alert{completely randomized design (CRD)}.
+
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Visualize the data}
+
+<<>>=
+ggplot(d, aes(glue, psi)) + geom_point() + theme_bw()
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Model}
+
+Let 
+\begin{itemize}
+\item $F_w$ be the force needed to break wood $w$,
+\item $T_w$ be an indicator that the Titebond glue was used on wood $w$,
+i.e. 
+\[ T_w = \I(\mbox{glue}_w = \mbox{Titebond}). \]
+\end{itemize}
+
+\pause
+
+Then a regression model for these data is 
+\[
+F_w \ind N(\beta_0+\beta_1T_w, \sigma)
+\]
+\pause
+where 
+\begin{itemize}
+\item $\beta_1$ is the expected difference in force when using Titebond glue
+compared to using Gorilla glue.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Perform analysis}
+
+<<>>=
+m <- lm(psi ~ glue, data = d)
+summary(m)
+confint(m)
+@
+
+\end{frame}
+
+
+\section{Randomized complete block design (RCBD)}
+\begin{frame}[fragile]
+\frametitle{Randomized complete block design (RCBD)}
+Suppose the wood actually came from two different types: Maple and Spruce.
+\pause
+And perhaps you have reason to believe the glue will work differently 
+depending on the type of wood. 
+\pause
+In this case, you would want to \alert{block} by wood type and perform the 
+randomization within each block, i.e. 
+<<echo=FALSE>>=
+d %>% select(-psi)
+@
+\pause
+This is called a \alert{randomized complete block design (RCBD)}.
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Visualize the data}
+<<>>=
+ggplot(d, aes(glue, psi, color=woodType, shape=woodType)) + geom_point() + theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Visualize the data - a more direct comparison}
+<<>>=
+ggplot(d, aes(woodType, psi, color=glue, shape=glue)) + geom_point() + theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Model}
+
+Let 
+\begin{itemize}
+\item $F_w$ be the force needed to break wood $w$
+\item $T_w$ be an indicator that Titebond glue was used on wood $w$, and
+\item $M_w$ be an indicator that wood $w$ was Maple.
+\end{itemize}
+
+\pause
+
+Then a regression model for these data is 
+\[
+F_w \ind N(\beta_0+\beta_1T_w + \beta_2M_w, \sigma)
+\]
+\pause
+where 
+\begin{itemize}
+\item $\beta_1$ is the expected difference in force when using Titebond glue
+compared to using Gorilla glue when adjusted for type of wood, i.e. the 
+type of wood is held constant, \pause and
+\item $\beta_2$ is the expected difference in force when using Spruce compared 
+to Maple when adjusted for type of glue, i.e. the 
+glue is held constant.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Perform analysis}
+
+<<>>=
+m <- lm(psi ~ glue + woodType, data = d)
+summary(m)
+confint(m)
+@
+
+\end{frame}
+
+
+
+\section{Replication}
+\begin{frame}[fragile]
+\frametitle{Replication}
+
+Since there are more than one observation for each woodType-glue combination,
+the design is \alert{replicated}:
+
+<<>>=
+d %>% group_by(woodType, glue) %>% summarize(n = n())
+@
+
+When the design is replicated, we can consider assessing an interaction.
+\pause
+In this example, an interaction between glue and woodType would indicate that
+the effect of glue depends on the woodType, i.e. the difference in expected 
+force between the two glues depends on woodType. 
+\pause
+At an extreme, it could be that Gorilla works better on Spruce and Titebond
+works better on Maple.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Assessing an interaction using a t-test}
+<<>>=
+m <- lm(psi ~ glue*woodType, data = d)
+summary(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Assessing an interaction using an F-test}
+<<>>=
+anova(m)
+drop1(m, test='F')
+@
+\end{frame}
+
+
+<<echo=FALSE>>=
+set.seed(3)
+d <- data.frame(woodID = paste0("wood",1:8),
+                woodType = factor(rep(c("Spruce","Maple"), each=4), 
+                                  levels = c("Spruce","Maple"))) %>%
+  group_by(woodType) %>%
+  mutate(glue = sample(rep(c("Gorilla","Titebond"), each=2))) %>%
+  ungroup() %>%
+  mutate(psi = rnorm(n(), 250, 20) +
+           ifelse(glue == "Titebond", 40, 0) +
+           ifelse(woodType == "Maple", 20, 0) + 
+           ifelse(glue == "Titebond" & woodType == "Maple", -50, 0))
+@
+
+
+
+\begin{frame}[fragile]
+\frametitle{What if this had been your data?}
+<<>>=
+ggplot(d, aes(woodType, psi, color=glue, shape=glue)) + geom_point() + theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Assessing an interaction using a t-test}
+<<>>=
+m <- lm(psi ~ glue*woodType, data = d)
+summary(m)
+@
+\end{frame}
+
+
+
+\end{document}
+
+
+
