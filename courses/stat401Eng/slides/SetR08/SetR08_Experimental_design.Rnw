@@ -304,6 +304,79 @@ summary(m)
 
 
 
+\subsection{Unreplicated study}
+\begin{frame}
+\frametitle{Unreplicated study}
+
+Suppose you now have 
+\begin{itemize}
+\item 5 glue choices
+\item 4 different types of wood with 
+\item 5 samples of each type of wood.
+\end{itemize}
+\pause
+Thus you can only run each glue choice once on each type of wood.
+
+\vspace{0.1in} \pause
+
+Then you can run an unreplicated RCBD.
+
+\end{frame}
+
+
+<<echo=FALSE>>=
+d <- data.frame(woodID = paste0("wood",1:20),
+                woodType = rep(c("Spruce","Maple","Oak","Cedar"), each=5)) %>%
+  group_by(woodType) %>%
+  mutate(glue = sample(c("Gorilla","Titebond","Hot glue","Carpenter's","Weldbond"))) %>%
+  ungroup() %>%
+  mutate(psi = rnorm(n(), 250, 20))
+@
+
+\begin{frame}[fragile]
+\frametitle{Visualize}
+<<>>=
+ggplot(d, aes(woodType, psi, color=glue, shape=glue)) + 
+  geom_point() + theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Fit the main effects (or additive) model}
+<<>>=
+m <- lm(psi ~ glue + woodType, data = d)
+anova(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Fit the main effects (or additive) model}
+<<>>=
+summary(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Fit the full (with interaction) model}
+<<>>=
+m <- lm(psi ~ glue * woodType, data = d)
+anova(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Fit the full (with interaction) model}
+<<>>=
+summary(m)
+@
+\end{frame}
+
+
 \end{document}
 
 
