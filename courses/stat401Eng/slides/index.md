@@ -52,6 +52,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |ANOVA/F-tests|[SetR06.Rnw](SetR06/SetR06_ANOVA_F-tests.Rnw)|[SetR06.pdf](SetR06/SetR06_ANOVA_F-tests.pdf)|  
 |Contrasts|[SetR07.Rnw](SetR07/SetR07_Contrasts.Rnw)|[SetR07.pdf](SetR07/SetR07_Contrasts.pdf)|  
 |Experimental design|[SetR08.Rnw](SetR08/SetR08_Experimental_design.Rnw)|[SetR08.pdf](SetR08/SetR08_Experimental_design.pdf)|  
+|Two-way ANOVA|[SetR09.Rnw](SetR09/SetR09_Two-way ANOVA.Rnw)|[SetR09.pdf](SetR09/SetR09_Two-way ANOVA.pdf)|  
 
 
 
@@ -63,16 +64,18 @@ You will need to have the R package `knitr` installed, i.e.
 
     install.packages('knitr')
 
-### Slides
-
-To obtain the pdf, you will need to have [LaTeX installed](http://en.wikibooks.org/wiki/LaTeX/Installation) and in the path (etc). Then download the Rnw file (as an example, I will use `Ch01.Rnw`) and run
-
-    knitr::knit2pdf('Set01_data_management.Rnw')
-
-Alternatively, you can install [RStudio](http://www.rstudio.com/) and click on the `Compile PDF` button.
-
 ### R Code
 
 To extract the R code, run 
 
     knitr::knit('Set01_data_management.Rnw', tangle=TRUE)
+
+
+### Slides
+
+To obtain the pdf, 
+you will need to have [LaTeX installed](http://en.wikibooks.org/wiki/LaTeX/Installation) and in the path (etc). Then download the Rnw file (as an example, I will use `Set01_data_management.Rnw`) and run
+
+    knitr::knit2pdf('Set01_data_management.Rnw')
+
+Alternatively, you can install [RStudio](http://www.rstudio.com/) and click on the `Compile PDF` button.

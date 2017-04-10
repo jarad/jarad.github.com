@@ -1,0 +1,821 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set R09 - Two-way ANOVA}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("gridExtra")
+# library("xtable")
+# library("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Two factors}
+
+Consider the question of the affect of variety and density on yield under
+various experimental designs:
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item Balanced, complete design
+\item Unbalanced, complete
+\item Incomplete
+\item Optimization
+\end{itemize}
+
+\end{frame}
+
+
+\section{Two-way ANOVA}
+
+
+\frame{\frametitle{Data}
+  An experiment was run on tomato plants to determine the effect of 
+	\begin{itemize}
+	\item 3 different varieties (A,B,C) \pause and 
+	\item 4 different planting densities (10,20,30,40) \pause 
+	\end{itemize}
+	on yield. 
+	
+	\vspace{0.2in} \pause 
+	
+	There is an expectation that planting density will have a different effect depending on the variety. \pause Therefore a \alert{balanced, complete, randomized} design was used. \pause 
+	\begin{itemize}\small
+	\item complete: each treatment (variety $\times$ density) is represented in the experiment \pause
+	\item balanced: each treatment in the experiment has the same number of replications \pause
+	\item randomized: treatment was randomly assigned to the plot \pause
+	\end{itemize}
+	This is also referred to as a \alert{full factorial} or \alert{fully crossed} design.
+}
+
+\frame{\frametitle{Hypotheses}
+	\begin{itemize}
+	\item Does variety affect mean yield?
+		\begin{itemize}
+		\item<4-> Is the mean yield for variety A different from B \alert{on average}?
+		\item<5-> Is the mean yield for variety A different from B \alert{at a particular value for density}?
+		\end{itemize}
+	\item<2-> Does density affect mean yield?
+		\begin{itemize}
+		\item<6-> Is the mean yield for density 10 different from density 20 \alert{on average}?
+		\item<7-> Is the mean yield for density 10 different from density 20 \alert{at a particular value for variety}?
+		\end{itemize}
+	\item<3-> Does density affect yield differently for each variety?
+	\end{itemize}
+	
+	\vspace{0.2in} 
+	
+	\uncover<8->{For all of these questions, we want to know
+	\begin{itemize}
+	\item is there any effect and 
+	\item if yes, what is the nature of the effect.
+	\end{itemize}}
+	\uncover<9->{Confidence/credible intervals can answer these questions. }
+}
+
+\begin{frame}[fragile]
+<<echo=FALSE>>=
+tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
+1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
+2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("A", 
+"B", "C"), class = "factor"), Density = c(10L, 10L, 10L, 20L, 
+20L, 20L, 30L, 30L, 30L, 40L, 40L, 40L, 10L, 10L, 10L, 20L, 20L, 
+20L, 30L, 30L, 30L, 40L, 40L, 40L, 10L, 10L, 10L, 20L, 20L, 20L, 
+30L, 30L, 30L, 40L, 40L, 40L), Yield = c(7.9, 9.2, 10.5, 11.2, 
+12.8, 13.3, 12.1, 12.6, 14, 9.1, 10.8, 12.5, 8.1, 8.6, 10.1, 
+11.5, 12.7, 13.7, 13.7, 14.4, 15.4, 11.3, 12.5, 14.5, 15.3, 16.1, 
+17.5, 16.6, 18.5, 19.2, 18, 20.8, 21, 17.2, 18.4, 18.9)), .Names = c("Variety", 
+"Density", "Yield"), class = "data.frame", row.names = c(NA, 
+-36L))
+tomato$Variety = relevel(tomato$Variety, ref="C")
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + theme_bw()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+
+<<>>=
+sm = tomato %>% 
+  group_by(Variety, Density) %>% 
+  summarize(n    = n(),
+            mean = mean(Yield),
+            sd   = sd(Yield))
+sm
+@
+
+\end{frame}
+
+\frame{\frametitle{Two-way ANOVA}
+	\begin{itemize}[<+->]
+	\item Setup: Two categorical explanatory variables with $\I$ and $\J$ levels
+	\item Model:
+	\[ Y_{ijk} \stackrel{ind}{\sim} N(\mu_{ij},\sigma^2) \]
+	where $Y_{ijk}$ is the 
+	\begin{itemize}
+	\item $k$th observation at the 
+	\item $i$th level of variable 1 (variety) with $i=1,\ldots,\I$ and the 
+	\item $j$th level of variable 2 (density) with $j=1,\ldots,\J$.
+	\end{itemize}
+	
+	\vspace{0.2in} \pause 
+	
+	Consider the models:
+		\begin{itemize}
+		\item Additive: $\mu_{ij} = \mu+\nu_i + \delta_j$
+		\item Cell-means: $\mu_{ij} = \mu+\nu_i + \delta_j + \gamma_{ij}$
+		\end{itemize}
+	\end{itemize}
+	\pause
+	\[ \begin{array}{|c|c|c|c|c|}
+	\hline
+	& 10 & 20 & 30 & 40 \\
+	\hline
+	\mbox{A} & \mu_{11} & \mu_{12} & \mu_{13} & \mu_{14} \\
+	\hline
+	\mbox{B} & \mu_{21} & \mu_{22} & \mu_{23} & \mu_{24} \\
+	\hline
+	\mbox{C} & \mu_{31} & \mu_{32} & \mu_{33} & \mu_{34} \\
+	\hline
+	\end{array} \]
+}
+
+\frame{\frametitle{As a regression model}
+\small
+	\begin{enumerate}[<+->]
+	\item Assign a reference level for both variety (C) and density (40).
+	\item Let $V_i$ and $D_i$ be the variety and density for observation $i$. 
+	\item Build indicator variables, e.g. $\I(V_i=A)$ and $\I(D_i=10)$. 
+	\item The additive model: {\scriptsize
+	\[ \begin{array}{rl} \mu_{i} =& \beta_0 \\
+	&+ \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
+	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30).
+	\end{array} \]
+	$\beta_1$ is the expected difference in yield between varieties A and C at any fixed density}
+	\item The cell-means model:{\scriptsize
+	\[ \begin{array}{rl} \mu_{i} =& \beta_0 \\
+	&+ \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
+	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30) \\ \\
+	&+\beta_6\I(V_i=A)\I(D_i=10)+\beta_{\phantom{1}7}\I(V_i=A)\I(D_i=20)+
+	\beta_{\phantom{1}8}\I(V_i=A)\I(D_i=30) \\
+	&+\beta_9\I(V_i=B)\I(D_i=10)+\beta_{10}\I(V_i=B)\I(D_i=20)+\beta_{11}\I(V_i=B)\I(D_i=30) \\
+	\end{array} \]
+	$\beta_1$ is the expected difference in yield between varieties A and C at a density of 40}
+	\end{enumerate}
+}
+
+
+% Table for means using regresison model
+
+
+\subsection{ANOVA Table}
+\begin{frame}
+\frametitle{ANOVA Table}
+
+ANOVA Table - Additive model
+\begin{center}
+\begin{tabular}{ccccc}
+Source & SS & df & MS & F \\
+\hline
+Factor A & SSA & ($\I$-1) & SSA/($\I$-1) & MSA/MSE\\
+Factor B & SSB & ($\J$-1) & SSB/($\J$-1) & MSB/MSE \\
+Error & SSE & n-$\I$-$\J$+1 & SSE/(n-$\I$-$\J$+1) \\
+Total & SST & n-$1$ 
+\end{tabular}
+\end{center}
+
+\vspace{0.2in} \pause
+
+ANOVA Table - Cell-means model
+\begin{center}
+\begin{tabular}{ccccc}
+Source & SS & df & MS & \\
+\hline
+Factor A & SSA & $\I$-1 & SSA/($\I$-1) & MSA/MSE \\
+Factor B & SSB & $\J$-1 & SSB/($\J$-1) & MSB/MSE \\
+Interaction AB & SSAB & ($\I$-1)($\J$-1) & SSAB /($\I$-1)($\J$-1) & MSAB/MSE \\
+Error & SSE & n-$\I$$\J$ & SSE/(n-$\I$$\J$) \\
+Total & SST & n-$1$ 
+\end{tabular}
+\end{center}
+
+\end{frame}
+
+
+
+\subsection{Additive vs cell-means}
+\begin{frame}
+\frametitle{Additive vs cell-means}
+
+Opinions differ on whether to use an additive vs a cell-means model when the interaction is not significant. \pause Remember that an insignificant test does not prove that there is no interaction. 
+
+\vspace{0.2in} \pause
+
+\begin{center}
+\begin{tabular}{lcc}
+& Additive & Cell-means \\
+\hline
+Interpretation & Direct & Complicated \\
+Estimate of $\sigma^2$ & Biased & Unbiased
+\end{tabular}
+\end{center}
+
+\vspace{0.2in} \pause
+
+We will continue using the cell-means model to answer the scientific questions of interest.
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<>>=
+ggplot(sm, aes(x=Density, y=mean, col=Variety)) + geom_line() + labs(y="Mean Yield") + theme_bw()
+@
+\end{frame}
+
+
+
+
+
+
+\subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{Two-way ANOVA in R}
+<<echo=TRUE>>=
+tomato$Density = factor(tomato$Density)
+m = lm(Yield~Variety*Density, tomato)
+anova(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Variety comparison}
+<<echo=TRUE>>=
+library(lsmeans)
+lsmeans(m, pairwise~Variety)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Density comparison}
+<<echo=TRUE>>=
+lsmeans(m, pairwise~Density)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<echo=TRUE>>=
+lsmeans(m, pairwise~Variety*Density)
+@
+\end{frame}
+
+
+\subsection{Summary}
+\frame{\frametitle{Summary}
+	\begin{itemize}[<+->]
+	\item Use {\tt lsmeans} to answer questions of scientific interest.
+	\item Check model assumptions
+	\item Consider alternative models, e.g. treating density as continuous 
+	\end{itemize}
+}
+
+
+
+\section{Unbalanced design}
+\begin{frame}
+\frametitle{Unbalanced design}
+
+Suppose for some reason that a variety B, density 30 sample was contaminated. \pause Although you started with a balanced design, the data is now unbalanced. \pause Fortunately, we can still use the tools we have used previously. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+tomato_unbalanced = tomato[-19,]
+ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety)) +  geom_point() + theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+
+<<>>=
+sm_unbalanced = tomato_unbalanced %>% 
+  group_by(Variety, Density) %>% 
+  summarize(n    = n(),
+            mean = mean(Yield),
+            sd   = sd(Yield))
+sm_unbalanced
+@
+
+\end{frame}
+
+
+
+
+\subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{Two-way ANOVA in R}
+<<echo=TRUE>>=
+m = lm(Yield~Variety*Density, tomato)
+anova(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Variety comparison}
+<<echo=TRUE>>=
+lsmeans(m, pairwise~Variety)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Density comparison}
+<<echo=TRUE>>=
+lsmeans(m, pairwise~Density)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<echo=TRUE>>=
+lsmeans(m, pairwise~Variety*Density)
+@
+\end{frame}
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+The analysis can be completed just like the balanced design using {\tt lsmeans} to answer scientific questions of interest. 
+
+\end{frame}
+
+
+
+\section{Incomplete design}
+\begin{frame}
+\frametitle{Incomplete design}
+
+Suppose none of the samples from variety B, density 30 were obtained. \pause Now the analysis becomes more complicated. 
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+<<>>=
+tomato_incomplete = tomato %>%
+  filter(!(Variety == "B" & Density == 30)) %>%
+  mutate(VarietyDensity = paste0(Variety,Density))
+ggplot(tomato_incomplete, aes(x=Density, y=Yield, color=Variety)) + geom_point() + theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+
+<<>>=
+sm_incomplete = tomato_incomplete %>% 
+  group_by(Variety, Density) %>% 
+  summarize(n    = n(),
+            mean = mean(Yield),
+            sd   = sd(Yield))
+sm_incomplete
+@
+
+\end{frame}
+
+
+
+
+
+\subsection{Treat as a One-way ANOVA}
+\begin{frame}
+\frametitle{Treat as a One-way ANOVA}
+
+When the design is incomplete, use a one-way ANOVA combined with contrasts to answer questions of interest. 
+\pause 
+For example, to compare the average difference between B and C, 
+we want to only compare at densities 10, 20, and 40. 
+\pause 
+
+  \[ \begin{array}{|c|c|c|c|c|}
+	\hline
+	& 10 & 20 & 30 & 40 \\
+	\hline
+	\mbox{A} & \mu_{11} & \mu_{12} & \mu_{13} & \mu_{14} \\
+	\hline
+	\mbox{B} & \mu_{21} & \mu_{22} & \mu_{23} & \mu_{24} \\
+	\hline
+	\mbox{C} & \mu_{31} & \mu_{32} & \mu_{33} & \mu_{34} \\
+	\hline
+	\end{array} \]
+  
+\pause 
+Thus, the contrast is 
+
+\[ \begin{array}{ll}
+\gamma &= \frac{1}{3}(\mu_{31}+\mu_{32}+\mu_{34}) - \frac{1}{3}(\mu_{21}+\mu_{22}+\mu_{24}) \\
+&= \frac{1}{3} (\mu_{31}+\mu_{32}+\mu_{34} - \mu_{21}-\mu_{22}-\mu_{24})
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{The Regression model}
+
+The regression model here considers variety-density combination as a single explanatory variable with 11 levels: A10, A20, A30, A40, B10, B20, B40, C10, C20, C30, and C40. 
+\pause 
+Let C40 be the reference level.
+\pause 
+For observation $i$, let
+
+\begin{itemize}
+\item $Y_i$ be the yield
+\item $V_i$ be the variety
+\item $D_i$ be the density
+\end{itemize}
+
+\pause 
+
+The model is then $Y_i\stackrel{ind}{\sim} N(\mu_i, \sigma^2)$ and 
+{\tiny
+\[ \begin{array}{rl@{}l@{}l@{}l@{}l@{}l}
+\mu_i &= \beta_0 \\
+&+ \beta_1\I(V_i=A,D_i=10) &+ \beta_2\I(V_i=A,D_i=20) &+ \beta_3\I(V_i=A,D_i=30)&+ \beta_4\I(V_i=A,D_i=40) \\
+&+ \beta_5\I(V_i=B,D_i=10)&+ \beta_6\I(V_i=B,D_i=20)&&+ \beta_7\I(V_i=B,D_i=40) \\
+&+\beta_8\I(V_i=C,D_i=10)&+ \beta_9\I(V_i=C,D_i=20)&+ \beta_{10}\I(V_i=C,D_i=30)
+\end{array} \]
+}
+\end{frame}
+
+
+
+
+\subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{One-way ANOVA in R}
+<<echo=TRUE>>=
+m = lm(Yield~Variety:Density, tomato_incomplete)
+anova(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Contrasts}
+<<echo=TRUE>>=
+# Note the -1 in order to construct the contrast
+m = lm(Yield~VarietyDensity-1, tomato_incomplete)
+#                   A10 A20 A30 A40 B10 B20 B40 C10 C20 C30 C40   
+K = rbind('C-B' = c(  0,  0,  0,  0, -1, -1, -1,  1,  1,  0,  1)/3,
+          'C-A' = c( -1, -1, -1, -1,  0,  0,  0,  1,  1,  1,  1)/4,
+          'B-A' = c( -1, -1,  0, -1,  1,  1,  1,  0,  0,  0,  0)/3)
+
+library(multcomp)
+t = glht(m, linfct=K)
+#summary(t)
+confint(t, calpha=univariate_calpha())
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{}
+<<echo=TRUE>>=
+m = lm(Yield~Variety:Density, tomato_incomplete)
+lsmeans(m, pairwise~Variety:Density)
+# We could have used the VarietyDensity model, but this looks nicer
+@
+\end{frame}
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+When dealing with an incomplete design, 
+it is often easier to treat the analysis as a one-way ANOVA and use contrasts to answer scientific questions of interest.
+
+\end{frame}
+
+
+
+
+\section{Optimal yield}
+\begin{frame}
+\frametitle{Optimal yield}
+
+Now suppose you have the same data set, but your scientific question is different.
+\pause 
+Specifically, you are interested in choosing a variety-density combination that provides the optimal yield. 
+
+\vspace{0.2in} \pause
+
+You can use the ANOVA analysis to choose from amongst the 3 varieties and one of the 4 densities\pause, but there is no reason to believe that the optimal density will be one of those 4. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=FALSE>>=
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + theme_bw()
+@
+\end{frame}
+
+
+\subsection{Modeling}
+\begin{frame}
+\frametitle{Modeling}
+
+\small
+
+Considering a single variety, if we assume a linear relationship between Yield ($Y_i$) and Density ($D_i$) then the maximum Yield will occur at either $-\infty$ or $+\infty$ which is unreasonable. \pause The easiest way to have a maximum (or minimum) is to assume a quadratic relationship, e.g. 
+
+\[ E[Y_i] = \mu_i = \beta_0 + \beta_1 D_i + \beta_2 D_i^2 \]
+
+\pause
+Now we can incorporate Variety ($V_i$) in many ways. \pause Two options are parallel curves or completely independent curves.
+
+\vspace{0.2in} \pause
+
+Parallel curves:
+
+{\tiny 
+\[ \begin{array}{rl}
+\mu_i =&  \beta_0 + \beta_1 D_i + \beta_2 D_i^2 \\
+&+ \beta_3 \I(V_i=A) + \beta_4 \I(V_i=B) 
+\end{array} \]
+}
+
+Independent lines:
+
+{\tiny
+\[ \begin{array}{rl}
+\mu_i =&  \beta_0 + \beta_1 D_i + \beta_2 D_i^2 \\
+&+ \beta_3 \I(V_i=A) + \beta_4 \I(V_i=B) \\
+&+ \beta_5 \I(V_i=A) D_i + \beta_6 \I(V_i=B) D_i  \\
+&+ \beta_7 \I(V_i=A) D_i^2 + \beta_8 \I(V_i=B) D_i^2 
+\end{array} \]
+}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<fig.width=10,out.width='0.9\\textwidth',echo=FALSE>>=
+tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
+1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
+2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("A", 
+"B", "C"), class = "factor"), Density = c(10L, 10L, 10L, 20L, 
+20L, 20L, 30L, 30L, 30L, 40L, 40L, 40L, 10L, 10L, 10L, 20L, 20L, 
+20L, 30L, 30L, 30L, 40L, 40L, 40L, 10L, 10L, 10L, 20L, 20L, 20L, 
+30L, 30L, 30L, 40L, 40L, 40L), Yield = c(7.9, 9.2, 10.5, 11.2, 
+12.8, 13.3, 12.1, 12.6, 14, 9.1, 10.8, 12.5, 8.1, 8.6, 10.1, 
+11.5, 12.7, 13.7, 13.7, 14.4, 15.4, 11.3, 12.5, 14.5, 15.3, 16.1, 
+17.5, 16.6, 18.5, 19.2, 18, 20.8, 21, 17.2, 18.4, 18.9)), .Names = c("Variety", 
+"Density", "Yield"), class = "data.frame", row.names = c(NA, 
+-36L))
+tomato$Variety = relevel(tomato$Variety, ref="C")
+
+g1 = ggplot(tomato, aes(x=Density, y=Yield)) + geom_point() + 
+  stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE, color="black") +
+  labs(title="No variety") + theme_bw()
+
+
+# Need to construct the parallel curves 
+lines = with(tomato,expand.grid(Density=seq(min(Density),max(Density),length=41),
+                               Variety=levels(Variety)))
+lines$Yield <- predict(lm(Yield~Density+I(Density^2)+Variety, tomato),lines)
+
+g2 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + 
+  geom_line(data=lines) + labs(title="Parallel curves") + theme_bw()
+
+g3 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + 
+  stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE) +
+  labs(title="Independent curves") + theme_bw()
+grid.arrange(g1,g2,g3, ncol=3)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Finding the maximum}
+
+For a particular variety, there will be an equation like 
+
+\[ E[Y_i] = \mu_i = \beta_0 + \beta_1 D_i + \beta_2 D_i^2 \]
+
+where these $\beta_1$ and $\beta_2$ need not correspond to any particular $\beta_1$ and $\beta_2$ we have discussed thus far. 
+
+\vspace{0.2in} \pause
+
+If $\beta_2<0$, then the quadratic curve has a maximum and it occurs at $-\beta_1/2\beta_2$. 
+
+\end{frame}
+
+
+
+
+\subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{No variety}
+<<>>=
+summary(lm(Yield~Density+I(Density^2), tomato))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Parallel curves}
+<<>>=
+summary(lm(Yield~Density+I(Density^2) + Variety, tomato))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Independent curves}
+<<>>=
+summary(lm(Yield~Density*Variety+I(Density^2)*Variety, tomato))
+@
+\end{frame}
+
+
+
+\section{Randomized complete block design}
+\begin{frame}
+\frametitle{Completely randomized design (CRD)}
+This semester, we have assumed a completely randomized design. \pause As an example, consider 36 plots and we are randomly assigning our variety-density combinations to the plots such that we have 3 reps of each combination. \pause The result may look something like this
+<<out.width='0.6\\textwidth'>>=
+set.seed(20121204)
+opar = par(mar=rep(0,4))
+plot(0,0, type="n", axes=F, 
+     xlab='', ylab='', xlim=c(0.5,6.5), ylim=c(0.5,6.5))
+segments(1:7-.5, .5, 1:7-.5, 6.5)
+segments(.5, 1:7-.5, 6.5, 1:7-.5)
+trts = rep(paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep=""),3)
+text(rep(1:6, each=6), rep(1:6, 6), sample(trts))
+par(opar)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Complete randomized block design (RBD)}
+
+A randomized block design is appropriate when there is a nuisance factor that you want to control for. \pause In our example, imagine you had 12 plots at 3 different locations and you expect these locations would have impact on yield. \pause A randomized block design might look like this.
+
+\vspace{-0.1in}
+
+<<out.width='0.6\\textwidth'>>=
+set.seed(20121204)
+opar = par(mar=rep(0,4))
+plot(0,0, type="n", axes=F, 
+     xlab='', ylab='', xlim=c(0,8.5), ylim=c(0,7.5))
+segments(1:9-.5, .5, 1:9-.5, 6.5)
+for (i in c(.5, 3.5, 6.5)) segments(i, 1:7-.5, i+2, 1:7-.5)
+trts = paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep="")
+for (i in c(1, 4, 7)) text(rep(c(i,i+1), each=2), rep(1:6, 2), sample(trts))
+text(c(1.5,4.5,7.5), 0, paste("Block", 1:3))
+par(opar)
+@
+\end{frame}
+
+
+
+\subsection{RBD Analysis}
+\begin{frame}
+\frametitle{RBD Analysis}
+
+{\small
+
+Generally, you will want to model a randomized block design using an additive model for the treatment and blocking factor. \pause If you have the replication, you should test for an interaction. \pause Let's compute the degrees of freedom for the ANOVA tables for this current design considering the variety-density combination as the treatment. 
+
+\vspace{0.1in} \pause
+
+\begin{center}
+
+
+\begin{tabular}{ll||ll||ll}
+\multicolumn{2}{c||}{V+D+B} & \multicolumn{2}{c||}{T+B} & \multicolumn{2}{c}{Cell-means} \\
+Factor & df & Factor & df & Factor & df \pause \\
+\hline
+Variety   &  2 &           &    &           &    \\
+Density   &  3 & Treatment & 11 & Treatment & 11 \\
+Block     &  2 & Block     &  2 & Block     &  2 \\
+          &    &           &    & Treatment x Block & 22 \\
+Error     & 28 & Error     & 22 & Error     & 0 \\
+Total     & 35 & Total     & 35 & Total     & 35 \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.1in} \pause
+The cell-means model does not have enough degrees of freedom to estimate the interacion because there is no replication of the treatment within a block. \pause 
+}
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Why block?}
+Consider a simple experiment with 2 blocks each with 3 experimental units and 3 treatments (A, B, C). \pause 
+
+<<out.width='0.4\\textwidth', fig.width=4, fig.height=3>>=
+set.seed(20121204)
+opar = par(mar=rep(0,4))
+plot(0,0, type="n", axes=F, 
+     xlab='', ylab='', xlim=c(0,5.5), ylim=c(0,4))
+segments(1:6-.5, .5, 1:6-.5, 3.5)
+for (i in c(.5, 3.5)) segments(i, 1:4-.5, i+2, 1:4-.5)
+trts = rep(c("A","B","C"),each=2)
+for (i in c(1, 4)) text(rep(c(i,i+1), each=3), rep(1:3, 2), sample(trts))
+text(c(1,2,4,5), .3, paste("Block", 1:2))
+text(c(1.5,4.5), 3.7, c("Blocked","Unblocked"))
+par(opar)
+@
+
+Let's consider 3 possible analyses:
+\begin{itemize}
+\item Blocked experiment using an additive model for treatment and block (RBD)
+\item Unblocked experiment using only treatment (CRD)
+\item Unblocked experiment using an additive model for treatment and block
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Why block?}
+
+Now suppose, the true model is 
+\[ \mu_{ij} = \mu + T_i + B_j \]
+where $T_1=T_2=T_3$ and $B_1=0$ and $B_2=\delta$. 
+
+\vspace{0.2in} \pause 
+
+In the Blocked experiment using an additive model for treatment and block, the expected treatment differences to all be zero. 
+
+\vspace{0.2in} \pause
+
+In the Unblocked design using only treatment, the expected difference between treatments is 
+\[ \mu_{C} - \mu_{B} = \delta \qquad \mbox{and} \qquad \mu_{C}-\mu_{A} = \delta/2. \]
+
+\vspace{0.2in} \pause
+
+In the Unblocked design using an additive model for treatment and block, we would have an unbalanced design and it would be impossible to compare B and C. 
+
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+Block what you can control; randomize what you cannot.
+\end{frame}
+
+
+\end{document}
+
+
+
