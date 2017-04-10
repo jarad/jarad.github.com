@@ -1,0 +1,154 @@
+---
+title: "Lab10 - Contrasts"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+## Preparation
+
+To follow along, use the [lab10 code](lab10.R) and make sure the following 
+packag is installed:
+
+- lsmeans
+
+You can use the following code to perform the installation:
+
+```{r install_packages, eval=FALSE}
+install.packages("lsmeans")
+```
+
+Now load the packages
+
+```{r load_packages}
+library("dplyr")
+library("ggplot2")
+# library("Sleuth3")
+library("lsmeans")
+```
+
+## One explanatory variables
+
+Consider the `fiber` data set in the lsmeans package where
+the stregnth of fibers produced by 3 different machines is tested. 
+
+```{r}
+ggplot(lsmeans::fiber, aes(machine, strength)) + 
+  geom_point() + 
+  theme_bw()
+```
+
+### Means
+
+We might be interested in the mean strength of fibers produced by each machine.
+One approach would be to fit a regression model and predict for a new 
+observation for each machine type.
+
+```{r}
+m <- lm(strength ~ machine, data = lsmeans::fiber)
+nd <- data.frame(machine = c("A","B","C"))
+p <- predict(m, 
+             newdata = nd, 
+             interval = "confidence")
+bind_cols(nd, p %>% as.data.frame)
+```
+Alternatively, use the `lsmeans` function in the 
+[lsmeans](https://cran.r-project.org/web/packages/lsmeans/index.html) 
+package.
+
+```{r}
+lsmeans(m, ~machine)
+```
+
+#### Means activity
+
+Consider the `ex0518` data set in the Sleuth3 package.
+
+```{r}
+ex0518 <- Sleuth3::ex0518 %>%
+  mutate(Treatment = relevel(Treatment, ref="Control"))
+
+ggplot(ex0518, aes(Treatment, Protein)) + 
+  geom_point() + 
+  theme_bw()
+```
+
+Fit a regession model of protein on treatment and 
+compute a point estimate as well as a 95% CI for the mean protein level in 
+each of the treatment (diet) levels.
+
+<div id="means_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+m <- lm(Protein ~ Treatment, data = ex0518)
+lsmeans(m, ~Treatment)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('means_activity_solution') .style.display=='none') {document.getElementById('means_activity_solution') .style.display=''}else{document.getElementById('means_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+### Comparison of means
+
+Typically we are more interested in saying something about differences in means.
+We can either try to specify the contrasts of interest, or we can use 
+pre-packaged analyses to extract those contrasts we are interested in.
+Suppose that machine C was really the control and we are interested primarily
+in comparing 
+
+- machine A to machine C and
+- machine A to machine B.
+
+We can use the `contrast`  function in the `lsmeans` package to perform the
+comparison.
+
+```{r}
+m <- lm(strength ~ machine, data = lsmeans::fiber)
+ls <- lsmeans(m, ~ machine)
+(co <- contrast(ls, method = "pairwise"))
+```
+To get the CIs, use `confint`:
+
+```{r}
+confint(co)
+```
+
+By default, these functions a Tukey multiple comparison adjustment which is the 
+most appropriate adjustment for performing all pairwise comparisons. 
+
+You can turn off the adjustment by setting the `adjust` argument to "none", e.g.
+
+```{r}
+(co <- contrast(ls, method = "pairwise", adjust="none"))
+confint(co)
+```
+
+Also, we weren't really interested in looking at all pairwise comparisons.
+Instead, we were really mainly interested in looking at machine A/B versus 
+machine C (the control).
+
+We can specify just these comparisons by changing the `method` argument to 
+"trt.vs.ctrlk" (which stands for treatment vs control).
+
+```{r}
+(co <- contrast(ls, method = "trt.vs.ctrlk"))
+confint(co)
+```
+Notice that the adjustment method used here is the `Dunnett` method which is
+the appropriate multiple comparison adjustment method for comparing all 
+treatment levels to a control. 
+
+#### Contrast activity
+
+Reconsider the `ex0518` data set and provide an estimate and 95% CI for the 
+difference in mean protein level for all treatments compared to control.
+
+<div id="contrasts_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+m <- lm(Protein ~ Treatment, data = ex0518)
+ls <- lsmeans(m, ~ Treatment)
+(co <- contrast(ls, method = "trt.vs.ctrlk"))
+confint(co)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('contrasts_activity_solution') .style.display=='none') {document.getElementById('contrasts_activity_solution') .style.display=''}else{document.getElementById('contrasts_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
