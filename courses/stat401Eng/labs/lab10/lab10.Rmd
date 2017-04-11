@@ -154,13 +154,225 @@ confint(co)
 
 
 
-## Two explanatory variables
+## Two categorical explanatory variables
 
-Consider the `fiber` data set in the lsmeans package where
-the stregnth of fibers produced by 3 different machines is tested. 
+These data are taken from 
+[a wood glue experiment](https://woodgears.ca/joint_strength/glue.html).
+For simplicity, the data here are taken to be balanced.
 
 ```{r}
-ggplot(lsmeans::fiber, aes(machine, strength)) + 
+wood_glue <- data.frame(force = c(185,170,210,240,245,190,210,250,
+                                  290,280,260,270,200,280,350,350),
+                        wood = rep(c("spruce","maple"),each = 8),
+                        glue = rep(c("carpenter's", "weldbond","gorilla","titebond"), each=2, times=2))
+```
+
+```{r}
+ggplot(wood_glue, aes(wood, force, color=glue, shape=glue)) +
+  geom_point() +
+  theme_bw()
+```
+
+We can fit the regression model with wood, glue, and their interaction.
+
+```{r}
+m <- lm(force ~ wood*glue, data = wood_glue)
+anova(m)
+```
+
+### Compare mean force averaged across wood type
+
+```{r}
+(ls <- lsmeans(m, ~ glue))
+```
+
+The note here indicates that there may be issues with comparing glue's when
+averaged over wood since, by construction of the model, the glue's effect on 
+the force may be different depending on the wood type.
+
+If we want to compare the glue's, we can use `contrast` as before.
+
+```{r}
+(co <- contrast(ls, "pairwise"))
+confint(co)
+```
+
+### Compare mean force within each wood type
+
+Since the glue's effect may depend on wood type, 
+we may be interested in comparing the glues within each wood type.
+To estimate the mean force required to break the joint for every wood-glue 
+combination use the `lsmeans` function with `A|B` denoting we want to calculate
+the means for A by B. 
+
+```{r}
+(ls <- lsmeans(m, ~ glue | wood))
+```
+
+We would have gotten the exact same result if we switched `glue` and `wood`, 
+but this provides a table in the more directly comparable order.
+
+If we want to compare glue's within the wood type, we again use `contrast`. 
+
+```{r}
+(co <- contrast(ls, "trt.vs.ctrlk"))
+confint(co)
+```
+
+#### Two categorical explanatory variables activity
+
+Consider the `ex1321` data set in the Sleuth3 package. 
+Estimate the average treatment effect on the intelligence test across all the 
+classes.
+
+<div id="twoC_activity_solution" style="display:none"> 
+
+We should always look at the data first.
+
+```{r, purl=FALSE}
+ggplot(Sleuth3::ex1321, aes(Class, Gain, color=Treatment, shape = Treatment)) +
+  geom_jitter() + 
+  theme_bw()
+```
+
+Then we can estimate the average treatment effect across the classes.
+
+```{r, purl=FALSE}
+m <- lm(Gain ~ Treatment*Class, data = Sleuth3::ex1321)
+(ls <- lsmeans(m, ~ Treatment))
+(co <- contrast(ls, "pairwise"))
+confint(co)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('twoC_activity_solution') .style.display=='none') {document.getElementById('twoC_activity_solution') .style.display=''}else{document.getElementById('twoC_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+
+
+## ANCOVA - Categorical explanatory variable with continuous explanatory variable
+
+Reconsider the `fiber` data set in the lsmeans package where
+the strength of fibers produced by 3 different machines is tested. 
+The machines do not actually produce a uniform size fiber.
+So in addition to recording the strength, the diameter of the fiber is also 
+recorded.
+Since we expect there to be differences in strength depending on the diameter,
+we should compare machine after adjusting for diameter. 
+
+```{r}
+ggplot(lsmeans::fiber, aes(diameter, strength, color=machine, shape=machine)) + 
   geom_point() + 
   theme_bw()
+```
+
+### Comparing treatments at a particular level of the continuous explanatory variable
+
+We will fit the model with an interaction between machine and diameter to allow
+the possibility that the effect of diameter depends on the machine.
+
+```{r}
+m <- lm(strength ~ diameter*machine, data=fiber)
+ls <- lsmeans(m, ~ machine)
+co <- contrast(ls, method = "pairwise")
+confint(co)
+```
+
+Again, 
+we are warned that these results may not make sense due to the interaction.
+Perhaps we should evaluate these at a particular diameter.
+
+```{r}
+ls <- lsmeans(m, ~ machine | diameter)
+co <- contrast(ls, method = "pairwise")
+confint(co)
+```
+
+We can see that, in fact, the analysis provided above was at a diameter of 
+24.1333 which happens to be the mean diameter in the data set.
+
+```{r}
+mean(fiber$diameter)
+```
+
+### Comparing the effect of the continuous variable across machines
+
+We can also look at the effect of the continuous variable across machines and 
+see if this is the same, i.e. is the slope the same for all machines.
+To do this we use the `lstrends` function.
+
+```{r}
+( lst <- lstrends(m, "machine", var = "diameter") )
+(co <- contrast(lst, method = "pairwise"))
+confint(co)
+```
+
+
+
+#### ANCOVA activity
+
+Take a look at the bat energy expenditure data set in `case1002` and determine
+the relationship between echo-locating ability and energy expenditure after
+adjusting for mass. 
+In particular, compare the differences in mean energy expenditure between 
+echolocating bats and non-echolocating bats as well as echolocating bats and 
+birds at the mean mass.
+Does comparing at the mean mass make sense?
+Also compare the effects of mass on mean energy expenditure between those same 
+groups.
+
+<div id="ancova_activity_solution" style="display:none"> 
+
+As always, plot the data. 
+
+```{r, purl=FALSE}
+ggplot(Sleuth3::case1002, aes(Mass, Energy, color = Type, shape = Type)) +
+  geom_point() + 
+  theme_bw()
+```
+
+Compare energy expenditure at mean mass.
+
+```{r, purl=FALSE}
+m <- lm(Energy ~ Mass*Type, data = Sleuth3::case1002)
+ls <- lsmeans(m, ~ Type | Mass)
+co <- contrast(ls, "pairwise") # Ideally we would use "trt.vs.ctrlk" here, can anybody figure out how?
+confint(co)
+```
+
+This doesn't really make sense since there are no echolocating bats whose mass 
+is anywhere near this range.
+
+To compare the slopes, use 
+
+```{r, purl=FALSE}
+( lst <- lstrends(m, "Type", var = "Mass") )
+(co <- contrast(lst, method = "pairwise"))
+confint(co)
+```
+
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('ancova_activity_solution') .style.display=='none') {document.getElementById('ancova_activity_solution') .style.display=''}else{document.getElementById('ancova_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+
+## Custom contrasts
+
+Although pairwise comparisons are common for contrasts, 
+we may be interested in more sophisticated contrasts. 
+For example, in the mice lifetime diet, we may be interested in comparing 
+the standard N/N85 diet to the low calorie diets.
+In addition, we may be interested in comparing N/R50 vs R/R50 to look specifically
+at pre-weaning calorie restriction.
+To perform these analysis, we use custom contrasts (although the second one is 
+technically part of the pairwise comarisons).
+
+```{r}
+m <- lm(Lifetime ~ Diet, data = Sleuth3::case0501)
+ls <- lsmeans(m, "Diet")
+#                                           N/N85 N/R40 N/R50  NP R/R50 lopro
+co <- contrast(ls, list(`High - Low`    = c(    4,   -1,   -1,  0,   -1,   -1) /4,
+                        `Pre-wean: R-N` = c(    0,    0,   -1,  0,    1,    0) ))
+confint(co)
 ```
