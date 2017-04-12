@@ -109,12 +109,12 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 |   8|         | |
 |   9|midterm| |
 |    |spring break| |
-|  10|         | |
-|  11|         | |
-|  12|         | |
-|  13|         | |
-|  14|         | |
-|  15|         | |
+|  10|Simple linear regression| |
+|  11|Multiple regression| |
+|  12|ANOVA    | |
+|  13|Contrasts| |
+|  14|Model selection| |
+|  15|Poisson and logistic regression| |
 |    |final exam| |
 
 ## Faculty Senate Recommendations
