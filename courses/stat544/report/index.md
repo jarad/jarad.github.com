@@ -43,10 +43,7 @@ sections:
 - Results 
 - Discussion
 
-Although you do not need to follow this outline, 
+Although you do not need to follow [this outline](outline.html), 
 providing a similar structure will help the flow of the manuscript. 
-Here I detail what should be included in the sections.
-
-### Introduction
 
 
