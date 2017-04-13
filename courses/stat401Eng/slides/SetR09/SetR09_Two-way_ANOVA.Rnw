@@ -74,17 +74,17 @@ various experimental designs:
 
 \frame{\frametitle{Hypotheses}
 	\begin{itemize}
-	\item Does variety affect mean yield?
+	\item How does variety affect mean yield?
 		\begin{itemize}
-		\item<4-> Is the mean yield for variety A different from B \alert{on average}?
-		\item<5-> Is the mean yield for variety A different from B \alert{at a particular value for density}?
+		\item<4-> How is the mean yield for variety A different from B \alert{on average}?
+		\item<5-> How is the mean yield for variety A different from B \alert{at a particular value for density}?
 		\end{itemize}
-	\item<2-> Does density affect mean yield?
+	\item<2-> How does density affect mean yield?
 		\begin{itemize}
-		\item<6-> Is the mean yield for density 10 different from density 20 \alert{on average}?
-		\item<7-> Is the mean yield for density 10 different from density 20 \alert{at a particular value for variety}?
+		\item<6-> How is the mean yield for density 10 different from density 20 \alert{on average}?
+		\item<7-> How is the mean yield for density 10 different from density 20 \alert{at a particular value for variety}?
 		\end{itemize}
-	\item<3-> Does density affect yield differently for each variety?
+	\item<3-> How does density affect yield differently for each variety?
 	\end{itemize}
 	
 	\vspace{0.2in} 
@@ -347,7 +347,7 @@ sm_unbalanced
 \begin{frame}[fragile]
 \frametitle{Two-way ANOVA in R}
 <<echo=TRUE>>=
-m = lm(Yield~Variety*Density, tomato)
+m = lm(Yield~Variety*Density, tomato_unbalanced)
 anova(m)
 @
 \end{frame}
@@ -490,6 +490,19 @@ The model is then $Y_i\stackrel{ind}{\sim} N(\mu_i, \sigma^2)$ and
 
 
 \subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{Two-way ANOVA in R}
+<<echo=TRUE>>=
+m <- lm(Yield ~ Variety*Density, data=tomato_incomplete)
+anova(m)
+@
+
+\pause
+
+\alert{How can you tell the design is not complete?}
+\end{frame}
+
+
 \begin{frame}[fragile]
 \frametitle{One-way ANOVA in R}
 <<echo=TRUE>>=
@@ -683,7 +696,7 @@ summary(lm(Yield~Density*Variety+I(Density^2)*Variety, tomato))
 \begin{frame}
 \frametitle{Completely randomized design (CRD)}
 This semester, we have assumed a completely randomized design. \pause As an example, consider 36 plots and we are randomly assigning our variety-density combinations to the plots such that we have 3 reps of each combination. \pause The result may look something like this
-<<out.width='0.6\\textwidth'>>=
+<<out.width='0.6\\textwidth', echo=FALSE>>=
 set.seed(20121204)
 opar = par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 
@@ -704,7 +717,7 @@ A randomized block design is appropriate when there is a nuisance factor that yo
 
 \vspace{-0.1in}
 
-<<out.width='0.6\\textwidth'>>=
+<<out.width='0.6\\textwidth', echo=FALSE>>=
 set.seed(20121204)
 opar = par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 
@@ -759,7 +772,7 @@ The cell-means model does not have enough degrees of freedom to estimate the int
 \frametitle{Why block?}
 Consider a simple experiment with 2 blocks each with 3 experimental units and 3 treatments (A, B, C). \pause 
 
-<<out.width='0.4\\textwidth', fig.width=4, fig.height=3>>=
+<<out.width='0.4\\textwidth', fig.width=4, fig.height=3, echo=FALSE>>=
 set.seed(20121204)
 opar = par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 

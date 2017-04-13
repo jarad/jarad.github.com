@@ -95,13 +95,17 @@ Suppose that machine C was really the control and we are interested primarily
 in comparing 
 
 - machine A to machine C and
-- machine A to machine B.
+- machine B to machine C.
 
 We can use the `contrast`  function in the `lsmeans` package to perform the
 comparison.
 
 ```{r}
-m <- lm(strength ~ machine, data = lsmeans::fiber)
+# First let's make C the reference level
+fiber <- lsmeans::fiber %>% 
+  mutate(machine = relevel(machine, ref="C"))
+  
+m <- lm(strength ~ machine, data = fiber)
 ls <- lsmeans(m, ~ machine)
 (co <- contrast(ls, method = "pairwise"))
 ```
@@ -126,15 +130,17 @@ Instead, we were really mainly interested in looking at machine A/B versus
 machine C (the control).
 
 We can specify just these comparisons by changing the `method` argument to 
-"trt.vs.ctrlk" (which stands for treatment vs control).
+"trt.vs.ctrl" (which stands for treatment vs control).
 
 ```{r}
-(co <- contrast(ls, method = "trt.vs.ctrlk"))
+(co <- contrast(ls, method = "trt.vs.ctrl"))
 confint(co)
 ```
-Notice that the adjustment method used here is the `Dunnett` method which is
-the appropriate multiple comparison adjustment method for comparing all 
-treatment levels to a control. 
+Notice that the adjustment method used here is the `dunnettx` method which is
+an approximation to the exact Dunnett method.
+The exact Dunnett method is appropriate choice when comparing treatments to a 
+control and can be obtained using `adjust = "mvt"`, 
+but this requires more computing time.
 
 #### Contrast activity
 
@@ -145,7 +151,7 @@ difference in mean protein level for all treatments compared to control.
 ```{r, purl=FALSE}
 m <- lm(Protein ~ Treatment, data = ex0518)
 ls <- lsmeans(m, ~ Treatment)
-(co <- contrast(ls, method = "trt.vs.ctrlk"))
+(co <- contrast(ls, method = "trt.vs.ctrl"))
 confint(co)
 ```
 </div> 
@@ -212,10 +218,10 @@ the means for A by B.
 We would have gotten the exact same result if we switched `glue` and `wood`, 
 but this provides a table in the more directly comparable order.
 
-If we want to compare glue's within the wood type, we again use `contrast`. 
+If we want to compare glues within the wood type, we again use `contrast`. 
 
 ```{r}
-(co <- contrast(ls, "trt.vs.ctrlk"))
+(co <- contrast(ls, "pairwise"))
 confint(co)
 ```
 
@@ -295,6 +301,16 @@ We can see that, in fact, the analysis provided above was at a diameter of
 mean(fiber$diameter)
 ```
 
+To set your own value(s) for diameter use the `at` argument, e.g.
+
+```{r}
+ls <- lsmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
+co <- contrast(ls, method = "pairwise")
+confint(co)
+```
+
+
+
 ### Comparing the effect of the continuous variable across machines
 
 We can also look at the effect of the continuous variable across machines and 
@@ -336,12 +352,13 @@ Compare energy expenditure at mean mass.
 ```{r, purl=FALSE}
 m <- lm(Energy ~ Mass*Type, data = Sleuth3::case1002)
 ls <- lsmeans(m, ~ Type | Mass)
-co <- contrast(ls, "pairwise") # Ideally we would use "trt.vs.ctrlk" here, can anybody figure out how?
+co <- contrast(ls, "trt.vs.ctrl") 
 confint(co)
 ```
 
 This doesn't really make sense since there are no echolocating bats whose mass 
 is anywhere near this range.
+
 
 To compare the slopes, use 
 

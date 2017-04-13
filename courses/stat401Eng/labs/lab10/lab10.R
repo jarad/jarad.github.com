@@ -32,7 +32,11 @@ ggplot(ex0518, aes(Treatment, Protein)) +
   theme_bw()
 
 ## ------------------------------------------------------------------------
-m <- lm(strength ~ machine, data = lsmeans::fiber)
+# First let's make C the reference level
+fiber <- lsmeans::fiber %>% 
+  mutate(machine = relevel(machine, ref="C"))
+  
+m <- lm(strength ~ machine, data = fiber)
 ls <- lsmeans(m, ~ machine)
 (co <- contrast(ls, method = "pairwise"))
 
@@ -44,7 +48,7 @@ confint(co)
 confint(co)
 
 ## ------------------------------------------------------------------------
-(co <- contrast(ls, method = "trt.vs.ctrlk"))
+(co <- contrast(ls, method = "trt.vs.ctrl"))
 confint(co)
 
 ## ------------------------------------------------------------------------
@@ -73,7 +77,7 @@ confint(co)
 (ls <- lsmeans(m, ~ glue | wood))
 
 ## ------------------------------------------------------------------------
-(co <- contrast(ls, "trt.vs.ctrlk"))
+(co <- contrast(ls, "pairwise"))
 confint(co)
 
 ## ------------------------------------------------------------------------
@@ -94,6 +98,11 @@ confint(co)
 
 ## ------------------------------------------------------------------------
 mean(fiber$diameter)
+
+## ------------------------------------------------------------------------
+ls <- lsmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
+co <- contrast(ls, method = "pairwise")
+confint(co)
 
 ## ------------------------------------------------------------------------
 ( lst <- lstrends(m, "machine", var = "diameter") )
