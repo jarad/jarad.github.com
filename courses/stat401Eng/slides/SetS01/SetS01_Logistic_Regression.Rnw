@@ -1,0 +1,259 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set S01 - Logistic Regression}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("gridExtra")
+# library("xtable")
+# library("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\frame{\frametitle{Linear regression}
+  The linear regression model
+	\[ \begin{array}{r@{\,}l} Y_i &\stackrel{ind}{\sim} N(\mu_i,\sigma^2) \\
+	\mu_i &= \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p} \end{array} \]
+	
+	\pause where
+	\begin{itemize}
+	\item $Y_i$ is continuous
+	\item $X_i$ is continuous or categorical (indicator variables)
+	\end{itemize}
+	
+	\vspace{0.2in} \pause
+	
+	What if $Y_i$ is 
+	\begin{itemize}
+	\item binary or 
+	\item a count of the number of success out of some total?
+	\end{itemize}
+}
+
+
+
+
+
+
+
+\section{Logistic regression}
+\begin{frame}
+\frametitle{Logistic regression}
+
+Let 
+\[
+Y_i = \left\{ \begin{array}{rl}
+1 & \mbox{if observation $i$ is a ``success'} \\
+0 & \mbox{otherwise}.
+\end{array} \right.
+\]
+\pause 
+and $X_{i}$ be an explanatory variable that affects the probability of 
+success $\theta_i$ for observation $i$. 
+
+\vspace{0.1in} \pause
+
+Then a logistic regression model is 
+\[
+Y_i \sim Ber(\theta_i) 
+\quad \mbox{and} \quad \pause
+\mbox{logit}(\theta_i)=\mbox{log}\left( \frac{\theta_i}{1-\theta_i} \right)= \beta_0+\beta_1 X_{i}
+\]
+\pause
+where the logistic function of $X_i$ is 
+\[ 
+\theta_i = f(X_i) =  \frac{1}{1+e^{-(\beta_0+\beta_1 X_{i})}}.
+\]
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+<<>>=
+d <- expand.grid(b0 = c(-1,0,1), b1 = c(-1,0,1), x = seq(-4,4,by=0.1)) %>%
+  mutate(theta = 1/(1+exp(-(b0+b1*x))),
+         beta0 = as.factor(b0),
+         beta1 = as.factor(b1)) 
+
+ggplot(d, aes(x,theta,color=beta0,linetype=beta1,group=interaction(beta0,beta1))) + 
+  geom_line() + 
+  theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Lung cancer due to smoking}
+
+To \emph{prove} a causal relationship between lung cancer and smoking, 
+there should be clear evidence that there is a dose response between lung cancer
+and smoking. 
+
+\vspace{0.1in} \pause
+
+But since lung cancer is binary, 
+we need to compare the number of individuals who have lung cancer and those
+who don't amongst the individuals who smoke about the same amount.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+lung_cancer <- Sleuth3::case2002 %>%
+  mutate(`Lung Cancer` = ifelse(LC=="NoCancer", "No","Yes"),
+         `Cigarettes Per Day` = CD)
+
+ggplot(lung_cancer, aes(`Cigarettes Per Day`, `Lung Cancer`)) + 
+  geom_jitter(height=0.1) +
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Analysis}
+
+<<>>=
+m <- glm(`Lung Cancer`=="Yes" ~ `Cigarettes Per Day`, 
+         data = lung_cancer,
+         family = "binomial")
+
+summary(m)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(lung_cancer, aes(`Cigarettes Per Day`, 1*(`Lung Cancer` == "Yes"))) + 
+  geom_jitter(height=0.1) + 
+  stat_smooth(method="glm", 
+              se=FALSE, 
+              method.args = list(family="binomial"))  +
+  theme_bw() + 
+  scale_y_continuous(breaks=c(0,1), labels=c("No","Yes")) +
+  labs(y = "Lung Cancer")
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Grouping}
+
+Often data are grouped:
+<<>>=
+lung_cancer_grouped <- lung_cancer %>%
+  group_by(`Cigarettes Per Day`) %>%
+  summarize(`Number of individuals` = n(),
+            `Number with lung cancer` = sum(`Lung Cancer` == "Yes"),
+            `Number without lung cancer` = sum(`Lung Cancer` == "No"),
+            `Proportion with lung cancer` = `Number with lung cancer`/`Number of individuals`)
+
+lung_cancer_grouped
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial distribution}
+  The probability mass function of the binomial distribution is
+	\[ P(Y=y) = {n\choose y} \theta^y (1-\theta)^{n-y} \qquad y=0,1,2,\ldots,n\]
+	\pause Properties:
+	\begin{itemize}
+	\item $E[Y]=\pause n\theta$ \pause
+	\item $V[Y]=\pause n\theta(1-\theta)$ \pause
+	\end{itemize}
+	
+<<fig.width=10>>=
+xx = 0:10
+plot(xx, dbinom(xx, 10, .3), main="Probability mass function for Bin(10,.3)", 
+     xlab="y", ylab="P(Y=Y)", pch=19)
+@
+\end{frame}
+
+
+
+\frame{\frametitle{Logistic regression for grouped data}
+	The model
+	\[ \begin{array}{r@{\,}l}
+	Y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \pause \\ \\
+	\mbox{logit}(\theta_i)&=\mbox{log}\left( \frac{\theta_i}{1-\theta_i} \right)= \beta_0+\beta_1 X_{i}
+	\end{array} \]
+	\pause where
+	\begin{itemize}
+	\item $Y_i$ is an integer from 0 to $n_i$ \pause
+	\item Bin refers to the binomial distribution \pause
+	\end{itemize}
+}
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Logistic regression in R}
+
+<<>>=
+m = glm(cbind(`Number with lung cancer`, `Number without lung cancer`) ~ `Cigarettes Per Day`, 
+        data = lung_cancer_grouped, 
+        family="binomial")
+summary(m)
+confint(m)
+@
+
+\end{frame}
+
+
+\subsection{Multiple explanatory variables}
+\begin{frame}
+\frametitle{Logistic regression with multiple explanatory variables}
+
+<<>>=
+pairs(Sleuth3::case2002)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Logistic regression with multiple explanatory variables}
+<<>>=
+# LC is binary
+summary(m <- glm(LC~FM+SS+BK+AG+YR+CD, data=Sleuth3::case2002, family="binomial"))
+@
+\end{frame}
+
+
+\end{document}
+
+
+
