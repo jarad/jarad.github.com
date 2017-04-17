@@ -54,7 +54,11 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Experimental design|[SetR08.Rnw](SetR08/SetR08_Experimental_design.Rnw)|[SetR08.pdf](SetR08/SetR08_Experimental_design.pdf)|  
 |Two-way ANOVA|[SetR09.Rnw](SetR09/SetR09_Two-way ANOVA.Rnw)|[SetR09.pdf](SetR09/SetR09_Two-way ANOVA.pdf)|  
 
+### Supplementary topics
 
+|Topic|Source|Handouts|
+|---|---|---|
+|Logistic Regression|[SetS01.Rnw](SetS01/SetS01_Logistic_Regression.Rnw)|[SetS01.pdf](SetS01/SetS01_Logistic_Regression.pdf)|
 
 
 ## Rnw compilation instructions

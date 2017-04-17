@@ -99,12 +99,49 @@ d <- expand.grid(b0 = c(-1,0,1), b1 = c(-1,0,1), x = seq(-4,4,by=0.1)) %>%
 
 ggplot(d, aes(x,theta,color=beta0,linetype=beta1,group=interaction(beta0,beta1))) + 
   geom_line() + 
-  theme_bw()
+  theme_bw() +
+  labs(x="Explanatory variable (x)", y="Probability of success")
 @
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Interpretation}
 
+\small
+
+When $X_i = 0$, then 
+\[ 
+E[Y_i|X_i=0] = \theta_i = \frac{1}{1+e^{-\beta_0}}
+\]
+\pause
+thus $\beta_0$ determines the \alert{probability of success when the 
+explanatory variable is zero}.
+
+\vspace{0.1in} \pause
+
+The odds of success when $X_1=x$ is 
+\[ 
+\frac{\theta_1}{1-\theta_1} = e^{\beta_0+\beta_1x}.
+\]
+\pause
+The probability of success when $X_2=x+1$ is 
+\[ 
+\frac{\theta_2}{1-\theta_2} = e^{\beta_0+\beta_1(x+1)} = e^{\beta_0+\beta_1x+\beta_1}.
+\]
+\pause
+Thus, the multiplicative change in the odds for a 1 unit increase in $x$ is 
+\[
+\frac{\frac{\theta_2}{1-\theta_2}}{\frac{\theta_1}{1-\theta_1}} = 
+\frac{e^{\beta_0+\beta_1x+\beta_1}}{e^{\beta_0+\beta_1x}} = e^\beta_1
+\]
+\pause
+This is also referred to as an \alert{odds ratio}.
+
+\end{frame}
+
+
+\subsection{Example}
 \begin{frame}[fragile]
 \frametitle{Lung cancer due to smoking}
 
@@ -115,8 +152,17 @@ and smoking.
 \vspace{0.1in} \pause
 
 But since lung cancer is binary, 
-we need to compare the number of individuals who have lung cancer and those
+we need to compare the proportion of individuals who have lung cancer to those
 who don't amongst the individuals who smoke about the same amount.
+
+\vspace{0.1in} \pause
+
+To investigate the causes of lung cancer, researchers conducted a 
+\alert{case-control} study where the 49 cases of individuals with lung cancer
+where \emph{matched} with 98 controls from a population of residents having the
+same general age structure. \pause 
+(In case-control studies, the intercept does not have our standard 
+interpretation because it is determined by our sampling.)
 
 \end{frame}
 
@@ -202,7 +248,9 @@ plot(xx, dbinom(xx, 10, .3), main="Probability mass function for Bin(10,.3)",
 
 
 \frame{\frametitle{Logistic regression for grouped data}
-	The model
+  Let $Y_i$ be the number of success out of $n_i$ attempts in group $i$. 
+  \pause
+  Then a logistic regression model is 
 	\[ \begin{array}{r@{\,}l}
 	Y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \pause \\ \\
 	\mbox{logit}(\theta_i)&=\mbox{log}\left( \frac{\theta_i}{1-\theta_i} \right)= \beta_0+\beta_1 X_{i}
@@ -235,12 +283,74 @@ confint(m)
 
 \subsection{Multiple explanatory variables}
 \begin{frame}
-\frametitle{Logistic regression with multiple explanatory variables}
+\frametitle{Effect of birdkeeping on lung cancer}
+
+The data set we have been analyzing was actually constructed to investigate
+the relationship between birdkeeping and lung cancer.
+\pause
+But, since we know smoking increase the probability of developing lung cancer,
+we want to \alert{control} for the effect of smoking when assessing the effect
+of bird keeping. 
+\pause
+Thus, we will run a logistic regression with both smoking and bird-keeping
+to determine the effect of bird-keeping on lung cancer.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Summarize data}
 
 <<>>=
-pairs(Sleuth3::case2002)
+lung_cancer_bird <- Sleuth3::case2002 %>%
+  group_by(CD, BK) %>%
+  summarize(y = sum(LC == "LungCancer"),
+            n = n(),
+            p = y/n)
+
+lung_cancer_bird
 @
 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualize data}
+
+<<>>=
+ggplot(lung_cancer_bird, aes(CD, p, size=n, color=BK, shape=BK)) + 
+  geom_point() + 
+  theme_bw() +
+  labs(x="Cigarettes per day", y="Proportion with lung cancer")
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Model}
+
+  Let $Y_i$ be the number of success out of $n_i$ attempts in group $i$ with 
+  explanatory variables $X_{i,1}$ and $X_{i,2}$.
+  \pause
+  Then a logistic regression model is 
+	\[ \begin{array}{r@{\,}l}
+	Y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \pause \\ \\
+	\mbox{logit}(\theta_i)&=\mbox{log}\left( \frac{\theta_i}{1-\theta_i} \right)= \beta_0+\beta_1 X_{i,1} + \beta_2 X_{i,2}
+	\end{array} \]
+	
+	\pause
+	
+	The interpretation is 
+	\begin{itemize}
+	\item The probability of success is $\frac{1}{1+e^{-\beta_0}}$ when all 
+	explanatory variables are zero. \pause (Except in a case-control study.) \pause
+	\item The odds ratio for a one unit increase in $X_{i,1}$ is $e^\beta_1$ when 
+	holding all other explanatory variables constant. \pause
+	\item The odds ratio for a one unit increase in $X_{i,2}$ is $e^\beta_2$ when 
+	holding all other explanatory variables constant.
+	\end{itemize}
 \end{frame}
 
 
@@ -248,7 +358,21 @@ pairs(Sleuth3::case2002)
 \frametitle{Logistic regression with multiple explanatory variables}
 <<>>=
 # LC is binary
-summary(m <- glm(LC~FM+SS+BK+AG+YR+CD, data=Sleuth3::case2002, family="binomial"))
+summary(m <- glm(cbind(y,n-y) ~ CD + BK, data=lung_cancer_bird, family="binomial"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+nd <- expand.grid(CD = 0:45, BK=c("Bird","NoBird"))
+pd <- cbind(nd, data.frame(p=predict(m, newdata = nd, type = "response")))
+
+ggplot() + 
+  geom_point(data = lung_cancer_bird, aes(CD, p, size=n, color=BK, shape=BK)) + 
+  geom_line(data = pd, aes(CD, p, color=BK, linetype=BK)) + 
+  theme_bw() + 
+  labs(x="Cigarettes per day", y="Proportion with lung cancer")
 @
 \end{frame}
 
