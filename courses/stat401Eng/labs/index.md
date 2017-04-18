@@ -18,3 +18,4 @@ tagline: Statistical Methods for Research Workers
  - [Lab08](lab08/lab08.html) - Regression with Factors
  - [Lab09](lab09/lab09.html) - ANOVA and F-tests
  - [Lab10](lab10/lab10.html) - Contrasts
+ - [Lab11](lab11/lab11.html) - Generalized linear mixed effect models
