@@ -1,0 +1,410 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set S02 - Poisson Regression}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Linear regression}
+For continuous $Y_i$, we have linear regression
+\[ \begin{array}{r@{\,}l} 
+Y_i &\ind N(\mu_i,\sigma^2) \\
+\mu_i &= \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p} 
+\end{array} \]
+	
+\vspace{0.1in} \pause
+
+For binary or count with an upper maximum $Y_i$, we have logistic regression
+
+\[ \begin{array}{r@{\,}l} 
+Y_i &\ind Bin(n_i,\theta_i) \\
+\log\left( \frac{\theta_i}{1-\theta_i} \right) &= \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p} 
+\end{array} \]
+	
+\vspace{0.1in} \pause
+
+What if $Y_i$ is a count without a maximum?
+	
+\end{frame}
+
+
+
+
+
+
+
+\section{Poisson regression}
+\begin{frame}
+\frametitle{Poisson regression}
+
+Let $Y_i\in\{0,1,2,\ldots\}$ be a count (typically over some amount of time
+or some amount of space) with associated explanatory variables $X_{i,1}, 
+X_{i,2}, \ldots$.
+
+\vspace{0.1in} \pause
+
+Then a Poisson regression model is 
+\[
+Y_i \ind Po(\lambda_i) 
+\]
+and
+\[
+\log(\lambda_i) 
+= \beta_0+\beta_1 X_{i,1} + \beta_2 X_{i,2} + \cdots +\beta_p X_{i,p} 
+\]
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Interpretation}
+
+\small
+
+When all explanatory variables are zero, then 
+\[ 
+E[Y_i|X_{i,1}=0, \ldots,X_{i,p}=0] \pause = \lambda_i \pause = e^{\beta_0}
+\]
+\pause
+thus $\beta_0$ determines the \alert{expected response when all explanatory
+variables are zero}.
+
+\vspace{0.1in} \pause
+
+More generally, 
+\[ 
+E[Y_i|X_{i,1}=x_1, \ldots,X_{i,p}=x_p] 
+\pause 
+= e^{\beta_0+\beta_1x_1+\cdots+\beta_px_p}.
+\]
+\pause
+If $X_{i,1}$  increases by one unit, we have 
+\[ 
+E[Y_i|X_{i,1}=x_1+1, \ldots,X_{i,p}=x_p] 
+\pause 
+= e^{\beta_0+\beta_1(x_1+1)+\cdots+\beta_px_p}
+\pause
+= e^{\beta_0+\beta_1x_1+\cdots+\beta_px_p}e^{\beta_1}
+\]
+\pause
+Thus 
+\[
+\frac{E[Y_i|X_{i,1}=x_1+1, \ldots,X_{i,p}=x_p]}{E[Y_i|X_{i,1}=x_1\phantom{+1}, \ldots,X_{i,p}=x_p]} 
+\pause 
+= e^{\beta_1}.
+\]
+\pause
+Thus $e^{\beta_p}$ is the \alert{multiplicative effect on the mean response for
+a one unit increase in the associated explanatory variable when holding all
+other explanatory variables constant.}
+\end{frame}
+
+
+\subsection{Example}
+\begin{frame}[fragile]
+\frametitle{Salamander habitat}
+
+\begin{quote}
+The Del Norte Salamander (plethodon elongates) is a small (5–7 cm) salamander found among rock rubble, rock outcrops and moss-covered talus in a narrow range of northwest California. To study the habitat characteristics of the species and particularly the tendency of these salamanders to reside in dwindling old-growth forests, researchers selected 47 sites from plausible salamander habitat in national forest and parkland. Randomly chosen grid points were searched for the presence of a site with suitable rocky habitat. At each suitable site, a 7 metre by 7 metre search are was examined for the number of salamanders it contained.
+\end{quote}
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(Sleuth3::case2202, aes(ForestAge, Salamanders)) + 
+  geom_point() + 
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(Sleuth3::case2202, aes(ForestAge, log(Salamanders+1))) + 
+  geom_point() + 
+  theme_bw()
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Analysis}
+
+<<>>=
+m <- glm(Salamanders ~ ForestAge, 
+         data = Sleuth3::case2202,
+         family = "poisson")
+
+summary(m)
+@
+
+\end{frame}
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(Sleuth3::case2202, aes(ForestAge, Salamanders)) + 
+  geom_point() + 
+  stat_smooth(method="glm", 
+              se=FALSE, 
+              method.args = list(family="poisson"))  +
+  theme_bw() 
+@
+\end{frame}
+
+
+
+
+
+\subsection{Multiple explanatory variables}
+\begin{frame}[fragile]
+\frametitle{Salamander habitat (cont.)}
+
+<<>>=
+m <- glm(Salamanders ~ ForestAge * PctCover, 
+         data = Sleuth3::case2202,
+         family = "poisson")
+
+summary(m)
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Offset}
+
+If not all counts are based on the same amount of time or space, 
+we need to account for the amount of time or space used.
+\pause
+To do this, we can include an \alert{offset}.
+
+\vspace{0.1in} 
+
+Let $T_i$ represent the amount of time or space, \pause
+then a Poisson regression model with an offset is 
+\[
+Y_i \ind Po(\lambda_i) 
+\]
+and
+\[
+\log(\lambda_i) 
+= \log(T_i) + \beta_0+\beta_1 X_{i,1} + \beta_2 X_{i,2} + \cdots +\beta_p X_{i,p}.
+\]
+\pause
+The offset is $\log(T_i)$ and can be thought of as an explanatory variable
+with a known coefficient of 1. 
+\pause
+Note that 
+\[ 
+\log E[Y_i/T_i] = \beta_0+\beta_1 X_{i,1} + \beta_2 X_{i,2} + \cdots +\beta_p X_{i,p}
+\]
+so we are effectively modeling the \alert{rate}. 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Airline crash data}
+
+When considering airline crash data, 
+we need to account for the fact that airlines are (typically) flying more miles
+year over year. 
+
+\pause
+
+<<>>=
+airline = data.frame(year=1976:1985,
+                     fatal_accidents = c(24,25,31,31,22,21,26,20,16,22),
+                     passenger_deaths = c(734,516,754,877,814,362,764,809,223,1066),
+                     death_rate = c(0.19,0.12,0.15,0.16,0.14,0.06,0.13,0.13,0.03,0.15)) %>%
+  mutate(miles_flown = passenger_deaths / death_rate)
+
+airline
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualize airline crash data}
+
+<<>>=
+ggplot(airline, aes(year, fatal_accidents)) + 
+  geom_point() + 
+  scale_x_continuous(breaks= scales::pretty_breaks()) + 
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Visualize airline crash data}
+
+<<>>=
+ggplot(airline, aes(year, fatal_accidents/miles_flown)) + 
+  geom_point() + 
+  scale_x_continuous(breaks= scales::pretty_breaks()) + 
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Offset in R}
+
+<<>>=
+m <- glm(fatal_accidents ~ year + offset(log(miles_flown)), 
+         data = airline,
+         family = "poisson")
+
+summary(m)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Offset in R}
+
+<<>>=
+m <- glm(fatal_accidents ~ year + log(miles_flown), 
+         data = airline,
+         family = "poisson")
+
+confint(m) # No evidence coefficient for log(miles_flown) is incompatible with 1
+@
+
+\end{frame}
+
+
+
+\section{Likelihood ratio tests}
+\begin{frame}
+\frametitle{Likelihood ratio tests}
+
+\small
+
+To compare nested generalized linear models, 
+we use likelihood ratio tests. 
+
+\vspace{0.1in} \pause
+
+Suppose we have a model $p(y|\theta)$ for our data \pause and two hypotheses
+\begin{itemize}
+\item $H_0: \theta = \theta_0$ and 
+\item $H_A: \theta \ne \theta_0$.
+\end{itemize}
+\pause
+
+Then the likelihood is $L(\theta) = p(y|\theta)$ \pause and the likelihood 
+ratio statistics is 
+\[
+\lambda = \frac{L(\theta_0)}{L\left(\hat\theta_{MLE}\right)} 
+= \frac{p(y|\theta_0)}{p\left(y\left|\hat\theta_{MLE}\right.\right)}.
+\]
+Asymptotically (as we have more data) under $H_0$,
+\[ 
+\mbox{deviance} = -2\log(\lambda) \stackrel{d}{\to} \chi^2_v
+\]
+\pause 
+where $\chi^2_v$ is a chi-squared distribution with $v$ degrees of freedom
+and $v$ is the number of parameters in $\theta$, i.e. the number of parameters
+set to a known value. \pause The pvalue is 
+\[ 
+pvalue = P\left(\chi^2_v > -2\log(\lambda)\right).
+\]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{$\chi^2$-distributions}
+
+If $X\sim \chi^2_v$, then $X$ has a chi-squared distribution with $v$ degrees
+of freedom.
+
+\vspace{0.1in} \pause
+
+The probability density function is 
+\[ 
+p(x) = \frac{1}{2^{\frac{v}{2}}\Gamma\left(\frac{v}{2}\right)}x^{\frac{v}{2}-1}e^{-\frac{x}{2}}
+\]
+with support $x\in[0,\infty)$. 
+\pause
+We have 
+\[ \begin{array}{rl}
+E[X] &= v \\
+Var[X] &= 2v.
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{$\chi^2$-distribution visualization}
+
+<<echo=FALSE>>=
+d = expand.grid(df = c(1,2,3,4,6,9),
+                x = seq(0,8,by=0.01)) %>%
+  mutate(density = dchisq(x, df)) %>%
+  mutate(df = factor(df))
+  
+ggplot(d, aes(x, density, color=df, linetype=df, group=df)) + 
+  geom_line() + 
+  ylim(0,0.5) +
+  theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Likelihood ratio tests in R}
+
+<<>>=
+m <- glm(Salamanders ~ ForestAge * PctCover, 
+         data = Sleuth3::case2202,
+         family = "poisson")
+
+anova(m, test="Chi")
+@
+\end{frame}
+
+\end{document}
+
+
+

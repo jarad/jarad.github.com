@@ -52,13 +52,14 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |ANOVA/F-tests|[SetR06.Rnw](SetR06/SetR06_ANOVA_F-tests.Rnw)|[SetR06.pdf](SetR06/SetR06_ANOVA_F-tests.pdf)|  
 |Contrasts|[SetR07.Rnw](SetR07/SetR07_Contrasts.Rnw)|[SetR07.pdf](SetR07/SetR07_Contrasts.pdf)|  
 |Experimental design|[SetR08.Rnw](SetR08/SetR08_Experimental_design.Rnw)|[SetR08.pdf](SetR08/SetR08_Experimental_design.pdf)|  
-|Two-way ANOVA|[SetR09.Rnw](SetR09/SetR09_Two-way ANOVA.Rnw)|[SetR09.pdf](SetR09/SetR09_Two-way ANOVA.pdf)|  
+|Two-way ANOVA|[SetR09.Rnw](SetR09/SetR09_Two-way_ANOVA.Rnw)|[SetR09.pdf](SetR09/SetR09_Two-way_ANOVA.pdf)|  
 
 ### Supplementary topics
 
 |Topic|Source|Handouts|
 |---|---|---|
 |Logistic Regression|[SetS01.Rnw](SetS01/SetS01_Logistic_Regression.Rnw)|[SetS01.pdf](SetS01/SetS01_Logistic_Regression.pdf)|
+|Poisson Regression|[SetS02.Rnw](SetS02/SetS02_Poisson_Regression.Rnw)|[SetS02.pdf](SetS02/SetS02_Poisson_Regression.pdf)|
 
 
 ## Rnw compilation instructions
