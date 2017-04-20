@@ -88,17 +88,28 @@ A few special cases are
 \begin{frame}
 \frametitle{Ridge regression}
 
-Suppose 
-\[ y \sim N(X\beta,\sigma^2\I) \]
+Let  
+\[
+y = X\beta + e, \quad E[e] = 0, \quad Var[e] = \sigma^2 \I
+\]
 \pause then ridge regression seeks to minimize 
 \[ (y-X\beta)'(y-X\beta) + g\beta'\beta  \]
 \pause where $g$ is a penalty for $\beta'\beta$ getting too large.
 
 \vspace{0.2in} \pause
 
-This looks like -2 times the log posterior when using independent normal priors centered at zero with a common variance ($c_0$) for $\beta$: \pause 
-\[ -2\log p(\beta,\sigma|y) = C + \frac{1}{\sigma^2} (y-X\beta)'(y-X\beta) + \frac{1}{c_0} \beta'\beta  \]
+This minimization looks like -2 times the log posterior for a Bayesian 
+regression analysis when using independent normal priors centered at zero with 
+a common variance ($c_0$) for $\beta$: 
+\pause 
+\[ -2 \sigma^2 \log p(\beta,\sigma|y) 
+= C + (y-X\beta)'(y-X\beta) + \frac{\sigma^2}{c_0} \beta'\beta  \]
 where $g=\sigma^2/c_0$.
+\pause
+Thus the ridge regression estimate is equivalent to a MAP estimate when 
+\[ 
+y \sim N(X\beta, \sigma^2\I)\quad \beta \sim N(0,c_0\I).
+\]
 
 \end{frame}
 
@@ -141,7 +152,7 @@ summary(lm(y~X))
 
 <<echo=TRUE>>=
 library(MASS)
-gs = seq(0,0.1, .0001)
+gs = seq(from = 0, to = 0.1, by = 0.0001)
 m = lm.ridge(GNP.deflator ~ ., longley, lambda = gs) 
 
 # Choose the ridge penalty
@@ -276,7 +287,8 @@ m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
 
 \section{Regression with known covariance matrix}
 \frame{\frametitle{Known covariance matrix}
-  Suppose $y\sim N(X\beta,S)$ where $S$ is a known covariance matrix, then $p(\beta)\propto 1$ is a non-informative prior.
+  Suppose $y\sim N(X\beta,S)$ where $S$ is a known covariance matrix and 
+  assume $p(\beta)\propto 1$.
   
   \vspace{0.2in} \pause
   
@@ -323,7 +335,8 @@ ar1 = ddply(data.frame(rho=c(0.01,0.5,0.99)), .(rho), function(x) {
   data.frame(t=1:length(x), x=x)
 })
 ggplot(ar1, aes(t,x,color=factor(rho))) +
-  geom_line()
+  geom_line() +
+  theme_bw()
 @
 \end{frame}
 
