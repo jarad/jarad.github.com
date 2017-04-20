@@ -160,7 +160,7 @@ select(m)
 
 # Estimates
 est = data.frame(lambda = gs, t(m$coef))
-est[round(est$lambda,4) %in% c(.0068,.0053,.0057),]
+est[round(est$lambda,4) %in% c(.0068,.053,.0057),]
 @
 \end{frame}
 
@@ -168,7 +168,10 @@ est[round(est$lambda,4) %in% c(.0068,.0053,.0057),]
 \begin{frame}[fragile]
 \frametitle{Ridge regression in MASS package}
 <<>>=
-plot(m)
+opar=par(mar=c(5,4,0,0)+0.1)
+matplot(m$lambda, t(m$coef), type = 'l',
+        xlab = "penalty (g)", ylab = "Ridge regression estimates (MAP)")
+par(opar)
 @
 \end{frame}
 
@@ -192,7 +195,7 @@ The posterior is then
 \end{array} \]
 with 
 \[ \begin{array}{rl}
-E[\beta|y] &= \frac{g}{g+1}\left( \frac{b_0}{g}+\hat{\beta}\right) \\
+E[\beta|y] &= \frac{1}{g+1}b_0 + \frac{g}{g+1}\hat\beta \\
 E[\sigma^2|y] &= \frac{(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)}{n-2}
 \end{array} \]
 
@@ -308,17 +311,17 @@ m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
 \frame{\frametitle{Autoregressive process of order 1}
   A mean zero, stationary autoregressive process of order 1  assumes
   \[ \epsilon_t = r \epsilon_{t-1} + \delta_t \]
-  \pause with $-1<r<1$ and $\delta_t \stackrel{ind}{\sim} N(0,t^2)$. 
+  \pause with $-1<r<1$ and $\delta_t \stackrel{ind}{\sim} N(0,v^2)$. 
   
   \vspace{0.2in} \pause 
   
   Suppose 
   \[ y_t = X_t'\beta + \epsilon_t \]
   or, equivalently, 
-  \[ y = N(X\beta, S) \]
+  \[ y \sim N(X\beta, S) \]
   \pause where $S=s^2 R$ with 
   \begin{itemize}[<+->]
-  \item stationary variance $s^2=t^2/[1-r^2]$ and 
+  \item stationary variance $s^2=v^2/[1-r^2]$ and 
   \item correlation matrix $R$ with elements $R_{ij} = r^{|i-j|}$.
   \end{itemize}
 }
@@ -343,9 +346,9 @@ ggplot(ar1, aes(t,x,color=factor(rho))) +
 \begin{frame}[fragile]
 \frametitle{Calculate posterior}
 <<known_covariance, echo=TRUE>>=
-ar1_covariance = function(n, r, s) {
+ar1_covariance = function(n, r, v) {
   V = diag(n)
-  s^2/(1-r^2) * r^(abs(row(V)-col(V)))
+  v^2/(1-r^2) * r^(abs(row(V)-col(V)))
 }
 
 # Covariance 
