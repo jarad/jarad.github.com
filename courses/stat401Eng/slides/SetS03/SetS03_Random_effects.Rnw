@@ -1,0 +1,255 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set S03 - Random effects}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("lme4")
+library("lsmeans")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Regression models}
+For continuous $Y_i$, we have linear regression
+\[  
+Y_i \ind N(\mu_i,\sigma^2), \quad 
+\mu_i = \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p} 
+\]
+	
+\vspace{0.1in} \pause
+
+For binary or count with an upper maximum $Y_i$, we have logistic regression
+
+\[  
+Y_i \ind Bin(n_i,\theta_i), \quad
+\log\left( \frac{\theta_i}{1-\theta_i} \right) 
+= \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p} 
+\]
+	
+\vspace{0.1in} \pause
+
+For count data with no upper maximum, we have Poisson regression
+
+\[ 
+Y_i \ind Po(\lambda_i), \quad
+\log\left( \lambda_i \right) = \beta_0+\beta_1 X_{i,1}+\cdots +\beta_p X_{i,p} 
+ \]
+	
+\vspace{0.1in} \pause
+
+But what if our observations cannot reasonably be assumed to be independent 
+given these explanatory variables?
+
+\end{frame}
+
+
+\section{Random effect model}
+\begin{frame}
+\frametitle{Random effect model}
+
+Suppose we have continuous observations $Y_{ij}$ for individual $i$ from 
+group $j$. 
+\pause 
+A random effects model (with a common variance) assumes 
+\[ 
+Y_{ij} = \mu + \alpha_j + \epsilon_{ij} \quad \epsilon_{ij}\ind N(0,\sigma_\epsilon^2)
+\]
+\pause
+and, to make the $\alpha_i$ random effects, independent of $\epsilon_{ij}$
+\[ 
+\alpha_j \ind N(0,\sigma_\alpha^2).
+\]
+\pause
+This makes observations within the group correlated since 
+\[ \begin{array}{rl}
+Cov[Y_{ij},Y_{i'j}] &= Cov[\alpha_j+\epsilon_{ij},\alpha_j+\epsilon_{i'j}] \\
+% &= Cov[\alpha_j,\alpha_j] + Cov[\alpha_j,\epsilon_{i'j}] + 
+%    Cov[\epsilon_{ij},\alpha_j] + Cov[\epsilon_{ij},\epsilon_{i'j}] \\
+&= Var[\alpha_j] = \sigma_\alpha^2
+\end{array} \]
+and
+\[
+Cor[Y_{ij},Y_{i'j}] = \frac{Cov[Y_{ij},Y_{i'j}]}{\sqrt{Var[Y_{ij}]Var[Y_{i'j}]}} 
+= \frac{\sigma_\alpha^2}{\sigma_\alpha^2+\sigma_\epsilon^2}.
+\]
+
+\end{frame}
+
+
+
+\subsection{Sleep study example}
+\begin{frame}[fragile]
+\frametitle{Sleep study example}
+
+<<>>=
+ggplot(sleepstudy, aes(Subject, Reaction)) + geom_point() + theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Sleep study example}
+
+<<>>=
+summary(me <- lmer(Reaction ~ (1|Subject), sleepstudy))
+@
+
+\end{frame}
+
+
+\section{Mixed effect model}
+\begin{frame}
+\frametitle{Mixed effect model}
+
+Suppose we have continuous observations $Y_{ij}$ for individual $i$ from 
+group $j$ and an associated explanatory variable $X_{ij}$.
+\pause 
+A mixed effect model assumes 
+\[ 
+Y_{ij} = \beta_0 + \beta_1X_{ij} + \alpha_j + \epsilon_{ij} \quad \epsilon_{ij}\ind N(0,\sigma_\epsilon^2)
+\]
+\pause
+and, to make the $\alpha_i$ random effects, independent of $\epsilon_{ij}$
+\[ 
+\alpha_j \ind N(0,\sigma_\alpha^2).
+\]
+\pause
+Again, this enforces a correlation between the observations within a group. 
+\pause
+This model is often referred to as a \alert{random intercept model} because
+each group has its own intercept ($\beta_0+\alpha_j$) and these are \emph{random} 
+since $\alpha_j$ has a distribution. 
+\pause
+Thus this model is related to a model that includes a fixed effect for each 
+subject. 
+\pause
+But here those subject specific effects are shrunk toward an overall mean ($\beta_0$).
+\end{frame}
+
+
+\subsection{Sleep study example}
+\begin{frame}[fragile]
+\frametitle{Sleep study example}
+
+<<>>=
+ggplot(sleepstudy, aes(Days, Reaction, color = Subject)) + 
+  geom_point() + theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Sleep study example}
+<<>>=
+summary(me <- lmer(Reaction ~ Days + (1|Subject), sleepstudy))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Shrinkage}
+<<echo=FALSE>>=
+m <- lm(Reaction ~ Days + Subject, sleepstudy)
+d <- data.frame(fixed_effect = summary(lsmeans(m, ~Subject, at=list(Days=0)))$lsmean,
+                random_effect = ranef(me)$Subject) %>%
+  mutate(fixed_effect = fixed_effect - mean(fixed_effect),
+         random_effect = X.Intercept.)
+ggplot(d, aes(fixed_effect, random_effect)) + theme_bw() + 
+  geom_abline(intercept = 0, slope = 1, color='gray') +
+  stat_smooth(method="lm", se=FALSE) + geom_point()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Sleep study example}
+
+<<>>=
+ggplot(sleepstudy, aes(Days, Reaction, color = Subject)) + 
+  geom_point() + theme_bw()
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Random slope model}
+
+Suppose we have continuous observations $Y_{ij}$ for individual $i$ from 
+group $j$. 
+\pause 
+A mixed effect model with group specific slopes assumes 
+\[ 
+Y_{ij} = \beta+0 + \beta_1 X_{ij} + \alpha_{0j} + \alpha_{1j}X_{ij} + \epsilon_{ij} 
+\quad \epsilon_{ij}\ind N(0,\sigma_\epsilon^2)
+\]
+\pause
+and, independent of $\epsilon_{ij}$,
+\[ 
+\left(\begin{array}{rl} \alpha_{0j} \\ \alpha_{1j} \end{array} \right) \ind 
+N(0,\Sigma_\alpha)
+\]
+$N(0,\Sigma_\alpha)$ represents a bivariate normal with mean 0 and covariance
+matrix $\Sigma_\alpha$.
+\pause
+This model is often referred to as a \alert{random slope model} because
+each group has its own slope ($\beta_1+\alpha_{1j}$) and these are \emph{random} 
+since $\alpha_{1j}$ has a distribution. 
+\pause
+Thus this model is related to a model that includes an interaction between 
+the group and the explanatory variable, \pause
+but here those subject specific slopes are shrunk toward an overall slope ($\beta_1$).
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Sleep study example}
+
+<<>>=
+ggplot(sleepstudy, aes(Days, Reaction, color = Subject)) + 
+  geom_point() + theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Sleep study example}
+<<>>=
+summary(me <- lmer(Reaction ~ Days + (Days|Subject), sleepstudy))
+@
+\end{frame}
+
+
+
+\end{document}
+
+
+
