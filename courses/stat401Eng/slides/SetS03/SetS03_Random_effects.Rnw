@@ -248,6 +248,113 @@ summary(me <- lmer(Reaction ~ Days + (Days|Subject), sleepstudy))
 \end{frame}
 
 
+% \begin{frame}[fragile]
+% \frametitle{Shrinkage}
+% <<echo=FALSE>>=
+% m <- lm(Reaction ~ Days * Subject, sleepstudy)
+% d <- data.frame(fixed_effect = summary(lsmeans(m, ~Days|Subject))$lsmean,
+%                 random_effect = ranef(me)$Subject) %>%
+%   mutate(fixed_effect = fixed_effect - mean(fixed_effect),
+%          random_effect = X.Intercept.)
+% ggplot(d, aes(fixed_effect, random_effect)) + theme_bw() + 
+%   geom_abline(intercept = 0, slope = 1, color='gray') +
+%   stat_smooth(method="lm", se=FALSE) + geom_point()
+% @
+% \end{frame}
+
+
+
+
+
+\section{Generalized linear mixed effect models}
+\begin{frame}[fragile]
+\frametitle{Contagious bovine pleuropneumonia (CBPP)}
+
+<<>>=
+ggplot(cbpp, aes(period, incidence/size, color=herd, group=herd)) +
+  geom_line() + theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Generalized linear mixed effect models}
+
+The same idea can be utilized in generalized linear models, e.g. logistic and 
+Poisson regression. 
+
+\vspace{0.1in} \pause
+
+A mixed effect logistic regression model for CBPP count is
+\[ \begin{array}{rl}
+Y_{ph} &\ind Bin(n_{ph},\theta_{ph}) \\
+\mbox{logit}\left( \theta_{ph} \right) 
+&= \beta_0+\beta_1 \I(p=2) + \beta_2 \I(p=3) + \beta_3 \I(p=4) + \alpha_h \\
+\alpha_h &\ind N(0,\sigma_\alpha^2)
+\end{array} \]
+\pause
+where $p=1,2,3,4$ stands for the period and $h=1,\ldots,15$ stands for the herd.
+
+\vspace{0.1in} \pause
+
+When used in GLMs, these models are called generalized linear mixed 
+models (GLMMs).
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{GLMMs in R}
+<<>>=
+me <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
+            data = cbpp, family = binomial)
+summary(me)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Contrasts}
+
+Is there a linear trend in logit($\theta_{ph}$) by period?
+
+<<>>=
+ls <- lsmeans(me, ~ period, type="response") # for intrepretability
+ls
+
+co <- contrast(ls, list(`linear trend` = c(-1.5, -0.5, 0.5, 1.5)))
+confint(co)
+@
+\end{frame}
+
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+There are a variety of opinions about when to use fixed effects and when to use
+random effects, e.g. {\tiny \url{https://stats.stackexchange.com/questions/4700/what-is-the-difference-between-fixed-effect-random-effect-and-mixed-effect-mode}}.
+
+\vspace{0.1in} \pause
+
+I am in favor of using random effects whenever we have enough levels ($\sim 5$) 
+of the effect to estimate the variance and we can consider the levels 
+\href{https://en.wikipedia.org/wiki/Exchangeable_random_variables}{\emph{exchangeable}}.
+
+\vspace{0.1in} \pause
+
+For example, in the CBPP data set, 
+\begin{itemize}
+\item period only has 4 levels and they are not exchangeable because they are ordered
+\item herd has 15 levels and the herds are exchangeable
+\end{itemize}
+thus I would treat period as a fixed effect and herd as random effect.
+
+\end{frame}
 
 \end{document}
 

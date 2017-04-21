@@ -58,8 +58,9 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 
 |Topic|Source|Handouts|
 |---|---|---|
-|Logistic Regression|[SetS01.Rnw](SetS01/SetS01_Logistic_Regression.Rnw)|[SetS01.pdf](SetS01/SetS01_Logistic_Regression.pdf)|
-|Poisson Regression|[SetS02.Rnw](SetS02/SetS02_Poisson_Regression.Rnw)|[SetS02.pdf](SetS02/SetS02_Poisson_Regression.pdf)|
+|Logistic regression|[SetS01.Rnw](SetS01/SetS01_Logistic_Regression.Rnw)|[SetS01.pdf](SetS01/SetS01_Logistic_Regression.pdf)|
+|Poisson regression|[SetS02.Rnw](SetS02/SetS02_Poisson_Regression.Rnw)|[SetS02.pdf](SetS02/SetS02_Poisson_Regression.pdf)|
+|Random effects|[SetS03.Rnw](SetS03/SetS03_Random_effects.Rnw)|[SetS03.pdf](SetS03/SetS03_Random_effects.pdf)|
 
 
 ## Rnw compilation instructions
