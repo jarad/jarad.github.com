@@ -183,8 +183,7 @@ print(xtable(tests))
 \begin{frame}[fragile]
 
 <<warning=FALSE>>=
-library(multcomp)
-m = lm(Lifetime~Diet-1, case0501) # The -1 indicates no intercept (see Ch 7)
+m = lm(Lifetime~Diet, data = Sleuth3::case0501) 
 summary(m)
 K
 @
@@ -195,14 +194,20 @@ K
 
 
 \begin{frame}[fragile]
+<<warning = FALSE>>=
+library("lsmeans")
+ls = lsmeans(m, ~ Diet)
+ls
 
-<<warning=FALSE>>=
-t = glht(m, linfct=K)
-summary(t)
-confint(t, calpha=univariate_calpha())
+co = contrast(ls, 
+              #                                   N/N85 N/R40 N/R50  NP R/R50 lopro
+              list("early rest - none @ 50kcal"=c(    0,    0,   -1,  0,    1,    0),
+                   "40kcal/week - 50kcal/week" =c(    0,    2,   -1,  0,   -1,    0) / 2,
+                   "lo cal - hi cal"           =c(   -2,    1,    1, -2,    1,    1) / 4))
+confint(co)
 @
-
 \end{frame}
+
 
 
 
@@ -448,7 +453,6 @@ Linear Trend & -6 & 0 & -3 & -6 & -3 & 0 & 6 & 1 \\
 \begin{frame}[fragile]
 \frametitle{}
 <<potato_in_R>>=
-library(multcomp)
 K = rbind("sulfur - control" = c(1, 1, 1,-6, 1, 1, 1)/6,
           "fall - spring"    = c(1, 1, 1, 0,-1,-1,-1)/3,
           "linear trend"     = c(6, 0,-3,-6,-3, 0, 6)/1)
@@ -470,9 +474,15 @@ plot(m,1:6)
 \begin{frame}[fragile]
 \frametitle{}
 <<>>=
-g = glht(lm(inf~trt-1,d), linfct=K) # notice the -1 in the model
-summary(g, test=adjusted(type="none")) # unadjusted pvalues
-confint(g, calpha=univariate_calpha()) # unadjusted confidence intervals
+ls <- lsmeans(m, ~trt)
+ls 
+
+co <- contrast(ls, 
+#                                         F12 F6 F3  0 S3 S6 S12           
+               list("sulfur - control" = c( 1, 1, 1,-6, 1, 1,  1)/6,
+                    "fall - spring"    = c( 1, 1, 1, 0,-1,-1, -1)/3,
+                    "linear trend"     = c( 6, 0,-3,-6,-3, 0,  6)/1))
+confint(co)
 @
 \end{frame}
 
