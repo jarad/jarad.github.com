@@ -1,0 +1,126 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set S04 - Model comparison}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("lme4")
+library("lsmeans")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Comparing nested models}
+
+Recall that we have discussed how to compare nested regression models:
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item linear regression: F-tests
+\item generalized linear regression models: likelihood ratio (drop-in-deviance) tests
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+How do we compare non-nested models?
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{$R^2$ always increases as explanatory variables are added}
+
+Since the coefficient of determination ($R^2$) explains ``the proportion of 
+variation explained by the model'', it seems you would want to choose the
+model with the highest $R^2$. 
+\pause
+But $R^2$ always increases as explanatory variables are added to the model and
+thus cannot be used to compare models with different numbers of explanatory 
+variables.
+
+\pause
+
+<<echo=FALSE, fig.height=3>>=
+# Simulate complete noise
+p <- 100; n <- p*10; y <- rnorm(n); X <- matrix(rnorm(n*p), nrow = n)
+d <- plyr::adply(1:p, 1, function(i) { 
+  data.frame(R2 = summary(lm(y~X[,1:i]))$r.squared)
+})
+ggplot(d, aes(X1,R2)) + 
+  geom_point() + theme_bw() + 
+  labs(x="Number of pure noise explanatory variables",
+       y="R-squared")
+@
+
+\pause
+
+For this reason, sometimes $R^2$ is reported with a subscript that indicates
+the number of $\beta$s in the model.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Adjusted R-squared}
+
+One way to remedy this is to use ``adjusted $R^2$'' which can be calculated
+using the formula
+\[
+\overline{R}^2 = 1 - \frac{(1-R^2)(n-1)}{n-p-1}
+\]
+where 
+\begin{itemize}
+\item $R^2$ is the unadjusted $R^2$
+\item $n$ is the number of observations
+\item $p$ is the number of $\beta$s
+\end{itemize}
+
+\pause
+
+This formula is equivalent to 
+\[
+\overline{R}^2 = 1- \frac{SSE/df_e}{SST/df_t}.
+\]
+
+\pause
+
+The idea with adjusted $R^2$ is that it only increases if the inclusion of a 
+new explanatory variable is more than one would expect to see by chance.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{}
+\end{frame}
+
+
+\end{document}
+
+
+
