@@ -22,6 +22,7 @@ options(width=120)
 <<libraries, message=FALSE, warning=FALSE>>=
 library(reshape2)
 library(plyr)
+library("dplyr")
 library(ggplot2)
 library(xtable)
 library(lme4)
@@ -104,14 +105,14 @@ set.seed(2)
 \section{Hierarchical linear model}
 \frame{\frametitle{Hierarchical linear model}
 	Assume $y\sim N(\tilde{X} \tilde{\beta}, \Lambda)$. \pause A Bayesian analysis proceeds by assigning prior distributions to $\tilde{\beta}$ and $\Lambda$. \pause In constructing the prior for $\tilde{\beta}$, consider the components $\beta$ and $u$ separately. \pause Assume
-	 \[ \beta \sim N(\beta_0, \mySigma_\beta) \qquad \mbox{and} \qquad u \sim N(0,\Omega) \]
+	 \[ \beta \sim N(b, B) \qquad \mbox{and} \qquad u \sim N(0,\Omega) \]
 	 independently. 
 	 
 	 \vspace{0.2in} \pause
 	 
 	 For the 
 	 \begin{itemize}
-	 \item {\bf fixed} effects $\beta$, we select $\beta_0$ and $\mySigma_\beta$ \pause while for the
+	 \item {\bf fixed} effects $\beta$, we select $b$ and $B$ \pause while for the
 	 \item {\bf random} effects $u$, we assign a prior for $\Omega$.  \pause
 	 \end{itemize} 
 	 Therefore we have created a hierarchical model for the random effects and thus refer to this as a \emph{hierarchical linear model}.
@@ -175,19 +176,19 @@ harvested from each tray and, after drying, weighed.
 
 \subsection{Model}
 \frame{\frametitle{A mixed effect model for seedling weight}
-	Let $y_{ijk}$ be the seedling weight \pause of the 
+	Let $y_{gts}$ be the seedling weight \pause of the 
 	\begin{itemize}
-	\item $i^{th}$ genotype with $i=1,2$, \pause
-	\item $j^{th}$ tray $j=1,2,3,4$ of the $i^{th}$ genotype, \pause and 
-	\item $k^{th}$ seedling with $k=1,\ldots,n_{ij}$.
+	\item $g^{th}$ genotype with $g=1,2$, \pause
+	\item $t^{th}$ tray $t=1,2,3,4$ of the $g^{th}$ genotype, \pause and 
+	\item $s^{th}$ seedling with $s=1,\ldots,n_{gt}$.
 	\end{itemize}
 	Then, we assume 
-	\[ y_{ijk} = \gamma_i + \tau_{ij} + e_{ijk} \]
+	\[ y_{gts} = \gamma_g + \tau_{gt} + e_{gts} \]
 	\pause where 
 	\begin{itemize}
 %  \item $\gamma_1=-\gamma_2$ for identifiability (sum-to-zero constraint)
-	\item $\tau_{ij} \stackrel{ind}{\sim} N(0,\sigma^2_\tau)$ \pause and, independently,
-	\item $e_{ijk} \stackrel{ind}{\sim} N(0,\sigma^2_e)$. 
+	\item $\tau_{gt} \stackrel{ind}{\sim} N(0,\sigma^2_\tau)$ \pause and, independently,
+	\item $e_{gts} \stackrel{ind}{\sim} N(0,\sigma^2_e)$. 
 	\end{itemize}
   
   \pause
@@ -333,20 +334,23 @@ confint(m1, method="boot")
 \frame{\frametitle{Bayesian model}
   An alternative notation convenient for programming in Stan \pause is
   \begin{itemize}
-	\item $y_i$ is the weight for seedling $i$ with $i=1,\ldots,n$ \pause 
-	\item $g[i]\in \{1,2\}$ is the genotype for seedling $i$  \pause
-	\item $t[i]\in\{1,2,\ldots,8\}$ is the {\bf unique} tray id for seedling $i$
+	\item $y_s$ is the weight for seedling $s$ with $s=1,\ldots,n$ \pause 
+	\item $g[s]\in \{1,2\}$ is the genotype for seedling $s$  \pause
+	\item $t[s]\in\{1,2,\ldots,8\}$ is the {\bf unique} tray id for seedling $s$
 	\end{itemize}
 	
 	\vspace{0.2in} \pause 
 	
 	Then the model is 
-	\[ y_i = \gamma_{g[i]} + \tau_{t[i]} + e_i \] 
-	\pause with $e_i \stackrel{ind}{\sim} N(0,\sigma^2_e)$ and, independently, $\tau_t \stackrel{ind}{\sim} N(0,\sigma^2_\tau)$ with $t=1,\ldots,8$.
+	\[ y_s = \gamma_{g[s]} + \tau_{t[s]} + e_s \] 
+	\pause with $e_s \stackrel{ind}{\sim} N(0,\sigma^2_e)$ and, independently, 
+	$\tau_t \stackrel{ind}{\sim} N(0,\sigma^2_\tau)$ with $t=1,\ldots,8$.
 	
 	\vspace{0.2in} \pause
 	
-	Prior: $p(\gamma_1,\gamma_2,\sigma_e,\sigma_u) \propto Ca^+(\sigma_e;0,10)Ca^+(\sigma_u;0,10)$.
+	Prior: 
+\[ p(\gamma_1,\gamma_2,\sigma_e,\sigma_\tau) \propto 
+Ca^+(\sigma_e;0,1)Ca^+(\sigma_\tau;0,1).\]
 }
 
 
@@ -364,15 +368,15 @@ data {
   int tray[n];
 }
 parameters {
-  real gamma[n_genotypes]; // Implicit prior over whole real line
+  real gamma[n_genotypes]; // Implicit improper prior over whole real line
   real tau[n_trays];
   real<lower=0> sigma_e;   // Implicit prior over positive reals
   real<lower=0> sigma_tau; // Implicit prior over positive reals
 }
 
 model {
-  sigma_e   ~ cauchy(0,10);
-  sigma_tau ~ cauchy(0,10);
+  sigma_e   ~ cauchy(0,1);
+  sigma_tau ~ cauchy(0,1);
 
   tau ~ normal(0,sigma_tau);
 
@@ -381,7 +385,7 @@ model {
 
 generated quantities {
   real delta;
-  delta <- gamma[2] - gamma[1];
+  delta = gamma[2] - gamma[1];
 }
 "
 @
@@ -409,16 +413,75 @@ r = sampling(m,
 
 
 \begin{frame}[fragile]
-<<table, dependson="analysis">>=
+<<table, dependson="analysis", echo=TRUE>>=
 r
 @
 \end{frame}
 
 
 
+
+
 \begin{frame}[fragile]
-<<intervals, dependson="analysis">>=
-plot(r)
+<<hyper_default, dependson="analysis">>=
+plot(r, pars=c("sigma_e","sigma_tau"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<hyper_improved, dependson="analysis", warning=FALSE>>=
+e <- extract(r, c("sigma_e","sigma_tau")) %>% 
+  as.data.frame %>%
+  tidyr::gather(parameter,value)
+
+ggplot(e, aes(x=value)) + 
+  geom_histogram(aes(y=..density..), binwidth=0.1, alpha=0.4) +
+  stat_function(fun = function(x) 2*dcauchy(x), aes(color='Prior')) +
+  facet_wrap(~parameter) + 
+  guides(color=FALSE) + 
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<tray, dependson="analysis">>=
+plot(r, pars="tau")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<genotype, dependson="analysis">>=
+plot(r, pars=c("gamma","delta"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<genotype_correlation, dependson="analysis">>=
+e <- extract(r, c("gamma")) %>% 
+  as.data.frame
+
+
+ggplot(e, aes(gamma.1, gamma.2)) + 
+  stat_binhex() +
+  scale_fill_continuous(trans = 'reverse') +
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+e <- extract(r, "delta") %>%
+  as.data.frame
+
+ggplot(e, aes(delta)) + 
+  geom_histogram(binwidth=0.2) + 
+  geom_vline(xintercept=0, color='red') + 
+  labs('Difference between genotypes (A-B)') +
+  theme_bw()
 @
 \end{frame}
 
@@ -429,18 +492,18 @@ plot(r)
 {\small
 
 Given our prior, i.e. 
-\[ p(\gamma_1,\gamma_2,\sigma_e,\sigma_u) \propto Ca^+(\sigma_e;0,10)Ca^+(\sigma_u;0,10),\]
+\[ p(\gamma_1,\gamma_2,\sigma_e,\sigma_\tau) \propto Ca^+(\sigma_e;0,1)Ca^+(\sigma_\tau;0,1),\]
 
 \pause
 Our posterior probability that genotype B has greater mean seedling weight than genotype A is 
 
 \[ P(\gamma_2>\gamma_1|y) = P(\delta>0|y) \pause = E[\I(\delta>0)|y] = E[\I(\gamma_2>\gamma_1)|y]. \] 
 \pause 
-If $\delta^{(k)}$ are MCMC samples from $p(\delta|y)$, then 
-\[ \frac{1}{K} \sum_{k=1}^K \I(\delta^{(k)}>0) \stackrel{a.s.}{\rightarrow} P(\gamma_2>\gamma_1|y) \]
+If $\delta^{(m)}$ are MCMC samples from $p(\delta|y)$, then 
+\[ \frac{1}{M} \sum_{m=1}^M \I(\delta^{(m)}>0) \stackrel{a.s.}{\rightarrow} P(\gamma_2>\gamma_1|y) \]
 \pause 
 and (if the regularity conditions hold)
-\[ \frac{1}{K} \sum_{k=1}^K \I(\delta^{(k)}>0) \stackrel{d}{\rightarrow} N(P(\gamma_2>\gamma_1|y), \sigma^2/K). \]
+\[ \frac{1}{M} \sum_{m=1}^M \I(\delta^{(m)}>0) \stackrel{d}{\rightarrow} N(P(\gamma_2>\gamma_1|y), \sigma^2/M). \]
 }
 \end{frame}
 
@@ -460,7 +523,7 @@ as.data.frame(mcse(delta>0))
 \pause
 A point estimate (posterior median) and a 95\% credible interval are calculated below:
 
-<<>>=
+<<echo=TRUE>>=
 ddply(dd <- data.frame(q=c(.025,.5,.975)), .(q), function(x) as.data.frame(mcse.q(delta, x$q)))
 @
 \end{frame}
@@ -474,8 +537,8 @@ ddply(dd <- data.frame(q=c(.025,.5,.975)), .(q), function(x) as.data.frame(mcse.
 The real question is whether this idea generalizes, i.e. is true for other representatives of these genotypes. \pause Let $\tilde{y}_A$ and $\tilde{y}_B$ be some future observation of seedling weight (on the same tray) for genotype A and B, respectively. \pause We might be interested in 
 \[  P(\tilde{y}_B>\tilde{y}_A|y) = P(\tilde{\delta}>0|y) = E[\I(\tilde{\delta}>0)|y] \]
 where $\tilde{\delta} = \tilde{y}_B-\tilde{y}_A$. \pause
-If $\tilde{\delta}^{(k)} = \tilde{y}^{(k)}_B-\tilde{y}^{(k)}_A$ is a sample from the posterior predictive distribution, \pause then we can estimate this probability via 
-\[ \frac{1}{K} \sum_{k=1}^K \I(\tilde{\delta}^{(k)}>0) \]
+If $\tilde{\delta}^{(m)} = \tilde{y}^{(m)}_B-\tilde{y}^{(m)}_A$ is a sample from the posterior predictive distribution, \pause then we can estimate this probability via 
+\[ \frac{1}{M} \sum_{m=1}^M \I(\tilde{\delta}^{(m)}>0) \]
 and have a similar LLN and CLT (if regularity conditions hold). 
 \end{frame}
 
@@ -483,11 +546,11 @@ and have a similar LLN and CLT (if regularity conditions hold).
 \begin{frame}[fragile]
 \frametitle{Prediction for a new comparison}
 
-Assuming $\tilde{y}^{(k)}_A$ and $\tilde{y}^{(k)}_B$ are independent conditional on $\gamma_1,\gamma_2,$ and $\sigma_e$, then 
+Assuming $\tilde{y}_A$ and $\tilde{y}_B$ are independent conditional on $\gamma_1,\gamma_2,$ and $\sigma_e$, then 
 \[ \tilde{\delta} =\tilde{y}_B - \tilde{y}_A \sim N(\gamma_2-\gamma_1, 2\sigma_e^2) \]
 \pause
 and 
-\[ p(\tilde{\delta}|y) \int N(\tilde{\delta}; \gamma_2-\gamma_1, 2\sigma_e^2) p(\gamma_1,\gamma_2,\sigma_e|y) d\gamma_1 d\gamma_2 d\sigma_e \]
+\[ p(\tilde{\delta}|y) = \int N(\tilde{\delta}; \gamma_2-\gamma_1, 2\sigma_e^2) p(\gamma_1,\gamma_2,\sigma_e|y) d\gamma_1 d\gamma_2 d\sigma_e \]
 
 \pause
 
@@ -526,7 +589,7 @@ ddply(data.frame(q=c(.025,.5,.975)), .(q), function(x) as.data.frame(mcse.q(tild
 \frametitle{Extensions}
 
 Consider the model 
-  \[ y_i = \gamma_{g[i]} + \tau_{t[i]} + e_i \] 
+  \[ y_s = \gamma_{g[s]} + \tau_{t[s]} + e_s \] 
 and the following modeling assumptions: 
 
 \vspace{0.2in} \pause
@@ -535,8 +598,8 @@ and the following modeling assumptions:
 \item $\gamma_g \stackrel{ind}{\sim} N(\mu,\sigma_\gamma^2)$ and learn $\mu,\sigma_\gamma$
 \item $\tau_t \stackrel{ind}{\sim} La(0,\sigma_\tau^2)$
 \item $\gamma_g \stackrel{ind}{\sim} La(\mu,\sigma_\gamma^2)$
-\item $e_i \stackrel{ind}{\sim} La(0,\sigma_e^2)$
-\item $e_i \stackrel{ind}{\sim} t_\nu(0,\sigma_e^2)$
+\item $e_s \stackrel{ind}{\sim} La(0,\sigma_e^2)$
+\item $e_s \stackrel{ind}{\sim} t_\nu(0,\sigma_e^2)$
 \end{itemize}
 
 \vspace{0.2in} \pause
