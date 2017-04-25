@@ -30,7 +30,8 @@ set.seed(2)
 \maketitle
 \end{frame}
 
-
+\section{Model comparison}
+\subsection{Formal tests}
 \begin{frame}
 \frametitle{Comparing nested models}
 
@@ -84,7 +85,7 @@ the number of $\beta$s in the model.
 \end{frame}
 
 
-
+\subsection{Adjusted $R^2$}
 \begin{frame}
 \frametitle{Adjusted R-squared}
 
@@ -114,13 +115,339 @@ new explanatory variable is more than one would expect to see by chance.
 
 \end{frame}
 
-
+\subsection{Model criterion}
 \begin{frame}
-\frametitle{}
+\frametitle{Model criterion}
+
+\small
+
+An alternative to the use of adjusted $R^2$ is model criterion.
+\pause
+Recall that the deviance is $-2\log L(\hat\theta_{MLE})$ and is a measure of
+how well the model fits the data (smaller values indicate better fit). 
+\pause
+Information criterion attempt to balance this fit with a penalty for too many
+parameters. 
+\pause
+They have the form
+\[ 
+IC = -2\log L(\hat\theta_{MLE}) + \mbox{penalty}
+\]
+\pause
+where the specific model criterion determines the penalty.
+\pause
+For example, here are some criterion
+\begin{itemize}
+\item AIC: $-2\log L(\hat\theta_{MLE})+2p$
+\item BIC: $-2\log L(\hat\theta_{MLE})+p\log(n)$
+\item AICc: $-2\log L(\hat\theta_{MLE})+2p(p+1)/(n-p-1)$
+\end{itemize}
+
+\pause
+
+There are a number of alternatives that also modify the ``fit'' component:
+\begin{itemize}
+\item DIC: $-2\log L(E[\theta|y])+2p_D$ (effective number of parameters)
+\item BPIC: $-2\log p(\tilde{y}|E[\theta|y])+2p_D$ 
+\item $\vdots$
+\end{itemize}
+
 \end{frame}
 
 
+
+\begin{frame}[fragile]
+\frametitle{Obtaining AIC/BIC in R}
+
+<<>>=
+lm1 <- lm(Fertility ~ . , data = swiss)
+AIC(lm1)
+BIC(lm1)
+
+lm2 <- update(lm1, . ~ . -Examination)
+AIC(lm1, lm2)
+BIC(lm1, lm2)
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Obtaining AICc in R}
+
+<<>>=
+AICcmodavg::AICc(lm1)
+AICcmodavg::AICc(lm2)
+
+sme::AICc(lm1)
+sme::AICc(lm2)
+@
+
+\end{frame}
+
+
+
+\subsection{Posterior model probability}
+\begin{frame}
+\frametitle{Posterior model probability}
+
+Another option is a Bayesian posterior model probability.
+\pause
+Recall that 
+\[ 
+p(M_j|y) 
+= \frac{p(y|M_j)p(M_j)}{\sum_i p(y|M_i)p(M_i)} 
+= \frac{1}{1+\sum_{i\ne j} \frac{p(y|M_i)}{p(y|M_j)}\frac{p(M_i)}{p(M_j)}}
+\]
+\pause
+where $p(y|M_i)/p(y|M_j)$ is the Bayes Factor, $p(M_i)/p(M_j)$ is the prior odds,
+\pause
+\[ 
+p(y|M_j) = \int p(y|\theta)p(\theta|M_j) d\theta,
+\]
+\pause
+\begin{itemize}
+\item $p(y|\theta)$ is the statistical model (or likelihood) and
+\item $p(\theta|M_j)$ is the prior over model parameters.
+\end{itemize}
+\pause
+
+This integral provides a natural penalty for increased number of parameters.
+\pause
+BIC is an asymptotic approximation to $p(y|M_j)$.
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Bayes Factors in R}
+
+<<>>=
+library("bayess")
+m <- BayesReg(swiss$Fertility, swiss[,-1])
+@
+\end{frame}
+
+
+
+\section{Model averaging}
+\begin{frame}
+\frametitle{Model selection}
+
+Information criterion (and posterior model probabilities) are often used to 
+select a model.
+\pause 
+Once the model is selected, inference, e.g. parameter estimation and 
+interpretation, is (typically) performed as usual.
+\pause
+That is, the process of selecting the model is completely neglected. 
+\pause
+To account for our uncertainty in model selection, 
+we can perform model averaging.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Bayesian model averaging}
+
+Bayesian model averaging can be performed by finding the
+posterior distribution for any desired quantity. 
+\pause
+For example, model averaging for an unknown mean $\mu$ is 
+\[
+p(\mu|y) = \sum_{j=1}^J p(\mu|M_j,y)p(M_j|y)
+\]
+\pause
+and model averaging for an unknown predictive value $\tilde{y}$ is 
+\[
+p(\tilde{y}|y) = \sum_{j=1}^J p(\tilde{y}|M_j,y)p(M_j|y).
+\]
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{AIC model averaging}
+
+You can also perform AIC model averaging using Akaike weights:
+\[ 
+w_j = \frac{e^{-\Delta_j}/2}{\sum_{i=1}^J e^{-\Delta_i}/2}
+\]
+\pause
+where
+\[
+\Delta_j = AIC_{min}-AIC_j.
+\]
+\pause
+Since there is no notion of a posterior distribution, 
+we calculate an estimate and standard error of quantities of interest.
+\pause
+For example, a model averaged mean estimate is
+\[
+\hat\mu = \sum_{j=1}^J \hat\mu_j w_j.
+\]
+
+\end{frame}
+
+
+% \begin{frame}
+% \frametitle{Be careful when averaging coefficients}
+% \end{frame}
+
+
+\begin{frame}
+\frametitle{Step-wise model selection}
+
+Once you have chosen a criteria, 
+a common approach is to choose the model that optimizes that criteria. 
+\pause
+But in regression problems there are $2^p$ models to consider which is often
+too many to enumerate.
+\pause
+An alternative is to use a stepwise selection procedure that compares all 
+\emph{neighboring} models. 
+
+<<echo=FALSE, fig.height=3>>=
+ggplot(data.frame(p=1:30) %>% mutate(`Number of models` = 2^p),
+       aes(p, `Number of models`)) + geom_point() + 
+  scale_y_log10(labels = scales::comma) + theme_bw()
+@
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Stepwise selection in R}
+<<cache=TRUE>>=
+d <- data.frame(X = X) %>% mutate(y = 10 * X.1 + 10 * X.2 + 10 * X.3 + 
+                                           X.4 +      X.5 +      X.6 + 
+                                      .1 * X.7 + .1 * X.8 + .1 * X.9 + 
+                                    rnorm(n()))
+m <- step(lm(y ~ ., data = d), k = 2, trace=FALSE) # AIC
+summary(m)
+@
+\end{frame}
+
+
+\section{Prediction}
+\begin{frame}
+\frametitle{How to select a criterion}
+
+All the criterion (and posterior probabilities) are based on some theoretical
+basis. 
+\pause 
+So you can choose a criterion based on your preferred theoretical basis or 
+based on what your field uses. 
+\pause
+Often times a criterion is justified based on predictive performance.
+\pause
+But then why not just use predictive ability as your criterion?
+
+\end{frame}
+
+
+
+
+\subsection{Test-train split}
+\begin{frame}
+\frametitle{Assessing predictive performance}
+
+Sometimes, we are just interested in developing a model with a good predictive
+performance.
+\pause
+To evaluate predictive performance, \alert{randomly} split your data into
+\begin{itemize}
+\item training data set
+\item testing data set
+\end{itemize}
+\pause
+Use the training data set to build your model and then use your testing data
+set to evaluate the fit. 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overfitting}
+
+\begin{center}
+\includegraphics{model_complexity_error_training_test}
+\end{center}
+
+{\tiny
+\url{https://gerardnico.com/wiki/data_mining/overfitting}
+}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Example splitting in R}
+<<cache=TRUE>>=
+d <- data.frame(X = X) %>% mutate(y = 10 * X.1 + 10 * X.2 + 10 * X.3 + 
+                                           X.4 +      X.5 +      X.6 + 
+                                      .1 * X.7 + .1 * X.8 + .1 * X.9 + 
+                                    rnorm(n()),
+                                  train = rbinom(n(), 1, 0.5))
+train <- d %>% filter(train == 1) %>% dplyr::select(-train)
+test <- d %>% filter(train == 0) %>% dplyr::select(-train)
+
+m <- step(lm(y ~ ., data = train), k = log(nrow(train)), trace=FALSE)
+m
+test <- test %>% bind_cols(data.frame(prediction = predict(m, newdata = test)))
+
+# Calculate mean sum of squared errors
+with(test, mean((y-prediction)^2))
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Cross-validation}
+
+The model chosen by the test-training split will be sensitive to the test 
+data set chosen. 
+\pause
+To avoid this sensitivity, 
+we can perform the split several times and average the result. 
+
+\vspace{0.1in} \pause
+
+\begin{center}
+\includegraphics{B-fig-1}
+\end{center}
+
+{\tiny \url{http://blog.goldenhelix.com/goldenadmin/cross-validation-for-genomic-prediction-in-svs/}}
+
+\pause
+
+Two special cases:
+\begin{itemize}
+\item Leave-one-out cross-validation (LOO-CV)
+\item $k$-fold cross validation
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Cross-validation in R}
+<<>>=
+library(DAAG)
+m <- lm(y~., data = d %>% dplyr::select(-train))
+cv <- cv.lm(data = d, form.lm = m, m=nrow(d)/5, plotit=FALSE) 
+@
+\end{frame}
+
+
+
+
 \end{document}
+
+
 
 
 
