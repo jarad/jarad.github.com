@@ -405,7 +405,8 @@ r = sampling(m,
                   genotype    = as.numeric(d$Genotype),
                   tray        = d$Tray,
                   y           = d$SeedlingWeight), 
-             c("gamma","tau","sigma_e","sigma_tau","delta"))
+             c("gamma","tau","sigma_e","sigma_tau","delta"),
+             refresh = 0)
 @
 \end{frame}
 
@@ -511,13 +512,27 @@ and (if the regularity conditions hold)
 
 \subsection{Comparing genotypes}
 \begin{frame}[fragile]
-\frametitle{Probability that genotype B has greater mean seedling weight than genotype A.}
-
-The probability is estimated to be
 <<probability, dependson='analysis', echo=TRUE, message=FALSE>>=
 library(mcmcse)
-delta = extract(r, "delta")$delta
-as.data.frame(mcse(delta>0))
+# Obtain samples for delta_tilde
+samps = extract(r, "delta", permuted=FALSE) %>%
+  plyr::adply(1:2) %>% 
+  rename(delta = V1)
+
+# Calculate posterior probability with MC error
+samps %>%
+  group_by(chains) %>%
+  do(as.data.frame(mcse(.$delta>0))) %>%
+  ungroup() %>%
+  summarize(est = mean(est), se = sqrt(sum(se^2))/n())
+
+# Calculate quantiles with MC error
+samps %>%
+  group_by(chains) %>%
+  do(ddply(data.frame(q=c(.025,.5,.975)), .(q), 
+           function(x) as.data.frame(mcse.q(.$delta, q=x$q)))) %>%
+  group_by(q) %>%
+  summarize(est = mean(est), se = sqrt(sum(se^2))/n())
 @
 
 \pause
@@ -543,7 +558,7 @@ and have a similar LLN and CLT (if regularity conditions hold).
 \end{frame}
 
 
-\begin{frame}[fragile]
+\begin{frame}
 \frametitle{Prediction for a new comparison}
 
 Assuming $\tilde{y}_A$ and $\tilde{y}_B$ are independent conditional on $\gamma_1,\gamma_2,$ and $\sigma_e$, then 
@@ -551,17 +566,30 @@ Assuming $\tilde{y}_A$ and $\tilde{y}_B$ are independent conditional on $\gamma_
 \pause
 and 
 \[ p(\tilde{\delta}|y) = \int N(\tilde{\delta}; \gamma_2-\gamma_1, 2\sigma_e^2) p(\gamma_1,\gamma_2,\sigma_e|y) d\gamma_1 d\gamma_2 d\sigma_e \]
+\end{frame}
 
-\pause
-
+\begin{frame}[fragile]
 <<predictive_probability, dependson='analysis', echo=TRUE>>=
-samps = extract(r, c("gamma","sigma_e"))
-gamma1 = samps['gamma']$gamma[,1]
-gamma2 = samps['gamma']$gamma[,2]
-sigmae = samps['sigma_e']$sigma_e
-tilde_delta = rnorm(length(gamma1), gamma2-gamma1, sqrt(2)*sigmae)
-as.data.frame(mcse(tilde_delta>0))
-ddply(data.frame(q=c(.025,.5,.975)), .(q), function(x) as.data.frame(mcse.q(tilde_delta, q=x$q)))
+# Obtain samples for delta_tilde
+samps = extract(r, c("delta","sigma_e"), permuted=FALSE) %>%
+  plyr::adply(1:2) %>%
+  mutate(delta_tilde = rnorm(n(), delta, sqrt(2)*sigma_e)) %>%
+  select(-delta, -sigma_e) 
+
+# Calculate posterior probability with MC error
+samps %>%
+  group_by(chains) %>%
+  do(as.data.frame(mcse(.$delta_tilde>0))) %>%
+  ungroup() %>%
+  summarize(est = mean(est), se = sqrt(sum(se^2))/n())
+
+# Calculate quantiles with MC error
+samps %>%
+  group_by(chains) %>%
+  do(ddply(data.frame(q=c(.025,.5,.975)), .(q), 
+           function(x) as.data.frame(mcse.q(.$delta_tilde, q=x$q)))) %>%
+  group_by(q) %>%
+  summarize(est = mean(est), se = sqrt(sum(se^2))/n())
 @
 
 \end{frame}
