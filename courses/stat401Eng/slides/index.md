@@ -62,6 +62,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 |Poisson regression|[SetS02.Rnw](SetS02/SetS02_Poisson_Regression.Rnw)|[SetS02.pdf](SetS02/SetS02_Poisson_Regression.pdf)|
 |Random effects|[SetS03.Rnw](SetS03/SetS03_Random_effects.Rnw)|[SetS03.pdf](SetS03/SetS03_Random_effects.pdf)|
 |Model comparison|[SetS04.Rnw](SetS04/SetS04_Model_comparison.Rnw)|[SetS04.pdf](SetS04/SetS04_Model_comparison.pdf)|
+|Random forests|[SetS05.Rnw](SetS05/SetS05_Random_forests.Rnw)|[SetS05.pdf](SetS05/SetS05_Random_forests.pdf)|
 
 
 ## Rnw compilation instructions

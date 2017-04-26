@@ -1,0 +1,226 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Set S05 - Random Forests}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("lme4")
+library("lsmeans")
+library("randomForest")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Regression trees}
+\begin{frame}
+\frametitle{Regression trees}
+
+Consider a regression model that uses a set of indicator variables to group the 
+data, e.g. 
+\[ 
+Y_i \ind N(\mu_i,\sigma^2) 
+\]
+\pause 
+where
+\[ \begin{array}{rl@{\qquad}l}
+\mu_i =& \beta_0 & \mbox{group 1} \\
+&+\beta_1\I(x_{i1}\le 49)\I(x_{i2}>0.4) & \mbox{group 2} \\
+&+ \beta_2\I(x_{i1}> 49)\I(x_{i3}\le 0.7) & \mbox{group 3} \\
+&+ \beta_3\I(x_{i1}> 49)\I(x_{i3}> 0.7) & \mbox{group 4}
+\end{array} \]
+\pause
+Thus group 1 corresponds to those observations with $x_{i1}\le 49$ and 
+$x_{i2}\le 0.4$.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Visualization of a regression tree}
+\begin{center}
+\includegraphics{regression_tree}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Regression trees in R {\tt tree}}
+<<>>=
+library("tree")
+data(cpus, package="MASS")
+m_tree <- tree(log10(perf) ~ syct+mmin+mmax+cach+chmin+chmax, cpus)
+summary(m_tree)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+plot(m_tree); text(m_tree)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Regression trees in R {\tt rpart}}
+<<>>=
+library("rpart")
+m_rpart <- rpart(log10(perf) ~ syct+mmin+mmax+cach+chmin+chmax, cpus)
+summary(m_rpart)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<>>=
+plot(m_rpart); text(m_rpart)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{How do this approaches decide on the splits?}
+
+\small
+
+From the help file for {\tt tree}:
+{\tiny
+\begin{quote}
+A tree is grown by binary recursive partitioning using the response in the specified formula and choosing splits from the terms of the right-hand-side. Numeric variables are divided into X $<$ a and X $>$ a; the levels of an unordered factor are divided into two non-empty groups. The split which maximizes the reduction in impurity is chosen, the data set split and the process repeated.Splitting continues until the terminal nodes are too small or too few to be split.
+\end{quote}
+}
+\pause
+The \emph{impurity} for a regression tree is most likely the estimate of 
+$\hat\sigma^2$. 
+\pause
+Thus, the algorithm searches over all possible splits and finds the one that 
+results in the smallest $\hat\sigma^2$. 
+\pause
+Then the process is repeated for each split.
+
+\vspace{0.1in} \pause
+
+To determine when to stop, the algorithm has a set of control values.
+\pause
+For {\tt tree} the values are 
+\begin{itemize}
+\item mincut: minimum number of observations to include in either child node
+\item minsize: smallest allowed node size
+\item mindev: within-node deviance must be at least this times that of the root node for the node to be split
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Little tree}
+<<>>=
+m_tree <- tree(log10(perf) ~ syct+mmin+mmax+cach+chmin+chmax, cpus,
+               control = list(mincut = 100, mindev = 0.01, minsize = 200, nmax = 90))
+plot(m_tree); text(m_tree)
+@
+\end{frame}
+
+
+
+\section{Random forests}
+\begin{frame}
+\frametitle{Random forests}
+
+Repeat this algorithm B times:
+\begin{enumerate}
+\item Randomly sample data with replacement from training set.
+\item Train a tree on these data (randomly evaluating a subset of explanatory
+variables for each split).
+\item Evaluate the tree based on its out of sample performance.
+\end{enumerate}
+
+\pause
+
+After training, predictions for new data are averaged across all the trees.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Visualizing}
+\begin{center}
+\includegraphics{random_forest}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Random forests in R}
+<<>>=
+forest <- randomForest(log10(perf) ~ syct+mmin+mmax+cach+chmin+chmax, 
+                       data = cpus,
+                       importance = TRUE)
+forest
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Out of bag error}
+<<>>=
+plot(forest)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Variable importance}
+<<>>=
+importance(forest) %>% round(2)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Prediction}
+<<>>=
+new_cpus = cpus %>% 
+  sample_n(10)
+10^predict(forest, new_cpus, interval="confidence") # Performance with no uncertainty
+@
+\end{frame}
+
+
+
+\subsection{Classification trees}
+\begin{frame}
+\frametitle{Classification trees}
+\begin{center}
+\includegraphics{vote}
+\end{center}
+\end{frame}
+
+
+\end{document}
+
+
+
+
+
