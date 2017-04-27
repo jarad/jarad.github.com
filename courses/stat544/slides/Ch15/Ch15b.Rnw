@@ -48,7 +48,8 @@ d = read.csv("Ch15b-bird_yeartotal.csv") %>%
 <<bird_plot, dependson='bird_data', fig.width=18, fig.height=15>>=
 ggplot(d, aes(year, y)) + 
   geom_point() +
-  facet_wrap(~abbrev, scales='free')
+  facet_wrap(~abbrev, scales='free') +
+  theme_bw()
 @
 \end{frame}
 
@@ -76,7 +77,8 @@ This model treats each species completely independently.
 ggplot(d, aes(year, y)) + 
   geom_point() +
   facet_wrap(~abbrev, scales='free')  + 
-  geom_smooth(method='lm')
+  geom_smooth(method='lm') +
+  theme_bw()
 @
 \end{frame}
 
@@ -99,7 +101,8 @@ ggplot(slopes,
   geom_pointrange() + 
   coord_flip() +
   labs(title='Estimated slopes and 95% confidence intervals',
-       y = 'Slopes', x='Species abbreviation')
+       y = 'Slopes', x='Species abbreviation') +
+  theme_bw()
 @
 \end{frame}
 
@@ -165,7 +168,8 @@ ggplot(merge(ind,joint), aes(individual, joint)) +
              aes(yintercept=value), color='gray') + 
   geom_smooth(method="lm", se=FALSE) + 
   coord_equal() + 
-  labs(title="Shrinkage of point estimates")
+  labs(title="Shrinkage of point estimates") +
+  theme_bw()
 @
 \end{frame}
 
@@ -185,7 +189,8 @@ tmp$abbrev = factor(tmp$abbrev,
 ggplot(tmp, aes(joint,abbrev)) + 
   geom_point() + 
   labs(x="Slope estimates", y='Species abbreviation',
-       title = 'Species slope estimates with no uncertainty')
+       title = 'Species slope estimates with no uncertainty') +
+  theme_bw()
 @
 \end{frame}
 
@@ -321,7 +326,7 @@ model {
 
 
 \begin{frame}[fragile]
-<<stan, dependson=c('bird_data','stan_model')>>=
+<<stan, dependson=c('bird_data','stan_model'), echo=TRUE>>=
 tmp = reshape2::dcast(d[,c('year','abbrev','y')], abbrev~year, value.var='y')
 dat = list(n_species = nrow(tmp),
            n_years   = ncol(tmp)-1,
@@ -329,7 +334,7 @@ dat = list(n_species = nrow(tmp),
            X         = cbind(1, as.numeric(names(tmp)[-1])-2005),
            prior_scale = 0.01)
 m = stan_model(model_code=model)
-r = sampling(m, dat)
+r = sampling(m, dat, refresh=0)
 @
 \end{frame}
 
@@ -349,7 +354,8 @@ beta$abbrev = factor(beta$abbrev,
 ggplot(subset(beta, parameter=='slope'), 
        aes(abbrev, y=median, ymin=lower, ymax=upper)) +
   geom_pointrange() + 
-  coord_flip()
+  coord_flip() +
+  theme_bw()
 @
 \end{frame}
 
@@ -412,32 +418,33 @@ model {
 
 
 
-% \begin{frame}[fragile]
-% <<stan2, cache=TRUE, dependson=c('bird_data','stan_model2'), echo=TRUE>>=
-% m2 = stan_model(model_code=model2)
-% r2 = sampling(m2, dat)
-% @
-% \end{frame}
-% 
-% 
-% \begin{frame}[fragile]
-% <<dependson='stan2', fig.width=18, fig.height=15>>=
-% beta2 = plyr::adply(extract(r2,'beta')$beta, 2, function(x) {
-%   data.frame(parameter = c("intercept","slope"),
-%              median    = apply(x,2,median),
-%              lower     = apply(x,2,quantile,prob=.025),
-%              upper     = apply(x,2,quantile,prob=.975))
-% })
-% beta2$abbrev = factor(beta2$X1, labels=tmp$abbrev)
-% beta2$abbrev = factor(beta2$abbrev,
-%                      levels = levels(beta2$abbrev)[order(beta2$upper[beta2$parameter=='slope'])])
-% 
-% ggplot(subset(beta2, parameter=='slope'), 
-%        aes(abbrev, y=median, ymin=lower, ymax=upper)) +
-%   geom_pointrange() + 
-%   coord_flip()
-% @
-% \end{frame}
+\begin{frame}[fragile]
+<<stan2, cache=TRUE, dependson=c('bird_data','stan_model2'), echo=TRUE>>=
+m2 = stan_model(model_code=model2)
+r2 = sampling(m2, dat)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<dependson='stan2', fig.width=18, fig.height=15>>=
+beta2 = plyr::adply(extract(r2,'beta')$beta, 2, function(x) {
+  data.frame(parameter = c("intercept","slope"),
+             median    = apply(x,2,median),
+             lower     = apply(x,2,quantile,prob=.025),
+             upper     = apply(x,2,quantile,prob=.975))
+})
+beta2$abbrev = factor(beta2$X1, labels=tmp$abbrev)
+beta2$abbrev = factor(beta2$abbrev,
+                     levels = levels(beta2$abbrev)[order(beta2$upper[beta2$parameter=='slope'])])
+
+ggplot(subset(beta2, parameter=='slope'),
+       aes(abbrev, y=median, ymin=lower, ymax=upper)) +
+  geom_pointrange() +
+  coord_flip() +
+  theme_bw()
+@
+\end{frame}
 
 
 
