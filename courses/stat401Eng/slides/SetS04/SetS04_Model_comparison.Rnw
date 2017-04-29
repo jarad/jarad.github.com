@@ -113,6 +113,27 @@ new explanatory variable is more than one would expect to see by chance.
 
 \end{frame}
 
+
+\begin{frame}[fragile]
+\frametitle{Adjusted $R^2$ can decrease}
+
+
+<<echo=FALSE>>=
+# Simulate complete noise
+p <- 100; n <- p*10; y <- rnorm(n); X <- matrix(rnorm(n*p), nrow = n)
+d <- plyr::adply(1:p, 1, function(i) { 
+  data.frame(R2 = summary(lm(y~X[,1:i]))$adj.r.squared)
+})
+ggplot(d, aes(X1,R2)) + 
+  geom_point() + theme_bw() + 
+  labs(x="Number of pure noise explanatory variables",
+       y="Adjusted R-squared")
+@
+
+\end{frame}
+
+
+
 \subsection{Model criterion}
 \begin{frame}
 \frametitle{Model criterion}
