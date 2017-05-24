@@ -20,6 +20,7 @@ The main purpose of this page is to provide one location for myself and others i
 - [Utility scripts](utility.html)
 - [Git/GitHub - version control and backup](git.html)
 - [Department cluster](smaster.html)
+- [Thesis](https://github.com/jarad/thesisTemplate) and [paper/chapter](https://github.com/jarad/chapter1Template) templates
 
 # Other/Both
 
