@@ -18,6 +18,8 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [Correlation structure for cyclical structures](meetings/20170502a.html)
+- [ggResidpanel](meetings/20170502.html)
 - [Sample collection for metagenomic analysis](meetings/20170404.html)
 - [Split-plot design with non-randomized factors](meetings/20170321.html)
 - [Steer diet-zinc analysis (obtaining relevant data summaries)](meetings/20170307.html)
