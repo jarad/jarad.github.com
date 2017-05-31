@@ -18,6 +18,7 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [Completely randomized vs cross-over design](meetings/20170531.html)
 - [Correlation structure for cyclical structures](meetings/20170502a.html)
 - [ggResidpanel](meetings/20170502.html)
 - [Sample collection for metagenomic analysis](meetings/20170404.html)
