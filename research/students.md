@@ -28,11 +28,11 @@ Here are some [resources](resources.html) for current graduate students.
 ![](student_figs/xiyuansu.jpg)
 ![](student_figs/ialvarez.jpg)
 ![](student_figs/adamms.jpg)
-![](student_figs/michaud.jpg)
 ![](student_figs/emittman.jpg)
 
 ## Former advisees
 
+- [Nicholas Michaud](http://www.public.iastate.edu/~michaud/homepage.html) ([PhD](thesis/NicholasMichaud_PhDthesis.pdf), ISU)
 - [Will Landau](http://will-landau.com/) ([PhD](thesis/WillLandau_PhDthesis.pdf), ISU)
 - [Matt Simpson](http://www.themattsimpson.com/) ([PhD](thesis/MattSimpson_PhDthesis.pdf), ISU)
 - Casey Oliver ([MS](thesis/CaseyOliver_CC.pdf), ISU) (co-advised with [Dan Nettleton](http://stat.iastate.edu/people/dan-nettleton))
