@@ -33,9 +33,9 @@ Here are some [resources](resources.html) for current graduate students.
 
 ## Former advisees
 
-- [Will Landau](http://will-landau.com/) (PhD, ISU)
-- [Matt Simpson](http://www.themattsimpson.com/) (PhD, ISU)
-- Casey Oliver (MS, ISU) (co-advised with [Dan Nettleton](http://stat.iastate.edu/people/dan-nettleton))
+- [Will Landau](http://will-landau.com/) ([PhD](thesis/WillLandau_PhDthesis.pdf), ISU)
+- [Matt Simpson](http://www.themattsimpson.com/) ([PhD](thesis/MattSimpson_PhDthesis.pdf), ISU)
+- Casey Oliver ([MS](thesis/CaseyOliver_CC.pdf), ISU) (co-advised with [Dan Nettleton](http://stat.iastate.edu/people/dan-nettleton))
 - Danny Sheinson (MS & PhD, UCSB) (co-advised with [Wendy Meiring](http://www.pstat.ucsb.edu/faculty%20pages/MEIRING.htm) for PhD)
 - Matt Wheeler (MS, UCSB)
 
