@@ -3,6 +3,8 @@ layout: page
 title: Students
 header: Students
 group: 
+fig_height: 6
+fig_width: 4
 ---
 {% include JB/setup %}
 
@@ -25,8 +27,8 @@ Here are some [resources](resources.html) for current graduate students.
 - Adam Martin-Schwarze (co-advised with [Philip Dixon](http://www.public.iastate.edu/~pdixon/))
 - Eric Mittman 
 
-![](student_figs/xiyuansu.jpg)
 ![](student_figs/kwill.jpg)
+![](student_figs/xiyuansu.jpg)
 ![](student_figs/ialvarez.jpg)
 ![](student_figs/adamms.jpg)
 ![](student_figs/emittman.jpg)
