@@ -3,21 +3,13 @@ layout: page
 title: Students
 header: Students
 group: 
-fig_height: 6
-fig_width: 4
 ---
 {% include JB/setup %}
 
 
 Here are some [resources](resources.html) for current graduate students. 
 
-## Preparing future faculty (PFF) mentees
 
-- [Natalia da Silva](http://ndasilva.public.iastate.edu/)
-- [Will Landau](http://will-landau.com/)
-
-![](student_figs/ndasilva.jpg)
-![](student_figs/landau.jpg)
 
 ## Current advisees
 
@@ -27,11 +19,11 @@ Here are some [resources](resources.html) for current graduate students.
 - Adam Martin-Schwarze (co-advised with [Philip Dixon](http://www.public.iastate.edu/~pdixon/))
 - Eric Mittman 
 
-![](student_figs/kwill.jpg)
-![](student_figs/xiyuansu.jpg)
-![](student_figs/ialvarez.jpg)
-![](student_figs/adamms.jpg)
-![](student_figs/emittman.jpg)
+![](student_figs/kwill.jpg =x118)
+![](student_figs/xiyuansu.jpg =x118)
+![](student_figs/ialvarez.jpg =x118)
+![](student_figs/adamms.jpg =x118)
+![](student_figs/emittman.jpg =x118)
 
 ## Former advisees
 
@@ -46,3 +38,11 @@ Here are some [resources](resources.html) for current graduate students.
 ![](student_figs/oliver.jpg)
 ![](student_figs/sheinson.jpg)
 ![](student_figs/wheeler.jpg)
+
+## Preparing future faculty (PFF) mentees
+
+- [Natalia da Silva](http://ndasilva.public.iastate.edu/)
+- [Will Landau](http://will-landau.com/)
+
+![](student_figs/ndasilva.jpg)
+![](student_figs/landau.jpg)
