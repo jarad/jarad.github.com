@@ -19,13 +19,14 @@ Here are some [resources](resources.html) for current graduate students.
 
 ## Current advisees
 
+- Katie Will
 - Xiyuan Sun
 - Ignacio Alvarez-Castro 
 - Adam Martin-Schwarze (co-advised with [Philip Dixon](http://www.public.iastate.edu/~pdixon/))
-- [Nick Michaud](http://www.public.iastate.edu/~michaud/homepage.html)
 - Eric Mittman 
 
 ![](student_figs/xiyuansu.jpg)
+![](student_figs/kwill.jpg)
 ![](student_figs/ialvarez.jpg)
 ![](student_figs/adamms.jpg)
 ![](student_figs/emittman.jpg)
