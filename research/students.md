@@ -19,11 +19,11 @@ Here are some [resources](resources.html) for current graduate students.
 - Adam Martin-Schwarze (co-advised with [Philip Dixon](http://www.public.iastate.edu/~pdixon/))
 - Eric Mittman 
 
-![](student_figs/kwill.jpg =x118)
-![](student_figs/xiyuansu.jpg =x118)
-![](student_figs/ialvarez.jpg =x118)
-![](student_figs/adamms.jpg =x118)
-![](student_figs/emittman.jpg =x118)
+<img src="student_figs/kwill.jpg" height="118" />
+<img src="student_figs/xiyuansu.jpg" height="118" />
+<img src="student_figs/ialvarez.jpg" height="118" />
+<img src="student_figs/adamms.jpg" height="118" />
+<img src="student_figs/emittman.jpg" height="118" />
 
 ## Former advisees
 
