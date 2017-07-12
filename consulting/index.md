@@ -18,6 +18,7 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [Detect disease](meetings/20170712.html)
 - [Interpretation of pvalues](meetings/20170628a.html)
 - [Interpretation of spline basis coefficients](meetings/20170628.html)
 - [Completely randomized vs cross-over design](meetings/20170531.html)
