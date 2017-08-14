@@ -9,11 +9,11 @@ tagline: Advanced Bayesian Methods
 This website is designed to host course material for [STAT 615 - Advanced Bayesian Methods](http://catalog.iastate.edu/showcourse/?code=STAT-615&edition=2015-16) at [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@NiemiSTAT](https://twitter.com/NiemiSTAT))
-- Office hours: 2-3 TW
+- Office hours: TBD
 
 This course meets
 
-- TR 11-12:20 @ Heady 0274
+- TR 11-12:20 @ Forker 0227
 
 ## Textbook
 

@@ -1,13 +1,13 @@
 ---
 layout: page
 title: Jarad Niemi
-tagline: Assistant Professor, Statistics Department, Iowa State University
+tagline: Associate Professor, Statistics Department, Iowa State University
 ---
 {% include JB/setup %}
 
 ## About ([CV](https://github.com/jarad/cv/blob/master/JaradNiemi-CV.pdf?raw=true))
 
-I am an assistant professor in the [Department of Statistics](http://www.stat.iastate.edu/ "ISU Statistics Department") at [Iowa State University](http://www.iastate.edu/ "Iowa State University"). 
+I am an associate professor in the [Department of Statistics](http://www.stat.iastate.edu/ "ISU Statistics Department") at [Iowa State University](http://www.iastate.edu/ "Iowa State University"). 
 My research focuses on [Bayesian inference](http://en.wikipedia.org/wiki/Bayesian_inference "Bayesian inference") typically accomplished through computational methods such as [Markov chain Monte Carlo](http://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo "MCMC") and [sequential Monte Carlo](http://en.wikipedia.org/wiki/Particle_filter "SMC") (SMC). 
 I received a PhD in [Statistical Science](http://stat.duke.edu/ "Stats @ Duke") from [Duke University](http://duke.edu/ "Duke University") in 2009, an MS in [Biostatistics](http://www.sph.umn.edu/biostatistics/ "Biostat @ Minnesota") from the [University of Minnesota](http://www1.umn.edu/twincities/index.html "University of Minnesota") in 2005, and a Bachelors of [Chemical Engineering](http://www.cems.umn.edu/ "Chemical Engineering @ Minnesota") from the [University of Minnesota](http://www1.umn.edu/twincities/index.html "University of Minnesota") in 1999. 
 I worked in a [Drosophila genetics lab](http://cbs.umn.edu/contacts/michael-simmons-phd "Michael Simmons") from 2001-2003 and before that at [Proctor & Gamble](http://www.pg.com/ "P&G") in [Cincinnati, Ohio](http://www.cincinnati-oh.gov/cityofcincinnati/ "Cincinnati, Ohio") as a Research Engineer from 1999-2001. 
@@ -21,10 +21,9 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
   {% endfor %}
 </ul>
 
-## Spring 2017 Courses ([all courses](courses))
+## Fall 2017 Courses ([all courses](courses))
 
-  - [STAT 401D (Engineering)](courses/stat401Eng)
-  - [STAT 544](courses/stat544)
+  - [STAT 615](courses/stat615)
 
 ## Contact
 
