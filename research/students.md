@@ -9,33 +9,28 @@ group:
 
 Here are some [resources](resources.html) for current graduate students. 
 
-## Preparing future faculty (PFF) mentees
 
-- [Natalia da Silva](http://ndasilva.public.iastate.edu/)
-- [Will Landau](http://will-landau.com/)
-
-![](student_figs/ndasilva.jpg)
-![](student_figs/landau.jpg)
 
 ## Current advisees
 
+- Katie Will
 - Xiyuan Sun
 - Ignacio Alvarez-Castro 
 - Adam Martin-Schwarze (co-advised with [Philip Dixon](http://www.public.iastate.edu/~pdixon/))
-- [Nick Michaud](http://www.public.iastate.edu/~michaud/homepage.html)
 - Eric Mittman 
 
-![](student_figs/xiyuansu.jpg)
-![](student_figs/ialvarez.jpg)
-![](student_figs/adamms.jpg)
-![](student_figs/michaud.jpg)
-![](student_figs/emittman.jpg)
+<img src="student_figs/kwill.jpg" height="118" />
+<img src="student_figs/xiyuansu.jpg" height="118" />
+<img src="student_figs/ialvarez.jpg" height="118" />
+<img src="student_figs/adamms.jpg" height="118" />
+<img src="student_figs/emittman.jpg" height="118" />
 
 ## Former advisees
 
-- [Will Landau](http://will-landau.com/) (PhD, ISU)
-- [Matt Simpson](http://www.themattsimpson.com/) (PhD, ISU)
-- Casey Oliver (MS, ISU) (co-advised with [Dan Nettleton](http://stat.iastate.edu/people/dan-nettleton))
+- [Nicholas Michaud](http://www.public.iastate.edu/~michaud/homepage.html) ([PhD](thesis/NicholasMichaud_PhDthesis.pdf), ISU)
+- [Will Landau](http://will-landau.com/) ([PhD](thesis/WillLandau_PhDthesis.pdf), ISU)
+- [Matt Simpson](http://www.themattsimpson.com/) ([PhD](thesis/MattSimpson_PhDthesis.pdf), ISU)
+- Casey Oliver ([MS](thesis/CaseyOliver_CC.pdf), ISU) (co-advised with [Dan Nettleton](http://stat.iastate.edu/people/dan-nettleton))
 - Danny Sheinson (MS & PhD, UCSB) (co-advised with [Wendy Meiring](http://www.pstat.ucsb.edu/faculty%20pages/MEIRING.htm) for PhD)
 - Matt Wheeler (MS, UCSB)
 
@@ -43,3 +38,11 @@ Here are some [resources](resources.html) for current graduate students.
 ![](student_figs/oliver.jpg)
 ![](student_figs/sheinson.jpg)
 ![](student_figs/wheeler.jpg)
+
+## Preparing future faculty (PFF) mentees
+
+- [Natalia da Silva](http://ndasilva.public.iastate.edu/)
+- [Will Landau](http://will-landau.com/)
+
+![](student_figs/ndasilva.jpg)
+![](student_figs/landau.jpg)

@@ -8,4 +8,5 @@ group: navigation
 
 - [Publications](publications.html)
 - [Presentations](presentations.html)
+- [Software](software.html)
 - [Students](students.html)
