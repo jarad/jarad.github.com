@@ -18,9 +18,16 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+### 2017-2018
+
+### 2016-2017
+
+Recorded conversations during the 2016-2017 school year including 
+summer 2017.
+
 - [Differences in word frequencies between corpora](meetings/20170809a.html)
 - [Coefficient of variation for cross-over design](meetings/20170809.html)
-- [Detect disease](meetings/20170712.html)
+- [Disease detection](meetings/20170712.html)
 - [Interpretation of pvalues](meetings/20170628a.html)
 - [Interpretation of spline basis coefficients](meetings/20170628.html)
 - [Completely randomized vs cross-over design](meetings/20170531.html)
