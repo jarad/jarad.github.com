@@ -18,6 +18,7 @@ This is currently a stub to organize consulting files.
 
 Reverse chronological order (newer on top)
 
+- [Differences in word frequencies between corpora](meetings/20170809a.html)
 - [Coefficient of variation for cross-over design](meetings/20170809.html)
 - [Detect disease](meetings/20170712.html)
 - [Interpretation of pvalues](meetings/20170628a.html)
