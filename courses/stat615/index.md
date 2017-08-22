@@ -13,7 +13,7 @@ This website is designed to host course material for [STAT 615 - Advanced Bayesi
 
 This course meets
 
-- TR 11-12:20 @ Forker 0227
+- TR 11-12:20 @ East 0111
 
 ## Textbook
 
