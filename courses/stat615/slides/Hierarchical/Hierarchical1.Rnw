@@ -80,17 +80,30 @@ m' &\pause = 'C[m/C + y/V]
 For simplicity, let $V=C=1$ and $m=0$, then $\theta|y \sim N(y/2, 1/2)$. \pause 
 Suppose $y=1$, then we have
 
+<<colors_and_lines>>=
+colors = c(prior = "#E69F00",
+           likelihood = "#56B4E9",
+           posterior = "#009E73")
+linetypes = c(prior = 1,
+              likelihood = 2,
+              posterior = 3)
+@
+
+
 <<normal_model_normal_prior, fig.width=7>>=
 y = 1
 d = data.frame(x=seq(-2,3,by=.01)) %>%
   mutate(prior = dnorm(x),
          likelihood = dnorm(x,y),
          posterior = dnorm(x,y/2,sqrt(1/2))) %>%
-  melt(id.var='theta', variable.name='distribution', value.name='density') 
+  melt(id.var='x', variable.name='distribution', value.name='density') 
 
-ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
+ggplot(d, aes(x,density, color=distribution, linetype=distribution)) + 
   geom_line() +
-  theme_bw()
+  theme_bw() +
+  labs(x='theta') +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 \end{frame}
 
@@ -110,7 +123,9 @@ d = data.frame(theta=seq(-2,12,by=.01)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
   geom_line() +
-  theme_bw()
+  theme_bw() +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 \end{frame}
 
@@ -215,7 +230,9 @@ d = data.frame(theta=seq(-2,3,by=.01)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
   geom_line() +
-  theme_bw()
+  theme_bw() +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 
 \end{frame}
@@ -237,7 +254,9 @@ d = data.frame(theta=seq(-2,12,by=.1)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
   geom_line() +
-  theme_bw()
+  theme_bw() +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 \end{frame}
 
@@ -374,7 +393,9 @@ d = data.frame(theta=seq(-2,y+2,length=1001)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
   geom_line() +
-  theme_bw()
+  theme_bw() +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 \end{frame}
 
@@ -404,12 +425,16 @@ ggplot(rbind(map, d), aes(y, theta, color=model)) +
 
 \begin{itemize}[<+->]
 \item For small signals, the MAP is zero (or $m$).
-\item For large signals, there is less shrinkage toward zero (or $m$) but more shrinkage than a $t$ distribution.
+\item For large signals, there is less shrinkage toward zero (or $m$) 
+but more shrinkage than a $t$ distribution.
+\item For large signals, the shrinkage is constant, i.e. it doesn't depend on
+$y$.
 \end{itemize}
 
 \vspace{0.2in} \pause
 
-It's fine that the MAP is zero, but since the posterior is continuous, we have $P(\theta=0|y) = 0$.
+It's fine that the MAP is zero, but since the posterior is continuous, 
+we have $P(\theta=0|y) = 0$ for any $y$.
 
 \vspace{0.2in} \pause
 
@@ -424,7 +449,7 @@ It's fine that the MAP is zero, but since the posterior is continuous, we have $
 \begin{frame}
 \frametitle{Dirac $\delta$ function }
 
-Let $\delta_c(x)$ be the Dirac $\delta$ function, i.e. heuristically
+Let $\delta_c(x)$ be the Dirac $\delta$ function, i.e. formally
 
 \[ 
 \delta_c(x) = \left\{ \begin{array}{ll}
@@ -437,7 +462,8 @@ and
 
 \vspace{0.2in} \pause
 
-Thus $\theta\sim \delta_c(\theta) \stackrel{d}{=} \delta_c$ indicate that the random variable $\theta$ is a degenerate random variable with $P(\theta=c)=1$. 
+Thus $\theta\sim \delta_c \stackrel{d}{=} \delta_c(\theta)$ indicates that the 
+random variable $\theta$ is a degenerate random variable with $P(\theta=c)=1$. 
 \end{frame}
 
 
@@ -527,7 +553,9 @@ d2 = data.frame(distribution = c('prior','posterior'),
 ggplot(d, aes(theta, density, color=distribution, linetype=distribution)) + 
   geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
   geom_line() +
-  theme_bw()
+  theme_bw() +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 
 \end{frame}
@@ -562,7 +590,9 @@ d2 = data.frame(distribution = c('prior','posterior'),
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
   geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
   geom_line() +
-  theme_bw()
+  theme_bw() +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 \end{frame}
 
@@ -674,7 +704,9 @@ d2 = data.frame(distribution = c('prior','posterior'),
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
   geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
   geom_line() +
-  theme_bw() 
+  theme_bw()  +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 
 \end{frame}
@@ -713,7 +745,9 @@ d2 = data.frame(distribution = c('prior','posterior'),
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) + 
   geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
   geom_line() +
-  theme_bw() 
+  theme_bw()  +
+  scale_color_manual(values = colors) +
+  scale_linetype_manual(values = linetypes)
 @
 
 \end{frame}
@@ -738,8 +772,11 @@ ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
 \frametitle{Discussion questions}
 
 \begin{itemize}
-\item Can we take this summary to the logical extreme and use a mixture of a point-mass and an improper uniform prior?
-\item Why do we typically talk about mixed effect models with a normal distribution for the random effects?
+\item What would happen if we tried to take this idea to the logical extreme
+by having a point-mass prior with an improper distribution for the non-point 
+mass portion?
+\item Why do the phrases ``random effects'' or ``mixed effects'' imply a normal 
+distribution for the random effects?
 \end{itemize}
 
 \end{frame}
