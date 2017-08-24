@@ -91,4 +91,3 @@ The instructions are from [here](http://stackoverflow.com/questions/17521300/sta
     git commit -m "first commit"
     git remote add origin git@github.com:[username]/rpackage.git
     git push -u origin master
-
