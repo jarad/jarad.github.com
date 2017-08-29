@@ -68,7 +68,232 @@ for $i=1,\ldots,\I$, $j=1,\ldots,n_i$, and $\sum_{i=1}^\I n_i = n$. \pause Now c
 
 \vspace{0.2in} \pause
 
-To perform a Bayesian analysis, we need a prior on $\mu$, $\tau^2$, and (possibly) $\pi$. 
+To perform a Bayesian analysis, we need a prior on $\mu$, $\tau^2$, and 
+(in the case of the discrete mixture) $\pi$. 
+
+\end{frame}
+
+
+\section{Gibbs sampling}
+\begin{frame}
+\frametitle{Normal hierarchical model}
+
+Consider the model 
+\[ \begin{array}{rl}
+Y_{ig} &\ind N(\theta_g, \sigma^2) \pause \\
+\theta_g &\ind N(\mu,\tau^2) 
+\end{array} \]
+\pause 
+where $i=1,\ldots,n_g$, $g=1,\ldots,G$, and $n=\sum_{g=1}^G n_g$
+\pause
+with prior distribution
+\[ \begin{array}{rl}
+p(\mu,\sigma^2,\tau^2)=p(\mu)p(\sigma^2)p(\tau^2) \propto \frac{1}{\sigma^2} Ca^+(\tau;0,C).
+\end{array} \]
+
+\vspace{0.1in} \pause
+
+For background on why we are using these priors for the variances, 
+see Gelman (2006) \url{https://projecteuclid.org/euclid.ba/1340371048}: 
+``Prior distributions for variance parameters in hierarchical models (comment 
+on article by Browne and Draper)''.
+
+\end{frame}
+
+
+\subsection{Multi-step}
+\begin{frame}
+\frametitle{Gibbs sampler for normal hierarchical model}
+
+Here is a possible Gibbs sampler for this model:
+\pause
+
+\begin{itemize}
+\item For $g=1,\ldots,G$, sample $\theta_g \sim p(\theta_g|\cdots)$. \pause 
+\item Sample $\sigma^2 \sim p(\sigma^2|\cdots)$. \pause 
+\item Sample $\mu \sim p(\mu|\cdots)$. \pause 
+\item Sample $\tau^2 \sim p(\tau^2|\cdots)$. 
+\end{itemize}
+
+\vspace{0.1in} \pause 
+
+How many steps exist in this Gibbs sampler? \pause G+3? 4?
+\end{frame}
+
+\subsection{2-Step}
+\begin{frame}
+\frametitle{2-Step Gibbs sampler for normal hierarchical model}
+
+Here is a 2-step Gibbs sampler: 
+\pause 
+ 
+\begin{enumerate}
+\item Sample $\theta = (\theta_1,\ldots,G) \sim p(\theta|\cdots)$. \pause 
+\item Sample $\mu,\sigma^2,\tau^2 \sim p(\mu,\sigma^2,\tau^2|\cdots)$. 
+\end{enumerate}
+
+\pause 
+There is stronger theoretical support for 2-step Gibbs sampler, 
+thus, if we can, it is prudent to construct a 2-step Gibbs sampler.
+
+\end{frame}
+
+
+\subsection{Sampling $\theta$}
+\begin{frame}
+\frametitle{Sampling $\theta$}
+
+The full conditional for $\theta$ is 
+\[ \begin{array}{rl}
+p(\theta|\cdots) 
+&\propto p(\theta,\mu,\sigma^2,\tau^2|y) \pause \\
+&\propto p(y|\theta,\sigma^2)p(\theta|\mu,\tau^2)p(\mu,\sigma^2,\tau^2) \pause \\
+&\propto p(y|\theta,\sigma^2)p(\theta|\mu,\tau^2) \pause \\
+&=\prod_{g=1}^G p(y_g|\theta_g,\sigma^2) p(\theta_g|\mu,\tau^2) 
+\end{array} \]
+where $y_g = (y_{1g},\ldots,y_{n_gg})$. 
+\pause
+We now know that the $\theta_g$ are conditionally independent of each other.
+\end{frame}
+
+
+\subsection{Sampling $\theta_g$}
+\begin{frame}
+\frametitle{Sampling $\theta_g$}
+The full conditional for $\theta_g$ is \pause 
+\[ \begin{array}{rl}
+p(\theta_g|\cdots) 
+&\propto p(y_g|\theta_g,\sigma^2) p(\theta_g|\mu,\tau^2) \pause \\
+&= \prod_{i=1}^{n_g} N(y_{ig};\theta_g,\sigma^2) N(\theta_g;\mu,\tau^2) 
+\end{array} \]
+\pause
+Notice that this does not include $\theta_{g'}$ for any $g'\ne g$. \pause
+This is an alternative way to conclude that the $\theta_g$ are conditionally
+independent of each other.
+
+\vspace{0.1in} \pause
+
+Thus
+\[
+\theta_g|\cdots \ind N(\mu_g, \tau_g^2)
+\]
+where
+\[ \begin{array}{rl}
+\tau_g^2 &= [\tau^{-2} + n_g \sigma^{-2}]^{-1} \\
+\mu_g &= \tau_g^2[\mu\tau^{-2} + \overline{y}_g n_g \sigma^{-2}] \\
+\overline{y}_g &= \frac{1}{n_g} \sum_{i=1}^{n_g} y_{ig}.
+\end{array} \]
+
+\end{frame}
+
+
+\subsection{Sampling $\mu,\sigma^2,\tau^2$}
+\begin{frame}
+\frametitle{Sampling $\mu,\sigma^2,\tau^2$}
+
+The full conditional for $\mu,\sigma^2,\tau^2$ is 
+\[ \begin{array}{rl}
+p(\mu,\sigma^2,\tau^2|\cdots) 
+&\propto p(y|\theta,\sigma^2)p(\theta|\mu,\tau^2)p(\mu)p(\sigma^2)p(\tau^2) \pause \\
+&= p(y|\theta,\sigma^2)p(\sigma^2) p(\theta|\mu,\tau^2)p(\mu)p(\tau^2)
+\end{array} \]
+\pause 
+So we know that $\sigma^2$ is independent of $\mu$ and $\tau^2$.
+\end{frame}
+
+
+
+\subsection{Sampling $\sigma^2$}
+\begin{frame}
+\frametitle{Sampling $\sigma^2$}
+
+Recall that 
+\[ 
+y_{ig} \ind N(\theta_g,\sigma^2) 
+\mbox{ and } 
+p(\sigma^2) \propto 1/\sigma^2. 
+\] 
+\pause 
+Thus, we are in the scenario of normal data with a known mean and unknown 
+variance and the unknown variance has our default prior.
+\pause
+Thus, we should know the full conditional is 
+$\sigma^2|\cdots \sim IG\left(\frac{n}{2}, \frac{1}{2} \sum_{g=1}^G \sum_{i=1}^{n_g} (y_{ig}-\theta_g)^2\right)$.
+
+\vspace{0.1in} \pause 
+
+To derive the full conditional, use 
+\[ \begin{array}{rl}
+p(\sigma^2|\cdots)
+&\propto \prod_{g=1}^G \prod_{i=1}^{n_g} (\sigma^2)^{-1/2} \exp\left( -\frac{1}{2\sigma^2} (y_{ig}-\theta_g)^2 \right) \frac{1}{\sigma^2} \\
+&= (\sigma^2)^{-n/2-1} \exp\left( \left. -\frac{1}{2} \sum_{g=1}^G \sum_{i=1}^{n_g} (y_{ig}-\theta_g)^2 \right/ \sigma^2 \right)
+\end{array} \]
+\pause
+which is the kernel of a $IG\left(\frac{n}{2}, \frac{1}{2} \sum_{g=1}^G \sum_{i=1}^{n_g} (y_{ig}-\theta_g)^2\right)$.
+
+\end{frame}
+
+
+\section{Sampling $\mu,\tau^2$}
+\begin{frame}
+\frametitle{Sampling $\mu,\tau^2$}
+\small
+
+Recall that 
+\[
+\theta_g \ind N(\mu,\tau^2) 
+\mbox{ and } 
+p(\mu,\tau^2) \propto Ca^+(\tau;0,C).
+\]
+
+\pause
+This is a non-standard distribution, but is extremely close a normal model
+with unknown mean and variance with the standard non-informative prior 
+$p(\mu,\tau^2) \propto 1/\tau^2$ or the conjugate normal-inverse-gamma
+prior.
+
+\vspace{0.1in} \pause
+
+Here are some options for sampling from this distribution:
+\begin{itemize}
+\item random-walk Metropolis (in 2 dimensions),
+\item independent Metropolis-Hastings using posterior from standard non-informative prior as the proposal, or
+\item rejection sampling using posterior from standard non-informative prior as the proposal
+\end{itemize}
+The posterior under the standard non-informative prior is 
+\[ 
+\tau^2|\cdots \sim \mbox{Inv-}\chi^2(G-1,s_\theta^2) 
+\mbox{ and } 
+\mu|\tau^2,\ldots \sim N(\overline{\theta}, \tau^2/G)
+\]
+where $\overline{\theta} = \frac{1}{G} \sum_{g=1}^G \theta_g$ and 
+$s_\theta^2 = \frac{1}{G-1}(\theta_g-\overline{\theta})^2$. 
+\pause
+What is the MH ratio?
+
+
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Markov chain Monte Carlo for normal hierarchical model}
+
+\begin{enumerate}
+\item Sample $\theta\sim p(\theta|\cdots)$:
+  \begin{enumerate}
+  \item For $g=1,\ldots,G$, sample $\theta_g \sim N(\mu_g,\tau_g^2)$.
+  \end{enumerate}
+\item Sample $\mu,\sigma^2,\tau^2$:
+  \begin{enumerate}
+  \item Sample $\sigma^2 \sim IG(n/2,SSE)$.
+  \item Sample $\mu,\tau^2$ using independent Metropolis-Hastings using posterior from standard non-informative prior as the proposal.
+  \end{enumerate}
+\end{enumerate}
+
+\vspace{0.1in} \pause
+
+What happens if $\theta_g \ind La(\mu,\tau)$ or $\theta_g \ind t_v(\mu,\tau^2)$?
 
 \end{frame}
 
@@ -117,7 +342,38 @@ p(\theta) &= \int p(\theta|\phi)p(\phi) d\phi \pause \\
 Thus 
 \[ \theta \sim t_{2a}(m,bC/a) \]
 \pause
-i.e. $\theta$ has a $t$ distribution with $2a$ degrees of freedom, location $m$, and scale (variance) $bC/a$. \pause Thus if $C=1$, $a=v/2$, and $b=v\tau^2/2$, we have a $t$ distribution with $v$ degrees of freedom, location $m$, and scale $\tau^2$. 
+i.e. $\theta$ has a $t$ distribution with $2a$ degrees of freedom, location $m$,
+scale $bC/a$, and variance $\frac{bC}{a-1}$. 
+\pause 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Hierarchical $t$ distribution}
+
+Let $m=\mu$, $C=1$, $a=\nu/2$, and $b=\nu\tau^2/2$, \pause i.e. 
+
+\[
+\theta|\phi \sim N(\mu,\phi) \mbox{ and } \phi \sim IG(\nu/2,\nu\tau^2/2).
+\]
+\pause
+ 
+Then, we have 
+
+\[ 
+\theta \sim t_\nu(\mu,\tau^2),
+\]
+i.e. a $t$ distribution with $\nu$ degrees of freedom, location $\mu$, and scale 
+$\tau^2$. 
+
+\vspace{0.2in} \pause
+
+Notice that the parameterization has a redundancy between $C$ and $a/b$, 
+i.e. we could have chosen $C=\tau^2$, $a=\nu/2$, and $b=\nu/2$ and we would have 
+obtained the same marginal distribution for $\theta$.
+
 \end{frame}
 
 
@@ -125,14 +381,60 @@ i.e. $\theta$ has a $t$ distribution with $2a$ degrees of freedom, location $m$,
 \frametitle{Laplace distribution}
 
 Let 
-\[ \theta|\phi \sim N(m,\phi C) \mbox{ and } \phi \sim Exp(1/2b^2) \]
+\[ 
+\theta|\phi \sim N(m,\phi C^2) \mbox{ and } \phi \sim Exp(1/2b^2) 
+\]
+where $E[\phi] = 2b^2$ and $Var[\phi] = 4b^4$.
 \pause 
-then, by equation (4) in Park and Casella (2008),
-\[ \theta \sim La(m,b/\sqrt{C}) \]
+then, 
+by an extension of equation (4) in Park and Casella (2008), 
+we have 
+\[
+p(\theta) = \frac{1}{2Cb}e^{-\frac{|\theta-m|}{Cb}}.
+\]
+\pause 
+This is the pdf for a Laplace (double exponential) distribution with 
+location $m$ and scale $Cb$ 
 \pause
-where $z=(\theta-m)/\sqrt{C}$ and $a=1/b$ \pause and thus $\theta$ has a Laplace distribution with location $m$ and scale $b/\sqrt{C}$. 
+which we write
+\[ 
+\theta \sim La(m,Cb).
+\]
+\pause
+\pause and say $\theta$ has a 
+Laplace distribution with location $m$ and scale $Cb$ 
+\pause
+and $E[\theta] = m$ and $Var[\theta] = 2[Cb]^2 = 2C^2b^2$.
 
 \end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Hierarchical Laplace distribution}
+
+Let $m=\mu$, $C=1$, and $b=\tau$ \pause i.e. 
+
+\[
+\theta|\phi \sim N(\mu,\phi) \mbox{ and } \phi \sim Exp(1/2\tau^2).
+\]
+\pause
+ 
+Then, we have 
+
+\[ 
+\theta \sim La(\mu,\tau),
+\]
+i.e. a Laplace distribution with location $\mu$ and scale $\tau$. 
+
+\vspace{0.2in} \pause
+
+Notice that the parameterization has a redundancy between $C$ and $b$, 
+i.e. we could have chosen $C=\tau$ and $b=1$ and we would have 
+obtained the same marginal distribution for $\theta$.
+\end{frame}
+
 
 \section{Normal hierarchical model}
 \begin{frame}
@@ -161,11 +463,11 @@ For simplicity, let's assume $\sigma^2 \sim IG(a,b)$, $\mu \sim N(m,C)$, and $\t
 The following Gibbs sampler will converge to the posterior $p(\theta,\sigma,\mu,\phi,\tau|y)$:
 
 \begin{enumerate}
-\item Sample $\mu\sim p(\mu|\ldots)$.
-\item Independently, sample $\theta_i \sim p(\theta_i|\ldots)$.
-\item Sample $\sigma \sim p(\sigma|\ldots)$.
-\item Independently, sample $\phi_i \sim p(\phi_i|\ldots)$.
-\item Sample $\tau \sim p(\tau|\ldots)$.
+\item Sample $\mu\sim p(\mu|\cdots)$.
+\item Independently, sample $\theta_i \sim p(\theta_i|\cdots)$.
+\item Sample $\sigma \sim p(\sigma|\cdots)$.
+\item Independently, sample $\phi_i \sim p(\phi_i|\cdots)$.
+\item Sample $\tau \sim p(\tau|\cdots)$.
 \end{enumerate}
 
 \vspace{0.2in} \pause
@@ -185,7 +487,7 @@ The first three steps will be common to all models while the last two steps will
 
 Immediately, we should know that 
 
-\[ \mu|\ldots \sim \pause N(m',C') \]
+\[ \mu|\cdots \sim \pause N(m',C') \]
 with 
 \[ \begin{array}{rl}
 C' &= \left(\frac{1}{C} + \sum_{i=1}^\I \frac{1}{\phi_i} \right)^{-1} \\
@@ -204,13 +506,13 @@ m' &= C'\left(\frac{m}{C} + \sum_{i=1}^\I \frac{\theta_i}{\phi_i} \right)
 \vspace{0.2in} \pause
 
 \[ \begin{array}{rl}
-p(\theta|\ldots) 
+p(\theta|\cdots) 
 &\propto \left[\prod_{i=1}^\I \prod_{j=1}^{n_i} e^{-(y_{ij}-\theta_i)^2/2\sigma^2} \right] \left[ \prod_{i=1}^\I e^{-(\theta_i-\mu)^2/2\phi_i} \right] \\
 &\propto \prod_{i=1}^\I \left[\prod_{j=1}^{n_i} e^{-(y_{ij}-\theta_i)^2/2\sigma^2} e^{-(\theta_i-\mu)^2/2\phi_i} \right] 
 \end{array} \]
 \pause
 Thus $\theta_i$ are conditionally independent given everything else. \pause It should be obvious that 
-\[ \theta_i|\ldots \sim \pause N\left(\left[ \frac{\mu}{\phi_i} + \frac{n_i}{\sigma^2}\overline{y}_i  \right], \left[\frac{1}{\phi_i} + \frac{n_i}{\sigma^2} \right]^{-1} \right) \]
+\[ \theta_i|\cdots \sim \pause N\left(\left[ \frac{\mu}{\phi_i} + \frac{n_i}{\sigma^2}\overline{y}_i  \right], \left[\frac{1}{\phi_i} + \frac{n_i}{\sigma^2} \right]^{-1} \right) \]
 where $\overline{y}_i = \sum_{j=1}^{n_i} y_{ij} / n_i$.
 \end{frame}
 
@@ -224,7 +526,7 @@ where $\overline{y}_i = \sum_{j=1}^{n_i} y_{ij} / n_i$.
 \vspace{0.2in} \pause
 
 This is just a normal data model with an unknown variance that has the conjugate prior. \pause The only difficulty is that we have several groups here. \pause But very quickly you should be able to determine that 
-\[ \sigma^2|\ldots \sim IG(a',b') \]
+\[ \sigma^2|\cdots \sim IG(a',b') \]
 where 
 \[ \begin{array}{rl}
 a' &= a + \sum_{i=1}^\I n_i /2 = a + n/2\\
@@ -264,17 +566,17 @@ For Laplace model,
 \pause 
 so the full conditional is 
 \[ 
-p(\phi|\ldots) \propto \left[ \prod_{i=1}^\I N(\theta_i; \mu, \phi_i) Exp(\phi_i;1/2\tau^2) \right].
+p(\phi|\cdots) \propto \left[ \prod_{i=1}^\I N(\theta_i; \mu, \phi_i) Exp(\phi_i;1/2\tau^2) \right].
 \]
 \pause
 So the individual $\phi_i$ are conditionally independent \pause with
 \[ 
-p(\phi_i|\ldots) \propto N(\theta_i; \mu, \phi_i) Exp(\phi_i;1/2\tau^2) \propto \phi_i^{-1/2} e^{-(\theta_i-\mu)^2/2\phi_i} e^{-\phi_i/2\tau^2}
+p(\phi_i|\cdots) \propto N(\theta_i; \mu, \phi_i) Exp(\phi_i;1/2\tau^2) \propto \phi_i^{-1/2} e^{-(\theta_i-\mu)^2/2\phi_i} e^{-\phi_i/2\tau^2}
  \]
 \pause
 If we perform the transformation $\eta_i = 1/\phi_i$, \pause we have 
 \[
-p(\eta_i|\ldots) \propto \eta_i^{-3/2} e^{-\frac{(\theta_i-\mu)^2}{2}\eta_i - \frac{1}{2\tau^2\eta_i}}
+p(\eta_i|\cdots) \propto \eta_i^{-3/2} e^{-\frac{(\theta_i-\mu)^2}{2}\eta_i - \frac{1}{2\tau^2\eta_i}}
 \] 
 \pause
 which is the kernel of an inverse Gaussian distribution with mean $\sqrt{1/\tau^2(\theta_i-\mu)^2}$ and scale $1/\tau^2$ where the parameterization is such that the variance is $\mu^3/\lambda$ (different from the {\tt mgcv::rig} parameterization).
@@ -292,7 +594,7 @@ For the $t$ model,
 \[ \theta_i \ind N(\mu,\phi_i) \mbox{ and } \phi_i \ind IG(v/2,v\tau^2/2), \]
 \pause
 so we have 
-\[ \phi_i|\ldots \ind IG([v+1]/2, [v\tau^2+(\theta_i-\mu)^2]/2). \]
+\[ \phi_i|\cdots \ind IG([v+1]/2, [v\tau^2+(\theta_i-\mu)^2]/2). \]
 Since this is just $\I$ independent normal data models with a known mean and independent conjugate inverse gamma priors on the variance.
 \end{frame}
 
@@ -307,7 +609,7 @@ Let
 \[ \theta_i \ind N(\mu,\tau^2) \mbox{ and } \tau \sim Ca^+(0,c). \]
 \pause
 so the full conditional is 
-\[ p(\eta|\ldots) \propto \eta^{-\I/2} e^{-\sum_{i=1}^\I (\theta_i-\mu)^2/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2} \]
+\[ p(\eta|\cdots) \propto \eta^{-\I/2} e^{-\sum_{i=1}^\I (\theta_i-\mu)^2/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2} \]
 where we performed the transformation $\eta = \tau^2$ on the prior.
 
 \vspace{0.1in} \pause
@@ -331,7 +633,7 @@ Then we calculate $\tau = \sqrt{\eta}$.
 Let 
 \[ \phi_i \sim Exp(1/2\tau^2) \mbox{ and } \tau \sim Ca^+(0,c) \]
 so the full conditional is 
-\[ p(\eta|\ldots) \propto \eta^{-\I} e^{-\sum_{i=1}^\I \phi_i/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2}. \]
+\[ p(\eta|\cdots) \propto \eta^{-\I} e^{-\sum_{i=1}^\I \phi_i/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2}. \]
 
 \vspace{0.1in} \pause
 
@@ -354,7 +656,7 @@ Then we calculate $\tau = \sqrt{\eta}$.
 Let 
 \[ \phi_i \sim IG(v/2, v\tau^2/2) \mbox{ and } \tau \sim Ca^+(0,c) \]
 so the full conditional is 
-\[ p(\eta|\ldots) \propto \eta^{\I v/2} e^{-\frac{\eta}{2} \sum_{i=1}^\I \frac{1}{\phi_i}} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2}. \]
+\[ p(\eta|\cdots) \propto \eta^{\I v/2} e^{-\frac{\eta}{2} \sum_{i=1}^\I \frac{1}{\phi_i}} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2}. \]
 
 \vspace{0.1in} \pause
 
@@ -404,7 +706,7 @@ and independently $\pi \sim Beta(s,f)$, $\mu \sim N(m,C)$, and $\phi_i=\tau^2$ f
 \vspace{0.2in} \pause
 
 The full conditional for $\pi$ is
-\[ \pi|\ldots \sim Beta\left(s+\sum_{i=1}^\I \I(\theta_i=0), f+\sum_{i=1}^\I \I(\theta_i\ne 0)\right)\]
+\[ \pi|\cdots \sim Beta\left(s+\sum_{i=1}^\I \I(\theta_i=0), f+\sum_{i=1}^\I \I(\theta_i\ne 0)\right)\]
 and $\mu$ and $\phi_i$ get updated using only those $\theta_i$ that are non-zero. 
 
 \end{frame}
