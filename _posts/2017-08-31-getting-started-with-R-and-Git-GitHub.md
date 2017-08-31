@@ -17,17 +17,17 @@ slightly modified by me.
 
 [Download and Install R](https://cran.r-project.org/)
 
-[Download and Install RStudio (Application [IDE] to make R easier to use)](https://www.rstudio.com/)
+[Download and Install RStudio](https://www.rstudio.com/) 
+(Application [IDE] to make R easier to use)
 
 [Learn to Program in R with DataCamp Online Course](https://www.datacamp.com/courses/free-introduction-to-r)
 
 The [swirl](http://swirlstats.com/) package which also provides
 [installation instructions](http://swirlstats.com/students.html).
 
-The [r4beginners_v3 pdf](figs/r4beginners_v3.pdf).
+ComputerWorld's [R: a beginner's guide](https://github.com/udacity-jack/Data-Analysis-with-R/raw/master/r4beginners_v3.pdf).
 
-More Resources
-https://www.rstudio.com/online-learning/#R
+More Resources <https://www.rstudio.com/online-learning/#R>
 
 ### Git/GitHub
 
@@ -43,6 +43,3 @@ Dr. Jarad Niemi's Resource on working with
 Dr. Jarad Niemi's 
 [R Data Package Template](https://github.com/jarad/RDataPackageTemplate) 
 for storing data and conducting analyses
-
-Further Details about the above two resources and how we use them in the lab
-See my notes in [RStudio-GitHub-Setup.pdf](figs/RStudio-GitHub-Setup.pdf) attached
