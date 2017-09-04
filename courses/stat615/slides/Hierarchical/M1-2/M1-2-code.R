@@ -23,6 +23,21 @@ r = mcmc_normal(n_reps = 1e5, y = d$y, group = d$group,
                 prior = prior,
                 verbose = 0)
 
+
+### Compare posteriors to truth
+par(mfrow = c(2,2))
+hist(r$mu, probability = TRUE, main=expression(mu))
+abline(v=mean(theta), col='red')
+g = sample(100,1) # random group
+hist(r$theta[,g], probability = TRUE, main = paste("group",g,"mean"))
+abline(v=theta[g], col='red')
+hist(sqrt(r$sigma2), probability = TRUE, main = expression(sigma))
+abline(v=1, col='red')
+hist(sqrt(r$tau2), probability = TRUE, main = expression(tau))
+abline(v = sd(theta), col='red')
+
+
+
 # Additional initial and prior values
 # This is really to speed up convergence
 initial_values$gamma = abs(s$mean) > 2*sqrt(initial_values$sigma2)
