@@ -28,11 +28,15 @@ For the purpose of this page,
 
 > raw data is a digital version of non-digital information. 
 
-Basically, raw data is a digitized version of a lab notebook or a print-out from a machine. When a machine provides a digital version, then it is just that file exactly as it came from the machine. 
+Basically, raw data is a digitized version of a lab notebook or a print-out 
+from a machine. 
+When a machine provides a digital version, 
+then it is just that file exactly as it came from the machine. 
 
 ## Tips in preparing raw data files
 
-The main goal with these tips are to simplify the raw data creation process in order to minimize mistakes and maximize reproducibility.
+The main goal with these tips are to simplify the raw data creation process in 
+order to minimize mistakes and maximize reproducibility.
 
 - Store the data in a nonproprietary software format
 
