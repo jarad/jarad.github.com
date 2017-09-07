@@ -334,9 +334,9 @@ List mcmc_pointmass_normal(
     for (int g=0; g<G; g++) phi[g] = tau2;
     
     // sample mu
-    sum = std::accumulate(psi.begin(), psi.end(), 0.0);
-    mu  = sample_normal_mean(G, sum/G, tau2, m, C);
-    check(mu, -1e5, 1e5);
+    // sum = std::accumulate(psi.begin(), psi.end(), 0.0);
+    // mu  = sample_normal_mean(G, sum/G, tau2, m, C);
+    // check(mu, -1e5, 1e5);
     
     // sample gamma
     gamma = sample_gamma(pi, G, n, ybar, psi, sigma2);
