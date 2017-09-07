@@ -39,6 +39,9 @@ options(width=100)
 @
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+library("dplyr")
+library("BMA")
+library("BMS")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -62,13 +65,15 @@ p(M_\gamma|y)
 = \frac{p(y|M_\gamma)p(M_\gamma)}{p(y)} \pause
 = \frac{p(y|M_\gamma)p(M_\gamma)}{\sum_{\lambda\in \mG} p(y|M_\lambda)p(M_\lambda)}
 \]
+is the \alert{posterior model probability}
 \pause
 and 
 \[
 p(y|M_\gamma) = \int p(y|\theta_\gamma,M_\gamma) p(\theta_\gamma|M_\gamma) d\theta_\gamma
 \]
 \pause
-where $\theta_\gamma$ is the set of parameters in model $M_\gamma$. 
+is the \alert{marginal likelihood for model $M_\gamma$} and 
+$\theta_\gamma$ is the set of parameters in model $M_\gamma$. 
 
 \end{frame}
 
@@ -87,10 +92,10 @@ E[\Delta|y] \pause= \sum_{\gamma\in\mG} \hat{\Delta}_\gamma p(M_\gamma|y)
 \pause
 and the variance is 
 \[ 
-V[\Delta|y] \pause = \left[ \sum_{\gamma\in\mG} (Var[\Delta|y,M_\gamma) + \hat{\Delta}_\gamma^2) p(M_\gamma|y) \right] - E[\Delta|y]^2
+Var[\Delta|y] \pause = \left[ \sum_{\gamma\in\mG} (Var[\Delta|y,M_\gamma) + \hat{\Delta}_\gamma^2) p(M_\gamma|y) \right] - E[\Delta|y]^2
 \]
 \pause
-The appealing aspect here is that the moments only depend on the moments from each individual model.
+The appealing aspect here is that the moments only depend on the moments from each individual model and the posterior model probability.
 
 \end{frame}
 
@@ -255,7 +260,7 @@ The quantities of interest from BMA are typically
 p(\mbox{including explanatory variable }i|y) = \sum_{\gamma\in\mG} p(M_\gamma|y) \I(\gamma_i=1) 
 \]
 \pause
-which provides an overall assessment of whether explanatory variable $j$ is important or not. \pause
+which provides an overall assessment of whether explanatory variable $i$ is important or not. \pause
 \item Posterior distributions, means, and variances for ``parameters'', e.g. 
 \[ 
 E(\theta_i|y) = \sum_{\gamma\in\mG} p(M_\gamma|y) E[\theta_{\gamma,i}|y] 
@@ -298,13 +303,17 @@ Until recently there was another package
 
 <<BMA, message=FALSE, echo=TRUE>>=
 library(BMA)
-library(MASS); data(UScrime)
+UScrime <- MASS::UScrime
+
+# Set up data
 x = UScrime[,-16]
 y = log(UScrime[,16])
 x[,-2] = log(x[,-2])
+
+# Run BMA using BIC
 lma = bicreg(x, y, 
-             strict = FALSE, # include models the more probability submodel?
-             OR = 20)        # cutoff for including models
+             strict = TRUE, # remove submodels that are less likely 
+             OR = 20)       # maximum BF ratio
 @
 \end{frame}
 
@@ -335,30 +344,37 @@ imageplot.bma(lma)
 
 
 \begin{frame}[fragile]
-\frametitle{BMA in R}
+\frametitle{BMA for GLMs in R}
 
 <<BMA_glm, message=FALSE, echo=TRUE>>=
-data(birthwt)
-y<- birthwt$lo # 1 indicates low birthweight
-x<- data.frame(birthwt[,-1])
-x$race<- as.factor(x$race)
-x$ht<- (x$ht>=1)+0
-x<- x[,-9]
-x$smoke <- as.factor(x$smoke)
-x$ptl<- as.factor(x$ptl)
-x$ht <- as.factor(x$ht) # history of hypertension
-x$ui <- as.factor(x$ui)
+# Set up data
+y <- MASS::birthwt$low                  # 1 indicates birthweight < 2.5 kg
 
-lma <- bic.glm(x, y, strict = FALSE, OR = 20, 
-                      glm.family="binomial", 
-                      factor.type=TRUE) # remove all levels of a factor?
+x <- MASS::birthwt %>%
+  dplyr::select(-low,-bwt) %>%
+  mutate(race  = factor(race),    # mother's race (1 = white, 2 = black, 3 = other)
+         smoke = factor(smoke),   # smoking status during pregnancy.
+         ptl   = factor(ptl),     # number of previous premature labours
+         ht    = factor(ht>=1),   # history of hypertension
+         ui    = factor(ui))      # presence of uterine irritability
+
+# Use BIC-based BMA
+lma <- bic.glm(x, y, strict = TRUE, OR = 20, 
+                     glm.family="binomial", 
+                     factor.type=TRUE) # remove all levels of a factor
 @
 \end{frame}
 
 
-
 \begin{frame}[fragile]
 <<BMA_glm4>>=
+summary(lma)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMA_glm4_plot>>=
 imageplot.bma(lma)
 @
 \end{frame}
@@ -369,75 +385,23 @@ imageplot.bma(lma)
 \begin{frame}[fragile]
 \frametitle{Predictions}
 
+<<npkBMA, echo=TRUE>>=
+npkBMA = bicreg( x = npk[, c("block","N","P","K")], y = npk$yield)
+summary(npkBMA)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Predictions}
+
 <<BMA_predictions, echo=TRUE>>=
-npkBMA = bicreg( x = npk[, c("block","N","K")], y=npk$yield)
-p = predict( npkBMA, newdata = npk)
-head(p$mean)
-head(p$sd)
-head(p$quantiles)
+p = predict( npkBMA, newdata = npk, quantiles = c(.5,.05,.95))
+bind_cols(npk, as.data.frame(p$quantiles)) %>% head(20)
 @
 \end{frame}
 
-
-
-
-
-\subsection{BMS}
-\begin{frame}[fragile]
-\frametitle{BMS}
-<<BMS, echo=TRUE>>=
-library(BMS)
-data(datafls)
-dim(datafls)
-bma1 = bms(datafls,
-           burn=1000, 
-           iter=2000, 
-           g="EBL",          # Local empirical Bayes 
-           mprior="uniform", # model over priors (extremely flexible)
-           user.int = interactive()) 
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-<<BMS_print, echo=TRUE>>=
-print(bma1)
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-<<BMS_summary, echo=TRUE>>=
-summary(bma1)
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-<<BMS2a, echo=TRUE>>=
-plot(bma1)
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-<<BMS3, echo=TRUE>>=
-image(bma1)
-@
-\end{frame}
-
-
-
-
-
-
-\begin{frame}[fragile]
-<<BMS5,echo=TRUE>>=
-p1 = predict(bma1) #fitted values based on MCM frequencies
-p2 = predict(bma1, exact=TRUE) #fitted values based on best models
-plot(p1,p2); abline(0,1)
-@
-\end{frame}
 
 
 \section{MCMC for sampling $\theta$ and $M$}
@@ -490,6 +454,68 @@ For other models, e.g. Poisson regression, sampling $\phi_j$ results in a non-Gi
 \end{frame}
 
 
+
+
+\subsection{BMS}
+\begin{frame}[fragile]
+\frametitle{BMS}
+<<BMS, echo=TRUE>>=
+library(BMS) # Bayesian model sampling
+data(datafls)
+dim(datafls)
+bma1 = bms(datafls,
+           burn=1000, 
+           iter=2000, 
+           g="EBL",          # Local empirical Bayes 
+           mprior="uniform", # model over priors (extremely flexible)
+           user.int = interactive()) 
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMS_print, echo=TRUE>>=
+print(bma1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMS_summary, echo=TRUE>>=
+summary(bma1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMS2a, echo=TRUE>>=
+plot(bma1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<BMS3, echo=TRUE>>=
+image(bma1)
+@
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+<<BMS5,echo=TRUE>>=
+p1 = predict(bma1)             # fitted values based on MCMM frequencies
+p2 = predict(bma1, exact=TRUE) # fitted values based on best models
+plot(p1,p2); abline(0,1)
+@
+\end{frame}
+
+
+
+
 % \subsection{Bayesian regression}
 % \begin{frame}
 % \frametitle{Bayesian regression}
@@ -516,6 +542,22 @@ For other models, e.g. Poisson regression, sampling $\phi_j$ results in a non-Gi
 % 
 % \end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Model averaging of regression coefficients}
 
+<<echo = TRUE>>=
+set.seed(20171007)
+n <- 100
+x1 <- rnorm(n)
+y <- x1 + rnorm(n)
+x2 <- x1 + rnorm(n,0,.01)
+
+library(BMA)
+m <- bicreg(cbind(x1,x2), y)
+
+summary(m)
+@
+
+\end{frame}
 
 \end{document}
