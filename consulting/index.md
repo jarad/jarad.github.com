@@ -20,6 +20,11 @@ Reverse chronological order (newer on top)
 
 ### 2017-2018
 
+Recorded conversations during the 2017-2018 school year including 
+summer 2018.
+
+- [Nonlinear estimation](meetings/20170906.html)
+
 ### 2016-2017
 
 Recorded conversations during the 2016-2017 school year including 
