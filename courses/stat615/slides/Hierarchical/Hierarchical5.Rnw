@@ -62,14 +62,14 @@ Adapted from Radford Neal's MCMC Using Hamltonian Dynamics in Handbook of Markov
 Considering a body in a frictionless 1-dimensional environment, let 
 \begin{itemize}
 \item $m$ be its mass,
-\item $q$ be its position, and
-\item $p$ be its momentum.
+\item $\theta$ be its position, and
+\item $\omega$ be its momentum.
 \end{itemize}
 \pause
 The mass has 
 \begin{itemize}
-\item potential energy $U(q)$ (which is proportional to its height) and
-\item kinetic energy $K(p)=p^2/(2m)$. 
+\item potential energy $U(\theta)$ (which is proportional to its height) and
+\item kinetic energy $K(\omega)=\omega^2/(2m)$. 
 \end{itemize}
 \end{frame}
 
@@ -81,14 +81,14 @@ The mass has
 Extending this to $d$ dimensions, 
 we have 
 \begin{itemize}
-\item position vector $q$ and 
-\item momentum vector $p$. 
+\item position vector $\theta$ and 
+\item momentum vector $\omega$. 
 \end{itemize}
 \pause
-The Hamiltonian $H(q,p)$ describes the time evolution of the system through 
+The Hamiltonian $H(\theta,\omega)$ describes the time evolution of the system through 
 \[ \begin{array}{rl}
-\frac{dq_i}{dt} &= \phantom{-}\frac{\partial H}{\partial p_i} \\
-\frac{dp_i}{dt} &= -\frac{\partial H}{\partial q_i}
+\frac{d\theta_i}{dt} &= \phantom{-}\frac{\partial H}{\partial \omega_i} \\
+\frac{d\omega_i}{dt} &= -\frac{\partial H}{\partial \theta_i}
 \end{array} \]
 for $i=1,\ldots,d$. 
 \end{frame}
@@ -102,20 +102,20 @@ for $i=1,\ldots,d$.
 For Hamiltonian Monte Carlo, 
 we usually use Hamiltonian functions that can be written as follows:
 \[ 
-H(q,p) = U(q) + K(p)
+H(\theta,\omega) = U(\theta) + K(\omega)
 \]
 where 
 \begin{itemize}
-\item $U(q)$ is called the potential energy and will be defined to be minus the log probability density of the distribution for $q$ (plus any constant that is 
+\item $U(\theta)$ is called the potential energy and will be defined to be minus the log probability density of the distribution for $\theta$ (plus any constant that is 
 convenient) and 
-\item $K(p)$ is called the kinetic energy and is usually defined as 
+\item $K(\omega)$ is called the kinetic energy and is usually defined as 
 \[ 
-K(p) = p^\top M^{-1} p / 2
+K(\omega) = \omega^\top M^{-1} \omega / 2
 \]
 where $M$ is a symmetric, positive-definite ``mass matrix'', 
 \pause which is 
 typically diagonal, and is often a scalar multiple of the identity matrix.
-This form for $K(p)$ corresponds to minus the log probability density 
+This form for $K(\omega)$ corresponds to minus the log probability density 
 (plus a constant) of the zero-mean Gaussian distribution with covariance
 matrix $M$.
 \end{itemize}
@@ -124,8 +124,8 @@ matrix $M$.
 
 The resulting Hamilton's equations are 
 \[ 
-\frac{dq_i}{dt} = [M^{-1}p]_i, \qquad
-\frac{dp_i}{dt} = -\frac{\partial U}{\partial q_i}.
+\frac{d\theta_i}{dt} = [M^{-1}\omega]_i, \qquad
+\frac{d\omega_i}{dt} = -\frac{\partial U}{\partial \theta_i}.
 \]
 \end{frame}
 
@@ -137,17 +137,17 @@ The resulting Hamilton's equations are
 
 Suppose 
 \[ 
-H(q,p) = U(q) + K(p), \quad U(q) = q^2/2, \quad K(p) = p^2/2
+H(\theta,\omega) = U(\theta) + K(\omega), \quad U(\theta) = \theta^2/2, \quad K(\omega) = \omega^2/2
 \]
 \pause
 The dynamics resulting from this Hamiltonian are
 \[ 
-\frac{dq}{dt} = p, \quad \frac{dp}{dt}=-q.
+\frac{d\theta}{dt} = \omega, \quad \frac{d\omega}{dt}=-\theta.
 \]
 \pause
 Solutions of the form
 \[ 
-q(t) = r\, cos(a+t),\quad p(t) = -r\, sin(a+t)
+\theta(t) = r\, cos(a+t),\quad \omega(t) = -r\, sin(a+t)
 \]
 for some constants $r$ and $a$.
 \end{frame}
@@ -158,14 +158,14 @@ for some constants $r$ and $a$.
 
 <<oned_sim, fig.show='animate', interval=.1>>=
 tt <- seq(0,2*pi, length=21)
-qt <- cos(tt); pt = -sin(tt)
+theta <- cos(tt); omega = -sin(tt)
 
 draw_step = function(i, e=.01) {
   opar = par(mfrow=c(1,2))
   curve(x^2/2, -1, 1, xlab='Position', ylab='Potential Energy')
-  points(qt[i], qt[i]^2/2+e, pch=19)
+  points(theta[i], theta[i]^2/2+e, pch=19)
   curve(x^2/2, -1, 1, xlab='Momentum', ylab='Kinetic Energy')
-  points(pt[i], pt[i]^2/2+e, pch=19)
+  points(omega[i], omega[i]^2/2+e, pch=19)
   par(opar)
 }
 
@@ -180,12 +180,12 @@ for (i in 1:length(tt)) {
 \subsection{Reversibility}
 \begin{frame}
 Hamiltonian dynamics is reversible, 
-i.e. the mapping $T_s$ from the state at time $t$, $(q(t),p(t))$, to the state 
-at time $t+s$, $(q(t+s),p(t+s))$, is one-to-one, and hence as an inverse,
+i.e. the mapping $T_s$ from the state at time $t$, $(\theta(t),omega(t))$, to the state 
+at time $t+s$, $(\theta(t+s),p(t+s))$, is one-to-one, and hence as an inverse,
 $T_{-s}$.
 \pause
 Under our usual assumptions for HMC, the inverse mapping can be obtained by
-negative $p$, applying $T_s$, and then negating $p$ again.
+negative $\omega$, applying $T_s$, and then negating $\omega$ again.
 \pause
 The reversibility of Hamiltonian dynamics is important for showing convergence
 of HMC.
@@ -198,11 +198,11 @@ of HMC.
 The dynamics conserve the Hamiltonian since
 \[ \begin{array}{rl}
 \frac{dH}{dt} &= 
-\sum_{i=1}^d \left[ \frac{dq_i}{dt}\frac{\partial H}{\partial q_i}
-+ \frac{dp_i}{dt} \frac{\partial H}{\partial p_i}\right] \\
+\sum_{i=1}^d \left[ \frac{d\theta_i}{dt}\frac{\partial H}{\partial \theta_i}
++ \frac{d\omega_i}{dt} \frac{\partial H}{\partial \omega_i}\right] \\
 &= 
-\sum_{i=1}^d \left[ \frac{\partial H}{\partial p_i}\frac{\partial H}{\partial q_i}
--\frac{\partial H}{\partial q_i}\frac{\partial H}{\partial p_i} \right]
+\sum_{i=1}^d \left[ \frac{\partial H}{\partial \omega_i}\frac{\partial H}{\partial \theta_i}
+-\frac{\partial H}{\partial \theta_i}\frac{\partial H}{\partial \omega_i} \right]
 \end{array} \]
 
 \pause
@@ -232,7 +232,7 @@ for (i in 1:length(tt)) {
 \begin{frame}
 \frametitle{Volume preservation}
 
-If we apply the mapping $T_s$ to point in some region $R$ of $(q,p)$ space with
+If we apply the mapping $T_s$ to point in some region $R$ of $(\theta,\omega)$ space with
 volume $V$, the image of $R$ under $T_s$ will also have volume $V$. 
 \pause 
 This feature simplifies calculation of the acceptance probability for 
@@ -247,18 +247,18 @@ Metropolis updates.
 
 For simplicity, assume 
 \[ 
-H(q,p) = U(q) + K(p), \qquad K(p) = \sum_{i=1}^d \frac{p_i^2}{2m_i}.
+H(\theta,\omega) = U(\theta) + K(\omega), \qquad K(\omega) = \sum_{i=1}^d \frac{\omega_i^2}{2m_i}.
 \]
 \pause
 One way to simulate Hamiltonian dynamics is to discretize time into increments
 of $e$, \pause i.e.
 \[ \begin{array}{rll}
-p_i(t+e) 
-&= p_i(t) + e \frac{dp_i}{dt}(t) 
-&= p_i(t) - e \frac{\partial U}{\partial q_i}(q(t)) \\
-q_i(t+e) 
-&= q_i(t) + e\frac{dq_i}{dt}(t) 
-&= q_i(t) + e\frac{p_i(t)}{m_i}
+\omega_i(t+e) 
+&= \omega_i(t) + e \frac{d\omega_i}{dt}(t) 
+&= \omega_i(t) - e \frac{\partial U}{\partial \theta_i}(\theta(t)) \\
+\theta_i(t+e) 
+&= \theta_i(t) + e\frac{d\theta_i}{dt}(t) 
+&= \theta_i(t) + e\frac{\omega_i(t)}{m_i}
 \end{array}\]
 
 \end{frame}
@@ -271,10 +271,10 @@ q_i(t+e)
 An improved approach is the \alert{leapfrog} method which has the following 
 updates:
 \[ \begin{array}{rl}
-p_i(t+e/2) 
-&=p_i(t) - (e/2)\frac{\partial U}{\partial q_i}(q(t)) \pause \\
-q_i(t+e) &= q_i(t) + e \frac{p_i(t+e/2)}{m_i} \pause \\
-p_i(t+e) &= p_i(t+e/2)- (e/2)\frac{\partial U}{\partial q_i}(q(t+e))
+\omega_i(t+e/2) 
+&=\omega_i(t) - (e/2)\frac{\partial U}{\partial \theta_i}(\theta(t)) \pause \\
+\theta_i(t+e) &= \theta_i(t) + e \frac{\omega_i(t+e/2)}{m_i} \pause \\
+\omega_i(t+e) &= \omega_i(t+e/2)- (e/2)\frac{\partial U}{\partial \theta_i}(\theta(t+e))
 \end{array} \]
 \pause
 The leapfrog method is reversible and preserves volume exactly.
@@ -369,7 +369,7 @@ for (i in 1:length(theta)) {
 % = \int p(\theta|y) p(\omega) d\omega
 % \]
 % \pause
-% To compare with Neal (2010), we have $q=\theta$, $p=\omega$, 
+% To compare with Neal (2010), we have $\theta=\theta$, $p=\omega$, 
 % \[ 
 % U(\theta) = -\log[p(y|\theta)p(\theta)] = -\log p(y|\theta) -\log p(\theta),
 % \]
@@ -385,21 +385,23 @@ for (i in 1:length(theta)) {
 \begin{frame}
 \frametitle{Probability distributions}
 
-The Hamiltonian is an energy function for the joint state of ``position'', $q$,
-and ``momentum'', $p$, and so defines a joint distribution for them, via
+The Hamiltonian is an energy function for the joint state of ``position'', 
+$\theta$,
+and ``momentum'', $\omega$, 
+and so defines a joint distribution for them, via
 \[
-P(q,p) = \frac{1}{Z} \exp\left(-H(q,p)\right)
+P(\theta,\omega) = \frac{1}{Z} \exp\left(-H(\theta,\omega)\right)
 \]
 where $Z$ is the normalizing constant.
 \pause
 
-If $H(q,p) = U(q)+K(p)$, the joint density is 
+If $H(\theta,\omega) = U(\theta)+K(\omega)$, the joint density is 
 \[
-P(q,p) = \frac{1}{Z} \exp\left(-U(q)\right)\exp\left(-K(p)\right).
+P(\theta,\omega) = \frac{1}{Z} \exp\left(-U(\theta)\right)\exp\left(-K(\omega)\right).
 \]
 \pause
 
-If we are interested in a posterior distribution, we set $q=\theta$ and 
+If we are interested in a posterior distribution, we set 
 \[
 U(\theta) = -\log\left[p(y|\theta)p(\theta)\right].
 \]
@@ -473,21 +475,25 @@ otherwise set $\theta^{(i+1)} = \theta^{(i)}$.
 \begin{frame}
 \frametitle{Reversibility}
 
-A reversible simulation means that
+Reversibility for the leapfrog means that
 \begin{itemize}
-\item if you simulate from $(\theta,\omega)$ to $(\theta',\omega')$ for some step size $e$ and number of steps $L$ \pause then
-\item if you simulate from $(\theta',\omega')$ for the same $e$ and $L$, you will end up at $(\theta,\omega)$.
+\item if you simulate from $(\theta,\omega)$ to $(\theta^*,\omega^*)$ for some step size $e$ and number of steps $L$ \pause then
+\item if you simulate from $(\theta^*,\omega^*)$ for the same $e$ and $L$, you will end up at $(\theta,\omega)$.
 \end{itemize}
 \pause
-If we use $q$ to denote our simulation ``density'', then reversibility means
+If we use $\theta$ to denote our simulation ``density'', then reversibility means
 \[
-q(\theta',\omega'|\theta,\omega) = q(\theta,\omega|\theta',\omega')
+\theta(\theta^*,\omega^*|\theta,\omega) = \theta(\theta,\omega|\theta^*,\omega^*)
 \]
 \pause
 and thus in the Metropolis-Hastings calculation, the proposal is symmetric.
 \pause
-In order to ensure reversibility of our proposal, we need to negate momentum after we complete the leap-frog simulation,
-but so long as $p(\omega) = p(-\omega)$ this will not affect our acceptance probability.
+In order to ensure reversibility of our proposal, 
+we need to negate momentum after we complete the leap-frog simulation.
+\pause 
+So long as $p(\omega) = p(-\omega)$, 
+which is true for a multivariate normal centered at 0, 
+this will not affect our acceptance probability.
 
 \end{frame}
 
@@ -497,22 +503,21 @@ but so long as $p(\omega) = p(-\omega)$ this will not affect our acceptance prob
 
 
 \begin{frame}
-\frametitle{Volume preserving results in perfect acceptance}
+\frametitle{Conservation of Hamiltonian results in perfect acceptance}
 
-Recall that we accept with probability $\min\{1,\rho(\theta^{(i)},\theta^*)\}$ 
+The Hamiltonian is conserved if $H(\theta,\omega)=H(\theta^*,\omega^*)$
+which implies
+\[ \begin{array}{rl}
+p(\theta^*|y)p(\omega^*)
+&= \exp\left(-H(\theta^*,\omega^*)\right) \\
+&= \exp\left(-H(\theta  ,\omega  )\right) \\
+&= p(\theta|y)p(\omega) 
+\end{array} \]
 \pause
-where 
+and thus the Metropolis-Hastings acceptance probability is
 \[ 
 \rho(\theta^{(i)},\theta^*) = 
-\frac{p(\theta^*|y)}{p(\theta^{(i)}|y)} 
-\frac{p(\omega^*)}{p(\omega^{(i)})} 
-\]
-\pause
-Volume is preserved if 
-\[ 
-p(\theta^{(i)}|y)p(\omega^{(i)}) 
-= p(\theta^*|y)p(\omega^*) \pause 
-\implies \frac{p(\theta^*|y)}{p(\theta^{(i)}|y)} \frac{p(\omega^*)}{p(\omega^{(i)})} = 1
+\frac{p(\theta^*|y)p(\omega^*)}{p(\theta^{(i)}|y)p(\omega^{(i)})} = 1.
 \]
 \pause 
 This will only be the case if the simulation is perfect! 
@@ -528,32 +533,32 @@ The acceptance probability accounts for this error.
 
 \begin{frame}[fragile]
 <<echo=TRUE>>=
-HMC_neal = function(U, grad_U, epsilon, L, current_q) {
-  q = current_q
-  p = rnorm(length(q),0,1)
-  current_p = p
+HMC_neal = function(U, grad_U, e, L, current_theta) {
+  theta = current_theta
+  omega = rnorm(length(theta),0,1)
+  current_omega = omega
   
-  p = p-epsilon*grad_U(q)/2
+  omega = omega - e * grad_U(theta) / 2
   
   for (i in 1:L) {
-    q = q+epsilon*p
-    if (i!=L) p = p -epsilon * grad_U(q)
+    theta = theta + e * omega
+    if (i!=L) omega = omega - e * grad_U(theta)
   }
-  p = p-epsilon * grad_U(q)/2
+  omega = omega - e * grad_U(theta) / 2
   
-  p = -p
+  omega = -omega
   
-  current_U = U(current_q)
-  current_K = sum(current_p^2)/2
-  proposed_U = U(q)
-  proposed_K = sum(p^2)/2
+  current_U  = U(current_theta)
+  current_K  = sum(current_omega^2)/2
+  proposed_U = U(theta)
+  proposed_K = sum(omega^2)/2
   
   if (runif(1) < exp(current_U-proposed_U+current_K-proposed_K))
   {
-    return(q)
+    return(theta)
   }
   else {
-    return(current_q)
+    return(current_theta)
   }
 }
 @
@@ -611,7 +616,7 @@ We can update this estimate throughout burn-in (or warm-up).
 \frametitle{Effect of $e$ and $L$}
 <<tuning, cache=TRUE, echo=TRUE>>=
 n_reps = 1e4
-d = expand.grid(e=10^seq(-3,0,by=1), L=10^seq(0,2))
+d = expand.grid(e=10^c(-3:3), L=10^seq(0,3))
 r = ddply(d, .(e,L), function(xx) {
   data.frame(
     iteration = 1:n_reps,
