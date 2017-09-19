@@ -22,3 +22,8 @@ I will put readings here that are relevant to the lectures.
 - [O'Hara and Sillanpaa (2009) A review of Bayesian variable selection methods: what, how and which](http://projecteuclid.org/euclid.ba/1340370391)
 - [Bayesian model averaging: A tutorial](http://www.jstor.org/stable/2676803)
 
+## State-apce models
+
+- Dynamic Linear Models with R
+- Bayesian Forecasting and Dynamic Models
+- State Space and Unobserved Component Models
