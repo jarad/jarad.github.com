@@ -1,0 +1,354 @@
+\documentclass[handout]{beamer}
+
+\usepackage{verbatim}
+
+\graphicspath{{figures/}}
+
+\usetheme{AnnArbor}
+\usecolortheme{beaver}
+
+\setlength{\unitlength}{\textwidth}  % measure in textwidths
+\usepackage[normalem]{ulem}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
+\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
+\setkeys{Gin}{width=0.6\textwidth}
+
+\title{State-space models}
+\author[Jarad Niemi]{Dr. Jarad Niemi}
+\institute[Iowa State]{Iowa State University}
+\date{\today}
+
+\newcommand{\mG}{\mathrm{\Gamma}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\mySigma}{\mathrm{\Sigma}}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+\begin{document}
+
+%\section{Temp??} \begin{comment}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE)
+options(width=100)
+@
+
+<<libraries, message=FALSE, warning=FALSE>>=
+library(ggplot2)
+library(plyr)
+library(dplyr)
+library(reshape2)
+library(dlm)
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\frame{\maketitle}
+
+
+\section{General state space models}
+
+\subsection{Structure, notation, and terminology}
+\frame{\frametitle{Structure}
+ \[ \begin{array}{rl@{\qquad}rl@{\qquad}l}
+% \multicolumn{2}{l}{\mbox{Observation equation:}} \\
+% \\
+ \uncover<2->{Y_t &= f_t(\theta_t,v_t)} & \uncover<4->{Y_t &\sim p(\theta_t,\dots)} \\ 
+ \\
+% \\
+% \multicolumn{2}{l}{\mbox{State transition (evolution) equation:}} \\
+% \\
+ \uncover<3->{\theta_t &= g_t(\theta_{t-1},w_t)} & \uncover<5->{\theta_t &\sim p(\theta_{t-1},\ldots)}
+ \end{array} \]
+ 
+ \vspace{0.1in}
+ \uncover<6->{
+ \begin{center}
+ \includegraphics{stateSpaceModel}
+ \end{center}
+ }
+}
+
+\frame{\frametitle{Notation and terminology}
+ \begin{tabular}{ll}
+ Observation equation: & $Y_t=f_t(\theta_t,v_t)$ \\ \pause
+ Observations: & $Y_t$ \\ \pause
+ Observation (measurement) error: & $v_t$ \\ \pause
+ \\
+ State transition (evolution) equation: & $\theta_t = g_t(\theta_{t-1},w_t)$ \\ \pause
+ Latent (unobserved) state: & $\theta_t$ \\ \pause
+ Evolution noise & $w_t$ 
+ \end{tabular}
+}
+
+
+\subsection{Examples}
+\begin{frame}
+
+\end{frame}
+
+
+
+\frame{\frametitle{Stochastic volatility}
+\setkeys{Gin}{width=0.5\textwidth}
+
+\begin{eqnarray*}
+y_t &\sim& N(0,\sigma_t^2) \\
+\log \sigma_t &\sim& N(\mu + \phi [\log \sigma_{t-1} - \mu],W) \pause
+\end{eqnarray*} 
+
+\begin{center}
+\includegraphics{volatility1}
+\end{center}
+}
+
+\frame{\frametitle{Stochastic volatility}
+\setkeys{Gin}{width=0.5\textwidth}
+
+\begin{eqnarray*}
+y_t &\sim& N(0,\sigma_t^2) \\
+\log \sigma_t &\sim& N(\mu + \phi (\log \sigma_{t-1} - \mu),W)
+\end{eqnarray*}
+
+\begin{center}
+\includegraphics{volatility2}
+\end{center}
+}
+
+\frame{\frametitle{Markov switching model}
+\setkeys{Gin}{width=0.5\textwidth}
+
+ \begin{eqnarray*}
+ y_t &\sim& N(\theta_t,\sigma^2) \\
+ \theta_t &\sim & p\delta_{\theta_{t-1}} +(1-p) \delta_{1-\theta_{t-1}} \\
+ \theta_0 &=& 0 \pause
+ \end{eqnarray*}
+
+\begin{center}
+\includegraphics{switching1}
+\end{center}
+}
+
+\frame{\frametitle{Markov switching model}
+\setkeys{Gin}{width=0.5\textwidth}
+
+ \begin{eqnarray*}
+ y_t &\sim& N(\theta_t,\sigma^2) \\
+ \theta_t &\sim & p\delta_{\theta_{t-1}} +(1-p) \delta_{1-\theta_{t-1}} \\
+ \theta_0 &=& 0 
+ \end{eqnarray*}
+
+\begin{center}
+\includegraphics{switching2}
+\end{center}
+}
+
+\subsection{Inferential goals}
+\frame{\frametitle{Goals:}
+\begin{itemize}
+\item Filtering
+\item Smoothing
+\item Forecasting
+\end{itemize}
+}
+
+\frame{\frametitle{What do we know?}
+\pause
+\begin{itemize} 
+\item $p(y_t|\theta_t)$ for all $t$ \pause
+\item $p(\theta_t|\theta_{t-1})$ for all $t$ \pause
+\item $p(\theta_0)$
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+In principle, we could have subscripts for the distributions/densities, \pause
+e.g.
+\begin{itemize} 
+\item $p_t(y_t|\theta_t)$ for all $t$ \pause
+\item $p_t(\theta_t|\theta_{t-1})$ for all $t$ 
+\end{itemize}
+to indicate that the form of the distribution/density has changed. 
+\pause
+But, most in most models the form stays the same and only the state changes with
+time.
+\pause
+So, for simplicity, we will ignore the subscript.
+
+}
+
+\frame{\frametitle{Filtering}
+{\tiny
+ Goal: $ p(\theta_t|y_{1:t})$ where $y_{1:t} = (y_1,y_2,\ldots,y_t)$ \pause (filtered distribution) \pause
+ 
+ \vspace{0.1in}
+
+ Recursive procedure: \pause
+ \begin{itemize}
+ \item Assume $p(\theta_{t-1}|y_{1:t-1})$ \pause
+ \item Prior for $\theta_t$ \pause
+ \begin{eqnarray*} p(\theta_t|y_{1:t-1}) \pause &=& \int p(\theta_t,\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\
+ \pause &=& \int p(\theta_t|\theta_{t-1},y_{1:t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\
+ \pause &=& \int p(\theta_t|\theta_{t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\
+ \end{eqnarray*} \pause
+ \item One-step ahead predictive distribution for $y_t$ \pause
+ \begin{eqnarray*} p(y_t|y_{1:t-1}) \pause &=& \pause \int p(y_t,\theta_t|y_{1:t-1}) d\theta_t \\
+ \pause &=& \int p(y_t|\theta_t,y_{1:t-1})p(\theta_t|y_{1:t-1})d\theta_t \\
+ \pause &=& \int p(y_t|\theta_t)p(\theta_t|y_{1:t-1})d\theta_t \\
+ \end{eqnarray*} \pause
+ \item Filtered distribution for $\theta_t$ \pause
+ \[ p(\theta_t|y_{1:t}) \pause = \frac{p(y_t|\theta_t,y_{1:t-1})p(\theta_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause = \frac{p(y_t|\theta_t)p(\theta_t|y_{1:t-1})}{p(y_t|y_{1:t-1})}\]
+ \end{itemize}
+ }
+}
+
+\frame{\frametitle{What do we know now?}
+\begin{itemize}
+\item $p(y_t|\theta_t)$ for all $t$ 
+\item $p(\theta_t|\theta_{t-1})$ for all $t$ 
+\item $p(\theta_0)$ \pause
+\item $p(\theta_{t}|y_{1:t-1})$ for all $t$ \pause
+\item $p(y_t|y_{1:t-1})$ for all $t$
+\end{itemize}
+}
+
+\frame{\frametitle{Smoothing}
+ Goal: $p(\theta_{t}|y_{1:T})$ for $t<T$
+ 
+ \vspace{0.1in} \pause
+{\tiny
+ \begin{itemize}
+ \item Backward transition probability $p(\theta_t|\theta_{t+1},y_{1:t})$ \pause
+ \begin{eqnarray*} 
+ p(\theta_t|\theta_{t+1},y_{1:T}) \pause &=& p(\theta_t|\theta_{t+1},y_{1:t}) \\ \pause 
+ &=& \frac{p(\theta_{t+1}|\theta_t,y_{1:t})p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} \\ \pause 
+ &=& \frac{p(\theta_{t+1}|\theta_t)p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} \pause
+ \end{eqnarray*}
+ 
+ \item Recursive smoothing distributions $p(\theta_t|y_{1:T})$ starting from $p(\theta_T|y_{1:T})$
+ \begin{eqnarray*} 
+ p(\theta_t|y_{1:T}) \pause &=& \int p(\theta_t,\theta_{t+1}|y_{1:T}) d\theta_{t+1} \\ \pause
+ &=& \int p(\theta_{t+1}|y_{1:T})p(\theta_t|\theta_{t+1},y_{1:T})d\theta_{t+1} \\ \pause
+   &=& \int p(\theta_{t+1}|y_{1:T}) \frac{p(\theta_{t+1}|\theta_t)p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} d\theta_{t+1} \\ \pause
+   &=& p(\theta_t|y_{1:t}) \int \frac{p(\theta_{t+1}|\theta_t)}{p(\theta_{t+1}|y_{1:t})} p(\theta_{t+1}|y_{1:T}) d\theta_{t+1} 
+   \end{eqnarray*}
+ \end{itemize}
+ }
+}
+
+\frame{\frametitle{Forecasting}
+ Goal: $p(y_{t+k},\theta_{t+k}|y_{1:t})$
+
+ {\footnotesize
+ \vspace{0.1in} \pause
+
+ \[ p(y_{t+k},\theta_{t+k}|y_{1:t}) \pause = p(y_{t+k}|\theta_{t+k}) p(\theta_{t+k}|y_{1:t}) \]
+
+ \vspace{0.1in} \pause
+
+Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
+ \begin{eqnarray*}
+ p(\theta_{t+k}|y_{1:t}) \pause &=& \int p(\theta_{t+k},\theta_{t+(k-1)}|y_{1:t})\, d\theta_{t+(k-1)} \\ \pause
+ &=& \int p(\theta_{t+k}|\theta_{t+(k-1)},y_{1:t})p(\theta_{t+(k-1)}|y_{1:t}) d\theta_{t+(k-1)} \\ \pause
+ &=& \int p(\theta_{t+k}|\theta_{t+(k-1)})p(\theta_{t+(k-1)}|y_{1:t}) d\theta_{t+(k-1)}
+ \end{eqnarray*}
+ }
+}
+
+\frame{\frametitle{Filtering in a Markov switching model}
+{\tiny
+\vspace{-0.1in}
+ \begin{eqnarray*}
+ y_t &\sim& N(\theta_t,\sigma^2) \\
+ \theta_t &\sim & p\delta_{\theta_{t-1}} +(1-p) \delta_{1-\theta_{t-1}} \\
+ \theta_0 &=& 0 \pause
+ \end{eqnarray*}
+ 
+ \vspace{0.1in} 
+
+ \begin{itemize}
+ \item Note: $p(\theta_t=1) = 1-p(\theta_t=0)$ for all $t$ \pause
+ \item Suppose $q=p(\theta_{t-1}=1|y_{1:t-1})$. \pause What is $p(\theta_{t}=1|y_{1:t-1})$? \pause
+ \[ p(\theta_{t}=1|y_{1:t-1}) \pause = \sum_{k=0}^1 p(\theta_{t}=1|\theta_{t-1}=k)p(\theta_{t-1}=k|y_{1:t-1}) \pause = (1-p)(1-q)+pq \pause = p_1 \]
+ \item What is $p(\theta_{t}=1|y_{1:t-1})$? \pause
+ \[ p(\theta_{t}=0|y_{1:t-1}) \pause = \sum_{k=0}^1 p(\theta_{t}=0|\theta_{t-1}=k)p(\theta_{t-1}=k|y_{1:t-1}) \pause = p(1-q)+(1-p)q\pause = p_0 \]
+ \item What is $p(y_t|y_{1:t-1})$? \pause
+ \begin{eqnarray*} 
+ p(y_t|y_{1:t-1}) \pause &=& \sum_{k=0}^1 p(y_t|\theta_t=k) p(\theta_t=k|y_{1:t-1})  \pause 
+ = p_0 N(y_t;0,\sigma^2)+p_1 N(y_t;1,\sigma^2) \pause
+ \end{eqnarray*}
+ \item What is $p(\theta_t=1|y_{1:t})$? \pause
+ \[ p(\theta_t=1|y_{1:t}) \pause = \frac{p(y_t|\theta_t=1)p(\theta_t=1|y_{1:t-1})}{p(y_t|y_{1:t-1})}= \frac{p_1 N(y_t;1,\sigma^2)}{p_0 N(y_t;0,\sigma^2)+p_1 N(y_t;1,\sigma^2)} \]
+ \end{itemize}
+}
+}
+
+
+
+\begin{frame}
+\frametitle{Hidden Markov model}
+
+\begin{definition}
+A hidden Markov model is a state-space model whose state is finite.
+\end{definition}
+{\tiny (Note: this is not a universal definition.)}
+
+\vspace{0.1in} \pause
+
+So let 
+\begin{itemize}
+\item $\pi_t^{t'}$ be the probability distribution for the state at time $t$
+given information up to time $t'$,
+\pause
+e.g. $\pi_{t,i}^{t'} = P(\theta_t=i|y_{1:t'})$. \pause
+\item $P$ be the transition probability matrix, 
+\pause
+e.g. $P_{ij}$ is the probability of moving from state $i$ to state $j$ in 
+1 time step. \pause
+\item $p(y_t|\theta_t)$ be the observation density or mass function.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Filter in a hidden Markov model}
+
+
+Assume $\pi_0$ is given. 
+\pause
+
+\begin{itemize}
+\item What is forecast distribution at time $t$ given only $\pi_0$,
+\pause
+i.e. $\pi_t^0$? 
+\pause
+\[ 
+\pi^0_t = \pi_0 P^t \qquad P^t = P^{t-1}P \quad \mbox{and} \quad P^1 = P 
+\]
+\item What is the filtered distribution at time $t$, 
+i.e. $P\pi_{t,i}^{t}$? 
+\pause
+Find this recursively via 
+\[ 
+\pi_{t,i}^{t} \propto p(y_t|\theta_{t} = i) \pi_{t-1}^{t-1} P_{\cdot,i}.
+\]
+\pause
+\item What is the smoothed distribution at time $t$, 
+\pause
+i.e. $\pi_{t,i}^{T}$ with $t<T$?
+\end{frame}
+
+
+\end{document}
+
