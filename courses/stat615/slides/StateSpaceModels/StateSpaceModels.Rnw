@@ -4,6 +4,8 @@
 
 \graphicspath{{figures/}}
 
+\usefonttheme[onlymath]{serif}
+
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
 
@@ -17,6 +19,7 @@
 \setkeys{Gin}{width=0.6\textwidth}
 
 \title{State-space models}
+\subtitle{Hidden Markov models}
 \author[Jarad Niemi]{Dr. Jarad Niemi}
 \institute[Iowa State]{Iowa State University}
 \date{\today}
@@ -61,17 +64,15 @@ set.seed(2)
 \subsection{Structure, notation, and terminology}
 \frame{\frametitle{Structure}
  \[ \begin{array}{rl@{\qquad}rl@{\qquad}l}
-% \multicolumn{2}{l}{\mbox{Observation equation:}} \\
-% \\
- \uncover<2->{Y_t &= f_t(\theta_t,v_t)} & \uncover<4->{Y_t &\sim p(\theta_t,\dots)} \\ 
+\multicolumn{2}{l}{\mbox{Observation equation:}} \\
+ \uncover<2->{Y_t &= f_t(\theta_t,v_t)} & \uncover<4->{Y_t &\sim p_t(y_t|\theta_t,\dots)} \\ 
  \\
-% \\
-% \multicolumn{2}{l}{\mbox{State transition (evolution) equation:}} \\
-% \\
- \uncover<3->{\theta_t &= g_t(\theta_{t-1},w_t)} & \uncover<5->{\theta_t &\sim p(\theta_{t-1},\ldots)}
+\multicolumn{2}{l}{\mbox{State transition (evolution) equation:}} \\
+ \uncover<3->{\theta_t &= g_t(\theta_{t-1},w_t)} & \uncover<5->{\theta_t &\sim p_t(\theta_t| \theta_{t-1},\ldots)}
  \end{array} \]
  
  \vspace{0.1in}
+ 
  \uncover<6->{
  \begin{center}
  \includegraphics{stateSpaceModel}
@@ -93,12 +94,6 @@ set.seed(2)
 
 
 \subsection{Examples}
-\begin{frame}
-
-\end{frame}
-
-
-
 \frame{\frametitle{Stochastic volatility}
 \setkeys{Gin}{width=0.5\textwidth}
 
@@ -162,7 +157,8 @@ y_t &\sim& N(0,\sigma_t^2) \\
 \end{itemize}
 }
 
-\frame{\frametitle{What do we know?}
+\begin{frame}
+\frametitle{What do we know?}
 \pause
 \begin{itemize} 
 \item $p(y_t|\theta_t)$ for all $t$ \pause
@@ -182,10 +178,12 @@ to indicate that the form of the distribution/density has changed.
 \pause
 But, most in most models the form stays the same and only the state changes with
 time.
-\pause
-So, for simplicity, we will ignore the subscript.
 
-}
+\vspace{0.1in} \pause
+
+For simplicity, we will assume a time-homogeneous process and therefore 
+remove the subscript.
+\end{frame}
 
 \frame{\frametitle{Filtering}
 {\tiny
@@ -299,7 +297,7 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
 \frametitle{Hidden Markov model}
 
 \begin{definition}
-A hidden Markov model is a state-space model whose state is finite.
+A hidden Markov model (HMM) is a state-space model whose state is finite.
 \end{definition}
 {\tiny (Note: this is not a universal definition.)}
 
@@ -322,33 +320,249 @@ e.g. $P_{ij}$ is the probability of moving from state $i$ to state $j$ in
 
 
 \begin{frame}
-\frametitle{Filter in a hidden Markov model}
+\frametitle{Inference in a hidden Markov model}
 
+\small
 
-Assume $\pi_0$ is given. 
+Assume $\pi_0^0$ is given.
 \pause
 
 \begin{itemize}
-\item What is forecast distribution at time $t$ given only $\pi_0$,
+\item What is forecast distribution at time $t$ given only $\pi_0^0$,
 \pause
-i.e. $\pi_t^0$? 
+i.e. $\pi_t^0$?
 \pause
+Recursively, we have 
 \[ 
-\pi^0_t = \pi_0 P^t \qquad P^t = P^{t-1}P \quad \mbox{and} \quad P^1 = P 
-\]
-\item What is the filtered distribution at time $t$, 
-i.e. $P\pi_{t,i}^{t}$? 
-\pause
-Find this recursively via 
-\[ 
-\pi_{t,i}^{t} \propto p(y_t|\theta_{t} = i) \pi_{t-1}^{t-1} P_{\cdot,i}.
+\pi_t^0 = \pi_{t-1}^0 P.
 \]
 \pause
-\item What is the smoothed distribution at time $t$, 
+Alternatively, we have 
+\[
+\pi^0_t = \pi_0 P^t \qquad P^t = P^{t-1}P \quad \mbox{and} \quad P^1 = P
+\]
 \pause
-i.e. $\pi_{t,i}^{T}$ with $t<T$?
+\item What is the filtered distribution at time $t$,
+i.e. $\pi_{t,i}^{t}$?
+\pause
+Find this recursively via
+\[
+\pi_{t,i}^{t} \propto p(y_t|\theta_{t} = i) \pi_{t-1}^{t-1} \cdot P_{\cdot,i}
+\]
+% \pause
+% \item What is the smoothed distribution at time $t$,
+% \pause
+% i.e. $\pi_{t,i}^{T}$ with $t<T$?
+% \pause
+% Find this recursively through
+% \[
+% \pi_{t,i}^T
+% \]
+\end{itemize}
+\pause
+Although smoothing can be useful, 
+it is often of more use in Bayesian analyses to perform backward sampling.
+
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Joint posterior}
+
+The joint distribution for $\theta = (\theta_0,\theta_1,\ldots,\theta_T)$ can be decomposed as
+\[ \begin{array}{rl}
+p(\theta|y) 
+&= p(\theta_0,\theta_1,\ldots,\theta_T|y) \pause \\
+&= \prod_{t=1}^T  p(\theta_{t-1}|\theta_t,y) \pause \\
+&= \prod_{t=1}^T p(\theta_{t-1}|\theta_t,y_{1:t-1}) \pause\\
+&\propto \prod_{t=1}^T p(\theta_t|\theta_{t-1},y_{1:t-1})p(\theta_{t-1}|y_{1:t-1}) \pause \\
+&= \prod_{t=1}^T p(\theta_t|\theta_{t-1})p(\theta_{t-1}|y_{1:t-1})
+\end{array} \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Backward sampling}
+
+The joint distribution for $\theta$ can be decomposed as
+\[ 
+p(\theta|y) 
+= \prod_{t=1}^T p(\theta_t|\theta_{t-1})p(\theta_{t-1}|y_{1:t-1}).
+\]
+Suppose we have all the filtered distributions,
+\pause 
+i.e. $\pi_t^t$ for $t=0,\ldots,T$. 
+
+\vspace{0.1in} \pause
+
+An algorithm to obtain a joint sample for $\theta$ is 
+\begin{enumerate}
+\item Sample $\theta_T \sim p(\theta_T|y_{1:T})$ 
+\pause 
+which is a discrete distribution with 
+$P(\theta_T = i|y_{1:T}) = \pi_{T,i}^T$. 
+\item For $t=T,\ldots,1$, sample $\theta_{t-1}$ from a discrete distribution 
+with 
+\[
+P(\theta_{t-1} = i|\theta_t,y_{1:t-1}) 
+\propto P_{i,\theta_t} \pi_{T-1,i}^{T-1}
+= \frac{P_{i,\theta_t} \pi_{T-1,i}^{T-1}}{\sum_{i'=1}^S P_{i',\theta_t} \pi_{T-1,i'}^{T-1}}.
+\]
+\end{enumerate}
+\end{frame}
+
+
+
+\subsection{Markov model}
+\begin{frame}
+\frametitle{Markov model}
+
+Consider Markov model where the states are observed directly,
+\pause
+but the transition probability matrix $\Psi$ is unknown.
+If the sequence of states are $y_{1:t} = (y_1,\ldots,y_t)$, 
+\pause
+we are interested in the posterior 
+\[ 
+p(\Psi|y_{1:t}). 
+\]
+\pause
+Since this is a row stochastic matrix $\Psi$, 
+\pause
+we have 
+\[ 
+\sum_{j=1}^S \Psi_{ij} = 1 \quad \forall\, i.
+\]
+So what priors are reasonable for $\Psi$?
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Priors for row stochastic matrices}
+
+\pause
+
+One option is a set of independent Dirichlet distributions for each row,
+\pause
+i.e. let $\Psi_{i\cdot}$ be the $i$th row of $\Psi$, then
+\[ 
+\Psi_{i\cdot} \sim Dir(A_i)
+\]
+where $A_i$ is a vector of length $S$ and $A$ is the matrix with rows $A_i$.
+
+\vspace{0.1in} \pause
+
+Do we want more structure here?
+\begin{itemize}
+\item sparsity (many zero elements)
+\item similarity between rows
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Dirichlet distribution}
+
+The Dirichlet distribution (named after Peter Gustav Lejeune Dirichlet), i.e. $P\sim Dir(a)$, is a probability distribution for a probability vector of length $H$. \pause The probability density function for the Dirichlet distribution is 
+\[
+p(P;a) = \frac{\mG(a_1+\cdots+a_H)}{\mG(a_1)\cdots \mG(a_H)} \prod_{h=1}^H p_h^{a_h-1}
+\]
+where $p_h\ge 0$, $\sum_{h=1}^H p_h=1$, and $a_h>0$. 
+
+\vspace{0.2in} \pause
+
+Letting $a_0 = \sum_{h=1}^H a_h$, then some moments are
+\begin{itemize}[<+->]
+\item $E[p_h] = \frac{a_h}{a_0}$,
+\item $V[p_h] = \frac{a_h(a_0-a_h)}{a_0^2(a_0+1)}$,
+\item $Cov(p_h,p_k) = -\frac{a_ha_k}{a_0^2(a_0+1)}$, and 
+\item $\mbox{mode}(p_h) = \frac{a_h-1}{a_0-H}$ for $a_h>1$.
+\end{itemize}
+
+A special case is $H=2$ which is the beta distribution.
+
+\end{frame}
+
+
+\subsection{Conjugate prior for multinomial distribution}
+\begin{frame}
+\frametitle{Conjugate prior for multinomial distribution}
+
+The Dirichlet distribution is the natural conjugate prior for the multinomial distribution. \pause If 
+\[
+Y \sim Mult(n,\pi) \qquad \mbox{and} \qquad \pi \sim Dir(a)
+\]
+then 
+\[ 
+\pi|y \sim Dir(a+y).
+\]
+
+\vspace{0.2in} \pause
+
+Some possible default priors are 
+\begin{itemize}
+\item $a=1$ which is the uniform density over $\pi$,
+\item $a=1/2$ is Jeffreys prior for the multinomial, 
+\item $a=1/S$ and 
+\item $a=0$, an improper prior that is uniform on $\log(\pi_h)$. 
+The resulting posterior is proper if $y_h>0$ for all $h$. 
+\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Dirichlet priors for Markov models}
+
+Let $A$ be the hyperparameter such that 
+\[ 
+\Psi_i \stackrel{ind}{\sim} Dir(A_i)
+\]
+\pause
+and
+$C$ be the count matrix of observed transitions, 
+\pause
+i.e. $C_i$ is the count vector of transitions from $i$ to all states and 
+$C_{ij}$ is the count of transitions from $i$ to $j$. 
+
+\vspace{0.1in} \pause
+
+The posterior distribution $p(\Psi|y_t)$ is fully conjugate with $A'=A+C$ such 
+that 
+\[ 
+\Psi_i|y \stackrel{ind}{\sim} Dir(A_i') \stackrel{d}{=} Dir(A_i+C_i)
+\]
+\pause
+where $A'_i$ is the $i$th row of $A'$.
+
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Inference for HMM with unknown transition matrix $\Psi$}
+
+Suppose we have a HMM with unknown transition matrix $\Psi$. 
+\pause
+How can we perform posterior inference?
+
+\vspace{0.1in} \pause
+
+
+If we assume $\Psi_i \ind Dir(A)$, 
+\pause
+then a Gibbs sampling approach is
+\begin{enumerate}
+\item Sample $\theta_{1:t}|\Psi,y \sim \prod_{t=1}^T p(\theta_{t-1}|\theta_t,y_{1:t},\Psi)$.
+\item For $i=1,\ldots,S$, sample $\Psi_i|\theta,y \ind Dir(A_i+C_i)$ where 
+$C_i$ is the count vector of transitions from $i$ to all states.
+\end{enumerate}
+
+\end{frame}
 
 \end{document}
 
