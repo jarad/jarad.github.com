@@ -21,3 +21,4 @@ The Rnw files can be found [here](https://github.com/jarad/jarad.github.com/tree
 ## State-space models
 
 - [Hidden Markov models](slides/StateSpaceModels/StateSpaceModels.pdf)
+- [Dynamic linear models](slides/DLMs/DLMs.pdf)

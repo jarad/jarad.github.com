@@ -1,6 +1,8 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
-\graphicspath{{figures/}}
+\usepackage{verbatim}
+
+\graphicspath{{figures/}{../StateSpaceModels/figures/}}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -53,222 +55,14 @@ set.seed(2)
 
 \frame{\maketitle}
 
-
-\section{General state space models}
-
-\subsection{Structure, notation, and terminology}
-\frame{\frametitle{Structure}
- \[ \begin{array}{rl@{\qquad}rl@{\qquad}l}
-% \multicolumn{2}{l}{\mbox{Observation equation:}} \\
-% \\
- \uncover<2->{Y_t &= f_t(\theta_t,v_t)} & \uncover<4->{Y_t &\sim p(\theta_t,\dots)} \\ 
- \\
-% \\
-% \multicolumn{2}{l}{\mbox{State transition (evolution) equation:}} \\
-% \\
- \uncover<3->{\theta_t &= g_t(\theta_{t-1},w_t)} & \uncover<5->{\theta_t &\sim p(\theta_{t-1},\ldots)}
- \end{array} \]
- 
- \vspace{0.1in}
- \uncover<6->{
- \begin{center}
- \includegraphics{stateSpaceModel}
- \end{center}
- }
-}
-
-\frame{\frametitle{Notation and terminology}
- \begin{tabular}{ll}
- Observation equation: & $Y_t=f_t(\theta_t,v_t)$ \\ \pause
- Observations: & $Y_t$ \\ \pause
- Observation (measurement) error: & $v_t$ \\ \pause
- \\
- State transition (evolution) equation: & $\theta_t = g_t(\theta_{t-1},w_t)$ \\ \pause
- Latent (unobserved) state: & $\theta_t$ \\ \pause
- Evolution noise & $w_t$ 
- \end{tabular}
-}
-
-
-\subsection{Examples}
-\frame{\frametitle{Stochastic volatility}
-\begin{eqnarray*}
-y_t &\sim& N(0,\sigma_t^2) \\
-\log \sigma_t &\sim& N(\mu + \phi (\log \sigma_{t-1} - \mu),W) \pause
-\end{eqnarray*} 
-
-\begin{center}
-\includegraphics{volatility1}
-\end{center}
-}
-
-\frame{\frametitle{Stochastic volatility}
-\begin{eqnarray*}
-y_t &\sim& N(0,\sigma_t^2) \\
-\log \sigma_t &\sim& N(\mu + \phi (\log \sigma_{t-1} - \mu),W)
-\end{eqnarray*}
-
-\begin{center}
-\includegraphics{volatility2}
-\end{center}
-}
-
-\frame{\frametitle{Markov switching model}
- \begin{eqnarray*}
- y_t &\sim& N(\theta_t,\sigma^2) \\
- \theta_t &\sim & p\delta_{\theta_{t-1}} +(1-p) \delta_{1-\theta_{t-1}} \\
- \theta_0 &=& 0 \pause
- \end{eqnarray*}
-
-\begin{center}
-\includegraphics{switching1}
-\end{center}
-}
-
-\frame{\frametitle{Markov switching model}
- \begin{eqnarray*}
- y_t &\sim& N(\theta_t,\sigma^2) \\
- \theta_t &\sim & p\delta_{\theta_{t-1}} +(1-p) \delta_{1-\theta_{t-1}} \\
- \theta_0 &=& 0 
- \end{eqnarray*}
-
-\begin{center}
-\includegraphics{switching2}
-\end{center}
-}
-
-\subsection{Inferential goals}
-\frame{\frametitle{Goals:}
-\begin{itemize}
-\item Filtering
-\item Smoothing
-\item Forecasting
-\end{itemize}
-}
-
-\frame{\frametitle{What do we know?}
-\pause
-\begin{itemize} 
-\item $p(y_t|\theta_t)$ for all $t$ \pause
-\item $p(\theta_t|\theta_{t-1})$ for all $t$ \pause
-\item $p(\theta_0)$
-\end{itemize}
-}
-
-\frame{\frametitle{Filtering}
-{\tiny
- Goal: $ p(\theta_t|y_{1:t})$ where $y_{1:t} = (y_1,y_2,\ldots,y_t)$ \pause (filtered distribution) \pause
- 
- \vspace{0.1in}
-
- Recursive procedure: \pause
- \begin{itemize}
- \item Assume $p(\theta_{t-1}|y_{1:t-1})$ \pause
- \item Prior for $\theta_t$ \pause
- \begin{eqnarray*} p(\theta_t|y_{1:t-1}) \pause &=& \int p(\theta_t,\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\
- \pause &=& \int p(\theta_t|\theta_{t-1},y_{1:t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\
- \pause &=& \int p(\theta_t|\theta_{t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\
- \end{eqnarray*} \pause
- \item One-step ahead predictive distribution for $y_t$ \pause
- \begin{eqnarray*} p(y_t|y_{1:t-1}) \pause &=& \pause \int p(y_t,\theta_t|y_{1:t-1}) d\theta_t \\
- \pause &=& \int p(y_t|\theta_t,y_{1:t-1})p(\theta_t|y_{1:t-1})d\theta_t \\
- \pause &=& \int p(y_t|\theta_t)p(\theta_t|y_{1:t-1})d\theta_t \\
- \end{eqnarray*} \pause
- \item Filtered distribution for $\theta_t$ \pause
- \[ p(\theta_t|y_{1:t}) \pause = \frac{p(y_t|\theta_t,y_{1:t-1})p(\theta_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause = \frac{p(y_t|\theta_t)p(\theta_t|y_{1:t-1})}{p(y_t|y_{1:t-1})}\]
- \end{itemize}
- }
-}
-
-\frame{\frametitle{What do we know now?}
-\begin{itemize}
-\item $p(y_t|\theta_t)$ for all $t$ 
-\item $p(\theta_t|\theta_{t-1})$ for all $t$ 
-\item $p(\theta_0)$ \pause
-\item $p(\theta_{t}|y_{1:t-1})$ for all $t$ \pause
-\item $p(y_t|y_{1:t-1})$ for all $t$
-\end{itemize}
-}
-
-\frame{\frametitle{Smoothing}
- Goal: $p(\theta_{t}|y_{1:T})$ for $t<T$
- 
- \vspace{0.1in} \pause
-{\tiny
- \begin{itemize}
- \item Backward transition probability $p(\theta_t|\theta_{t+1},y_{1:t})$ \pause
- \begin{eqnarray*} 
- p(\theta_t|\theta_{t+1},y_{1:T}) \pause &=& p(\theta_t|\theta_{t+1},y_{1:t}) \\ \pause 
- &=& \frac{p(\theta_{t+1}|\theta_t,y_{1:t})p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} \\ \pause 
- &=& \frac{p(\theta_{t+1}|\theta_t)p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} \pause
- \end{eqnarray*}
- 
- \item Recursive smoothing distributions $p(\theta_t|y_{1:T})$ starting from $p(\theta_T|y_{1:T})$
- \begin{eqnarray*} 
- p(\theta_t|y_{1:T}) \pause &=& \int p(\theta_t,\theta_{t+1}|y_{1:T}) d\theta_{t+1} \\ \pause
- &=& \int p(\theta_{t+1}|y_{1:T})p(\theta_t|\theta_{t+1},y_{1:T})d\theta_{t+1} \\ \pause
-   &=& \int p(\theta_{t+1}|y_{1:T}) \frac{p(\theta_{t+1}|\theta_t)p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} d\theta_{t+1} \\ \pause
-   &=& p(\theta_t|y_{1:t}) \int \frac{p(\theta_{t+1}|\theta_t)}{p(\theta_{t+1}|y_{1:t})} p(\theta_{t+1}|y_{1:T}) d\theta_{t+1} 
-   \end{eqnarray*}
- \end{itemize}
- }
-}
-
-\frame{\frametitle{Forecasting}
- Goal: $p(y_{t+k},\theta_{t+k}|y_{1:t})$
-
- {\footnotesize
- \vspace{0.1in} \pause
-
- \[ p(y_{t+k},\theta_{t+k}|y_{1:t}) \pause = p(y_{t+k}|\theta_{t+k}) p(\theta_{t+k}|y_{1:t}) \]
-
- \vspace{0.1in} \pause
-
-Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
- \begin{eqnarray*}
- p(\theta_{t+k}|y_{1:t}) \pause &=& \int p(\theta_{t+k},\theta_{t+(k-1)}|y_{1:t})\, d\theta_{t+(k-1)} \\ \pause
- &=& \int p(\theta_{t+k}|\theta_{t+(k-1)},y_{1:t})p(\theta_{t+(k-1)}|y_{1:t}) d\theta_{t+(k-1)} \\ \pause
- &=& \int p(\theta_{t+k}|\theta_{t+(k-1)})p(\theta_{t+(k-1)}|y_{1:t}) d\theta_{t+(k-1)}
- \end{eqnarray*}
- }
-}
-
-\frame{\frametitle{Filtering in a Markov switching model}
-{\tiny
-\vspace{-0.1in}
- \begin{eqnarray*}
- y_t &\sim& N(\theta_t,\sigma^2) \\
- \theta_t &\sim & p\delta_{\theta_{t-1}} +(1-p) \delta_{1-\theta_{t-1}} \\
- \theta_0 &=& 0 \pause
- \end{eqnarray*}
- 
- \vspace{0.1in} 
-
- \begin{itemize}
- \item Note: $p(\theta_t=1) = 1-p(\theta_t=0)$ for all $t$ \pause
- \item Suppose $q=p(\theta_{t-1}=1|y_{1:t-1})$. \pause What is $p(\theta_{t}=1|y_{1:t-1})$? \pause
- \[ p(\theta_{t}=1|y_{1:t-1}) \pause = \sum_{k=0}^1 p(\theta_{t}=1|\theta_{t-1}=k)p(\theta_{t-1}=k|y_{1:t-1}) \pause = (1-p)(1-q)+pq \pause = p_1 \]
- \item What is $p(\theta_{t}=1|y_{1:t-1})$? \pause
- \[ p(\theta_{t}=0|y_{1:t-1}) \pause = \sum_{k=0}^1 p(\theta_{t}=0|\theta_{t-1}=k)p(\theta_{t-1}=k|y_{1:t-1}) \pause = p(1-q)+(1-p)q\pause = p_0 \]
- \item What is $p(y_t|y_{1:t-1})$? \pause
- \begin{eqnarray*} 
- p(y_t|y_{1:t-1}) \pause &=& \sum_{k=0}^1 p(y_t|\theta_t=k) p(\theta_t=k|y_{1:t-1})  \pause 
- = p_0 N(y_t;0,\sigma^2)+p_1 N(y_t;1,\sigma^2) \pause
- \end{eqnarray*}
- \item What is $p(\theta_t=1|y_{1:t})$? \pause
- \[ p(\theta_t=1|y_{1:t}) \pause = \frac{p(y_t|\theta_t=1)p(\theta_t=1|y_{1:t-1})}{p(y_t|y_{1:t-1})}= \frac{p_1 N(y_t;1,\sigma^2)}{p_0 N(y_t;0,\sigma^2)+p_1 N(y_t;1,\sigma^2)} \]
- \end{itemize}
-}
-}
-
 \section{Dynamic linear models}
 
 \subsection{Structure, notation, and terminology}
 \frame{\frametitle{Structure}
  \[ \begin{array}{rl@{\qquad}l}
- Y_t &= F_t\theta_t + v_t &v_t\sim N(0,V_t) \\
- \theta_t &= G_t\theta_{t-1}+w_t & w_t\sim N(0,W_t) \\
- p(\theta_0) &\sim N(m_0,C_0)
+ Y_t &= F_t\theta_t + v_t &v_t\sim N_m(0,V_t) \\
+ \theta_t &= G_t\theta_{t-1}+w_t & w_t\sim N_p(0,W_t) \\
+ \theta_0 &\sim N_p(m_0,C_0)
  \end{array} \] \pause
 
  \vspace{0.1in}
@@ -283,9 +77,9 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
 \frame{\frametitle{Local level model}
 \setkeys{Gin}{width=\textwidth}
   \[ \begin{array}{rl@{\qquad}l}
- Y_t &= \theta_t + v_t &v_t\sim N(0,V) \\
- \theta_t &= \theta_{t-1}+w_t & w_t\sim N(0,W) \\
- p(\theta_0) &= N(m_0,C_0)
+ Y_t &= \theta_t + v_t &v_t\sim N_1(0,V) \\
+ \theta_t &= \theta_{t-1}+w_t & w_t\sim N_1(0,W) \\
+ \theta_0 &\sim N_1(m_0,C_0)
  \end{array} \]
 
  \vspace{0.1in} \pause
@@ -347,14 +141,14 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
  \begin{itemize}
  \item Prior for $\theta_t$ \pause
  \begin{eqnarray*} p(\theta_t|y_{1:t-1}) &=& \int N(\theta_t;G_t\theta_{t-1},W_t) N(\theta_{t-1};m_{t-1},C_{t-1}) d\theta_{t-1} \\
- &=& \int \frac{1}{(2\pi)^{p/2}|W_t|^{1/2}}\exp\left(-\frac{1}{2}(\theta_t-G_t\theta_{t-1})'W_t^{-1}(\theta_t-G_t\theta_{t-1})\right) \\ && \quad \frac{1}{(2\pi)^{p/2}|C_{t-1}|^{1/2}}\exp\left(-\frac{1}{2}(\theta_{t-1}-m_{t-1})'C_{t-1}^{-1}(\theta_{t-1}-m_{t-1})\right) d\theta_{t-1} \\ \pause
+ &=& \int \frac{1}{(2\pi)^{p/2}|W_t|^{1/2}}\exp\left(-\frac{1}{2}(\theta_t-G_t\theta_{t-1})^\top W_t^{-1}(\theta_t-G_t\theta_{t-1})\right) \\ && \quad \frac{1}{(2\pi)^{p/2}|C_{t-1}|^{1/2}}\exp\left(-\frac{1}{2}(\theta_{t-1}-m_{t-1})^\top C_{t-1}^{-1}(\theta_{t-1}-m_{t-1})\right) d\theta_{t-1} \\ \pause
  &=& N(a_t,R_t)
  \end{eqnarray*} \pause
  \item One-step ahead predictive distribution for $y_t$ \pause
  \begin{eqnarray*} p(y_t|y_{1:t-1}) &=& \int p(y_t|\theta_t)p(\theta_t|y_{1:t-1})d\theta_t \\
  &=& \int N(y_t;F_t\theta_t,V_t)N(\theta_t;a_t,R_t)d\theta_t \\
- &=& \int \frac{1}{(2\pi)^{m/2}|V_t|^{1/2}}\exp\left(-\frac{1}{2}(y_t-F_t\theta_t)'V_t^{-1}(y_t-F_t\theta_t)\right) \\
- && \quad \frac{1}{(2\pi)^{p/2}|R_t|^{1/2}}\exp\left(-\frac{1}{2}(\theta_t-a_t)'R_t^{-1}(\theta_t-a_t)\right) d\theta_t \\ \pause
+ &=& \int \frac{1}{(2\pi)^{m/2}|V_t|^{1/2}}\exp\left(-\frac{1}{2}(y_t-F_t\theta_t)^\top V_t^{-1}(y_t-F_t\theta_t)\right) \\
+ && \quad \frac{1}{(2\pi)^{p/2}|R_t|^{1/2}}\exp\left(-\frac{1}{2}(\theta_t-a_t)^\top R_t^{-1}(\theta_t-a_t)\right) d\theta_t \\ \pause
  &=& N(f_t,Q_t)
  \end{eqnarray*} \pause
  \item Filtered distribution for $\theta_t$ \pause
@@ -378,12 +172,12 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
  \begin{itemize}
  \item CONAN $\implies \theta_t|y_{1:t-1}$ is normal \pause
  \item $E[\theta_t|y_{1:t-1}] \pause = G_tm_{t-1} \pause = a_t$ \pause
- \item $V[\theta_t|y_{1:t-1}] \pause = G_tC_{t-1}G_t'+W_t \pause = R_t$ \pause
+ \item $Var[\theta_t|y_{1:t-1}] \pause = G_tC_{t-1}G_t^\top +W_t \pause = R_t$ \pause
  \item $p(\theta_t|y_{1:t-1}) = N(a_t,R_t)$.
  \end{itemize}
 }
 
-\frame{\frametitle{One step ahead prediction}
+\frame{\frametitle{One-step ahead prediction}
  Prior is $p(\theta_t|y_{1:t-1}) = N(a_t,R_t)$. Find $p(y_t|y_{1:t-1})$.
 
  \vspace{0.5in} \pause
@@ -395,7 +189,7 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
  \begin{itemize}
  \item CONAN $\implies y_t|y_{1:t-1}$ is normal \pause
  \item $E[y_t|y_{1:t-1}] \pause = F_ta_t \pause = f_t$ \pause
- \item $V[y_t|y_{1:t-1}] \pause = F_tR_tF_t'+V_t \pause = Q_t$ \pause
+ \item $Var[y_t|y_{1:t-1}] \pause = F_tR_tF_t^\top +V_t \pause = Q_t$ \pause
  \item $p(y_t|y_{1:t-1}) = N(f_t,Q_t)$.
  \end{itemize}
 }
@@ -411,8 +205,8 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
 
  \begin{itemize}
  \item Linear regression $\implies \theta_t|y_{1:t}$ is normal \pause
- \item $V[\theta_t|y_{1:t}] \pause = (R_t^{-1}+F_t'V_t^{-1}F_t)^{-1} \pause = C_t$ \pause
- \item $E[\theta_t|y_{1:t}] \pause = C_t(R_t^{-1}a_t+F_t'V_t^{-1}y_t) \pause = m_t$ \pause
+ \item $Var[\theta_t|y_{1:t}] \pause = (R_t^{-1}+F_t^\top V_t^{-1}F_t)^{-1} \pause = C_t$ \pause
+ \item $E[\theta_t|y_{1:t}] \pause = C_t(R_t^{-1}a_t+F_t^\top V_t^{-1}y_t) \pause = m_t$ \pause
  \item $p(\theta_t|y_{1:t}) = N(m_t,C_t)$.
  \end{itemize}
 }
@@ -422,15 +216,15 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
 
  \vspace{0.5in} \pause
 
- Consider \[ p\left(\left. \left[ \begin{array}{c} y_t \\ \theta_t \end{array} \right] \right|y_{1:t-1}\right)\pause = N\left(\left[\begin{array}{c} f_t \\ a_t \end{array}\right], \left[\begin{array}{cc} Q_t & \uncover<4->{F_tR_t} \\ \uncover<4->{R_tF_t'} & R_t \end{array} \right]\right) \]
+ Consider \[ p\left(\left. \left[ \begin{array}{c} y_t \\ \theta_t \end{array} \right] \right|y_{1:t-1}\right)\pause = N\left(\left[\begin{array}{c} f_t \\ a_t \end{array}\right], \left[\begin{array}{cc} Q_t & \uncover<4->{F_tR_t} \\ \uncover<4->{R_tF_t^\top } & R_t \end{array} \right]\right) \]
 
  \vspace{0.2in} \pause \pause
 
  \begin{itemize}
  \item MVN theory $\implies \theta_t|y_{1:t-1},y_t$ is normal \pause
- \item $E[\theta_t|y_{1:t}] \pause = a_t+R_tF_t'Q_t^{-1}(y_t-f_t)
+ \item $E[\theta_t|y_{1:t}] \pause = a_t+R_tF_t^\top Q_t^{-1}(y_t-f_t)
   \pause = m_t$ \pause
- \item $V[\theta_t|y_{1:t}] \pause = R_t-R_tF_t'Q_t^{-1}F_tR_t \pause = C_t$ \pause
+ \item $Var[\theta_t|y_{1:t}] \pause = R_t-R_tF_t^\top Q_t^{-1}F_tR_t \pause = C_t$ \pause
  \item $p(\theta_t|y_{1:t}) = N(m_t,C_t)$.
  \end{itemize}
 }
@@ -439,16 +233,16 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
  \begin{itemize}
  \item Assume $p(\theta_{t-1}|y_{1:t-1})=N(m_{t-1},C_{t-1})$.
  \item Obtain prior $p(\theta_t|y_{1:t-1}) = N(a_t,R_t)$ where
- \[ a_t = G_tm_{t-1} \quad \mbox{and} \quad R_t =G_tC_{t-1}G_t'+W_t.\]
+ \[ a_t = G_tm_{t-1} \quad \mbox{and} \quad R_t =G_tC_{t-1}G_t^\top +W_t.\]
  \item Obtain one step ahead predictive $p(y_t|y_{1:t-1}) = N(f_t,Q_t)$ where
- \[ f_t = F_ta_t \quad \mbox{and} \quad Q_t = F_tR_tF_t'+V_t.\]
+ \[ f_t = F_ta_t \quad \mbox{and} \quad Q_t = F_tR_tF_t^\top +V_t.\]
  \item Obtain posterior $p(\theta_t|y_{1:t}) = N(m_t,C_t)$ where
  \[ \begin{array}{rcl@{\quad \mbox{and} \quad}rcl}
- m_t &=& a_t+K_te_t & C_t &=& R_t-K_tQ_tK_t' \\
- e_t &=& y_t-f_t  & K_t &=& R_tF_t'Q_t^{-1}
+ m_t &=& a_t+K_te_t & C_t &=& R_t-K_tQ_tK_t^\top  \\
+ e_t &=& y_t-f_t  & K_t &=& R_tF_t^\top Q_t^{-1}
  \end{array} \]
  \end{itemize} \pause
- $K_t$ is the \emph{Kalman gain} or \emph{adaptive coefficient}.
+ $K_t$ is the \alert{Kalman gain} or \alert{adaptive coefficient}.
 }
 
 \subsection{Kalman filter example}
@@ -499,39 +293,117 @@ Recursively, given $p(\theta_{t+(k-1)}|y_{1:t})$ \pause
 }
 
 \subsection{Missing observations}
-\frame{\frametitle{\phantom{Updated }Kalman filter}
+\frame{\frametitle{Kalman filter}
  \begin{itemize}
  \item Assume $p(\theta_{t-1}|y_{1:t-1})=N(m_{t-1},C_{t-1})$.
  \item Obtain prior $p(\theta_t|y_{1:t-1}) = N(a_t,R_t)$ where
- \[ a_t = G_tm_{t-1} \quad \mbox{and} \quad R_t =G_tC_{t-1}G_t'+W_t.\]
+ \[ a_t = G_tm_{t-1} \quad \mbox{and} \quad R_t =G_tC_{t-1}G_t^\top +W_t.\]
  \item Obtain one step ahead predictive $p(y_t|y_{1:t-1}) = N(f_t,Q_t)$ where
- \[ f_t = F_ta_t \quad \mbox{and} \quad Q_t = F_tR_tF_t'+V_t.\]
+ \[ f_t = F_ta_t \quad \mbox{and} \quad Q_t = F_tR_tF_t^\top +V_t.\]
  \item Obtain posterior $p(\theta_t|y_{1:t}) = N(m_t,C_t)$ where
  \[ \begin{array}{rcl@{\quad \mbox{and} \quad}rcl}
- m_t &=& a_t+K_te_t & C_t &=& R_t-K_tQ_tK_t' \\
- e_t &=& y_t-f_t  & K_t &=& R_tF_t'Q_t^{-1}
+ m_t &=& a_t+K_te_t & C_t &=& R_t-K_tQ_tK_t^\top  \\
+ e_t &=& y_t-f_t  & K_t &=& R_tF_t^\top Q_t^{-1}
  \end{array} \]
  \end{itemize}
 }
 
-\frame{\frametitle{Updated Kalman filter}
+\frame{\frametitle{Kalman filter \alert{with missing data}}
  \begin{itemize}
  \item Assume $p(\theta_{t-1}|y_{1:t-1})=N(m_{t-1},C_{t-1})$.
  \item Obtain prior $p(\theta_t|y_{1:t-1}) = N(a_t,R_t)$ where
- \[ a_t = G_tm_{t-1} \quad \mbox{and} \quad R_t =G_tC_{t-1}G_t'+W_t.\]
+ \[ a_t = G_tm_{t-1} \quad \mbox{and} \quad R_t =G_tC_{t-1}G_t^\top +W_t.\]
  \item Obtain one step ahead predictive $p(y_t|y_{1:t-1}) = N(f_t,Q_t)$ where
- \[ f_t = F_ta_t \quad \mbox{and} \quad Q_t = F_tR_tF_t'+V_t.\]
+ \[ f_t = F_ta_t \quad \mbox{and} \quad Q_t = F_tR_tF_t^\top +V_t.\]
  \item Obtain posterior $p(\theta_t|y_{1:t}) = N(m_t,C_t)$ where
   \begin{itemize}
-  \item If $y_t$ is not observed, $m_t=a_t$ and $C_t=R_t$.
+  \item \alert{If $y_t$ is not observed, $m_t=a_t$ and $C_t=R_t$.}
   \item If $y_t$ is observed,
  \[ \begin{array}{rcl@{\quad \mbox{and} \quad}rcl}
- m_t &=& a_t+K_te_t & C_t &=& R_t-K_tQ_tK_t' \\
- e_t &=& y_t-f_t  & K_t &=& R_tF_t'Q_t^{-1}
+ m_t &=& a_t+K_te_t & C_t &=& R_t-K_tQ_tK_t^\top  \\
+ e_t &=& y_t-f_t  & K_t &=& R_tF_t^\top Q_t^{-1}
  \end{array} \]
   \end{itemize}
  \end{itemize}
 }
+
+\subsection{Forecasting}
+\begin{frame}
+\frametitle{Forecasting}
+
+Forecasting is simply the Kalman filter with missing observations.
+\pause
+So, 
+\[ \begin{array}{rl}
+\left( \begin{array}{c} \theta_{t+k} \\ Y_{t+k} \end{array} \right) \sim
+N\left( \left[ \begin{array}{c} a_t(k) \\ f_t(k) \end{array}\right], 
+\left[ \begin{array}{cc} R_t(k) & F_{t+k}R_t(k) \\ R_t(k)F_{t+k}^\top & Q_t(k) \end{array} \right]\right)
+\end{array} \]
+\pause 
+where 
+\[ \begin{array}{rl}
+a_t(k) &= G_{t+k}a_t(k-1) \\
+R_t(k) &= G_{t+k} R_{t}(k-1)G_{t+k}^\top +W_{t+k} \\
+f_t(k) &= F_{t+k}a_t(k) \\
+Q_t(k) &= F_{t+k}R_t(k)R_{t+k}^\top + V_t
+\end{array} \]
+\pause 
+with $a_t(0) = m_t$ and $R_t(0) = C_t$.
+
+\end{frame}
+
+\subsection{Kalman Smoother}
+\begin{frame}
+\frametitle{Kalman Smoother}
+
+Smoothing can be accomplished in a manner similar to the Kalman filter via
+the Kalman smoother.
+\pause
+If we have $\theta_{t+1}|y_{1:T} \sim N(s_{t+1},S_{t+1})$, 
+then $\theta_t|y_{1:T} \sim N(s_t,S_t)$ where
+\[ \begin{array}{rl}
+s_t &= m_t + C_tG_{t+1}^\top R_{t+1}^{-1}(s_{t+1}-a_{t+1}) \\
+S_t &= C_t - C_tG_{t+1}^\top R_{t+1}^{-1}(R_{t+1}-S_{t+1})R_{t+1}^{-1}G_{t+1}C_t.
+\end{array} \]
+
+\end{frame}
+
+
+\subsection{Backward sampling}
+\begin{frame}
+\frametitle{Backward sampling}
+Recall
+\begin{itemize}[<+->]
+\item $p(\theta_t|y_{1:t})=N(m_t,C_t)$ is available for all $t$ from filtering and 
+\item $p(\theta_t|\theta_{t+1},y_{1:T})=N(h_t,H_T)$ with
+\end{itemize}
+\uncover<3>{
+\begin{eqnarray*}
+H_t &=& (C_t^{-1}+G_{t+1}^\top W_{t+1}^{-1}G_{t+1})^{-1} \\
+h_t &=& H_t(C_t^{-1}m_t+G_{t+1}^\top W_{t+1}^{-1}\theta_{t+1})
+\end{eqnarray*}
+} \pause
+\uncover<4->{The algorithm is then} \pause
+\begin{itemize}[<+->]
+\item Forward filter to obtain $p(\theta_t|y_{1:t})=N(m_t,C_t)$ for all $t$. 
+\item Sample $\theta_T \sim H(m_T,C_T)$. 
+\item For $t=T-1,T-2,\ldots,1,0$,
+ \begin{itemize}
+ \item Calculate $h_t$ and $H_t$ based on $\theta_{t+1}$.
+ \item Draw $\theta_t\sim N(h_t,H_T)$.
+ \end{itemize}
+\end{itemize}
+This is then a joint draw of 
+$\theta_{0:T} \sim p(\theta_0,\ldots,\theta_T|y_{1:T})$.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Inference questions?}
+
+Any questions on performing inference on the latent states in a DLM?
+
+\end{frame}
 
 
 \section{Model components}
@@ -676,7 +548,7 @@ In practice we use,
  
  \begin{itemize}
  \item $F_t \pause = F= (1,0)$ \pause
- \item $\theta_t \pause = (\mu_t,\beta_t)'$ \pause
+ \item $\theta_t \pause = (\mu_t,\beta_t)^\top $ \pause
  \item \[ G_t \pause = \left[ \begin{array}{cc} 1 & 1 \\ 0 & 1 \end{array} \right] \] \pause
  \item Forecast function $f_t(k)=E[Y_{t+k}|y_{1:t}]\pause = \hat{\mu}_t+k\hat{\beta}_t$ 
  \end{itemize}
@@ -868,7 +740,7 @@ Y_t &=& F_t\theta_t + v_t \\
 \end{eqnarray*} \pause
 where
 \begin{eqnarray*}
-\theta_1 &=& \pause (\alpha_1,\alpha_2,\ldots,\alpha_s)' \\
+\theta_1 &=& \pause (\alpha_1,\alpha_2,\ldots,\alpha_s)^\top  \\
 F_t &=& F = \pause (1,0,0,\ldots,0) \\ \pause
 G_t &=& G= \pause \left[ \begin{array}{ccccc}
 0 & 1 & 0 & \cdots & 0 \\
@@ -884,15 +756,15 @@ W_t &=& W = \pause 0 \quad \pause \mbox{(maybe)}
 }
 
 \frame{\frametitle{Rotating factors}
-If $\theta_1 = (\alpha_1,\alpha_2,\ldots,\alpha_s)'$ and $W_t=0$, what is $\theta_t$?
+If $\theta_1 = (\alpha_1,\alpha_2,\ldots,\alpha_s)^\top $ and $W_t=0$, what is $\theta_t$?
 
 \vspace{0.1in} \pause
 
 \begin{eqnarray*}
-\theta_2 &=& G\theta_1 = \pause (\alpha_2,\alpha_3,\alpha_4,\ldots,\alpha_s,\alpha_1)' \\ \pause
-\theta_3 &=& G\theta_2 = \pause (\alpha_3,\alpha_4,\ldots,\alpha_s,\alpha_1,\alpha_2)' \\ \pause
+\theta_2 &=& G\theta_1 = \pause (\alpha_2,\alpha_3,\alpha_4,\ldots,\alpha_s,\alpha_1)^\top  \\ \pause
+\theta_3 &=& G\theta_2 = \pause (\alpha_3,\alpha_4,\ldots,\alpha_s,\alpha_1,\alpha_2)^\top  \\ \pause
 &\vdots & \\ \pause
-\theta_t &=& G\theta_{t-1} = \pause (\alpha_{j},\alpha_{j+1},\ldots,\alpha_s,\alpha_1,\ldots,\alpha_{j-1})' \\ \pause
+\theta_t &=& G\theta_{t-1} = \pause (\alpha_{j},\alpha_{j+1},\ldots,\alpha_s,\alpha_1,\ldots,\alpha_{j-1})^\top  \\ \pause
 \end{eqnarray*}
 where $j=t \mbox{ mod } s$ ($j\%\%s$ in R).
 }
@@ -922,7 +794,7 @@ Y_t &=& F_t\theta_t + v_t \\
 \end{eqnarray*} \pause
 where
 \begin{eqnarray*}
-\theta_1 &=&  (\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_2)' \\
+\theta_1 &=&  (\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_2)^\top  \\
 F_t &=& F =  (1,0,0,\ldots,0) \\
 G_t &=& G=  \left[ \begin{array}{ccccc}
 0 & 0 & \cdots & 0 & 1 \\
@@ -966,7 +838,7 @@ Y_t &=& F_t\theta_t + v_t \\
 \end{eqnarray*} \pause
 where
 \begin{eqnarray*}
-\theta_1 &=&  (\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_3)' \\
+\theta_1 &=&  (\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_3)^\top  \\
 F_t &=& F =  (1,0,\ldots,0) \\
 G_t &=& G=  \left[ \begin{array}{ccccc}
 -1 & -1 & \cdots & -1 & -1 \\
@@ -981,11 +853,11 @@ W_t &=& W =  0 \quad  \mbox{(maybe)}
 \column{0.5\textwidth}
 What is $\theta_2$ if $W=0$?
 \begin{eqnarray*}
-\theta_2 &=& G\theta_1 = \pause (\alpha_2,\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_4)' \\ \pause
-\theta_3 &=& G\theta_2 = \pause (\alpha_3,\alpha_2,\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_5)' \\ \pause
+\theta_2 &=& G\theta_1 = \pause (\alpha_2,\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_4)^\top  \\ \pause
+\theta_3 &=& G\theta_2 = \pause (\alpha_3,\alpha_2,\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_5)^\top  \\ \pause
 &\vdots & \\ \pause
 \theta_t &=& G\theta_{t-1} \\
-&=& \pause (\alpha_{j},\alpha_{j-1},\ldots,\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_{j+2})' \\ \pause
+&=& \pause (\alpha_{j},\alpha_{j-1},\ldots,\alpha_1,\alpha_s,\alpha_{s-1},\ldots,\alpha_{j+2})^\top  \\ \pause
 \end{eqnarray*}
 where $j=t \mbox{ mod } s$.
 \end{columns}
@@ -1049,14 +921,14 @@ Let
 Consider
 {\scriptsize
 \[ \begin{array}{rl}
-e_0 &= (1,1,\ldots,1)' \pause \\
-c_1 &= (\cos \omega_1, \cos 2\omega_1, \ldots \cos s\omega_1)' \\
-s_1 &= (\sin \omega_1, \sin 2\omega_1, \ldots \sin s\omega_1)' \pause \\
+e_0 &= (1,1,\ldots,1)^\top  \pause \\
+c_1 &= (\cos \omega_1, \cos 2\omega_1, \ldots \cos s\omega_1)^\top  \\
+s_1 &= (\sin \omega_1, \sin 2\omega_1, \ldots \sin s\omega_1)^\top  \pause \\
 &\vdots \\
-c_j &= (\cos \omega_j, \cos 2\omega_j, \ldots \cos s\omega_j)' \\
-s_j &= (\sin \omega_j, \sin 2\omega_j, \ldots \sin s\omega_j)' \pause \\
+c_j &= (\cos \omega_j, \cos 2\omega_j, \ldots \cos s\omega_j)^\top  \\
+s_j &= (\sin \omega_j, \sin 2\omega_j, \ldots \sin s\omega_j)^\top  \pause \\
 &\vdots \\
-c_{s/2} &= (\cos \omega_{s/2}, \cos 2\omega_{s/2}, \ldots \cos s\omega_{s/2})'
+c_{s/2} &= (\cos \omega_{s/2}, \cos 2\omega_{s/2}, \ldots \cos s\omega_{s/2})^\top 
 \end{array} \]
 }
 
@@ -1139,7 +1011,7 @@ Consider simpler DLMs containing only seasonality of frequency $j<s/2$.
 \[ \left[\begin{array}{c} S_j(t+1) \\ S_j^*(t+1) \end{array} \right] = \left[ \begin{array}{rr} \cos \omega_j & \sin \omega_j \\ -\sin \omega_j & \cos \omega_j \end{array} \right] \left[\begin{array}{c} S_j(t) \\ S_j^*(t) \end{array} \right].\] \pause
 So this is a DLM with evolution matrix
 \[ H_j = \left[ \begin{array}{rr} \cos \omega_j & \sin \omega_j \\ -\sin \omega_j & \cos \omega_j \end{array} \right], \]
-state vector $(S_j(t),S_j^*(t))'$, and observation matrix $F=[1\, 0]$.
+state vector $(S_j(t),S_j^*(t))^\top $, and observation matrix $F=[1\, 0]$.
 
 \vspace{0.1in} \pause
 
@@ -1150,13 +1022,13 @@ which is a DLM with state vector $S_{s/2}(t)$, evolution matrix $H_{s/2}=[-1]$, 
 
 \frame{\frametitle{Fourier form seasonal DLM}
 Combine these period $j$ DLMs using our combining rules:
-\[ \theta_t = (S_1(t),S_1^*(t),\ldots,S_{\frac{s}{2}-1}(t),S_{\frac{s}{2}-1}^*(t),S_{\frac{s}{2}}(t))' \]
+\[ \theta_t = (S_1(t),S_1^*(t),\ldots,S_{\frac{s}{2}-1}(t),S_{\frac{s}{2}-1}^*(t),S_{\frac{s}{2}}(t))^\top  \]
 with evolution matrix
 \[ G = \mbox{blockdiag}(H_1,\ldots,H_{\frac{s}{2}}) \]
 and observation matrix
 \[ F=[1\, 0\, 1\, 0\, \ldots\, 0\, 1]\]
 and initial vector
-\[ \theta_0 = (a_1,b_1,\ldots,a_{\frac{s}{2}-1},b_{\frac{s}{2}-1},a_{\frac{s}{2}})'. \]
+\[ \theta_0 = (a_1,b_1,\ldots,a_{\frac{s}{2}-1},b_{\frac{s}{2}-1},a_{\frac{s}{2}})^\top . \]
 }
 
 
@@ -1177,8 +1049,10 @@ d = ddply(data.frame(harmonics=1:6), .(harmonics), function(x) {
 
 \begin{frame}[fragile]
 \frametitle{Nottingham data}
-<<echo=TRUE>>=
-ggplot(subset(d, harmonics==6), aes(month, effect, group=1)) + geom_line()
+<<echo=TRUE, out.width='.7\\linewidth'>>=
+ggplot(subset(d, harmonics==6), aes(month, effect, group=1)) + 
+  geom_line() +
+  theme_bw()
 @
 \end{frame}
 
@@ -1186,9 +1060,12 @@ ggplot(subset(d, harmonics==6), aes(month, effect, group=1)) + geom_line()
 
 \begin{frame}[fragile]
 \frametitle{Nottingham data - fewer harmonics}
-<<echo=TRUE>>=
+<<echo=TRUE,out.width='.7\\linewidth'>>=
 d$harmonics_f = factor(d$harmonics)
-ggplot(d, aes(month, effect, color=harmonics_f, shape=harmonics_f, group=harmonics_f)) + geom_point() + geom_line()
+ggplot(d, aes(month, effect, color=harmonics_f, shape=harmonics_f, group=harmonics_f)) + 
+  geom_point() + 
+  geom_line() +
+  theme_bw()
 @
 \end{frame}
 
@@ -1234,11 +1111,8 @@ Y_t &=& \sum_{j=1}^p \phi_jY_{t-j} + \sum_{j=1}^q \psi_j \epsilon_{t-j}+\epsilon
 \\
 Y_t &=& \sum_{j=1}^r \phi_jY_{t-j} + \sum_{j=1}^{r-1} \psi_j \epsilon_{t-j}+\epsilon_t 
 \end{eqnarray*}
-where $r=\max\{p,q+1\}$ with $\phi_j=0$ for $j>p$ and $\psi_j=0$ for $j>q$ and $\epsilon\stackrel{iid}{\sim} N(0,\sigma^2)$. 
-
-\begin{center}
-\uncover<3>{\alert{(write on board)}}
-\end{center}
+where $r=\max\{p,q+1\}$ with $\phi_j=0$ for $j>p$ and $\psi_j=0$ for $j>q$ and 
+$\epsilon_t\ind N(0,\sigma^2)$. 
 }
 
 \subsection{DLM representation of an ARMA model}
@@ -1254,8 +1128,8 @@ with
 
 \begin{eqnarray*}
 V &=& 0 \\ \pause
-W &=& RR'\sigma^2 \\ \pause
-\theta_t &=& (\theta_{1,t},\ldots,\theta_{r,t})' \\ \pause
+W &=& RR^\top \sigma^2 \\ \pause
+\theta_t &=& (\theta_{1,t},\ldots,\theta_{r,t})^\top  \\ \pause
 F &=& (1,0,\ldots,0) \\ \pause 
 G &=& \left[ \begin{array}{ccccc} 
 \phi_1 & 1 & 0 & \cdots & 0 \\
@@ -1264,7 +1138,7 @@ G &=& \left[ \begin{array}{ccccc}
 \phi_{r-1} & 0 & \cdots & 0 & 1 \\
 \phi_r & 0 & \cdots & 0 & 0
 \end{array}\right] \\ \pause
-R &=& (1, \psi_1,\ldots,\psi_{r-2},\psi_{r-1})' 
+R &=& (1, \psi_1,\ldots,\psi_{r-2},\psi_{r-1})^\top  
 \end{eqnarray*}
 }
 
@@ -1335,8 +1209,8 @@ Y_{t} &=& \sum_{j=1}^r \phi_jY_{1,t-j}+\sum_{j=1}^{r-1} \psi_j\epsilon_{t-j}+\ep
 Y_t ^{(p)} &=& F^{(p)}\theta_t^{(p)} \\
 \theta_t^{(p)} &=& G^{(p)}\theta_{t-1}^{(p)} + w_t^{(p)} \\
 \\
-\theta_t^{(p)} &=& (Y_t^{(p)},\delta_t)' \\
-F^{(p)} &=& (1,0)' \\
+\theta_t^{(p)} &=& (Y_t^{(p)},\delta_t)^\top  \\
+F^{(p)} &=& (1,0)^\top  \\
 G^{(p)} &=& \left[ \begin{array}{cc} 1 & 1 \\ 0 & 1 \end{array} \right] \\
 W^{(p)} &=& \mbox{diag}(\sigma^2_\epsilon,\sigma^2_z) 
 \end{eqnarray*}
@@ -1345,8 +1219,8 @@ W^{(p)} &=& \mbox{diag}(\sigma^2_\epsilon,\sigma^2_z)
 Y_t ^{(g)} &=& F^{(g)}\theta_t^{(g)} \\
 \theta_t^{(g)} &=& G^{(g)}\theta_{t-1}^{(g)} + w_t^{(g)} \\
 \\
-\theta_t^{(g)} &=& (Y_t^{(g)},\theta_{t,2}^{(g)})' \\
-F^{(g)} &=& (1,0)' \\
+\theta_t^{(g)} &=& (Y_t^{(g)},\theta_{t,2}^{(g)})^\top  \\
+F^{(g)} &=& (1,0)^\top  \\
 G^{(g)} &=& \left[ \begin{array}{cc} \phi_1 & 1 \\ \phi_2 & 0 \end{array} \right] \\
 W^{(g)} &=& \mbox{diag}(\sigma^2_u,0)
 \end{eqnarray*}
@@ -1366,7 +1240,7 @@ Y_t &=& F\theta_t +v_t\\
 \vspace{0.1in}
 
 \begin{eqnarray*}
-\theta_t &=& (Y_t^{(p)},\delta_t,Y_t^{(g)},\theta_{t,2}^{(g)})' \\
+\theta_t &=& (Y_t^{(p)},\delta_t,Y_t^{(g)},\theta_{t,2}^{(g)})^\top  \\
 F &=& (1,0,1,0) \\
 G &=& \left[ \begin{array}{cccc} 
 1 & 1 & 0 & 0 \\
@@ -1428,7 +1302,7 @@ for $j=1,2, w_{1,t}$ and $w_{2,t}$ independent.
 
 \frame{\frametitle{Dynamic regression model}
 \[ \begin{array}{rll}
-Y_t &= x_t'\theta_t + v_t & v_t \sim N(0,\sigma_t^2) \\
+Y_t &= x_t^\top \theta_t + v_t & v_t \sim N(0,\sigma_t^2) \\
 \theta_t &= G_t \theta_{t-1} + w_t & w_t \sim N_p(0,W_t) 
 \end{array} \]
 
@@ -1600,7 +1474,7 @@ Suppose you have a linear trend model for each unit $i$:
  \vspace{0.2in} \pause
 
  \begin{itemize}
- \item What is $F_{i,t}$? \pause $F_{i,t}=(1,0)'$ \pause
+ \item What is $F_{i,t}$? \pause $F_{i,t}=(1,0)^\top $ \pause
  \item What is $G_{i,t}$? \pause \[ G_{i,t} = \left[ \begin{array}{cc} 1 & 1 \\ 0 & 1 \end{array} \right] \] \pause
  \item What is $V_{i,t}$? \pause $V_{i,t} = V_i$ \pause
  \item What is $W_{i,t}$? \pause $W_{i,t} = W_i$ \pause
@@ -1692,7 +1566,7 @@ where
 > mod$W <- bdiag(W1, W2)
 >
 > V <- diag(c(72, 14353))
-> V[1, 2] <- V[2, 1] <- 1018
+> Var[1, 2] <- Var[2, 1] <- 1018
 > mod$V <- V
 >
 > mod$m0 <- rep(0, 4)
@@ -1756,7 +1630,7 @@ Y_{i,t} &= F_t^{(i)}\theta_t^{(i)}+v_{i,t}, &v_{i,t}\sim N(0,V_i) \\
  \item What is $G_{i,t}$? \pause $G_{i,t} = I_p$ \pause
  \item What is $V_{i,t}$? \pause $V_{i,t} = V_i$ \pause
  \item What is $W_{i,t}$? \pause $W_{i,t} = I_p$ \pause
- \item What is $\theta_t^{(i)}$? \pause $\theta_t^{(i)} = (\beta_{1,t}^{(i)},\ldots,\beta_{p,t}^{(i)})'$
+ \item What is $\theta_t^{(i)}$? \pause $\theta_t^{(i)} = (\beta_{1,t}^{(i)},\ldots,\beta_{p,t}^{(i)})^\top $
  \end{itemize}
 }
 
@@ -1770,7 +1644,7 @@ where \pause
 \[ y_t = \left[ \begin{array}{c} y_{1,t} \\ \vdots \\ y_{m,t} \end{array} \right], \quad \pause
 \theta_t = \left[ \begin{array}{c} \alpha_{1,t} \\ \vdots \\ \alpha_{m,t} \\ \beta_{1,t} \\ \vdots \\ \beta_{m,t} \end{array} \right], \quad \pause v_t = \left[ \begin{array}{c} v_{1,t} \\ \vdots \\ v_{m,t} \end{array} \right], \quad \pause
 w_t = \left[ \begin{array}{c} w_{1,t} \\ \vdots \\ w_{m,t} \\ w_{m+1,t} \\ \vdots \\ w_{2m,t} \end{array} \right] \] \pause
-with $F_t=(1,x_t)', G=I_2,$ and $W=\mbox{blockdiag}(W_\alpha,W_\beta)$.
+with $F_t=(1,x_t)^\top , G=I_2,$ and $W=\mbox{blockdiag}(W_\alpha,W_\beta)$.
 }
 
 \subsection{An example}
@@ -1797,7 +1671,7 @@ with $F_t=(1,x_t)', G=I_2,$ and $W=\mbox{blockdiag}(W_\alpha,W_\beta)$.
 +       -4.267e-05, 0.001852,   0.002498,   0.003884,
 +       -6.649e-05, 0.002884,   0.003884,   0.006057)
 > CAPM$V <- CAPM$V %x% matrix(0, m, m)
-> CAPM$V[] <- c(41.06,     0.01571, -0.9504, -2.328,
+> CAPM$Var[] <- c(41.06,     0.01571, -0.9504, -2.328,
 +                0.01571, 24.23,     5.783,   3.376,
 +               -0.9504,   5.783,   39.2,     8.145,
 +               -2.328,    3.376,    8.145,  39.29)
@@ -1883,9 +1757,9 @@ Y_{t} &= F_{y,t}\theta_{t}+v_{t}, & v_{t} \sim N_m(0,V_{y,t}) \\
 
 where
 \[ \begin{array}{rl@{\qquad}l}
-\theta_t &= (\theta_{1,t}',\ldots,\theta_{m,t}')' \\
+\theta_t &= (\theta_{1,t}^\top ,\ldots,\theta_{m,t}^\top )^\top  \\
 F_{y,t} &= \mbox{blockdiag}(F_{i,t}) \\
-F_{\theta,t} &= [I_p|\cdots|I_p]' \\
+F_{\theta,t} &= [I_p|\cdots|I_p]^\top  \\
 V_{y,t} &= \mbox{diag}(\sigma_{i,t}^2) \\
 V_{\theta,t} &= \mbox{blockdiag}(\Sigma_t) \\
 G_t &= G
@@ -1898,7 +1772,7 @@ Let's write this as a standard DLM \pause
 \vspace{0.3in}
 
 \[ \begin{array}{rl@{\qquad}l}
-Y_{t} &= F_{y,t}F_{\theta,t}\lambda_{t}+v_{t}^*, & v_{t}^* \sim N_m(0,F_{y,t}V_{\theta,t}F_{y,t}'+V_{y,t}) \\
+Y_{t} &= F_{y,t}F_{\theta,t}\lambda_{t}+v_{t}^*, & v_{t}^* \sim N_m(0,F_{y,t}V_{\theta,t}F_{y,t}^\top +V_{y,t}) \\
 \lambda_t &= G_t\lambda_{t-1} + w_t, & w_t \sim N_k(0,W_t)
 \end{array} \]
 }
@@ -1980,7 +1854,7 @@ where $A$ is a fixed $m\times p$ matrix of factor loadings with $p<m$.
 Identifiability of $A$. Suppose $H$ is a $p\times p$ invertible matrix. Then 
 \[ \begin{array}{rl@{\qquad}l}
 Y_t &= \tilde{A}\tilde{\mu}_t+v_t, & v_t\sim N_m(0,V) \\
-\tilde{\mu}_t &= \tilde{\mu}_{t-1}+\tilde{w}_t, & \tilde{w}_t \sim N_p(0,HWH')
+\tilde{\mu}_t &= \tilde{\mu}_{t-1}+\tilde{w}_t, & \tilde{w}_t \sim N_p(0,HWH^\top )
 \end{array} \]\pause
 with $\tilde{\mu}_t = H\mu_t$ and $\tilde{A}=AH^{-1}$. 
 
@@ -2137,12 +2011,12 @@ p(y|\psi) &\pause = & \prod_{t=1}^n p(y_t|y_{1:t-1},\psi)
 \subsection{MLEs in DLMs}
 \frame{\frametitle{Finding MLEs for DLMs}
 If $y_t$ is multivariate, the likelihood function is \pause
-\[ L(\psi) \propto \prod_{t=1}^n \frac{1}{(2\pi)^{k/2} |Q_t|^{1/2}} \exp\left( -\frac{1}{2} (y_t-f_t)'Q_t^{-1}(y_t-f_t)\right).\]
+\[ L(\psi) \propto \prod_{t=1}^n \frac{1}{(2\pi)^{k/2} |Q_t|^{1/2}} \exp\left( -\frac{1}{2} (y_t-f_t)^\top Q_t^{-1}(y_t-f_t)\right).\]
 
 \vspace{0.2in} \pause
 
 Log-likelihood function \pause
-\[ \ell(\psi) = C + -\frac{1}{2}\sum_{t=1}^n \log |Q_t|-\frac{1}{2}\sum_{t=1}^n (y_t-f_t)'Q_t^{-1}(y_t-f_t).\]
+\[ \ell(\psi) = C + -\frac{1}{2}\sum_{t=1}^n \log |Q_t|-\frac{1}{2}\sum_{t=1}^n (y_t-f_t)^\top Q_t^{-1}(y_t-f_t).\]
 
 \vspace{0.2in} \pause
 
@@ -2251,13 +2125,13 @@ Starting with
 
 One step ahead prior
 \[ \theta_{t},\phi|y_{1:t-1} \sim NG(a_t, \tilde{R}_{t}, \alpha_{t-1}, \beta_{t-1}) \]
-where $a_t = G_tm_{t-1}$ and $\tilde{R}_t = G_t \tilde{C}_{t-1} G_t'+\tilde{W}_t$.
+where $a_t = G_tm_{t-1}$ and $\tilde{R}_t = G_t \tilde{C}_{t-1} G_t^\top +\tilde{W}_t$.
 
 \vspace{0.1in} \pause
 
 One step ahead predictive density
 \[ Y_t|y_{1:t-1} \sim t_{2\alpha_{t-1}}(f_t, \tilde{Q}_t\beta_{t-1}/\alpha_{t-1})\]
-with $f_t=F_ta_t$ and $\tilde{Q}_t = F_t\tilde{R}_tF_t'+\tilde{V}_t$.
+with $f_t=F_ta_t$ and $\tilde{Q}_t = F_t\tilde{R}_tF_t^\top +\tilde{V}_t$.
 
 \vspace{0.1in} \pause
 
@@ -2266,9 +2140,9 @@ Filtering density
 with
 \begin{eqnarray*}
 m_t &=& a_t + \tilde{R}_tF_t \tilde{Q}_t^{-1}(y_t-f_t) \\
-\tilde{C}_t &=& \tilde{R}_t-\tilde{R}_tF_t'\tilde{Q}_t^{-1}\tilde{R}_t' \\
+\tilde{C}_t &=& \tilde{R}_t-\tilde{R}_tF_t^\top \tilde{Q}_t^{-1}\tilde{R}_t^\top  \\
 \alpha_t &=& \alpha_{t-1} +\frac{m}{2} \\
-\beta_t &=& \beta_{t-1}+\frac{1}{2}(y_t-f_t)'\tilde{Q}_t^{-1}(y_t-f_t)
+\beta_t &=& \beta_{t-1}+\frac{1}{2}(y_t-f_t)^\top \tilde{Q}_t^{-1}(y_t-f_t)
 \end{eqnarray*}
 }
 }
@@ -2285,7 +2159,7 @@ Let's specify how adaptive we want our model to be.
 
 \vspace{0.2in}
 
-To implement, set \[ W_t = \frac{1-\delta}{\delta} G_t' C_{t-1} G_t\] or \[ \tilde{W}_t = \frac{1-\delta}{\delta} G_t' \tilde{C}_{t-1} G_t\]
+To implement, set \[ W_t = \frac{1-\delta}{\delta} G_t^\top  C_{t-1} G_t\] or \[ \tilde{W}_t = \frac{1-\delta}{\delta} G_t^\top  \tilde{C}_{t-1} G_t\]
 if using a common $\sigma^2$.
 }
 
@@ -2330,7 +2204,7 @@ Choose $\delta^*\in(0,1)$
 What is
 \begin{itemize}
 \item $E[\phi_t|y_{1:t-1}] \pause = E[\phi_{t-1}|y_{1:t-1}]$ \pause
-\item $V[\phi_t|y_{1:t-1}] \pause = \frac{1}{\delta^*} V[\phi_{t-1}|y_{1:t-1}]$
+\item $Var[\phi_t|y_{1:t-1}] \pause = \frac{1}{\delta^*} Var[\phi_{t-1}|y_{1:t-1}]$
 \end{itemize}
 }
 
@@ -2482,20 +2356,20 @@ Suppose our goal is to draw from $p(\theta_{0:T}|y_{1:T})$ using univariate Gibb
 p(\theta_0|\ldots) \pause &=& p(\theta_0|\theta_1) \\ \pause 
 &\propto & N(\theta_1; G_1\theta_0, W_1) N(\theta_0; m_0, C_0) \\ \pause
 &\propto & N(\theta_0; k_0, K_0) \\ \pause
-K_0 &=& (C_0^{-1}+G_1'W_1^{-1}G_1)^{-1} \\ \pause
-k_0 &=& K_0(C_0^{-1}m_0 +G_1'W_1^{-1}\theta_1) \\ \pause
+K_0 &=& (C_0^{-1}+G_1^\top W_1^{-1}G_1)^{-1} \\ \pause
+k_0 &=& K_0(C_0^{-1}m_0 +G_1^\top W_1^{-1}\theta_1) \\ \pause
 \\
 p(\theta_T|\ldots) \pause &=& p(\theta_T|\theta_{T-1},y_T) \\ \pause
 &\propto & N(y_T; F_T\theta_T, V_T) N(\theta_T;G_T\theta_{T-1},W_T) \\ \pause
 &\propto & N(\theta_T; k_T, K_T) \\ \pause
-K_T &=& (W_T^{-1}+F_T'V_T^{-1}F_T)^{-1} \\ \pause
-k_T &=& K_T(W_T^{-1}G_T\theta_{T-1} + F_T'V_T^{-1}y_T) \\ \pause
+K_T &=& (W_T^{-1}+F_T^\top V_T^{-1}F_T)^{-1} \\ \pause
+k_T &=& K_T(W_T^{-1}G_T\theta_{T-1} + F_T^\top V_T^{-1}y_T) \\ \pause
 \\
 p(\theta_t|\ldots) \pause &=& p(\theta_t|\theta_{t-1},\theta_{t+1},y_t) \\ \pause
 &\propto & N(y_t; F_t\theta_t, V_t) N(\theta_{t+1}; G_{t+1}\theta_t, W_t) N(\theta_t; G_t\theta_{t-1}, W_{t+1})\\ \pause
 &\propto & N(\theta_t; k_t, K_t) \\ \pause
-K_t &=& (W_t^{-1}+F_t'V_t^{-1}F_t+G_{t+1}'W_{t+1}^{-1}G_{t+1})^{-1} \\ \pause
-k_t &=& K_t(W_t^{-1}G_t\theta_{t-1}+F_t'V_t^{-1}y_t+G_{t+1}'W_{t+1}^{-1}\theta_{t+1})
+K_t &=& (W_t^{-1}+F_t^\top V_t^{-1}F_t+G_{t+1}^\top W_{t+1}^{-1}G_{t+1})^{-1} \\ \pause
+k_t &=& K_t(W_t^{-1}G_t\theta_{t-1}+F_t^\top V_t^{-1}y_t+G_{t+1}^\top W_{t+1}^{-1}\theta_{t+1})
 \end{eqnarray*}
 }
 }
@@ -2586,13 +2460,13 @@ p(\theta_t|\theta_{t+1},y_{1:T}) &=& p(\theta_t|\theta_{t+1},y_{1:t}) \\
 &\propto & p(\theta_{t+1}|\theta_t,y_{1:t})p(\theta_t|y_{1:t}) \\
 &=& N(\theta_{t+1}; G_{t+1}\theta_t,W_{t+1}) N(\theta_t;m_t,C_t) \\
 &\propto & N(\theta_t; h_t, H_t) \\
-H_t &=& (C_t^{-1}+G_{t+1}'W_{t+1}^{-1}G_{t+1})^{-1} \\
-h_t &=& H_t(C_t^{-1}m_t+G_{t+1}'W_{t+1}^{-1}\theta_{t+1}) \\
+H_t &=& (C_t^{-1}+G_{t+1}^\top W_{t+1}^{-1}G_{t+1})^{-1} \\
+h_t &=& H_t(C_t^{-1}m_t+G_{t+1}^\top W_{t+1}^{-1}\theta_{t+1}) \\
 \\
 p(\theta_t|y_{1:T}) &=& \int p(\theta_t|\theta_{t+1},y_{1:T})p(\theta_{t+1}|y_{1:T}) d\theta_{t+1} \\ \pause
 &=& N(\theta_t; s_t, S_t) \\
-S_t &=& C_t-C_tG_{t+1}'R_{t+1}^{-1}(R_{t+1}-S_{t+1})R_{t+1}^{-1}G_{t+1}C_t \\
-s_t &=& m_t+C_tG_{t+1}'R_{t+1}^{-1}(s_{t+1}-a_{t+1})
+S_t &=& C_t-C_tG_{t+1}^\top R_{t+1}^{-1}(R_{t+1}-S_{t+1})R_{t+1}^{-1}G_{t+1}C_t \\
+s_t &=& m_t+C_tG_{t+1}^\top R_{t+1}^{-1}(s_{t+1}-a_{t+1})
 \end{eqnarray*}
 }
 
@@ -2680,8 +2554,8 @@ Recall
 \end{itemize}
 \uncover<3>{
 \begin{eqnarray*}
-H_t &=& (C_t^{-1}+G_{t+1}'W_{t+1}^{-1}G_{t+1})^{-1} \\
-h_t &=& H_t(C_t^{-1}m_t+G_{t+1}'W_{t+1}^{-1}\theta_{t+1})
+H_t &=& (C_t^{-1}+G_{t+1}^\top W_{t+1}^{-1}G_{t+1})^{-1} \\
+h_t &=& H_t(C_t^{-1}m_t+G_{t+1}^\top W_{t+1}^{-1}\theta_{t+1})
 \end{eqnarray*}
 } \pause
 \uncover<4->{The algorithm is then} \pause
@@ -2795,7 +2669,7 @@ with $y_1=1$. \pause The objective is $p(\theta_0,\theta_1|y_1)$.
 }
 
 \frame{\frametitle{Local level convergence example}
-\setkeys{Gin}{width=\textwidth}
+\setkeys{Gin}{width=0.5\textwidth}
 \begin{columns}
 \column{0.5\textwidth}
 \only< 1   >{\includegraphics{joint0}}
@@ -2986,7 +2860,7 @@ All convergence diagnostics detect a lack of convergence.
 
 \vspace{0.2in} \pause
 
-So instead of saying `\emph{the chain has converged}' you should be saying `\emph{the chain shows no lack of convergence}'.
+So instead of saying `\alert{the chain has converged}' you should be saying `\alert{the chain shows no lack of convergence}'.
 }
 
 \subsection{Burn-in}
@@ -3586,12 +3460,12 @@ is a distribution on symmetric, positive definite matrices $P$ with parameters $
 \frame{\frametitle{Full conditionals for the precision matrices}
 Wishart distributions are conditionally conjugate in this model: \pause
 \[ p\left(\mathrm\Phi_0|\ldots\right) = \mathcal{W}\left(\nu_0+T/2, S_0+\frac{1}{2}SS_y\right) \]
-where $SS_y = \sum_{t=1}^T \left(y_t-F_t\theta_t\right)\left(y_t-F_t\theta_t\right)'$.
+where $SS_y = \sum_{t=1}^T \left(y_t-F_t\theta_t\right)\left(y_t-F_t\theta_t\right)^\top $.
 
 \vspace{0.2in} \pause
 
 \[ p\left(\mathrm\Phi_1|\ldots\right) = \mathcal{W}\left(\nu_1+T/2, S_1+\frac{1}{2}SS_\theta\right) \]
-where $SS_\theta = \sum_{t=1}^T \left(\theta_t-G_t\theta_{t-1}\right)\left(\theta_t-G_t\theta_{t-1}\right)'$.
+where $SS_\theta = \sum_{t=1}^T \left(\theta_t-G_t\theta_{t-1}\right)\left(\theta_t-G_t\theta_{t-1}\right)^\top $.
 
 \vspace{0.2in} \pause
 
@@ -3630,12 +3504,12 @@ Y_t &= F_t\theta_t + v_t & v_t \sim N(0,\mathrm\Phi_0^{-1}) \\
 \theta_{p,t} &= G_{p,t}\theta_{p,t-1} + w_{p,t} & w_{p,t} \sim N_{p_d}(0,\mathrm\Phi^{-1}_d) \\
 \end{array} \]
 where $w_{i,t}$ are independent across $i$. Then 
-\[ SS_{ii,t} = (\theta_{i,t}-G_{i,t}\theta_{i,t-1})(\theta_{i,t}-G_{i,t}\theta_{i,t-1})'.\]
+\[ SS_{ii,t} = (\theta_{i,t}-G_{i,t}\theta_{i,t-1})(\theta_{i,t}-G_{i,t}\theta_{i,t-1})^\top .\]
 }
 
 \frame{\frametitle{Multivariate models}
 Let
-\[ SS_t = (\theta_t-G_t\theta_{t-1})(\theta_t-G_t\theta_{t-1})' \]
+\[ SS_t = (\theta_t-G_t\theta_{t-1})(\theta_t-G_t\theta_{t-1})^\top  \]
 and partition it according to
 \[ SS_t = \left[ \begin{array}{ccc} SS_{11,t} & \cdots & SS_{1d,t} \\
 \vdots & \ddots & \vdots \\ SS_{d1,t} & \cdots & S_{dd,t} \end{array} \right] \]
@@ -3645,7 +3519,7 @@ where the partition is according to the partition in $\mathrm\Phi=\mbox{blockdia
 \subsection{Full conditional distributions}
 \frame{\frametitle{Full conditional distributions}
 \[ p\left(\mathrm\Phi_0^{-1}|\ldots\right) = \mathcal{W}\left(\nu_0+T/2, S_0+\frac{1}{2}SS_y\right) \]
-where $SS_y = \sum_{t=1}^T \left(y_t+F_t\theta_t\right)\left(y_t-F_t\theta_t\right)'$.
+where $SS_y = \sum_{t=1}^T \left(y_t+F_t\theta_t\right)\left(y_t-F_t\theta_t\right)^\top $.
 
 \vspace{0.2in} \pause
 
@@ -3806,7 +3680,7 @@ where `obs' is a vector of times when the data are observed and $T'\le T$ is the
 \vspace{0.1in}
 e.g. matrix $V$
 \[ \begin{array}{rl}
-p(\mathrm\Phi_V|\ldots) &= W\left(a+\frac{T'}{2}, b+\sum_{t\in \mbox{obs}} (y_t -F_t\theta_t)(y_t -F_t\theta_t)'\right) .
+p(\mathrm\Phi_V|\ldots) &= W\left(a+\frac{T'}{2}, b+\sum_{t\in \mbox{obs}} (y_t -F_t\theta_t)(y_t -F_t\theta_t)^\top \right) .
 \end{array} \]
 }
 
@@ -3822,7 +3696,7 @@ What are $\tilde{F}_t$ and $\tilde{V}_t$?
 
 \begin{itemize}
 \item $\tilde{F}_t = M_tF_t$
-\item $\tilde{V}_t = M_tV_tM_t'$
+\item $\tilde{V}_t = M_tV_tM_t^\top $
 \end{itemize}
 }
 
@@ -3922,8 +3796,6 @@ Q_{97.5\%}[y_{t+k}|y_{1:t}] &\approx& \frac{1}{J} \sum_{j=1}^J f_t(k)^{(j)}+1.96
 
 If you have many MCMC iterations, you can use fewer iterations for this forecast by thinning the chain.
 }
-
-
 
 
 
