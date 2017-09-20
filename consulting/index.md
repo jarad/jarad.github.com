@@ -23,6 +23,7 @@ Reverse chronological order (newer on top)
 Recorded conversations during the 2017-2018 school year including 
 summer 2018.
 
+- [Cross-over experiment with significant sequence effect](meetings/20170920.html)
 - [Nonlinear estimation](meetings/20170906.html)
 
 ### 2016-2017
