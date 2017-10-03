@@ -1,0 +1,167 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,mathrsfs,fancyhdr,syntonly,lastpage,hyperref,enumitem,graphicx}
+
+\hypersetup{colorlinks=true,urlcolor=red}
+
+\topmargin      -1.5cm   % read Lamport p.163
+\oddsidemargin  -0.04cm  % read Lamport p.163
+\evensidemargin -0.04cm  % same as oddsidemargin but for left-hand pages
+\textwidth      16.59cm
+\textheight     23.94cm
+\parskip         7.2pt   % sets spacing between paragraphs
+\parindent         0pt   % sets leading space for paragraphs
+\pagestyle{empty}        % Uncomment if don't want page numbers
+\pagestyle{fancyplain}
+
+
+\begin{document}
+\lhead{Homework 3}
+\chead{STAT 615 - Advanced Bayesian Methods}
+\rhead{Page \thepage\ of \pageref{LastPage}}
+
+Consider the linear trend model
+\begin{align*}
+Y_t &= F\theta_t + \nu_t, && \nu_t \stackrel{ind}{\sim}N(0,V) \\
+\theta_t &= G\theta_{t-1} + \omega_t,  &&\omega_t \stackrel{ind}{\sim}N_2(0,W) \\
+\theta_0 &\sim N(m_0,C_0)
+\end{align*}
+where
+\[
+V = \sigma^2, \quad
+F = (1,0), \quad
+G = \left[ \begin{array}{cc} 1 & 1 \\ 0 & 1 \end{array} \right], \quad 
+\mbox{and} \quad
+W = \left[ \begin{array}{cc} 0 & 0 \\ 0 & \sigma_\beta^2\end{array} \right].
+\]
+Let $y=(y_1,\ldots,y_n)$, $\theta = (\theta_0,\ldots,\theta_T)$, and
+$\psi = (\sigma^2,\sigma_\beta^2)$.
+
+For simplicity, assume the variances have independent inverse gamma
+priors with shape and rate parameters both equal to 1.
+
+Two possible MCMC approaches to estimating the unknowns in this model are
+provided below.
+
+\begin{enumerate}
+\item MCMC 1 is a Gibbs sampler that involves two steps:
+  \begin{enumerate}
+  \item Sample $\theta \sim p(\theta|\psi,y)$.
+  One approach is to use the FFBS algorithm
+  which can be accomplished using the {\tt dlm::dlmBSample} and
+  {\tt dlm::dlmFilter} functions in R.
+  \item Sample $\psi \sim p(\psi|\theta,y)$.
+  \end{enumerate}
+\item MCMC 2 involves a single Metropolis step:
+  \begin{enumerate}
+  \item The goal is to sample $\psi \sim p(\psi|y)$ but this does not have an
+  analytical form. Thus, we will use a Metropolis step to construct a Markov
+  chain that will converge to samples from this distribution.
+  In order to construct this Metropolis step, we need to be able to evaluate
+  $p(\psi|y)$ for any $\psi$.
+  So, note that
+\[ \begin{array}{rl}
+p(\psi|y) & \propto p(y|\psi)p(\psi) \\
+&= \left[ \prod_{t=1}^T p(y_t|\psi,y_{1:t-1}) \right] p(\psi) \\
+&= \left[ \prod_{t=1}^T N(y_t;a_t(\psi),R_t(\psi)) \right] p(\psi).
+\end{array} \]
+  For any $\psi$, the $a_t(\psi)$ and $R_t(\psi)$ can be obtained using the
+  {\tt dlm::dlmFilter} and {\tt dlm::dlmSvd2var} functions in R.
+
+  A random-walk Metropolis step can be constructed by starting with a current
+  value $\psi^{(i)}$, simulating a proposed value
+  $\psi^* \sim N(\psi^{(i)},S)$, and setting
+  $\psi^{(i+1)} = \psi^*$ with
+  probability $\min{1,\rho}$ where
+  \[
+  \rho = \rho(\psi^{(i)},\psi^*)
+  = \frac{p\left(\psi^{(i)}|y\right)}{p\left(\psi^*|y\right)},
+  \]
+  and otherwise setting $\psi^{(i+1)} = \psi^{(i)}$.
+
+  If posteriors for $\theta$ are desired, they can be obtained by the 
+  decomposition $p(\psi,\theta|y) = p(\theta|\psi,y)p(\psi,y)$, i.e. you can
+  use your posterior samples for $\psi$ to draw posterior samples for $\theta$.
+  \end{enumerate}
+\end{enumerate}
+
+
+
+\newpage
+
+In order to answer the following questions, you will need to implement
+both of the MCMC algorithms above using the {\tt lakeSuperior.dat} data set.
+
+
+
+Questions:
+\begin{enumerate}
+\item Derive $p(\psi|\theta,y)$. 
+(Hint: Conditioning on the states means that you can calculate $\nu_{1:T}$ and 
+$\omega_{1:T}$.)
+\item Determine and state an $S$ that will result in approximately 40\% 
+acceptance in the Metropolis algorithm.
+\item Run MCMC 1 starting at the MLE (use the {\tt dlm::dlmMLE} function) for 
+9,999 iterations and compute the time per effective 
+sample. To calculate time, use the first element of {\tt system.time()}. 
+To calculate the number of effective samples, use {\tt mcmcse::ess}.
+\item Run MCMC 2 starting at the MLE for 9,999 iterations and compute the time per effective sample. Also report the observed acceptance rate.
+\item Construct posterior plots for the standard deviations to compare MCMC 1 
+and MCMC 2.
+\item Construct posterior (smoothing) plots for the equal-tail 95\% credible
+interval for the states to compare MCMC 1 and MCMC 2.
+\item Discuss which MCMC is more efficient based on the previous two results.
+Discuss whether this is an appropriate way to compare the efficiencies of the
+two algorithms.
+
+
+
+
+
+\newpage
+Code:
+
+<<>>=
+lake <- read.table("lakeSuperior.dat", col.names = c("year","precipitation_inches"))
+@
+
+
+Here is some code for parameters:
+<<message=FALSE>>=
+library("dplyr")
+library("ggplot2")
+d <- expand.grid(variable = c("sigma","sigma_beta"),
+                 method = c("MCMC 1", "MCMC 2"),
+                 iteration = 1:9999) %>%
+  group_by(variable, method, iteration) %>%
+  mutate(value = rgamma(n(),1) + (variable == "sigma")) # dummy data
+
+ggplot(d, aes(x=value)) + 
+  geom_histogram(bins = 100) + 
+  facet_grid(method ~ variable, scales = "free") +
+  theme_bw()
+@
+
+
+Here is some code for states
+<<>>=
+n <- nrow(lake)
+d <- expand.grid(time = 0:n,
+                 method = c("MCMC 1", "MCMC 2"),
+                 iteration = 1:99) %>%
+  group_by(time, method, iteration) %>%
+  mutate(value = rnorm(n()) + mean(lake$precipitation_inches)) %>%
+  group_by(time, method) %>%
+  summarize(L = quantile(value, .025),
+         U = quantile(value, .975)) %>%
+  ungroup() %>%
+  mutate(year = time + min(lake$year) - 1)
+
+ggplot(d) + 
+  geom_ribbon(aes(x=year, ymin=L, ymax = U), fill = "gray70") + 
+  geom_point(data = lake, aes(x=year, y = precipitation_inches)) +
+  facet_grid(method~., scales = "free") +
+  theme_bw()
+@
+\end{enumerate}
+
+\end{document}
