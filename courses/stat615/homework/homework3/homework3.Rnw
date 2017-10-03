@@ -133,11 +133,15 @@ d <- expand.grid(variable = c("sigma","sigma_beta"),
                  method = c("MCMC 1", "MCMC 2"),
                  iteration = 1:9999) %>%
   group_by(variable, method, iteration) %>%
-  mutate(value = rgamma(n(),1) + (variable == "sigma")) # dummy data
+  mutate(value = rgamma(n(),1))
+
+dinvgamma = function(x, a, b) dgamma(1/x,a,b)/x^2
+dsqrtinvgamma = function(x, a, b) dinvgamma(x^2, a, b)*2*x
 
 ggplot(d, aes(x=value)) + 
-  geom_histogram(bins = 100) + 
+  geom_histogram(aes(y=..density..), bins = 100) + 
   facet_grid(method ~ variable, scales = "free") +
+  stat_function(fun = dsqrtinvgamma, color = "red", args = list(a = 1, b = 1)) +
   theme_bw()
 @
 
