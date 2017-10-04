@@ -1,30 +1,12 @@
 \documentclass[handout]{beamer}
 
-\usepackage{verbatim}
+\input{../frontmatter}
+\input{../commands}
 
 \graphicspath{{figures/}{../StateSpaceModels/figures/}}
 
-\usetheme{AnnArbor}
-\usecolortheme{beaver}
-
-\setlength{\unitlength}{\textwidth}  % measure in textwidths
-\usepackage[normalem]{ulem}
-
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{enumerate items}[default]
-\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
-\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
-\setkeys{Gin}{width=0.6\textwidth}
 
 \title{Dynamic linear models}
-\author[Jarad Niemi]{Dr. Jarad Niemi}
-\institute[Iowa State]{Iowa State University}
-\date{\today}
-
-\newcommand{\mG}{\mathrm{\Gamma}}
-\newcommand{\I}{\mathrm{I}}
-\newcommand{\mySigma}{\mathrm{\Sigma}}
-\newcommand{\ind}{\stackrel{ind}{\sim}}
 
 \begin{document}
 
@@ -42,11 +24,11 @@ options(width=100)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(ggplot2)
+library("ggplot2")
 library(plyr)
-library(dplyr)
+library("dplyr")
 library(reshape2)
-library(dlm)
+library("dlm")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -583,42 +565,39 @@ In practice we use,
 
 
 
-\frame{\frametitle{Specifying a local level model in R}
-  \begin{itemize}
-\setbeamertemplate{itemize item}{\textcolor{black}{\bf $>$}}
-  \item \texttt{library(dlm)} \pause
-  \item \texttt{local.level = dlmModPoly(order=1)} \pause
-  \item \texttt{?dlmModPoly} \pause
+\begin{frame}[fragile]
+\frametitle{Specifying a local level model in R}
 
-\begin{align*} dlmModPoly(&order = 2, dV = 1, dW = c(rep(0, order - 1), 1),\\
-           &m0 = rep(0, order), C0 = 1e+07 * diag(nrow = order))
-\end{align*} \pause
+<<eval=FALSE>>=
+library("dlm")
+local.level = dlmModPoly(order=1) # ?dlmModPoly
 
-  \item \texttt{V(local.level) = 9.465} \pause
-  \item \texttt{W(local.level) = 0.121} \pause
-  \item \texttt{modLSup = dlmModPoly(1, dV = 9.465, dW = 0.121)}
-  \end{itemize}
-}
-%
-%\frame{\frametitle{Specifying a linear trend model in R}
-%  \begin{itemize}
-%\setbeamertemplate{itemize item}{\textcolor{black}{\bf $>$}}
-%  \item \texttt{library(dlm)} \pause
-%  \item \texttt{local.level = dlmModPoly(order=1)} \pause
-%  \item \texttt{?dlmModPoly} \pause
-%
-%\begin{align*} dlmModPoly(&order = 2, dV = 1, dW = c(rep(0, order - 1), 1),\\
-%           &m0 = rep(0, order), C0 = 1e+07 * diag(nrow = order))
-%\end{align*} \pause
-%
-%  \item \texttt{V(local.level) = 9.465} \pause
-%  \item \texttt{W(local.level) = 0.121} \pause
-%  \item \texttt{modLSup = dlmModPoly(1, dV = 9.465, dW = 0.121)}
-%  \end{itemize}
-%}
+# Set variances
+V(local.level) = 9.465
+W(local.level) = 0.121
+
+# Or set variances during model construction
+modLSup = dlmModPoly(1, dV = 9.465, dW = 0.121)
+@
+
+\end{frame}
+
+
+
 
 \section{Seasonal models}
 \subsection{Example time series}
+% \begin{frame}
+% \frametitle{Example seasonal time series}
+% 
+% <<>>=
+% 
+% @
+% \end{frame}
+
+
+
+
 \frame{\frametitle{Example seasonal time series}
 \setkeys{Gin}{width=0.7\textwidth}
 
