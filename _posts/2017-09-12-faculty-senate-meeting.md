@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Notes from Faculty Senate meeting"
+title: "Notes from Faculty Senate meeting on 12 Sep 2017"
 description: ""
 category: 
 tags: [faculty senate]
