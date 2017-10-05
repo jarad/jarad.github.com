@@ -875,9 +875,12 @@ data.frame(mean = c(-sum(nottem.filter$m[n,]), rev(nottem.filter$m[n,])),
 \section{Fourier form seasonal models}
 \subsection{Basis}
 \frame{\frametitle{Canonical basis}
-Suppose all $s$ seasons have a factor $\alpha_i$. Then, think of $\alpha$ as a linear combination of basis vectors
-\[ \alpha = \sum_{i=1}^s \alpha_i u_i \]
-where $u_i$ is the $s$-dimensional vector having the $i$th component equal to one and all other elements zero.
+Suppose all $s$ seasons have a factor $\alpha_i$. 
+Then, think of $\alpha$ 
+as a linear combination of basis vectors
+\[ \alpha= (\alpha_1,\ldots,\alpha_s) = \sum_{i=1}^s \alpha_i u_i \]
+where $u_i$ is the $s$-dimensional vector having the $i$th component equal to 
+one and all other elements zero.
 
 \vspace{0.2in} \pause
 
@@ -918,23 +921,31 @@ $s_{s/2}$ is all zeros
 }
 
 
-
-\frame{\frametitle{Fourier basis}
-\begin{itemize}[<+->]
-\item Basis for $\mathbb{R}^s$
-
-\[ \alpha = a_0e_0+\sum_{j=1}^{s/2-1} (a_jc_j+b_js_j)+a_{s/2}c_{s/2}. \]
-\pause
-Assume $a_0=0$ since the mean will be modeled separately.
-
-\vspace{0.2in} \pause
-
-\item Naturally periodic, e.g. $s_j(t+ks)=s_j(t)$ for $k=1,2,\ldots$ \pause since
-\[ \sin \frac{2\pi(t+ks)j}{s} = \sin\left( \frac{2\pi tj}{s} + 2\pi kj\right) = \sin \frac{2\pi tj}{s}.\]
-\end{itemize}
-}
-
-
+% 
+% \begin{frame}
+% \frametitle{Fourier frequencies for period of length 12}
+% 
+% <<>>=
+% s = 12 # period; must be an even number or you may break the code
+% js = 0:(s/2)
+% d <- expand.grid(j = js, i=1:s) %>%
+%   mutate(omega = j/2,
+%          c = cos(i*omega),
+%          s = sin(i*omega)) %>%
+%   tidyr::gather(tmp, value, c, s) %>%
+%   mutate(basis = factor(paste0(tmp, j), 
+%                         levels = paste0(c("c","s"), rep(js, each=2)))) %>%
+%   filter(!(grepl("0", basis)))
+% 
+% ggplot(d, aes(i, value)) + 
+%   geom_point() + 
+%   facet_grid(basis~.) +
+%   scale_y_continuous(breaks=c(-1,1)) + 
+%   theme_bw() +
+%   theme(panel.spacing = unit(0, "lines"))
+% @
+% 
+% \end{frame}
 
 
 \frame{\frametitle{Plotting Fourier basis}
@@ -950,17 +961,81 @@ Assume $a_0=0$ since the mean will be modeled separately.
 
 
 
+\begin{frame}
+\frametitle{Fourier basis}
+Basis for $\mathbb{R}^s$
+
+\[ \alpha = a_0e_0+\sum_{j=1}^{s/2-1} (a_jc_j+b_js_j)+a_{s/2}c_{s/2}. \]
+\pause
+
+
+\vspace{0.2in} \pause
+
+Assume $a_0=0$ since the mean will be modeled separately, e.g. through a 
+polynomial trend model. 
+\pause
+For $j=1,2,\ldots,s/2$, the $j$th \alert{harmonic} is 
+\[ \begin{array}{rl}
+S_j(t) &= a_j \cos(t \omega_j) + b_j \sin (t \omega_j) \\
+&= A_j \cos (t \omega_j+ \gamma_j)
+\end{array} \]
+where $b_{s/2}=0$, \pause
+$A_j = \sqrt{a_j^2+b_j^2}$ is the amplitude, 
+and $\gamma_j = \mbox{arctan}(-b_j/a_j)$ is the phase.
+
+% \item Naturally periodic, e.g. $s_j(t+ks)=s_j(t)$ for $k=1,2,\ldots$ \pause since
+% \[ \sin \frac{2\pi(t+ks)j}{s} = \sin\left( \frac{2\pi tj}{s} + 2\pi kj\right) = \sin \frac{2\pi tj}{s}.\]
+\end{frame}
+
+
+
+
+
+
+
 
 
 \subsection{Building a DLM}
-\frame{\frametitle{Harmonics}
-For $j=1,2,\ldots,s/2$,
-\[ S_j(t) = a_j \cos(t \omega_j) + b_j \sin (t \omega_j).\]
-where $b_{s/2}=0$. \pause 
+\begin{frame}
+\frametitle{Evolving a harmonic}
+For $j=1,2,\ldots,s/2$, the $j$th \alert{harmonic} is 
+\[
+S_j(t) = a_j \cos(t \omega_j) + b_j \sin (t \omega_j) 
+\]
+\pause
+\alert{What is $S_j(t+1)$?} 
+\pause
+It is 
+\[ 
+S_j(t+1) = a_j \cos([t+1] \omega_j) + b_j \sin ([t+1] \omega_j).
+\]
+\pause
+For $j<s/2$, 
+if we only know the value of $S_j(t)$, 
+i.e. we don't know the value of $a_j$ and $b_j$ individual, 
+we cannot determine $S_j(t+1)$. 
+\pause
+But we can find that 
+\[ \begin{array}{rl}
+S_j(t+1) =& a_j \cos([t+1] \omega_j) + b_j \sin ([t+1] \omega_j) \\
+&\vdots \\
+=& (a_j \cos(t \omega_j) + b_j \sin (t \omega_j)) \cos(\omega_j) + \\
+&+ (-a_j \sin(t \omega_j) + b_j \cos(t \omega_j)) \sin(\omega_j) \\ \\
+=& S_j(t) \cos(\omega_j) + S_j^*(t) \sin(\omega_j)
+\end{array} \]
+
+\end{frame}
+
+\frame{\frametitle{Building a DLM - constructing G}
+For $j=1,2,\ldots,s/2$, the $j$th \alert{harmonic} is 
+\[
+S_j(t) = a_j \cos(t \omega_j) + b_j \sin (t \omega_j) 
+\]
+\pause 
 % Then
 % \[ g_t = \sum_{j=1}^{s/2} S_j(t).\]
 % \pause 
-The conjugate harmonic is
+The \alert{conjugate harmonic} is
 \[ S_j^*(t) = -a_j \sin(t \omega_j) + b_j \cos (t \omega_j).\]
 \pause
 And the $j$th harmonic evolves in time according to 
@@ -975,19 +1050,11 @@ and
 
 
 
-\frame{\frametitle{Plotting Harmonics for Nottingham data}
 
-\vspace{-0.1in}
-
-\setkeys{Gin}{width=0.6\textwidth}
-\begin{center}
-\includegraphics{nottemHarmonics}
-\end{center}
-}
 
 
 \frame{\frametitle{Period $j$ DLMs}
-Consider simpler DLMs containing only seasonality of frequency $j<s/2$.
+Consider DLMs containing only seasonality of frequency $j<s/2$.
 \[ \left[\begin{array}{c} S_j(t+1) \\ S_j^*(t+1) \end{array} \right] = \left[ \begin{array}{rr} \cos \omega_j & \sin \omega_j \\ -\sin \omega_j & \cos \omega_j \end{array} \right] \left[\begin{array}{c} S_j(t) \\ S_j^*(t) \end{array} \right].\] \pause
 So this is a DLM with evolution matrix
 \[ H_j = \left[ \begin{array}{rr} \cos \omega_j & \sin \omega_j \\ -\sin \omega_j & \cos \omega_j \end{array} \right], \]
@@ -1009,6 +1076,8 @@ and observation matrix
 \[ F=[1\, 0\, 1\, 0\, \ldots\, 0\, 1]\]
 and initial vector
 \[ \theta_0 = (a_1,b_1,\ldots,a_{\frac{s}{2}-1},b_{\frac{s}{2}-1},a_{\frac{s}{2}})^\top . \]
+\pause
+The seasonal process can be made more smooth by dropping higher harmonics.
 }
 
 
@@ -1037,6 +1106,16 @@ ggplot(subset(d, harmonics==6), aes(month, effect, group=1)) +
 \end{frame}
 
 
+\frame{\frametitle{Plotting Harmonics for Nottingham data}
+
+\vspace{-0.1in}
+
+\setkeys{Gin}{width=0.6\textwidth}
+\begin{center}
+\includegraphics{nottemHarmonics}
+\end{center}
+}
+
 
 \begin{frame}[fragile]
 \frametitle{Nottingham data - fewer harmonics}
@@ -1052,9 +1131,19 @@ ggplot(d, aes(month, effect, color=harmonics_f, shape=harmonics_f, group=harmoni
 
 
 
-
+\subsection{General periodic components}
 \begin{frame}[fragile]
 \frametitle{Sunspots}
+
+The previous development works for even period $s$ and odd period $s$ with the 
+slight change that $j=0,\ldots,(s-1)/2$. 
+\pause
+A similar development can be constructed for periodic observations with a 
+non-integer period. 
+\pause
+In this example, the period for sunspots was estimated to be 130.51 months.
+This quantity and the variances were estimated via MLEs.
+
 <<sunspots, cache=TRUE, echo=TRUE>>=
 mod <- dlmModTrig(q = 2, tau = 130.51, dV = 0,
                   dW = rep(c(1765e-2, 3102e-4), each = 2)) +
@@ -1266,30 +1355,61 @@ gdpSmooth <- dlmSmooth(Lgdp, dlmGap)
 \end{center}
 }
 
+
+
+
+
 \section{DLM Regression models}
 \subsection{DLM Regression models}
-\frame{\frametitle{Standard regression model}
-\[ Y_t = \beta_1+\beta_2x_t+\epsilon_t, \qquad \epsilon_t \stackrel{iid} N(0,\sigma^2) \]
+\begin{frame}
+\frametitle{Standard regression model}
 
-\vspace{0.2in} \pause
+Consider a temporal regression problem with $y_t \in \mathbb{R}$ and 
+$x_t \in \mathbb{R}^p$.
+\pause
+A standard regression model assumes 
+\[
+y_t = x_t^\top\theta + \epsilon_t, \qquad \epsilon_t \ind N(0,\sigma^2).
+\]
+\pause
+But, if the effect of $x_t$ on $y_t$ changes with $t$, 
+\pause
+we may want to consider the model 
+\[
+y_t = x_t^\top\theta_t + \epsilon_t, \qquad \epsilon_t \ind N(0,\sigma^2).
+\]
+\pause
+And put some kind of evolution on $\theta_t$, e.g. 
+\[ 
+\theta_t = G_t \theta_{t-1} + \omega_t,\qquad \omega_t \ind N_p(0,W_t).
+\]
+\pause
+\alert{Outstanding problem: How can we differentiate dynamic coefficients from
+autocorrelated errors?}
+\end{frame}
 
-Let's make the regression coefficients dynamic:
-\[ Y_t = \beta_{1,t}+\beta_{2,t}x_t+\epsilon_t, \qquad \epsilon_t \stackrel{iid}{\sim} N(0,\sigma^2) \]
-and have temporal evolution of the regression coefficients, e.g. 
-\[ \beta_{j,t}=\beta_{j,t-1}+w_{j,t} \]
-for $j=1,2, w_{1,t}$ and $w_{2,t}$ independent. 
-}
 
-\frame{\frametitle{Dynamic regression model}
+
+
+\begin{frame}
+\frametitle{Dynamic regression model}
+This dynamic regression model written as a DLM is 
 \[ \begin{array}{rll}
-Y_t &= x_t^\top \theta_t + v_t & v_t \sim N(0,\sigma_t^2) \\
-\theta_t &= G_t \theta_{t-1} + w_t & w_t \sim N_p(0,W_t) 
+Y_t &= F_t \theta_t + \onoise_t & \onoise_t \ind N(0,\sigma_t^2) \\
+\theta_t &= G_t \theta_{t-1} + w_t & w_t \ind N_p(0,W_t) 
 \end{array} \]
+\pause
+where 
+\begin{itemize}
+\item $F_t = x_t^\top$,
+\item (typically) $G_t = I_p$, and 
+\item (typically) $W_t$ is diagonal.
+\end{itemize}
+\end{frame}
 
-\vspace{0.2in} \pause
 
-A common choice is $G_t =I_p$ and $W_t$ diagonal. 
-}
+
+
 
 \subsection{Capital asset pricing model}
 \frame{\frametitle{Background}
@@ -1311,7 +1431,7 @@ x_t &= r_t^{(M)}-r_t^{(f)}
 \vspace{0.2in} \pause
 
 A univariate CAPM assumes that 
-\[ y_t = \alpha+\beta x_t +v_t, \qquad v_t \stackrel{iid}{\sim} N(0,\sigma^2). \]
+\[ y_t = \alpha+\beta x_t +v_t, \qquad v_t \ind N(0,\sigma^2). \]
 }
 
 \frame{\frametitle{CAPM example}
@@ -1404,43 +1524,6 @@ Y_{i,t} &= F\theta_t^{(i)}+v_{i,t}, &v_{i,t}\sim N(0,V_i) \\
 
 
 
-\section{DLMs for longitudinal data}
-\subsection{Longitudinal data}
-\frame{\frametitle{Longitudinal data}
-Suppose at each time point, you have observations from multiple units, e.g. people, countries, stocks, etc. The data can be represented as a matrix. \pause
-
-\[
-\begin{array}{|c|cccc|}
-\hline
-& \multicolumn{4}{c|}{\mbox{Time}} \\
-\mbox{Item} & 1 & 2 & \cdots & T \pause \\
-\hline
-1 & Y_{1,1} & Y_{1,2} & \cdots & Y_{1,T} \pause \\
-2 & Y_{2,1} & Y_{2,2} & \cdots & Y_{2,T} \pause \\
-\vdots & \multicolumn{4}{c|}{\vdots} \\
-m & Y_{m,1} & Y_{m,2} & \cdots & Y_{m,T} \\
-\hline
-\end{array} \]
-}
-
-\subsection{Individual univariate DLMs}
-\frame{\frametitle{Individual univariate DLMs}
-Suppose for each unit $i=1,\ldots,m$, we can write down a univariate DLM:
-\[ \begin{array}{rl@{\qquad}l}
-Y_{i,t} &= F\theta_t^{(i)}+v_{i,t}, &v_{i,t}\sim N(0,V_i) \\
-\theta_t^{(i)} &= G\theta_{t-1}^{(i)}+w_t^{(i)}, & w_t^{(i)}\sim N_p(0,W_i)
-\end{array} \]
-
-\vspace{0.2in} \pause
-
-\begin{itemize}[<+->]
-\item $F$ and $G$ are constant for all $i$ and $t$
-\item $V_i$ and $W_i$ are constant for all $t$
-\item $\theta_t^{(i)}$ are still vectors, thus the notation
-\item Is there a relationship between $V_i$ and $V_j$ or $W_i$ and $W_j$ for $i\ne j$?
-\item How about $Cov(v_{i,t},v_{j,t})$ or $Cov(w_t^{(i)},w_t^{(j)})$ for $i\ne j$?
-\end{itemize}
-}
 
 \section{Seemingly unrelated time series}
 \subsection{An $m=2$ example}
@@ -1517,9 +1600,13 @@ where
 
  \vspace{0.1in}
 
+The covariance matrices $V$ and $W$ are typically somewhat sparse. 
+\pause
+Often 
 \begin{itemize}
-\item the diagonal of $V$ is non-zero and the off-diagonal may be and
-\item the diagonal of $W$ is non-zero and the off-diagonal may be.
+\item off-diagonal elements of $V$ are zero
+\item off-diagonal elements of $W$ are zero
+\item some diagonal elements of $W$ are zero
 \end{itemize}
 }
 
@@ -1576,24 +1663,24 @@ where
 
 
 \section{Seemingly unrelated regressions model}
-\frame{\frametitle{Longitudinal data}
-Suppose at each time point, you have observations from multiple units, e.g. people, countries, stocks, etc., with a common covariate. The data can be represented as a matrix. \pause
-
-\[
-\begin{array}{|c|cccc|}
-\hline
-& \multicolumn{4}{c|}{\mbox{Time}} \\
-\mbox{Item} & 1 & 2 & \cdots & T  \\
-\hline
-1 & Y_{1,1} & Y_{1,2} & \cdots & Y_{1,T}  \\
-2 & Y_{2,1} & Y_{2,2} & \cdots & Y_{2,T}  \\
-\vdots & \multicolumn{4}{c|}{\vdots} \\
-m & Y_{m,1} & Y_{m,2} & \cdots & Y_{m,T} \\
-\hline
- & x_1 & x_2 & \vdots & x_T \\
-\hline
-\end{array} \]
-}
+% \frame{\frametitle{Longitudinal data}
+% Suppose at each time point, you have observations from multiple units, e.g. people, countries, stocks, etc., with a common covariate. The data can be represented as a matrix. \pause
+% 
+% \[
+% \begin{array}{|c|cccc|}
+% \hline
+% & \multicolumn{4}{c|}{\mbox{Time}} \\
+% \mbox{Item} & 1 & 2 & \cdots & T  \\
+% \hline
+% 1 & Y_{1,1} & Y_{1,2} & \cdots & Y_{1,T}  \\
+% 2 & Y_{2,1} & Y_{2,2} & \cdots & Y_{2,T}  \\
+% \vdots & \multicolumn{4}{c|}{\vdots} \\
+% m & Y_{m,1} & Y_{m,2} & \cdots & Y_{m,T} \\
+% \hline
+%  & x_1 & x_2 & \vdots & x_T \\
+% \hline
+% \end{array} \]
+% }
 
 \subsection{Individual univariate dynamic regressions}
 \frame{\frametitle{Individual univariate dynamic regressions}
@@ -1617,8 +1704,8 @@ Y_{i,t} &= F_t^{(i)}\theta_t^{(i)}+v_{i,t}, &v_{i,t}\sim N(0,V_i) \\
 \subsection{Model}
 \frame{\frametitle{Simple multivariate dynamic regression}
 \[ \begin{array}{rl@{\quad}l}
-y_t &= (F_t \otimes I_m)\theta_t + v_t & v_t \stackrel{iid}{\sim} N(0,V) \\
-\theta_t &= (G\otimes I_m)\theta_{t-1} + w_t & w_t \stackrel{iid}{\sim} N(0,W)
+y_t &= (F_t \otimes I_m)\theta_t + v_t & v_t \ind N(0,V) \\
+\theta_t &= (G\otimes I_m)\theta_{t-1} + w_t & w_t \ind N(0,W)
 \end{array} \]
 where \pause
 \[ y_t = \left[ \begin{array}{c} y_{1,t} \\ \vdots \\ y_{m,t} \end{array} \right], \quad \pause
@@ -2223,7 +2310,7 @@ Set $j=1$. \pause
 %\frame{\frametitle{Bivariate normal example}
 %\setkeys{Gin}{width=0.6\textwidth}
 %Suppose we have the model
-%\[ y_i \stackrel{iid}{\sim} p N(\mu_0, \sigma_0^2) + (1-p) N(\mu_1, \sigma_1^2). \]
+%\[ y_i \ind p N(\mu_0, \sigma_0^2) + (1-p) N(\mu_1, \sigma_1^2). \]
 %\begin{center}
 %\includegraphics{mixdens}
 %\end{center}
@@ -2232,7 +2319,7 @@ Set $j=1$. \pause
 %
 %\frame{\frametitle{Bivariate normal priors}
 %Suppose we have the model
-%\[ y_i \stackrel{iid}{\sim} p N(\mu_0, \sigma_0^2) + (1-p) N(\mu_1, \sigma_1^2). \]
+%\[ y_i \ind p N(\mu_0, \sigma_0^2) + (1-p) N(\mu_1, \sigma_1^2). \]
 %
 %\vspace{0.2in}
 %
@@ -2282,7 +2369,7 @@ Set $j=1$. \pause
 %The model can now be written
 %\begin{eqnarray*}
 %y_i|z_i &\stackrel{ind}{\sim}& N(\mu_{z_i}, \sigma_{z_i}^2) \\
-%z_i &\stackrel{iid}{\sim} & Ber(p)
+%z_i &\ind & Ber(p)
 %\end{eqnarray*}
 %}
 %
@@ -2969,7 +3056,7 @@ Now that no lack of convergence is apparent, how long should I run my chain?
 }
 
 \frame{\frametitle{Simple Monte Carlo example}
-Consider the model $y_i \stackrel{iid}{\sim} N(\mu,1)$ and our goal is to estimate $E[y_i]=\mu$. The Monte Carlo approximation is 
+Consider the model $y_i \ind N(\mu,1)$ and our goal is to estimate $E[y_i]=\mu$. The Monte Carlo approximation is 
 \[ \mu \approx \mu_{MC} = \frac{1}{n} \sum_{i=1}^n y_i \]
 with the variance of this approximation given by 
 \[ \mbox{se}(\mu_{MC}) \approx \sqrt{\frac{1}{n(n-1)} \sum_{i=1}^n (y_i-\mu_{MC})^2} = \frac{1}{\sqrt{n}} sd_{y}\]
@@ -3127,7 +3214,7 @@ In DLMs, conditional on unknown parameters, we can sample from the joint state v
 \end{array} \]
 }
 \frame{\frametitle{Full conditional distributions - the easy way}
-Recall from HW 1b, if $\sigma^2 \sim IG(a,b)$ and $x_i\stackrel{iid}{\sim} N(0,\sigma^2)$, \pause then
+Recall from HW 1b, if $\sigma^2 \sim IG(a,b)$ and $x_i\ind N(0,\sigma^2)$, \pause then
 \[ p(\sigma^2|x_1,x_2,\ldots,x_n) = IG\left(a+n/2, b+\frac{1}{2} \sum_{t=1}^n x_t^2\right).\]
 
 \vspace{0.2in} \pause
@@ -3135,12 +3222,12 @@ Recall from HW 1b, if $\sigma^2 \sim IG(a,b)$ and $x_i\stackrel{iid}{\sim} N(0,\
 Notice
 \[ \begin{array}{rl}
 V&\sim IG(a_V,b_V) \\ \pause
-v_t = y_t-\theta_t &\stackrel{iid}{\sim} N(0,V) \\ \pause
+v_t = y_t-\theta_t &\ind N(0,V) \\ \pause
 p(V|y_{1:T}, \theta_{0:T}, W) &= p(V|y_{1:T},\theta_{1:T}) \\ \pause
 &= IG(a_V+T/2, b_V+\frac{1}{2} \sum_{t=1}^T v_t^2) \\ \pause
 \\
 W &\sim IG(a_W, b_W) \\ \pause
-w_t = \theta_t-\theta_{t-1} &\stackrel{iid}{\sim} N(0,W) \\ \pause
+w_t = \theta_t-\theta_{t-1} &\ind N(0,W) \\ \pause
 p(W|y_{1:T}, \theta_{0:T}, V) &= p(W|\theta_{1:T}) \\ \pause
 &= IG(a_W+T/2, b_W+\frac{1}{2} \sum_{t=1}^T w_t^2)
 \end{array} \]
