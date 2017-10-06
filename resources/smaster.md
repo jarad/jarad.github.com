@@ -6,21 +6,34 @@ group:
 ---
 {% include JB/setup %}
 
-The statistics department at ISU has a department cluster with a Simple Linux Utility for Resource Management ([SLURM controller](http://it.las.iastate.edu/slurm-simple-linux-utility-resource-management)). 
+The statistics department at ISU has a 
+[department cluster](https://stat.iastate.edu/statistics-slurm-cluster) 
+with a Simple Linux Utility for Resource Management 
+([SLURM](http://it.las.iastate.edu/slurm-simple-linux-utility-resource-management))
+controller.
+This cluster is accessed by sshing into **smaster.stat.iastate.edu** from 
+campus or when connect to the [ISU VPN](https://www.it.iastate.edu/howtos/vpn).
 
 ## Storage
 
 Basically, your "home" folder, e.g. /home/niemi for me, is not backed up but is accessible by the cluster nodes. 
-In contrast, your "work" folder, e.g. /home/niemi/work, which is also called "MyFiles" (https://www.it.iastate.edu/services/storage/myfiles) is backed up but is not accessible to the cluster nodes (but it is accessible elsewhere, e.g. windows terminal servers).
+In contrast, 
+your "work" folder, e.g. /home/niemi/work, which is also called "MyFiles" (https://www.it.iastate.edu/services/storage/myfiles) is backed up but is not accessible to the cluster nodes 
+(but it is accessible elsewhere, e.g. windows terminal servers).
 
-My suggestion is to mainly use [git](https://git-scm.com/)/[github](https://github.com/) for backuping up scripts and raw data and ignore your "work" folder.
+My suggestion is to mainly use [git](https://git-scm.com/)/[github](https://github.com/) 
+for backuping up scripts and raw data and ignore your "work" folder.
 Git/github should contain all the files necessary to reproduce your work. 
 The small amount of data necessary to create figures should be included in the repository, but the big data files, e.g. MCMC output, should not be included. 
 Thus these files will only exist in your home folder. 
 
 ### Backing up with `rsync`
 
-If you are worried about the home folder disappearing (which certainly has happened in the past), use [rsync](http://linux.die.net/man/1/rsync) ([some examples](http://www.tecmint.com/rsync-local-remote-file-synchronization-commands/)) to back it up, e.g.
+If you are worried about the home folder disappearing 
+(which has happened in the past), 
+use [rsync](http://linux.die.net/man/1/rsync) 
+([some examples](http://www.tecmint.com/rsync-local-remote-file-synchronization-commands/)) to back it up, 
+e.g.
 
     rsync -avz --no-perms --no-owner --no-group --delete /home/niemi/examples /net/my.files.iastate.edu/ifs/isu/las/dept/stat/ds/niemi/backup/
 
@@ -29,34 +42,77 @@ It is probably best to back up a folder, e.g. examples/, rather than your whole 
 
 If you want to automate this process, you could run the script on logout by adding the command to your `~/.bash_logout` file. 
 
-### remakeGenerator on smaster
-
-Will Landau, an alumni, created a package to help manage simulation studies and real data analysis that utilize makefiles (specifically the remake R package) called [remakeGenerator](https://github.com/wlandau/remakeGenerator). 
-This package is useful when simulating data, performing an analysis, or calculating summary statistics is time consuming.
-It is also useful when you want to easily re-run a simulation study due to bugs in code or add an additional analysis to the study. 
 
 
-To use this package on smaster, I changed two things
 
-    1. Add `begin = c("SHELL=srun\n.SHELLFLAGS= -N1 -n1 bash -c\n\n")` to `workflow.R`. 
-    1. Add `module load R` to your `~/.bash_profile` on smaster. 
+## Running jobs on smaster
+
+Before running jobs on smaster, 
+you may want to get a feel for the cluster. 
+You can get information about partitions by running 
+
+    sinfo
+  
+and information about jobs currently being run using 
+
+    squeue
     
-Basically to get parallelization on the SLURM cluster, we run each job through its own `srun` command. 
-This gets accomplished by changing the `SHELL` in the makefile.
-But every time we send a job to a node, we need the node to execute `module load R` to make sure we have access to R. 
-This gets accomplished by the additional line in the `.bash_profile` that gets executed when logging into the node. 
-(Nacho tells me that he did not need to add this to his .bash_profile.)
+or 
 
-There are probably alternative approaches but this is what I got to work.
-Also, you can modify the flags for whatever is appropriate in your application.
-
-To run this, you will use `make` with parallelization `-j`. 
-For example, to run 4 parallel jobs use 
-
-    nohup make -j 4 > test.out 2> err.out &
+    smap
     
-which will send standard output to `test.out` and standard error to `err.out`. 
-For some reason, much more goes to standard error than would be expected on this server. 
+    
+
+Most jobs will be run using scripts, 
+but before I explain the scripts, I'll mention running jobs interactively as
+this is a way to get a feel for the cluster.
+
+### Running jobs interactively
+
+To run a job interactively use
+
+    srun --pty bash
+   
+If there are a lot of jobs running, 
+it may take a while for this job to come up on the queue. 
+Thus, you may want to specify the short or medium partition, e.g.
+
+    srun --pty --partition=short bash
+    
+If you want to specifically get a job on a GPU server use
+
+    srun --pty --partition=short --gres=gpu:1 bash
+
+If you want to use R, you will need to 
+
+    module load R
+    
+before you can run R.
+
+
+### Running a batch job
+
+To run a batch job, you will use either `srun` or `sbatch` with an 
+[explanation here of the difference](https://stackoverflow.com/questions/43767866/slurm-srun-vs-sbatch-and-their-parameters).
+
+Suppose you have an R script called `test.R` and a SLURM script called `script`
+that has the following contents
+
+    #! /bin/bash
+    #SBATCH -p short
+    #SBATCH -N 1
+    #SBTACH -n 2
+    module load R
+    test.R
+
+Then you can run the job using 
+
+    srun script
+    
+or 
+
+    sbatch script
+    
 
 
 ## Resources
