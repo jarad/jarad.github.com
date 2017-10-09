@@ -10,6 +10,18 @@ group:
 
 ## Refereed Journal Articles
 
+1. Lisa A. Schulte, Jarad Niemi, Matthew J. Helmers, Matt Liebman, J. Gordon
+Arbuckle, David E. James, Randall K. Kolka, Matthew E. O'Neal, Mark D. Tomer, 
+John C. Tyndall, Heidi Asbjornsen, Pauline Drobney, Jeri Neal, Gary Van Ryswyk,
+and Chris Witte ``Prairie strips improve biodiversity and the delivery of 
+multiple ecosystem services from corn–soybean croplands.'' to appear in the 
+Proceedings of the National Academy of Sciences. 
+[url](http://www.pnas.org/content/early/2017/09/26/1620229114.abstract)
+1. Adam Martin-Schwarze, Jarad Niemi, and Philip Dixon ``Assessing the impacts
+of time to detection distribution assumptions on detection probability 
+estimation.'' to appear in the Journal of Agricultural, Biological, and 
+Environmental Statistics
+[url](https://link.springer.com/article/10.1007/s13253-017-0300-y)
 1. Matt Simpson\*, Vivek Roy, and Jarad Niemi ``Interweaving Markov chain Monte Carlo strategies for efficient estimation of dynamic linear models.'' to appear in the Journal of Computational and Graphical Statistics DOI:http://dx.doi.org/10.1080/10618600.2015.1105748
 1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.'' (2016) Agriculture, Ecosystems and Environment 220: 55-63 [url](http://www.sciencedirect.com/science/article/pii/S016788091630007X)
 1. Jarad Niemi, Eric Mittman\*, Will Landau\*, and Dan Nettleton (2015) ``Empirical Bayes analysis of RNA-seq data for detection of gene expression heterosis.'' Journal of Agricultural, Biological, and Environmental Statistcs, 20(4): 614-628 [url](http://link.springer.com/article/10.1007%2Fs13253-015-0230-5#)
