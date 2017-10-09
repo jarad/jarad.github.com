@@ -16,7 +16,7 @@ John C. Tyndall, Heidi Asbjornsen, Pauline Drobney, Jeri Neal, Gary Van Ryswyk,
 and Chris Witte ``Prairie strips improve biodiversity and the delivery of 
 multiple ecosystem services from corn–soybean croplands.'' to appear in the 
 Proceedings of the National Academy of Sciences. 
-[url](http://www.pnas.org/content/early/2017/09/26/1620229114.abstract)
+[url](http://www.pnas.org/content/early/2017/09/26/1620229114)
 1. Adam Martin-Schwarze, Jarad Niemi, and Philip Dixon ``Assessing the impacts
 of time to detection distribution assumptions on detection probability 
 estimation.'' to appear in the Journal of Agricultural, Biological, and 
