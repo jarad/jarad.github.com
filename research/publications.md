@@ -22,7 +22,8 @@ of time to detection distribution assumptions on detection probability
 estimation.'' to appear in the Journal of Agricultural, Biological, and 
 Environmental Statistics
 [url](https://link.springer.com/article/10.1007/s13253-017-0300-y)
-1. Matt Simpson\*, Vivek Roy, and Jarad Niemi ``Interweaving Markov chain Monte Carlo strategies for efficient estimation of dynamic linear models.'' to appear in the Journal of Computational and Graphical Statistics DOI:http://dx.doi.org/10.1080/10618600.2015.1105748
+1. Matt Simpson\*, Vivek Roy, and Jarad Niemi ``Interweaving Markov chain Monte Carlo strategies for efficient estimation of dynamic linear models.'' to appear in the Journal of Computational and Graphical Statistics 
+[url](http://www.tandfonline.com/doi/full/10.1080/10618600.2015.1105748)
 1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.'' (2016) Agriculture, Ecosystems and Environment 220: 55-63 [url](http://www.sciencedirect.com/science/article/pii/S016788091630007X)
 1. Jarad Niemi, Eric Mittman\*, Will Landau\*, and Dan Nettleton (2015) ``Empirical Bayes analysis of RNA-seq data for detection of gene expression heterosis.'' Journal of Agricultural, Biological, and Environmental Statistcs, 20(4): 614-628 [url](http://link.springer.com/article/10.1007%2Fs13253-015-0230-5#)
 1. David M. Brenner, Jack Dekker, Jarad Niemi, and Lisa Pfiffner. (2016) ``Medical Oxygen Concentrators for Releasing Seed Dormancy.'' Crop Science 55:2291-2293 [pdf](papers/brenner2015medical.pdf)
