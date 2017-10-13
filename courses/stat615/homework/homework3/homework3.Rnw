@@ -102,17 +102,14 @@ $\omega_{1:T}$.)
 acceptance in the Metropolis algorithm.
 \item Run MCMC 1 starting at the MLE (use the {\tt dlm::dlmMLE} function) for 
 9,999 iterations and compute the time per effective 
-sample. To calculate time, use the first element of {\tt system.time()}. 
+sample. To calculate time, use the third element of {\tt system.time()}. 
 To calculate the number of effective samples, use {\tt mcmcse::ess}.
 \item Run MCMC 2 starting at the MLE for 9,999 iterations and compute the time per effective sample. Also report the observed acceptance rate.
 \item Construct posterior plots for the standard deviations to compare MCMC 1 
 and MCMC 2.
 \item Construct posterior (smoothing) plots for the equal-tail 95\% credible
 interval for the states to compare MCMC 1 and MCMC 2.
-\item Discuss which MCMC is more efficient based on the previous two results.
-Discuss whether this is an appropriate way to compare the efficiencies of the
-two algorithms.
-
+\item Discuss which MCMC is more efficient based on the previous results.
 
 
 
@@ -129,6 +126,8 @@ Here is some code for parameters:
 <<message=FALSE>>=
 library("dplyr")
 library("ggplot2")
+
+# Make some fake data
 d <- expand.grid(variable = c("sigma","sigma_beta"),
                  method = c("MCMC 1", "MCMC 2"),
                  iteration = 1:9999) %>%
@@ -141,7 +140,8 @@ dsqrtinvgamma = function(x, a, b) dinvgamma(x^2, a, b)*2*x
 ggplot(d, aes(x=value)) + 
   geom_histogram(aes(y=..density..), bins = 100) + 
   facet_grid(method ~ variable, scales = "free") +
-  stat_function(fun = dsqrtinvgamma, color = "red", args = list(a = 1, b = 1)) +
+  stat_function(fun = dsqrtinvgamma, color = "red", 
+                args = list(a = 1, b = 1)) +
   theme_bw()
 @
 
@@ -149,6 +149,8 @@ ggplot(d, aes(x=value)) +
 Here is some code for states
 <<>>=
 n <- nrow(lake)
+
+# Make fake data
 d <- expand.grid(time = 0:n,
                  method = c("MCMC 1", "MCMC 2"),
                  iteration = 1:99) %>%
