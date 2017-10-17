@@ -12,6 +12,7 @@ I will put readings here that are relevant to the lectures.
 ## Hierarchical (linear) models
 
 - BDA3 Chapters 2,5,12,14,15
+- Data Analysis Using Regression and Multilevel/Hierarchical Models
 - [Ridge regression in practice](http://www.tandfonline.com/doi/abs/10.1080/00031305.1975.10479105)
 - [Bayesian LASSO](http://www.stat.ufl.edu/~casella/Papers/Lasso.pdf)
 - [Zellner's g-prior](http://www.jstor.org/stable/2348164)
@@ -22,8 +23,13 @@ I will put readings here that are relevant to the lectures.
 - [O'Hara and Sillanpaa (2009) A review of Bayesian variable selection methods: what, how and which](http://projecteuclid.org/euclid.ba/1340370391)
 - [Bayesian model averaging: A tutorial](http://www.jstor.org/stable/2676803)
 
-## State-apce models
+## State-space models
 
 - Dynamic Linear Models with R
 - Bayesian Forecasting and Dynamic Models
 - State Space and Unobserved Component Models
+- Sequential Monte Carlo Methods in Practice
+
+## Spatial
+
+- Hierarchical Modeling and Analysis for Spatial Data (Ch. 1-3)
