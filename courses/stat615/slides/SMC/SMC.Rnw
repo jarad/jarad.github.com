@@ -1,30 +1,11 @@
 \documentclass[handout]{beamer}
 
-\usepackage{verbatim,multicol,xmpmulti,animate}
+\input{../frontmatter}
+\input{../commands}
 
 \graphicspath{{figs/}}
 
-\usetheme{AnnArbor}
-\usecolortheme{beaver}
-
-\setlength{\unitlength}{\textwidth}  % measure in textwidths
-\usepackage[normalem]{ulem}
-
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{enumerate items}[default]
-\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
-\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
-\setkeys{Gin}{width=0.6\textwidth}
-
 \title{Sequential Monte Carlo}
-\author[Jarad Niemi]{Dr. Jarad Niemi}
-\institute[Iowa State]{Iowa State University}
-\date{\today}
-
-\newcommand{\mG}{\mathrm{\Gamma}}
-\newcommand{\I}{\mathrm{I}}
-\newcommand{\mySigma}{\mathrm{\Sigma}}
-\newcommand{\ind}{\stackrel{ind}{\sim}}
 
 \begin{document}
 
@@ -42,11 +23,10 @@ options(width=100)
 @
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
-library(ggplot2)
-library(plyr)
+library("ggplot2")
+# library(plyr)
 library(dplyr)
 library(reshape2)
-library(maps)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -58,16 +38,16 @@ set.seed(2)
 
 \section{Overview}
 \subsection{Outline}
-\frame{\frametitle{}
+\frame{\frametitle{Outline}
     \begin{multicols}{2}
     \begin{enumerate}
-    \item State-space models $p(y|x,\theta)p(x|\theta)$ \pause
+    \item State-space models $p(y|\theta,\psi)p(\theta|\psi)$ \pause
         \begin{itemize}
         \item Definition
         \item Terminology
         \item Notation \pause
         \end{itemize}
-    \item State inference $p(x|y,\theta)$ \pause
+    \item State inference $p(\theta|y,\psi)$ \pause
         \begin{itemize}
         \item Exact inference
         \item Importance sampling
@@ -75,7 +55,7 @@ set.seed(2)
         \item Bootstrap filter - resampling
         \item Auxiliary particle filter \pause
         \end{itemize}
-    \item State and parameter inference $p(x,\theta|y)$ \pause
+    \item State and parameter inference $p(\theta,\psi|y)$ \pause
         \begin{itemize}
         \item Bootstrap filter
         \item Kernel density
@@ -104,8 +84,8 @@ set.seed(2)
 
     \vspace{0.2in} \pause
 
-    Suppose $p(x_t,\theta|y_{1:t-1})$ is our current knowledge about the state of the world. \pause We observe datum $y_t$ then
-    \[ p(x_t,\theta|y_{1:t}) = \frac{p(y_t|x_t,\theta)p(x_t,\theta|y_{1:t-1})}{p(y_t|y_{1:t-1})}.\]
+    Suppose $p(\theta_t,\psi|y_{1:t-1})$ is our current knowledge about the state of the world. \pause We observe datum $y_t$ then
+    \[ p(\theta_t,\psi|y_{1:t}) = \frac{p(y_t|\theta_t,\psi)p(\theta_t,\psi|y_{1:t-1})}{p(y_t|y_{1:t-1})}.\]
     where $y_{1:t} = (y_1,y_2,\ldots,y_t)$.
 }
 
@@ -115,9 +95,9 @@ set.seed(2)
     \begin{definition}
     A \alert{state-space model} can be described by these conditional distributions:
     \begin{itemize}
-    \item an observation equation: $p_o(y_t|x_t,\theta)$, \pause
-    \item an evolution equation: $p_e(x_t|x_{t-1},\theta)$, \pause and
-    \item a prior $p(x_0,\theta)$.
+    \item an observation equation: $p_o(y_t|\theta_t,\psi)$, \pause
+    \item an evolution equation: $p_e(\theta_t|\theta_{t-1},\psi)$, \pause and
+    \item a prior $p(\theta_0,\psi)$.
     \end{itemize}
     \end{definition}
 
@@ -129,8 +109,8 @@ set.seed(2)
 
     \begin{itemize}
     \item $y_t$: an observation vector of length $m$ \pause
-    \item $x_t$: a latent state vector of length $p$ \pause
-    \item $\theta$: a fixed parameter vector of length $q$
+    \item $\theta_t$: a latent state vector of length $p$ \pause
+    \item $\psi$: a fixed parameter vector of length $q$
     \end{itemize}
 }
 
@@ -138,6 +118,7 @@ set.seed(2)
 
 \subsection{Graphical representation}
 \frame{
+\frametitle{Graphical representation}
     \setkeys{Gin}{width=\textwidth}
 
     \vspace{-1in}
@@ -151,13 +132,14 @@ set.seed(2)
     \vspace{-1.5in}
 
     \begin{itemize}
-    \item<2-> $p(x_t|x_{t-1},\theta)$
-    \item<3-> $p(y_t|x_{t},\theta)$
+    \item<2-> $p(\theta_t|\theta_{t-1},\psi)$
+    \item<3-> $p(y_t|\theta_{t},\psi)$
     \end{itemize}
 }
 
 \subsection{Interpretation}
 \frame{
+\frametitle{Interpretation}
     \begin{center}
     \begin{tabular}{ll}
     Model & State interpretation \\
@@ -166,6 +148,7 @@ set.seed(2)
     Linear growth model & True level and slope \\
     Seasonal factor model & Seasonal effect \\
     Dynamic regression & Time-varying regression coefficients \\
+    \hline
     Stochastic volatility & Underlying volatility in the market \\
     Markov switching model & Influenza epidemic on/off \\
     \hline
@@ -186,7 +169,8 @@ d = data.frame(time = 1:n,
                volatility = exp(log_sigma))
 ggplot(melt(d, id.var='time'), aes(time,value,group=1)) + 
   geom_line() + 
-  facet_grid(variable~.)
+  facet_grid(variable~.) +
+  theme_bw()
 @
 \end{frame}
 
@@ -203,7 +187,8 @@ d = data.frame(time = 1:n,
            state = theta)
 ggplot(melt(d, id.var='time'), aes(time,value,group=1)) + 
   geom_line() + 
-  facet_grid(variable~.) 
+  facet_grid(variable~.) +
+  theme_bw()
 @
 \end{frame}
 
@@ -212,18 +197,18 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
     {\footnotesize
     \begin{definition}
     The \alert{state filtering distribution} is the distribution for the state conditional on all observations up to and including time $t$, i.e.
-    \[ p(x_t|y_{1:t},\theta)=p(x_t|y_1,y_2,\ldots,y_t,\theta).\]
+    \[ p(\theta_t|y_{1:t},\psi)=p(\theta_t|y_1,y_2,\ldots,y_t,\psi).\]
     \end{definition}
     \pause
     \begin{definition}
     The \alert{state smoothing distribution} is the distribution for the state conditional on all observed data, i.e.
-    \[ p(x_{t}|y_{1:T},\theta)=p(x_t|y_1,y_2,\ldots,y_T,\theta) \]
+    \[ p(\theta_{t}|y_{1:T},\psi)=p(\theta_t|y_1,y_2,\ldots,y_T,\psi) \]
     where $t<T$.
     \end{definition}
     \pause
     \begin{definition}
     The \alert{state forecasting distribution} is the distribution for future states conditional on all observed data, i.e.
-    \[ p(x_{T+k}|y_{1:T},\theta)=p(x_{T+k}|y_1,y_2,\ldots,y_T,\theta) \]
+    \[ p(\theta_{T+k}|y_{1:T},\psi)=p(\theta_{T+k}|y_1,y_2,\ldots,y_T,\psi) \]
     where $k>0$.
     \end{definition}
     }
@@ -251,91 +236,91 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 \subsection{Filtering}
 \frame{\frametitle{}
     {\tiny
-     Goal: $ p(x_t|y_{1:t})$  (filtered distribution) \pause
+     Goal: $ p(\theta_t|y_{1:t})$  (filtered distribution) \pause
 
      \vspace{0.1in}
 
      Recursive procedure: \pause
      \begin{itemize}
-     \item Assume $p(x_{t-1}|y_{1:t-1})$ \pause
-     \item Prior for $x_t$ \pause
-     \begin{eqnarray*} p(x_t|y_{1:t-1}) \pause &=& \int p(x_t,x_{t-1}|y_{1:t-1}) dx_{t-1} \\
-     \pause &=& \int p(x_t|x_{t-1},y_{1:t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1} \\
-     \pause &=& \int p(x_t|x_{t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1}
+     \item Assume $p(\theta_{t-1}|y_{1:t-1})$ \pause
+     \item Prior for $\theta_t$ \pause
+     \begin{eqnarray*} p(\theta_t|y_{1:t-1}) \pause &=& \int p(\theta_t,\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\
+     \pause &=& \int p(\theta_t|\theta_{t-1},y_{1:t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\
+     \pause &=& \int p(\theta_t|\theta_{t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1}
      \end{eqnarray*} \pause
      \item One-step ahead predictive distribution for $y_t$ \pause
-     \begin{eqnarray*} p(y_t|y_{1:t-1}) \pause &=& \pause \int p(y_t,x_t|y_{1:t-1}) dx_t \\
-     \pause &=& \int p(y_t|x_t,y_{1:t-1})p(x_t|y_{1:t-1})dx_t \\
-     \pause &=& \int p(y_t|x_t)p(x_t|y_{1:t-1})dx_t
+     \begin{eqnarray*} p(y_t|y_{1:t-1}) \pause &=& \pause \int p(y_t,\theta_t|y_{1:t-1}) d\theta_t \\
+     \pause &=& \int p(y_t|\theta_t,y_{1:t-1})p(\theta_t|y_{1:t-1})d\theta_t \\
+     \pause &=& \int p(y_t|\theta_t)p(\theta_t|y_{1:t-1})d\theta_t
      \end{eqnarray*} \pause
-     \item Filtered distribution for $x_t$ \pause
-     \[ p(x_t|y_{1:t}) \pause = \frac{p(y_t|x_t,y_{1:t-1})p(x_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause = \frac{p(y_t|x_t)p(x_t|y_{1:t-1})}{p(y_t|y_{1:t-1})}\] \pause
+     \item Filtered distribution for $\theta_t$ \pause
+     \[ p(\theta_t|y_{1:t}) \pause = \frac{p(y_t|\theta_t,y_{1:t-1})p(\theta_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause = \frac{p(y_t|\theta_t)p(\theta_t|y_{1:t-1})}{p(y_t|y_{1:t-1})}\] \pause
      \end{itemize}
      }
-     Start from $p(x_0)$.
+     Start from $p(\theta_0)$.
 }
 
 \subsection{Smoothing}
 \frame{\frametitle{}
     {\footnotesize
-     Goal: $p(x_{t}|y_{1:T})$ for $t<T$
+     Goal: $p(\theta_{t}|y_{1:T})$ for $t<T$
 
      \vspace{0.1in} \pause
 
 
      \begin{itemize}
-     \item Backward transition probability $p(x_t|x_{t+1},y_{1:T})$ \pause
+     \item Backward transition probability $p(\theta_t|\theta_{t+1},y_{1:T})$ \pause
      \begin{eqnarray*}
-     p(x_t|x_{t+1},y_{1:T}) \pause &=& p(x_t|x_{t+1},y_{1:t}) \\ \pause
-     &=& \frac{p(x_{t+1}|x_t,y_{1:t})p(x_t|y_{1:t})}{p(x_{t+1}|y_{1:t})} \\ \pause
-     &=& \frac{p(x_{t+1}|x_t)p(x_t|y_{1:t})}{p(x_{t+1}|y_{1:t})} \pause
+     p(\theta_t|\theta_{t+1},y_{1:T}) \pause &=& p(\theta_t|\theta_{t+1},y_{1:t}) \\ \pause
+     &=& \frac{p(\theta_{t+1}|\theta_t,y_{1:t})p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} \\ \pause
+     &=& \frac{p(\theta_{t+1}|\theta_t)p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} \pause
      \end{eqnarray*}
 
-     \item Recursive smoothing distributions $p(x_t|y_{1:T})$ assuming we know $p(x_{t+1}|y_{1:T})$ \pause
+     \item Recursive smoothing distributions $p(\theta_t|y_{1:T})$ assuming we know $p(\theta_{t+1}|y_{1:T})$ \pause
      \begin{eqnarray*}
-     p(x_t|y_{1:T}) \pause &=& \int p(x_t,x_{t+1}|y_{1:T}) dx_{t+1} \\ \pause
-     &=& \int p(x_{t+1}|y_{1:T})p(x_t|x_{t+1},y_{1:T})dx_{t+1} \\ \pause
-       &=& \int p(x_{t+1}|y_{1:T}) \frac{p(x_{t+1}|x_t)p(x_t|y_{1:t})}{p(x_{t+1}|y_{1:t})} dx_{t+1} \\ \pause
-       &=& p(x_t|y_{1:t}) \int \frac{p(x_{t+1}|x_t)}{p(x_{t+1}|y_{1:t})} p(x_{t+1}|y_{1:T}) d x_{t+1}\pause
+     p(\theta_t|y_{1:T}) \pause &=& \int p(\theta_t,\theta_{t+1}|y_{1:T}) d\theta_{t+1} \\ \pause
+     &=& \int p(\theta_{t+1}|y_{1:T})p(\theta_t|\theta_{t+1},y_{1:T})d\theta_{t+1} \\ \pause
+       &=& \int p(\theta_{t+1}|y_{1:T}) \frac{p(\theta_{t+1}|\theta_t)p(\theta_t|y_{1:t})}{p(\theta_{t+1}|y_{1:t})} d\theta_{t+1} \\ \pause
+       &=& p(\theta_t|y_{1:t}) \int \frac{p(\theta_{t+1}|\theta_t)}{p(\theta_{t+1}|y_{1:t})} p(\theta_{t+1}|y_{1:T}) d \theta_{t+1}\pause
        \end{eqnarray*}
-       Start from $p(x_T|y_{1:T})$.
+       Start from $p(\theta_T|y_{1:T})$.
      \end{itemize}
      }
 }
 
 \subsection{Forecasting}
-\frame{\frametitle{}
-     Goal: $p(y_{T+k},x_{T+k}|y_{1:T})$
+\frame{\frametitle{Forecasting}
+     Goal: $p(y_{T+k},\theta_{T+k}|y_{1:T})$
 
      {\footnotesize
      \vspace{0.1in} \pause
 
-     \[ p(y_{T+k},x_{T+k}|y_{1:T}) \pause = p(y_{T+k}|x_{T+k}) p(x_{T+k}|y_{1:T}) \]
+     \[ p(y_{T+k},\theta_{T+k}|y_{1:T}) \pause = p(y_{T+k}|\theta_{T+k}) p(\theta_{T+k}|y_{1:T}) \]
 
      \vspace{0.1in} \pause
 
-    Recursively, given $p(x_{T+(k-1)}|y_{1:T})$ \pause
+    Recursively, given $p(\theta_{T+(k-1)}|y_{1:T})$ \pause
      \begin{eqnarray*}
-     p(x_{T+k}|y_{1:T}) \pause &=& \int p(x_{T+k},x_{T+(k-1)}|y_{1:T})\, dx_{T+(k-1)} \\ \pause
-     &=& \int p(x_{T+k}|x_{T+(k-1)},y_{1:T})p(x_{T+(k-1)}|y_{1:T}) dx_{T+(k-1)} \\ \pause
-     &=& \int p(x_{T+k}|x_{T+(k-1)})p(x_{T+(k-1)}|y_{1:T}) dx_{T+(k-1)} \pause
+     p(\theta_{T+k}|y_{1:T}) \pause &=& \int p(\theta_{T+k},\theta_{T+(k-1)}|y_{1:T})\, d\theta_{T+(k-1)} \\ \pause
+     &=& \int p(\theta_{T+k}|\theta_{T+(k-1)},y_{1:T})p(\theta_{T+(k-1)}|y_{1:T}) d\theta_{T+(k-1)} \\ \pause
+     &=& \int p(\theta_{T+k}|\theta_{T+(k-1)})p(\theta_{T+(k-1)}|y_{1:T}) d\theta_{T+(k-1)} \pause
      \end{eqnarray*}
      }
      Start with $k=1$.
 }
 
 \section{State inference}
-\frame{\frametitle{}
+\frame{\frametitle{Outline}
     \begin{multicols}{2}
     \begin{enumerate}
-    \item State-space models $p(y|x,\theta)p(x|\theta)$
+    \item State-space models $p(y|\theta,\psi)p(\theta|\psi)$
         \begin{itemize}
         \item Definition
         \item Terminology
         \item Notation
         \end{itemize}
     \alert{
-    \item State inference $p(x|y,\theta)$
+    \item State inference $p(\theta|y,\psi)$
         \begin{itemize}
         \item Exact inference
         \item Importance sampling
@@ -344,7 +329,7 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
         \item Auxiliary particle filter
         \end{itemize}
     }
-    \item State and parameter inference $p(x,\theta|y)$
+    \item State and parameter inference $p(\theta,\psi|y)$
         \begin{itemize}
         \item Bootstrap filter
         \item Kernel density
@@ -365,19 +350,20 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 
 \subsection{Exact inference}
 \frame{
+\frametitle{Exact inference}
     Our goal for most of today is to find filtering methods.
 
     \vspace{0.2in}\pause
 
     \begin{itemize}
-    \item We assume $p(x_{t-1}|y_{1:t-1})$ is known \pause
-    \item and try to obtain $p(x_t|y_{1:t})$ using \pause
-    \item $p(x_t|x_{t-1})$ and $p(y_t|x_t)$.
+    \item We assume $p(\theta_{t-1}|y_{1:t-1})$ is known \pause
+    \item and try to obtain $p(\theta_t|y_{1:t})$ using \pause
+    \item $p(\theta_t|\theta_{t-1})$ and $p(y_t|\theta_t)$.
     \end{itemize}
 
     \vspace{0.2in}\pause
 
-    Then, starting with $p(x_0|y_0)=p(x_0)$ we can find $p(x_t|y_{1:t})$ for all $t$.
+    Then, starting with $p(\theta_0|y_0)=p(\theta_0)$ we can find $p(\theta_t|y_{1:t})$ for all $t$.
 }
 
 \frame{
@@ -392,16 +378,16 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 \frame{\frametitle{}
     \begin{definition}
     A \alert{hidden Markov model} (HMM) is a state-space model with an arbitrary observation equation and an evolution equation that can be represented by a transition probability matrix, i.e.
-    \[  p(x_t=j|x_{t-1}=i) = p_{ij} . \]
+    \[  p(\theta_t=j|\theta_{t-1}=i) = p_{ij} . \]
     \end{definition}
 
     \vspace{0.1in} \pause
 
     \begin{block}{Filtering in HMMs}
-    Suppose we have a HMM with $p$ states. \pause Let $q_i=p(x_{t-1}=i|y_{1:t-1})$, \pause then
+    Suppose we have a HMM with $p$ states. \pause Let $q_i=p(\theta_{t-1}=i|y_{1:t-1})$, \pause then
     \begin{eqnarray*}
-    p(x_t=j|y_{1:t-1}) &=& \sum_{i=1}^p q_i p_{ij} \pause \\
-    p(x_t=j|y_{1:t}) &\propto& p(y_t|x_t=j) p(x_t=j|y_{1:t-1}).
+    p(\theta_t=j|y_{1:t-1}) &=& \sum_{i=1}^p q_i p_{ij} \pause \\
+    p(\theta_t=j|y_{1:t}) &\propto& p(y_t|\theta_t=j) p(\theta_t=j|y_{1:t-1}).
     \end{eqnarray*}
     \end{block}
 
@@ -415,11 +401,11 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
     \begin{definition}
     A \alert{dynamic linear model} (DLM) is a state-space model where both the observation and evolution equations are linear in the states and have additive Gaussian errors and the prior is Gaussian, i.e.
     \[ \begin{array}{rl@{\quad}l}
-    y_t &= F_tx_t + v_t & v_t \sim N(0,V_t) \\
-    x_t &= G_tx_{t-1} + w_t & w_t \sim N(0,W_t) \\
-    x_0 &\sim N(m_0,C_0)
+    y_t &= F_t\theta_t + v_t & v_t \sim N(0,V_t) \\
+    \theta_t &= G_t\theta_{t-1} + w_t & w_t \sim N(0,W_t) \\
+    \theta_0 &\sim N(m_0,C_0)
     \end{array} \]
-    where $v_t,w_t$, and $x_0$ are independent of each other and mutually independent through time.
+    where $v_t,w_t$, and $\theta_0$ are independent of each other and mutually independent through time.
     \end{definition}
 
     \vspace{0.2in} \pause
@@ -432,22 +418,22 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 
 \subsubsection{Kalman filter}
 \frame{
-    Suppose $x_{t-1}|y_{1:t-1}\sim N(m_{t-1},C_{t-1})$ \pause , then
+    Suppose $\theta_{t-1}|y_{1:t-1}\sim N(m_{t-1},C_{t-1})$ \pause , then
     \begin{itemize}
-    \item The one-step-ahead prior distribution for $x_t$ is $x_t|y_{1:t-1} \sim N(a_t,R_t)$ \pause where
+    \item The one-step-ahead prior distribution for $\theta_t$ is $\theta_t|y_{1:t-1} \sim N(a_t,R_t)$ \pause where
     \begin{eqnarray*}
-    a_t &=& E(x_t|y_{1:t-1}) = G_tm_{t-1},\\ \pause
-    R_t &=& Var(x_t|y_{1:t-1}) = G_tC_{t-1}G_t'+W_t.\\ \pause
+    a_t &=& E(\theta_t|y_{1:t-1}) = G_tm_{t-1},\\ \pause
+    R_t &=& Var(\theta_t|y_{1:t-1}) = G_tC_{t-1}G_t'+W_t.\\ \pause
     \end{eqnarray*}
     \item The one-step-ahead predictive distribution for $y_t$ is $y_t|y_{1:t-1}\sim N(f_t,Q_t)$ \pause where
     \begin{eqnarray*}
     f_t &=& E(y_t|y_{1:t-1}) = F_ta_t, \\ \pause
     Q_t &=& Var(y_t|y_{1:t-1}) = F_tR_tF_t'+V_t.\\ \pause
     \end{eqnarray*}
-    \item The filtering distribution of $x_t$ is $x_t|y_{1:t}\sim N(m_t,C_t)$ \pause where
+    \item The filtering distribution of $\theta_t$ is $\theta_t|y_{1:t}\sim N(m_t,C_t)$ \pause where
     \begin{eqnarray*}
-    m_t &=& E(x_t|y_{1:t}) = a_t+R_tF_t'Q_t^{-1}e_t, \\ \pause
-    C_t &=& Var(x_t|y_{1:t})=R_t-R_tF_t'Q_t^{-1}F_tR_t, \pause
+    m_t &=& E(\theta_t|y_{1:t}) = a_t+R_tF_t'Q_t^{-1}e_t, \\ \pause
+    C_t &=& Var(\theta_t|y_{1:t})=R_t-R_tF_t'Q_t^{-1}F_tR_t, \pause
     \end{eqnarray*}
     where $e_t=y_t-f_t$ is the forecast error.
     \end{itemize}
@@ -460,11 +446,11 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
     \vspace{0.2in} \pause
 
     \begin{eqnarray*}
-    y_t &=& x_t + v_t \\
-    x_t &=& \alpha+\beta x_{t-1} + w_t \\
-    v_t &\stackrel{iid}{\sim}& N(0,V) \\
-    w_t &\stackrel{iid}{\sim}& N(0,W) \\
-    x_0 &\sim & N(m_0,C_0)
+    y_t &=& \theta_t + v_t \\
+    \theta_t &=& \alpha+\beta \theta_{t-1} + w_t \\
+    v_t &\ind & N(0,V) \\
+    w_t &\ind & N(0,W) \\
+    \theta_0 &\sim & N(m_0,C_0)
     \end{eqnarray*}
 }
 
@@ -472,9 +458,9 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
     {\small
     Assume
     \begin{eqnarray*}
-    x_{t-1}|y_{1:t-1} &\sim & N(m_{t-1},C_{t-1}) \\
+    \theta_{t-1}|y_{1:t-1} &\sim & N(m_{t-1},C_{t-1}) \\
     \\ \pause
-    x_t|y_{1:t-1} &\sim & N(a_t,R_t) \\
+    \theta_t|y_{1:t-1} &\sim & N(a_t,R_t) \\
     a_t &=& \alpha+\beta m_{t-1} \\
     R_t &=& \beta^2C_{t-1}+W \\
     \\ \pause
@@ -482,7 +468,7 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
     f_t &=& a_t \\
     Q_t &=& R_t+V \\
     \\ \pause
-    x_t|y_{1:t} &\sim & N(m_t,C_t) \\
+    \theta_t|y_{1:t} &\sim & N(m_t,C_t) \\
     C_t &=& \left(\frac{1}{R_t}+\frac{1}{V}\right)^{-1} \\
     m_t &=& C_t\left( \frac{a_t}{R_t} + \frac{y_t}{V} \right)
     \end{eqnarray*}
@@ -520,6 +506,7 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 
 \subsection{Approximate inference}
 \frame{
+\frametitle{Approximate inference}
     HMMs and DLMs are the main classes of models with closed form updating of the filtering distributions.
 
     \vspace{0.2in} \pause
@@ -548,7 +535,7 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 \subsection{Monte Carlo sampling}
 \frame{
     \setkeys{Gin}{width=0.9\textwidth}
-    Suppose we want to approximate some density $f(x)$, e.g. $p(x_t|y_{1:t})$. \pause Draw samples from $f(x)$. \pause
+    Suppose we want to approximate some density $f(\theta)$, e.g. $p(\theta_t|y_{1:t})$. \pause Draw samples from $f(\theta)$. \pause
 
     \begin{center}
     \includegraphics{mc}
@@ -557,7 +544,7 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 
 \frame{
     \setkeys{Gin}{width=\textwidth}
-    Suppose $Z\sim N(0,1)$ \pause and we are trying to estimate $P(Z>1)\pause \approx 0.1586553$. \pause If $Z_i\stackrel{iid}{\sim} N(0,1)$, then
+    Suppose $Z\sim N(0,1)$ \pause and we are trying to estimate $P(Z>1)\pause \approx 0.1586553$. \pause If $Z_i\ind  N(0,1)$, then
     \[ P(Z>1) \approx \frac{1}{J} \sum_{i=1}^J \mathrm{I}(Z_i>1)\]
     is a standard MC approach. \pause
     \begin{columns}
@@ -580,26 +567,27 @@ ggplot(melt(d, id.var='time'), aes(time,value,group=1)) +
 
 \subsection{MCMC}
 \frame{
+\frametitle{Sequential MCMC}
     Suppose we want to sample from
-    \[ p(x_{\alt<5-6>{\alert{t+1}}{t}}|y_{1:\alt<5-6>{\alert{t+1}}{t}}) \pause = \int p(x_{0:\alt<5-6>{\alert{t+1}}{t}}|y_{1:\alt<5-6>{\alert{t+1}}{t}}) dx_{0:\alt<5-6>{\alert{t}}{t-1}} .\]
+    \[ p(\theta_{\alt<5-6>{\alert{t+1}}{t}}|y_{1:\alt<5-6>{\alert{t+1}}{t}}) \pause = \int p(\theta_{0:\alt<5-6>{\alert{t+1}}{t}}|y_{1:\alt<5-6>{\alert{t+1}}{t}}) d\theta_{0:\alt<5-6>{\alert{t}}{t-1}} .\]
 
     \vspace{0.1in} \pause
 
-    A MCMC approach says to iterate through draws of full conditionals, e.g.
-    \[ x_{s} \sim p(x_{s}|y_{1:t},x_{-s})\pause =p(x_s|y_s,x_{s-1},x_{s+1}) \]
-    where $x_{-s}$ indicates $x_{0:t}$ with the $s$ component removed and $s=0,1,2,\ldots,t$.
+An MCMC approach says to iterate through draws of full conditionals, e.g.
+    \[ \theta_{s} \sim p(\theta_{s}|y_{1:t},\theta_{-s})\pause =p(\theta_s|y_s,\theta_{s-1},\theta_{s+1}) \]
+    where $\theta_{-s}$ indicates $\theta_{0:t}$ with the $s$ component removed and $s=0,1,2,\ldots,t$.
 
     \vspace{0.1in} \pause
 
-    Now, you just obtained $y_{t+1}$. \pause You need to redo the analysis, e.g.
-    \[ x_{s} \sim p(x_s|y_s,x_{s-1},x_{s+1}) \]
+    Now, you just obtained $y_{t+1}$. \pause You need to \alert{redo the analysis}, e.g.
+    \[ \theta_{s} \sim p(\theta_s|y_s,\theta_{s-1},\theta_{s+1}) \]
     for $s=0,1,2,\ldots,t,t+1$.
 }
 
 \subsection{Importance sampling}
 \begin{frame}
 \frametitle{Importance sampling}
-Suppose we want to approximate some density $f(x)$, e.g. $p(x_t|y_{1:t})$, but we cannot simulate from $f(x)$. \pause Draw $x_i\stackrel{iid}{\sim}g(x)$ and give each draw a weight $w_i=\frac{f(x_i)}{g(x_i)}$. \pause
+Suppose we want to approximate some density $f(\theta)$, e.g. $p(\theta_t|y_{1:t})$, but we cannot simulate from $f(\theta)$. \pause Draw $\theta_i\ind g(\theta)$ and give each draw a weight $w_i=\frac{f(\theta_i)}{g(\theta_i)}$. \pause
 
 <<importance_sampling, warning=FALSE, fig.height=4>>=
 x = seq(-5,5,by=.1)
@@ -623,12 +611,13 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
        aes(x,density,color=variable,linetype=variable,group=variable)) +
   geom_line() + 
   facet_wrap(~example) + 
-  ylim(c(0,2))
+  ylim(c(0,2)) +
+  theme_bw()
 @
 \end{frame}
 
 \frame{
-    Suppose we are trying to estimate $E[X]$ when $X\sim t_2$. We draw samples from $x_i\sim N(0,0.5^2)$ and give a weight $w_i = \frac{t_2(x_i)}{N(x_i;0,0.5^2)}$ to each sample.
+    Suppose we are trying to estimate $E[\theta]$ when $\theta\sim t_2$. We draw samples from $\theta_i\sim N(0,0.5^2)$ and give a weight $w_i = \frac{t_2(\theta_i)}{N(\theta_i;0,0.5^2)}$ to each sample.
     \begin{center}
     \multiinclude[format=pdf]{is}
     %\only<1-| handout:0>{\multiinclude[format=pdf]{is}}
@@ -638,7 +627,7 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
 
 \frame{
     \setkeys{Gin}{width=\textwidth}
-    Suppose $Z\sim N(0,1)$ \pause and we are trying to estimate $P(Z>4.5)\pause \approx 3.398x10^{-6}$. \pause If $Z_i\sim N(0,1)$, then
+    Suppose $Z\sim N(0,1)$ \pause and we are trying to estimate $P(Z>4.5)\pause \approx 3.398\times 10^{-6}$. \pause If $Z_i\sim N(0,1)$, then
     \[ P(Z>4.5) \approx \frac{1}{J} \sum_{i=1}^J \mathrm{I}(Z_i>4.5)\]
     is a standard MC approach. \pause If J=100,000 usually the indicator function is all zeros.
     \phantom{
@@ -663,8 +652,8 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
 
 \frame{
     \setkeys{Gin}{width=\textwidth}
-    Suppose $Z\sim N(0,1)$ and we are trying to estimate $P(Z>4.5) \approx 3.398x10^{-6}$. \pause If $X_i\sim Exp(1)+4.5$, then
-    \[ P(Z>4.5) \approx \frac{1}{J} \sum_{i=1}^J \frac{N(x_i;0,1)}{Exp(x_i-4.5;1)} \mathrm{I}(x_i>4.5)\]
+    Suppose $Z\sim N(0,1)$ and we are trying to estimate $P(Z>4.5) \approx 3.398\times 10^{-6}$. \pause If $\theta_i\sim Exp(1)+4.5$, then
+    \[ P(Z>4.5) \approx \frac{1}{J} \sum_{i=1}^J \frac{N(\theta_i;0,1)}{Exp(\theta_i-4.5;1)} \mathrm{I}(\theta_i>4.5)\]
     is an importance sampling approach. \pause
     \begin{columns}
     \column{0.5\textwidth}
@@ -685,6 +674,7 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
 }
 
 \frame{
+\frametitle{Importance sampling summary}
     Importance sampling summary:
     \begin{itemize}[<+->]
     \item Importance sampling can be vastly superior to Monte Carlo sampling.
@@ -701,66 +691,67 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
 %    {\footnotesize
 %    Suppose we have a general state-space model
 %    \begin{eqnarray*}
-%    &&p(y_t|x_t) \\
-%    &&p(x_t|x_{t-1})
+%    &&p(y_t|\theta_t) \\
+%    &&p(\theta_t|\theta_{t-1})
 %    \end{eqnarray*}
-%    and a current filtered distribution $p(x_{t-1}|y_{1:t-1})$. \pause Our goal is to approximate
+%    and a current filtered distribution $p(\theta_{t-1}|y_{1:t-1})$. \pause Our goal is to approximate
 %    \begin{eqnarray*}
-%    p(x_t|y_{1:t}) \pause &=& \frac{p(y_t|x_t,y_{1:t-1})p(x_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause
-%    \propto  p(y_t|x_t,y_{1:t-1})p(x_t|y_{1:t-1}) \\ \pause
-%    &=& p(y_t|x_t) \int p(x_t,x_{t-1}|y_{1:t-1}) dx_{t-1} \\ \pause
-%    &=& p(y_t|x_t) \int p(x_t|x_{t-1},y_{1:t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1} \\ \pause
-%    &=& p(y_t|x_t) \int p(x_t|x_{t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1} \\ \pause
-%    &\approx&  p(y_t|x_t) \sum_{i=1}^J \delta_{x_t^{(i)}} \pause
-%    \approx  \sum_{i=1}^J p(y_t|x_t^{(i)}) \delta_{x_t^{(i)}}  \pause
-%    \approx  \sum_{i=1}^J w_i \delta_{x_t^{(i)}}
+%    p(\theta_t|y_{1:t}) \pause &=& \frac{p(y_t|\theta_t,y_{1:t-1})p(\theta_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause
+%    \propto  p(y_t|\theta_t,y_{1:t-1})p(\theta_t|y_{1:t-1}) \\ \pause
+%    &=& p(y_t|\theta_t) \int p(\theta_t,\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\ \pause
+%    &=& p(y_t|\theta_t) \int p(\theta_t|\theta_{t-1},y_{1:t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\ \pause
+%    &=& p(y_t|\theta_t) \int p(\theta_t|\theta_{t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\ \pause
+%    &\approx&  p(y_t|\theta_t) \sum_{i=1}^J \delta_{\theta_t^{(i)}} \pause
+%    \approx  \sum_{i=1}^J p(y_t|\theta_t^{(i)}) \delta_{\theta_t^{(i)}}  \pause
+%    \approx  \sum_{i=1}^J w_i \delta_{\theta_t^{(i)}}
 %    \end{eqnarray*}
 %    }
-%    where $x_t^{(i)} \sim p(x_t|x_{t-1}^{(i)})$ and $x_{t-1}^{(i)}\sim p(x_{t-1}|y_{1:t-1})$.
+%    where $\theta_t^{(i)} \sim p(\theta_t|\theta_{t-1}^{(i)})$ and $\theta_{t-1}^{(i)}\sim p(\theta_{t-1}|y_{1:t-1})$.
 %
 %    \vspace{0.2in} \pause
 %
-%    The pair $\left\{w_i,x_t^{(i)}\right\}$ is called a \alert{particle}.
+%    The pair $\left\{w_i,\theta_t^{(i)}\right\}$ is called a \alert{particle}.
 %}
 
 \frame{\frametitle{}
     {\footnotesize
     Suppose we have a general state-space model
     \begin{eqnarray*}
-    &&p(y_t|x_t) \\
-    &&p(x_t|x_{t-1})
+    &&p(y_t|\theta_t) \\
+    &&p(\theta_t|\theta_{t-1})
     \end{eqnarray*}
-    and a current filtered distribution $p(x_{t-1}|y_{1:t-1})$. \pause Our goal is to approximate $p(x_t|y_{1:t})$. \pause Let
+    and a current filtered distribution $p(\theta_{t-1}|y_{1:t-1})$. \pause Our goal is to approximate $p(\theta_t|y_{1:t})$. \pause Let
     \begin{eqnarray*}
-    f(x_t) &=& p(x_t|y_{1:t})  \pause
-    = \frac{p(y_t|x_t)p(x_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause
-    \propto  p(y_t|x_t)p(x_t|y_{1:t-1}) \\ \pause
-    g(x_t) &=& p(x_t|y_{1:t-1})  \pause
-    = \int p(x_t|x_{t-1})p(x_{t-1}|y_{1:t-1}) dx_{t-1} \\ \pause
-    \frac{f(x_t)}{g(x_t)} &\propto & \frac{p(y_t|x_t)p(x_t|y_{1:t-1})}{p(x_t|y_{1:t-1})}  \pause
-    =p(y_t|x_t) \\ \pause
-    x_{t-1}^{(i)} &\sim & p(x_{t-1}|y_{1:t-1}) \\ \pause
-    x_{t}^{(i)} &\sim & p(x_t|x_{t-1}^{(i)}) \\ \pause
-    w_t^{(i)} &\propto & p(y_t|x_t^{(i)}) \\ \pause
-    p(x_t|y_{1:t}) &\approx&  \sum_{i=1}^J w_t^{(i)} \delta_{x_t^{(i)}} \pause
+    f(\theta_t) &=& p(\theta_t|y_{1:t})  \pause
+    = \frac{p(y_t|\theta_t)p(\theta_t|y_{1:t-1})}{p(y_t|y_{1:t-1})} \pause
+    \propto  p(y_t|\theta_t)p(\theta_t|y_{1:t-1}) \\ \pause
+    g(\theta_t) &=& p(\theta_t|y_{1:t-1})  \pause
+    = \int p(\theta_t|\theta_{t-1})p(\theta_{t-1}|y_{1:t-1}) d\theta_{t-1} \\ \pause
+    \frac{f(\theta_t)}{g(\theta_t)} &\propto & \frac{p(y_t|\theta_t)p(\theta_t|y_{1:t-1})}{p(\theta_t|y_{1:t-1})}  \pause
+    =p(y_t|\theta_t) \\ \pause
+    \theta_{t-1}^{(i)} &\sim & p(\theta_{t-1}|y_{1:t-1}) \\ \pause
+    \theta_{t}^{(i)} &\sim & p(\theta_t|\theta_{t-1}^{(i)}) \\ \pause
+    w_t^{(i)} &\propto & p(y_t|\theta_t^{(i)}) \\ \pause
+    p(\theta_t|y_{1:t}) &\approx&  \sum_{i=1}^J w_t^{(i)} \delta_{\theta_t^{(i)}} \pause
     \end{eqnarray*}
 
-    The pair $\left(w_t^{(i)},x_t^{(i)}\right)$ is called a \alert{particle}.
+    The pair $\left(w_t^{(i)},\theta_t^{(i)}\right)$ is called a \alert{particle}.
     }
 }
 
 \frame{
+\frametitle{Sequential importance sampling}
     Sequential importance sampling procedure: \pause
     \begin{enumerate}
     \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
-    \[ p(x_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{x_{t-1}^{(i)}}.\] \pause
+    \[ p(\theta_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{\theta_{t-1}^{(i)}}.\] \pause
     \item For $i\in\{1,2,\ldots,J\}$ \pause
         \begin{enumerate}
-        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(i)})$ \pause
-        \item Set $w_{t}^{(i)} \propto w_{t-1}^{(i)} p(y_t|x_t^{(i)})$ \pause
+        \item Sample $\theta_t^{(i)}\sim p(\theta_t|\theta_{t-1}^{(i)})$ \pause
+        \item Set $w_{t}^{(i)} \propto w_{t-1}^{(i)} p(y_t|\theta_t^{(i)})$ \pause
         \end{enumerate}
     \item We now have a particle approximation to our density at time $t$, i.e.
-    \[ p(x_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{x_{t}^{(i)}}.\]
+    \[ p(\theta_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{\theta_{t}^{(i)}}.\]
     \end{enumerate}
 }
 
@@ -775,6 +766,7 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
 \end{frame}
 
 \frame{
+\frametitle{SIS summary}
     Sequential importance sampling (SIS) summary:
     \begin{itemize}
     \item Positives
@@ -795,27 +787,27 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
 
 \subsection{Sequential importance sampling with resampling}
 \frame{
-    Let's approximate $p(x_{t-1}|y_{1:t-1})$ by sampling with replacement proportional to the weights $w_{t-1}^{(i)}$:
+    Let's approximate $p(\theta_{t-1}|y_{1:t-1})$ by sampling with replacement proportional to the weights $w_{t-1}^{(i)}$:
 
     \vspace{0.2in} \pause
 
     \[ \begin{array}{c}
-    p(x_{t-1}|y_{1:t-1}) \approx \left\{
+    p(\theta_{t-1}|y_{1:t-1}) \approx \left\{
     \begin{array}{c|cccr}
     i & 1 & 2 & \cdots & J \\
     \hline
     w_{t-1}^{(i)} & 0.02 & 0.05 & \cdots & 0.03 \\
-    x_{t-1}^{(i)} & 1.91 & 0.63 & \cdots & -0.12
+    \theta_{t-1}^{(i)} & 1.91 & 0.63 & \cdots & -0.12
     \end{array} \right. \\ \pause
     \\
     \Big\Downarrow \\
     \\
-    p(x_{t-1}|y_{1:t-1}) \approx \left\{
+    p(\theta_{t-1}|y_{1:t-1}) \approx \left\{
     \begin{array}{c|cccr}
     i & 1 & 2 & \cdots & J \\
     \hline
     w_{t-1}^{(i)} & 1/J & 1/J & \cdots & 1/J \\
-    x_{t-1}^{(i)} & 0.63 & 0.63 & \cdots & -0.12
+    \theta_{t-1}^{(i)} & 0.63 & 0.63 & \cdots & -0.12
     \end{array} \right. \\
 
     \end{array} \]
@@ -830,18 +822,18 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
 
     \vspace{0.1in}
 
-    Sequential importance sampling \alt<2>{\alert{with resampling }}{}procedure:
+    Sequential importance sampling \alt<2>{\alert{with resampling (SIR)}}{} procedure:
     \begin{enumerate}
     \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
-    \[ p(x_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{x_{t-1}^{(i)}}.\]
+    \[ p(\theta_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{\theta_{t-1}^{(i)}}.\]
     \item For $i\in\{1,2,\ldots,J\}$
         \begin{enumerate}
         \item \uncover<2->{\alert{Sample $j\in\{1,2,\ldots,J\}$ with probability $w_{t-1}^{(j)}$}}
-        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(\alt<2>{\alert{j}}{i})})$
-        \item Set $w_{t}^{(i)} \propto \alt<2>{\alert{1}}{w_{t-1}^{(i)}} p(y_t|x_t^{(i)})$
+        \item Sample $\theta_t^{(i)}\sim p(\theta_t|\theta_{t-1}^{(\alt<2>{\alert{j}}{i})})$
+        \item Set $w_{t}^{(i)} \propto \alt<2>{\alert{1}}{w_{t-1}^{(i)}} p(y_t|\theta_t^{(i)})$
         \end{enumerate}
     \item We now have a particle approximation to our density at time $t$, i.e.
-    \[ p(x_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{x_{t}^{(i)}}.\]
+    \[ p(\theta_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{\theta_{t}^{(i)}}.\]
     \end{enumerate}
 }
 
@@ -883,7 +875,7 @@ ggplot(melt(d, id.var=c('x','example'), value.name='density'),
 \begin{frame}
 \frametitle{Multinomial sampling}
 \begin{enumerate}
-\item Draw $U_1,\ldots,U_J \stackrel{iid}{\sim} Unif(0,1)$
+\item Draw $U_1,\ldots,U_J \ind  Unif(0,1)$
 \item Invert cumulative sum of weights
 \end{enumerate} 
 
@@ -951,7 +943,7 @@ segments(0, u, ind, u, col='red')
 \begin{frame}
 \frametitle{Stratified sampling}
     \begin{enumerate}
-    \item Draw $U_j \stackrel{ind}{\sim} Unif\left(\frac{j-1}{J},\frac{j}{J}\right)$ for $j=1,2,\ldots,J$
+    \item Draw $U_j \ind  Unif\left(\frac{j-1}{J},\frac{j}{J}\right)$ for $j=1,2,\ldots,J$
     \item Invert cumulative sum of weights
     \end{enumerate} \pause
     
@@ -1077,7 +1069,9 @@ for (i in 1:max(s$time)) {
     geom_point() +
     xlim(0,max(s$time)) + 
     ylim(0,max(s$ess)) +
-    geom_hline(yintercept=n/2, color='red')
+    geom_hline(yintercept=n/2, color='red') +
+    labs(y='Effective sample size') +
+    theme_bw()
   print(g)
 }
 @
@@ -1098,38 +1092,38 @@ for (i in 1:max(s$time)) {
     Resample-move procedure:
     \begin{enumerate}
     \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
-    \[ p(x_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J \frac{1}{J} \delta_{x_{t-1}^{(i)}}.\] \pause
+    \[ p(\theta_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J \frac{1}{J} \delta_{\theta_{t-1}^{(i)}}.\] \pause
     \item For $i\in\{1,2,\ldots,J\}$
         \begin{enumerate}
-        \item Sample $j\in\{1,2,\ldots,J\}$ with probability proportional to $\alert<5>{p(y_t|x_{t-1}^{(j)})}$ \pause
-        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(j)})$ \pause
+        \item Sample $j\in\{1,2,\ldots,J\}$ with probability proportional to $\alert<5>{p(y_t|\theta_{t-1}^{(j)})}$ \pause
+        \item Sample $\theta_t^{(i)}\sim p(\theta_t|\theta_{t-1}^{(j)})$ \pause
         \end{enumerate}
     \item We now have a particle approximation to our density at time $t$, i.e.
-    \[ p(x_{t}|y_{1:t}) \approx \sum_{i=1}^J \frac{1}{J} \delta_{x_{t}^{(i)}}.\]
+    \[ p(\theta_{t}|y_{1:t}) \approx \sum_{i=1}^J \frac{1}{J} \delta_{\theta_{t}^{(i)}}.\]
     \end{enumerate} \pause\pause
 
     \vspace{0.1in}
 
-    Evaluating $p(y_t|x_{t-1})$ requires solving the integral
-    \[ p(y_t|x_{t-1}) = \int p(y_t|x_t)p(x_t|x_{t-1})dx_t.\]
+    Evaluating $p(y_t|\theta_{t-1})$ requires solving the integral
+    \[ p(y_t|\theta_{t-1}) = \int p(y_t|\theta_t)p(\theta_t|\theta_{t-1})d\theta_t.\]
 }
 
 \frame{
     Auxiliary particle filter (APF) procedure:
     \begin{enumerate}
     \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
-    \[ p(x_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)}\delta_{x_{t-1}^{(i)}}.\] \pause
+    \[ p(\theta_{t-1}|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)}\delta_{\theta_{t-1}^{(i)}}.\] \pause
     \item For $i\in\{1,2,\ldots,J\}$
         \begin{enumerate}
         \item Sample $j\in\{1,2,\ldots,J\}$ with prob. proportional to $w_{t-1}^{(j)}p(y_t|\mu_t^{(j)})$ \pause
-        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(j)})$ \pause
-        \item Set $w_t^{(i)} = \frac{p(y_t|x_t^{(i)})}{p(y_t|\mu_t^{(j)})}$ \pause
+        \item Sample $\theta_t^{(i)}\sim p(\theta_t|\theta_{t-1}^{(j)})$ \pause
+        \item Set $w_t^{(i)} = \frac{p(y_t|\theta_t^{(i)})}{p(y_t|\mu_t^{(j)})}$ \pause
         \end{enumerate}
     \item We now have a particle approximation to our density at time $t$, i.e.
-    \[ p(x_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{x_{t}^{(i)}}.\]
+    \[ p(\theta_{t}|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{\theta_{t}^{(i)}}.\]
     \end{enumerate}
     \pause
-    where $\mu_t^{(j)}$ is a point estimate of $x_t^{(j)}$, usually $\mu_t^{(j)}=E[x_t|x_{t-1}^{(j)}]$.
+    where $\mu_t^{(j)}$ is a point estimate of $\theta_t^{(j)}$, usually $\mu_t^{(j)}=E[\theta_t|\theta_{t-1}^{(j)}]$.
 }
 
 \begin{frame}
@@ -1144,7 +1138,7 @@ for (i in 1:max(s$time)) {
 
 \subsection{Summary}
 \frame{
-    Summary of $p(x_t|y_t,\theta)$:
+    Summary of $p(\theta_t|y_t,\psi)$:
     \begin{itemize}
     \item Avoid particle degeneracy if possible
         \begin{itemize}
@@ -1160,16 +1154,16 @@ for (i in 1:max(s$time)) {
 }
 
 \section{State and parameter inference}
-\frame{\frametitle{}
+\frame{\frametitle{Outline}
     \begin{multicols}{2}
     \begin{enumerate}
-    \item State-space models $p(y|x,\theta)p(x|\theta)$
+    \item State-space models $p(y|\theta,\psi)p(\theta|\psi)$
         \begin{itemize}
         \item Definition
         \item Terminology
         \item Notation
         \end{itemize}
-    \item State inference $p(x|y,\theta)$
+    \item State inference $p(\theta|y,\psi)$
         \begin{itemize}
         \item Exact inference
         \item Importance sampling
@@ -1178,7 +1172,7 @@ for (i in 1:max(s$time)) {
         \item Auxiliary particle filter
         \end{itemize}
     \alert{
-    \item State and parameter inference $p(x,\theta|y)$
+    \item State and parameter inference $p(\theta,\psi|y)$
         \begin{itemize}
         \item Bootstrap filter
         \item Kernel density
@@ -1201,8 +1195,8 @@ for (i in 1:max(s$time)) {
 \frame{
     What if the fixed parameters are unknown? \pause
     \begin{itemize}[<+->]
-    \item incorporate into state with degenerate evolutions, e.g. $\theta_t=\theta_{t-1}$
-    \item incorporate into state with evolutions, e.g. $\theta_t=\theta_{t-1}+\epsilon_t$
+    \item incorporate into state with degenerate evolutions, e.g. $\psi_t=\psi_{t-1}$
+    \item incorporate into state with evolutions, e.g. $\psi_t=\psi_{t-1}+\epsilon_t$
     \item use kernel density approximation to regenerate parameter values
     \item use sufficient statistics to regenerate parameter values
     \item use Markov chain Monte Carlo to regenerate parameter values
@@ -1215,14 +1209,14 @@ for (i in 1:max(s$time)) {
     \vspace{0.2in}\pause
 
     \begin{itemize}
-    \item We assume $p(x_{t-1},\theta|y_{1:t-1})$ is known \pause
-    \item and try to obtain $p(x_t,\theta|y_{1:t})$ using \pause
-    \item $p(x_t|x_{t-1},\theta)$ and $p(y_t|x_t,\theta)$.
+    \item We assume $p(\theta_{t-1},\psi|y_{1:t-1})$ is known \pause
+    \item and try to obtain $p(\theta_t,\psi|y_{1:t})$ using \pause
+    \item $p(\theta_t|\theta_{t-1},\psi)$ and $p(y_t|\theta_t,\psi)$.
     \end{itemize}
 
     \vspace{0.2in}\pause
 
-    Then, starting with $p(x_0,\theta|y_0)=p(x_0,\theta)$ we can find $p(x_t,\theta|y_{1:t})$ for all $t$.
+    Then, starting with $p(\theta_0,\psi|y_0)=p(\theta_0,\psi)$ we can find $p(\theta_t,\psi|y_{1:t})$ for all $t$.
 }
 
 \subsection{Resampling with fixed parameters}
@@ -1230,16 +1224,16 @@ for (i in 1:max(s$time)) {
     Modify SIR to include fixed parameters: \pause
     \begin{enumerate}
     \item Suppose we have a particle approximation to our density at time $t-1$, i.e.
-    \[ p(x_{t-1},\theta|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{(x_{t-1},\theta)^{(i)}}.\] \pause
+    \[ p(\theta_{t-1},\psi|y_{1:t-1}) \approx \sum_{i=1}^J w_{t-1}^{(i)} \delta_{(\theta_{t-1},\psi)^{(i)}}.\] \pause
     \item For $i\in\{1,2,\ldots,J\}$
         \begin{enumerate}
         \item Sample $j\in\{1,2,\ldots,J\}$ with probability $w_{t-1}^{(j)}$. \pause
-        \item Set $\theta^{(i)}=\theta^{(j)}$. \pause
-        \item Sample $x_t^{(i)}\sim p(x_t|x_{t-1}^{(j)},\theta^{(i)})$. \pause
-        \item Set $w_{t}^{(i)} \propto p(y_t|x_t^{(i)},\theta^{(i)})$. \pause
+        \item Set $\psi^{(i)}=\psi^{(j)}$. \pause
+        \item Sample $\theta_t^{(i)}\sim p(\theta_t|\theta_{t-1}^{(j)},\psi^{(i)})$. \pause
+        \item Set $w_{t}^{(i)} \propto p(y_t|\theta_t^{(i)},\psi^{(i)})$. \pause
         \end{enumerate}
     \item We now have a particle approximation to our density at time $t$, i.e.
-    \[ p(x_{t},\theta|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{(x_{t},\theta)^{(i)}}.\]
+    \[ p(\theta_{t},\psi|y_{1:t}) \approx \sum_{i=1}^J w_{t}^{(i)} \delta_{(\theta_{t},\psi)^{(i)}}.\]
     \end{enumerate}
 }
 
@@ -1249,13 +1243,13 @@ for (i in 1:max(s$time)) {
     \vspace{0.2in} \pause
 
     \begin{eqnarray*}
-    y_t &=& x_t + v_t \\
-    x_t &=& \alpha+\beta x_{t-1} + w_t \\
-    v_t &\stackrel{iid}{\sim}& N(0,V) \\
-    w_t &\stackrel{iid}{\sim}& N(0,W) \\
-    x_0 &\sim & N(m_0,C_0) \\
+    y_t &=& \theta_t + v_t \\
+    \theta_t &=& \alpha+\beta \theta_{t-1} + w_t \\
+    v_t &\ind & N(0,V) \\
+    w_t &\ind & N(0,W) \\
+    \theta_0 &\sim & N(m_0,C_0) \\
     \\ \pause
-    \theta &=& (\alpha,\beta,V,W)
+    \psi &=& (\alpha,\beta,V,W)
     \end{eqnarray*}
 }
 
@@ -1264,7 +1258,7 @@ for (i in 1:max(s$time)) {
 
 \begin{frame}
 \frametitle{SIR with fixed parameters}
-<<fig.show='animate'>>=
+<<fig.show='animate', cache.extra = tools::md5sum('script.R')>>=
 source("script.R")
 x = lMultivariateBootstrapFilter$adParticles
 w = lMultivariateBootstrapFilter$mdWeights
@@ -1298,6 +1292,7 @@ for (i in 2:10) {
 
 \subsection{Kernel density estimation}
 \frame{
+
     Clearly we need to regenerate parameter values. \pause One idea:
 
     \vspace{0.1in} \pause
@@ -1308,15 +1303,16 @@ for (i in 2:10) {
     \end{itemize} \pause
 
     \begin{eqnarray*}
-    p(\theta|y_{1:t-1}) &\approx& \sum_{i=1}^J w_{t-1}^{(i)} \delta_{\theta^{(i)}} \\ \pause
-    &\approx & \sum_{i=1}^J w_{t-1}^{(i)} N(a\theta^{(i)}+(1-a)\overline{\theta}, h^2V)  \pause
+    p(\psi|y_{1:t-1}) &\approx& \sum_{i=1}^J w_{t-1}^{(i)} \delta_{\psi^{(i)}} \\ \pause
+    &\approx & \sum_{i=1}^J w_{t-1}^{(i)} N(a\psi^{(i)}+(1-a)\overline{\psi}, h^2V)  \pause
     \end{eqnarray*}
     where
     \[     h^2 = 1-a^2 = 1-\left( \frac{3\tau-1}{2\tau} \right)^2 \]
-    and $\overline{\theta}$ and $V$ are the Monte Carlo estimate of the mean and covariance.
+    and $\overline{\psi}$ and $V$ are the Monte Carlo estimate of the mean and covariance.
 }
 
 \frame{
+\frametitle{Kernel density approximation}
     \setkeys{Gin}{width=\textwidth}
     \begin{center}
     \includegraphics{kd}
@@ -1325,6 +1321,7 @@ for (i in 2:10) {
 
 \subsection{Sufficient statistics}
 \frame{
+\frametitle{Sufficient statistics}
     Another idea:
     \begin{itemize}
     \item Rather than storing draws of parameters, store sufficient statistics for the parameters.
@@ -1334,18 +1331,18 @@ for (i in 2:10) {
 
     \begin{itemize}
     \item Suppose the model admits a sufficient statistic representation, i.e.
-    \[ p(x_t,s_t,\theta|y_{1:t}) = p(\theta|s_t)p(x_t,s_t|y_{1:t}). \] \pause
+    \[ p(\theta_t,s_t,\psi|y_{1:t}) = p(\psi|s_t)p(\theta_t,s_t|y_{1:t}). \] \pause
     \item Then, each particle stores a distribution for the parameters \pause
     \item and the sufficient statistics can be updated deterministically via
-    \[ s_t = \mathcal{S}(s_{t-1},x_t,x_{t-1},y_t) .\]
+    \[ s_t = \mathcal{S}(s_{t-1},\theta_t,\theta_{t-1},y_t) .\]
     \end{itemize}
 }
 
 \frame{
     For example, in our model
     \[ \begin{array}{ll@{\quad}l}
-    y_t &= x_t + v_t & v_t\sim N(0,V) \\
-    x_t &= \alpha+\beta x_{t-1} + w_t & w_t\sim N(0,W)
+    y_t &= \theta_t + v_t & v_t\sim N(0,V) \\
+    \theta_t &= \alpha+\beta \theta_{t-1} + w_t & w_t\sim N(0,W)
     \end{array} \] \pause
     if
     \[ \begin{array}{rl@{\quad}l}
@@ -1356,7 +1353,7 @@ for (i in 2:10) {
     then
     \[ \begin{array}{rl@{\quad}l}
     V|y_{1:t} &\sim  IG(a_{V,t},b_{V,t}) \\
-    \alpha,\beta,W|y_{1:t},x_t,x_{t-1} &\sim N-IG(m_{t},S_{t},a_{W,t},b_{W,t}) \\ \pause
+    \alpha,\beta,W|y_{1:t},\theta_t,\theta_{t-1} &\sim N-IG(m_{t},S_{t},a_{W,t},b_{W,t}) \\ \pause
     s_{t} &= (a_{V,t},b_{V,t},m_{t},S_{t},a_{W,t},b_{W,t})
     \end{array} \]
 }
@@ -1377,6 +1374,7 @@ for (i in 2:10) {
 
 \subsection{MCMC kernels}
 \frame{
+\frametitle{MCMC within SMC}
     Final idea for fixed parameter regeneration: \pause
 
     \vspace{0.1in}
@@ -1403,7 +1401,8 @@ for (i in 2:10) {
 
 \subsection{Summary}
 \frame{
-    Summary of $p(x_t,\theta|y_t)$:
+\frametitle{Summary}
+    Summary of $p(\theta_t,\psi|y_t)$:
     \begin{itemize}
     \item Regenerating fixed parameters is necessary
         \begin{itemize}
@@ -1414,16 +1413,16 @@ for (i in 2:10) {
 }
 
 \section{Advanced SMC}
-\frame{\frametitle{}
+\frame{\frametitle{Outline}
     \begin{multicols}{2}
     \begin{enumerate}
-    \item State-space models $p(y|x,\theta)p(x|\theta)$
+    \item State-space models $p(y|\theta,\psi)p(\theta|\psi)$
         \begin{itemize}
         \item Definition
         \item Terminology
         \item Notation
         \end{itemize}
-    \item State inference $p(x|y,\theta)$
+    \item State inference $p(\theta|y,\psi)$
         \begin{itemize}
         \item Exact inference
         \item Importance sampling
@@ -1431,7 +1430,7 @@ for (i in 2:10) {
         \item Bootstrap filter - resampling
         \item Auxiliary particle filter
         \end{itemize}
-    \item State and parameter inference $p(x,\theta|y)$
+    \item State and parameter inference $p(\theta,\psi|y)$
         \begin{itemize}
         \item Bootstrap filter
         \item Kernel density
@@ -1453,18 +1452,19 @@ for (i in 2:10) {
 }
 
 \subsection{Marginal likelihood calculations}
-\frame{\frametitle{}
+\frame{
+\frametitle{Marginal likelihood calculations}
     {\small
     In Bayesian data analysis, model comparison and hypothesis testing involves the \alert{marginal likelihood}:
-    \[ p(y) = \int p(y|\theta)p(\theta)d\theta.\] \pause
+    \[ p(y) = \int p(y|\psi)p(\psi)d\psi.\] \pause
     For example, Bayes' factors depend on the marginal likelihood of for both models:
-    \[ BF(0:1) = \frac{p(y|H_0)}{p(y|H_1)} = \frac{\int p(y|\theta_0)p(\theta_0|H_0) d\theta_0}{\int p(y|\theta_1)p(\theta_1|H_1) d\theta_1}.\]
+    \[ BF(0:1) = \frac{p(y|M_0)}{p(y|M_1)} = \frac{\int p(y|\psi_0)p(\psi_0|M_0) d\psi_0}{\int p(y|\psi_1)p(\psi_1|M_1) d\psi_1}.\]
 
     \vspace{0.2in} \pause
 
     The marginal likelihood can be decomposed as
     \[ p(y_{1:T}) = \prod_{t=1}^T p(y_t|y_{1:t-1}) 
-    %= \int \int \left[ \prod_{t=0}^T \int p(y_t|x_t,\theta)p(x_t|y_{1:t-1},\theta) dx_{t} \right] p(x_0|\theta) dx_0 p(\theta) d\theta .
+    %= \int \int \left[ \prod_{t=0}^T \int p(y_t|\theta_t,\psi)p(\theta_t|y_{1:t-1},\psi) d\theta_{t} \right] p(\theta_0|\psi) d\theta_0 p(\psi) d\psi .
     \] \pause
     This can be approximated using SMC methods by
     \[ p(y_t|y_{1:t-1}) \approx \frac{1}{J} \sum_{i=1}^J \tilde{w}_t^{(i)}\]
@@ -1474,19 +1474,21 @@ for (i in 2:10) {
 
 \subsection{Theoretical results}
 \frame{
-    For $p(x_{1:t}|y_{1:t},\theta)$, we have
-    \[ E\left[ \left| \int h(x_{T:T-L})[\hat{p}(x_{T:T-L}|y_{1:T})-p(x_{T:T-L}|y_{1:T})]dx_{T:T-L}\right|^p\right]^{1/p} \pause \le \frac{c(L)}{\sqrt{J}}.\] \pause
+\frametitle{Theoretical results}
+    For $p(\theta_{1:t}|y_{1:t},\psi)$, we have
+    \[ E\left[ \left| \int h(\theta_{T:T-L})[\hat{p}(\theta_{T:T-L}|y_{1:T})-p(\theta_{T:T-L}|y_{1:T})]d\theta_{T:T-L}\right|^p\right]^{1/p} \pause \le \frac{c(L)}{\sqrt{J}}.\] \pause
     As long as we are only interested in a fixed time into the past, we can use a constant number of particles and maintain accuracy.
 
     \vspace{0.2in} \pause
 
-    While for $p(x_{1:t},\theta|y_{1:t})$, we have
-    \[ E\left[ \left| \int h(\theta)[\hat{p}(\theta|y_{1:T})-p(\theta|y_{1:T})]d\theta\right|^p\right]^{1/p} \pause \le \frac{c(T)}{\sqrt{J}}.\] \pause
+    While for $p(\theta_{1:t},\psi|y_{1:t})$, we have
+    \[ E\left[ \left| \int h(\psi)[\hat{p}(\psi|y_{1:T})-p(\psi|y_{1:T})]d\psi\right|^p\right]^{1/p} \pause \le \frac{c(T)}{\sqrt{J}}.\] \pause
     So, as time increases, we need more and more particles to maintain accuracy.
 }
 
 \subsection{SMC-MCMC}
 \frame{
+\frametitle{MCMC within SMC}
     How about using SMC to generate proposal draws for the states within a Metropolis sampling scheme?
 
     \vspace{0.2in} \pause
@@ -1499,14 +1501,15 @@ for (i in 2:10) {
 \section{Summary}
 \subsection{of Summaries}
 \frame{
+\frametitle{Summary}
     \begin{itemize}[<+->]
-    \item If your goal is $p(x_t|y_{1:t},\theta)$, then
+    \item If your goal is $p(\theta_t|y_{1:t},\psi)$, then
         \begin{itemize}
         \item Analytically integrate anything you can
         \item Use a point estimate to reduce particle degeneracy
         \item Use stratified or residual resampling
         \end{itemize}
-    \item If your goal is $p(x_t,\theta|y_{1:t})$, then
+    \item If your goal is $p(\theta_t,\psi|y_{1:t})$, then
         \begin{itemize}
         \item Analytically integrate anything you can
         \item Use kernel density approximation to regenerate particles
