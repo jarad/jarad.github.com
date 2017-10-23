@@ -5,11 +5,6 @@
 
 \title{Bayesian Spatial Analysis}
 
-\begin{document}
-
-%\section{Temp??} \begin{comment}
-
-
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(fig.width=7, 
                fig.height=5, 
@@ -21,7 +16,7 @@ opts_chunk$set(fig.width=7,
 options(width=100)
 @
 
-<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
+<<libraries, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE>>=
 library("ggplot2")
 # library(plyr)
 library("dplyr")
@@ -41,6 +36,11 @@ library("spdep")
 <<set_seed, echo=FALSE>>=
 set.seed(2)
 @
+
+
+\begin{document}
+
+% \section{Temp??} \begin{comment}
 
 \frame{\maketitle}
 
@@ -150,10 +150,10 @@ Assumptions:
 \vspace{-0.2in}
 <<spatial_process,out.width='\\linewidth'>>=
 library(fields)
-fit<- Tps( BD[,1:4], BD$lnya)  # fit surface to data 
+fit<- Tps( BD[,1:4], BD$lnya)  # fit surface to data
 
-glist<- list( KCL=29.77, MgCl2= seq(3,7,length.out=1e2), KPO4=32.13, 
-                     dNTP=seq( 250,1500,length.out=1e2))
+glist<- list( KCL=29.77, MgCl2= seq(3,7,length.out=1e2), KPO4=32.13,
+              dNTP=seq( 250,1500,length.out=1e2))
 
 out.p<- predictSurface(fit, glist)
 surface(out.p, type="C", main='log of DNA amplification rate (KCL=29.77, KPO4=32.13)')
@@ -171,16 +171,16 @@ A process $Y(s)$ is \alert{intrinsically stationary} if ($E[Y(s+h)-Y(s)]=0$ and)
 \[ E[(Y(s+h)-Y(s))^2] = Var[Y(s+h)-Y(s)] = 2\gamma(h) \]
 when $s,s+h\in\mathcal{D}$. \pause We call $2\gamma(h)$ the \alert{variogram} and $\gamma(h)$ the \alert{semivariogram}.
 \end{definition}
-  
+
 % \vspace{0.2in} \pause
-% 
+%
 % Note that here we are only defining the first and second moments of the differences, but it says nothing about the joint distribution and thus provides no likelihood.
 
 \vspace{0.2in} \pause
 
 \begin{definition}
 A process $Y(s)$ is \alert{isotropic} if the semivariogram function depends only on $||h||$, the length of the separation vector. Otherwise the process is \alert{anisotropic}.
-  \end{definition}
+\end{definition}
 
 \end{frame}
 
@@ -196,16 +196,16 @@ when $s,s+h\in\mathcal{D}$. \pause We call $C(h)$ the covariance function or cov
 
 \vspace{0.2in} \pause
 
-Since $\gamma(h) = C(0)-C(h)$, a weakly stationary process is also intrinsicly stationary. 
+Since $\gamma(h) = C(0)-C(h)$, a weakly stationary process is also intrinsicly stationary.
 
 \vspace{0.2in} \pause
 
-If the spatial process is \alert{ergodic}, then $C(h)\to 0$ as $||h||\to\infty$ \pause and $\lim_{||h||\to\infty} \gamma(h) = C(0)$. \pause Thus 
-\[ 
+If the spatial process is \alert{ergodic}, then $C(h)\to 0$ as $||h||\to\infty$ \pause and $\lim_{||h||\to\infty} \gamma(h) = C(0)$. \pause Thus
+\[
 C(h) = C(0) - \gamma(h) = \lim_{||u||\to\infty} \gamma(u)-\gamma(h).
 \]
 \pause
-Thus, if the process is ergodic, an intrinsicly stationary process is also weakly stationary. 
+Thus, if the process is ergodic, an intrinsicly stationary process is also weakly stationary.
 
 \end{frame}
 
@@ -217,81 +217,81 @@ Thus, if the process is ergodic, an intrinsicly stationary process is also weakl
 \begin{tabular}{lll}
 Model & Covariance function, $C(t)$ & Semivariogram, $\gamma(t)$ \\
 \hline
-Linear & 
-$C(t)$ does not exist & 
+Linear &
+$C(t)$ does not exist &
 $\gamma(t) = \left\{ \begin{array}{ll} \tau^2 + \sigma^2 t & \mbox{if }t>0 \\ 0 & \mbox{otherwise} \end{array} \right.$ \\
 
-Spherical & 
+Spherical &
 $C(t) = \left\{ \begin{array}{l}
 0 \\
 \sigma^2\left[1-\frac{3}{2}\phi t + \frac{1}{2}(\phi t)^3 \right]  \\
- \tau^2+\sigma^2 \end{array} \right.$ &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 & \mbox{if }t\ge 1/\phi \\
 \tau^2 + \sigma^2 \left[ \frac{3}{2}\phi t - \frac{1}{2}(\phi t)^3 \right] & 0<t\le 1/\phi \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
- 
-Exponential & 
+0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Exponential &
 $C(t) = \left\{ \begin{array}{l}
 \sigma^2 \exp(-\phi t)  \\
- \tau^2+\sigma^2 \end{array} \right.$ &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 \left[ 1-\exp(-\phi t) \right] & t>0 \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
- 
-Powered exponential & 
+0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Powered exponential &
 $C(t) = \left\{ \begin{array}{l}
 \sigma^2 \exp(-|\phi t|^p)  \\
- \tau^2+\sigma^2 \end{array} \right.$ &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 \left[ 1-\exp(-|\phi t|^p) \right] & t>0 \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
- 
-Gaussian & 
+0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Gaussian &
 $C(t) = \left\{ \begin{array}{l}
 \sigma^2 \exp(-\phi^2 t^2)  \\
- \tau^2+\sigma^2 \end{array} \right.$ &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 \left[ 1-\exp(-\phi^2 t^2) \right] & t>0 \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
- 
-Rational quadratic & 
+0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Rational quadratic &
 $C(t) = \left\{ \begin{array}{l}
 \sigma^2 \left( 1- \frac{t^2}{(1+\phi^2)} \right)  \\
- \tau^2+\sigma^2 \end{array} \right.$ &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 \frac{t^2}{(1+\phi^2)} & t>0 \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
- 
-Wave & 
+0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Wave &
 $C(t) = \left\{ \begin{array}{l}
 \sigma^2 \frac{\sin(\phi t)}{\phi t}  \\
- \tau^2+\sigma^2 \end{array} \right.$ &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 \left[ 1-\frac{\sin(\phi t)}{\phi t} \right] & t>0 \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
- 
-Power law & 
+0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Power law &
 $C(t)$ does not exist  &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 t^\lambda & t>0 \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
-  
-Mat\'{e}rn & 
+0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Mat\'{e}rn &
 $C(t) = \left\{ \begin{array}{l}
 \frac{\sigma^2}{2^{\nu-1}\mG(\nu)}(2\sqrt{v}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi)  \\
- \tau^2+\sigma^2 \end{array} \right.$ &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 \left[ 1-\frac{\left(2\sqrt{\nu}t\phi\right)^\nu}{2^{\nu-1}\mG(\nu)}(2\sqrt{v}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi) \right] & t>0 \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
-  
-Mat\'{e}rn ($\nu=3/2$) & 
+0 & \mbox{otherwise} \end{array} \right.$ \\
+
+Mat\'{e}rn ($\nu=3/2$) &
 $C(t) = \left\{ \begin{array}{l}
 \sigma^2(1+\phi t) \exp(-\phi t)  \\
- \tau^2+\sigma^2 \end{array} \right.$ &
-$\gamma(t) = \left\{ \begin{array}{ll} 
+\tau^2+\sigma^2 \end{array} \right.$ &
+$\gamma(t) = \left\{ \begin{array}{ll}
 \tau^2 + \sigma^2 \left[ 1-(1+\phi t) \exp(-\phi t) \right] & t>0 \\
- 0 & \mbox{otherwise} \end{array} \right.$ \\
+0 & \mbox{otherwise} \end{array} \right.$ \\
 \hline
 \end{tabular}
 
@@ -304,8 +304,8 @@ $\gamma(t) = \left\{ \begin{array}{ll}
 <<>>=
 ff <- function(t,tau2=.2,sigma2=1,phi=1) {
   (t==0)*0+
-	(t>0 & t<1/phi)*(tau2+sigma2*(3*phi*t/2-(phi*t)^3/2))+
-	(t>=1/phi)*(tau2+sigma2)
+    (t>0 & t<1/phi)*(tau2+sigma2*(3*phi*t/2-(phi*t)^3/2))+
+    (t>=1/phi)*(tau2+sigma2)
 }
 
 curve(ff,0.0001,2, ylim=c(0,1.2), xlab="t", ylab=expression(gamma(t)), main="Spherical semivariogram", lwd=2)
@@ -322,19 +322,19 @@ segments(0,.6,1,.6, col="red", lwd=2);         text(.5,.6,expression(paste("rang
 \begin{frame}
 \frametitle{Mat\'{e}rn}
 Perhaps the most important isotropic process is the Mat\'{e}rn process with covariance
-\[ C(t) = \left\{ \begin{array}{ll} 
+\[ C(t) = \left\{ \begin{array}{ll}
 \frac{\sigma^2}{2^{\nu-1}\mathrm\Gamma(\nu)} (2\sqrt{\nu}t\phi)^\nu K_\nu(2\sqrt{\nu}t\phi) & t>0 \\
 \tau^2 + \sigma^2 & t=0
 \end{array}\right. \]
 and variogram
-\[ \gamma(t) = \left\{ \begin{array}{cl} 
+\[ \gamma(t) = \left\{ \begin{array}{cl}
 \tau^2 + \sigma^2\left[ 1-\frac{(2\sqrt{\nu}t\phi)^\nu}{2^{\nu-1}\mathrm\Gamma(\nu)} K_\nu(2\sqrt{\nu}t\phi)\right] & t>0 \\
-0 & \mbox{otherwise} 
+0 & \mbox{otherwise}
 \end{array} \right. \]
-\pause where 
+\pause where
 \begin{itemize}
-\item $\nu$ controls the smoothness of the spatial process ($\lfloor \nu \rfloor$ number of times process realizations are mean square differentiable) while 
-\item $\phi$ is a spatial scale parameter. 
+\item $\nu$ controls the smoothness of the spatial process ($\lfloor \nu \rfloor$ number of times process realizations are mean square differentiable) while
+\item $\phi$ is a spatial scale parameter.
 \end{itemize}
 \pause Special cases are the exponential ($\nu=1/2$) and Gaussian ($\nu\to\infty$).
 \end{frame}
@@ -345,7 +345,7 @@ and variogram
 \begin{frame}
 \frametitle{Strong stationarity}
 \begin{definition}
-A process $Y(s)$ is \alert{strongly (or strictly) stationary} if, for any set of $n\ge 1$ sites $\{s_1,\ldots,s_n\}$ and any $h\in \mathbb{R}^d$, 
+A process $Y(s)$ is \alert{strongly (or strictly) stationary} if, for any set of $n\ge 1$ sites $\{s_1,\ldots,s_n\}$ and any $h\in \mathbb{R}^d$,
 \[
 (Y(s_1),\ldots,Y(s_n))^\top \stackrel{d}{=} (Y(s_1+h),\ldots,Y(s_n+h))^\top
 \]
@@ -358,7 +358,7 @@ If we assume all variances exist, then strong stationarity implies weak stationa
 
 \vspace{0.2in} \pause
 
-The reverse is not necessarily true. 
+The reverse is not necessarily true.
 
 \end{frame}
 
@@ -374,9 +374,9 @@ The reverse is not necessarily true.
 $Y(s)$ is a \alert{Gaussian process} if, for any $n\ge 1$ and any set of sites $\{s_1,\ldots,s_n\}$, $Y=(Y(s_1),\ldots,Y(s_n))^\top$ has a multivariate normal distribution.
 \end{definition}
 
-\vspace{0.2in} \pause 
+\vspace{0.2in} \pause
 
-For a Gaussian process, weak stationarity and strong stationarity are equivalent. 
+For a Gaussian process, weak stationarity and strong stationarity are equivalent.
 \end{frame}
 
 
@@ -388,18 +388,18 @@ For a Gaussian process, weak stationarity and strong stationarity are equivalent
 \frametitle{Bayesian estimation of Gaussian process parameters}
 
 Suppose we observe data at some locations $s_1,\ldots,s_n$. \pause Collectively, we have $y=(y(s_1),\ldots,y(s_n))$. \pause Let's assume the data arise from a Gaussian process \pause and according to a particular covariance function\pause. Collectively refer to the parameters as $\theta$, then our objective is
-\[ 
+\[
 p(\theta|y) \propto p(y|\theta)p(\theta).
 \]
 
 \vspace{0.2in} \pause
 
-Suppose we assume the Mat\'{e}rn covariance function and a common mean $\mu$ so that $\theta = (\mu,\nu, \phi, \tau^2, \sigma^2)$. \pause Then we have 
-\[ 
+Suppose we assume the Mat\'{e}rn covariance function and a common mean $\mu$ so that $\theta = (\mu,\nu, \phi, \tau^2, \sigma^2)$. \pause Then we have
+\[
 p(\mu,\nu,\phi,\tau^2,\sigma^2|y) \propto N(y;\mu,\mySigma)p(\mu,\nu, \phi, \tau^2, \sigma^2)
 \]
 \pause
-where $\mySigma$ is constructed from the parameters $\nu$, $\phi$, $\tau^2$, and $\sigma^2$ and the distances between locations, e.g. $||s_1-s_2||$. 
+where $\mySigma$ is constructed from the parameters $\nu$, $\phi$, $\tau^2$, and $\sigma^2$ and the distances between locations, e.g. $||s_1-s_2||$.
 
 \end{frame}
 
@@ -407,27 +407,27 @@ where $\mySigma$ is constructed from the parameters $\nu$, $\phi$, $\tau^2$, and
 
 
 \frame{\frametitle{}
-	Consider point-referenced data at spatial locations $s_1,\ldots,s_n$, model this data as 
-	\[ Y(s) = \mu(s)+w(s)+\epsilon(s) \]
-	If we constrain ourselves to isotropic models, the Mat\'{e}rn class is suggested as a general tool (Banerjee pg. 37). \pause If $w=(w(s_1),\ldots,w(s_n))^\top$ and $\epsilon=(\epsilon(s_1),\ldots,\epsilon(s_n))^\top$, then a general model is \pause
-	\[ Var[w] = \sigma^2 H(\phi) \qquad Var[\epsilon] = \tau^2 \mathrm{I} \]
-	\pause where $H$ is a correlation matrix with $H_{ij}=\rho(s_i-s_j;\phi)$ and $\rho$ is a valid isotropic correlation function on $\mathbb{R}^r$, i.e. Mat\'{e}rn:
-	\[ \rho(u;\nu,\phi) = \frac{(u/\phi)^\nu K_\nu(u/\phi)}{2^{\nu-1}\mathrm\Gamma(\nu)} \]
-	as defined in {\tt geoR:matern}. 
-	\pause The overall mean is modeled separately and uses covariates $x(s)$ via \[\mu(s)=x(s)^\top\beta.\] 
+Consider point-referenced data at spatial locations $s_1,\ldots,s_n$, model this data as
+\[ Y(s) = \mu(s)+w(s)+\epsilon(s) \]
+If we constrain ourselves to isotropic models, the Mat\'{e}rn class is suggested as a general tool (Banerjee pg. 37). \pause If $w=(w(s_1),\ldots,w(s_n))^\top$ and $\epsilon=(\epsilon(s_1),\ldots,\epsilon(s_n))^\top$, then a general model is \pause
+\[ Var[w] = \sigma^2 H(\phi) \qquad Var[\epsilon] = \tau^2 \mathrm{I} \]
+\pause where $H$ is a correlation matrix with $H_{ij}=\rho(s_i-s_j;\phi)$ and $\rho$ is a valid isotropic correlation function on $\mathbb{R}^r$, i.e. Mat\'{e}rn:
+\[ \rho(u;\nu,\phi) = \frac{(u/\phi)^\nu K_\nu(u/\phi)}{2^{\nu-1}\mathrm\Gamma(\nu)} \]
+as defined in {\tt geoR:matern}.
+\pause The overall mean is modeled separately and uses covariates $x(s)$ via \[\mu(s)=x(s)^\top\beta.\]
 }
 
 \frame{\frametitle{Bayesian estimation for spatial random effects}
-	Let $\theta=(\beta,\sigma^2,\tau^2,\phi)$, then parameter estimates may be obtained from the posterior distribution:
-	\[ p(\theta|y) \propto p(y|\theta) p(\theta) \]
-	\pause where 
-	\[ Y|\theta \sim N(X\beta, \sigma^2 H(\phi)+\tau^2\mathrm{I}).\]
-	
-	\vspace{0.2in} \pause
-	
-	Typically, independent priors are chosen so that 
-	\[ p(\theta) = p(\beta)p(\sigma^2)p(\tau^2)p(\phi). \]
-	As a general rule, non-informative priors can be chosen for $\beta$, e.g. $p(\beta)\propto 1$. \pause However, improper (or vague proper) priors for the variance parameters can lead to improper (or computationally improper) posteriors.  
+Let $\theta=(\beta,\sigma^2,\tau^2,\phi)$, then parameter estimates may be obtained from the posterior distribution:
+\[ p(\theta|y) \propto p(y|\theta) p(\theta) \]
+\pause where
+\[ Y|\theta \sim N(X\beta, \sigma^2 H(\phi)+\tau^2\mathrm{I}).\]
+
+\vspace{0.2in} \pause
+
+Typically, independent priors are chosen so that
+\[ p(\theta) = p(\beta)p(\sigma^2)p(\tau^2)p(\phi). \]
+As a general rule, non-informative priors can be chosen for $\beta$, e.g. $p(\beta)\propto 1$. \pause However, improper (or vague proper) priors for the variance parameters can lead to improper (or computationally improper) posteriors.
 }
 
 
@@ -444,7 +444,12 @@ d <- WEF.dat[!apply(WEF.dat[,c("East_m","North_m", "DBH_cm","Tree_height_m","ELE
 
 # Best guess at common name based on species code
 d$Species = factor(d$Species) # remove unknowns
-d$Species = revalue(d$Species, c(DF = 'Douglas Fir', GF = 'Grand Fir', NF = 'Noble Fir', SF = 'Silver Fir', WH = 'Western Hemlock'))
+d$Species = plyr::revalue(d$Species,
+                          c(DF = 'Douglas Fir',
+                            GF = 'Grand Fir',
+                            NF = 'Noble Fir',
+                            SF = 'Silver Fir',
+                            WH = 'Western Hemlock'))
 
 g = ggplot(d, aes(East_m, North_m, size=DBH_cm)) + theme_bw()
 g + geom_point(alpha=I(0.5))
@@ -457,8 +462,8 @@ g + geom_point(alpha=I(0.5))
 
 \begin{frame}
 <<DBH_interval, dependson='WEF.dat'>>=
-g + geom_point(alpha=I(0.5)) + 
-  facet_wrap(~Species) 
+g + geom_point(alpha=I(0.5)) +
+  facet_wrap(~Species)
 @
 \end{frame}
 
@@ -467,16 +472,20 @@ g + geom_point(alpha=I(0.5)) +
 \frametitle{Interpolation of mean DBH (ignoring species)}
 <<DBH_interpolation, message=FALSE>>=
 ## Load the MBA and fields libraries for creating surface interpolation plots
-library(MBA)
-library(fields) ## For using the image.plot function
+library("MBA")
+library("fields") ## For using the image.plot function
 x.res <- 100
 y.res <- 100
 
 col.br <- colorRampPalette(c("blue", "cyan", "yellow", "red"))
 col.pal <- col.br(5)
 
-surf <- mba.surf(d[c('East_m','North_m','DBH_cm')], no.X = x.res, no.Y = y.res, h = 5, m = 2, extend = FALSE)$xyz.est
-image.plot(surf, xaxs = "r", yaxs = "r", xlab = "Easting (m)", ylab = "Northing (m)", col = col.br(25))
+surf <- mba.surf(d[c('East_m','North_m','DBH_cm')],
+                 no.X = x.res, no.Y = y.res, h = 5, m = 2, extend = FALSE)$xyz.est
+
+image.plot(surf, xaxs = "r", yaxs = "r",
+           xlab = "Easting (m)", ylab = "Northing (m)", col = col.br(25))
+
 contour(surf, add=T) ## (Optional) Adds contour lines to the plot
 @
 \end{frame}
@@ -488,7 +497,7 @@ contour(surf, add=T) ## (Optional) Adds contour lines to the plot
 \frametitle{Regression}
 <<DBH_OLS>>=
 ## Load geoR library for computing variograms
-library(geoR)
+library("geoR")
 coords = d[c('North_m','East_m')]
 max.dist <- 0.25 * max(iDist(coords))
 bins <- 50
@@ -507,9 +516,9 @@ DBH.resid <- resid(lm.DBH)
 \begin{frame}[fragile]
 \frametitle{Variogram (exponential model)}
 <<DBH_variogram, dependson='DBH_OLS', message=FALSE>>=
-vario.DBH.resid <- variog(coords = coords, 
-                          data = DBH.resid, 
-                          uvec = (seq(0, max.dist, length = bins)), 
+vario.DBH.resid <- variog(coords = coords,
+                          data = DBH.resid,
+                          uvec = (seq(0, max.dist, length = bins)),
                           messages=FALSE)
 fit.DBH.resid <- variofit(vario.DBH.resid, ini.cov.pars = c(300, 200/-log(0.05)), cov.model = "exponential", minimisation.function = "nls", weights = "equal", messages=FALSE)
 
@@ -533,14 +542,14 @@ par(opar)
 \frametitle{Isotropy?}
 <<DBH_directional_variograms, dependson='DBH_data'>>=
 ### Illustrate variograms using the gstat package
-library(sp)
-library(gstat)
+library("sp")
+library("gstat")
 dd = d
 coordinates(dd) = coords
-vario.DBH <- variogram(DBH_cm ~ Species, 
+vario.DBH <- variogram(DBH_cm ~ Species,
                        data = dd,
-                       cutoff = max.dist, 
-                       width = 5, 
+                       cutoff = max.dist,
+                       width = 5,
                        alpha = (0:3) * 45)
 fit.DBH <- fit.variogram(vario.DBH, vgm(1000, "Exp", 200/-log(0.05), 600))
 print(plot(vario.DBH, fit.DBH))
@@ -556,24 +565,24 @@ print(plot(vario.DBH, fit.DBH))
 \frametitle{spBayes}
 <<spLM, dependson=c('DBH_data','DBH_variogram'), echo=TRUE, eval=FALSE>>=
 p = nlevels(d$Species)
-r = spLM(DBH_cm ~ Species, 
-     data = d, 
-     coords = as.matrix(d[c('East_m','North_m')]),
-     knots = c(6,6,.1),
-     cov.model = 'exponential',
-     starting = list(tau.sq = fit.DBH.resid$nugget,
-                     sigma.sq = fit.DBH.resid$cov.pars[1],
-                     phi = fit.DBH.resid$cov.pars[2]),
-     tuning = list(tau.sq = 0.015,
-                   sigma.sq = 0.015,
-                   phi = 0.015),
-     priors = list(beta.Norm=list(rep(0,p), diag(1000,p)),
-                   phi.Unif = c(3/1,3/0.1),
-                   sigma.sq.IG = c(2,200),
-                   tau.sq.IG=c(3,300)),
-     n.samples = 2000,
-     n.report = 500,
-     verbose=TRUE)
+r = spLM(DBH_cm ~ Species,
+         data = d,
+         coords = as.matrix(d[c('East_m','North_m')]),
+         knots = c(6,6,.1),
+         cov.model = 'exponential',
+         starting = list(tau.sq = fit.DBH.resid$nugget,
+                         sigma.sq = fit.DBH.resid$cov.pars[1],
+                         phi = fit.DBH.resid$cov.pars[2]),
+         tuning = list(tau.sq = 0.015,
+                       sigma.sq = 0.015,
+                       phi = 0.015),
+         priors = list(beta.Norm=list(rep(0,p), diag(1000,p)),
+                       phi.Unif = c(3/1,3/0.1),
+                       sigma.sq.IG = c(2,200),
+                       tau.sq.IG=c(3,300)),
+         n.samples = 2000,
+         n.report = 500,
+         verbose=TRUE)
 @
 \end{frame}
 
@@ -601,7 +610,10 @@ nreps = dim(r$p.theta.samples)[1]
 \begin{frame}
 \frametitle{}
 <<theta_posteriors, dependson='spLM_run'>>=
-GGally::ggpairs(r$p.theta.samples[burnin:nreps,])
+r$p.theta.samples[burnin:nreps,] %>%
+  as.data.frame %>%
+  GGally::ggpairs() +
+  theme_bw()
 @
 \end{frame}
 
@@ -632,16 +644,16 @@ summary(r$p.beta.samples)
 
 \begin{frame}
 \frametitle{Spatial surface}
-  If interest resides in $w$, draws can be obtained using the following relationship
-	\[ p(w|y) = \int p(w|\sigma^2,\phi)p(\sigma^2,\phi|y) d\sigma^2 d\phi \]
-	which suggests the following strategy:
-	
-	\vspace{0.2in} \pause
-	
-	\begin{enumerate}
-	\item Run the MCMC sampler to obtain draws $(\sigma^2,\phi)^{(g)} \sim p(\sigma^2,\phi|y)$
-	\item After burn-in and for $g=1,\ldots,G$, sample $w^{(g)}\sim p(w|(\sigma^2,\phi)^{(g)})$. 
-	\end{enumerate}
+If interest resides in $w$, draws can be obtained using the following relationship
+\[ p(w|y) = \int p(w|\sigma^2,\phi)p(\sigma^2,\phi|y) d\sigma^2 d\phi \]
+which suggests the following strategy:
+
+\vspace{0.2in} \pause
+
+\begin{enumerate}
+\item Run the MCMC sampler to obtain draws $(\sigma^2,\phi)^{(g)} \sim p(\sigma^2,\phi|y)$
+\item After burn-in and for $g=1,\ldots,G$, sample $w^{(g)}\sim p(w|(\sigma^2,\phi)^{(g)})$.
+\end{enumerate}
 \end{frame}
 
 
@@ -652,10 +664,10 @@ summary(r$p.beta.samples)
 % <<spLM_beta, dependson='spLM_run'>>=
 % w = spRecover(r, verbose=FALSE)
 % d_w = d[,c('East_m','North_m')] %>%
-%   mutate(w_hat=apply(w$p.w.recover.samples, 1, mean), 
+%   mutate(w_hat=apply(w$p.w.recover.samples, 1, mean),
 %          w_sd = apply(w$p.w.recover.samples, 1, sd))
 % d_w$w_hat[d_w$w_hat < -1e-5] = NA
-% ggplot(d_w, aes(East_m, North_m, color=w_hat)) + 
+% ggplot(d_w, aes(East_m, North_m, color=w_hat)) +
 %   geom_point() +
 %   facet_wrap(~variable)
 % @
@@ -663,11 +675,11 @@ summary(r$p.beta.samples)
 
 
 \frame{\frametitle{Prediction}
-	For prediction at points $s_{01},\ldots,s_{0m}$ and denoting $Y_0=(Y(s_{01}),\ldots,Y(s_{0m}))^\top$ and design matrix $X_0$ having rows $x(s_{0j})^\top$, \pause the following relationship
-	\[ p(y_0|y,X,X_0) = \int p(y_0|y,\theta,X_0) p(\theta|y,X) d\theta \pause \approx \frac{1}{G} \sum_{g=1}^G p(y_0|y,\theta^{(g)},X_0). \]
-	\pause It is more common to take draws $y_0^{(g)} \sim p(y_0|y,\theta^{(g)},X_0)$ and estimate the predictive distribution using 
-	\[ p(y_0|y,,X_0)  \approx \frac{1}{G}  \sum_{g=1}^G \delta_{y_0^{(g)}} \]
-	\pause where $p(y_0|y,\theta,X_0)$ has a conditional normal distribution.
+For prediction at points $s_{01},\ldots,s_{0m}$ and denoting $Y_0=(Y(s_{01}),\ldots,Y(s_{0m}))^\top$ and design matrix $X_0$ having rows $x(s_{0j})^\top$, \pause the following relationship
+\[ p(y_0|y,X,X_0) = \int p(y_0|y,\theta,X_0) p(\theta|y,X) d\theta \pause \approx \frac{1}{G} \sum_{g=1}^G p(y_0|y,\theta^{(g)},X_0). \]
+\pause It is more common to take draws $y_0^{(g)} \sim p(y_0|y,\theta^{(g)},X_0)$ and estimate the predictive distribution using
+\[ p(y_0|y,,X_0)  \approx \frac{1}{G}  \sum_{g=1}^G \delta_{y_0^{(g)}} \]
+\pause where $p(y_0|y,\theta,X_0)$ has a conditional normal distribution.
 }
 
 
@@ -675,12 +687,12 @@ summary(r$p.beta.samples)
 \frametitle{Predictions are not conditionally independent}
 
 Consider the joint distribution for $y$ and $y_0=y(s_0)$ (a scalar for simplicity), \pause then
-\[ 
+\[
 \left(\begin{array}{c} y \\ y_0 \end{array}\right) \sim N\left(\left[\begin{array}{c}X\beta \\ X_0\beta \end{array}\right],
 \left[ \begin{array}{cc} \Omega_{11} & \Omega_{12} \\ \Omega_{21} & \Omega_{22} \end{array} \right]\right)
 \]
 \pause
-where 
+where
 \[ \begin{array}{rl}
 \Omega_{11} &= \sigma^2 H(\phi) + \tau^2 \I \\
 \Omega_{22} &= \sigma^2 + \tau^2 \\
@@ -690,7 +702,7 @@ and $d_{ij}=||s_i-s_j||$.
 
 \vspace{0.2in} \pause
 
-Thus $y_0|y,\theta,X,X_0$ is normal with 
+Thus $y_0|y,\theta,X,X_0$ is normal with
 \[ \begin{array}{rl}
 E[Y(s_0)|y,\theta,X,X_0] &= x_0^\top \beta + \Omega_{12}^\top\Omega_{22}^{-1}(y-X\beta) \\
 V[Y(s_0)|y,\theta,X,X_0] &= \sigma^2+\tau^2 - \Omega_{12}^\top\Omega_{22}^{-1}\Omega_{12}
@@ -702,8 +714,8 @@ V[Y(s_0)|y,\theta,X,X_0] &= \sigma^2+\tau^2 - \Omega_{12}^\top\Omega_{22}^{-1}\O
 
 \begin{frame}
 \frametitle{Generalized linear spatial modeling}
-Let $Y(s)$ be the response of interest with 
-\[ 
+Let $Y(s)$ be the response of interest with
+\[
 E[Y(s)] = g^{-1}(x(s)^\top\beta + w(s))
 \]
 where $w(s)$ is our spatial random effect.
@@ -711,17 +723,17 @@ where $w(s)$ is our spatial random effect.
 \vspace{0.2in} \pause
 
 For example, Poisson regression
-\[ 
+\[
 Y(s) \sim Po(e^{x(s)^\top\beta + w(s)}).
 \]
 
 \vspace{0.2in} \pause
 
-For GLMs (other than linear models), $w(s)$ cannot be integrated out \pause and therefore a common MCMC strategy is 
+For GLMs (other than linear models), $w(s)$ cannot be integrated out \pause and therefore a common MCMC strategy is
 \begin{enumerate}
 \item Sample $\beta|\ldots$.
 \item Sample $w|\ldots$.
-\item Sample $\theta|\ldots$ (the spatial parameters [no nugget]). 
+\item Sample $\theta|\ldots$ (the spatial parameters [no nugget]).
 \end{enumerate}
 \end{frame}
 
@@ -730,18 +742,18 @@ For GLMs (other than linear models), $w(s)$ cannot be integrated out \pause and 
 
 \section{Areal-referenced data}
 % \frame{\frametitle{Areal data}
-% 	Let $y_i$ denote the observation for areal unit $i$, then we typically model this using 
+% 	Let $y_i$ denote the observation for areal unit $i$, then we typically model this using
 % 	\[ Y_i = \mu_i + \phi_i + \epsilon_i \quad \mbox{equivalently} \quad Y = \mu+\phi+\epsilon \]
-% 	\pause with a conditionally autoregressive (CAR) model 
+% 	\pause with a conditionally autoregressive (CAR) model
 % 	\[ \mu = X\beta \qquad \phi \sim N(0,\tau^2[D_w-\rho W]^{-1}) \qquad \epsilon \sim N(0,\sigma^2\mathrm{I}) \]
-% 	\pause where $W$ is the proximity matrix and $D_w$ is a diagonal containing the row sums of $W$. \pause Alternatively for the CAR model, we can write 
+% 	\pause where $W$ is the proximity matrix and $D_w$ is a diagonal containing the row sums of $W$. \pause Alternatively for the CAR model, we can write
 % 	\[ p(\phi_i|\phi_j,i\ne j) = N\left(\rho \sum_j w_{ij} \phi_j/w_{i+}, \tau^2/w_{i+}\right) \]
 % 	\pause which justifies the CAR name.
 % }
-% 
+%
 % \frame{\frametitle{Choosing $W$}
 % 	$W$ is a proximity matrix with $w_{ii}=0$ by definition. \pause
-% 	Common choices for $w_{ij}$ are 
+% 	Common choices for $w_{ij}$ are
 % 	\begin{itemize}[<+->]
 % 	\item 1 if $i$ is a neighbor of $j$ and 0 otherwise
 % 		\begin{itemize}
@@ -750,19 +762,19 @@ For GLMs (other than linear models), $w(s)$ cannot be integrated out \pause and 
 % 		\item neighbors defined by those who are within distance $\delta$
 % 		\item $K$-nearest neighbors
 % 		\end{itemize}
-% 	\item ``distance'' 
+% 	\item ``distance''
 % 		\begin{itemize}
 % 		\item inverse intercentroidal distance
 % 		\item inverse minimum distance plus c
 % 		\end{itemize}
 % 	\end{itemize}
 % }
-% 
+%
 % \frame{\frametitle{Dealing with $\rho$}
 % 	The CAR model is only proper if $\rho \in (1/\lambda_{(1)},1/\lambda_{(n)})$ where $\lambda_{(1)}<\cdots<\lambda_{(n)}$ are the ordered eigenvalues of $D_w^{-1/2}WD_w^{-1/2}$. \pause So
-% 	
-% 	\vspace{0.2in} 
-% 	
+%
+% 	\vspace{0.2in}
+%
 % 	\begin{itemize}[<+->]
 % 	\item Choose $\rho$ so the CAR model is proper
 % 	\item Choose $\rho=1$ (improper IAR model) and constrain $\sum_{i=1}^n \phi_i=0$
@@ -780,32 +792,32 @@ For GLMs (other than linear models), $w(s)$ cannot be integrated out \pause and 
 library(maps)
 
 y<-c(1.14285714285714, 1.15635738831615, 1.08396946564886, 1,
-1.05555555555556,
-1.10810810810811, 0.894179894179894, 0.763358778625954, 1.22137404580153,
-0.81578947368421, 1.13953488372093, 0.930555555555556, 1.10483870967742,
-0.889502762430939, 1.23809523809524, 0.714285714285714, 0.698630136986301,
-1.02136752136752, 1.0431654676259, 0.774193548387097, 0.789115646258503,
-0.760416666666667, 0.711711711711712, 0.909638554216867,
-0.805405405405405,
-0.717948717948718, 1.07624716553288, 0.952380952380952, 1.3125,
-0.978260869565217, 1.20833333333333, 0.714285714285714, 0.982456140350877,
-0.751479289940828, 1.28125, 1.22857142857143, 0.88235294117647,
-1.23636363636364, 1.14285714285714, 0.660194174757282, 1.20454545454545,
-0.830188679245283, 0.92, 0.660377358490566, 0.783333333333333,
-0.63235294117647, 0.66, 0.936170212765957, 0.862595419847328,
-0.91219512195122, 0.62962962962963, 0.8, 0.722772277227723,
-1.04347826086957,
-0.855491329479769, 0.807142857142857, 0.852459016393443, 1.33333333333333,
-0.947368421052632, 1.10256410256410, 1, 1.11717403790925,
-0.909090909090909,
-0.826086956521739, 0.787234042553192, 0.897727272727273, 1,
-1.03333333333333,
-0.895061728395062, 1.09401709401709, 0.75, 1.08577633007600,
-0.888324873096447, 0.706349206349206, 0.760869565217391,
-0.868852459016393,
-1.02727272727273, 0.75, 1.03333333333333, 0.779411764705882,
-0.858974358974359, 1.11940298507463, 1.08333333333333, 0.75,
-1.04324324324324, 0.937777777777778, 0.93939393939394)
+     1.05555555555556,
+     1.10810810810811, 0.894179894179894, 0.763358778625954, 1.22137404580153,
+     0.81578947368421, 1.13953488372093, 0.930555555555556, 1.10483870967742,
+     0.889502762430939, 1.23809523809524, 0.714285714285714, 0.698630136986301,
+     1.02136752136752, 1.0431654676259, 0.774193548387097, 0.789115646258503,
+     0.760416666666667, 0.711711711711712, 0.909638554216867,
+     0.805405405405405,
+     0.717948717948718, 1.07624716553288, 0.952380952380952, 1.3125,
+     0.978260869565217, 1.20833333333333, 0.714285714285714, 0.982456140350877,
+     0.751479289940828, 1.28125, 1.22857142857143, 0.88235294117647,
+     1.23636363636364, 1.14285714285714, 0.660194174757282, 1.20454545454545,
+     0.830188679245283, 0.92, 0.660377358490566, 0.783333333333333,
+     0.63235294117647, 0.66, 0.936170212765957, 0.862595419847328,
+     0.91219512195122, 0.62962962962963, 0.8, 0.722772277227723,
+     1.04347826086957,
+     0.855491329479769, 0.807142857142857, 0.852459016393443, 1.33333333333333,
+     0.947368421052632, 1.10256410256410, 1, 1.11717403790925,
+     0.909090909090909,
+     0.826086956521739, 0.787234042553192, 0.897727272727273, 1,
+     1.03333333333333,
+     0.895061728395062, 1.09401709401709, 0.75, 1.08577633007600,
+     0.888324873096447, 0.706349206349206, 0.760869565217391,
+     0.868852459016393,
+     1.02727272727273, 0.75, 1.03333333333333, 0.779411764705882,
+     0.858974358974359, 1.11940298507463, 1.08333333333333, 0.75,
+     1.04324324324324, 0.937777777777778, 0.93939393939394)
 
 
 # Number of categories/shadings to be used.
@@ -834,150 +846,150 @@ title(main="MN Lung Cancer SMR", cex.main=2)
 }
 
 \frame{\frametitle{Modeling areal units}
-  Let $Y_i$ represent the SMR for lung cancer in MN county $i$. \pause Consider the model defined by conditional distributions:
-	\[ Y_i|y_{-i} \sim N\left(\sum_{j\in n_i} y_j/m_i, \tau^2/m_i\right) \]
-	where 
-	\begin{itemize}[<+->]
-	\item $n_i$ indicates the neighbors of $i$
-	\item $m_i$ indicates the number of neighbors for $i$
-	\end{itemize}
-	
-	\vspace{0.2in} \pause
-	
-	This defines a \emph{Markov Random Field}.
+Let $Y_i$ represent the SMR for lung cancer in MN county $i$. \pause Consider the model defined by conditional distributions:
+\[ Y_i|y_{-i} \sim N\left(\sum_{j\in n_i} y_j/m_i, \tau^2/m_i\right) \]
+where
+\begin{itemize}[<+->]
+\item $n_i$ indicates the neighbors of $i$
+\item $m_i$ indicates the number of neighbors for $i$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+This defines a \emph{Markov Random Field}.
 }
 
 \subsection{Brook's Lemma}
 \frame{\frametitle{Brook's Lemma}
-	It is clear that given $p(y_1,\ldots,y_n)$, the \emph{full conditionals}, i.e. $p(y_i|y_{-i})$, are determined. \pause 
-	
-	\vspace{0.2in} \pause 
-	
-	\begin{definition}
-	\alert{Brook's Lemma} states that 
-	\[ \frac{p(y_1,\ldots,y_n)}{p(y_1',\ldots,y_n')} = \frac{p(y_1|y_2,\ldots,y_n)}{p(y_1'|y_2,\ldots,y_n)} \cdot \frac{p(y_2|y_1',y_3,\ldots,y_n)}{p(y_2'|y_1',y_3,\ldots,y_n)}\cdots \frac{p(y_n|y_1',\ldots,y_{n-1}')}{p(y_n'|y_1',\ldots,y_{n-1}')} \]
-	for all $(y_1',\ldots,y_n')$. 
-	\end{definition}
-	
-	\vspace{0.2in} \pause
-	
-	If 
-	{\tiny
-	\[ p(y_1',\ldots,y_n') = \int \frac{p(y_1|y_2,\ldots,y_n)}{p(y_1'|y_2,\ldots,y_n)} \cdot \frac{p(y_2|y_1',y_3,\ldots,y_n)}{p(y_2'|y_1',y_3,\ldots,y_n)}\cdots \frac{p(y_n|y_1',\ldots,y_{n-1}')}{p(y_n'|y_1',\ldots,y_{n-1}')} dy_1,\ldots,dy_n < \infty \]
-	}
-	then $p(y_1,\ldots,y_n)$ is a proper joint distribution.
+It is clear that given $p(y_1,\ldots,y_n)$, the \emph{full conditionals}, i.e. $p(y_i|y_{-i})$, are determined. \pause
+
+\vspace{0.2in} \pause
+
+\begin{definition}
+\alert{Brook's Lemma} states that
+\[ \frac{p(y_1,\ldots,y_n)}{p(y_1',\ldots,y_n')} = \frac{p(y_1|y_2,\ldots,y_n)}{p(y_1'|y_2,\ldots,y_n)} \cdot \frac{p(y_2|y_1',y_3,\ldots,y_n)}{p(y_2'|y_1',y_3,\ldots,y_n)}\cdots \frac{p(y_n|y_1',\ldots,y_{n-1}')}{p(y_n'|y_1',\ldots,y_{n-1}')} \]
+for all $(y_1',\ldots,y_n')$.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+If
+{\tiny
+\[ p(y_1',\ldots,y_n') = \int \frac{p(y_1|y_2,\ldots,y_n)}{p(y_1'|y_2,\ldots,y_n)} \cdot \frac{p(y_2|y_1',y_3,\ldots,y_n)}{p(y_2'|y_1',y_3,\ldots,y_n)}\cdots \frac{p(y_n|y_1',\ldots,y_{n-1}')}{p(y_n'|y_1',\ldots,y_{n-1}')} dy_1,\ldots,dy_n < \infty \]
+}
+then $p(y_1,\ldots,y_n)$ is a proper joint distribution.
 }
 
 \subsection{Conditionally autoregressive models}
 \frame{\frametitle{Conditionally autoregressive models}
-	More generally, we can consider 
-	\[ Y_i|y_{-i} \sim N\left(\sum_{j\ne i} b_{ij}y_j, \tau_i^2\right) \]
-	Through Brook's Lemma, we have 
-	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2} y^\top D^{-1}[\mathrm{I}-B]y \right) \]
-	where 
-	\begin{itemize}
-	\item $B$ has elements $b_{ij}$
-	\item $D$ is diagonal with elements $\tau_i^2$
-	\end{itemize}
-	
-	\vspace{0.2in} \pause
-	
-	In order for $D^{-1}[\mathrm{I}-B]$ to be symmetric, we need $\frac{b_{ij}}{\tau_i^2} = \frac{b_{ji}}{\tau_j^2}$ for all $i,j$.
+More generally, we can consider
+\[ Y_i|y_{-i} \sim N\left(\sum_{j\ne i} b_{ij}y_j, \tau_i^2\right) \]
+Through Brook's Lemma, we have
+\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2} y^\top D^{-1}[\mathrm{I}-B]y \right) \]
+where
+\begin{itemize}
+\item $B$ has elements $b_{ij}$
+\item $D$ is diagonal with elements $\tau_i^2$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+In order for $D^{-1}[\mathrm{I}-B]$ to be symmetric, we need $\frac{b_{ij}}{\tau_i^2} = \frac{b_{ji}}{\tau_j^2}$ for all $i,j$.
 }
 
 \subsection{Proximity matrix}
 \frame{\frametitle{Proximity matrix}
-	\begin{definition}
-	A \alert{proximity matrix} is a an $n\times n$ matrix, W, with elements 
-	\begin{itemize}[<+->]
-	\item $w_{ii}=0$ and 
-	\item $w_{ij}$ representing the ``distance'' between unit $i$ and unit $j$
-	\end{itemize}
-	\end{definition}
-	
-	\vspace{0.2in} \pause 
-	
-	Common choices for $w_{ij}$ are 
-	\begin{itemize}[<+->]
-	\item 1 if $i$ is a neighbor of $j$ and 0 otherwise
-		\begin{itemize}
-		\item neighbors defined by those who share an edge
-		\item neighbors defined by those who share a point
-		\item neighbors defined by those who are within distance $\delta$
-		\item $K$-nearest neighbors
-		\end{itemize}
-	\item ``distance'' 
-		\begin{itemize}
-		\item inverse intercentroidal distance
-		\item inverse minimum distance plus c
-		\end{itemize}
-	\end{itemize}
-}	
+\begin{definition}
+A \alert{proximity matrix} is a an $n\times n$ matrix, W, with elements
+\begin{itemize}[<+->]
+\item $w_{ii}=0$ and
+\item $w_{ij}$ representing the ``distance'' between unit $i$ and unit $j$
+\end{itemize}
+\end{definition}
+
+\vspace{0.2in} \pause
+
+Common choices for $w_{ij}$ are
+\begin{itemize}[<+->]
+\item 1 if $i$ is a neighbor of $j$ and 0 otherwise
+\begin{itemize}
+\item neighbors defined by those who share an edge
+\item neighbors defined by those who share a point
+\item neighbors defined by those who are within distance $\delta$
+\item $K$-nearest neighbors
+\end{itemize}
+\item ``distance''
+\begin{itemize}
+\item inverse intercentroidal distance
+\item inverse minimum distance plus c
+\end{itemize}
+\end{itemize}
+}
 
 \frame{\frametitle{Intrinsicially autoregressive model}
-	Recall 
-	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2} y^\top D^{-1}[\mathrm{I}-B]y \right) \]
-	\pause if we set $w_{i+} = \sum_{j=1}^n w_{ij}$, $b_{ij} = w_{ij}/w_{i+}$, and $\tau_i^2=\tau^2/w_{i+}$, \pause we have 
-	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} y^\top [D_w-W]y \right) \]
-	\pause where 
-	\begin{itemize}[<+->]
-	\item $W$ is our proximity matrix and 
-	\item $D_w$ has diagonal elements $w_{i+}$
-	\end{itemize}
-	
-	\vspace{0.2in} \pause 
-	
-	This can be rewritten as 
-	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} \sum_{i\ne j} w_{ij}(y_i-y_j)^2 \right) \]
-	\pause This is called the \emph{intrinsically autoregressive} model.
+Recall
+\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2} y^\top D^{-1}[\mathrm{I}-B]y \right) \]
+\pause if we set $w_{i+} = \sum_{j=1}^n w_{ij}$, $b_{ij} = w_{ij}/w_{i+}$, and $\tau_i^2=\tau^2/w_{i+}$, \pause we have
+\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} y^\top [D_w-W]y \right) \]
+\pause where
+\begin{itemize}[<+->]
+\item $W$ is our proximity matrix and
+\item $D_w$ has diagonal elements $w_{i+}$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+This can be rewritten as
+\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} \sum_{i\ne j} w_{ij}(y_i-y_j)^2 \right) \]
+\pause This is called the \emph{intrinsically autoregressive} model.
 }
 
 
 \subsection{Proper CAR models}
 \frame{\frametitle{Proper CAR models}
-	To make this proper, 
-	\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} y^\top [D_w-\rho W]y \right) \]
-	with 
-	\begin{itemize}[<+->]
-	\item $\rho \in (1/\lambda_{(n)}, 1/\lambda_{(1)})$ where
-	\item $\lambda_{(1)} < \cdots < \lambda_{(n)}$ are the ordered eigenvalues of $D_w^{-1/2}WD_w^{-1/2}$. 
-	\end{itemize}
-	
-	\vspace{0.2in} \pause
-	
-	The full conditionals are 
-	\[ Y_i|y_{-i} \sim N\left( \rho \sum_{j\ne i} w_{ij}y_j/w_{i+}, \tau^2/w_{i+}\right) \]
-	\pause a reasonable prior for $\rho$ should put most of its mass near 1. 
+To make this proper,
+\[ p(y_1,\ldots,y_n) \propto \exp\left( -\frac{1}{2\tau^2} y^\top [D_w-\rho W]y \right) \]
+with
+\begin{itemize}[<+->]
+\item $\rho \in (1/\lambda_{(n)}, 1/\lambda_{(1)})$ where
+\item $\lambda_{(1)} < \cdots < \lambda_{(n)}$ are the ordered eigenvalues of $D_w^{-1/2}WD_w^{-1/2}$.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+The full conditionals are
+\[ Y_i|y_{-i} \sim N\left( \rho \sum_{j\ne i} w_{ij}y_j/w_{i+}, \tau^2/w_{i+}\right) \]
+\pause a reasonable prior for $\rho$ should put most of its mass near 1.
 }
 
 \frame{\frametitle{Dealing with $\rho$}
-	\begin{itemize}[<+->]
-	\item Choose $\rho$ so the CAR model is proper
-	\item Choose $\rho=1$ (improper IAR model) and constrain $\sum_{i=1}^n Y_i=0$
-	\item Choose $\rho=1$ and estimate a mean (remove mean from the fixed effect)
-	\item Let $\rho\sim Be(18,2)$ (Banerjee pg 164) and estimate it.
-	\end{itemize}
+\begin{itemize}[<+->]
+\item Choose $\rho$ so the CAR model is proper
+\item Choose $\rho=1$ (improper IAR model) and constrain $\sum_{i=1}^n Y_i=0$
+\item Choose $\rho=1$ and estimate a mean (remove mean from the fixed effect)
+\item Let $\rho\sim Be(18,2)$ (Banerjee pg 164) and estimate it.
+\end{itemize}
 }
 
 
 \subsection{Random effect model}
 \frame{\frametitle{CAR as a model for random effects}
-	Let 
-	\begin{itemize}[<+->]
-	\item $Y_i$ represent the (continuous) response for observation $i$
-	\item $X_i$ represent explanatory variables for observation $i$
-	\item $s[i]$ represent the areal unit for observation $i$
-	\end{itemize}
-	\pause then a possible model is 
-	\[ Y_i = X_i^\top \beta + \omega_{s[i]} + \epsilon_i \]
-	\pause  where 
-	\begin{itemize}[<+->]
-	\item $\epsilon_i\stackrel{ind}{\sim} N(0,\sigma^2)$ is noise
-	\item $\omega_s$ is the spatial random effect associated with areal unit $s$, e.g. 
-	\end{itemize}
- \pause 
-	 
-	\[ p(\omega_1,\ldots,\omega_S) \propto \exp\left( -\frac{1}{2\tau^2} \omega^\top [D_w-\rho W]\omega \right) \]
+Let
+\begin{itemize}[<+->]
+\item $Y_i$ represent the (continuous) response for observation $i$
+\item $X_i$ represent explanatory variables for observation $i$
+\item $s[i]$ represent the areal unit for observation $i$
+\end{itemize}
+\pause then a possible model is
+\[ Y_i = X_i^\top \beta + \omega_{s[i]} + \epsilon_i \]
+\pause  where
+\begin{itemize}[<+->]
+\item $\epsilon_i\ind N(0,\sigma^2)$ is noise
+\item $\omega_s$ is the spatial random effect associated with areal unit $s$, e.g.
+\end{itemize}
+\pause
+
+\[ p(\omega_1,\ldots,\omega_S) \propto \exp\left( -\frac{1}{2\tau^2} \omega^\top [D_w-\rho W]\omega \right) \]
 }
 
 
@@ -991,23 +1003,32 @@ title(main="MN Lung Cancer SMR", cex.main=2)
 #library(shapefiles)
 #library(sp)
 
-library(CARBayesdata)
-data(propertydata.spatial)
-propertydata <- propertydata.spatial@data
+data(GGHB.IG)
+data(pricedata)
 
 
 ###################################################
-### code chunk number 8: CARBayesvignette.Rnw:328-337
+### code chunk number 6: CARBayes.Rnw:429-433
 ###################################################
-northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(), offset = c(220000,647000), 
-scale = 4000)
-scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(), offset = c(225000,647000), 
-scale = 10000, fill=c("transparent","black"))
+missing.IG <- setdiff(rownames(GGHB.IG@data), pricedata$IG)
+missing.IG.row <- which(missing.IG==rownames(GGHB.IG@data))
+propertydata.spatial <- GGHB.IG[-missing.IG.row, ]
+propertydata.spatial@data <- data.frame(propertydata.spatial@data, pricedata)
+
+
+###################################################
+### code chunk number 7: CARBayes.Rnw:461-471
+###################################################
+northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(), 
+    offset = c(220000,647000), scale = 4000)
+scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(), 
+    offset = c(225000,647000), scale = 10000, fill=c("transparent","black"))
 text1 <- list("sp.text", c(225000,649000), "0")
 text2 <- list("sp.text", c(230000,649000), "5000 m")
-spplot(propertydata.spatial, c("price"), sp.layout=list(northarrow, scalebar, text1, text2), 
-scales=list(draw = TRUE), at=seq(min(propertydata$price)-1, max(propertydata$price)+1, length.out=8), 
-col.regions=hsv(0,seq(0.05,1,length.out=7),1), col="transparent")
+breakpoints <- seq(min(pricedata$price)-1, max(pricedata$price)+1, length.out=8)
+spplot(propertydata.spatial, c("price"), sp.layout=list(northarrow, scalebar, 
+    text1, text2), scales=list(draw = TRUE), at=breakpoints,
+    col.regions=terrain.colors(n=length(breakpoints)-1), col="transparent")
 @
 \end{frame}
 
@@ -1015,32 +1036,37 @@ col.regions=hsv(0,seq(0.05,1,length.out=7),1), col="transparent")
 \begin{frame}
 \frametitle{Housing price model}
 
-Let 
+Let
 \begin{itemize}
-\item $Y_i$ be the logarithm of the median home price in each Intermediate Geography (IG) to the north of the river Clude in the Greater Glasgow and Clyde health board, \pause 
+\item $Y_i$ be the logarithm of the median home price in each Intermediate Geography (IG) to the north of the river Clude in the Greater Glasgow and Clyde health board, \pause
 \item use explanatory variables
-  \begin{itemize}
-  \item crime: crime rate (number of crimes per 10,000 people) in each IG (logged),
-  \item rooms: median number of rooms in a property in each IG,
-  \item type: predominant property type in each IG with levels: detached, flat, semi, terrace, 
-  \item sales: percentage of properties that sold in each IG in a year, and
-  \item driveshop: average time taken to drive to a shopping centre in minutes (logged).
-  \end{itemize}
+\begin{itemize}
+\item crime: crime rate (number of crimes per 10,000 people) in each IG (logged),
+\item rooms: median number of rooms in a property in each IG,
+\item type: predominant property type in each IG with levels: detached, flat, semi, terrace,
+\item sales: percentage of properties that sold in each IG in a year, and
+\item driveshop: average time taken to drive to a shopping centre in minutes (logged).
+\end{itemize}
 \end{itemize}
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Housing price model}
-Assume 
-\[ 
-Y_i \stackrel{ind}{\sim} N(X_i\beta + \omega_i, \nu^2)
+Assume
+\[
+Y_i \ind N(X_i\beta + \omega_i, \nu^2)
+\]
+or, alternatively,
+\[
+Y_i = X_\beta+\omega_i+\epsilon_i
 \]
 \pause
-where 
+where
 \begin{itemize}
-\item $\beta$ are the regression parameters and 
-\item $\omega_i$ are assumed to come from an intrinsic CAR model with proximity matrix indicating those regions that share a border.
+\item $\beta$ are the regression parameters,
+\item $\omega_i$ are assumed to come from an intrinsic CAR model with proximity matrix indicating those regions that share a border, and
+\item $\epsilon_i\ind N(0,\nu^2)$.
 \end{itemize}
 
 \end{frame}
@@ -1049,193 +1075,227 @@ where
 
 \begin{frame}[fragile]
 <<CARBayes_analysis, dependson='CARBayes_data', echo=TRUE>>=
-W.nb <- poly2nb(propertydata.spatial, row.names = rownames(propertydata))
-W.mat <- nb2mat(W.nb, style="B")
-model.spatial <- S.CARiar(formula = log(price) ~ crime+rooms+sales+factor(type) + log(driveshop), 
-                             data = propertydata, 
-                             family = "gaussian", 
-                             W = W.mat, 
-                             burnin = 1000, 
-                             n.sample = 3000, 
-                             verbose = FALSE)
+propertydata.spatial@data$logprice <- log(propertydata.spatial@data$price)
+propertydata.spatial@data$logdriveshop <- log(propertydata.spatial@data$driveshop)
+
+
+###################################################
+### code chunk number 9: CARBayes.Rnw:495-498
+###################################################
+library(splines)
+form <- logprice~ns(crime,3)+rooms+sales+factor(type) + logdriveshop
+model <- lm(formula=form, data=propertydata.spatial@data)
+
+
+###################################################
+### code chunk number 10: CARBayes.Rnw:505-510
+###################################################
+library(spdep)
+W.nb <- poly2nb(propertydata.spatial, row.names = rownames(propertydata.spatial@data))
+W.list <- nb2listw(W.nb, style="B")
+resid.model <- residuals(model)
+moran.mc(x=resid.model, listw=W.list, nsim=1000)
+
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 <<CARBayes_results, dependson='CARBayes_analysis'>>=
-model.spatial
+summary(model)
 @
 \end{frame}
 
-
-\subsection{Respiratory data}
-\frame{\frametitle{GLMs with spatial random effects}\pause
-  Let 
-	\begin{itemize}[<+->]
-	\item $Y_i$ represent the response for observation $i$
-	\item $X_i$ represent explanatory variables for observation $i$
-	\item $s[i]$ represent the areal unit for observation $i$
-	\end{itemize}
-	
-	\vspace{0.2in} \pause
-	
-	Then a GLM model incorporating spatial random effects has a
-	\begin{itemize}[<+->]
-	\item probability distribution from an exponential family,
-	\item link function $g$ such that $E[Y_i]=\mu_i=g^{-1}(\eta_i)$, and
-	\item linear predictor $\eta_i=X_i^{\top} \beta+\omega_{s[i]}$.
-	\end{itemize}	
-
-	\vspace{0.2in} \pause
-	
-	For example,
-	\begin{itemize}[<+->]
-	\item $Y_i\stackrel{ind}{\sim} Ber(p_i)$ with $p_i=\mathrm{\Phi}^{-1}(X_i^\top \beta + \omega_{s[i]})$ 
-	\item $Y_i \stackrel{ind}{\sim} Po(\lambda_i)$ with $\lambda_i = \exp(X_i^\top\beta +\omega_{s[i]})$
-	\end{itemize}
-}
-
-
-\begin{frame}
-\frametitle{Respitatory data in Glasgow}
-<<CARBayes_respiratory>>=
-###################################################
-### code chunk number 17: CARBayesvignette.Rnw:474-478
-###################################################
-library(CARBayesdata)
-data(respiratorydata.spatial)
-respiratorydata <- respiratorydata.spatial@data
-#head(respiratorydata)
-
-###################################################
-### code chunk number 18: CARBayesvignette.Rnw:484-488
-###################################################
-respiratorydata$SIR2010 <- respiratorydata$observed2010 / respiratorydata$expected2010
-respiratorydata.spatial@data$SIR2010 <- respiratorydata$SIR2010
-W.nb <- poly2nb(respiratorydata.spatial, row.names = rownames(respiratorydata))
-W.mat <- nb2mat(W.nb, style="B")
-
-
-###################################################
-### code chunk number 19: CARBayesvignette.Rnw:496-503
-###################################################
-northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(), offset = c(220000,647000), scale = 4000)
-scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(), offset = c(225000,647000), scale = 10000, fill=c("transparent","black"))
-text1 <- list("sp.text", c(225000,649000), "0")
-text2 <- list("sp.text", c(230000,649000), "5000 m")
-spplot(respiratorydata.spatial, c("SIR2010"), sp.layout=list(northarrow, scalebar, text1, text2), 
-       scales=list(draw = TRUE), at=seq(min(respiratorydata$SIR2010)-0.05, max(respiratorydata$SIR2010)+0.05, length.out=8), 
-       col.regions=hsv(0,seq(0.05,1,length.out=7),1), col="transparent")
-
-
-###################################################
-### code chunk number 20: CARBayesvignette.Rnw:522-524
-###################################################
-Z.incomedep <- as.matrix(dist(cbind(respiratorydata$incomedep2010, 
-respiratorydata$incomedep2010), method="manhattan", diag=TRUE, upper=TRUE)) * W.mat / 2
-@
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Respiratory model}
-
-Let 
-\begin{itemize}
-\item $Y_i$ be the observed number of hospitalisations due to respiratory disease in each Intermediate Geography (IG) to the north of the river Clude in the Greater Glasgow and Clyde health board. \pause 
-\item $E_i$ be the expected number of hospitalisations using external data.
-\end{itemize}
-
-\vspace{0.2in} \pause
-
-Assume 
-\[ 
-Y_i \stackrel{ind}{\sim} Po(E_ie^{\beta_0+\omega_i}) 
-\]
-\pause
-where 
-\begin{itemize}
-\item $\beta_0$ is the intercept and 
-\item $\omega_i$ are assumed to come from an intrinsic CAR model with proximity matrix indicating those regions that share a border.
-\end{itemize}
-
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]
-<<CARBayes_respiratory_analysis, dependson='CARBayes_respiratory', echo=TRUE>>=
-m = S.CARiar(formula = observed2010 ~ offset(log(expected2010)),
-             data = respiratorydata,
-             family = 'poisson',
-             W = W.mat,
-             burnin = 10000,
-             n.sample = 20000, verbose=FALSE)
-m
-@
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Smoothed estimates}
-<<CARBayes_smoothed, dependson='CARBayes_respiratory_analysis', out.width='\\linewidth'>>=
-northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(), offset = c(220000,647000), scale = 4000)
-scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(), offset = c(225000,647000), scale = 10000, fill=c("transparent","black"))
-text1 <- list("sp.text", c(225000,649000), "0")
-text2 <- list("sp.text", c(230000,649000), "5000 m")
-p1 = spplot(respiratorydata.spatial, c("SIR2010"), sp.layout=list(northarrow, scalebar, text1, text2), 
-       scales=list(draw = TRUE), at=seq(min(respiratorydata$SIR2010)-0.05, max(respiratorydata$SIR2010)+0.05, length.out=8), 
-       col.regions=hsv(0,seq(0.05,1,length.out=7),1), col="transparent", main='Raw')
-
-risk.estimates <- m$fitted.values / respiratorydata$expected2010
-respiratorydata.spatial@data$risk <- risk.estimates
-northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(),
-offset = c(220000,647000), scale = 4000)
-scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(),
-offset = c(225000,647000), scale = 10000, fill=c("transparent","black"))
-text1 <- list("sp.text", c(225000,649000), "0")
-text2 <- list("sp.text", c(230000,649000), "5000 m")
-p2 = spplot(respiratorydata.spatial, c("risk"), sp.layout=list(northarrow, scalebar,
-text1, text2), scales=list(draw = TRUE),
-at=seq(min(risk.estimates)-0.1, max(risk.estimates)+0.1, length.out=8),
-col.regions=hsv(0,seq(0.05,1,length.out=7),1), col="transparent", main='Smoothed')
-
-
-print(p1, position=c(0,0,.5,1), more=T)
-print(p2, position=c(.5,0,1,1), more=F)
-@
-\end{frame}
-
-
-
-\subsection{Generalized linear modeling}
-\frame{\frametitle{GLMs}\pause
-	\begin{itemize}[<+->]
-	\item Binary data
-		\begin{itemize}
-		\item Point-referenced data: 
-		\[ Y(s) \sim Ber(p(s)) \qquad \mbox{logit}(p(s)) = \mu(s)+w(s) \]
-		\item Areal data
-		\[ Y_i \sim Ber(p_i) \qquad \mbox{logit}(p_i) = \mu_i + \omega_i \]
-		\end{itemize}
-		
-		\vspace{0.2in}
-		
-	\item Count data
-		\begin{itemize}
-		\item Point-referenced data: 
-		\[ Y(s) \sim Po(\lambda(s)) \qquad \log(\lambda(s)) = \mu(s)+w(s) \]
-		\item Areal data
-		\[ Y_i \sim Po(\lambda_i) \qquad \log(\lambda_i) = \mu_i + \omega_i \]
-		\end{itemize}
-	\end{itemize}
-}
-
-
+% 
+% 
+% \begin{frame}[fragile]
+% \frametitle{Bayesian analysis using Leroux CAR}
+% <<CARleroux, dependson = "CARBayes_analysis", echo=TRUE>>=
+% W <- nb2mat(W.nb, style = "B")
+% model.spatial <- S.CARleroux(formula = form, 
+%                              data = propertydata.spatial@data,
+%                              family = "gaussian",
+%                              W = W,
+%                              burnin = 20000,
+%                              n.sample = 120000, thin = 10)
+% @
+% \end{frame}
+% 
+% 
+% \begin{frame}
+% \frametitle{Bayesian analysis using Leroux CAR}
+% <<dependson="CARleroux">>=
+% model.spatial
+% @
+% \end{frame}
+% 
+% \subsection{Respiratory data}
+% \frame{\frametitle{GLMs with spatial random effects}\pause
+% Let
+% \begin{itemize}[<+->]
+% \item $Y_i$ represent the response for observation $i$
+% \item $X_i$ represent explanatory variables for observation $i$
+% \item $s[i]$ represent the areal unit for observation $i$
+% \end{itemize}
+% 
+% \vspace{0.2in} \pause
+% 
+% Then a GLM model incorporating spatial random effects has a
+% \begin{itemize}[<+->]
+% \item probability distribution from an exponential family,
+% \item link function $g$ such that $E[Y_i]=\mu_i=g^{-1}(\eta_i)$, and
+% \item linear predictor $\eta_i=X_i^{\top} \beta+\omega_{s[i]}$.
+% \end{itemize}
+% 
+% \vspace{0.2in} \pause
+% 
+% For example,
+% \begin{itemize}[<+->]
+% \item $Y_i\ind Ber(p_i)$ with $p_i=\mathrm{\Phi}^{-1}(X_i^\top \beta + \omega_{s[i]})$
+% \item $Y_i \ind Po(\lambda_i)$ with $\lambda_i = \exp(X_i^\top\beta +\omega_{s[i]})$
+% \end{itemize}
+% }
+% 
+% 
+% \begin{frame}
+% \frametitle{Respitatory data in Glasgow}
+% <<CARBayes_respiratory>>=
+% ###################################################
+% ### code chunk number 17: CARBayesvignette.Rnw:474-478
+% ###################################################
+% library(CARBayesdata)
+% data(respiratorydata.spatial)
+% respiratorydata <- respiratorydata.spatial@data
+% #head(respiratorydata)
+% 
+% ###################################################
+% ### code chunk number 18: CARBayesvignette.Rnw:484-488
+% ###################################################
+% respiratorydata$SIR2010 <- respiratorydata$observed2010 / respiratorydata$expected2010
+% respiratorydata.spatial@data$SIR2010 <- respiratorydata$SIR2010
+% W.nb <- poly2nb(respiratorydata.spatial, row.names = rownames(respiratorydata))
+% W.mat <- nb2mat(W.nb, style="B")
+% 
+% 
+% ###################################################
+% ### code chunk number 19: CARBayesvignette.Rnw:496-503
+% ###################################################
+% northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(), offset = c(220000,647000), scale = 4000)
+% scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(), offset = c(225000,647000), scale = 10000, fill=c("transparent","black"))
+% text1 <- list("sp.text", c(225000,649000), "0")
+% text2 <- list("sp.text", c(230000,649000), "5000 m")
+% spplot(respiratorydata.spatial, c("SIR2010"), sp.layout=list(northarrow, scalebar, text1, text2),
+%        scales=list(draw = TRUE), at=seq(min(respiratorydata$SIR2010)-0.05, max(respiratorydata$SIR2010)+0.05, length.out=8),
+%        col.regions=hsv(0,seq(0.05,1,length.out=7),1), col="transparent")
+% 
+% 
+% ###################################################
+% ### code chunk number 20: CARBayesvignette.Rnw:522-524
+% ###################################################
+% Z.incomedep <- as.matrix(dist(cbind(respiratorydata$incomedep2010,
+%                                     respiratorydata$incomedep2010), method="manhattan", diag=TRUE, upper=TRUE)) * W.mat / 2
+% @
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}
+% \frametitle{Respiratory model}
+% 
+% Let
+% \begin{itemize}
+% \item $Y_i$ be the observed number of hospitalisations due to respiratory disease in each Intermediate Geography (IG) to the north of the river Clude in the Greater Glasgow and Clyde health board. \pause
+% \item $E_i$ be the expected number of hospitalisations using external data.
+% \end{itemize}
+% 
+% \vspace{0.2in} \pause
+% 
+% Assume
+% \[
+% Y_i \ind Po(E_ie^{\beta_0+\omega_i})
+% \]
+% \pause
+% where
+% \begin{itemize}
+% \item $\beta_0$ is the intercept and
+% \item $\omega_i$ are assumed to come from an intrinsic CAR model with proximity matrix indicating those regions that share a border.
+% \end{itemize}
+% 
+% \end{frame}
+% 
+% 
+% 
+% 
+% \begin{frame}[fragile]
+% <<CARBayes_respiratory_analysis, dependson='CARBayes_respiratory', echo=TRUE>>=
+% m = S.CARiar(formula = observed2010 ~ offset(log(expected2010)),
+%              data = respiratorydata,
+%              family = 'poisson',
+%              W = W.mat,
+%              burnin = 10000,
+%              n.sample = 20000, verbose=FALSE)
+% m
+% @
+% \end{frame}
+% 
+% 
+% 
+% \begin{frame}
+% \frametitle{Smoothed estimates}
+% <<CARBayes_smoothed, dependson='CARBayes_respiratory_analysis', out.width='\\linewidth'>>=
+% northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(), offset = c(220000,647000), scale = 4000)
+% scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(), offset = c(225000,647000), scale = 10000, fill=c("transparent","black"))
+% text1 <- list("sp.text", c(225000,649000), "0")
+% text2 <- list("sp.text", c(230000,649000), "5000 m")
+% p1 = spplot(respiratorydata.spatial, c("SIR2010"), sp.layout=list(northarrow, scalebar, text1, text2),
+%             scales=list(draw = TRUE), at=seq(min(respiratorydata$SIR2010)-0.05, max(respiratorydata$SIR2010)+0.05, length.out=8),
+%             col.regions=hsv(0,seq(0.05,1,length.out=7),1), col="transparent", main='Raw')
+% 
+% risk.estimates <- m$fitted.values / respiratorydata$expected2010
+% respiratorydata.spatial@data$risk <- risk.estimates
+% northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(),
+%                    offset = c(220000,647000), scale = 4000)
+% scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(),
+%                  offset = c(225000,647000), scale = 10000, fill=c("transparent","black"))
+% text1 <- list("sp.text", c(225000,649000), "0")
+% text2 <- list("sp.text", c(230000,649000), "5000 m")
+% p2 = spplot(respiratorydata.spatial, c("risk"), sp.layout=list(northarrow, scalebar,
+%                                                                text1, text2), scales=list(draw = TRUE),
+%             at=seq(min(risk.estimates)-0.1, max(risk.estimates)+0.1, length.out=8),
+%             col.regions=hsv(0,seq(0.05,1,length.out=7),1), col="transparent", main='Smoothed')
+% 
+% 
+% print(p1, position=c(0,0,.5,1), more=T)
+% print(p2, position=c(.5,0,1,1), more=F)
+% @
+% \end{frame}
+% 
+% 
+% 
+% \subsection{Generalized linear modeling}
+% \frame{\frametitle{GLMs}\pause
+% \begin{itemize}[<+->]
+% \item Binary data
+% \begin{itemize}
+% \item Point-referenced data:
+% \[ Y(s) \sim Ber(p(s)) \qquad \mbox{logit}(p(s)) = \mu(s)+w(s) \]
+% \item Areal data
+% \[ Y_i \sim Ber(p_i) \qquad \mbox{logit}(p_i) = \mu_i + \omega_i \]
+% \end{itemize}
+% 
+% \vspace{0.2in}
+% 
+% \item Count data
+% \begin{itemize}
+% \item Point-referenced data:
+% \[ Y(s) \sim Po(\lambda(s)) \qquad \log(\lambda(s)) = \mu(s)+w(s) \]
+% \item Areal data
+% \[ Y_i \sim Po(\lambda_i) \qquad \log(\lambda_i) = \mu_i + \omega_i \]
+% \end{itemize}
+% \end{itemize}
+% }
+% 
+% 
 
 
 \end{document}
