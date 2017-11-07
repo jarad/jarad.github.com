@@ -13,20 +13,20 @@ group:
 1. Lisa A. Schulte, Jarad Niemi, Matthew J. Helmers, Matt Liebman, J. Gordon
 Arbuckle, David E. James, Randall K. Kolka, Matthew E. O'Neal, Mark D. Tomer, 
 John C. Tyndall, Heidi Asbjornsen, Pauline Drobney, Jeri Neal, Gary Van Ryswyk,
-and Chris Witte ``Prairie strips improve biodiversity and the delivery of 
-multiple ecosystem services from corn–soybean croplands.'' to appear in the 
-Proceedings of the National Academy of Sciences. 
-[url](http://www.pnas.org/content/early/2017/09/26/1620229114)
-1. Adam Martin-Schwarze, Jarad Niemi, and Philip Dixon ``Assessing the impacts
+and Chris Witte (2017) ``Prairie strips improve biodiversity and the delivery of 
+multiple ecosystem services from corn–soybean croplands.''
+Proceedings of the National Academy of Sciences, 114(42), 11247-11252.
+[url](http://www.pnas.org/content/114/42/11247.short)
+1. Adam Martin-Schwarze, Jarad Niemi, and Philip Dixon (2017) ``Assessing the impacts
 of time to detection distribution assumptions on detection probability 
 estimation.'' to appear in the Journal of Agricultural, Biological, and 
 Environmental Statistics
 [url](https://link.springer.com/article/10.1007/s13253-017-0300-y)
-1. Matt Simpson\*, Vivek Roy, and Jarad Niemi ``Interweaving Markov chain Monte Carlo strategies for efficient estimation of dynamic linear models.'' to appear in the Journal of Computational and Graphical Statistics 
+1. Matt Simpson\*, Vivek Roy, and Jarad Niemi (2017) ``Interweaving Markov chain Monte Carlo strategies for efficient estimation of dynamic linear models.'' Journal of Computational and Graphical Statistics, 26(1), 152-159
 [url](http://www.tandfonline.com/doi/full/10.1080/10618600.2015.1105748)
-1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.'' (2016) Agriculture, Ecosystems and Environment 220: 55-63 [url](http://www.sciencedirect.com/science/article/pii/S016788091630007X)
+1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. (2016) ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.''  Agriculture, Ecosystems and Environment 220: 55-63
+1. David M. Brenner, Jack Dekker, Jarad Niemi, and Lisa Pfiffner. (2016) ``Medical Oxygen Concentrators for Releasing Seed Dormancy.'' Crop Science 55:2291-2293 [pdf](papers/brenner2015medical.pdf) [url](http://www.sciencedirect.com/science/article/pii/S016788091630007X)
 1. Jarad Niemi, Eric Mittman\*, Will Landau\*, and Dan Nettleton (2015) ``Empirical Bayes analysis of RNA-seq data for detection of gene expression heterosis.'' Journal of Agricultural, Biological, and Environmental Statistcs, 20(4): 614-628 [url](http://link.springer.com/article/10.1007%2Fs13253-015-0230-5#)
-1. David M. Brenner, Jack Dekker, Jarad Niemi, and Lisa Pfiffner. (2016) ``Medical Oxygen Concentrators for Releasing Seed Dormancy.'' Crop Science 55:2291-2293 [pdf](papers/brenner2015medical.pdf)
 1. Robert B. Gramacy, Jarad Niemi, Robin Weiss. (2014) ``Massively parallel approximate Gaussian process regression.'' SIAM/ASA Journal on Uncertainty Quantification 2(1) 564-584. [arXiv](http://arxiv.org/abs/1310.5182) [url](http://epubs.siam.org/doi/abs/10.1137/130941912) [pdf](papers/Gram_Niem_Weis_mass_2014.pdf) DOI:http://dx.doi.org/10.1016/j.mbs.2014.06.018
 1. Daniel Sheinson\*, Jarad Niemi, and Wendy Meiring. (2014) ``Comparison of the performance of particle filter algorithms applied to tracking of a disease epidemic.'' Journal of Mathematical Biosciences, 255, 21-32 [url](http://www.sciencedirect.com/science/article/pii/S0025556414001242)
 1. Jonathan Dess, Jennifer L. Momsen, Jarad Niemi, Lisa Montplaisir. (2014) ``Student interpretations of phylogenetic trees in an introductory biology course.'' CBE - Life Sciences Education [url](http://www.lifescied.org/content/13/4/666.short)
