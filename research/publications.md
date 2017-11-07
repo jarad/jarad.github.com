@@ -17,7 +17,7 @@ and Chris Witte (2017) ``Prairie strips improve biodiversity and the delivery of
 multiple ecosystem services from corn–soybean croplands.''
 Proceedings of the National Academy of Sciences, 114(42), 11247-11252.
 [url](http://www.pnas.org/content/114/42/11247.short)
-1. Adam Martin-Schwarze, Jarad Niemi, and Philip Dixon (2017) ``Assessing the impacts
+1. Adam Martin-Schwarze\*, Jarad Niemi, and Philip Dixon (2017) ``Assessing the impacts
 of time to detection distribution assumptions on detection probability 
 estimation.'' to appear in the Journal of Agricultural, Biological, and 
 Environmental Statistics
