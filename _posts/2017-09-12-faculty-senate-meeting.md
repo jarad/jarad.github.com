@@ -7,6 +7,8 @@ tags: [faculty senate]
 ---
 {% include JB/setup %}
 
+Summary from [Inside Iowa State](https://www.inside.iastate.edu/article/2017/09/14/fs)
+
 Special Order: Update on Canvas - Sara Marcketti, CELT
 
     - Will have 24x7 support from Instructure
