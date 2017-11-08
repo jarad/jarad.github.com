@@ -22,7 +22,7 @@ Special Order: Reg Stewart, VP for Diversity and Inclusion
 Special Order: COACHE Survey - Dawn Bratsch-Prince, Associate Provost
 
 - preliminary results: no areas of concern (compared to peers)
-- previous results: http://www.provost.iastate.edu/administrator-resources/recruitment/coache
+- previous results: <http://www.provost.iastate.edu/administrator-resources/recruitment/coache>
 
 President Elect's Report:
 
