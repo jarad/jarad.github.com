@@ -3,7 +3,7 @@ layout: post
 title: "Ignoring interactions"
 description: ""
 category: [Consulting]
-tags: [modeling]
+tags: [modeling,interactions]
 ---
 {% include JB/setup %}
 
