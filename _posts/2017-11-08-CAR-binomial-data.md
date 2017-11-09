@@ -3,7 +3,7 @@ layout: post
 title: "Simulating spatial data"
 description: ""
 category: [Teaching]
-tags: [areal,data,simulation]
+tags: [areal,data,simulation,STAT615]
 ---
 {% include JB/setup %}
 
