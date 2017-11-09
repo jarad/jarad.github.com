@@ -9,6 +9,11 @@ tags: [areal,spatial,STAT615]
 
 
 {% highlight r %}
+options(width=100)
+{% endhighlight %}
+
+
+{% highlight r %}
 library("CARBayes")
 
 set.seed(20171109)
@@ -26,38 +31,29 @@ sessionInfo()
 ## BLAS/LAPACK: /usr/lib64/R/lib/libRblas.so
 ## 
 ## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8       
+##  [4] LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                  LC_ADDRESS=C              
+## [10] LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] knitr_1.17    bindrcpp_0.2  ggplot2_2.2.1 dplyr_0.7.4   CARBayes_5.0 
-## [6] Rcpp_0.12.13  MASS_7.3-47  
+## [1] knitr_1.17    bindrcpp_0.2  ggplot2_2.2.1 dplyr_0.7.4   CARBayes_5.0  Rcpp_0.12.13 
+## [7] MASS_7.3-47  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] spdep_0.6-13       CARBayesdata_2.0   highr_0.6         
-##  [4] plyr_1.8.4         compiler_3.4.0     bindr_0.1         
-##  [7] LearnBayes_2.15    shapefiles_0.7     tools_3.4.0       
-## [10] digest_0.6.12      boot_1.3-20        dotCall64_0.9-04  
-## [13] evaluate_0.10.1    gtable_0.2.0       tibble_1.3.4      
-## [16] nlme_3.1-131       lattice_0.20-35    pkgconfig_2.0.1   
-## [19] rlang_0.1.2        Matrix_1.2-10      expm_0.999-2      
-## [22] SparseM_1.77       spam_2.1-1         coda_0.19-1       
-## [25] stringr_1.2.0      gtools_3.5.0       MatrixModels_0.4-1
-## [28] grid_3.4.0         glue_1.1.1         R6_2.2.2          
-## [31] foreign_0.8-69     sp_1.2-5           gdata_2.18.0      
-## [34] deldir_0.1-14      magrittr_1.5       scales_0.4.1      
-## [37] matrixcalc_1.0-3   mcmc_0.9-5         gmodels_2.16.2    
-## [40] splines_3.4.0      assertthat_0.2.0   colorspace_1.3-2  
-## [43] labeling_0.3       quantreg_5.33      stringi_1.1.5     
-## [46] MCMCpack_1.4-0     lazyeval_0.2.0     munsell_0.4.3     
-## [49] truncnorm_1.0-7
+##  [1] spdep_0.6-13       CARBayesdata_2.0   highr_0.6          plyr_1.8.4         compiler_3.4.0    
+##  [6] bindr_0.1          LearnBayes_2.15    shapefiles_0.7     tools_3.4.0        digest_0.6.12     
+## [11] boot_1.3-20        dotCall64_0.9-04   evaluate_0.10.1    gtable_0.2.0       tibble_1.3.4      
+## [16] nlme_3.1-131       lattice_0.20-35    pkgconfig_2.0.1    rlang_0.1.2        Matrix_1.2-10     
+## [21] expm_0.999-2       SparseM_1.77       spam_2.1-1         coda_0.19-1        stringr_1.2.0     
+## [26] gtools_3.5.0       MatrixModels_0.4-1 grid_3.4.0         glue_1.1.1         R6_2.2.2          
+## [31] foreign_0.8-69     sp_1.2-5           gdata_2.18.0       deldir_0.1-14      magrittr_1.5      
+## [36] scales_0.4.1       matrixcalc_1.0-3   mcmc_0.9-5         gmodels_2.16.2     splines_3.4.0     
+## [41] assertthat_0.2.0   colorspace_1.3-2   labeling_0.3       quantreg_5.33      stringi_1.1.5     
+## [46] MCMCpack_1.4-0     lazyeval_0.2.0     munsell_0.4.3      truncnorm_1.0-7
 {% endhighlight %}
 
 Using the data from [this post](http://www.jarad.me/teaching/2017/11/08/CAR-binomial-data), 
@@ -123,7 +119,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  29.257   0.129  29.380
+##  29.593   0.205  29.792
 {% endhighlight %}
 
 
@@ -182,7 +178,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  40.648   0.088  40.732
+##  40.640   0.032  40.667
 {% endhighlight %}
 
 
@@ -240,7 +236,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  31.887   0.020  31.903
+##  31.065   0.013  31.074
 {% endhighlight %}
 
 
