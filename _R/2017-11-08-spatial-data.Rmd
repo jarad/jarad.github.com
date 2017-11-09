@@ -27,16 +27,6 @@ Grid <- expand.grid(x.easting = 1:10, x.northing = 1:10)
 n <- nrow(Grid)
 ```
 
-Build a neighborhood structure based on 4 nearest neighbors, 
-i.e. cardinal directions.
-
-```{r neighbors}
-distance <- as.matrix(dist(Grid))
-
-# Proximity matrix
-W              <- matrix(0, nrow = n, ncol = n)
-W[distance==1] <- 1       	
-```
 
 Simulate data
 
@@ -46,6 +36,7 @@ x1 <- rnorm(n) %>% round(2)
 x2 <- rnorm(n) %>% round(2)
 
 # Spatial field
+distance <- as.matrix(dist(Grid))
 omega <- MASS::mvrnorm(n     = 1, 
                        mu    = rep(0,n), 
                        Sigma = 0.4 * exp(-0.1 * distance))
@@ -88,5 +79,6 @@ ggplot(d, aes(x = x.easting, y = x.northing, fill = Y_binom/trials)) +
 For use in future posts.
 
 ```{r data, comment=NA}
-dput(d)
+save(d, file="data/spatial20171108.rda")
 ```
+

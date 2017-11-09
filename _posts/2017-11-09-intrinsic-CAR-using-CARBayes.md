@@ -40,31 +40,29 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] knitr_1.17    bindrcpp_0.2  ggplot2_2.2.1 dplyr_0.7.4   CARBayes_5.0  Rcpp_0.12.13 
-## [7] MASS_7.3-47  
+##  [1] hglm_2.1-1      hglm.data_1.0-0 Matrix_1.2-10   knitr_1.17      bindrcpp_0.2    ggplot2_2.2.1  
+##  [7] dplyr_0.7.4     CARBayes_5.0    Rcpp_0.12.13    MASS_7.3-47    
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] spdep_0.6-13       CARBayesdata_2.0   highr_0.6          plyr_1.8.4         compiler_3.4.0    
-##  [6] bindr_0.1          LearnBayes_2.15    shapefiles_0.7     tools_3.4.0        digest_0.6.12     
-## [11] boot_1.3-20        dotCall64_0.9-04   evaluate_0.10.1    gtable_0.2.0       tibble_1.3.4      
-## [16] nlme_3.1-131       lattice_0.20-35    pkgconfig_2.0.1    rlang_0.1.2        Matrix_1.2-10     
-## [21] expm_0.999-2       SparseM_1.77       spam_2.1-1         coda_0.19-1        stringr_1.2.0     
-## [26] gtools_3.5.0       MatrixModels_0.4-1 grid_3.4.0         glue_1.1.1         R6_2.2.2          
-## [31] foreign_0.8-69     sp_1.2-5           gdata_2.18.0       deldir_0.1-14      magrittr_1.5      
-## [36] scales_0.4.1       matrixcalc_1.0-3   mcmc_0.9-5         gmodels_2.16.2     splines_3.4.0     
-## [41] assertthat_0.2.0   colorspace_1.3-2   labeling_0.3       quantreg_5.33      stringi_1.1.5     
-## [46] MCMCpack_1.4-0     lazyeval_0.2.0     munsell_0.4.3      truncnorm_1.0-7
+##  [1] gtools_3.5.0       spam_2.1-1         splines_3.4.0      lattice_0.20-35    colorspace_1.3-2  
+##  [6] expm_0.999-2       htmltools_0.3.6    yaml_2.1.14        MCMCpack_1.4-0     rlang_0.1.2       
+## [11] foreign_0.8-69     glue_1.1.1         sp_1.2-5           bindr_0.1          plyr_1.8.4        
+## [16] stringr_1.2.0      MatrixModels_0.4-1 dotCall64_0.9-04   CARBayesdata_2.0   munsell_0.4.3     
+## [21] gtable_0.2.0       coda_0.19-1        evaluate_0.10.1    labeling_0.3       SparseM_1.77      
+## [26] quantreg_5.33      spdep_0.6-13       highr_0.6          backports_1.1.0    scales_0.4.1      
+## [31] gdata_2.18.0       truncnorm_1.0-7    deldir_0.1-14      mcmc_0.9-5         digest_0.6.12     
+## [36] stringi_1.1.5      gmodels_2.16.2     rprojroot_1.2      grid_3.4.0         tools_3.4.0       
+## [41] LearnBayes_2.15    magrittr_1.5       lazyeval_0.2.0     tibble_1.3.4       pkgconfig_2.0.1   
+## [46] shapefiles_0.7     matrixcalc_1.0-3   assertthat_0.2.0   rmarkdown_1.6      R6_2.2.2          
+## [51] boot_1.3-20        nlme_3.1-131       compiler_3.4.0
 {% endhighlight %}
 
-Using the data from [this post](http://www.jarad.me/teaching/2017/11/08/CAR-binomial-data), 
+Using the data from [this post](http://www.jarad.me/teaching/2017/11/08/spatial-data), 
 we will utilize the intrinsic CAR prior to account for spatial association.
 
 
-
-The code to read in the data is suppressed but the head of the data looks like
-
-
 {% highlight r %}
+load("data/spatial20171108.rda")
 head(d)
 {% endhighlight %}
 
@@ -119,7 +117,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  29.593   0.205  29.792
+##  29.639   0.155  29.790
 {% endhighlight %}
 
 
@@ -178,7 +176,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  40.640   0.032  40.667
+##  40.824   0.004  40.822
 {% endhighlight %}
 
 
@@ -236,7 +234,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  31.065   0.013  31.074
+##  31.360   0.019  31.374
 {% endhighlight %}
 
 
