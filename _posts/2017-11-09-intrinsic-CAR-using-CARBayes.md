@@ -8,9 +8,6 @@ tags: [areal,spatial,STAT615]
 {% include JB/setup %}
 
 
-{% highlight r %}
-options(width=100)
-{% endhighlight %}
 
 
 {% highlight r %}
@@ -31,29 +28,21 @@ sessionInfo()
 ## BLAS/LAPACK: /usr/lib64/R/lib/libRblas.so
 ## 
 ## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8       
-##  [4] LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                  LC_ADDRESS=C              
-## [10] LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8    LC_PAPER=en_US.UTF-8      
+##  [8] LC_NAME=C                  LC_ADDRESS=C               LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] hglm_2.1-1      hglm.data_1.0-0 Matrix_1.2-10   knitr_1.17      bindrcpp_0.2    ggplot2_2.2.1  
-##  [7] dplyr_0.7.4     CARBayes_5.0    Rcpp_0.12.13    MASS_7.3-47    
+##  [1] hglm_2.1-1      hglm.data_1.0-0 Matrix_1.2-10   knitr_1.17      bindrcpp_0.2    ggplot2_2.2.1   dplyr_0.7.4     CARBayes_5.0    Rcpp_0.12.13    MASS_7.3-47    
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] gtools_3.5.0       spam_2.1-1         splines_3.4.0      lattice_0.20-35    colorspace_1.3-2  
-##  [6] expm_0.999-2       htmltools_0.3.6    yaml_2.1.14        MCMCpack_1.4-0     rlang_0.1.2       
-## [11] foreign_0.8-69     glue_1.1.1         sp_1.2-5           bindr_0.1          plyr_1.8.4        
-## [16] stringr_1.2.0      MatrixModels_0.4-1 dotCall64_0.9-04   CARBayesdata_2.0   munsell_0.4.3     
-## [21] gtable_0.2.0       coda_0.19-1        evaluate_0.10.1    labeling_0.3       SparseM_1.77      
-## [26] quantreg_5.33      spdep_0.6-13       highr_0.6          backports_1.1.0    scales_0.4.1      
-## [31] gdata_2.18.0       truncnorm_1.0-7    deldir_0.1-14      mcmc_0.9-5         digest_0.6.12     
-## [36] stringi_1.1.5      gmodels_2.16.2     rprojroot_1.2      grid_3.4.0         tools_3.4.0       
-## [41] LearnBayes_2.15    magrittr_1.5       lazyeval_0.2.0     tibble_1.3.4       pkgconfig_2.0.1   
-## [46] shapefiles_0.7     matrixcalc_1.0-3   assertthat_0.2.0   rmarkdown_1.6      R6_2.2.2          
+##  [1] gtools_3.5.0       spam_2.1-1         splines_3.4.0      lattice_0.20-35    colorspace_1.3-2   expm_0.999-2       htmltools_0.3.6    yaml_2.1.14        MCMCpack_1.4-0     rlang_0.1.2       
+## [11] foreign_0.8-69     glue_1.1.1         sp_1.2-5           bindr_0.1          plyr_1.8.4         stringr_1.2.0      MatrixModels_0.4-1 dotCall64_0.9-04   CARBayesdata_2.0   munsell_0.4.3     
+## [21] gtable_0.2.0       coda_0.19-1        evaluate_0.10.1    labeling_0.3       SparseM_1.77       quantreg_5.33      spdep_0.6-13       highr_0.6          backports_1.1.0    scales_0.4.1      
+## [31] gdata_2.18.0       truncnorm_1.0-7    deldir_0.1-14      mcmc_0.9-5         digest_0.6.12      stringi_1.1.5      gmodels_2.16.2     rprojroot_1.2      grid_3.4.0         tools_3.4.0       
+## [41] LearnBayes_2.15    magrittr_1.5       lazyeval_0.2.0     tibble_1.3.4       pkgconfig_2.0.1    shapefiles_0.7     matrixcalc_1.0-3   assertthat_0.2.0   rmarkdown_1.6      R6_2.2.2          
 ## [51] boot_1.3-20        nlme_3.1-131       compiler_3.4.0
 {% endhighlight %}
 
@@ -117,7 +106,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  29.639   0.155  29.790
+##  30.689   0.150  30.838
 {% endhighlight %}
 
 
@@ -176,7 +165,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  40.824   0.004  40.822
+##  40.709   0.033  40.738
 {% endhighlight %}
 
 
@@ -234,7 +223,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  31.360   0.019  31.374
+##  32.332   0.062  32.391
 {% endhighlight %}
 
 
