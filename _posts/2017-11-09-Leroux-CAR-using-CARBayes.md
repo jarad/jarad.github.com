@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Intrinsic CAR using CARBayes"
+title: "Leroux CAR using CARBayes"
 description: ""
 category: [Teaching]
 tags: [areal,spatial,STAT615]
@@ -61,7 +61,7 @@ sessionInfo()
 {% endhighlight %}
 
 Using the data from [this post](http://www.jarad.me/teaching/2017/11/08/CAR-binomial-data), 
-we will utilize the intrinsic CAR prior to account for spatial association.
+we will utilize the Leroux CAR prior to account for spatial association.
 
 
 
@@ -101,7 +101,7 @@ W[distance==1] <- 1
 image(W)
 {% endhighlight %}
 
-![center](/../figs/2017-11-09-intrinsic-CAR-using-CARBayes/proximity_matrix-1.png)
+![center](/../figs/2017-11-09-Leroux-CAR-using-CARBayes/proximity_matrix-1.png)
 
 ## Normal model
 
@@ -112,7 +112,6 @@ system.time(
                    family   = "gaussian", 
                    data     = d,
                    W        = W, 
-                   fix.rho  = TRUE, rho = 1, # intrinsic CAR
                    burnin   = 20000, 
                    n.sample = 100000,
                    verbose  = FALSE)
@@ -123,7 +122,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  29.257   0.129  29.380
+##  35.174   0.306  35.479
 {% endhighlight %}
 
 
@@ -149,14 +148,14 @@ mn
 ## Posterior quantities and DIC
 ## 
 ##             Median   2.5%  97.5% n.sample % accept n.effective Geweke.diag
-## (Intercept) 0.6222 0.5953 0.6488    80000      100     75928.7        -0.4
-## x1          1.0162 0.9802 1.0530    80000      100     19371.2         0.7
-## x2          0.9819 0.9423 1.0209    80000      100     19202.8        -1.2
-## nu2         0.0168 0.0042 0.0341    80000      100      2079.1        -0.6
-## tau2        0.0621 0.0245 0.1194    80000      100      2127.2         0.7
-## rho         1.0000 1.0000 1.0000       NA       NA          NA          NA
+## (Intercept) 0.6224 0.5990 0.6454    80000      100     72067.3         1.8
+## x1          1.0138 0.9768 1.0505    80000      100     11347.7        -0.4
+## x2          0.9824 0.9423 1.0224    80000      100     11829.9        -0.4
+## nu2         0.0114 0.0029 0.0296    80000      100      1900.2        -0.6
+## tau2        0.0744 0.0340 0.1187    80000      100      2894.2         0.1
+## rho         0.8199 0.5055 0.9808    80000       46      6222.3        -0.9
 ## 
-## DIC =  -63.54406       p.d =  59.70351       Percent deviance explained =  99.62
+## DIC =  -90.79569       p.d =  72.11037       Percent deviance explained =  99.82
 {% endhighlight %}
 
 
@@ -171,7 +170,6 @@ system.time(
                    data     = d,
                    trials   = d$trials,
                    W        = W, 
-                   fix.rho  = TRUE, rho = 1, # intrinsic CAR
                    burnin   = 20000, 
                    n.sample = 100000,
                    verbose  = FALSE)
@@ -182,7 +180,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  40.648   0.088  40.732
+##  46.507   0.018  46.519
 {% endhighlight %}
 
 
@@ -208,13 +206,13 @@ mb
 ## Posterior quantities and DIC
 ## 
 ##             Median   2.5%  97.5% n.sample % accept n.effective Geweke.diag
-## (Intercept) 0.7036 0.5462 0.8648    80000     46.6     28172.6        -1.3
-## x1          1.2821 1.0842 1.4967    80000     46.6     12485.4        -2.4
-## x2          1.0849 0.8831 1.3002    80000     46.6     16405.8        -2.0
-## tau2        0.0183 0.0030 0.1684    80000    100.0       360.6        -0.7
-## rho         1.0000 1.0000 1.0000       NA       NA          NA          NA
+## (Intercept) 0.7048 0.5513 0.8632    80000     46.7     27452.1        -0.4
+## x1          1.2724 1.0752 1.4805    80000     46.7     14460.2        -1.0
+## x2          1.0814 0.8790 1.2942    80000     46.7     16984.4         0.0
+## tau2        0.0065 0.0019 0.0443    80000    100.0       388.0         0.4
+## rho         0.4431 0.0320 0.9110    80000     46.0      2590.5         0.1
 ## 
-## DIC =  309.0988       p.d =  4.419879       Percent deviance explained =  51.44
+## DIC =  310.0368       p.d =  3.174497       Percent deviance explained =  50.89
 {% endhighlight %}
 
 
@@ -229,7 +227,6 @@ system.time(
                    family   = "poisson", 
                    data     = d,
                    W        = W, 
-                   fix.rho  = TRUE, rho = 1, # intrinsic CAR
                    burnin   = 20000, 
                    n.sample = 100000,
                    verbose  = FALSE)
@@ -240,7 +237,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  31.887   0.020  31.903
+##  37.208   0.033  37.236
 {% endhighlight %}
 
 
@@ -266,11 +263,11 @@ mp
 ## Posterior quantities and DIC
 ## 
 ##             Median   2.5%  97.5% n.sample % accept n.effective Geweke.diag
-## (Intercept) 0.7773 0.6201 0.9248    80000     45.9      4998.7        -1.6
-## x1          0.9260 0.8312 1.0236    80000     45.9      5518.6         2.7
-## x2          0.7736 0.6561 0.8923    80000     45.9      7710.8         0.7
-## tau2        0.0097 0.0025 0.0595    80000    100.0       334.0         0.7
-## rho         1.0000 1.0000 1.0000       NA       NA          NA          NA
+## (Intercept) 0.7813 0.6309 0.9266    80000     46.1      4681.6        -0.3
+## x1          0.9201 0.8285 1.0121    80000     46.1      7545.1        -0.5
+## x2          0.7712 0.6556 0.8866    80000     46.1      7936.1         0.7
+## tau2        0.0060 0.0018 0.0320    80000    100.0       475.3         0.9
+## rho         0.4231 0.0302 0.8951    80000     46.2      2471.3        -1.2
 ## 
-## DIC =  374.7862       p.d =  5.034638       Percent deviance explained =  61.12
+## DIC =  373.8462       p.d =  4.142147       Percent deviance explained =  61.03
 {% endhighlight %}
