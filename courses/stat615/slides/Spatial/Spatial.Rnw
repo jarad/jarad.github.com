@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -52,9 +52,9 @@ set.seed(2)
 
 Three main types of spatial data:
 \begin{itemize}
-\item Point-referenced (georeferenced)
+\item Point/geo-referenced
 \item Areal-referenced
-\item Point process
+\item Point process/pattern
 \end{itemize}
 \end{frame}
 
@@ -64,18 +64,18 @@ Three main types of spatial data:
 Features
 \begin{itemize}[<+->]
 \item Some spatial domain $\mathcal{D}$ is under study
-\item Measured spatial locations $s\in \mathcal{D}$ are pre-determined
+\item Measured spatial locations $s\in \mathcal{D}$ are \alert{pre-determined}
 \item Some quantity, $Y(s)$, is measured at each location $s\in \mathcal{D}$
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.2in}
 
 Examples
 \begin{itemize}[<+->]
 \item Air quality monitoring
-\item Bird point counts
 \item Coastal tide level monitoring
 \item Earthquake monitoring
+\item Bird point counts
 \end{itemize}
 \end{frame}
 
@@ -89,7 +89,7 @@ Features
 \item Some quantity, $Y_s$, is measured as an aggregate over that region
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.2in}
 
 Examples
 \begin{itemize}[<+->]
@@ -106,11 +106,11 @@ Examples
 Features
 \begin{itemize}[<+->]
 \item Some spatial domain $\mathcal{D}$ is under study
-\item Spatial locations $s\in \mathcal{S}\subset \mathcal{D}$ are random
+\item Spatial locations $s\in \mathcal{S}\subset \mathcal{D}$ are \alert{random}
 \item $Y(s)=1$ indicates an occurence of the event
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.2in}
 
 Examples
 \begin{itemize}[<+->]
@@ -133,10 +133,13 @@ Let $Y(s)$ for $s\in\mathcal{D}\subseteq \mathbb{R}^d$ be a spatial process. \pa
 
 Assumptions:
 \begin{itemize}[<+->]
-\item Intrinsic stationarity
+\item Stationarity
+  \begin{itemize}
+  \item Intrinsic stationarity
+  \item Weak stationarity
+  \item Strong stationarity
+  \end{itemize}
 \item Isotropy
-\item Weak stationarity
-\item Strong stationarity
 \item Gaussian process
 \end{itemize}
 
@@ -568,20 +571,24 @@ p = nlevels(d$Species)
 r = spLM(DBH_cm ~ Species,
          data = d,
          coords = as.matrix(d[c('East_m','North_m')]),
-         knots = c(6,6,.1),
+         knots = c(6,6,.1), # for spatial prediction
          cov.model = 'exponential',
-         starting = list(tau.sq = fit.DBH.resid$nugget,
+         
+         starting = list(tau.sq   = fit.DBH.resid$nugget,
                          sigma.sq = fit.DBH.resid$cov.pars[1],
-                         phi = fit.DBH.resid$cov.pars[2]),
-         tuning = list(tau.sq = 0.015,
+                         phi      = fit.DBH.resid$cov.pars[2]),
+         
+         tuning = list(tau.sq   = 0.015,
                        sigma.sq = 0.015,
-                       phi = 0.015),
-         priors = list(beta.Norm=list(rep(0,p), diag(1000,p)),
-                       phi.Unif = c(3/1,3/0.1),
+                       phi      = 0.015),
+         
+         priors = list(beta.Norm   = list(rep(0,p), diag(1000,p)),
+                       phi.Unif    = c(3/1,3/0.1),
                        sigma.sq.IG = c(2,200),
-                       tau.sq.IG=c(3,300)),
-         n.samples = 2000,
-         n.report = 500,
+                       tau.sq.IG   = c(3,300)),
+         
+         n.samples = 10000,
+         n.report = 200,
          verbose=TRUE)
 @
 \end{frame}
@@ -597,19 +604,19 @@ r = spLM(DBH_cm ~ Species,
 
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Traceplots}
-<<theta_traceplots, dependson='spLM_run'>>=
+<<theta_traceplots, dependson='spLM_run', echo=TRUE>>=
 plot(r$p.theta.samples, density=FALSE)
-burnin=500
+burnin = 500
 nreps = dim(r$p.theta.samples)[1]
 @
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{}
-<<theta_posteriors, dependson='spLM_run'>>=
+<<theta_posteriors, dependson='spLM_run', echo=TRUE>>=
 r$p.theta.samples[burnin:nreps,] %>%
   as.data.frame %>%
   GGally::ggpairs() +
@@ -618,9 +625,9 @@ r$p.theta.samples[burnin:nreps,] %>%
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Traceplot 2s}
-<<beta_traceplots, dependson='spLM_run'>>=
+<<beta_traceplots, dependson='spLM_run', echo=TRUE>>=
 plot(r$p.beta.samples, density=FALSE)
 @
 \end{frame}
@@ -629,14 +636,14 @@ plot(r$p.beta.samples, density=FALSE)
 
 \begin{frame}[fragile]
 \frametitle{Summary statistics}
-<<theta_summary, dependson='spLM_run'>>=
+<<theta_summary, dependson='spLM_run', echo=TRUE>>=
 summary(r$p.theta.samples)
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Summary statistics 2}
-<<beta_summary, dependson='spLM_run'>>=
+<<beta_summary, dependson='spLM_run', echo=TRUE>>=
 summary(r$p.beta.samples)
 @
 \end{frame}
@@ -645,14 +652,14 @@ summary(r$p.beta.samples)
 \begin{frame}
 \frametitle{Spatial surface}
 If interest resides in $w$, draws can be obtained using the following relationship
-\[ p(w|y) = \int p(w|\sigma^2,\phi)p(\sigma^2,\phi|y) d\sigma^2 d\phi \]
+\[ p(w|y) = \int p(w|\sigma^2,\phi,y)p(\sigma^2,\phi|y) d\sigma^2 d\phi \]
 which suggests the following strategy:
 
 \vspace{0.2in} \pause
 
 \begin{enumerate}
 \item Run the MCMC sampler to obtain draws $(\sigma^2,\phi)^{(g)} \sim p(\sigma^2,\phi|y)$
-\item After burn-in and for $g=1,\ldots,G$, sample $w^{(g)}\sim p(w|(\sigma^2,\phi)^{(g)})$.
+\item After burn-in and for $g=1,\ldots,G$, sample $w^{(g)}\sim p(w|(\sigma^2,\phi)^{(g)},y)$.
 \end{enumerate}
 \end{frame}
 
@@ -675,10 +682,14 @@ which suggests the following strategy:
 
 
 \frame{\frametitle{Prediction}
-For prediction at points $s_{01},\ldots,s_{0m}$ and denoting $Y_0=(Y(s_{01}),\ldots,Y(s_{0m}))^\top$ and design matrix $X_0$ having rows $x(s_{0j})^\top$, \pause the following relationship
-\[ p(y_0|y,X,X_0) = \int p(y_0|y,\theta,X_0) p(\theta|y,X) d\theta \pause \approx \frac{1}{G} \sum_{g=1}^G p(y_0|y,\theta^{(g)},X_0). \]
+For prediction at points $s_{01},\ldots,s_{0m}$ and denoting $Y_0=(Y(s_{01}),\ldots,Y(s_{0m}))^\top$ and design matrix $X_0$ having rows $x(s_{0j})^\top$, \pause we have the following relationship
+\[ 
+p(y_0|y,X,X_0) = 
+\int p(y_0|y,\theta,X_0) p(\theta|y,X) d\theta \pause 
+\approx \frac{1}{G} \sum_{g=1}^G p(y_0|y,\theta^{(g)},X_0). 
+\]
 \pause It is more common to take draws $y_0^{(g)} \sim p(y_0|y,\theta^{(g)},X_0)$ and estimate the predictive distribution using
-\[ p(y_0|y,,X_0)  \approx \frac{1}{G}  \sum_{g=1}^G \delta_{y_0^{(g)}} \]
+\[ p(y_0|y,X,X_0)  \approx \frac{1}{G}  \sum_{g=1}^G \delta_{y_0^{(g)}} \]
 \pause where $p(y_0|y,\theta,X_0)$ has a conditional normal distribution.
 }
 
@@ -696,7 +707,7 @@ where
 \[ \begin{array}{rl}
 \Omega_{11} &= \sigma^2 H(\phi) + \tau^2 \I \\
 \Omega_{22} &= \sigma^2 + \tau^2 \\
-\Omega_{12}^\top &= \sigma^2(\rho(d_{01};\phi), \ldots, \rho(d_{0n};\phi))
+\Omega_{12}^\top &= \sigma^2[\rho(d_{01};\phi), \ldots, \rho(d_{0n};\phi)]
 \end{array} \]
 and $d_{ij}=||s_i-s_j||$.
 
@@ -705,7 +716,7 @@ and $d_{ij}=||s_i-s_j||$.
 Thus $y_0|y,\theta,X,X_0$ is normal with
 \[ \begin{array}{rl}
 E[Y(s_0)|y,\theta,X,X_0] &= x_0^\top \beta + \Omega_{12}^\top\Omega_{22}^{-1}(y-X\beta) \\
-V[Y(s_0)|y,\theta,X,X_0] &= \sigma^2+\tau^2 - \Omega_{12}^\top\Omega_{22}^{-1}\Omega_{12}
+Var[Y(s_0)|y,\theta,X,X_0] &= \sigma^2+\tau^2 - \Omega_{12}^\top\Omega_{22}^{-1}\Omega_{12}
 \end{array} \]
 \end{frame}
 
@@ -861,7 +872,7 @@ This defines a \emph{Markov Random Field}.
 
 \subsection{Brook's Lemma}
 \frame{\frametitle{Brook's Lemma}
-It is clear that given $p(y_1,\ldots,y_n)$, the \emph{full conditionals}, i.e. $p(y_i|y_{-i})$, are determined. \pause
+It is clear that given $p(y_1,\ldots,y_n)$, the \emph{full conditionals}, i.e. $p(y_i|y_{-i})$, are determined. 
 
 \vspace{0.2in} \pause
 
@@ -959,10 +970,33 @@ with
 
 The full conditionals are
 \[ Y_i|y_{-i} \sim N\left( \rho \sum_{j\ne i} w_{ij}y_j/w_{i+}, \tau^2/w_{i+}\right) \]
-\pause a reasonable prior for $\rho$ should put most of its mass near 1.
+\pause a prior for $\rho$ that induces a reasonable amount of spatial 
+association should put most of its mass near 1.
 }
 
-\frame{\frametitle{Dealing with $\rho$}
+
+\begin{frame}
+\frametitle{Issues with the proper CAR}
+
+The full condition for the proper CAR, i.e. 
+\[ Y_i|y_{-i} \sim N\left( \rho \sum_{j\ne i} w_{ij}y_j/w_{i+}, \tau^2/w_{i+}\right) \]
+indicates some issues with this model: \pause
+
+\begin{itemize}
+\item $\tau^2$ does not play a role in spatial association. \pause
+\item $\rho$ is a proportional reaction to the weighted average of its 
+neighbors. \pause 
+\item If $\rho<1$, then the expected value of the current location is less
+than the weighted average of its neighbors. \pause
+\item If $\rho=0$, then we have conditional independence. \pause But the
+variance decreases with the number of neighbors which is perplexing. \pause
+\item $\rho$ needs to be very close to 1 to obtain a consequential amount of 
+spatial association.
+\end{itemize}
+
+\end{frame}
+
+\frame{\frametitle{Dealing with $\rho$ in the proper CAR}
 \begin{itemize}[<+->]
 \item Choose $\rho$ so the CAR model is proper
 \item Choose $\rho=1$ (improper IAR model) and constrain $\sum_{i=1}^n Y_i=0$
@@ -970,6 +1004,35 @@ The full conditionals are
 \item Let $\rho\sim Be(18,2)$ (Banerjee pg 164) and estimate it.
 \end{itemize}
 }
+
+
+\subsection{Leroux CAR}
+\begin{frame}
+\frametitle{Leroux CAR}
+
+The Leroux et al. (1999) CAR tries to ameliorate these issues. 
+\pause 
+The joint distribution is 
+\[
+Y \sim N(0, \tau^2[\rho(D_w-W)+(1-rho)\I]^{-1})
+\]
+\pause
+and the conditional distributions are 
+\[ 
+Y_i|y_{-i} \sim N\left(
+\frac{\rho \sum_{j\ne i} w_{ij}y_j}{rho \sum_{j\ne i} w_{ij}y_j+1-\rho},
+\frac{\tau^2}{rho \sum_{j\ne i} w_{ij}y_j+1-\rho}\right).
+\]
+\pause
+This distribution is proper so long as $0\le \rho <1$.
+\pause
+Lee (2011) argued that this CAR should be preferred for a variety of reasons.
+
+
+\end{frame}
+
+
+
 
 
 \subsection{Random effect model}
@@ -989,7 +1052,9 @@ Let
 \end{itemize}
 \pause
 
-\[ p(\omega_1,\ldots,\omega_S) \propto \exp\left( -\frac{1}{2\tau^2} \omega^\top [D_w-\rho W]\omega \right) \]
+\[ 
+p(\omega_1,\ldots,\omega_S) \propto 
+\exp\left( -\frac{1}{2\tau^2} \omega^\top [D_w-\rho W]\omega \right) \]
 }
 
 
@@ -1057,16 +1122,16 @@ Assume
 \[
 Y_i \ind N(X_i\beta + \omega_i, \nu^2)
 \]
+\pause
 or, alternatively,
 \[
-Y_i = X_\beta+\omega_i+\epsilon_i
+Y_i = X_\beta+\omega_i+\epsilon_i, \quad \epsilon_i\ind N(0,\nu^2)
 \]
 \pause
 where
-\begin{itemize}
-\item $\beta$ are the regression parameters,
-\item $\omega_i$ are assumed to come from an intrinsic CAR model with proximity matrix indicating those regions that share a border, and
-\item $\epsilon_i\ind N(0,\nu^2)$.
+\begin{itemize}[<+->]
+\item $\beta$ are the regression parameters and
+\item $\omega_i$ are assumed to come from an intrinsic CAR model with proximity matrix indicating those regions that share a border
 \end{itemize}
 
 \end{frame}
@@ -1083,8 +1148,8 @@ propertydata.spatial@data$logdriveshop <- log(propertydata.spatial@data$drivesho
 ### code chunk number 9: CARBayes.Rnw:495-498
 ###################################################
 library(splines)
-form <- logprice~ns(crime,3)+rooms+sales+factor(type) + logdriveshop
-model <- lm(formula=form, data=propertydata.spatial@data)
+form <- logprice ~ ns(crime,3) + rooms + sales + factor(type) + logdriveshop
+model <- lm(formula = form, data=propertydata.spatial@data)
 
 
 ###################################################
@@ -1106,20 +1171,20 @@ summary(model)
 @
 \end{frame}
 
-% 
-% 
-% \begin{frame}[fragile]
-% \frametitle{Bayesian analysis using Leroux CAR}
-% <<CARleroux, dependson = "CARBayes_analysis", echo=TRUE>>=
-% W <- nb2mat(W.nb, style = "B")
-% model.spatial <- S.CARleroux(formula = form, 
-%                              data = propertydata.spatial@data,
-%                              family = "gaussian",
-%                              W = W,
-%                              burnin = 20000,
-%                              n.sample = 120000, thin = 10)
-% @
-% \end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Bayesian analysis using Leroux CAR}
+<<CARleroux, dependson = "CARBayes_analysis", echo=TRUE>>=
+W <- nb2mat(W.nb, style = "B")
+model.spatial <- S.CARleroux(formula = form,
+                             data = propertydata.spatial@data,
+                             family = "gaussian",
+                             W = W,
+                             burnin = 20000,
+                             n.sample = 120000, thin = 10)
+@
+\end{frame}
 % 
 % 
 % \begin{frame}
