@@ -3,156 +3,22 @@ layout: post
 title: "Simulating spatial data"
 description: ""
 category: [Teaching]
-tags: [spatial,data,simulation,STAT615]
+tags: [areal,spatial,STAT615]
 ---
 {% include JB/setup %}
 
-The posts generates some spatial data on a lattice which can be used to evaluate
-areal models or point-referenced models on a lattice.
-The code is a modified version of the code in `?CARBayes::S.CARleroux`.
+```{r pacakges}
+library("CARBayes")
 
-
-{% highlight r %}
-library("MASS")
-library("dplyr")
-library("ggplot2")
-
-set.seed(20171108)
+set.seed(20171109)
 sessionInfo()
-{% endhighlight %}
+```
 
+Using the data from [this post](http://www.jarad.me/teaching/2017/11/08/CAR-binomial-data), 
+we will utilize the intrinsic CAR prior to account for spatial association.
 
-
-{% highlight text %}
-## R version 3.4.0 (2017-04-21)
-## Platform: x86_64-redhat-linux-gnu (64-bit)
-## Running under: Red Hat Enterprise Linux Workstation 7.3 (Maipo)
-## 
-## Matrix products: default
-## BLAS/LAPACK: /usr/lib64/R/lib/libRblas.so
-## 
-## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-## 
-## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  methods   base     
-## 
-## other attached packages:
-## [1] knitr_1.17    bindrcpp_0.2  ggplot2_2.2.1 dplyr_0.7.4   CARBayes_5.0 
-## [6] Rcpp_0.12.13  MASS_7.3-47  
-## 
-## loaded via a namespace (and not attached):
-##  [1] spdep_0.6-13       CARBayesdata_2.0   plyr_1.8.4        
-##  [4] compiler_3.4.0     bindr_0.1          LearnBayes_2.15   
-##  [7] shapefiles_0.7     tools_3.4.0        digest_0.6.12     
-## [10] boot_1.3-20        dotCall64_0.9-04   evaluate_0.10.1   
-## [13] gtable_0.2.0       tibble_1.3.4       nlme_3.1-131      
-## [16] lattice_0.20-35    pkgconfig_2.0.1    rlang_0.1.2       
-## [19] Matrix_1.2-10      expm_0.999-2       SparseM_1.77      
-## [22] spam_2.1-1         coda_0.19-1        stringr_1.2.0     
-## [25] gtools_3.5.0       MatrixModels_0.4-1 grid_3.4.0        
-## [28] glue_1.1.1         R6_2.2.2           foreign_0.8-69    
-## [31] sp_1.2-5           gdata_2.18.0       deldir_0.1-14     
-## [34] magrittr_1.5       scales_0.4.1       matrixcalc_1.0-3  
-## [37] mcmc_0.9-5         gmodels_2.16.2     splines_3.4.0     
-## [40] assertthat_0.2.0   colorspace_1.3-2   labeling_0.3      
-## [43] quantreg_5.33      stringi_1.1.5      MCMCpack_1.4-0    
-## [46] lazyeval_0.2.0     munsell_0.4.3      truncnorm_1.0-7
-{% endhighlight %}
-
-Construct spatial lattice.
-
-
-{% highlight r %}
-Grid <- expand.grid(x.easting = 1:10, x.northing = 1:10)
-n <- nrow(Grid)
-{% endhighlight %}
-
-Build a neighborhood structure based on 4 nearest neighbors, 
-i.e. cardinal directions.
-
-
-{% highlight r %}
-distance <- as.matrix(dist(Grid))
-
-# Proximity matrix
-W              <- matrix(0, nrow = n, ncol = n)
-W[distance==1] <- 1       	
-{% endhighlight %}
-
-Simulate data
-
-
-{% highlight r %}
-# Explanatory variables and coefficients
-x1 <- rnorm(n) %>% round(2)
-x2 <- rnorm(n) %>% round(2)
-
-# Spatial field
-omega <- MASS::mvrnorm(n     = 1, 
-                       mu    = rep(0,n), 
-                       Sigma = 0.4 * exp(-0.1 * distance))
-
-eta <- x1 + x2 + omega
-
-d <- Grid %>% 
-  mutate(Y_normal = rnorm(n, eta, sd = 0.1) %>% round(2),
-         Y_pois   = rpois(n, exp(eta)),
-         trials   = 10,
-         Y_binom  = rbinom(n = n, size = trials, prob = 1/(1+exp(-eta))),
-         x1       = x1,
-         x2       = x2)
-{% endhighlight %}
-
-Normal data
-
-
-{% highlight r %}
-ggplot(d, aes(x = x.easting, y = x.northing, fill = Y_normal)) + 
-  geom_raster() +
-  theme_bw()
-{% endhighlight %}
-
-![center](/../figs/2017-11-08-CAR-binomial-data/normal_data-1.png)
-
-Poisson data
-
-
-{% highlight r %}
-ggplot(d, aes(x = x.easting, y = x.northing, fill = Y_pois)) + 
-  geom_raster() +
-  theme_bw()
-{% endhighlight %}
-
-![center](/../figs/2017-11-08-CAR-binomial-data/poisson_data-1.png)
-
-Binomial data
-
-
-{% highlight r %}
-ggplot(d, aes(x = x.easting, y = x.northing, fill = Y_binom/trials)) + 
-  geom_raster() +
-  theme_bw()
-{% endhighlight %}
-
-![center](/../figs/2017-11-08-CAR-binomial-data/binomial_data-1.png)
-
-For use in future posts.
-
-
-{% highlight r %}
-dput(d)
-{% endhighlight %}
-
-
-
-{% highlight text %}
-structure(list(x.easting = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 
+```{r data, echo=FALSE}
+d <- structure(list(x.easting = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 
 9L, 10L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 1L, 2L, 3L, 
 4L, 5L, 6L, 7L, 8L, 9L, 10L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 
 9L, 10L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 1L, 2L, 3L, 
@@ -220,4 +86,88 @@ structure(list(x.easting = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L,
     1.94, -1.56, -0.56, -1.41)), class = "data.frame", .Names = c("x.easting", 
 "x.northing", "Y_normal", "Y_pois", "trials", "Y_binom", "x1", 
 "x2"), row.names = c(NA, -100L))
-{% endhighlight %}
+```
+
+The code to read in the data is suppressed but the head of the data looks like
+
+```{r head}
+head(d)
+```
+
+Build a neighborhood structure based on 4 nearest neighbors, 
+i.e. cardinal directions.
+
+```{r neighbors}
+distance <- as.matrix(dist(d[,c("x.easting","x.northing")]))
+
+# Proximity matrix
+W              <- matrix(0, nrow = n, ncol = n)
+W[distance==1] <- 1       	
+```
+
+```{r proximity_matrix}
+image(W)
+```
+
+## Normal model
+
+```{r normal_model}
+system.time(
+  mn <- S.CARleroux(formula  = Y_normal ~ x1 + x2, 
+                   family   = "gaussian", 
+                   data     = d,
+                   W        = W, 
+                   fix.rho  = TRUE, rho = 1, # intrinsic CAR
+                   burnin   = 20000, 
+                   n.sample = 100000,
+                   verbose  = FALSE)
+)
+```
+
+```{r normal_model_results}
+mn
+```
+
+
+
+## Binomial model
+
+```{r binomial_model}
+system.time(
+  mb <- S.CARleroux(formula  = Y_binom ~ x1 + x2, 
+                   family   = "binomial", 
+                   data     = d,
+                   trials   = d$trials,
+                   W        = W, 
+                   fix.rho  = TRUE, rho = 1, # intrinsic CAR
+                   burnin   = 20000, 
+                   n.sample = 100000,
+                   verbose  = FALSE)
+)
+```
+
+```{r binomial_model_results}
+mb
+```
+
+
+
+
+## Poisson model
+
+```{r poisson_model}
+system.time(
+  mp <- S.CARleroux(formula  = Y_pois ~ x1 + x2, 
+                   family   = "poisson", 
+                   data     = d,
+                   W        = W, 
+                   fix.rho  = TRUE, rho = 1, # intrinsic CAR
+                   burnin   = 20000, 
+                   n.sample = 100000,
+                   verbose  = FALSE)
+)
+```
+
+```{r poisson_model_results}
+mp
+```

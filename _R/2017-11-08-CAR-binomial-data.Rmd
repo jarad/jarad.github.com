@@ -3,7 +3,7 @@ layout: post
 title: "Simulating spatial data"
 description: ""
 category: [Teaching]
-tags: [areal,data,simulation,STAT615]
+tags: [spatial,data,simulation,STAT615]
 ---
 {% include JB/setup %}
 
@@ -42,8 +42,8 @@ Simulate data
 
 ```{r simulate}
 # Explanatory variables and coefficients
-x1 <- rnorm(n)
-x2 <- rnorm(n)
+x1 <- rnorm(n) %>% round(2)
+x2 <- rnorm(n) %>% round(2)
 
 # Spatial field
 omega <- MASS::mvrnorm(n     = 1, 
@@ -56,7 +56,9 @@ d <- Grid %>%
   mutate(Y_normal = rnorm(n, eta, sd = 0.1) %>% round(2),
          Y_pois   = rpois(n, exp(eta)),
          trials   = 10,
-         Y_binom  = rbinom(n = n, size = trials, prob = 1/(1+exp(-eta))))
+         Y_binom  = rbinom(n = n, size = trials, prob = 1/(1+exp(-eta))),
+         x1       = x1,
+         x2       = x2)
 ```
 
 Normal data
