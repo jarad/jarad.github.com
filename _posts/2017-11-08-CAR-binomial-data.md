@@ -138,8 +138,7 @@ ggplot(d, aes(x = x.easting, y = x.northing, fill = Y_binom/trials)) +
 
 ![center](/../figs/2017-11-08-CAR-binomial-data/binomial_data-1.png)
 
-For use in future posts, 
-put it all in a list.
+For use in future posts.
 
 
 {% highlight r %}
