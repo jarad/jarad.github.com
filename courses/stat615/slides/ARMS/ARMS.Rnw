@@ -22,11 +22,11 @@ options(width=100)
 @
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
-library(plyr)
-library(dplyr)
-library(reshape2)
-library(ggplot2)
-library(gridExtra)
+# library("plyr")
+library("dplyr")
+# library("reshape2")
+library("ggplot2")
+library("gridExtra")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -69,12 +69,17 @@ $X\sim Ca(0,1)$ has a non-log-concave density since
 $$ \frac{d^2}{dx^2} \log \frac{1}{1+x^2} = \frac{d}{dx} \frac{-2x}{1+x^2} = \frac{2(x^2-1)}{(1+x^2)^2}. $$
 
 <<cauchy, out.width='.4\\linewidth'>>=
-d = data.frame(x=seq(0,2,by=.01)) %>%
-  mutate(normal = dnorm(x, log=TRUE),
-         cauchy = dcauchy(x, log=TRUE))
-ggplot(melt(d, id.var='x', value.name='log density', variable.name='distribution'),
-       aes(x,`log density`,color=distribution, group=distribution, linetype=distribution)) + 
-  geom_line()
+d = data.frame(x=seq(0,5,length=101)) %>%
+  mutate(normal = dnorm(x),
+         cauchy = dcauchy(x),
+         exponential = dexp(x))
+
+ggplot(d %>% tidyr::gather(distribution,density,-x),
+       aes(x,density,color=distribution, 
+           group=distribution, linetype=distribution)) + 
+  geom_line() +
+  scale_y_log10() +
+  theme_bw()
 @
 \end{frame}
 
@@ -122,7 +127,8 @@ $$
 \frac{d^2}{d\theta^2} \log(b) - b\theta = \frac{d}{d\theta} -b = 0 \le 0.
 $$
 
-The exponential distribution, or exponential function, is unique in that it matches the bound for the definition of log-concavity. 
+The exponential distribution, or exponential function, 
+is unique in that it matches the bound for the definition of log-concavity. 
 \end{frame}
 
 
@@ -193,16 +199,18 @@ d = data.frame(x=seq(0,3,by=.01)) %>%
          'Exp(1)' = dexp(x),
          'M*Exp(1)' = M*dexp(x))
 
-g1 = ggplot(melt(d, 
-                 id.var='x', 
-                 variable.name='distribution', 
-                 value.name='density'),
+g1 = ggplot(d %>% tidyr::gather(distribution,density,-x),
        aes(x, density, group=distribution, color=distribution, linetype=distribution)) + 
-  geom_line() + theme(legend.position='bottom')
+  geom_line() + 
+  theme_bw() + 
+  theme(legend.position='bottom')
+
 g2 = g1 + 
-  scale_y_log10() + 
+  scale_y_log10() +
+  theme_bw() + 
   theme(legend.position='none') +
   labs(y='log density')
+
 grid.arrange(g1, g2, nrow=1)
 @
 \end{frame}
@@ -215,10 +223,12 @@ n = 100
 s = data.frame(i = 1:n, x=rexp(n)) %>%
   mutate(y=runif(n)*M*dexp(x),
          accept=y<2*dnorm(x)) 
+
 ggplot(s, aes(x, y, color=accept, shape=accept)) + 
   geom_point() + 
   stat_function(fun=function(x) 2*dnorm(x) ) + 
-  labs(y='M*Exp(x;1)')
+  labs(y='M*Exp(x;1)') + 
+  theme_bw()
 @
 \end{frame}
 
@@ -366,7 +376,15 @@ For non-log-concave densities adaptive rejection Metropolis sampling can be used
 \begin{enumerate}
 \item Choose starting locations for $\theta$, call the set $\Theta$.
 \item Construct piece-wise linear pseudo-envelope $\log q(\theta)$ to $\log p(\theta|y)$.
-\item Sample $\theta^*\sim q(\theta)$ and $U\sim Unif(0,1)$ until $U \le p(\theta^*|y)/q(\theta^*).$
+\item Sample $\theta^*\sim q(\theta)$.
+  \begin{enumerate}
+  \item If $q(\theta^*)<p(\theta^*)$, then add $\theta^*$ to $\Theta$.
+  \item Otherwise, sample $U\sim Unif(0,1)$.
+    \begin{enumerate}
+    \item If $U \le p(\theta^*|y)/q(\theta^*)$, proceed to Step 4.
+    \item Otherwise, return to 3.
+    \end{enumerate}
+  \end{enumerate}
 \item Perform Metropolis step: 
 Set $\theta^{(i)} = \theta^*$ with probability 
 $$\min\left\{1,\frac{p(\theta^*|y)}{p(\theta^{(i)}|y)}
@@ -411,8 +429,10 @@ curve(dnorm(x,10), add=TRUE, lwd=2, col='red')
 \begin{itemize}
 \item ARMS is an independent Metropolis-Hastings algorithm
   \begin{itemize}
-  \item Proposal changes, due to updating $q$ thus inhomogenous
-  \item We need to stop updating $q$ at some point to enforce homogeneity
+  \item Proposal changes, due to updating $q$, 
+  i.e. adding more points in to $\Theta$, 
+  thus inhomogenous.
+  \item We need to stop updating $q$ at some point to enforce homogeneity.
   \end{itemize}
 \end{itemize}
 \end{frame}
