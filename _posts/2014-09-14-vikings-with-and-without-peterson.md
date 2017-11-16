@@ -2,22 +2,22 @@
 layout: post
 title: "Vikings with and without Peterson"
 description: ""
-category: 
-tags: [401A]
+category: [Teaching]
+tags: [R,STAT 401A,football]
 ---
 {% include JB/setup %}
 
 While watching the Minnesota Vikings football game today, the following statistics were discussed concerning the Minnesota Vikings performance since 2007 with and without Adrian Peterson. 
 
-<!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Mon Sep 15 10:59:43 2014 -->
-<TABLE border=1>
-<TR> <TH> Statistic </TH> <TH> With Peterson </TH> <TH> Without Peterson </TH>  </TR>
-  <TR> <TD> # of games </TD> <TD align="right">  </TD> <TD align="right"> 9.0 </TD> </TR>
-  <TR> <TD> Win % </TD> <TD align="right"> 49.5 </TD> <TD align="right"> 44.4 </TD> </TR>
-  <TR> <TD> Points/game </TD> <TD align="right"> 23.1 </TD> <TD align="right"> 25.9 </TD> </TR>
-  <TR> <TD> Rushing yards/game </TD> <TD align="right"> 142.1 </TD> <TD align="right"> 141.0 </TD> </TR>
-   </TABLE>
+<!-- html table generated in R 3.4.1 by xtable 1.8-2 package -->
+<!-- Thu Nov 16 09:42:14 2017 -->
+<table border=1>
+<tr> <th> Statistic </th> <th> With Peterson </th> <th> Without Peterson </th>  </tr>
+  <tr> <td> # of games </td> <td align="right">  </td> <td align="right"> 9.0 </td> </tr>
+  <tr> <td> Win % </td> <td align="right"> 49.5 </td> <td align="right"> 44.4 </td> </tr>
+  <tr> <td> Points/game </td> <td align="right"> 23.1 </td> <td align="right"> 25.9 </td> </tr>
+  <tr> <td> Rushing yards/game </td> <td align="right"> 142.1 </td> <td align="right"> 141.0 </td> </tr>
+   </table>
 
 The commentators main point was that there was no practical significance in the difference in the numbers (although perhaps the win percentage is lower) when Peterson is playing vs when he is not playing. The commentators did point out that due to the low number of games without Peterson the results are ``skewed.'' I think they really mean that there is a lot of uncertainty in the estimates relative to their true values with Peterson not playing. Below I will talk about statistical significance, but the main point of the commentators is that there is no practical significant difference between the results with and without Peterson.
 

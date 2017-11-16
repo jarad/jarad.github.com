@@ -2,8 +2,8 @@
 layout: post
 title: "Most people who have been confirmed to have MERS CoV infection developed severe acute respiratory illness"
 description: ""
-category: disease
-tags: [MERS-CoV]
+category: [Research]
+tags: [MERS-CoV,disease]
 ---
 {% include JB/setup %}
 

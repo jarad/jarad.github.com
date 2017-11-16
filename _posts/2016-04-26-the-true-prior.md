@@ -2,8 +2,8 @@
 layout: post
 title: "The True Prior"
 description: ""
-category: 
-tags: [probability-interpretation]
+category: [Teaching]
+tags: [probability,interpretation]
 ---
 {% include JB/setup %}
 

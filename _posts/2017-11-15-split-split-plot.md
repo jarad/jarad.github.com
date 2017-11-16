@@ -3,7 +3,7 @@ layout: post
 title: "Split-split plot"
 description: ""
 category: [Consulting]
-tags: [modeling,split plot, split-split plot]
+tags: [modeling,split plot,split-split plot]
 ---
 {% include JB/setup %}
 

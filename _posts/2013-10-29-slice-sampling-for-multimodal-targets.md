@@ -2,8 +2,8 @@
 layout: post
 title: "Slice sampling for multimodal targets"
 description: ""
-category: 615
-tags: [MCMC, slice sampling, Gibbs sampling]
+category: [Teaching]
+tags: [STAT 615,MCMC,slice sampling,Gibbs sampling,R]
 ---
 {% include JB/setup %}
 
@@ -20,56 +20,51 @@ The maximum number of steps taken can be controlled.
 
 
 {% highlight r %}
-slice = function(n, init_x, target, w, max_steps) {
-    u = x = rep(NA, n)
-    x[1] = init_x
-    
-    for (i in 2:n) {
-        u[i] = runif(1, 0, target(x[i - 1]))
-        L = x[i - 1] - runif(1, 0, w)
-        R = L + w
-        
-        # Step out
-        J = floor(max_steps * runif(1))
-        K = (max_steps - 1) - J
-        while ((u[i] < target(L)) & J > 0) {
-            L = L - w
-            J = J - 1
-        }
-        while ((u[i] < target(R)) & K > 0) {
-            R = R + w
-            K = K - 1
-        }
-        
-        # Sample and shrink
-        repeat {
-            x[i] = runif(1, L, R)
-            if (u[i] < target(x[i])) 
-                break
-            
-            # shrink
-            if (x[i] > x[i - 1]) 
-                R = x[i]
-            if (x[i] < x[i - 1]) 
-                L = x[i]
-        }
+slice = function(n,init_x,target,w,max_steps) {
+  u = x = rep(NA,n)
+  x[1] = init_x
+
+  for (i in 2:n) {
+    u[i] = runif(1,0,target(x[i-1]))
+    L = x[i-1] - runif(1,0,w)
+    R = L+w
+
+    # Step out
+    J = floor(max_steps*runif(1))
+    K = (max_steps-1)-J
+    while((u[i]<target(L)) & J>0) {
+      L = L-w
+      J = J-1
+    } 
+    while((u[i]<target(R)) & K>0) {
+      R = R+w
+      K = K-1
     }
-    return(list(x = x, u = u))
+
+    # Sample and shrink
+    repeat {
+      x[i] = runif(1,L,R)
+      if (u[i]<target(x[i])) break
+      
+      # shrink
+      if (x[i]>x[i-1]) R = x[i]
+      if (x[i]<x[i-1]) L = x[i]
+    }
+  }
+  return(list(x=x,u=u))
 }
 {% endhighlight %}
 
 
-
 {% highlight r %}
-target = function(x) dnorm(x, -2)/2 + dnorm(x, 2)/2
-res = slice(10000, 0, target, 1, 10)
+target = function(x)  dnorm(x,-2)/2+dnorm(x,2)/2
+res = slice(1e4, 0, target, 1, 10)
 
-hist(res$x, freq = F, 100)
-curve(target, add = TRUE)
+hist(res$x,freq=F,100)
+curve(target, add=TRUE)
 {% endhighlight %}
 
-![center](/../figs/2013-10-29-slice-sampling-for-multimodal-targets/unnamed-chunk-2.png) 
-
+![center](/../figs/2013-10-29-slice-sampling-for-multimodal-targets/unnamed-chunk-2-1.png)
 
 ## Doubling slice sampler
 
@@ -89,75 +84,65 @@ The function to perform this check is 'accept'.
 
 {% highlight r %}
 accept = function(x0, x1, L, R, u, w) {
-    D = FALSE
-    while (R - L > 1.1 * w) {
-        M = (L + R)/2
-        if ((x0 < M & x1 >= M) | (x0 >= M & x1 < M)) 
-            D = TRUE
-        if (x1 < M) {
-            R = M
-        } else {
-            L = M
-        }
-        if (D & u >= target(L) & u >= target(R)) {
-            return(FALSE)
-        }
-    }
-    return(TRUE)
+  D = FALSE
+  while(R-L > 1.1*w) {
+    M = (L+R)/2
+    if ((x0 < M & x1 >= M) | (x0 >= M & x1 < M)) D = TRUE
+    if (x1 < M) { R = M } else { L = M }
+    if (D & u>=target(L) & u>= target(R)) {
+      return(FALSE) 
+    } 
+  }
+  return(TRUE)
 }
 {% endhighlight %}
-
 
 Now, we have the doubling slice sampler which looks very similar to the stepping-out slice sampler.
 
 
 {% highlight r %}
-slice = function(n, init_x, target, w, max_doubling) {
-    u = x = rep(NA, n)
-    x[1] = init_x
-    
-    for (i in 2:n) {
-        u[i] = runif(1, 0, target(x[i - 1]))
-        L = x[i - 1] - runif(1, 0, w)
-        R = L + w
-        
-        # Step out
-        K = max_doubling
-        while ((u[i] < target(L) | u[i] < target(R)) & K > 0) {
-            if (runif(1) < 0.5) {
-                L = L - (R - L)
-            } else {
-                R = R + (R - L)
-            }
-            K = K - 1
-        }
-        
-        # Sample and shrink
-        repeat {
-            x[i] = runif(1, L, R)
-            if (u[i] < target(x[i]) & accept(x[i - 1], x[i], L, R, u[i], w)) 
-                break
-            
-            # shrink
-            if (x[i] > x[i - 1]) 
-                R = x[i]
-            if (x[i] < x[i - 1]) 
-                L = x[i]
-        }
+slice = function(n,init_x,target,w,max_doubling) {
+  u = x = rep(NA,n)
+  x[1] = init_x
+
+  for (i in 2:n) {
+    u[i] = runif(1,0,target(x[i-1]))
+    L = x[i-1] - runif(1,0,w)
+    R = L+w
+
+    # Step out
+    K = max_doubling
+    while((u[i]<target(L) | u[i]<target(R)) & K>0) {
+      if (runif(1) < 0.5) {
+        L = L-(R-L)
+      } else {
+        R = R+(R-L)
+      }
+      K = K-1
     }
-    return(list(x = x, u = u))
+
+    # Sample and shrink
+    repeat {
+      x[i] = runif(1,L,R)
+      if (u[i]<target(x[i]) & 
+          accept(x[i-1], x[i], L, R, u[i], w)) break
+      
+      # shrink
+      if (x[i]>x[i-1]) R = x[i]
+      if (x[i]<x[i-1]) L = x[i]
+    }
+  }
+  return(list(x=x,u=u))
 }
 {% endhighlight %}
 
 
-
 {% highlight r %}
-target = function(x) dnorm(x, -2)/2 + dnorm(x, 2)/2
-res = slice(10000, 0, target, 1, 10)
+target = function(x)  dnorm(x,-2)/2+dnorm(x,2)/2
+res = slice(1e4, 0, target,1, 10)
 
-hist(res$x, freq = F, 100)
-curve(target, add = TRUE)
+hist(res$x,freq=F,100)
+curve(target, add=TRUE)
 {% endhighlight %}
 
-![center](/../figs/2013-10-29-slice-sampling-for-multimodal-targets/unnamed-chunk-5.png) 
-
+![center](/../figs/2013-10-29-slice-sampling-for-multimodal-targets/unnamed-chunk-5-1.png)

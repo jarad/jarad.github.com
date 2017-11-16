@@ -2,8 +2,8 @@
 layout: post
 title: "Importance sampling"
 description: ""
-category: 615
-tags: [Monte Carlo, importance sampling]
+category: [Teaching]
+tags: [STAT 615,Monte Carlo,importance sampling,R]
 ---
 {% include JB/setup %}
 
@@ -19,12 +19,11 @@ Set up the target and proposal densities and sample.
 {% highlight r %}
 a = 5
 b = 12
-target = function(x) dbeta(x, a, b)
+target = function(x) dbeta(x,a,b)
 proposal = dunif
 n = 1000
 points = runif(n)
 {% endhighlight %}
-
 
 So far, everything is the same as rejection sampling. Now we calculate the weights. 
 
@@ -32,12 +31,11 @@ So far, everything is the same as rejection sampling. Now we calculate the weigh
 {% highlight r %}
 w = target(points)/proposal(points)
 
-curve(target, lwd = 2)
-points(points, w, col = "red", pch = 1, lwd = 2)
+curve(target,lwd=2)
+points(points,w, col="red", pch=1, lwd=2)
 {% endhighlight %}
 
-![center](/../figs/2013-10-03-importance-sampling/unnamed-chunk-2.png) 
-
+![center](/../figs/2013-10-03-importance-sampling/unnamed-chunk-2-1.png)
 
 Since our proposal is the uniform distribution, the unnormalized weights exactly match the density of our target. 
 We can use this weighted sample for any purpose, e.g. estimation of expectations or densities. 
@@ -47,26 +45,18 @@ If so, we can resample from our weights with replacement to obtain an unweighted
 
 
 {% highlight r %}
-points2 = points[sample(n, n, w, replace = TRUE)]
+points2 = points[sample(n, n, w, replace=TRUE)]
 {% endhighlight %}
-
-
-
-{% highlight text %}
-## Warning: Walker's alias method used: results are different from R < 2.2.0
-{% endhighlight %}
-
 
 These unweighted samples should look like our target density. 
 
 
 {% highlight r %}
-hist(points2, freq = FALSE)
-curve(target, lwd = 2, add = TRUE)
+hist(points2, freq=FALSE)
+curve(target, lwd=2, add=TRUE)
 {% endhighlight %}
 
-![center](/../figs/2013-10-03-importance-sampling/unnamed-chunk-4.png) 
-
+![center](/../figs/2013-10-03-importance-sampling/unnamed-chunk-4-1.png)
 
 But notice that there are duplications in this sample.
 
@@ -75,19 +65,16 @@ But notice that there are duplications in this sample.
 dup = table(as.factor(points2))
 {% endhighlight %}
 
-
 The plot below shows that the duplicated points are more often found where the target density is high. 
 
 
 {% highlight r %}
-plot(as.numeric(names(dup)), as.numeric(dup), xlim = c(0, 1), ylim = c(0, 10), 
-    col = "blue", ylab = "# of duplicates", xlab = "Location", lwd = 2)
-points(points, rep(0, n), lwd = 2, col = "red", pch = 1)
-curve(target, lwd = 2, add = TRUE, col = "gray")
+plot(as.numeric(names(dup)), as.numeric(dup), xlim=c(0,1), ylim=c(0,10), col="blue", ylab="# of duplicates", xlab="Location", lwd=2)
+points(points,rep(0,n), lwd=2, col="red", pch=1)
+curve(target, lwd=2, add=TRUE, col="gray")
 {% endhighlight %}
 
-![center](/../figs/2013-10-03-importance-sampling/unnamed-chunk-6.png) 
-
+![center](/../figs/2013-10-03-importance-sampling/unnamed-chunk-6-1.png)
 
 
 

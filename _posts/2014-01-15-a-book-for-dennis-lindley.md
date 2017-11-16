@@ -2,8 +2,8 @@
 layout: post
 title: "A Book for Dennis Lindley"
 description: ""
-category: 544
-tags: [544, 615, Bayesian]
+category: [Teaching]
+tags: [STAT 544,STAT 615,Bayesian]
 ---
 {% include JB/setup %}
 

@@ -3,7 +3,7 @@ layout: post
 title: "Data entry in R"
 description: ""
 category: [Consulting]
-tags: [R, data management]
+tags: [R,data management]
 ---
 {% include JB/setup %}
 

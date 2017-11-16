@@ -2,8 +2,8 @@
 layout: post
 title: "Probability interpretation for Mars rescue mission"
 description: ""
-category: 
-tags: [probability-interpretation]
+category: [Teaching]
+tags: [probability,interpretation]
 ---
 {% include JB/setup %}
 

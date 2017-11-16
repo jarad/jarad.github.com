@@ -2,8 +2,8 @@
 layout: post
 title: "Do lefties earn more?"
 description: ""
-category: 
-tags: [401A]
+category: [Teaching]
+tags: [STAT 401A,baseball]
 ---
 {% include JB/setup %}
 
