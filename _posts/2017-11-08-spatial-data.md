@@ -3,7 +3,7 @@ layout: post
 title: "Simulating spatial data"
 description: ""
 category: [Teaching]
-tags: [spatial,data,simulation,STAT615]
+tags: [spatial,data,simulation,STAT 615,R]
 ---
 {% include JB/setup %}
 
@@ -15,6 +15,73 @@ The code is a modified version of the code in `?CARBayes::S.CARleroux`.
 {% highlight r %}
 library("MASS")
 library("dplyr")
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## Warning: package 'dplyr' was built under R version 3.4.2
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## 
+## Attaching package: 'dplyr'
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## The following object is masked _by_ '.GlobalEnv':
+## 
+##     slice
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## The following objects are masked from 'package:Hmisc':
+## 
+##     combine, src, summarize
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## The following object is masked from 'package:MASS':
+## 
+##     select
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## The following objects are masked from 'package:plyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+{% endhighlight %}
+
+
+
+{% highlight r %}
 library("ggplot2")
 
 set.seed(20171108)
@@ -24,48 +91,44 @@ sessionInfo()
 
 
 {% highlight text %}
-## R version 3.4.0 (2017-04-21)
-## Platform: x86_64-redhat-linux-gnu (64-bit)
-## Running under: Red Hat Enterprise Linux Workstation 7.3 (Maipo)
+## R version 3.4.1 (2017-06-30)
+## Platform: x86_64-apple-darwin15.6.0 (64-bit)
+## Running under: OS X El Capitan 10.11.6
 ## 
 ## Matrix products: default
-## BLAS/LAPACK: /usr/lib64/R/lib/libRblas.so
+## BLAS: /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
 ## 
 ## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] hglm_2.1-1      hglm.data_1.0-0 Matrix_1.2-10   knitr_1.17     
-##  [5] bindrcpp_0.2    ggplot2_2.2.1   dplyr_0.7.4     CARBayes_5.0   
-##  [9] Rcpp_0.12.13    MASS_7.3-47    
+##  [1] dplyr_0.7.4        xtable_1.8-2       Hmisc_4.0-3       
+##  [4] Formula_1.2-2      survival_2.41-3    lattice_0.20-35   
+##  [7] MCMCpack_1.4-0     MASS_7.3-47        coda_0.19-1       
+## [10] dlm_1.1-4          ggplot2_2.2.1.9000 plyr_1.8.4        
+## [13] knitr_1.17        
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] gtools_3.5.0       spam_2.1-1         splines_3.4.0     
-##  [4] lattice_0.20-35    colorspace_1.3-2   expm_0.999-2      
-##  [7] htmltools_0.3.6    yaml_2.1.14        MCMCpack_1.4-0    
-## [10] rlang_0.1.2        foreign_0.8-69     glue_1.1.1        
-## [13] sp_1.2-5           bindr_0.1          plyr_1.8.4        
-## [16] stringr_1.2.0      MatrixModels_0.4-1 dotCall64_0.9-04  
-## [19] CARBayesdata_2.0   munsell_0.4.3      gtable_0.2.0      
-## [22] coda_0.19-1        evaluate_0.10.1    labeling_0.3      
-## [25] SparseM_1.77       quantreg_5.33      spdep_0.6-13      
-## [28] highr_0.6          backports_1.1.0    scales_0.4.1      
-## [31] gdata_2.18.0       truncnorm_1.0-7    deldir_0.1-14     
-## [34] mcmc_0.9-5         digest_0.6.12      stringi_1.1.5     
-## [37] gmodels_2.16.2     rprojroot_1.2      grid_3.4.0        
-## [40] tools_3.4.0        LearnBayes_2.15    magrittr_1.5      
-## [43] lazyeval_0.2.0     tibble_1.3.4       pkgconfig_2.0.1   
-## [46] shapefiles_0.7     matrixcalc_1.0-3   assertthat_0.2.0  
-## [49] rmarkdown_1.6      R6_2.2.2           boot_1.3-20       
-## [52] nlme_3.1-131       compiler_3.4.0
+##  [1] reshape2_1.4.2      splines_3.4.1       colorspace_1.3-2   
+##  [4] htmltools_0.3.6     base64enc_0.1-3     rlang_0.1.2        
+##  [7] foreign_0.8-69      glue_1.1.1          RColorBrewer_1.1-2 
+## [10] bindrcpp_0.2        bindr_0.1           stringr_1.2.0      
+## [13] MatrixModels_0.4-1  munsell_0.4.3       gtable_0.2.0       
+## [16] htmlwidgets_0.9     evaluate_0.10.1     labeling_0.3       
+## [19] latticeExtra_0.6-28 SparseM_1.77        quantreg_5.33      
+## [22] htmlTable_1.9       highr_0.6           Rcpp_0.12.13       
+## [25] acepack_1.4.1       scales_0.5.0.9000   backports_1.1.1    
+## [28] checkmate_1.8.4     mcmc_0.9-5          gridExtra_2.3      
+## [31] digest_0.6.12       stringi_1.1.5       grid_3.4.1         
+## [34] tools_3.4.1         magrittr_1.5        lazyeval_0.2.0     
+## [37] tibble_1.3.4        cluster_2.0.6       pkgconfig_2.0.1    
+## [40] Matrix_1.2-11       data.table_1.10.4   assertthat_0.2.0   
+## [43] R6_2.2.2            rpart_4.1-11        nnet_7.3-12        
+## [46] compiler_3.4.1
 {% endhighlight %}
 
 Construct spatial lattice.

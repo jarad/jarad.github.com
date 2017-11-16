@@ -2,8 +2,8 @@
 layout: post
 title: "Rejection sampling"
 description: ""
-category: 615
-tags: [Monte Carlo, rejection sampling]
+category: [Teaching]
+tags: [STAT 615,Monte Carlo,rejection sampling,R]
 ---
 {% include JB/setup %}
 
@@ -21,16 +21,15 @@ Set up the targt and proposal densities.
 {% highlight r %}
 a = 5
 b = 12
-target = function(x) dbeta(x, a, b)
+target = function(x) dbeta(x,a,b)
 proposal = dunif
 {% endhighlight %}
-
 
 Calculate M and the probability of acceptance.
 
 
 {% highlight r %}
-mode = (a - 1)/(a + b - 2)
+mode = (a-1)/(a+b-2)
 M = target(mode)
 1/M
 {% endhighlight %}
@@ -38,9 +37,8 @@ M = target(mode)
 
 
 {% highlight text %}
-## [1] 0.2745
+## [1] 0.2745091
 {% endhighlight %}
-
 
 Perform rejection sampling
 
@@ -49,26 +47,23 @@ Perform rejection sampling
 n = 1000
 points = runif(n)
 uniforms = runif(n)
-accept = uniforms < (target(points)/(M * proposal(points)))
+accept = uniforms < (target(points)/(M*proposal(points)))
 {% endhighlight %}
-
 
 The plot below has target (red) and proposal (green) density as well as the proposal density scaled by M (green, dashed) to show how it creates an envelope over the target. The points are accepted (blue circle) and rejected (red x) values on the x-axis with their associated uniform draws on the y-axis.
 
 
 {% highlight r %}
-curve(target, lwd = 2)
-curve(proposal, add = TRUE, col = "seagreen", lwd = 2)
-curve(M * proposal(x), add = TRUE, col = "seagreen", lty = 2, lwd = 2)
-points(points, M * uniforms, pch = ifelse(accept, 1, 4), col = ifelse(accept, 
-    "blue", "red"), lwd = 2)
-legend("topright", c("target", "proposal", "accepted", "rejected"), lwd = c(2, 
-    2, NA, NA), col = c("black", "seagreen", "blue", "red"), pch = c(NA, NA, 
-    1, 4), bg = "white")
+curve(target, lwd=2)
+curve(proposal, add=TRUE, col="seagreen", lwd=2)
+curve(M*proposal(x), add=TRUE, col="seagreen", lty=2, lwd=2)
+points(points, M*uniforms, pch=ifelse(accept,1,4), col=ifelse(accept,"blue","red"), lwd=2)
+legend("topright", c("target","proposal","accepted","rejected"), 
+       lwd=c(2,2,NA,NA), col=c("black","seagreen","blue","red"),
+       pch=c(NA,NA,1,4), bg="white") 
 {% endhighlight %}
 
-![center](/../figs/2013-10-03-rejection-sampling/unnamed-chunk-4.png) 
-
+![center](/../figs/2013-10-03-rejection-sampling/unnamed-chunk-4-1.png)
 
 The empirical acceptance probability is.
 
@@ -80,8 +75,7 @@ sum(accept)/n
 
 
 {% highlight text %}
-## [1] 0.276
+## [1] 0.291
 {% endhighlight %}
-
 
 

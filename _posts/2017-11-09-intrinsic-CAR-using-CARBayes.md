@@ -3,7 +3,7 @@ layout: post
 title: "Intrinsic CAR using CARBayes"
 description: ""
 category: [Teaching]
-tags: [areal,spatial,STAT615]
+tags: [areal,spatial,STAT 615,R,CAR]
 ---
 {% include JB/setup %}
 
@@ -12,7 +12,23 @@ tags: [areal,spatial,STAT615]
 
 {% highlight r %}
 library("CARBayes")
+{% endhighlight %}
 
+
+
+{% highlight text %}
+## Loading required package: Rcpp
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## Warning: package 'Rcpp' was built under R version 3.4.2
+{% endhighlight %}
+
+
+
+{% highlight r %}
 set.seed(20171109)
 sessionInfo()
 {% endhighlight %}
@@ -20,30 +36,32 @@ sessionInfo()
 
 
 {% highlight text %}
-## R version 3.4.0 (2017-04-21)
-## Platform: x86_64-redhat-linux-gnu (64-bit)
-## Running under: Red Hat Enterprise Linux Workstation 7.3 (Maipo)
+## R version 3.4.1 (2017-06-30)
+## Platform: x86_64-apple-darwin15.6.0 (64-bit)
+## Running under: OS X El Capitan 10.11.6
 ## 
 ## Matrix products: default
-## BLAS/LAPACK: /usr/lib64/R/lib/libRblas.so
+## BLAS: /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
 ## 
 ## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8    LC_PAPER=en_US.UTF-8      
-##  [8] LC_NAME=C                  LC_ADDRESS=C               LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] hglm_2.1-1      hglm.data_1.0-0 Matrix_1.2-10   knitr_1.17      bindrcpp_0.2    ggplot2_2.2.1   dplyr_0.7.4     CARBayes_5.0    Rcpp_0.12.13    MASS_7.3-47    
+##  [1] CARBayes_5.0       Rcpp_0.12.13       bindrcpp_0.2       dplyr_0.7.4        xtable_1.8-2       Hmisc_4.0-3        Formula_1.2-2      survival_2.41-3    lattice_0.20-35    MCMCpack_1.4-0    
+## [11] MASS_7.3-47        coda_0.19-1        dlm_1.1-4          ggplot2_2.2.1.9000 plyr_1.8.4         knitr_1.17        
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] gtools_3.5.0       spam_2.1-1         splines_3.4.0      lattice_0.20-35    colorspace_1.3-2   expm_0.999-2       htmltools_0.3.6    yaml_2.1.14        MCMCpack_1.4-0     rlang_0.1.2       
-## [11] foreign_0.8-69     glue_1.1.1         sp_1.2-5           bindr_0.1          plyr_1.8.4         stringr_1.2.0      MatrixModels_0.4-1 dotCall64_0.9-04   CARBayesdata_2.0   munsell_0.4.3     
-## [21] gtable_0.2.0       coda_0.19-1        evaluate_0.10.1    labeling_0.3       SparseM_1.77       quantreg_5.33      spdep_0.6-13       highr_0.6          backports_1.1.0    scales_0.4.1      
-## [31] gdata_2.18.0       truncnorm_1.0-7    deldir_0.1-14      mcmc_0.9-5         digest_0.6.12      stringi_1.1.5      gmodels_2.16.2     rprojroot_1.2      grid_3.4.0         tools_3.4.0       
-## [41] LearnBayes_2.15    magrittr_1.5       lazyeval_0.2.0     tibble_1.3.4       pkgconfig_2.0.1    shapefiles_0.7     matrixcalc_1.0-3   assertthat_0.2.0   rmarkdown_1.6      R6_2.2.2          
-## [51] boot_1.3-20        nlme_3.1-131       compiler_3.4.0
+##  [1] deldir_0.1-14       gtools_3.5.0        assertthat_0.2.0    digest_0.6.12       truncnorm_1.0-7     R6_2.2.2            backports_1.1.1     acepack_1.4.1       MatrixModels_0.4-1 
+## [10] evaluate_0.10.1     spam_2.1-1          highr_0.6           rlang_0.1.2         lazyeval_0.2.0      spdep_0.6-15        gdata_2.18.0        data.table_1.10.4   SparseM_1.77       
+## [19] gmodels_2.16.2      rpart_4.1-11        Matrix_1.2-11       checkmate_1.8.4     labeling_0.3        splines_3.4.1       stringr_1.2.0       foreign_0.8-69      htmlwidgets_0.9    
+## [28] munsell_0.4.3       compiler_3.4.1      shapefiles_0.7      pkgconfig_2.0.1     base64enc_0.1-3     mcmc_0.9-5          htmltools_0.3.6     nnet_7.3-12         expm_0.999-2       
+## [37] tibble_1.3.4        gridExtra_2.3       htmlTable_1.9       matrixcalc_1.0-3    grid_3.4.1          nlme_3.1-131        gtable_0.2.0        magrittr_1.5        scales_0.5.0.9000  
+## [46] stringi_1.1.5       reshape2_1.4.2      LearnBayes_2.15     sp_1.2-5            latticeExtra_0.6-28 boot_1.3-20         CARBayesdata_2.0    RColorBrewer_1.1-2  tools_3.4.1        
+## [55] glue_1.1.1          colorspace_1.3-2    cluster_2.0.6       dotCall64_0.9-04    bindr_0.1           quantreg_5.33
 {% endhighlight %}
 
 Using the data from [this post](http://www.jarad.me/teaching/2017/11/08/spatial-data), 
@@ -59,12 +77,12 @@ head(d)
 
 {% highlight text %}
 ##   x.easting x.northing Y_normal Y_pois trials Y_binom    x1    x2
-## 1         1          1    -1.37      1     10       2 -2.01  0.00
-## 2         2          1     1.81      5     10      10  0.55  0.38
-## 3         3          1     1.62      5     10       9  0.10  0.79
-## 4         4          1     0.65      2     10       7  0.08 -0.14
-## 5         5          1     1.05      1     10       6 -0.54  1.13
-## 6         6          1     0.40      2     10       3  0.35 -0.84
+## 1         1          1    -1.28      1     10       2 -2.01  0.00
+## 2         2          1     1.49      4     10      10  0.55  0.38
+## 3         3          1     1.36      3     10       9  0.10  0.79
+## 4         4          1     0.55      2     10       7  0.08 -0.14
+## 5         5          1     0.89      0     10       6 -0.54  1.13
+## 6         6          1     0.02      2     10       3  0.35 -0.84
 {% endhighlight %}
 
 Build a neighborhood structure based on 4 nearest neighbors, 
@@ -106,7 +124,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  30.689   0.150  30.838
+##  44.141   3.975  49.694
 {% endhighlight %}
 
 
@@ -132,14 +150,14 @@ mn
 ## Posterior quantities and DIC
 ## 
 ##             Median   2.5%  97.5% n.sample % accept n.effective Geweke.diag
-## (Intercept) 0.6222 0.5953 0.6488    80000      100     75928.7        -0.4
-## x1          1.0162 0.9802 1.0530    80000      100     19371.2         0.7
-## x2          0.9819 0.9423 1.0209    80000      100     19202.8        -1.2
-## nu2         0.0168 0.0042 0.0341    80000      100      2079.1        -0.6
-## tau2        0.0621 0.0245 0.1194    80000      100      2127.2         0.7
+## (Intercept) 0.6248 0.5968 0.6522    80000      100     75134.2        -0.6
+## x1          0.9836 0.9447 1.0236    80000      100     14171.7         1.1
+## x2          0.9859 0.9429 1.0288    80000      100     15026.4        -1.1
+## nu2         0.0171 0.0037 0.0398    80000      100      1724.8        -1.0
+## tau2        0.0848 0.0323 0.1532    80000      100      1896.8         1.1
 ## rho         1.0000 1.0000 1.0000       NA       NA          NA          NA
 ## 
-## DIC =  -63.54406       p.d =  59.70351       Percent deviance explained =  99.62
+## DIC =  -55.9519       p.d =  65.39269       Percent deviance explained =  99.67
 {% endhighlight %}
 
 
@@ -165,7 +183,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  40.709   0.033  40.738
+##  38.574   3.925  47.830
 {% endhighlight %}
 
 
@@ -191,13 +209,13 @@ mb
 ## Posterior quantities and DIC
 ## 
 ##             Median   2.5%  97.5% n.sample % accept n.effective Geweke.diag
-## (Intercept) 0.7036 0.5462 0.8648    80000     46.6     28172.6        -1.3
-## x1          1.2821 1.0842 1.4967    80000     46.6     12485.4        -2.4
-## x2          1.0849 0.8831 1.3002    80000     46.6     16405.8        -2.0
-## tau2        0.0183 0.0030 0.1684    80000    100.0       360.6        -0.7
+## (Intercept) 0.7655 0.6074 0.9242    80000     46.5     26245.6        -1.8
+## x1          1.1657 0.9771 1.3665    80000     46.5     15932.2        -1.1
+## x2          1.0543 0.8567 1.2662    80000     46.5     17006.5        -1.2
+## tau2        0.0134 0.0026 0.1437    80000    100.0       304.1         0.1
 ## rho         1.0000 1.0000 1.0000       NA       NA          NA          NA
 ## 
-## DIC =  309.0988       p.d =  4.419879       Percent deviance explained =  51.44
+## DIC =  313.3336       p.d =  3.998382       Percent deviance explained =  48.75
 {% endhighlight %}
 
 
@@ -223,7 +241,7 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
-##  32.332   0.062  32.391
+##  32.139   3.258  37.832
 {% endhighlight %}
 
 
@@ -249,11 +267,11 @@ mp
 ## Posterior quantities and DIC
 ## 
 ##             Median   2.5%  97.5% n.sample % accept n.effective Geweke.diag
-## (Intercept) 0.7773 0.6201 0.9248    80000     45.9      4998.7        -1.6
-## x1          0.9260 0.8312 1.0236    80000     45.9      5518.6         2.7
-## x2          0.7736 0.6561 0.8923    80000     45.9      7710.8         0.7
-## tau2        0.0097 0.0025 0.0595    80000    100.0       334.0         0.7
+## (Intercept) 0.7115 0.5425 0.8745    80000       46      2063.7        -2.3
+## x1          0.9905 0.8651 1.1047    80000       46      1571.7         2.5
+## x2          0.8755 0.7375 1.0117    80000       46      2495.8         1.2
+## tau2        0.0600 0.0065 0.2742    80000      100       103.6        -0.4
 ## rho         1.0000 1.0000 1.0000       NA       NA          NA          NA
 ## 
-## DIC =  374.7862       p.d =  5.034638       Percent deviance explained =  61.12
+## DIC =  382.3014       p.d =  12.18594       Percent deviance explained =  70.27
 {% endhighlight %}

@@ -2,8 +2,8 @@
 layout: post
 title: "Getting started with R/RStudio and Git/GitHub"
 description: ""
-category: 
-tags: []
+category: [Teaching]
+tags: [R,RStudio,Git,GitHub]
 ---
 {% include JB/setup %}
 

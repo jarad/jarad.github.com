@@ -3,7 +3,7 @@ layout: post
 title: "Using R and RStudio for data management"
 description: ""
 category: 
-tags: [R, data management]
+tags: [R,RStudio,data management]
 ---
 {% include JB/setup %}
 

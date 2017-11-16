@@ -2,8 +2,8 @@
 layout: post
 title: "ggplot2 ISU palette"
 description: ""
-category: 
-tags: [ggplot2]
+category: [Consulting]
+tags: [R,ggplot2,Iowa State]
 ---
 {% include JB/setup %}
 

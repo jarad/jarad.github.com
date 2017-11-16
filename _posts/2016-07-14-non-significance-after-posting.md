@@ -2,8 +2,8 @@
 layout: post
 title: "Non-significance after adjusting"
 description: ""
-category:  [401A]
-tags: media
+category:  [Teaching]
+tags: [media,STAT 401A]
 ---
 {% include JB/setup %}
 

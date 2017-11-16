@@ -27,3 +27,8 @@ The Rnw files can be found [here](https://github.com/jarad/jarad.github.com/tree
 ## Spatial models
 
 - [GPs and CARs](slides/Spatial/Spatial.pdf)
+
+## Slice sampling and ARMS
+
+- [Slice](slides/Slice/slice.pdf)
+- [ARMS](slides/ARMS/ARMS.pdf)

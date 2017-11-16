@@ -2,8 +2,8 @@
 layout: post
 title: "Bayesian logistic regression"
 description: ""
-category: 615
-tags: [R, logistic regression]
+category: [Teaching]
+tags: [STAT 615,R,logistic regression]
 ---
 {% include JB/setup %}
 
@@ -22,35 +22,38 @@ The first function here just creates a sample from the prior suggested in the pa
 
 
 {% highlight r %}
-p = function(psi) 1/(1 + exp(-psi))
+p = function(psi) 1/(1+exp(-psi))
 
-samps = function(kappa, phi.a = 1, phi.b = 1, beta.sigma = 100, x = 0, n = 1e+05) {
-    phi = rgamma(n, phi.a, phi.b)
-    sd = 1/sqrt(phi)
-    
-    beta = rnorm(n, 0, beta.sigma)
-    delta = rnorm(n, 0, sd)
-    m = rnorm(n, 0, kappa * sd)
-    
-    p(m + delta + x * beta)
+samps = function(kappa, 
+                 phi.a=1, 
+                 phi.b=1, 
+                 beta.sigma=100, 
+                 x = 0,
+                 n=1e5) {
+  phi = rgamma(n, phi.a, phi.b)
+  sd = 1/sqrt(phi)
+
+  beta = rnorm(n,0,beta.sigma)
+  delta = rnorm(n,0,sd)
+  m = rnorm(n,0,kappa*sd)
+  
+  p(m+delta+x*beta)
 }
 {% endhighlight %}
-
 
 Below are three plots where kappa has increased from 1 to 10 to 100. With kappa=1, the prior looks almost uniform but appears to have a peak near 0 and 1. As kappa is increased this peak gets higher and higher. This implied prior does not seem objective at all. 
 
 
 {% highlight r %}
 kappas = 10^c(0:2)
-par(mfrow = c(1, length(kappas)))
+par(mfrow=c(1,length(kappas)))
 for (i in 1:length(kappas)) {
-    hist(samps(kappas[i]), 1000, freq = F, main = paste("kappa=", kappas[i]), 
-        ylim = c(0, 2))
+  hist(samps(kappas[i]), 1000, freq=F, 
+       main=paste("kappa=",kappas[i]), ylim=c(0,2))
 }
 {% endhighlight %}
 
-![center](/../figs/2013-09-12-bayesian-logistic-regression/unnamed-chunk-2.png) 
-
+![center](/../figs/2013-09-12-bayesian-logistic-regression/unnamed-chunk-2-1.png)
 
 
 ### Accept/reject algorithm
@@ -61,38 +64,36 @@ This was not discussed in class, but is just a simple example of an accept/rejec
 {% highlight r %}
 # sample Z~N(0,1) using X~t_df
 df = 5
-n = 1e+06  # number of attempts
-c = exp(dnorm(0, log = T) - dt(0, df, log = T))
-x = rt(n, df)
-lu = log(runif(n)) + log(c) + dt(x, df, log = T)
-z = x[lu <= dnorm(x, log = T)]
+n = 1e6 # number of attempts
+c = exp(dnorm(0,log=T)-dt(0,df,log=T))
+x = rt(n,df)
+lu = log(runif(n))+log(c)+dt(x,df,log=T)
+z = x[lu<=dnorm(x,log=T)]
 {% endhighlight %}
-
 
 In the plot below is a histogram of the samples with two curves representing the target distribution (normal) and the proposal distribution (t). It appears to do reasonably well although I'm concerned with the slightly higher peak at the mode of the distribution. Is this just due to binning?
 
 
 {% highlight r %}
-hist(z, 100, freq = F)
-curve(dnorm, add = T, col = 4, lwd = 2)
-curve(dt(x, df), add = T, col = 2, lwd = 2, lty = 2)
-legend("topright", c("normal", "t"), col = c(4, 2), lty = 1:2, lwd = 2)
+hist(z, 100, freq=F)
+curve(dnorm, add=T, col=4, lwd=2)
+curve(dt(x,df), add=T, col=2, lwd=2, lty=2)
+legend("topright",c("normal","t"), col=c(4,2), lty=1:2, lwd=2)
 {% endhighlight %}
 
-![center](/../figs/2013-09-12-bayesian-logistic-regression/unnamed-chunk-4.png) 
-
+![center](/../figs/2013-09-12-bayesian-logistic-regression/unnamed-chunk-4-1.png)
 
 I also decided to check the acceptance rate relative to the expected acceptance rate and these don't seem to quite agree. Do I have a bug somewhere?
 
 
 {% highlight r %}
-length(z)/n  # acceptance rate, should be 1/c
+length(z)/n # acceptance rate, should be 1/c
 {% endhighlight %}
 
 
 
 {% highlight text %}
-## [1] 0.9335
+## [1] 0.932718
 {% endhighlight %}
 
 
@@ -104,9 +105,8 @@ length(z)/n  # acceptance rate, should be 1/c
 
 
 {% highlight text %}
-## [1] 0.9515
+## [1] 0.9515329
 {% endhighlight %}
-
 
 ### Bayesian logistic regression in R (using Pólya-Gamma latent variables)
 
@@ -116,31 +116,76 @@ The code below is straight from the examples in the help file for the function `
 {% highlight r %}
 # 
 library(BayesLogit)
-
-## From UCI Machine Learning Repository.
-data(spambase)
-
-## A subset of the data.
-sbase = spambase[seq(1, nrow(spambase), 10), ]
-
-X = model.matrix(is.spam ~ word.freq.free + word.freq.1999, data = sbase)
-y = sbase$is.spam
-
-## Run logistic regression.
-output = logit(y, X, samp = 10000, burn = 1000)
 {% endhighlight %}
 
 
 
 {% highlight text %}
-## Warning: data was combined!
-## N: 140, P: 3 
-## Burn-in complete: 0.329178 sec. for 1000 iterations.
-## Expect approx. 3.29178 sec. for 10000 samples.
-## Sampling complete: 3.29542 sec. for 10000 iterations.
+## Error in library(BayesLogit): there is no package called 'BayesLogit'
 {% endhighlight %}
 
 
+
+{% highlight r %}
+## From UCI Machine Learning Repository.
+data(spambase);
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## Warning in data(spambase): data set 'spambase' not found
+{% endhighlight %}
+
+
+
+{% highlight r %}
+## A subset of the data.
+sbase = spambase[seq(1,nrow(spambase),10),];
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## Error in eval(expr, envir, enclos): object 'spambase' not found
+{% endhighlight %}
+
+
+
+{% highlight r %}
+X = model.matrix(is.spam ~ word.freq.free + word.freq.1999, data=sbase);
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## Error in terms.formula(object, data = data): object 'sbase' not found
+{% endhighlight %}
+
+
+
+{% highlight r %}
+y = sbase$is.spam;
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## Error in eval(expr, envir, enclos): object 'sbase' not found
+{% endhighlight %}
+
+
+
+{% highlight r %}
+## Run logistic regression.
+output = logit(y, X, samp=10000, burn=1000);
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## Error in logit(y, X, samp = 10000, burn = 1000): could not find function "logit"
+{% endhighlight %}
 
 
 
@@ -150,24 +195,30 @@ Some traceplots that look pretty good.
 
 {% highlight r %}
 # Traceplots
-par(mfrow = c(1, 3))
-for (i in 1:3) plot(output$beta[, i], type = "l")
+par(mfrow=c(1,3))
+for (i in 1:3)
+  plot(output$beta[,i], type="l")
 {% endhighlight %}
 
-![center](/../figs/2013-09-12-bayesian-logistic-regression/unnamed-chunk-8.png) 
 
+
+{% highlight text %}
+## Error in plot(output$beta[, i], type = "l"): object 'output' not found
+{% endhighlight %}
 
 And some posterior plots (panel.hist and panel.cor are taken from the `pairs` help file).
 
 
 {% highlight r %}
 # Posteriors
-pairs(output$beta, labels = paste("beta", 1:3), lower.panel = panel.smooth, 
-    upper.panel = panel.cor, diag.panel = panel.hist)
+pairs(output$beta, labels=paste("beta",1:3), lower.panel = panel.smooth, upper.panel = panel.cor, diag.panel = panel.hist)
 {% endhighlight %}
 
-![center](/../figs/2013-09-12-bayesian-logistic-regression/unnamed-chunk-9.png) 
 
+
+{% highlight text %}
+## Error in pairs(output$beta, labels = paste("beta", 1:3), lower.panel = panel.smooth, : object 'output' not found
+{% endhighlight %}
 
 
 
