@@ -30,6 +30,7 @@ Build a neighborhood structure based on 4 nearest neighbors,
 i.e. cardinal directions.
 
 ```{r neighbors}
+n <- nrow(d)
 distance <- as.matrix(dist(d[,c("x.easting","x.northing")]))
 
 # Proximity matrix
@@ -58,6 +59,17 @@ system.time(
 
 ```{r normal_model_results}
 mn
+```
+
+Spatial surface
+
+```{r normal_surface}
+d$mean = apply(mn$samples$phi, 2, mean)
+d$sd   = apply(mn$samples$phi, 2, sd)
+
+ggplot(d, aes(x.easting, x.northing)) + 
+  geom_raster(aes(fill = mean)) + 
+  theme_bw()
 ```
 
 

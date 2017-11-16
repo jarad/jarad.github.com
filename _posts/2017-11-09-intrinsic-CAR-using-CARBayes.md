@@ -51,6 +51,7 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
+<<<<<<< Updated upstream
 ##  [1] CARBayes_5.0       Rcpp_0.12.13       bindrcpp_0.2       dplyr_0.7.4        xtable_1.8-2       Hmisc_4.0-3        Formula_1.2-2      survival_2.41-3    lattice_0.20-35    MCMCpack_1.4-0    
 ## [11] MASS_7.3-47        coda_0.19-1        dlm_1.1-4          ggplot2_2.2.1.9000 plyr_1.8.4         knitr_1.17        
 ## 
@@ -62,6 +63,17 @@ sessionInfo()
 ## [37] tibble_1.3.4        gridExtra_2.3       htmlTable_1.9       matrixcalc_1.0-3    grid_3.4.1          nlme_3.1-131        gtable_0.2.0        magrittr_1.5        scales_0.5.0.9000  
 ## [46] stringi_1.1.5       reshape2_1.4.2      LearnBayes_2.15     sp_1.2-5            latticeExtra_0.6-28 boot_1.3-20         CARBayesdata_2.0    RColorBrewer_1.1-2  tools_3.4.1        
 ## [55] glue_1.1.1          colorspace_1.3-2    cluster_2.0.6       dotCall64_0.9-04    bindr_0.1           quantreg_5.33
+=======
+## [1] knitr_1.17    ggplot2_2.2.1 bindrcpp_0.2  dplyr_0.7.4   CARBayes_5.0  Rcpp_0.12.13  MASS_7.3-47  
+## 
+## loaded via a namespace (and not attached):
+##  [1] gtools_3.5.0       spam_2.1-1         splines_3.4.0      lattice_0.20-35    colorspace_1.3-2   expm_0.999-2       htmltools_0.3.6    yaml_2.1.14        MCMCpack_1.4-0     rlang_0.1.2       
+## [11] foreign_0.8-69     glue_1.1.1         sp_1.2-5           bindr_0.1          plyr_1.8.4         stringr_1.2.0      MatrixModels_0.4-1 dotCall64_0.9-04   CARBayesdata_2.0   munsell_0.4.3     
+## [21] gtable_0.2.0       coda_0.19-1        evaluate_0.10.1    labeling_0.3       SparseM_1.77       quantreg_5.33      spdep_0.6-13       highr_0.6          backports_1.1.0    scales_0.4.1      
+## [31] gdata_2.18.0       truncnorm_1.0-7    deldir_0.1-14      mcmc_0.9-5         digest_0.6.12      stringi_1.1.5      gmodels_2.16.2     grid_3.4.0         rprojroot_1.2      tools_3.4.0       
+## [41] LearnBayes_2.15    magrittr_1.5       lazyeval_0.2.0     tibble_1.3.4       tidyr_0.6.3        pkgconfig_2.0.1    Matrix_1.2-10      shapefiles_0.7     matrixcalc_1.0-3   assertthat_0.2.0  
+## [51] rmarkdown_1.6      R6_2.2.2           boot_1.3-20        nlme_3.1-131       compiler_3.4.0
+>>>>>>> Stashed changes
 {% endhighlight %}
 
 Using the data from [this post](http://www.jarad.me/teaching/2017/11/08/spatial-data), 
@@ -90,6 +102,7 @@ i.e. cardinal directions.
 
 
 {% highlight r %}
+n <- nrow(d)
 distance <- as.matrix(dist(d[,c("x.easting","x.northing")]))
 
 # Proximity matrix
@@ -124,7 +137,11 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
+<<<<<<< Updated upstream
 ##  44.141   3.975  49.694
+=======
+##  29.587   0.025  29.599
+>>>>>>> Stashed changes
 {% endhighlight %}
 
 
@@ -160,6 +177,20 @@ mn
 ## DIC =  -55.9519       p.d =  65.39269       Percent deviance explained =  99.67
 {% endhighlight %}
 
+Spatial surface
+
+
+{% highlight r %}
+d$mean = apply(mn$samples$phi, 2, mean)
+d$sd   = apply(mn$samples$phi, 2, sd)
+
+ggplot(d, aes(x.easting, x.northing)) + 
+  geom_raster(aes(fill = mean)) + 
+  theme_bw()
+{% endhighlight %}
+
+![center](/../figs/2017-11-09-intrinsic-CAR-using-CARBayes/normal_surface-1.png)
+
 
 
 ## Binomial model
@@ -183,7 +214,11 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
+<<<<<<< Updated upstream
 ##  38.574   3.925  47.830
+=======
+##  40.272   0.105  40.327
+>>>>>>> Stashed changes
 {% endhighlight %}
 
 
@@ -241,7 +276,11 @@ system.time(
 
 {% highlight text %}
 ##    user  system elapsed 
+<<<<<<< Updated upstream
 ##  32.139   3.258  37.832
+=======
+##  31.409   0.000  31.342
+>>>>>>> Stashed changes
 {% endhighlight %}
 
 

@@ -106,6 +106,7 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
+<<<<<<< Updated upstream
 ##  [1] dplyr_0.7.4        xtable_1.8-2       Hmisc_4.0-3       
 ##  [4] Formula_1.2-2      survival_2.41-3    lattice_0.20-35   
 ##  [7] MCMCpack_1.4-0     MASS_7.3-47        coda_0.19-1       
@@ -129,6 +130,30 @@ sessionInfo()
 ## [40] Matrix_1.2-11       data.table_1.10.4   assertthat_0.2.0   
 ## [43] R6_2.2.2            rpart_4.1-11        nnet_7.3-12        
 ## [46] compiler_3.4.1
+=======
+## [1] knitr_1.17    ggplot2_2.2.1 bindrcpp_0.2  dplyr_0.7.4   CARBayes_5.0 
+## [6] Rcpp_0.12.13  MASS_7.3-47  
+## 
+## loaded via a namespace (and not attached):
+##  [1] gtools_3.5.0       spam_2.1-1         splines_3.4.0     
+##  [4] lattice_0.20-35    colorspace_1.3-2   expm_0.999-2      
+##  [7] htmltools_0.3.6    yaml_2.1.14        MCMCpack_1.4-0    
+## [10] rlang_0.1.2        foreign_0.8-69     glue_1.1.1        
+## [13] sp_1.2-5           bindr_0.1          plyr_1.8.4        
+## [16] stringr_1.2.0      MatrixModels_0.4-1 dotCall64_0.9-04  
+## [19] CARBayesdata_2.0   munsell_0.4.3      gtable_0.2.0      
+## [22] coda_0.19-1        evaluate_0.10.1    labeling_0.3      
+## [25] SparseM_1.77       quantreg_5.33      spdep_0.6-13      
+## [28] backports_1.1.0    scales_0.4.1       gdata_2.18.0      
+## [31] truncnorm_1.0-7    deldir_0.1-14      mcmc_0.9-5        
+## [34] digest_0.6.12      stringi_1.1.5      gmodels_2.16.2    
+## [37] grid_3.4.0         rprojroot_1.2      tools_3.4.0       
+## [40] LearnBayes_2.15    magrittr_1.5       lazyeval_0.2.0    
+## [43] tibble_1.3.4       tidyr_0.6.3        pkgconfig_2.0.1   
+## [46] Matrix_1.2-10      shapefiles_0.7     matrixcalc_1.0-3  
+## [49] assertthat_0.2.0   rmarkdown_1.6      R6_2.2.2          
+## [52] boot_1.3-20        nlme_3.1-131       compiler_3.4.0
+>>>>>>> Stashed changes
 {% endhighlight %}
 
 Construct spatial lattice.
@@ -164,6 +189,19 @@ d <- Grid %>%
          x1       = x1,
          x2       = x2)
 {% endhighlight %}
+
+Spatial surface
+
+
+{% highlight r %}
+ggplot(d %>% mutate(omega=omega), 
+       aes(x=x.easting, y=x.northing)) +
+  geom_raster(aes(fill = omega)) +
+  theme_bw()
+{% endhighlight %}
+
+![center](/../figs/2017-11-08-spatial-data/surface-1.png)
+
 
 Normal data
 
