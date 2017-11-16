@@ -6,6 +6,7 @@ category:
 tags: [faculty senate]
 ---
 {% include JB/setup %}
+Summary from [Inside Iowa State](https://www.inside.iastate.edu/article/2017/11/16/fs).
 
 ## Special Order
 
