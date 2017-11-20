@@ -11,7 +11,7 @@ who might be interested in looking at the material after the conference.
 If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
 - 2017
-  - [UCI](https://github.com/jarad/UMASS2017/raw/master/JaradNiemi_UCI2017.pdf)
+  - [UCI](https://github.com/jarad/UCI2017/raw/master/JaradNiemi_UCI2017.pdf)
   - [Graybill](https://github.com/jarad/Graybill2017/raw/master/JaradNiemi_Graybill2017.pdf)
   - [UMASS](https://github.com/jarad/UMASS2017/raw/master/JaradNiemi_UMASS2017.pdf)
 - 2016
