@@ -32,3 +32,7 @@ The Rnw files can be found [here](https://github.com/jarad/jarad.github.com/tree
 
 - [Slice](slides/Slice/slice.pdf)
 - [ARMS](slides/ARMS/ARMS.pdf)
+
+## Bayesian nonparametrics (BNP)
+
+- [Finite mixture models](slides/Nonparametrics/finiteMixtures.pdf) (not really BNP)

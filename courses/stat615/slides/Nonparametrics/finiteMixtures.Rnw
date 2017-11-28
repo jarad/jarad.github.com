@@ -3,7 +3,7 @@
 \input{../frontmatter}
 \input{../commands}
 
-\title{Slice sampling}
+\title{Finite mixture models}
 
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
@@ -17,12 +17,16 @@ opts_chunk$set(fig.width=7,
 options(width=100)
 @
 
-<<libraries, message=FALSE, warning=FALSE>>=
-# library("plyr")
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("plyr")
 library("dplyr")
 # library("reshape2")
 library("ggplot2")
+library("grid")
 library("gridExtra")
+
+library("edgeR")
+library("rjags")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -140,7 +144,7 @@ Some possible default priors are
 \begin{frame}
 \frametitle{Complicated distributions}
 <<rnaseq, message=FALSE>>=
-library(edgeR)
+library("edgeR")
 d = read.table("rna_seq.txt", header=TRUE)
 
 # Keep only total columns
@@ -196,19 +200,23 @@ for (i in 1:n) {
   for (j in 1:n) {
     p = (i-1)*n+j # plot number
     if (i>j) 
-      plots[[p]] = grid::grid.rect(gp=gpar(col="white"))
+      plots[[p]] = grid.rect(gp = gpar(col = "white"))
     if (i==j) {
       plots[[p]] = ggplot(hat, aes_string(parms[i])) + 
-        geom_histogram(fill='gray') +
+        geom_histogram(fill = 'gray') +
         theme_bw() + 
-        labs(x=parse(text=parms[i]))
+        labs(x = parse(text = parms[i]))
     }
     if (i<j) {   
       plots[[p]] = ggplot(hat, aes_string(parms[j], parms[i])) + 
-        stat_binhex(bin=100) +
+        stat_binhex(bins = 100) +
         theme_bw() + 
-        scale_fill_gradientn(trans='log',breaks=c(1,10,100,1000), guide=FALSE, colours=c("gray","black")) + 
-        labs(x=parse(text=parms[j]), y=parse(text=parms[i]))
+        scale_fill_gradientn(trans = 'log',
+                             breaks = c(1,10,100,1000), 
+                             guide = FALSE, 
+                             colours = c("gray","black")) + 
+        labs(x = parse(text=parms[j]), 
+             y = parse(text=parms[i]))
     }
   }
 }
@@ -343,7 +351,7 @@ d_h' &= d_h + \frac{1}{2}\left(\sum_{i:\zeta_i=h} (y_i-\overline{y}_h)^2 + \left
 \subsection{JAGS}
 \begin{frame}[fragile]
 <<jags, echo=TRUE>>=
-library(rjags)
+library("rjags")
 jags_model = "
 model {
   for (i in 1:n) {
@@ -437,7 +445,7 @@ Dir(\pi;a) \I(\mu_1<\cdots<\mu_H)  \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\sigma_h^2) IG
 \subsection{JAGS}
 \begin{frame}[fragile]
 <<jags2, echo=TRUE>>=
-library(rjags)
+library("rjags")
 jags_model = "
 model {
   for (i in 1:n) {
@@ -508,10 +516,13 @@ sm = ddply(d, .(xx), summarize,
 
 <<posterior_density_plot, dependson=c('posterior_density','jags_data'), results='hide'>>=
 ggplot(data.frame(x=c(-3,10)), aes(x)) + 
-  geom_histogram(data=tmp, aes(x=phi, y=..density..), binwidth=0.2, alpha=0.5)+
-  geom_ribbon(data=sm, aes(x=xx,y=mean, ymin=lb, ymax=ub), fill='blue', alpha=0.5) 
-#  geom_line() +
-  labs(x='x', y='density') 
+  geom_histogram(data=tmp, aes(x=phi, y=..density..), 
+                 binwidth=0.2, alpha=0.5) +
+  geom_ribbon(data=sm, aes(x=xx,y=mean, ymin=lb, ymax=ub), 
+              fill='blue', alpha=0.5) +
+  #  geom_line() +
+  labs(x='x', y='density') +
+  theme_bw()
 @
 \end{frame}
 
@@ -556,13 +567,14 @@ Genes can then be clustered by assigning them to a group based on their posterio
 \mbox{argmax}_h P(\zeta_i=h|y).
 \]
 
-<<clustering_final>>=
+<<clustering_final, dependson=c("clustering_results"),fig.height=3>>=
 cluster = ddply(sm, .(parameter), function(x) data.frame(group=which.max(x[,-1])))
 library(gtools)
 ordr = mixedorder(as.character(cluster$parameter))
 # ggplot(cbind(cluster[ordr,], tmp), aes(x=phi,y=..density..)) +
 #   geom_histogram(binwidth=0.2, alpha=0.5) +
-#   facet_wrap(~group)
+#   facet_wrap(~group) +
+#   theme_bw()
 @
 
 \vspace{0.2in} \pause
@@ -574,12 +586,13 @@ Unfortunately clustering is extremely sensitive to the parametric model chosen, 
 \subsection{Choosing $H$}
 \begin{frame}
 \frametitle{Choosing $H$}
-When using finite mixture modeling one of the key choices is to choose $H$ the number of clusters. 
+When using finite mixture models one of the key choices is to choose $H$, 
+the number of clusters. 
 
 \begin{itemize}[<+->]
 \item A Bayesian approach would place a prior on $H$, e.g. a Poisson or truncated Poisson, and then use reversible jump MCMC to estimate it.
 \item A more pragmatic approach is to start with a small $H$ and then determine whether there is some feature of the data that is not being adequately addressed\pause, e.g. via posterior predictive pvalues. 
-\item An approach that is somewhere in between is to find an MLE (or MAP) via 
+\item An empirical Bayes finds an MLE (or MAP) via 
 \[ 
 \hat{H} = \mbox{argmax}_H p(y|H) = \int p(y|\pi,\mu,\sigma^2,H) p(\pi,\mu,\sigma^2|H) d\pi d\mu d\sigma^2
 \]
@@ -689,7 +702,7 @@ D_h' &= D_h + \sum_{i:\zeta_i=h} (y_i-\overline{y}_h)(y_i-\overline{y}_h)^\top +
 
 \begin{frame}[fragile]
 <<jags_joint, echo=TRUE>>=
-library(rjags)
+library("rjags")
 joint_mixture_model = "
 model {
   for (i in 1:n) {
