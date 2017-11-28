@@ -297,7 +297,7 @@ Commonly, we have $m_h=m$, $v_h=v$, $c_h=c$, and $d_h=d$. \pause If the data hav
 
 \begin{frame}
 \frametitle{MCMC}
-\small
+\tiny
 
 \vspace{-0.05in}
 
@@ -308,23 +308,26 @@ p(\pi,\mu,\sigma^2,\zeta|y) \propto p(y|\zeta,\mu,\sigma^2) p(\zeta|\pi) p(\mu|\
 has steps 
 
 \begin{enumerate}
-\item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
+\item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional (as the $\zeta$ are conditionally independent across $i$):
 \[ 
 P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h, \sigma_h^2) 
 \]
-\item Sample $\pi \sim Dir(a+n)$ where $n=(n_1,\ldots,n_H)$ and $n_h = \sum_{i=1}^n \I(\zeta_i=h)$. 
-\item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
+\item Jointly sample $\pi$ and $\mu,\sigma^2$ as they are conditionally independent.
+  \begin{enumerate}\tiny
+  \item Sample $\pi \sim Dir(a+Z)$ where $n=(Z_1,\ldots,Z_H)$ and $Z_h = \sum_{i=1}^n \I(\zeta_i=h)$. 
+  \item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional (as these are conditionally independent across $h$):
 \[ 
-\mu_h|\sigma_h^2 \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^2 \stackrel{ind}{\sim} IG(c'_h, d'_h)
+\sigma_h^2 \stackrel{ind}{\sim} IG(c'_h, d'_h) \quad \mu_h|\sigma_h^2 \stackrel{ind}{\sim} N(m_h', v_h'^2\sigma_h^2) 
 \]
 where 
 \[ \begin{array}{rl}
-v_h'^2 &= (1/v_h^2 + n_h)^{-1} \\
-m_h' &= v_h'^2(m_h/v_h^2 + n_h\overline{y}_h) \\
-c_h' &= c_d + n_2/2 \\
-d_h' &= d_h + \frac{1}{2}\left(\sum_{i:\zeta_i=h} (y_i-\overline{y}_h)^2 + \left(\frac{n_h}{1+n_h/v_h^2}\right)(\overline{y}_h - m_h)^2 \right) \\
-\overline{y}_h &= \frac{1}{n_h} \sum_{i:\zeta_i=h} y_i
+v_h'^2 &= (1/v_h^2 + Z_h)^{-1} \\
+m_h' &= v_h'^2(m_h/v_h^2 + Z_h\overline{y}_h) \\
+c_h' &= c_d + Z_h/2 \\
+d_h' &= d_h + \frac{1}{2}\left(\sum_{i:\zeta_i=h} (y_i-\overline{y}_h)^2 + \left(\frac{Z_h}{1+Z_h/v_h^2}\right)(\overline{y}_h - m_h)^2 \right) \\
+\overline{y}_h &= \frac{1}{Z_h} \sum_{i:\zeta_i=h} y_i
 \end{array} \]
+\end{enumerate}
 \end{enumerate}
 
 \end{frame}
@@ -518,7 +521,7 @@ sm = ddply(d, .(xx), summarize,
 ggplot(data.frame(x=c(-3,10)), aes(x)) + 
   geom_histogram(data=tmp, aes(x=phi, y=..density..), 
                  binwidth=0.2, alpha=0.5) +
-  geom_ribbon(data=sm, aes(x=xx,y=mean, ymin=lb, ymax=ub), 
+  geom_ribbon(data=sm, aes(x=xx, ymin=lb, ymax=ub), 
               fill='blue', alpha=0.5) +
   #  geom_line() +
   labs(x='x', y='density') +
@@ -667,7 +670,7 @@ where $c_h>p-1$ is the degrees of freedom and $D$ is the scale matrix. \pause Th
 
 \begin{frame}
 \frametitle{MCMC}
-\small
+\tiny
 
 \vspace{-0.05in}
 
@@ -682,19 +685,24 @@ has steps
 \[ 
 P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h, \mySigma_h) 
 \]
-\item Sample $\pi \sim Dir(a+n)$ where $n=(n_1,\ldots,n_H)$ and $n_h = \sum_{i=1}^n \I(\zeta_i=h)$. 
-\item For $h=1,\ldots,H$, sample $\mu_h,\mySigma_h$ from their full conditional
+\item Jointly sample $\pi$ and $\mu,\sigma^2$ as they are conditionally independent.
+  \begin{enumerate}\tiny
+  \item Sample $\pi \sim Dir(a+Z)$ where $Z=(Z_1,\ldots,Z_H)$ and $Z_h = \sum_{i=1}^n \I(\zeta_i=h)$. 
+  \item For $h=1,\ldots,H$, sample $\mu_h,\mySigma_h$ from their full conditional
 \[ 
-\mu_h|\mySigma_h \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \mySigma_h \stackrel{ind}{\sim} IW(D_h',c_h')
+\mySigma_h \stackrel{ind}{\sim} IW(D_h',c_h')
+\quad
+\mu_h|\mySigma_h \stackrel{ind}{\sim} N(m_h', v_h'^2\mySigma_h)
 \]
 where 
 \[ \begin{array}{rl}
-v_h'^2 &= (1/v_h^2 + n_h)^{-1} \\
-m_h' &= v_h'^2(m_h/v_h^2 + n_h\overline{y}_h) \\
-c_h' &= c_d + n_h \\
-D_h' &= D_h + \sum_{i:\zeta_i=h} (y_i-\overline{y}_h)(y_i-\overline{y}_h)^\top + \left(\frac{n_h}{1+n_h/v_h^2}\right)(\overline{y}_h-\mu_h)(\overline{y}_h-\mu_h)^\top  \\
-\overline{y}_h &= \frac{1}{n_h} \sum_{i:\zeta_i=h} y_i 
+v_h'^2 &= (1/v_h^2 + Z_h)^{-1} \\
+m_h' &= v_h'^2(m_h/v_h^2 + Z_h\overline{y}_h) \\
+c_h' &= c_d + Z_h \\
+D_h' &= D_h + \sum_{i:\zeta_i=h} (y_i-\overline{y}_h)(y_i-\overline{y}_h)^\top + \left(\frac{Z_h}{1+Z_h/v_h^2}\right)(\overline{y}_h-\mu_h)(\overline{y}_h-\mu_h)^\top  \\
+\overline{y}_h &= \frac{1}{Z_h} \sum_{i:\zeta_i=h} y_i 
 \end{array} \]
+\end{enumerate}
 \end{enumerate}
 
 \end{frame}
