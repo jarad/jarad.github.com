@@ -1,34 +1,9 @@
 \documentclass[handout]{beamer}
 
-\usepackage{verbatim,multicol,xmpmulti}
+\input{../frontmatter}
+\input{../commands}
 
-\graphicspath{{figs/}}
-
-\usetheme{AnnArbor}
-\usecolortheme{beaver}
-
-\setlength{\unitlength}{\textwidth}  % measure in textwidths
-\usepackage[normalem]{ulem}
-
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{enumerate items}[default]
-\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
-\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
-\setkeys{Gin}{width=0.6\textwidth}
-
-\title{Finite mixture models}
-\author[Jarad Niemi]{Dr. Jarad Niemi}
-\institute[Iowa State]{Iowa State University}
-\date{\today}
-
-\newcommand{\mG}{\mathrm{\Gamma}}
-\newcommand{\I}{\mathrm{I}}
-\newcommand{\mySigma}{\mathrm{\Sigma}}
-\newcommand{\ind}{\stackrel{ind}{\sim}}
-
-\begin{document}
-
-%\section{Temp??} \begin{comment}
+\title{Slice sampling}
 
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
@@ -37,24 +12,24 @@ opts_chunk$set(fig.width=7,
                out.width='.8\\linewidth', 
                fig.align='center', 
                size='tiny',
-               cache=TRUE,
-               echo=FALSE)
+               echo=FALSE,
+               cache=TRUE)
 options(width=100)
 @
 
-<<libraries, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE>>=
-library(ggplot2)
-library(grid)
-library(gridExtra)
-library(plyr)
-library(dplyr)
-library(reshape2)
-library(rjags)
+<<libraries, message=FALSE, warning=FALSE>>=
+# library("plyr")
+library("dplyr")
+# library("reshape2")
+library("ggplot2")
+library("gridExtra")
 @
 
 <<set_seed, echo=FALSE>>=
 set.seed(2)
 @
+
+\begin{document}
 
 \frame{\maketitle}
 
@@ -221,7 +196,7 @@ for (i in 1:n) {
   for (j in 1:n) {
     p = (i-1)*n+j # plot number
     if (i>j) 
-      plots[[p]] = grid.rect(gp=gpar(col="white"))
+      plots[[p]] = grid::grid.rect(gp=gpar(col="white"))
     if (i==j) {
       plots[[p]] = ggplot(hat, aes_string(parms[i])) + 
         geom_histogram(fill='gray') +
@@ -250,7 +225,8 @@ Let's focus on modeling the univariate distribution for $\phi$
 
 <<phi, dependson='rnaseq', message=FALSE>>=
 ggplot(hat, aes(phi)) + 
-  geom_histogram(aes(y=..density..))
+  geom_histogram(aes(y=..density..)) +
+  theme_bw()
 @
 \end{frame}
 
