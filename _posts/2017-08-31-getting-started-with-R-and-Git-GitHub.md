@@ -38,7 +38,7 @@ Go to [GitHub Education](https://education.github.com/) and request a discount
 [GitHub Bootcamp](https://help.github.com/categories/bootcamp/) (How to set up and get started)
 
 Dr. Jarad Niemi's Resource on working with 
-[GitHub in RStudio](https://github.com/jarad/jarad.github.com/blob/master/resources/git.md)
+[GitHub in RStudio](../../../../resources/git.html)
 
 Dr. Jarad Niemi's 
 [R Data Package Template](https://github.com/jarad/RDataPackageTemplate) 
