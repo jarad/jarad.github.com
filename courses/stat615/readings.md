@@ -33,3 +33,8 @@ I will put readings here that are relevant to the lectures.
 ## Spatial
 
 - Hierarchical Modeling and Analysis for Spatial Data (Ch. 1-3)
+- BDA3 Chapter 21
+
+## Bayesian nonparametrics
+
+- BDA3 Chapters 22,23
