@@ -38,3 +38,6 @@ I will put readings here that are relevant to the lectures.
 ## Bayesian nonparametrics
 
 - BDA3 Chapters 22,23
+- [Bayesian Nonparametric Inference – Why and How](https://projecteuclid.org/euclid.ba/1369407550)
+- [Markov Chain Sampling Methods for Dirichlet Process Mixture Models](http://amstat.tandfonline.com/doi/abs/10.1080/10618600.2000.10474879)
+- [A Bayesian Analysis of Some Nonparametric Problems](https://projecteuclid.org/euclid.aos/1176342360)

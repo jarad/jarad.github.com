@@ -1,34 +1,9 @@
 \documentclass[handout]{beamer}
 
-\usepackage{verbatim,multicol,xmpmulti}
-
-\graphicspath{{figs/}}
-
-\usetheme{AnnArbor}
-\usecolortheme{beaver}
-
-\setlength{\unitlength}{\textwidth}  % measure in textwidths
-\usepackage[normalem]{ulem}
-
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{enumerate items}[default]
-\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
-\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
-\setkeys{Gin}{width=0.6\textwidth}
+\input{../frontmatter}
+\input{../commands}
 
 \title{Bayesian nonparametrics}
-\author[Jarad Niemi]{Dr. Jarad Niemi}
-\institute[Iowa State]{Iowa State University}
-\date{\today}
-
-\newcommand{\mG}{\mathrm{\Gamma}}
-\newcommand{\I}{\mathrm{I}}
-\newcommand{\mySigma}{\mathrm{\Sigma}}
-\newcommand{\ind}{\stackrel{ind}{\sim}}
-
-\begin{document}
-
-%\section{Temp??} \begin{comment}
 
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
@@ -37,24 +12,29 @@ opts_chunk$set(fig.width=7,
                out.width='.8\\linewidth', 
                fig.align='center', 
                size='tiny',
-               cache=TRUE,
-               echo=FALSE)
+               echo=FALSE,
+               cache=TRUE)
 options(width=100)
 @
 
-<<libraries, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE>>=
-library(ggplot2)
-library(grid)
-library(gridExtra)
-library(plyr)
-library(dplyr)
-library(reshape2)
-library(rjags)
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("plyr")
+library("dplyr")
+# library("reshape2")
+library("ggplot2")
+library("grid")
+library("gridExtra")
+
+library("edgeR")
+library("rjags")
+library("DPpackage")
 @
 
 <<set_seed, echo=FALSE>>=
 set.seed(2)
 @
+
+\begin{document}
 
 \frame{\maketitle}
 
@@ -72,7 +52,9 @@ There are two main approaches to Bayesian nonparametrics for density estimation
 
 \vspace{0.2in} \pause
 
-See \url{https://projecteuclid.org/euclid.ba/1369407550} for a general overview of all Bayesian nonparametric problems, e.g. density estimation, clustering, regression, random effects distributions, etc.
+See Muller and Mitra (2013) for a general overview of all Bayesian nonparametric 
+problems, e.g. density estimation, clustering, regression, 
+random effects distributions, etc.
 
 \end{frame}
 
@@ -127,16 +109,22 @@ hat = data.frame(gene = 1:length(fit$dispersion),
 hat$gene = d$GeneID
 
 ggplot(hat, aes(phi)) + 
-  geom_histogram(aes(y=..density..))
+  geom_histogram(aes(y=..density..)) +
+  theme_bw()
 @
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Goal}
-Let $Y_i$ come from an unknown probability distribution $G$, i.e. $Y_i\sim G$. \pause As a Bayesian, the natural approach is to put a prior on $G$. \pause That is, we want to make statements like 
+Let $Y_i$ come from an unknown probability measure $\mathcal{G}$, 
+i.e. $Y_i\sim \mathcal{G}$. 
+\pause 
+As a Bayesian, the natural approach is to put a prior on $\mathcal{G}$. 
+\pause 
+That is, we want to make statements like 
 \[ 
-P(Y_i \in A) = G(A)
+P(Y_i \in A) = \mathcal{G}(A)
 \]
 for any set $A$. 
 \end{frame}
@@ -148,24 +136,29 @@ for any set $A$.
 
 One approach is to use a Dirichlet process (Ferguson 1973). \pause We write 
 \[ 
-G \sim DP(aG_0)
+\mathcal{G} \sim DP(aG_0)
 \]
 where 
 \begin{itemize}[<+->]
-\item $a>0$ is total mass (or concentration) parameter and
-\item $G_0$ is the base measure, i.e. a probability distribution defined on the support of $G$. 
+\item $a>0$ is concentration (or total mass) parameter and
+\item $G_0$ is the base measure, 
+i.e. a probability distribution defined on the support of $\mathcal{G}$. 
 \end{itemize}
 
 \vspace{0.2in} \pause
 
-For any partition $\{A_1,\ldots,A_K\}$ of the sample space $S$, \pause the probability vector $[G(A_1),\ldots,G(A_K)]$ \pause follows a Dirichlet distribution, i.e.
+For any partition $A_1,\ldots,A_K$ of the sample space $S$, 
+\pause 
+the probability vector $[\mathcal{G}(A_1),\ldots,\mathcal{G}(A_K)]$ 
+\pause 
+follows a Dirichlet distribution, i.e.
 \[ 
-[G(A_1),\ldots,G(A_K)] \sim Dir([aG_0(A_1),\ldots,aG_0(a_K)]).
+[\mathcal{G}(A_1),\ldots,\mathcal{G}(A_K)] \sim Dir([aG_0(A_1),\ldots,aG_0(a_K)]).
 \]
 Thus 
 \begin{itemize}[<+->]
-\item $E[G(A_1)] = G_0(A_1)$ and 
-\item $V[G(A_1)] = \frac{G_0(A_1)[1-G_0(A_1)]}{1+a}$.
+\item $E[\mathcal{G}(A_1)] = G_0(A_1)$ and 
+\item $Var[\mathcal{G}(A_1)] = \frac{G_0(A_1)[1-G_0(A_1)]}{1+a}$.
 \end{itemize}
 \end{frame}
 
@@ -176,22 +169,22 @@ Thus
 
 Assume
 \[ 
-Y_i \ind G \qquad \mbox{and} \qquad G\sim DP(aG_0)
+Y_i \ind \mathcal{G} \qquad \mbox{and} \qquad \mathcal{G}\sim DP(aG_0)
 \]
 \pause
 then for any partition $\{A_1,\ldots,A_K\}$, we have 
 \[ \begin{array}{ll}
-[G(A_1),\ldots,G(A_K)]|y \sim \\
+[\mathcal{G}(A_1),\ldots,\mathcal{G}(A_K)]|y \sim \\
 \quad Dir\left(\left[aG_0(A_1) + \sum_{i=1}^n \I(y_i\in A_1),\ldots,aG_0(A_K) + \sum_{i=1}^n \I(y_i\in A_K)\right]\right)
 \end{array} \]
 \pause
 and thus 
 \[
-G|y \sim DP\left(aG_0 + \sum_{i=1}^n \delta_{y_i}\right)
+\mathcal{G}|y \sim DP\left(aG_0 + \sum_{i=1}^n \delta_{y_i}\right)
 \]
 which has 
 \[ 
-E(G(A)) = \left( \frac{a}{a+n} \right)G_0(A) + \left( \frac{n}{a+n} \right)\sum_{i=1}^n \frac{1}{n} \I(y_i\in A)
+E[\mathcal{G}(A)|y] = \left( \frac{a}{a+n} \right)G_0(A) + \left( \frac{n}{a+n} \right)\sum_{i=1}^n \frac{1}{n} \I(y_i\in A)
 \]
 
 \end{frame}
@@ -201,17 +194,25 @@ E(G(A)) = \left( \frac{a}{a+n} \right)G_0(A) + \left( \frac{n}{a+n} \right)\sum_
 \begin{frame}
 \frametitle{Stick-breaking representation}
 
-A constructive representation of the Dirichlet process is the stick-breaking representation. \pause Assume $G\sim DP(aG_0)$, then 
+A constructive representation of the Dirichlet process is the stick-breaking 
+representation. 
+\pause 
+Assume $\mathcal{G}\sim DP(aG_0)$, 
+then 
 \[ 
-P(\cdot) = \sum_{h=1}^\infty \pi_h \delta_{\theta_h}(\cdot)
+\mathcal{G}(\cdot) = \sum_{h=1}^\infty \pi_h \delta_{\theta_h}(\cdot)
 \]
-where 
+where $\pi \sim \mbox{stick}(a)$ 
+\pause 
+and $\theta_h\ind G_0$.
+\pause
+The stick distribution is the following:
 \begin{itemize}
-\item $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$
-\item $V_h \ind Be(1,a)$, and
-\item $\theta_h\ind G_0$.
+\item $\pi_h = \nu_h\prod_{\ell<h} (1-\nu_\ell)$ and 
+\item $\nu_h \ind Be(1,a)$.
 \end{itemize}
 
+\pause
 
 <<stick_breaking, fig.height=2>>=
 # Stick-breaking realizations
@@ -253,6 +254,8 @@ text(mp, -0.3, expression(pi[1], pi[2], pi[3], pi[4], pi[5], ...))
 
 \begin{frame}
 \frametitle{Realizations from a DP}
+Base measure is a standard normal. Realizations are across the columns and
+values for a are down the rows.
 <<stick_breaking_realizations, dependson='stick_breaking'>>=
 rdp = function(alpha, rP0, H = 10000) {
     theta = rP0(H)
@@ -274,7 +277,8 @@ d = ddply(expand.grid(alpha=10^seq(-2,2)), .(alpha), function(x) {
 ggplot(d, aes(x=theta, weight=pi)) +
   geom_histogram(aes(y=..density..), binwidth=0.1) + 
   facet_grid(alpha~.n, scales='free_y') + 
-  stat_function(fun=dnorm, color='red')
+  stat_function(fun=dnorm, color='red') +
+  theme_bw()
 @
 \end{frame}
 
@@ -283,14 +287,24 @@ ggplot(d, aes(x=theta, weight=pi)) +
 \begin{frame}
 \frametitle{DP mixture}
 
-If we have an absolutely continuous distribution we are trying to approximate, then a DP is not reasonable. \pause Thus, we may use a DP mixture, i.e. 
+If we have an absolutely continuous distribution we are trying to approximate, 
+then a DP is not reasonable. 
+\pause 
+Thus, we may want to use a \alert{DP mixture}, i.e. 
 \[ 
-Y_i \ind p(\cdot|\theta_i), \quad \theta_i \ind G, \quad G\sim DP(aG_0).
+Y_i \ind p(\cdot|\theta_i), 
+\quad 
+\theta_i \ind \mathcal{G}, 
+\quad 
+\mathcal{G}\sim DP(aG_0)
 \]
+for some parametric model $p(\cdot|\theta)$. 
 
 Alternatively, if we use the stick-breaking construction, we have 
 \[ 
-Y_i \ind p(\cdot|\theta_i), \quad \theta_i \ind \sum_{h=1}^\infty \pi_h \delta_{\theta_h^*}
+Y_i \ind p(\cdot|\theta_i), 
+\qquad 
+\theta_i \ind \sum_{h=1}^\infty \pi_h \delta_{\theta_h^*}
 \]
 where $\theta_h^* \ind G_0$ and $\pi \sim \mbox{stick}(a)$. 
 
@@ -301,7 +315,11 @@ where $\theta_h^* \ind G_0$ and $\pi \sim \mbox{stick}(a)$.
 \begin{frame}
 \frametitle{Finite approximation to the stick-breaking representation}
 
-For some $\epsilon>0$, there exists an $H$ such that $\sum_{h=H}^\infty \pi_h < \epsilon$ and can be ignored. \pause The resulting model is 
+For some $\epsilon>0$, 
+there exists an $H$ such that $\sum_{h=H}^\infty \pi_h < \epsilon$ and 
+components $H$ and beyond can reasonably be ignored. 
+\pause 
+The resulting model is 
 \[ 
 Y_i \ind p(\cdot|\theta_i), \quad \theta_i \ind \sum_{h=1}^H \pi_h \delta_{\theta_h^*}
 \]
@@ -320,7 +338,7 @@ where
 \begin{frame}
 \frametitle{Normal example}
 
-A model for the marginal distribution for $Y_i=\phi_i$ is
+A DP mixture model for the marginal distribution for $Y_i=\phi_i$ is
 
 \[ 
 Y_i \ind N(\mu_i, \sigma_i^2) \quad 
@@ -333,7 +351,7 @@ where $\sum_{h=1}^H \pi_h = 1$.
 Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
 Then 
 \[ \begin{array}{rl}
-Y_i|\zeta_i=z &\ind N(\mu_{h},\sigma_{h}^2) \\ 
+Y_i|\zeta_i=h &\ind N(\mu_{h},\sigma_{h}^2) \\ 
 \zeta_i &\ind Cat(H,\pi)
 \end{array} \]
 where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
@@ -349,9 +367,11 @@ Let
 \[ 
 Y_i \ind N(\mu_i,\sigma_i^2), \qquad (\mu_i,\sigma_i^2) \ind \sum_{h=1}^H \pi_h \delta_{(\mu_h^*,\sigma_h^{2*})}
 \]
-where the base measure is 
+where the base measure $G_0$ is 
 \[
-\mu_h^*|\sigma_h^{2*} \ind N(m,v^2\sigma_h^{2*}) \qquad\mbox{and}\qquad \sigma_h^{2*} \ind IG(c,d).
+\mu_h^*|\sigma_h^{2*} \ind N(m_h,v_h^2\sigma_h^{2*}) 
+\qquad\mbox{and}\qquad 
+\sigma_h^{2*} \ind IG(c_h,d_h).
 \]
 \pause
 
@@ -377,20 +397,23 @@ p(\pi,\mu,\sigma^2,\zeta|y) \propto p(y|\zeta,\mu,\sigma^2) p(\zeta|\pi) p(\mu|\
 has steps 
 
 \begin{enumerate}
-\item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
+\item For $i=1,\ldots,n$, independently sample $\zeta_i$ from its full conditional
 \[ 
 P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h^*, \sigma_h^{2*}) 
 \]
-\item \alert{Sample $V_h \ind Be(1+n_h,a+n_h^+)$ for $V=1,\ldots,H-1$ where $n_h = \sum_{i=1}^n \I(\zeta_i=h)$ and $n_h^+ = \sum_{h'=h+1}^H n_{h'}$ and set $V_H=1$. Then calculate $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$.}
-\item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
+\item Jointly sample $\pi$ and $\mu,\sigma^2$ because they are conditionally
+independent.
+  \begin{enumerate}
+  \item \alert{Sample $V_h \ind Be(1+Z_h,a+Z_h^+)$ for $V=1,\ldots,H-1$ where 
+  $Z_h = \sum_{i=1}^n \I(\zeta_i=h)$ and $Z_h^+ = \sum_{h'=h+1}^H Z_{h'}$ and 
+  set $V_H=1$. 
+  Then calculate $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$.}
+  \item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
 \[ 
 \mu_h^*|\sigma_h^{2*} \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^{2*} \stackrel{ind}{\sim} IG(c'_h, d'_h)
 \]
 where $m_h', v_h'^2, c_h'$, and $d_h'$ are exactly the same as in the normal finite mixture MCMC.
-
-\vspace{0.2in} \pause
-
-This Gibbs sampler is blocked because you sample $\zeta=(\zeta_1,\ldots,\zeta_n)$ jointly.
+\end{enumerate}
 \end{enumerate}
 
 \end{frame}
@@ -400,7 +423,7 @@ This Gibbs sampler is blocked because you sample $\zeta=(\zeta_1,\ldots,\zeta_n)
 \subsection{JAGS}
 \begin{frame}[fragile]
 <<dp_normal_blocked_model, echo=TRUE>>=
-library(rjags)
+library("rjags")
 dp_normal_blocked = "
 model {
   for (i in 1:n) {
@@ -440,7 +463,9 @@ r = jags.samples(jm, c('mu','sigma','pi','zeta'), 1e3)
 \begin{frame}
 \frametitle{Monitor convergence of density}
 
-As previously discussed, the model as constructed as identifiability problems among the $\pi_h$, $\mu_h^*$, and $\sigma_h^{2*}$ due to label switching. \pause
+As previously discussed, the model as constructed as identifiability problems 
+among the $\pi_h$, $\mu_h^*$, and $\sigma_h^{2*}$ due to label switching.
+\pause
 What is identified in the model is the value of the density at any particular value. 
 
 \vspace{0.2in} \pause
@@ -473,9 +498,11 @@ ddply(grid, .(iteration,chain,x), function(d) {
 
 <<example_traceplots, dependson='jags_conversion'>>=
 d$chain = as.factor(d$chain)
-ggplot(subset(d, x == sample(xx, 4)), aes(iteration, density, color=chain, group=chain)) + 
+ggplot(subset(d, x == sample(xx, 4)), 
+       aes(iteration, density, color=chain, group=chain)) + 
   geom_line() + 
-  facet_wrap(~x, scales='free')
+  facet_wrap(~x, scales='free') +
+  theme_bw()
 @
 \end{frame}
 
@@ -484,14 +511,27 @@ ggplot(subset(d, x == sample(xx, 4)), aes(iteration, density, color=chain, group
 \begin{frame}
 \frametitle{Monitoring the number of utilized components}
 
-Since we are using a finite approximation to the DP, we should monitor the index of the maximum occupied component. \pause If the finite approximation is reasonable, then this index will be far from our choice of $H$. \pause If not, then $H$ should be increased. 
+Since we are using a finite approximation to the DP, 
+we should monitor the index of the maximum occupied component 
+(or the number of occupied clusters).
+\pause 
+If the finite approximation is reasonable, 
+then this number will be smaller than $H$. 
+\pause 
+If not, then $H$ should be increased. 
 
 \vspace{0.2in} \pause
 
 Specifically, at iteration $m$, we monitor
 \[ 
-\max \{ \zeta_1^{(m)}, \ldots,\zeta_n^{(m)} \}.
+\max \{ \zeta_1^{(m)}, \ldots,\zeta_n^{(m)}, \}
 \]
+the index of the maximum occupied cluster, \pause
+or 
+\[
+\sum_{h=1}^H \I(Z_h>0),
+\]
+the number of occupied clusters.
 \end{frame}
 
 
@@ -503,7 +543,8 @@ index = adply(r$zeta, 2:3, function(d) data.frame(max_index = max(d)))
 names(index)[1:2] = c('iteration','chain')
 index$chain = as.factor(index$chain)
 ggplot(index, aes(iteration, max_index, color=chain, group=chain)) + 
-  geom_line() 
+  geom_line() +
+  theme_bw()
 @
 
 \end{frame}
@@ -520,7 +561,8 @@ sm = ddply(d, .(x), summarize,
            ub = quantile(density, .975))
 ggplot(sm, aes(x)) + 
   geom_histogram(data=tmp, aes(x=phi, y=..density..), binwidth=0.2, alpha=0.5) + 
-  geom_ribbon(aes(ymin=lb, ymax=ub), fill='blue', alpha=0.5) 
+  geom_ribbon(aes(ymin=lb, ymax=ub), fill='blue', alpha=0.5) +
+  theme_bw()
 @
 
 
@@ -532,7 +574,7 @@ ggplot(sm, aes(x)) +
 
 \small
 
-Rather than utilizing the finite approximation to the DP, we can use the DP directly, by marginalizing out $G$. \pause
+Rather than utilizing the finite approximation to the DP, we can use the DP directly, by marginalizing out $\mathcal{G}$. \pause
 This results in a prior directly on $\theta_1,\ldots,\theta_n$ via 
 \[ 
 \theta_i|\theta_1,\ldots,\theta_{i-1} \sim \left( \frac{a}{a+i-1} \right)G_0(\theta_i) + \sum_{j=1}^{i-1} \left(\frac{1}{a+i-1} \right) \delta_{\theta_j}
@@ -540,7 +582,7 @@ This results in a prior directly on $\theta_1,\ldots,\theta_n$ via
 
 \pause
 
-The conditional prior distribution for $\theta_i$ is 
+The conditional prior for $\theta_i$ is 
 \[ 
 \theta_i| \theta_{-i} \sim \left( \frac{a}{a+n-1} \right)G_0(\theta_i) + \sum_{j\ne i} \left(\frac{1}{a+n-1} \right) \delta_{\theta_j}
 \]
@@ -556,7 +598,7 @@ where $H^{(-i)}$ is the number of components without $i$ and $n_h^{(-i)}$ is the
 \begin{frame}
 \frametitle{Marginalized Gibbs sampler}
 
-Using this Chinese restaurant process, we have the following MCMC
+Using this Chinese restaurant process, we have the following $n+1$-step MCMC
 
 \begin{enumerate}
 \item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
@@ -568,7 +610,9 @@ a \int p(y_i;\theta) dG_0(\theta) & h=H^{(-i)}+1
 \end{array} \right.
 \]
 \pause
-If $\zeta_i = H^{(-i)}+1$, then sample $\theta^*_{\zeta_i}$ from its posterior using $y_i$ as the only observation.
+If $\zeta_i = H^{(-i)}+1$, 
+then sample $\theta^*_{\zeta_i}$ from its posterior using $y_i$ as the only 
+observation.
 
 \pause
 
@@ -586,7 +630,7 @@ i.e. sample the parameters from their posteriors using only the data in that gro
 \begin{frame}
 \frametitle{Marginalized Gibbs sampler - Normal example}
 
-For the normal example, we have 
+For the normal example, we have this $n+1$-step sampler
 
 \begin{enumerate}
 \item For $i=1,\ldots,n$, sample $\zeta_i$ from its full conditional
@@ -616,22 +660,32 @@ where $m_h', v_h'^2, c_h'$, and $d_h'$ are exactly the same as in the normal fin
 \begin{frame}
 \frametitle{Putting a prior on the concentration parameter}
 
-If $G\sim DP(a G_0)$, then the concentration parameter ($a$) controls the prior on the number of clusters. \pause 
-For example, if $a=1$, then in the prior two randomly selected observations have a 0.5 probability of belonging to the same cluster. \pause 
-As $a$ increases, then you have more clusters and more concentration around $G_0$. \pause
-As $a$ decreases, then you have fewer clusters and the data are more informative. 
+If $\mathcal{G}\sim DP(a G_0)$, 
+then the concentration parameter ($a$) controls the prior on the number of 
+clusters. 
+\pause 
+For example, 
+if $a=1$, 
+then in the prior two randomly selected observations have a 0.5 probability of 
+belonging to the same cluster. 
+\pause 
+As $a$ increases, 
+then you have more clusters and more concentration around $G_0$. 
+\pause
+As $a$ decreases, 
+then you have fewer clusters and the data are more informative. 
 
 \vspace{0.2in} \pause
 
 Rather than setting the concentration parameter, we can learn it. \pause
-Let $G\sim DP(\alpha G_0)$ and 
+Let $\mathcal{G}\sim DP(\alpha G_0)$ and 
 \[ 
 \alpha \sim Ga(a,b)
 \]
 \pause
 then the full conditional for $\alpha$ is 
 \[ 
-\alpha|\ldots \sim Ga\left(a+H-1, b - \sum_{h=1}^{H-1} \log(1-V_h)\right)
+\alpha|\ldots \sim Ga\left(a+H-1, b - \sum_{h=1}^{H-1} \log(1-V_h)\right).
 \]
 \end{frame}
 
@@ -644,7 +698,7 @@ then the full conditional for $\alpha$ is
 Suppose we have $Y_{ij}$ for $i=1,\ldots,n_j$ and $j=1,\ldots,J$, \pause i.e. we have $J$ groups with $n_j$ observations per group. \pause
 We may consider a DP for each group individually, i.e. 
 \[ 
-Y_{ij} \ind G_j, \quad G_j \ind DP(\alpha_j G_{0j})
+Y_{ij} \ind \mathcal{G}_j, \quad \mathcal{G}_j \ind DP(\alpha_j G_{0j})
 \]
 where we must now specify $\alpha_j$ and $G_{0j}$ for $j=1,\ldots,J$. \pause
 More importantly, this model does not allow us to borrow any information across the groups since the observations across groups given $\alpha_j$ and $G_{0j}$. 
@@ -665,16 +719,17 @@ Some possible models to allow borrowing of information are the
 \begin{frame}
 \frametitle{Dependent Dirichlet process}
 
-Suppose we are interested in estimating a collection of random probability measures $G_1,\ldots,G_J$. \pause
+Suppose we are interested in estimating a collection of random probability 
+measures $\mathcal{G}_1,\ldots,\mathcal{G}_J$. \pause
 We would like for the measures to be DPs marginally, i.e. 
 \[ 
-G_j \ind DP(\alpha_j G_{0j})
+\mathcal{G}_j \ind DP(\alpha_j G_{0j})
 \]
 \pause
 but we may want to incorporate dependency between the measures and thus borrow information across the measures. \pause
 One approach is a ``fixed-$\pi$ DDP'' which is defined via the stick-breaking process such that each measure has the same weights $\pi$ but the locations vary, \pause i.e.
 \[
-G_j \stackrel{d}{=} \sum_{h=1}^\infty \pi_h \delta_{\theta_{jh}^*}, \quad 
+\mathcal{G}_j \stackrel{d}{=} \sum_{h=1}^\infty \pi_h \delta_{\theta_{jh}^*}, \quad 
 \pi \sim \mbox{stick}(\alpha), \quad 
 \theta_{jh}^* \sim G_0
 \]
@@ -688,13 +743,15 @@ G_j \stackrel{d}{=} \sum_{h=1}^\infty \pi_h \delta_{\theta_{jh}^*}, \quad
 
 An alternative is to build a hierarchical model, i.e. 
 \[
-G_j \ind DP(\alpha G_0) \qquad G_0 \sim DP(\beta G_{00})
+\mathcal{G}_j \ind DP(\alpha \mathcal{G}_0) 
+\qquad 
+\mathcal{G}_0 \sim DP(\beta G_{00})
 \]
 \pause
 The stick-breaking process related to this model is 
 \[ 
-G_j \stackrel{d}{=} \sum_{h=1}^\infty \pi_{jh}\delta_{\theta_h^*}, \quad 
-G_0 \stackrel{d}{=} \sum_{h=1}^\infty \lambda_h \delta_{\theta_h^*}, \quad 
+\mathcal{G}_j \stackrel{d}{=} \sum_{h=1}^\infty \pi_{jh}\delta_{\theta_h^*}, \quad 
+\mathcal{G}_0 \stackrel{d}{=} \sum_{h=1}^\infty \lambda_h \delta_{\theta_h^*}, \quad 
 \theta_h^* \sim G_{00}
 \]
 \pause
@@ -715,14 +772,19 @@ Like the DDP, the HDP allows individuals in different groups to be clustered tog
 Rather than clusting individuals across groups, we may be interested in clustering groups themselves\pause, i.e. groups that have the same distribution should be treated as the same group. \pause
 Here we can use the nested Dirichlet process: \pause
 \[ 
-G_j \ind G, \quad G\sim DP(\alpha G_0),\quad G_0\equiv DP(\beta G_{00}).
+\mathcal{G}_j \ind \mathcal{G}, 
+\quad 
+\mathcal{G}\sim DP(\alpha \mathcal{G}_0),
+\quad 
+\mathcal{G}_0\equiv DP(\beta G_{00}).
 \]
 \pause
 The stick-breaking process related to this model is 
 \[
-G_j \ind G \stackrel{d}{=} \sum_{h=1}^\infty \pi_h \delta_{G_h^*}, \quad 
+\mathcal{G}_j \ind \mathcal{G} 
+\stackrel{d}{=} \sum_{h=1}^\infty \pi_h \delta_{\mathcal{G}_h^*}, \quad 
 \pi \sim \mbox{stick}(\alpha), \quad 
-P_h^* \ind DP(\beta G_{00}).
+\mathcal{G}_h^* \ind DP(\beta G_{00}).
 \]
 \pause
 A natural combination of the HDP and NDP is to place a DP on $G_{00}$ which results in common set of global atoms, i.e. $\theta_h^*$, but with varying weights for each cluster.
@@ -796,7 +858,7 @@ G \sim DP(\alpha G_0)
 \]
 To provide parismony, i.e. dropping basis functions, we can utilize a base measure that a point-mass mixtures, i.e. 
 \[
-G_{0h} \stackrel{d}{=} = \pi_{0h}\delta_0 + (1-\pi_{0h}) N(0,\tau_h^2)
+G_{0h} \stackrel{d}{=} \pi_{0h}\delta_0 + (1-\pi_{0h}) N(0,\tau_h^2)
 \]
 \pause
 If we want $t$ alternatives, let $\tau_h^* \sim IG(\cdot,\cdot)$. \pause
@@ -824,15 +886,13 @@ From \href{https://cran.r-project.org/web/views/Bayesian.html}{CRAN Task View: B
 \item PReMiuM
 \end{itemize}
 
-The DPpackage was (is?) the premiere package for Dirichlet process, but it hasn't been updated since 2012-09-14. 
-
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Density estimation in the DPpackage}
 <<DPpackage_density_estimation, dependson='rnaseq', echo=TRUE, eval=FALSE>>=
-library(DPpackage)
+library("DPpackage")
 prior = list(alpha=1,
              m1 = 2,
              k0 = 1/3,
