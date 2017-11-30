@@ -36,3 +36,4 @@ The Rnw files can be found [here](https://github.com/jarad/jarad.github.com/tree
 ## Bayesian nonparametrics (BNP)
 
 - [Finite mixture models](slides/Nonparametrics/finiteMixtures.pdf) (not really BNP)
+- [Dirichlet process](slides/Nonparametrics/nonparametrics.pdf) (not really BNP)
