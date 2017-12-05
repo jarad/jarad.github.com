@@ -52,7 +52,7 @@ There are two main approaches to Bayesian nonparametrics for density estimation
 
 \vspace{0.2in} \pause
 
-See Muller and Mitra (2013) for a general overview of all Bayesian nonparametric 
+See M{\"u}ller and Mitra (2013) for a general overview of all Bayesian nonparametric 
 problems, e.g. density estimation, clustering, regression, 
 random effects distributions, etc.
 
@@ -325,9 +325,9 @@ Y_i \ind p(\cdot|\theta_i), \quad \theta_i \ind \sum_{h=1}^H \pi_h \delta_{\thet
 \]
 where 
 \begin{itemize}
-\item $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$ 
-\item $V_h \ind Be(1,a)$ for $h<H$, and
-\item $V_H=1$. 
+\item $\pi_h = \nu_h\prod_{\ell<h} (1-\nu_\ell)$ 
+\item $\nu_h \ind Be(1,a)$ for $h<H$, and
+\item $\nu_H=1$. 
 \end{itemize}
 \pause
 \end{frame}
@@ -342,7 +342,7 @@ A DP mixture model for the marginal distribution for $Y_i=\phi_i$ is
 
 \[ 
 Y_i \ind N(\mu_i, \sigma_i^2) \quad 
-\left(\begin{array}{cc} \mu_i \\ \sigma_i^2 \end{array} \right) \sim \sum_{h=1}^H \pi_h \delta_{(\mu_h,\sigma_h^{2*})}
+\left(\begin{array}{cc} \mu_i \\ \sigma_i^2 \end{array} \right) \sim \sum_{h=1}^H \pi_h \delta_{(\mu_h^*,\sigma_h^{2*})}
 \]
 where $\sum_{h=1}^H \pi_h = 1$. 
 
@@ -351,7 +351,7 @@ where $\sum_{h=1}^H \pi_h = 1$.
 Alternatively, we can introduce a latent variable $\zeta_i=h$ if observation $i$ came from group $h$. \pause
 Then 
 \[ \begin{array}{rl}
-Y_i|\zeta_i=h &\ind N(\mu_{h},\sigma_{h}^2) \\ 
+Y_i|\zeta_i=h &\ind N(\mu_{h}^*,\sigma_{h}^{2*}) \\ 
 \zeta_i &\ind Cat(H,\pi)
 \end{array} \]
 where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) = \pi_h$ for $h=1,\ldots,H$ and $\pi=(\pi_1,\ldots,\pi_H)$. 
@@ -360,7 +360,7 @@ where $\zeta\sim Cat(H,\pi)$ is a categorical random variable with $P(\zeta=h) =
 
 
 
-\subsection{Normal example}
+% \subsection{Normal example}
 \begin{frame}
 \frametitle{Normal example}
 Let
@@ -404,13 +404,13 @@ P(\zeta_i=h|\ldots) \propto \pi_h N(y_i; \mu_h^*, \sigma_h^{2*})
 \item Jointly sample $\pi$ and $\mu,\sigma^2$ because they are conditionally
 independent.
   \begin{enumerate}
-  \item \alert{Sample $V_h \ind Be(1+Z_h,a+Z_h^+)$ for $V=1,\ldots,H-1$ where 
+  \item \alert{Sample $\nu_h \ind Be(1+Z_h,a+Z_h^+)$ for $V=1,\ldots,H-1$ where 
   $Z_h = \sum_{i=1}^n \I(\zeta_i=h)$ and $Z_h^+ = \sum_{h'=h+1}^H Z_{h'}$ and 
-  set $V_H=1$. 
-  Then calculate $\pi_h = V_h\prod_{\ell<h} (1-V_\ell)$.}
+  set $\nu_H=1$. 
+  Then calculate $\pi_h = \nu_h\prod_{\ell<h} (1-\nu_\ell)$.}
   \item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
 \[ 
-\mu_h^*|\sigma_h^{2*} \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^{2*} \stackrel{ind}{\sim} IG(c'_h, d'_h)
+\mu_h^*|\sigma_h^{2*} \stackrel{ind}{\sim} N(m_h', v_h'^2\sigma_h^{2*}) \quad \sigma_h^{2*} \stackrel{ind}{\sim} IG(c'_h, d'_h)
 \]
 where $m_h', v_h'^2, c_h'$, and $d_h'$ are exactly the same as in the normal finite mixture MCMC.
 \end{enumerate}
@@ -646,7 +646,7 @@ If $\zeta_i = H^{(-i)}+1$, then sample $\mu^*_{\zeta_i},\sigma_{\zeta_i}^{2*}$ f
 
 \item For $h=1,\ldots,H$, sample $\mu_h,\sigma_h^2$ from their full conditional
 \[ 
-\mu_h^*|\sigma_h^{2*} \stackrel{ind}{\sim} N(m_h', v_h'^2) \quad \sigma_h^{2*} \stackrel{ind}{\sim} IG(c'_h, d'_h)
+\mu_h^*|\sigma_h^{2*} \stackrel{ind}{\sim} N(m_h', v_h'^2\sigma_h^{2*}) \quad \sigma_h^{2*} \stackrel{ind}{\sim} IG(c'_h, d'_h)
 \]
 where $m_h', v_h'^2, c_h'$, and $d_h'$ are exactly the same as in the normal finite mixture MCMC.
 \end{enumerate}
@@ -685,7 +685,7 @@ Let $\mathcal{G}\sim DP(\alpha G_0)$ and
 \pause
 then the full conditional for $\alpha$ is 
 \[ 
-\alpha|\ldots \sim Ga\left(a+H-1, b - \sum_{h=1}^{H-1} \log(1-V_h)\right).
+\alpha|\ldots \sim Ga\left(a+H-1, b - \sum_{h=1}^{H-1} \log(1-\nu_h)\right).
 \]
 \end{frame}
 
@@ -933,7 +933,9 @@ dp = DPdensity(y = hat$phi,
 \frametitle{References}
 
 \begin{itemize}
+\item Ferguson, T. S. (1973). A Bayesian analysis of some nonparametric problems. The Annals of Statistics, 209-230.
 \item Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture models. Journal of Computational and Graphical Statistics, 9: 249-265. 
+\item M{\"u}ller, P., and Mitra, R. (2013). Bayesian nonparametric inference–why and how. Bayesian Analysis, 8(2).
 \end{itemize}
 \end{frame}
 
