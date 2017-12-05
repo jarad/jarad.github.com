@@ -1,31 +1,13 @@
 \documentclass[handout]{beamer}
 
-\usepackage{verbatim,chemarr}
+\input{../frontmatter}
+\input{../commands}
 
 \graphicspath{{figs/}}
 
-\usetheme{AnnArbor}
-\usecolortheme{beaver}
+\usepackage{chemarr}
 
-\setlength{\unitlength}{\textwidth}  % measure in textwidths
-\usepackage[normalem]{ulem}
-
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{enumerate items}[default]
-\setbeamertemplate{enumerate subitem}{\alph{enumii}.}
-\setbeamertemplate{enumerate subsubitem}{\roman{enumiii}.}
-\setkeys{Gin}{width=0.6\textwidth}
-
-
-
-\title{Approximate Bayesian Computation}
-\author{Jarad Niemi}
-\institute[ISU]{Iowa State University}
-\date{\today}
-
-\begin{document}
-
-%\section{Temp??} \begin{comment}
+\title{Bayesian nonparametrics}
 
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
@@ -39,16 +21,20 @@ opts_chunk$set(fig.width=7,
 options(width=100)
 @
 
-<<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
-library(plyr)
-library(dplyr)
-library(reshape2)
-library(ggplot2)
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("plyr")
+library("dplyr")
+library("reshape2")
+library("ggplot2")
+
+library("smfsb")
 @
 
 <<set_seed, echo=FALSE>>=
 set.seed(2)
 @
+
+\begin{document}
 
 
 
@@ -155,26 +141,26 @@ set.seed(2)
 \begin{frame}
 \frametitle{Michaelis-Menton System}
 
-The Michaelis-Menton system has $N=4$ species: 
+The Michaelis-Menton system has $N=4$ species:
 \begin{itemize}
-\item Substrate (S), 
+\item Substrate (S),
 \item Enzyme (E),
-\item Substrate-Enzyme Complex (SE), and 
+\item Substrate-Enzyme Complex (SE), and
 \item Product (P).
 \end{itemize}
 \pause
-The $M=3$ reactions as well as their propensities and stoichiometries are 
+The $M=3$ reactions as well as their propensities and stoichiometries are
 
-\vspace{0.1in} 
+\vspace{0.1in}
 
 \begin{center}
 \begin{tabular}{rll|rrrr}
 &&& \multicolumn{4}{c}{Stoichiometry} \\
 \multicolumn{2}{c}{Reaction} & Propensity & S & E & SE & P \\
 \hline
-S + E &\longrightarrow SE & \theta_1 $X_S X_E$ & -1 & -1 & 1 & \\
-SE & \longrightarrow S + E & \theta_2 $X_{SE}$ & 1 & 1 & -1 & \\
-SE & \longrightarrow P+E & \theta_3 $X_{SE}$ &  & 1 & -1 & 1 \\
+S + E &$\longrightarrow$ SE & $\theta_1 X_S X_E$ & -1 & -1 & 1 & \\
+SE & $\longrightarrow$ S + E & $\theta_2 X_{SE}$ & 1 & 1 & -1 & \\
+SE & $\longrightarrow$ P+E & $\theta_3 X_{SE}$ &  & 1 & -1 & 1 \\
 \hline
 \end{tabular}
 \end{center}
@@ -204,7 +190,8 @@ d = ddply(data.frame(species=factor(species, levels=species),
 ggplot(d, aes(x,y,col=species, shape=species)) +
   geom_point() + 
   theme(legend.position='bottom') +
-  scale_x_continuous(expand=c(0,0)) + scale_y_continuous(expand=c(0,0))
+  scale_x_continuous(expand=c(0,0)) + scale_y_continuous(expand=c(0,0)) +
+  theme_bw()
 @
 \end{frame}
 
@@ -232,7 +219,7 @@ ggplot(d, aes(x,y,col=species, shape=species)) +
 \begin{frame}
 \frametitle{Michaelis-Menton Gillespie Simulation}
 <<michaelis_mention_gillespie>>=
-library('smfsb')
+library("smfsb")
 data(spnModels)
 # simulate a realisation of the process and plot it
 out = gillespie(MM,500)
@@ -243,6 +230,7 @@ d = cbind(time=out$t, as.data.frame(out$x))
 ggplot(melt(d, id.var='time', variable.name='species', value.name='count'),
        aes(time,count,color=species,linetype=species)) + 
   geom_step() +
+  theme_bw() + 
   theme(legend.position='bottom') 
 @
 \end{frame}
@@ -317,6 +305,7 @@ p = ddply(d, .(reaction), function(dd) {
 
 ggplot(p, aes(x, density, color=reaction, linetype=reaction)) + 
   geom_line() +
+  theme_bw() +
   theme(legend.position='bottom')
 @
 \end{frame}
@@ -375,7 +364,7 @@ print(g)
 \begin{frame}
 \frametitle{Reversible isomerization}
 
-<<fig.height=4, warning=FALSE>>=
+<<fig.height=4, warning=FALSE, dependson="michaelis_mention_discrete_observations">>=
 g + xlim(30,31)
 @
 
@@ -445,6 +434,7 @@ g = ggplot(subset(r,time<=1),
              aes(time, P,color='orange')) +
   theme_bw() + 
   theme(legend.position='none')
+
 print(g)
 @
 \end{frame}
