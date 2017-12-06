@@ -42,29 +42,29 @@ is a violence prevention program.
 
 ## Unfinished Business
 
-### Discontinuation of MS in Landscape Architecture [S17-1]
+### [Discontinuation of MS in Landscape Architecture [S17-1]](http://www.facsen.iastate.edu/sites/default/files/uploads/17-18%20Docket%20Calendar/S17-1%20-%20ISU%20MSLADegree%20Termination.pdf)
 
 Passed unanimously
 
-### US Diversity and International Perspective Requirement Modification [S17-2] 
+### [US Diversity and International Perspective Requirement Modification [S17-2]](http://www.facsen.iastate.edu/sites/default/files/uploads/17-18%20Docket%20Calendar/S17-2%20-%20Diversity%20and%20IP%20requirement%20modification.pdf) 
 
-
+Passed unanimously
 
 ## New business
 
-### FH 7.2.2.5.1 Unacceptable Performance of Duty [S17-3] 
+### [FH 7.2.2.5.1 Unacceptable Performance of Duty [S17-3]](http://www.facsen.iastate.edu/sites/default/files/uploads/17-18%20Docket%20Calendar/S17-3%20-%20FH%207.2.2.5.1%20Unacceptable%20Performance%20of%20Duty.pdf)
 
 Longest NTE contract is believed to be 5 years.
 
-### Minor in Textile Design [S17-4] 
+### [Minor in Textile Design [S17-4]](http://www.facsen.iastate.edu/sites/default/files/uploads/17-18%20Docket%20Calendar/S17-4%20-%20Textile%20Minor%20Proposal.pdf)
 
 No questions.
 
-### B.S. in Actuarial Science [S17-5] 
+### [B.S. in Actuarial Science [S17-5]](http://www.facsen.iastate.edu/sites/default/files/uploads/17-18%20Docket%20Calendar/S17-5%20-%20Actuarial%20Science%20Major%20Proposal.pdf)
 
 No questions.
 
-### B.S. in Data Science [S17-6] 
+### [B.S. in Data Science [S17-6]](http://www.facsen.iastate.edu/sites/default/files/uploads/17-18%20Docket%20Calendar/S17-6%20-%20Data%20Science%20Major.pdf)
 
 - Related to development of certificate and minor in data science
 - Allows domain-specific data science through electives
