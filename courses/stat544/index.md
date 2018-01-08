@@ -13,12 +13,12 @@ This website is designed to host course material for [STAT 544 - Bayesian Statis
 
 This course meets
 
-- TR 8-9:20 Snedecor 3121
+- TR 8-9:20 MacKay 213
 
 Office hours are
 
-- Instructor: W 10-12 @ Snedecor 2208
-- TA: W 12-2 @ Snedecor 1205
+- Instructor: TBD @ Snedecor 2208
+- TA: TBD
 
 ## Textbook
 
@@ -53,7 +53,7 @@ The prerequisite for the course is previous or concurrent enrollement in [STAT 5
 
 ## Q&A
 
-Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum. 
+Please use the [Canvas](http://canvas.iastate.edu/) discussion forum. 
 
 
 ## Reading schedule
