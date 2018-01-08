@@ -1,26 +1,26 @@
 ---
 layout: page
-title: STAT 401D (Engineering)
+title: STAT 401C (Engineering)
 tagline: Statistical Methods for Research Workers
 ---
 {% include JB/setup %}
 
-This website is designed to host course material for STAT 401D (Engineering) - 
+This website is designed to host course material for STAT 401C (Engineering) - 
 Statistical Methods for Research Workers at 
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Yue Zhang (<yzhang1@iastate.edu>)
+- TA: Yan Wang (<wangyan@iastate.edu>)
 
 This course meets
 
-- MWF 1:10-2 @ Gilman 1810
-- T 10-11:50 @ Snedecor 1105
+- MWF 1:10-2 @ [Town 0270](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1206&ycenter=1748&background=map&xshow=1206&yshow=1748)
+- T 10-11:50 @ [Snedecor 1105](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1456&ycenter=1854&background=map&xshow=1456&yshow=1854)
 
 Office hours are
 
-- Instructor: R 3-5 @ Snedecor 1109
-- TA: M 9-10, T 1-2, R 1-2 @ Snedecor 2404
+- Instructor: TBD @ Snedecor 1109
+- TA: TBD
 
 ## Relevant course pages
 
@@ -33,7 +33,7 @@ Office hours are
 ## Textbook
 
 There is no required textbook for this course. 
-Here are some free resources that will be used:
+Here are some free resources that can be used:
 
 - [Online Statistics Education](http://onlinestatbook.com/2/)
 - [R for Data Science](http://r4ds.had.co.nz/)
@@ -99,9 +99,9 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 
 |Week|Topic|Reading|
 |----|-----|-------|
-|   1|Data |       |
-|   2|Probability| |
-|   3|Distributions| |
+|   1|Probability |       |
+|   2|Random variables| |
+|   3|Random variables| |
 |   4|Modeling| |
 |   5|Inference| |
 |   6|         | |

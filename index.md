@@ -23,7 +23,7 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
 
 ## Spring 2018 Courses ([all courses](courses))
 
-  - [STAT 401C](courses/stat401Eng)
+  - [STAT 401C (Engineering)](courses/stat401Eng)
   - [STAT 544](courses/stat544)
 
 ## Contact
