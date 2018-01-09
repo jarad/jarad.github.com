@@ -196,6 +196,7 @@ if (!requireNamespace("HootOwlHoot", quietly = TRUE))
   devtools::install_github("BoardGameSimulator/HootOwlHoot")
 
 # Exp for experiment
+set.seed(20180109) # makes the code reproducible
 Exp <- HootOwlHoot::run_experiments(n_reps = 10, n_players = 2:4, n_owls = 1:6)
 
 class(Exp)
@@ -208,7 +209,7 @@ names(Exp)
 Exp[1:2, c("rep","n_players", "n_owls")]
 
 ## ---- message=FALSE------------------------------------------------------
-library('dplyr') 
+library("dplyr") # install.packages("dplyr")
 Exp %>% 
   select(rep, n_players, n_owls) %>%
   head(n = 2)
@@ -225,14 +226,14 @@ Exp %>%
 str(Exp)
 
 ## ------------------------------------------------------------------------
-library('dplyr')
+library("dplyr") # if it is already loaded, nothing will happen
 
 ## ------------------------------------------------------------------------
 Exp %>%                           
   group_by(n_owls) %>%        
-  summarize(games_won = sum(win == TRUE),
-            n_games = n(),                    # n() counts the number of rows in the grouped data.frame
-            proportion = games_won / n_games) 
+  summarize(n_games_won = sum(win == TRUE),
+            n_games     = n(),                    # n() counts the number of rows in the grouped data.frame
+            proportion  = n_games_won / n_games) 
 
 ## ------------------------------------------------------------------------
 Exp %>%                           
@@ -248,7 +249,7 @@ Exp %>%
 # Calculate the average number of cards played by the number of players in the game.
 
 ## ------------------------------------------------------------------------
-library('ggplot2')
+library("ggplot2")
 
 ## ------------------------------------------------------------------------
 ggplot(data = Exp, aes(x = n_cards_played)) + geom_histogram(binwidth = 1)

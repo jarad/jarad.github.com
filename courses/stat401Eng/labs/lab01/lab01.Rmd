@@ -371,7 +371,7 @@ elements are accessed.
 a[c(TRUE, TRUE, FALSE, FALSE, FALSE)]
 ```
 
-You can also remove elements using a negative sign `-`.
+You can also see all elements except some using a negative sign `-`.
 
 ```{r}
 a[-1]
@@ -536,6 +536,7 @@ if (!requireNamespace("HootOwlHoot", quietly = TRUE))
   devtools::install_github("BoardGameSimulator/HootOwlHoot")
 
 # Exp for experiment
+set.seed(20180109) # makes the code reproducible
 Exp <- HootOwlHoot::run_experiments(n_reps = 10, n_players = 2:4, n_owls = 1:6)
 
 class(Exp)
@@ -562,7 +563,7 @@ Exp[1:2, c("rep","n_players", "n_owls")]
 or 
 
 ```{r, message=FALSE}
-library('dplyr') 
+library("dplyr") # install.packages("dplyr")
 Exp %>% 
   select(rep, n_players, n_owls) %>%
   head(n = 2)
@@ -615,7 +616,7 @@ To do so, we will use the `group_by()` and `summarize()` functions in the
 `dplyr` package.
 
 ```{r}
-library('dplyr')
+library("dplyr") # if it is already loaded, nothing will happen
 ```
 
 For example, perhaps we wanted to know the proportion of games won across
@@ -624,9 +625,9 @@ the number of owls in play
 ```{r}
 Exp %>%                           
   group_by(n_owls) %>%        
-  summarize(games_won = sum(win == TRUE),
-            n_games = n(),                    # n() counts the number of rows in the grouped data.frame
-            proportion = games_won / n_games) 
+  summarize(n_games_won = sum(win == TRUE),
+            n_games     = n(),                    # n() counts the number of rows in the grouped data.frame
+            proportion  = n_games_won / n_games) 
 ```
 
 or, equivalently,
@@ -683,7 +684,7 @@ lecture using the base system).
 
 Load the `ggplot2` package
 ```{r}
-library('ggplot2')
+library("ggplot2")
 ```
 
 
@@ -871,5 +872,8 @@ These sites all provide code. The first two also provide the plots that are prod
 - <http://www.cookbook-r.com/Graphs/>
 - <http://stackoverflow.com/questions/tagged/ggplot2>
 
+```{r, echo=FALSE, purl=FALSE}
+knitr::knit("lab01.Rmd", tangle = TRUE)
+```
 
 
