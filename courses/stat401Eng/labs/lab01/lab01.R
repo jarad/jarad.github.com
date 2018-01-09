@@ -191,92 +191,77 @@ m
 # Print all but the 3rd row
 
 ## ------------------------------------------------------------------------
-# Installs the HootOwlHoot package if it is not already installed
-if (!requireNamespace("HootOwlHoot", quietly = TRUE))
-  devtools::install_github("BoardGameSimulator/HootOwlHoot")
-
-# Exp for experiment
-set.seed(20180109) # makes the code reproducible
-Exp <- HootOwlHoot::run_experiments(n_reps = 10, n_players = 2:4, n_owls = 1:6)
-
-class(Exp)
+class(warpbreaks) # warpbreaks is a built-in data.frame
 
 ## ------------------------------------------------------------------------
-Exp[1:2, 1:3]
+warpbreaks[1:3,1:2]
 
 ## ------------------------------------------------------------------------
-names(Exp)
-Exp[1:2, c("rep","n_players", "n_owls")]
+names(warpbreaks)
+warpbreaks[1:3, c("breaks","wool")]
 
 ## ---- message=FALSE------------------------------------------------------
 library("dplyr") # install.packages("dplyr")
-Exp %>% 
-  select(rep, n_players, n_owls) %>%
-  head(n = 2)
+warpbreaks %>% 
+  select(breaks, wool) %>%
+  head(n = 3)
 
 ## ---- eval=FALSE---------------------------------------------------------
 ## # Approach 1
-## head(select(Exp, rep, n_players, n_owls), n = 2)
+## head(select(warpbreaks, breaks, wool), n = 3)
 ## 
 ## # Approach 2
-## Exp_select <- select(Exp, rep, n_players, n_owls)
-## head(Exp_select, n = 2)
+## warpbreaks_select <- select(warpbreaks, breaks, wool)
+## head(warpbreaks_select, n = 3)
 
 ## ------------------------------------------------------------------------
-str(Exp)
+str(warpbreaks)
 
 ## ------------------------------------------------------------------------
 library("dplyr") # if it is already loaded, nothing will happen
 
 ## ------------------------------------------------------------------------
-Exp %>%                           
-  group_by(n_owls) %>%        
-  summarize(n_games_won = sum(win == TRUE),
-            n_games     = n(),                    # n() counts the number of rows in the grouped data.frame
-            proportion  = n_games_won / n_games) 
+warpbreaks %>%                           
+  group_by(wool) %>%        
+  summarize(n    = n(),          # counts the number lines in the grouped data.frame
+            mean = mean(breaks),
+            sd   = sd(breaks)) 
 
 ## ------------------------------------------------------------------------
-Exp %>%                           
-  group_by(n_owls) %>%        
-  summarize(proportion = mean(win)) # the logical `win` is implicitly converted to 0's and 1's 
-
-## ------------------------------------------------------------------------
-Exp %>%                           
-  group_by(n_players, n_owls) %>%        
-  summarize(proportion = mean(win)) # the logical `win` is implicitly converted to 0's and 1's 
+warpbreaks %>%                           
+  group_by(wool, tension) %>%        
+  summarize(n    = n(),
+            mean = mean(breaks),
+            sd   = sd(breaks))
 
 ## ---- echo=FALSE---------------------------------------------------------
-# Calculate the average number of cards played by the number of players in the game.
+# Calculate the mean and standard deviation for each level of tension ignoring wool.
 
 ## ------------------------------------------------------------------------
 library("ggplot2")
 
 ## ------------------------------------------------------------------------
-ggplot(data = Exp, aes(x = n_cards_played)) + geom_histogram(binwidth = 1)
+ggplot(data = warpbreaks, aes(x = breaks)) + geom_histogram(binwidth = 1)
 
 ## ---- eval=FALSE---------------------------------------------------------
-## qplot(data = Exp, x = age, geom = "histogram", binwidth = 1)
+## qplot(data = warpbreaks, x = breaks, geom = "histogram", binwidth = 1)
 
 ## ------------------------------------------------------------------------
-ggplot(data = Exp, aes(x = 1, y = n_cards_played)) + geom_boxplot()
+ggplot(data = warpbreaks, aes(x = 1, y = breaks)) + geom_boxplot()
 
 ## ------------------------------------------------------------------------
-ggplot(Exp, aes(x = n_owls, y = n_cards_played, group = n_owls)) + geom_boxplot()
+ggplot(warpbreaks, aes(x = wool, y = breaks, group = wool)) + geom_boxplot()
 
 ## ------------------------------------------------------------------------
-ggplot(Exp, aes(x=n_owls, y = n_cards_played)) + geom_point()
+ggplot(warpbreaks, aes(x = wool, y = breaks)) + geom_point()
 
 ## ------------------------------------------------------------------------
-ggplot(Exp, aes(x=n_owls, y = n_cards_played)) + geom_jitter(width=0.2, height=0)
+ggplot(warpbreaks, aes(x = wool, y = breaks)) + geom_jitter(width = 0.2, height = 0)
 
-## ------------------------------------------------------------------------
-ggplot(Exp, aes(x=n_cards_played)) + geom_bar()
-
-## ---- eval=FALSE---------------------------------------------------------
-## # Construct bar chart for the number of suns played.
-## 
-## # Construct a jittered scatter plot for the number of suns played as a function
-## # of the number of owls.
+## ---- eval=FALSE, echo=FALSE---------------------------------------------
+## # Construct a scatterplot of the number of breaks by amount of tension.
+## # Jitter the points horizontally.
+## # (Advanced) Use a different shape and color for the wool type.
 
 ## ---- eval=FALSE---------------------------------------------------------
 ## ?mean

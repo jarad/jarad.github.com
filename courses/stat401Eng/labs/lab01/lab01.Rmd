@@ -531,15 +531,7 @@ different columns.
 
 
 ```{r}
-# Installs the HootOwlHoot package if it is not already installed
-if (!requireNamespace("HootOwlHoot", quietly = TRUE))
-  devtools::install_github("BoardGameSimulator/HootOwlHoot")
-
-# Exp for experiment
-set.seed(20180109) # makes the code reproducible
-Exp <- HootOwlHoot::run_experiments(n_reps = 10, n_players = 2:4, n_owls = 1:6)
-
-class(Exp)
+class(warpbreaks) # warpbreaks is a built-in data.frame
 ```
 
 
@@ -549,24 +541,24 @@ A `data.frame` can be accessed just like a matrix,
 e.g. [row index, column index].
 
 ```{r}
-Exp[1:2, 1:3]
+warpbreaks[1:3,1:2]
 ```
 
 `data.frame`s can also be accessed by column names. 
 In order to determine the column names use the `names()` function.
 
 ```{r}
-names(Exp)
-Exp[1:2, c("rep","n_players", "n_owls")]
+names(warpbreaks)
+warpbreaks[1:3, c("breaks","wool")]
 ```
 
 or 
 
 ```{r, message=FALSE}
 library("dplyr") # install.packages("dplyr")
-Exp %>% 
-  select(rep, n_players, n_owls) %>%
-  head(n = 2)
+warpbreaks %>% 
+  select(breaks, wool) %>%
+  head(n = 3)
 ```
 
 The `%>%` (pipe) operator allows chaining of commands by passing the result of
@@ -576,11 +568,11 @@ Two equivalent approaches that are harder to read are
 
 ```{r, eval=FALSE}
 # Approach 1
-head(select(Exp, rep, n_players, n_owls), n = 2)
+head(select(warpbreaks, breaks, wool), n = 3)
 
 # Approach 2
-Exp_select <- select(Exp, rep, n_players, n_owls)
-head(Exp_select, n = 2)
+warpbreaks_select <- select(warpbreaks, breaks, wool)
+head(warpbreaks_select, n = 3)
 ```
 
 When there are long strings of commands, using the `%>%` (pipe) operator makes
@@ -602,7 +594,7 @@ Using `str()` on a `data.frame` object tells you
 1. the first few elements in that column.
 
 ```{r}
-str(Exp)
+str(warpbreaks)
 ```
 
 
@@ -610,7 +602,7 @@ str(Exp)
 
 ## <a name="aggregating">Aggregating data frames in R</a>
 
-Each row in the `Exp` `data.frame` is a simulated game and e may want to 
+Each row in the `warpbreaks` `data.frame` is a simulated game and e may want to 
 aggregate this information. 
 To do so, we will use the `group_by()` and `summarize()` functions in the
 `dplyr` package.
@@ -623,49 +615,44 @@ For example, perhaps we wanted to know the proportion of games won across
 the number of owls in play
 
 ```{r}
-Exp %>%                           
-  group_by(n_owls) %>%        
-  summarize(n_games_won = sum(win == TRUE),
-            n_games     = n(),                    # n() counts the number of rows in the grouped data.frame
-            proportion  = n_games_won / n_games) 
-```
-
-or, equivalently,
-
-```{r}
-Exp %>%                           
-  group_by(n_owls) %>%        
-  summarize(proportion = mean(win)) # the logical `win` is implicitly converted to 0's and 1's 
+warpbreaks %>%                           
+  group_by(wool) %>%        
+  summarize(n    = n(),          # counts the number lines in the grouped data.frame
+            mean = mean(breaks),
+            sd   = sd(breaks)) 
 ```
 
 
-### Aggregating the Exp data set
+### Aggregating the warpbreaks data set
 
-Let's aggregate the Exp data set by n_players and n_owls.
+Let's aggregate the warpbreaks data set by wool and tension.
 
 ```{r}
-Exp %>%                           
-  group_by(n_players, n_owls) %>%        
-  summarize(proportion = mean(win)) # the logical `win` is implicitly converted to 0's and 1's 
+warpbreaks %>%                           
+  group_by(wool, tension) %>%        
+  summarize(n    = n(),
+            mean = mean(breaks),
+            sd   = sd(breaks))
 ```
 
 
 
 ### Activity
 
-Calculate the average number of cards played by the number of players in the game
-
+Calculate the mean and standard deviation for each level of tension ignoring
+wool.
 
 ```{r, echo=FALSE}
-# Calculate the average number of cards played by the number of players in the game.
+# Calculate the mean and standard deviation for each level of tension ignoring wool.
 ```
 
 
 <div id="aggregate_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
-Exp %>%                           
-  group_by(n_players) %>%        
-  summarize(average_cards_played = mean(n_cards_played)) 
+warpbreaks %>%                           
+  group_by(tension) %>%        
+  summarize(mean = mean(breaks),
+            sd   = sd(breaks)) 
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('aggregate_activity_solution') .style.display=='none') {document.getElementById('aggregate_activity_solution') .style.display=''}else{document.getElementById('aggregate_activity_solution') .style.display='none'}">Show/Hide Solution</button>
@@ -694,13 +681,13 @@ library("ggplot2")
 A basic histogram in ggplot
 
 ```{r}
-ggplot(data = Exp, aes(x = n_cards_played)) + geom_histogram(binwidth = 1)
+ggplot(data = warpbreaks, aes(x = breaks)) + geom_histogram(binwidth = 1)
 ```
 
 For code that looks more similar to base graphics in R, you can use
 
 ```{r, eval=FALSE}
-qplot(data = Exp, x = age, geom = "histogram", binwidth = 1)
+qplot(data = warpbreaks, x = breaks, geom = "histogram", binwidth = 1)
 ```
 
 Many websites and even the `ggplot2` manual have examples using `qplot`. 
@@ -715,14 +702,14 @@ I recommend using the `ggplot` function in `ggplot2` from the beginning.
 A basic boxplot
 
 ```{r}
-ggplot(data = Exp, aes(x = 1, y = n_cards_played)) + geom_boxplot()
+ggplot(data = warpbreaks, aes(x = 1, y = breaks)) + geom_boxplot()
 ```
 
 
 ### Multiple boxplots
 
 ```{r}
-ggplot(Exp, aes(x = n_owls, y = n_cards_played, group = n_owls)) + geom_boxplot()
+ggplot(warpbreaks, aes(x = wool, y = breaks, group = wool)) + geom_boxplot()
 ```
 
 
@@ -730,22 +717,14 @@ ggplot(Exp, aes(x = n_owls, y = n_cards_played, group = n_owls)) + geom_boxplot(
 ### Scatterplots
 
 ```{r}
-ggplot(Exp, aes(x=n_owls, y = n_cards_played)) + geom_point()
+ggplot(warpbreaks, aes(x = wool, y = breaks)) + geom_point()
 ```
 
 some of these points might be overplotted, so we will jitter (add a little 
 random number to move the points on the x-axis) them
 
 ```{r}
-ggplot(Exp, aes(x=n_owls, y = n_cards_played)) + geom_jitter(width=0.2, height=0)
-```
-
-### Bar charts
-
-With ggplot, there is no need to count first.
-
-```{r}
-ggplot(Exp, aes(x=n_cards_played)) + geom_bar()
+ggplot(warpbreaks, aes(x = wool, y = breaks)) + geom_jitter(width = 0.2, height = 0)
 ```
 
 
@@ -756,25 +735,29 @@ it is easy to construct lots of different plots.
 
 ### Activity
 
+Try these:
 
-Construct a bar chart for the number of suns played. 
-Then construct a jittered (jitter only the x-axis) scatter plot for the number
-of suns played as a function of the number of owls.
+1. Construct a scatterplot of the number of breaks by amount of tension.
+2. Jitter the points horizontally. 
+3. (Advanced) Use a different shape and color for the wool type.
 
-```{r, eval=FALSE}
-# Construct bar chart for the number of suns played.
 
-# Construct a jittered scatter plot for the number of suns played as a function 
-# of the number of owls.
+```{r, eval=FALSE, echo=FALSE}
+# Construct a scatterplot of the number of breaks by amount of tension.
+# Jitter the points horizontally.
+# (Advanced) Use a different shape and color for the wool type.
 ```
 
 
 <div id="ggplot2_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
-ggplot(Exp, aes(x=n_suns_played)) + 
-  geom_bar()
+ggplot(warpbreaks, aes(x = tension, y = breaks)) + 
+  geom_point()
 
-ggplot(Exp, aes(x = n_owls, y = n_suns_played)) + 
+ggplot(warpbreaks, aes(x = tension, y = breaks)) + 
+  geom_jitter(width = 0.2, height = 0)
+
+ggplot(warpbreaks, aes(x = tension, y = breaks, shape = wool, color = wool)) + 
   geom_jitter(width = 0.2, height = 0)
 ```
 </div> 
@@ -792,9 +775,9 @@ As you work with R, there will be many times when you need to get help.
 
 My basic approach is 
  
-1. Use the help contained within R
-1. Perform an internet search for an answer
-1. Find somebody else who knows
+1. Use the help contained within R.
+1. Perform an internet search for an answer.
+1. Find somebody else who knows.
 
 In all cases, knowing the R keywords, e.g. a function name, will be extremely 
 helpful.
@@ -809,6 +792,7 @@ If you know the function name, then you can use `?<function>`, e.g.
 ```
 
 The structure of help is 
+
 - Description: quick description of what the function does
 - Usage: the arguments, their order, and default values (if any)
 - Arguments: more thorough description about the arguments
@@ -872,7 +856,7 @@ These sites all provide code. The first two also provide the plots that are prod
 - <http://www.cookbook-r.com/Graphs/>
 - <http://stackoverflow.com/questions/tagged/ggplot2>
 
-```{r, echo=FALSE, purl=FALSE}
+```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
 knitr::knit("lab01.Rmd", tangle = TRUE)
 ```
 
