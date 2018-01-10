@@ -20,6 +20,7 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 |:--|:--|
 |Probability|[P1-Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
 |Discrete distributions|[P2-Discrete_distributions.pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
+
 updated to here
 
 |---|---|---|
