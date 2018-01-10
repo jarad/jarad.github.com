@@ -22,7 +22,7 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 |Discrete distributions|[P2-Discrete_distributions.pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
 |Continuous distributions|[P3-Continuous_distributions.pdf](P3-Continuous_distributions/P3-Continuous_distributions.pdf)|
 
-updated to here
+ ============ updated to here =================
 
 |---|---|---|
 |Central limit theorem|[Set06.Rnw](Set06/Set06_central_limit_theorem.Rnw)|[Set06.pdf](Set06/Set06_central_limit_theorem.pdf)|
