@@ -17,7 +17,7 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 
 |Topic|Source|Handouts|
 |:--|:--|:--|
-|Probability|[P1-Probability.Rnw](Probability/P1-Probability.Rnw)|[P1-Probability.pdf](Probability/P1-Probability.pdf)|
+|Probability|[P1-Probability.Rnw](Probability/P1-Probability/P1-Probability.Rnw)|[P1-Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
 
 updated to here
 
