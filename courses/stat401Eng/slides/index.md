@@ -17,9 +17,11 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 
 |Topic|Source|Handouts|
 |---|---|---|
-|Data Management|[Set01.Rnw](Set01/Set01_data_management.Rnw)|[Set01.pdf](Set01/Set01_data_management.pdf)|
-|Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
-|Probability|[Set03.Rnw](Set03/Set03_probability.Rnw)|[Set03.pdf](Set03/Set03_probability.pdf)|
+|Probability|[P1-Probability.Rnw](Probability/P1-Probability.Rnw)|[P1-Probability.pdf](Probability/P1-Probability.pdf)|
+
+updated to here
+
+|---|---|---|
 |Discrete distributions|[Set04.Rnw](Set04/Set04_discrete_distributions.Rnw)|[Set04.pdf](Set04/Set04_discrete_distributions.pdf)|
 |Continuous distributions|[Set05.Rnw](Set05/Set05_continuous_distributions.Rnw)|[Set05.pdf](Set05/Set05_continuous_distributions.pdf)|
 |Central limit theorem|[Set06.Rnw](Set06/Set06_central_limit_theorem.Rnw)|[Set06.pdf](Set06/Set06_central_limit_theorem.pdf)|
@@ -58,6 +60,8 @@ you should be able to find them [here](https://github.com/jarad/jarad.github.com
 
 |Topic|Source|Handouts|
 |---|---|---|
+|Data Management|[Set01.Rnw](Set01/Set01_data_management.Rnw)|[Set01.pdf](Set01/Set01_data_management.pdf)|
+|Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
 |Logistic regression|[SetS01.Rnw](SetS01/SetS01_Logistic_Regression.Rnw)|[SetS01.pdf](SetS01/SetS01_Logistic_Regression.pdf)|
 |Poisson regression|[SetS02.Rnw](SetS02/SetS02_Poisson_Regression.Rnw)|[SetS02.pdf](SetS02/SetS02_Poisson_Regression.pdf)|
 |Random effects|[SetS03.Rnw](SetS03/SetS03_Random_effects.Rnw)|[SetS03.pdf](SetS03/SetS03_Random_effects.pdf)|
