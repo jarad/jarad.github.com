@@ -19,11 +19,11 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 |Topic|Handouts|
 |:--|:--|
 |Probability|[P1-Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
-
+|Discrete distributions|[P2-Discrete_distributions.pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
 updated to here
 
 |---|---|---|
-|Discrete distributions|[Set04.Rnw](Set04/Set04_discrete_distributions.Rnw)|[Set04.pdf](Set04/Set04_discrete_distributions.pdf)|
+
 |Continuous distributions|[Set05.Rnw](Set05/Set05_continuous_distributions.Rnw)|[Set05.pdf](Set05/Set05_continuous_distributions.pdf)|
 |Central limit theorem|[Set06.Rnw](Set06/Set06_central_limit_theorem.Rnw)|[Set06.pdf](Set06/Set06_central_limit_theorem.pdf)|
 |Multiple random variables|[Set07.Rnw](Set07/Set07_multiple_random_variables.Rnw)|[Set07.pdf](Set07/Set07_multiple_random_variables.pdf)|
