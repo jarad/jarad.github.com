@@ -10,14 +10,15 @@ Instructions for compiling the Rnw files can be found below.
 
 ## Chapter slide set files
 
-If the files are ever not available here, 
-you should be able to find them [here](https://github.com/jarad/jarad.github.com/tree/master/courses/stat401Eng/slides).
+If the files are ever not available here or if you are interested in the source
+files, 
+you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/courses/stat401Eng/slides).
 
 ### Probability
 
-|Topic|Source|Handouts|
-|:--|:--|:--|
-|Probability|[P1-Probability.Rnw](Probability/P1-Probability/P1-Probability.Rnw)|[P1-Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
+|Topic|Handouts|
+|:--|:--|
+|Probability|[P1-Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
 
 updated to here
 
