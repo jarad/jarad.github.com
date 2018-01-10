@@ -24,9 +24,6 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 
  ============ updated to here =================
 
-|---|---|---|
-|Multiple random variables|[Set07.Rnw](Set07/Set07_multiple_random_variables.Rnw)|[Set07.pdf](Set07/Set07_multiple_random_variables.pdf)|
-
 ### Inference
 
 |Topic|Source|Handouts|
