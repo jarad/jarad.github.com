@@ -1,9 +1,9 @@
 \documentclass[handout]{beamer}
 
-\input{../frontmatter}
-\input{../commands}
+\input{../../frontmatter}
+\input{../../commands}
 
-\title{Set05 - Continuous distributions}
+\title{P3 - Continuous distributions}
 
 \begin{document}
 
@@ -20,7 +20,8 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library(dplyr)
+library("dplyr")
+library("ggplot2")
 @
 
 <<set_seed>>=
@@ -103,13 +104,13 @@ f_X(x) = \left\{ \begin{array}{ll}
 
 \pause
 
-$f_X(x)$ defines a valid probability density function because $f_X(x) \ge 0$ for all $x$ \pause and
+$f_X(x)$ defines a valid pdf because $f_X(x) \ge 0$ for all $x$ \pause and
 \[ 
 \int_{-\infty}^\infty f_X(x) dx = \int_0^1 3x^2 dx = x^3 |_0^1 = 1.
 \]
 
 \pause
-The cumulative distribution function is 
+The cdf is 
 \[ 
 F_X(x) = \left\{ \begin{array}{ll}
 0 & x\le 0 \\
@@ -137,7 +138,8 @@ If $h(x)=x$, then
 E[X] = \int_{-\infty}^\infty x \cdot f_X(x) dx.
 \]
 \pause
-and we call this the \alert{expectation} of $X$. 
+and we call this the \alert{expectation} of $X$. \pause
+We commonly use the symbol $\mu$ for this expectation.
 \end{definition}
 \end{frame}
 
@@ -162,6 +164,25 @@ E[X] &= \int_{-\infty}^\infty x \cdot f_X(x) dx \\
 &= \int_0^1 3x^3 dx \\
 &= 3\frac{x^4}{4} |_0^1 = \frac{3}{4}.
 \end{array} \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Center of mass}
+
+<<center_of_mass, fig.height=4>>=
+d <- data.frame(x = seq(0,1,by=0.05)) %>%
+  mutate(y = 3*x^2)
+
+
+ggplot(d, aes(x, ymin = 0, ymax = y)) + 
+  geom_ribbon() +
+  geom_point(data = data.frame(x=.75,y=-0.1), aes(x,y), 
+             shape=24, color='red', fill='red') + 
+  labs(y = "probability density function") +
+  theme_bw()
+@
+
 \end{frame}
 
 
