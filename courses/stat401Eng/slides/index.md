@@ -16,11 +16,9 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 
 ### Probability
 
-|Topic|Handouts|
-|:--|:--|
-|Probability|[P1-Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
-|Discrete distributions|[P2-Discrete_distributions.pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
-|Continuous distributions|[P3-Continuous_distributions.pdf](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|
+- [P1-Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
+- [P2-Discrete_distributions.pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
+- [P3-Continuous_distributions.pdf](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|
 
  ============ updated to here =================
 
