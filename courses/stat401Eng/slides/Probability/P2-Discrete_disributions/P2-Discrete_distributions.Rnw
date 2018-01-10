@@ -1,9 +1,9 @@
 \documentclass[handout]{beamer}
 
-\input{../frontmatter}
-\input{../commands}
+\input{../../frontmatter}
+\input{../../commands}
 
-\title{Set04 - Discrete Distributions}
+\title{P2 - Discrete Distributions}
 
 \begin{document}
 
@@ -46,13 +46,10 @@ of an experiment, we call the variable a {\it random variable}.}
 
 \vspace{0.1in} \pause
 
-Examples of random variables from HootOwlHoot:
+Examples of random variables from rolling two 6-sided dice:
 \begin{itemize}[<+->]
-\item Win (1) or Loss (0)
-\item Number of cards played
-\item Number of suns played
-\item Number of owls remaining
-\item Owl score
+\item Sum of the two dice
+\item Indicator of the sum being greater than 5
 \end{itemize}
 
 \vspace{0.1in} \pause
@@ -195,19 +192,19 @@ Which of the following functions are a valid probability mass functions?
 
 \subsection{Die rolling}
 \begin{frame}[fragile]
-\frametitle{Rolling fair 6-sided fair dice}
+\frametitle{Rolling a fair 6-sided die}
 \begin{example}
 Let $Y$ be the number of pips on the upturned face of a die. \pause 
 The image of $Y$ is  \pause $\{1,2,3,4,5,6\}$.	\pause
 If we believe the die has equal probability for each face, 
-then the probability mass function for $Y$ is 
+then the pmf and cdf for $Y$ are
 \[ \arraycolsep=2pt\def\arraystretch{2.2} 
 \begin{array}{c|cccccc}
 \hline
 y & 1 & 2 & 3 & 4 & 5 & 6 \pause \\
 \hline
-P(Y=y) & \frac{1}{6} & \frac{1}{6} & \frac{1}{6} & \frac{1}{6} & \frac{1}{6}  & \frac{1}{6} \pause \\ 
-P(Y\le y) & \frac{1}{6} & \frac{2}{6} & \frac{3}{6} & \frac{4}{6} & \frac{5}{6}  & \frac{6}{6} \\
+p_Y(y) = P(Y=y) & \frac{1}{6} & \frac{1}{6} & \frac{1}{6} & \frac{1}{6} & \frac{1}{6}  & \frac{1}{6} \pause \\ 
+F_Y(y) = P(Y\le y) & \frac{1}{6} & \frac{2}{6} & \frac{3}{6} & \frac{4}{6} & \frac{5}{6}  & \frac{6}{6} \\
 \hline
 \end{array} \]
 \end{example}
@@ -228,7 +225,7 @@ What is the image, pmf, and cdf for the sum of the upturned numbers when rolling
 die   = c(1,2,2,3,3,4)
 rolls = expand.grid(die1 = die, die2 = die, die3 = die)
 sum   = rowSums(rolls); tsum = table(sum)
-dragonwood3 = data.frame(x   = round(as.numeric(names(tsum)),3),
+dragonwood3 = data.frame(x   = round(as.numeric(names(tsum)),0),
                          pmf = round(as.numeric(table(sum)/length(sum)),3)) %>%
 	mutate(cdf = cumsum(pmf))
 
@@ -272,10 +269,10 @@ grid.arrange(g_pmf,g_cdf, nrow=1)
 \begin{frame}
 \frametitle{Properties of pmf and cdf}
 
-Properties of probability mass function $P(X=x)$:
+Properties of probability mass function $p_X(x) = P(X=x)$:
 \begin{itemize}
-\item $0 \le P(X=x) \le 1$ for all $x \in \mathbb{R}$.
-\item $\sum_{x\in S} P(X=x) = 1$ where $S$ is the support.
+\item $0 \le p_X(x) \le 1$ for all $x \in \mathbb{R}$.
+\item $\sum_{x\in S} p_X(x) = 1$ where $S$ is the support.
 \end{itemize}
 
 \vspace{0.1in} \pause
@@ -355,7 +352,8 @@ If $h(x)=x$, then
 E[X] = \sum_i x_i \cdot p_X(x_i)
 \]
 \pause
-and we call this the \alert{expectation} of $X$. 
+and we call this the \alert{expectation} of $X$. \pause
+We commonly use the symbol $\mu$ for the expectation.
 \end{definition}
 
 \pause
@@ -378,7 +376,7 @@ expectation
 \pause
 
 The expectation can be thought of as the \alert{center of mass} 
-if we place mass $P(X=x)$ at corresponding points $x$. 
+if we place mass $p_X(x)$ at corresponding points $x$. 
 
 \vspace{0.1in} \pause
 
@@ -396,7 +394,7 @@ ggplot(dragonwood3 %>% mutate(y=0), aes(x=x, xend=x, y=y, yend=pmf)) +
 \begin{frame}
 \frametitle{Biased coin}
 
-Suppose we have a biased coin represented by the following probability mass function:
+Suppose we have a biased coin represented by the following pmf:
 \[ \begin{array}{ccc}
 \hline
 y & 0 & 1 \\
@@ -560,7 +558,7 @@ sqrt(variance)
 \begin{frame}
 \frametitle{Biased coin}
 
-Suppose we have a biased coin represented by the following probability mass function:
+Suppose we have a biased coin represented by the following pmf:
 \[ \begin{array}{ccc}
 \hline
 y & 0 & 1 \\
@@ -643,7 +641,7 @@ a Bernoulli distribution with success probability $p$, i.e. $P(X=1)=p$.
 \begin{example}
 \begin{itemize}
 \item Toss a coin: $\mOmega = \{H,T\}$
-\item Win/Loss outcome of a HootOwlHoot! game
+% \item Win/Loss outcome of a HootOwlHoot! game
 \item Throw a fair die and ask if the face value is a six: 
 $\mOmega = \{{\text{face value is a six},\text{face value is not a six}}\}$
 \item Send a message through a network and record whether or not it is received: 
@@ -664,11 +662,11 @@ $\mOmega = \{\text{yes}, \text{no}\}$
 
 The cdf of the Bernoulli distribution is
 \[
-F_X(t) =P(X\leq t)= \left \{
+F_X(x) =P(X\leq x)= \left \{
 \begin{array}{cl}
-    0 & t < 0 \\
-    1-p & 0 \le t < 1 \\
-    1 & 1 \le t
+    0 & x < 0 \\
+    1-p & 0 \le x < 1 \\
+    1 & 1 \le x
 \end{array}
 \right .
 \]
@@ -715,7 +713,6 @@ Let $X_i$ represent the $i^{th}$ Bernoulli experiment.
 \vspace{0.1in} \pause 
 
 \alert{Independence} means 
-
 \[ 
 P(X_1=x_1,\ldots,X_n=x_n) = \prod_{i=1}^n P(X_i=x_i),
 \]
@@ -787,7 +784,7 @@ Then we use the notation $Y\sim Bin(n,p)$ to indicate a binomial distribution wi
 
 We need to obtain 
 \[ 
-p_Y(y) = P(Y=y) \quad \forall y\in \mOmega \pause = \{0,1,2,\ldots,n\}.
+p_Y(y) = P(Y=y) \quad \forall \, y\in \mOmega \pause = \{0,1,2,\ldots,n\}.
 \]
 
 \pause
@@ -801,7 +798,7 @@ since the experiments are $iid$ with success probability $p$. \pause But there a
 \]
 ways of obtaining a sequence of $y$ success and $n-y$ failures. 
 \pause 
-Thus, the binomial probability mass function is 
+Thus, the binomial pmf is 
 \[ 
 p_Y(y) = P(Y=y) = {n\choose y} p^y(1-p)^{n-y}.
 \]
@@ -910,7 +907,7 @@ For example,
 \pause
 
 These situations can be effectly modeled using a Poisson distribution. \pause
-The Poisson distribution has probability mass function 
+The Poisson distribution has pmf 
 \[
 p(x) = \frac{e^{-\lambda}\lambda^{x}}{x!} \quad \text{ for } x = 0,1,2,3,\ldots
 \]
