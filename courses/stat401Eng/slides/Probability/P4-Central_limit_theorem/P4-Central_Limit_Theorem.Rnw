@@ -1,9 +1,9 @@
 \documentclass[handout]{beamer}
 
-\input{../frontmatter}
-\input{../commands}
+\input{../../frontmatter}
+\input{../../commands}
 
-\title{Set06 - Central Limit Theorem}
+\title{P4 - Central Limit Theorem}
 
 \begin{document}
 
@@ -20,9 +20,9 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library(dplyr)
-library(ggplot2)
-library(tidyr)
+library("dplyr")
+library("tidyr")
+library("ggplot2")
 @
 
 <<set_seed>>=
@@ -52,12 +52,47 @@ Define
 \end{array} \] 
 Then 
 \[ \begin{array}{rl}
-\overline{X}_n &\stackrel{d}{\to} N(\mu,\sigma^2/n) \\
-S_n &\stackrel{d}{\to} N(n\mu,n\sigma^2) 
+\lim_{n\to\infty} \frac{\overline{X}_n-\mu}{\sigma/\sqrt{n}} &\stackrel{d}{\to} N(0,1) \\
+\lim_{n\to\infty} \frac{S_n-n\mu}{\sqrt{n}\sigma} &\stackrel{d}{\to} N(0,1).
 \end{array} \]
-as $n\to \infty$.
 \end{theorem}
 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Approximating distributions}
+
+Rather than considering the limit, 
+I typically think of the following approximations as $n$ gets large. 
+
+\vspace{0.1in} \pause
+
+For the sample average,
+\[ 
+\overline{X}_n \stackrel{\cdot}{\sim} N(\mu,\sigma^2/n).
+\]
+where $\stackrel{\cdot}{\sim}$ indicates \emph{approximately distributed}.
+\pause
+Note that 
+\[ 
+E\left[\,\overline{X}_n\right] = \mu \qquad \text{and} \qquad
+Var\left[\,\overline{X}_n\right] = \sigma^2/n.
+\]
+
+
+\vspace{0.1in} \pause
+
+For the sample sum,
+\[ 
+S_n \stackrel{\cdot}{\sim} N(n\mu,n\sigma^2).
+\]
+\pause
+Note that 
+\[ 
+E[S_n] = n\mu \qquad \text{and} \qquad
+Var[S_n] = n\sigma^2.
+\]
 \end{frame}
 
 
@@ -114,23 +149,27 @@ par(opar)
 \frametitle{Normal approximation to a binomial}
 
 Recall that a binomial distribution can be considered as a sum of iid Bernouli 
-random variables, i.e. if $Y=\sum_{i=1}^n X_i$ where $X_i\ind Ber(p)$, 
+random variables, i.e. if $Y_n=\sum_{i=1}^n X_i$ where $X_i\ind Ber(p)$, 
 then 
 \pause
 \[ 
-Y \sim Bin(n,p).
+Y_n \sim Bin(n,p).
 \]
 \pause 
 For a binomial random variable, we have 
 \[ 
-E[Y] = \pause np \qquad \mbox{and} \qquad V[Y] = \pause np(1-p).
+E[Y_n] = \pause np \qquad \mbox{and} \qquad Var[Y_n] = \pause np(1-p).
 \]
 \pause
-Now, if $n$ is large, 
+By the CLT,
 \[ 
-Y \dot{\sim} \pause N(np, np[1-p]).
+\lim_{n\to\infty} \frac{Y_n-np}{\sqrt{np(1-p)}} \to \pause N(0, 1),
 \]
-where $\dot{\sim}$ indicates \emph{appoximately distributed}.
+\pause
+if $n$ is large, 
+\[ 
+Y_n \stackrel{\cdot}{\sim} \pause N(np, np[1-p]).
+\]
 \end{frame}
 
 
@@ -226,7 +265,7 @@ P\left(|\overline{X}_n-d|<0.5\right)
 \frametitle{Astronomy example (cont.)}
 \small
 
-Suppose the astronomer wants to be within 0.5 parsecs with 95\% 
+Suppose the astronomer wants to be within 0.5 parsecs with at least 95\% 
 probability. 
 How many more samples would she need to take?
 
@@ -248,7 +287,7 @@ where $z = 0.5/(\sigma/\sqrt{n}) = 1.96$ since
 @
 
 \pause 
-and thus $n = 61.47$ which we round up to $n=62$ to unsure the probability is 
+and thus $n = 61.47$ which we round up to $n=62$ to ensure the probability is 
 \emph{at least} 0.95. 
 
 

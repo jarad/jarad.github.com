@@ -16,14 +16,14 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 
 ### Probability
 
-- [P1-Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
-- [P2-Discrete_distributions.pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
-- [P3-Continuous_distributions.pdf](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|
+- [Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
+- [Discrete distributions](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
+- [Continuous distributions](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|
+- [Central Limit Theorem](Probability/Central_limit_theorem/Central_limit_theorem.pdf)|
 
  ============ updated to here =================
 
 |---|---|---|
-|Central limit theorem|[Set06.Rnw](Set06/Set06_central_limit_theorem.Rnw)|[Set06.pdf](Set06/Set06_central_limit_theorem.pdf)|
 |Multiple random variables|[Set07.Rnw](Set07/Set07_multiple_random_variables.Rnw)|[Set07.pdf](Set07/Set07_multiple_random_variables.pdf)|
 
 ### Inference
