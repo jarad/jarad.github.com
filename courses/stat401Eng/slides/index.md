@@ -16,7 +16,7 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 
 ### Probability
 
-- [Probability.pdf](Probability/P1-Probability/P1-Probability.pdf)|
+- [Probability](Probability/P1-Probability/P1-Probability.pdf)|
 - [Discrete distributions](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
 - [Continuous distributions](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|
 - [Central Limit Theorem](Probability/Central_limit_theorem/Central_limit_theorem.pdf)|
