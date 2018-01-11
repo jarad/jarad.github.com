@@ -22,9 +22,9 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(dplyr)
-library(tidyr)
-library(ggplot2)
+library("dplyr")
+library("tidyr")
+library("ggplot2")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -364,6 +364,8 @@ If $\theta$ is discrete (continuous),
 
 \hspace{0.2in} then $p(\theta)$ and $p(\theta|y)$ are probability mass (density) functions.
 
+\pause
+
 If $y$ is discrete (continuous), 
 
 \hspace{0.2in}  then $p(y|\theta)$ and $p(y)$ are probability mass (density) functions.
@@ -394,11 +396,11 @@ thus $\theta|y \sim Ga(a+1,b+y)$.
 \begin{frame}[fragile]
 \frametitle{}
 
-<<>>=
-a = 1
-b = 1
-y = 0.5
+<<echo=TRUE>>=
+a = 1; b = 1; y = 0.5
+@
 
+<<>>=
 d = data.frame(x = seq(0,3,by=0.1)) %>% 
   mutate(prior = dgamma(x,a,b),
          "normalized likelihood" = dgamma(x, 1, y),
@@ -458,12 +460,11 @@ where $n\overline{y} = \sum_{i=1}^n y_i$. We recognize this as the kernel of a g
 \begin{frame}[fragile]
 \frametitle{}
 
-<<>>=
-a = 1
-b = 1
-set.seed(20141121)
-y = rexp(10, 2)
+<<echo=TRUE>>=
+a = 1; b = 1; set.seed(20141121); y = rexp(10, 2)
+@
 
+<<>>=
 d = data.frame(x = seq(0,5,by=0.1)) %>% 
   mutate(prior = dgamma(x,a,b),
          "normalized likelihood" = dgamma(x, length(y), sum(y)),
@@ -502,11 +503,11 @@ So Bayesian learning is
 \end{frame}
 
 
-\subsection{Model selection}
+\subsection{Model comparison}
 \begin{frame}
-\frametitle{Model selection}
+\frametitle{Model comparison}
 
-Formally, to select a model (or average over models), we use
+Formally, to compare models (or average over models), we use
 \[ p(M_j|y) \propto p(y|M_j)p(M_j) \]
 \pause where 
 \begin{itemize}[<+->]
@@ -527,7 +528,13 @@ Thus, a Bayesian approach provides a natural way to learn about models, i.e. $p(
 \begin{frame}
 \frametitle{Prediction}
 
-Let $y$ be observed data and $\tilde{y}$ be unobserved data from a model with parameter $\theta$\pause, then 
+Let $y$ be observed data and $\tilde{y}$ be unobserved data from a model with parameter $\theta$
+\pause
+where $\tilde{y}$ is conditionally independent of $y$ given $\theta$ 
+\pause
+(true for many of the models we will discuss this semester)
+\pause
+, then 
 \[ \begin{array}{rl}
 p(\tilde{y}|y) 
 &= \int p(\tilde{y},\theta|y) d\theta \pause \\
