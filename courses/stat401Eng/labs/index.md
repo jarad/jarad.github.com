@@ -9,8 +9,10 @@ tagline: Statistical Methods for Research Workers
 ## Schedule
 
  - [Lab01](lab01/lab01.html) - Introduction to R
- - [Lab02](lab02/lab02.html) - Data Management in R
- - [Lab03](lab03/lab03.html) - Probability Distributions in R
+ - [Lab03](lab02/lab02.html) - Probability Distributions in R
+ 
+   === updated through here ===
+ 
  - [Lab04](lab04/lab04.html) - Monte Carlo Methods in R
  - [Lab05](lab05/lab05.html) - Estimator Evaluation
  - [Lab06](lab06/lab06.html) - Built-in Analyses in R ([creativity.csv](lab06/creativity.csv))
@@ -19,3 +21,4 @@ tagline: Statistical Methods for Research Workers
  - [Lab09](lab09/lab09.html) - ANOVA and F-tests
  - [Lab10](lab10/lab10.html) - Contrasts
  - [Lab11](lab11/lab11.html) - Generalized linear mixed effect models
+ - [LabData](labData/lab02.html) - Data Management in R
