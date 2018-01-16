@@ -1,9 +1,14 @@
 ## ------------------------------------------------------------------------
 n <- 13
 p <- 0.7
-x <- 0:n
+dbinom(6, size = n, prob = p)
 
+## ------------------------------------------------------------------------
+x <- 0:n
 plot(x, dbinom(x, size = n, prob = p), main = "Probability mass function for Bin(13,0.7)")
+
+## ------------------------------------------------------------------------
+pbinom(9, size = n, prob = p)
 
 ## ------------------------------------------------------------------------
 plot(x, pbinom(x, size = n, prob = p), type="s", main = "Cumulative distribution function for Bin(13,0.7)")
@@ -36,7 +41,7 @@ plot(p_seq, qpois(p_seq, lambda = rate), type="s", ylim=c(0,10), main = "Quantil
 ## ------------------------------------------------------------------------
 draws <- rpois(100, lambda = rate)
 
-hist(draws, breaks = (0:(max(draws)+1)) - 0.5, probability = TRUE, main = "Random draws from Po(s)")
+hist(draws, breaks = (0:(max(draws)+1)) - 0.5, probability = TRUE, main = "Random draws from Po(2)")
 points(x, dpois(x, lambda = rate), col="red")
 
 ## ------------------------------------------------------------------------
