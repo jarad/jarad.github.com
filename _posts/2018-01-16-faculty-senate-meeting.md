@@ -14,7 +14,7 @@ Summary from [Inside Iowa State](https://www.inside.iastate.edu/article/2018/01/
 
 - [Bridging the divide: Arts & Humanities, Social Science, Design & Stem](https://www.vpresearch.iastate.edu/event/bridging-divide-lunch-learn/)
 - [ISU Research Day](https://www.vpresearch.iastate.edu/event/isu-research-day/)
-- [Presidential Interdisciplinary Research (PIRS)](https://www.vpresearch.iastate.edu/iowa-state-announces-recipients-first-round-pirs-research-seed-grants/)
+- [Presidential Interdisciplinary Research Seed funding (PIRS)](https://www.vpresearch.iastate.edu/iowa-state-announces-recipients-first-round-pirs-research-seed-grants/)
 - [Presidential Interdisciplinary Research Initiative (PIRI)](https://www.vpresearch.iastate.edu/research-iowa-state/piri/)
 
 
