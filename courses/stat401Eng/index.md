@@ -19,8 +19,8 @@ This course meets
 
 Office hours are
 
-- Instructor: TBD @ Snedecor 1109
-- TA: TBD
+- Instructor: R 9:30-11:30 @ Snedecor 2208
+- TA: MW 10-11 @ Snedecor 2404
 
 ## Relevant course pages
 
