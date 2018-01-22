@@ -16,6 +16,16 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 
 ### Probability
 
+|Topic|slides|code|
+|---|---|---|
+|Probability|[pdf](Probability/P1-Probability/P1-Probability.pdf)|[R](Probability/P1-Probability/P1-Probability.R)|
+|Discrete distributions|[pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|[R](Probability/P2-Discrete_distributions/P2-Discrete_distributions.R)|
+|Continuous distributions|[pdf](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|[R](Probability/P3-Continuous_distributions/P3-Continuous_distributions.R)|
+|Central limit theorem|[pdf](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.pdf)|[R](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.R)|
+|Multiple random variables|[pdf](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.pdf)|[R](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.R)|
+
+
+
 - [Probability](Probability/P1-Probability/P1-Probability.pdf)|
 - [Discrete distributions](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|
 - [Continuous distributions](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|
