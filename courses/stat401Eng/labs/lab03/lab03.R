@@ -54,7 +54,7 @@ n <- 10
 x <- rnorm(n)
 y <- rnorm(n, x)
 m <- lm(y~x) # a linear regression
-print(m)
+summary(m)
 
 ## ------------------------------------------------------------------------
 class(m)
@@ -62,7 +62,7 @@ class(m)
 ## ------------------------------------------------------------------------
 summary(m)
 anova(m)
-plot(m)
+opar <- par(mfrow=c(2,2)); plot(m); par(opar)
 
 ## ------------------------------------------------------------------------
 a <- 1
@@ -127,6 +127,7 @@ mean(y)
 
 ## ------------------------------------------------------------------------
 plot( cumsum(y)/(1:length(y)), type='l', main='Convergence', ylim=c(.3,.4))
+abline(h=1/3, col='red')
 
 ## ------------------------------------------------------------------------
 mean(y) # Notice that this is the estimate of the integral that we are trying to find
@@ -143,6 +144,7 @@ for (i in 1:n) {
 }
 
 plot(m, type='l', col='gray', main='Convergence', ylim=c(.3,.4))
+abline(h=1/3, col='red')
 lines(m+s)
 lines(m-s)
 
@@ -155,7 +157,7 @@ x <- sample(0:3, size = 1e5, prob = c(.5,.25,.1,.15), replace = TRUE)
 s^2 # variance
 
 ## ------------------------------------------------------------------------
-m + c(-1,1) * pnorm(.95) * s / sqrt( length(x) )
+m + c(-1,1) * qnorm(.95) * s / sqrt( length(x) )
 
 ## ------------------------------------------------------------------------
 n <- 1e5
@@ -164,5 +166,5 @@ y <- rnorm(n)
 (p <- mean(x>y))
 
 ## ------------------------------------------------------------------------
-p + c(-1,1) * pnorm(.975) * sqrt(p*(1-p)/n)
+p + c(-1,1) * qnorm(.975) * sqrt(p*(1-p)/n)
 

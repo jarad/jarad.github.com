@@ -1,12 +1,12 @@
 ---
-title: "Lab04 - Monte Carlo Methods in R"
+title: "Lab03 - Monte Carlo Methods in R"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
 
-To follow along, use the [lab04 code](lab04.R).
+To follow along, use the [lab03 code](lab03.R).
 
 ## Programming in R
 
@@ -128,7 +128,8 @@ sub <- function(first = 1:2, second = 1) {
 ### Generic Functions
 
 R has generic functions, i.e. functions where the type of object passed as the 
-first argument to the function determine which function to actually run.
+first argument to the function determine which version of the function to 
+actually run.
 The `print()` function is a generic function
 
 ```{r, eval=FALSE}
@@ -147,21 +148,22 @@ n <- 10
 x <- rnorm(n)
 y <- rnorm(n, x)
 m <- lm(y~x) # a linear regression
-print(m)
+summary(m)
 ```
-Here `print()` checked the class of `m`
+Here the generic function `summary()` checked the class of `m`.
 
 ```{r}
 class(m)
 ```
-and found that the class is `lm` and uses the appropriate print function. 
+and found that the class is `lm` and uses the appropriate summary function,
+i.e. `summary.lm()`. 
 
 There are other helpful functions for `lm` objects, e.g. 
 
 ```{r}
 summary(m)
 anova(m)
-plot(m)
+opar <- par(mfrow=c(2,2)); plot(m); par(opar)
 ```
 
 ### Scope
@@ -201,8 +203,8 @@ a
 f()
 a
 ```
-So be careful when constructing functions to deal appropriately with the 
-scope of the objects you are using.
+So **be careful** when constructing functions to deal appropriately with the 
+scope of the objects you are using!
 
 ### Loops
 
@@ -237,11 +239,11 @@ for (i in 1:10) {
 }
 ```
 
-There is also a useful `ifelse` statement, but it is a little confusing.
-This statement takes in a vector logical first argument and two more scalar 
+There is also a useful `ifelse` function, but it is a little confusing.
+This function takes in a vector logical first argument and two more scalar 
 arguments. 
 For each element in the logical vector, it will return the first scalar argument
-when the element is true and the second scalar argument when the elemtn is 
+when the element is true and the second scalar argument when the element is 
 false.
 
 ```{r}
@@ -309,15 +311,17 @@ We did not discuss it, but the
 guarantees that if we 
 take a large enough sample, we will converge in probability to the true integral.
 We can visualize this by calculating the running mean. 
+
 ```{r}
 plot( cumsum(y)/(1:length(y)), type='l', main='Convergence', ylim=c(.3,.4))
+abline(h=1/3, col='red')
 ```
 
 
 We would also like to know, at any number of simulated values, how far away we
 are likely to be. 
 The [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem)
-provides a way to evaluate the error in our estimate. 
+provides a way to evaluate the Monte Carlo error in our estimate. 
 Recall that the CLT says that an average of iid random variables has a normal
 distribution with mean equal to the expectation and variance equal to the 
 variance of an individual random variate divided by n.
@@ -354,6 +358,7 @@ for (i in 1:n) {
 }
 
 plot(m, type='l', col='gray', main='Convergence', ylim=c(.3,.4))
+abline(h=1/3, col='red')
 lines(m+s)
 lines(m-s)
 ```
@@ -431,7 +436,7 @@ Find the expectation for discrete random variable with the following pmf:
 |-|-|-|-|-|
 |p(x)|.1|.2|.3|.4|
 
-Also find a 99% interval for this value using the CLT based on a million samples.
+Also find a 99% interval for this expectation using the CLT based on a million samples.
 
 <div id="expectation_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
@@ -452,7 +457,7 @@ We can also use simulations to estimate probabilities.
 Suppose we have a random variable $X\sim Unif(0,1)$ and a random variable 
 $Y\sim N(0,1)$ and we are interested in calculating the probability that 
 $X$ is larger than $Y$. 
-This is not an easy calculation to do. 
+This is not an easy calculation to do by hand. 
 But we can simply simulate a bunch of $X$ and $Y$ values and calculate the 
 number of times that an $X$ value is larger than an associated $Y$ value.
 Note that the event $X>Y$ will have a Bernoulli distribution, i.e. there is 
@@ -485,7 +490,8 @@ p + c(-1,1) * qnorm(.975) * sqrt(p*(1-p)/n)
 Suppose $X\sim Bin(10,.5)$ and $Y\sim Po(5)$, calculate the probability that 
 $Y \ge X$. 
 Since these are discrete random variables, the equal to sign is important.
-As a reminder, to get *greater than or equal to* in R, use `>=`. 
+As a reminder, to get *greater than or equal to* in R, use `>=` and the 
+random Poisson generator is `rpois()`. 
 Provide a 95% interval based on a million samples.
 
 
@@ -501,3 +507,6 @@ p + c(-1,1) * qnorm(.975) * sqrt(p*(1-p)/n)
 <button title="Show a solution" type="button" onclick="if(document.getElementById('probability_activity_solution') .style.display=='none') {document.getElementById('probability_activity_solution') .style.display=''}else{document.getElementById('probability_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
+```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
+knitr::knit("lab03.Rmd", tangle = TRUE)
+```
