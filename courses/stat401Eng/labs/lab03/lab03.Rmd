@@ -327,7 +327,8 @@ distribution with mean equal to the expectation and variance equal to the
 variance of an individual random variate divided by n.
 
 In this case, the random variable is $X^2$ where $X\sim Unif(0,1)$. 
-We can estimate the mean and variance by taking a large number of $X^2$ values 
+We can estimate the mean and variance by taking a large number of $X^2$ values
+(multiplied by the width of the interval which is just 1 in this example)
 and calculating their mean and variance, e.g. 
 
 ```{r}
@@ -382,10 +383,13 @@ You will need to
 ```{r, purl=FALSE}
 n <- 1e5
 x <- runif(n, min = -1, max = 1)
-y <- exp(-abs(x))
+y <- 2*exp(-abs(x))
 m <- mean(y)
-s <- qnorm(.975)*sd(y)/length(y)
+s <- qnorm(.975)*sd(y)/sqrt(length(y))
 m + c(-1,1)*s
+
+# Compare with the truth
+integrate(function(x) exp(-abs(x)), lower = -1, upper = 1)
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('integral_activity_solution') .style.display=='none') {document.getElementById('integral_activity_solution') .style.display=''}else{document.getElementById('integral_activity_solution') .style.display='none'}">Show/Hide Solution</button>
