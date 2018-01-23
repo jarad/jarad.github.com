@@ -10,6 +10,7 @@ tagline: Statistical Methods for Research Workers
 
  - [Lab01](lab01/lab01.html) - Introduction to R
  - [Lab02](lab02/lab02.html) - Probability Distributions in R
+ - [Lab03](lab03/lab03.html) - Monte Carlo Methods in R
  
    === updated through here ===
  
