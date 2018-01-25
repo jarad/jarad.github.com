@@ -281,116 +281,6 @@ With the prevalence of computers, statistics is increasingly utilizing methods
 based on simulations to answer scientific questions of interest.
 These methods are called Monte Carlo methods.
 
-### Monte Carlo integration
-
-Monte Carlo methods can be used to answer any integration question.
-For example, suppose we want to estimate the integral of the function 
-$f(x) = x^2$ evaluated from 0 to 1. 
-We can sample uniform values from 0 to 1, calculate x at each of these values,
-and take their average. 
-
-```{r}
-n <- 1e4
-sum <- 0
-for (i in 1:n) {
-  x <- runif(1)
-  sum <- sum + x^2
-}
-sum/n
-```
-
-or, more succinctly (and quicker), 
-
-```{r}
-y <- runif(n)^2
-mean(y)
-```
-
-We did not discuss it, but the 
-[Strong Law of Large Numbers](https://en.wikipedia.org/wiki/Law_of_large_numbers#Strong_law) 
-guarantees that if we 
-take a large enough sample, we will converge in probability to the true integral.
-We can visualize this by calculating the running mean. 
-
-```{r}
-plot( cumsum(y)/(1:length(y)), type='l', main='Convergence', ylim=c(.3,.4))
-abline(h=1/3, col='red')
-```
-
-
-We would also like to know, at any number of simulated values, how far away we
-are likely to be. 
-The [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem)
-provides a way to evaluate the Monte Carlo error in our estimate. 
-Recall that the CLT says that an average of iid random variables has a normal
-distribution with mean equal to the expectation and variance equal to the 
-variance of an individual random variate divided by n.
-
-In this case, the random variable is $X^2$ where $X\sim Unif(0,1)$. 
-We can estimate the mean and variance by taking a large number of $X^2$ values 
-and calculating their mean and variance, e.g. 
-
-```{r}
-mean(y) # Notice that this is the estimate of the integral that we are trying to find
-var(y)
-```
-
-For any particular number of simulations $n$, a 95\% interval for the value of 
-the integral is 
-\[ 
-\overline{Y} \pm 1.96 s/\sqrt{n}
-\]
-where $s$ is the estimated standard deviation (square root of the variance). 
-Based on our samples we have 
-
-```{r}
-mean(y) + c(-1,1)*qnorm(0.975)*sd(y)/sqrt(length(y))
-```
-
-We can visualize the increasing certainty by calculating this interval for each
-new simulation we have.
-
-```{r}
-m <- cumsum(y)/(1:length(y))
-s <- numeric(n)
-for (i in 1:n) {
-  s[i] <- qnorm(0.975)*sd(y[1:i])/sqrt(i)
-}
-
-plot(m, type='l', col='gray', main='Convergence', ylim=c(.3,.4))
-abline(h=1/3, col='red')
-lines(m+s)
-lines(m-s)
-```
-
-
-#### Integral activity
-
-Estimate the integral
-\[ 
-\int_{-1}^1 e^{-|x|} dx
-\]
-by Monte Carlo integration and provide a 95\% interval. 
-You will need to 
-
-1. draw uniform random values from $(-1,1)$,
-2. calculate $e^{-|x|}$ for each of these values using the `exp()` and `abs()` functions,
-3. calculate the mean and standard deviation of these values, and 
-4. construct the interval.
-
-<div id="integral_activity_solution" style="display:none"> 
-```{r, purl=FALSE}
-n <- 1e5
-x <- runif(n, min = -1, max = 1)
-y <- exp(-abs(x))
-m <- mean(y)
-s <- qnorm(.975)*sd(y)/length(y)
-m + c(-1,1)*s
-```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('integral_activity_solution') .style.display=='none') {document.getElementById('integral_activity_solution') .style.display=''}else{document.getElementById('integral_activity_solution') .style.display='none'}">Show/Hide Solution</button>
-
-
 ### Evaluating expectations
 
 Suppose we have a random variable with the probability mass function
@@ -420,11 +310,21 @@ of these values which are estimates of the expectation and standard deviation
 s^2 # variance
 ```
 
-The CLT can be used to provide bounds. 
+The 100(1-a)% CLT can be used to provide bounds based on 
+\[ 
+\overline{X} \pm z_{a/2} s/\sqrt{n}
+\]
+where 
+$\overline{X}$ is the sample mean, 
+$z_{a/2}$ is the z-critical value,
+$s$ is the sample standard deviation, and
+$n$ is the size of our sample.
 For example a 90% interval is 
 
 ```{r}
-m + c(-1,1) * qnorm(.95) * s / sqrt( length(x) )
+mean(x) + c(-1,1) * 
+  qnorm(.95) * 
+  sd(x) / sqrt( length(x) )
 ```
 
 
@@ -441,9 +341,9 @@ Also find a 99% interval for this expectation using the CLT based on a million s
 <div id="expectation_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
 x <- sample(c(10,12,21,33), size = 1e6, prob = c(.1,.2,.3,.4), replace = TRUE)
-m <- mean(x)
-s <- sd(x)
-m + c(-1,1) * qnorm(.995) * s / sqrt( length(x) )
+mean(x) + c(-1,1) * 
+  qnorm(.995) * 
+  sd(x) / sqrt( length(x) )
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('expectation_activity_solution') .style.display=='none') {document.getElementById('expectation_activity_solution') .style.display=''}else{document.getElementById('expectation_activity_solution') .style.display='none'}">Show/Hide Solution</button>
