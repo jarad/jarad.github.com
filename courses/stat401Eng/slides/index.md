@@ -25,9 +25,14 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 |Multiple random variables|[pdf](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.pdf)|[R](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.R)|
 
 
+### Inference
+
+|Topic|slides|code|
+|---|---|---|
+|Statistics|[pdf](Inference/I01-Statistics/I01-Statistics.pdf)|[R](Inference/I01-Statistics/I01-Statistics.R)|
+
  ============ updated to here =================
 
-### Inference
 
 |Topic|Source|Handouts|
 |---|---|---|
