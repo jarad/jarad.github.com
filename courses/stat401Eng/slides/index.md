@@ -30,14 +30,13 @@ you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/c
 |Topic|slides|code|
 |---|---|---|
 |Statistics|[pdf](Inference/I01-Statistics/I01-Statistics.pdf)|[R](Inference/I01-Statistics/I01-Statistics.R)|
+|Likelihood|[pdf](Inference/I02-Likelihood/I02-Likelihood.pdf)|[R](Inference/I02-Likelihood/I02-Likelihood.R)|
 
  ============ updated to here =================
 
 
 |Topic|Source|Handouts|
 |---|---|---|
-|Statistics|[Set08.Rnw](Set08/Set08_Statistics.Rnw)|[Set08.pdf](Set08/Set08_Statistics.pdf)|
-|Likelihood|[Set09.Rnw](Set09/Set09_likelihood.Rnw)|[Set09.pdf](Set09/Set09_likelihood.pdf)|
 |Bayesian statistics|[Set10.Rnw](Set10/Set10_Bayesian_statistics.Rnw)|[Set10.pdf](Set10/Set10_Bayesian_statistics.pdf)|
 |Normal model|[Set11.Rnw](Set11/Set11_Normal_model.Rnw)|[Set11.pdf](Set11/Set11_Normal_model.pdf)|
 |Confidence intervals|[Set12.Rnw](Set12/Set12_Confidence_intervals.Rnw)|[Set12.pdf](Set12/Set12_Confidence_intervals.pdf)|
