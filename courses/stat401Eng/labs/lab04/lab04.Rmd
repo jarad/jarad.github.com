@@ -1,0 +1,131 @@
+---
+title: "Lab04 - Graphical Statistics"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Setup
+
+To follow along, use the [lab04 code](lab04.R) also run the following
+
+```{r, eval=FALSE}
+install.packages("tidyverse")
+```
+
+If the install fails, then run
+
+```{r, eval=FALSE}
+install.packages(c("dplyr","ggplot2"))
+```
+
+The installation only needs to be done once. 
+But we will need to load the packages in every R session where we want to use 
+them.
+To load the packages, use 
+
+```{r, eval=FALSE}
+library("dplyr")
+library("ggplot2")
+```
+
+alternatively, you can load the entire (not very big) `tidyverse`.
+
+```{r}
+library("tidyverse")
+```
+
+
+The main purpose of the lab today is to construct plots using the `ggplot2`
+R package.
+In order to construct these plots, 
+we need to construct an appropriate `data.frame` and we will use 
+`dplyr` to help us construct that `data.frame`. 
+
+
+## Data wrangling
+
+Let's use the built-in R data set `airquality`.
+First, let's look at the top of the file using the `head()` function.
+
+```{r}
+head(airquality)
+```
+
+We can get more information, by going to the help file
+
+```{r, eval=FALSE}
+?airquality
+```
+
+One issue with this dataset is that the Month/Day columns don't really provide 
+us with a `Date`.
+Let's create a new column that creates a real `Date`.
+
+```{r}
+airquality <- airquality %>%
+  mutate(Date = as.Date(paste("1973",Month,Day,sep="/"))) 
+```
+
+Now we can get rid of the old Month and Day columns
+
+```{r}
+airquality <- airquality %>%
+  select(-Month, -Day)
+```
+
+# Scatterplot
+
+At this point we can construct individual graphs for our 4 different response
+variables: Ozone, Solar.R, Wind, and Temp.
+
+```{r}
+ggplot(airquality, aes(x = Date, y = Ozone)) +
+  geom_point()
+```
+
+or if we wanted a line plot
+
+```{r}
+ggplot(airquality, aes(x = Date, y = Ozone)) +
+  geom_line()
+```
+
+#### Scatterplot activity
+
+Create a scatterplot of solar radiation vs date.
+
+<div id="scatterplot_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+ggplot(airquality, aes(x = Date, y = Solar.R)) +
+  geom_point()
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('scatterplot_activity_solution') .style.display=='none') {document.getElementById('scatterplot_activity_solution') .style.display=''}else{document.getElementById('scatterplot_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+### Faceted scatterplots
+
+What if we want to visualize all 4 response variables vs Date simultaneously.
+One way to do this is with facets, but in order to use facets, we will need
+to organize our `data.frame` into long format. 
+
+```{r}
+d <- airquality %>%
+  tidyr::gather(response, value, -Date)
+```
+
+Take a look at the resulting `data.frame`.
+
+```{r}
+head(d)
+summary(d)
+table(d$response)
+```
+
+
+
+
+```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
+knitr::knit("lab04.Rmd", tangle = TRUE)
+```
