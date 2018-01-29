@@ -43,7 +43,7 @@ we need to construct an appropriate `data.frame` and we will use
 `dplyr` to help us construct that `data.frame`. 
 
 
-## Data wrangling
+
 
 Let's use the built-in R data set `airquality`.
 First, let's look at the top of the file using the `head()` function.
@@ -74,10 +74,53 @@ airquality <- airquality %>%
   select(-Month, -Day)
 ```
 
-# Scatterplot
+
+## Histogram
+
+```{r}
+ggplot(airquality, aes(x=Ozone)) + 
+  geom_histogram()
+```
+
+If you want to avoid the message, 
+you can specify the number of bins to use.
+
+```{r}
+ggplot(airquality, aes(x=Ozone)) + 
+  geom_histogram(bins = 40)
+```
+
+If you want plot on the density scale (so that you can compare to a pdf),
+use the following:
+
+
+```{r}
+ggplot(airquality, aes(x=Ozone)) + 
+  geom_histogram(aes(y=..density..), bins = 40)
+```
+
+
+#### Histogram activity
+
+Create a histogram of solar radiation on the density scale with 50 bins.
+
+<div id="histogram_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+ggplot(airquality, aes(x=Solar.R)) + 
+  geom_histogram(aes(y=..density..), bins = 50)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('histogram_activity_solution') .style.display=='none') {document.getElementById('histogram_activity_solution') .style.display=''}else{document.getElementById('histogram_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+
+## Scatterplot
 
 At this point we can construct individual graphs for our 4 different response
 variables: Ozone, Solar.R, Wind, and Temp.
+Perhaps we want to understand the temporal variability for Ozone.
+We can use a scatterplot of Ozone vs Date.
 
 ```{r}
 ggplot(airquality, aes(x = Date, y = Ozone)) +
@@ -91,13 +134,23 @@ ggplot(airquality, aes(x = Date, y = Ozone)) +
   geom_line()
 ```
 
+Perhaps we want to understand the relationship between solar radiation and 
+ozone. 
+
+```{r}
+ggplot(airquality, aes(x = Solar.R, y = Ozone)) +
+  geom_point()
+```
+
+
+
 #### Scatterplot activity
 
-Create a scatterplot of solar radiation vs date.
+Create a scatterplot of wind speed and temperature.
 
 <div id="scatterplot_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
-ggplot(airquality, aes(x = Date, y = Solar.R)) +
+ggplot(airquality, aes(x = Wind, y = Temp)) +
   geom_point()
 ```
 </div> 
@@ -118,9 +171,29 @@ d <- airquality %>%
 Take a look at the resulting `data.frame`.
 
 ```{r}
+dim(airquality)
+dim(d)
+
 head(d)
 summary(d)
 table(d$response)
+```
+
+Now we can facet by `response`.
+
+```{r}
+ggplot(d, aes(Date, value)) +
+  geom_point() + 
+  facet_wrap(~response)
+```
+
+Since the axes are quite different for the different responses, 
+we can allow them to vary in the different facets.
+
+```{r}
+ggplot(d, aes(Date, value)) +
+  geom_line() + 
+  facet_wrap(~response,scales="free_y")
 ```
 
 
