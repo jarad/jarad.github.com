@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-# Setup
+### Setup
 
 To follow along, use the [lab04 code](lab04.R) also run the following
 
@@ -16,7 +16,7 @@ install.packages("tidyverse")
 If the install fails, then run
 
 ```{r, eval=FALSE}
-install.packages(c("dplyr","ggplot2"))
+install.packages(c("dplyr","tidyr","ggplot2"))
 ```
 
 The installation only needs to be done once. 
@@ -26,6 +26,7 @@ To load the packages, use
 
 ```{r, eval=FALSE}
 library("dplyr")
+library("tidyr")
 library("ggplot2")
 ```
 
@@ -35,6 +36,9 @@ alternatively, you can load the entire (not very big) `tidyverse`.
 library("tidyverse")
 ```
 
+
+
+## Constructing plots
 
 The main purpose of the lab today is to construct plots using the `ggplot2`
 R package.
@@ -67,19 +71,12 @@ airquality <- airquality %>%
   mutate(Date = as.Date(paste("1973",Month,Day,sep="/"))) 
 ```
 
-Now we can get rid of the old Month and Day columns
+### Histogram
 
 ```{r}
-airquality <- airquality %>%
-  select(-Month, -Day)
-```
-
-
-## Histogram
-
-```{r}
-ggplot(airquality, aes(x=Ozone)) + 
-  geom_histogram()
+ggplot(airquality,     # data.frame containing the data
+       aes(x=Ozone)) + # a column name from the data.frame
+  geom_histogram()     # create a histogram
 ```
 
 If you want to avoid the message, 
@@ -115,7 +112,52 @@ ggplot(airquality, aes(x=Solar.R)) +
 
 
 
-## Scatterplot
+### Boxplots
+
+```{r}
+ggplot(airquality,     
+       aes(x=1,y=Ozone)) + 
+  geom_boxplot()     
+```
+
+Comparing boxplots
+
+```{r}
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_boxplot()     
+```
+
+Add all points to the boxplot
+
+```{r}
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_boxplot(color='grey',                 # make the boxes not so obvious
+               outlier.shape = NA) +         # remove outliers, 
+  geom_jitter() +                            # because they get plotted here
+  theme_bw()
+```
+
+#### Boxplot activity
+
+Create a scatterplot of wind speed by month and add a boxplot for each month
+in the background.
+
+<div id="boxplot_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+ggplot(airquality,     
+       aes(x=Month, y=Wind, group=Month)) + 
+  geom_boxplot(outlier.shape = NA, color='grey') +         
+  geom_jitter() +                       
+  theme_bw()
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('boxplot_activity_solution') .style.display=='none') {document.getElementById('boxplot_activity_solution') .style.display=''}else{document.getElementById('boxplot_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+### Scatterplot
 
 At this point we can construct individual graphs for our 4 different response
 variables: Ozone, Solar.R, Wind, and Temp.
@@ -164,7 +206,8 @@ One way to do this is with facets, but in order to use facets, we will need
 to organize our `data.frame` into long format. 
 
 ```{r}
-d <- airquality %>%
+airquality_long <- airquality %>%
+  select(-Month, -Day) %>%              # Remove these columns
   tidyr::gather(response, value, -Date)
 ```
 
@@ -172,17 +215,17 @@ Take a look at the resulting `data.frame`.
 
 ```{r}
 dim(airquality)
-dim(d)
+dim(airquality_long)
 
-head(d)
-summary(d)
-table(d$response)
+head(airquality_long)
+summary(airquality_long)
+table(airquality_long$response)
 ```
 
 Now we can facet by `response`.
 
 ```{r}
-ggplot(d, aes(Date, value)) +
+ggplot(airquality_long, aes(Date, value)) +
   geom_point() + 
   facet_wrap(~response)
 ```
@@ -191,10 +234,108 @@ Since the axes are quite different for the different responses,
 we can allow them to vary in the different facets.
 
 ```{r}
-ggplot(d, aes(Date, value)) +
+ggplot(airquality_long, aes(Date, value)) +
   geom_line() + 
   facet_wrap(~response,scales="free_y")
 ```
+
+Alternatively (especially if the response variables are on the same scale)
+we can plot them on the same axes and color them.
+
+```{r}
+ggplot(airquality_long, 
+       aes(Date, value, color = response, group = response)) +
+  geom_line()
+```
+
+Notice that the legend is automatically created.
+This is not something that is done in base R graphics.
+
+Honestly, this doesn't look very good, 
+so it is better to just facet the plot.
+
+
+### Customizing
+
+If we only had the long version of the `data.frame`, we can reconstruct the
+wide version by using the following
+
+```{r}
+airquality2 <- airquality_long %>%
+  tidyr::spread(response, value)
+```
+
+Sometimes it is helpful to save the plot so that it can be updated in the 
+future. 
+To save the plot, just use the assignment operator, e.g. 
+
+```{r}
+g <- ggplot(airquality2,
+       aes(x = Temp, y = Wind)) +
+  geom_point()
+
+g # Then you can see the plot by just typing the object name
+```
+
+We would like this plot to be a bit more informative, 
+so we will add some informative labels.
+
+```{r}
+g <- g +
+  labs(x = "Temperature (F)",
+       y = "Wind speed (mph)",
+       title = "New York (May-September 1973)")
+
+g
+```
+
+As you have seen before, we can also change the theme. 
+I prefer the simple "bw" theme.
+
+```{r}
+g <- g + theme_bw()
+g
+```
+
+We can add a regression line.
+
+```{r}
+g <- g + geom_smooth(method="lm")
+```
+
+Alternatively, you can combine all the steps
+
+```{r}
+ggplot(airquality2,
+       aes(x = Temp, y = Wind)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  labs(x = "Temperature (F)",
+       y = "Wind speed (mph)",
+       title = "New York (May-September 1973)") + 
+  theme_bw()
+```
+
+
+
+#### Plot creation activity
+
+Use the `cars` dataset to construct and customize a figure displaying the
+relationship between the stopping distance and speed of a car.
+
+<div id="plot_creation_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+ggplot(cars,
+       aes(x=speed, y=dist)) +
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  labs(x = "Speed (mph)",
+       y = "Stopping distance (ft)",
+       title = "Stopping distance as a function of speed (1920s)") +
+  theme_bw()
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('plot_creation_activity_solution') .style.display=='none') {document.getElementById('plot_creation_activity_solution') .style.display=''}else{document.getElementById('plot_creation_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
 
