@@ -13,7 +13,10 @@
 library("tidyverse")
 
 ## ------------------------------------------------------------------------
+dim(airquality)
 head(airquality)
+tail(airquality)
+summary(airquality)
 
 ## ---- eval=FALSE---------------------------------------------------------
 ## ?airquality
@@ -51,7 +54,7 @@ ggplot(airquality,
   geom_boxplot(color='grey',                 # make the boxes not so obvious
                outlier.shape = NA) +         # remove outliers, 
   geom_jitter() +                            # because they get plotted here
-  theme_bw()
+  theme_bw()                                 # Change the theme to remove gray
 
 ## ------------------------------------------------------------------------
 ggplot(airquality, aes(x = Date, y = Ozone)) +
@@ -79,6 +82,11 @@ summary(airquality_long)
 table(airquality_long$response)
 
 ## ------------------------------------------------------------------------
+ggplot(airquality_long, 
+       aes(Date, value, color = response, group = response)) +
+  geom_line()
+
+## ------------------------------------------------------------------------
 ggplot(airquality_long, aes(Date, value)) +
   geom_point() + 
   facet_wrap(~response)
@@ -87,11 +95,6 @@ ggplot(airquality_long, aes(Date, value)) +
 ggplot(airquality_long, aes(Date, value)) +
   geom_line() + 
   facet_wrap(~response,scales="free_y")
-
-## ------------------------------------------------------------------------
-ggplot(airquality_long, 
-       aes(Date, value, color = response, group = response)) +
-  geom_line()
 
 ## ------------------------------------------------------------------------
 airquality2 <- airquality_long %>%
@@ -118,6 +121,7 @@ g
 
 ## ------------------------------------------------------------------------
 g <- g + geom_smooth(method="lm")
+g
 
 ## ------------------------------------------------------------------------
 ggplot(airquality2,
@@ -128,4 +132,7 @@ ggplot(airquality2,
        y = "Wind speed (mph)",
        title = "New York (May-September 1973)") + 
   theme_bw()
+
+## ----eval=FALSE----------------------------------------------------------
+## ggsave(filename = "plot.png", plot = g, width = 5, height = 4)
 
