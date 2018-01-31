@@ -50,13 +50,17 @@ we need to construct an appropriate `data.frame` and we will use
 
 
 Let's use the built-in R data set `airquality`.
-First, let's look at the top of the file using the `head()` function.
+Before we start plotting let's take a quick look at the data.
 
 ```{r}
+dim(airquality)
 head(airquality)
+tail(airquality)
+summary(airquality)
 ```
 
-We can get more information, by going to the help file
+For built in datasets, 
+we can get more information by going to the help file.
 
 ```{r, eval=FALSE}
 ?airquality
@@ -71,7 +75,17 @@ airquality <- airquality %>%
   mutate(Date = as.Date(paste("1973",Month,Day,sep="/"))) 
 ```
 
+If you deal with dates a lot, 
+you should check out the [lubridate](https://cran.r-project.org/package=lubridate) 
+package.
+
 ### Histogram
+
+All `ggplot2` graphics require a `data.frame` containing the data
+and this `data.frame` is always the first argument to a `ggplot` 
+call.
+After this, we specify some aesthetics using the `aes()` function.
+Then, we tell `ggplot2` what kind of graphics to construct.
 
 ```{r}
 ggplot(airquality,     # data.frame containing the data
@@ -87,7 +101,8 @@ ggplot(airquality, aes(x=Ozone)) +
   geom_histogram(bins = 40)
 ```
 
-If you want plot on the density scale (so that you can compare to a pdf),
+If you want plot on the density scale 
+(so that you can compare to a pdf),
 use the following:
 
 
@@ -114,6 +129,9 @@ ggplot(airquality, aes(x=Solar.R)) +
 
 ### Boxplots
 
+The syntax for boxplots is similar except that the variable you are
+interest in is the y aesthetic.
+
 ```{r}
 ggplot(airquality,     
        aes(x=1,y=Ozone)) + 
@@ -128,7 +146,9 @@ ggplot(airquality,
   geom_boxplot()     
 ```
 
-Add all points to the boxplot
+I dislike boxplots as it hides the data behind a 5 point summary in 
+the shape of a box and whiskers. 
+I prefer to see the data and the boxplot together.
 
 ```{r}
 ggplot(airquality,     
@@ -136,13 +156,15 @@ ggplot(airquality,
   geom_boxplot(color='grey',                 # make the boxes not so obvious
                outlier.shape = NA) +         # remove outliers, 
   geom_jitter() +                            # because they get plotted here
-  theme_bw()
+  theme_bw()                                 # Change the theme to remove gray
 ```
 
 #### Boxplot activity
 
 Create a scatterplot of wind speed by month and add a boxplot for each month
 in the background.
+See if you can google to find out how to swap the axes, i.e. have month on the 
+y-axis and Wind on the x-axis.
 
 <div id="boxplot_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
@@ -150,8 +172,11 @@ ggplot(airquality,
        aes(x=Month, y=Wind, group=Month)) + 
   geom_boxplot(outlier.shape = NA, color='grey') +         
   geom_jitter() +                       
-  theme_bw()
+  theme_bw() +
+  coord_flip()
 ```
+
+Flipping the axes makes the comparisons vertical and therefore, I think, easier.
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('boxplot_activity_solution') .style.display=='none') {document.getElementById('boxplot_activity_solution') .style.display=''}else{document.getElementById('boxplot_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
@@ -190,7 +215,8 @@ ggplot(airquality, aes(x = Solar.R, y = Ozone)) +
 
 #### Scatterplot activity
 
-Create a scatterplot of wind speed and temperature.
+Create a scatterplot of wind speed versus temperature.
+
 
 <div id="scatterplot_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
@@ -201,11 +227,9 @@ ggplot(airquality, aes(x = Wind, y = Temp)) +
 <button title="Show a solution" type="button" onclick="if(document.getElementById('scatterplot_activity_solution') .style.display=='none') {document.getElementById('scatterplot_activity_solution') .style.display=''}else{document.getElementById('scatterplot_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
-### Faceted scatterplots
-
-What if we want to visualize all 4 response variables vs Date simultaneously.
-One way to do this is with facets, but in order to use facets, we will need
-to organize our `data.frame` into long format. 
+If we want to put all the response variables on the same plot, we can color 
+them.
+In order to do this, we will need to organize our `data.frame` into long format. 
 
 ```{r}
 airquality_long <- airquality %>%
@@ -224,7 +248,26 @@ summary(airquality_long)
 table(airquality_long$response)
 ```
 
-Now we can facet by `response`.
+```{r}
+ggplot(airquality_long, 
+       aes(x = Date, y = value, 
+           linetype = response,
+           color = response, 
+           group = response)) +
+  geom_line()
+```
+
+Notice that the legend is automatically created.
+This is not something that is done in base R graphics.
+
+Honestly, this doesn't look very good, 
+so it is better to facet the plot.
+
+
+
+### Faceted scatterplots
+
+Facets are often a better way of representing multiple variables.
 
 ```{r}
 ggplot(airquality_long, aes(Date, value)) +
@@ -241,20 +284,7 @@ ggplot(airquality_long, aes(Date, value)) +
   facet_wrap(~response,scales="free_y")
 ```
 
-Alternatively (especially if the response variables are on the same scale)
-we can plot them on the same axes and color them.
 
-```{r}
-ggplot(airquality_long, 
-       aes(Date, value, color = response, group = response)) +
-  geom_line()
-```
-
-Notice that the legend is automatically created.
-This is not something that is done in base R graphics.
-
-Honestly, this doesn't look very good, 
-so it is better to just facet the plot.
 
 
 ### Customizing
@@ -267,8 +297,8 @@ airquality2 <- airquality_long %>%
   tidyr::spread(response, value)
 ```
 
-Sometimes it is helpful to save the plot so that it can be updated in the 
-future. 
+Sometimes it is helpful to save the plot as an R object 
+so that it can be updated in the future. 
 To save the plot, just use the assignment operator, e.g. 
 
 ```{r}
@@ -303,6 +333,7 @@ We can add a regression line.
 
 ```{r}
 g <- g + geom_smooth(method="lm")
+g
 ```
 
 Alternatively, you can combine all the steps
@@ -339,6 +370,12 @@ ggplot(cars,
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('plot_creation_activity_solution') .style.display=='none') {document.getElementById('plot_creation_activity_solution') .style.display=''}else{document.getElementById('plot_creation_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
+
+If you want to save the plot, use the ggsave function, e.g.
+
+```{r,eval=FALSE}
+ggsave(filename = "plot.png", plot = g, width = 5, height = 4)
+```
 
 
 
