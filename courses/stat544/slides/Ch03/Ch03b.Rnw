@@ -21,11 +21,11 @@ opts_chunk$set(comment=NA,
 options(width=120)
 @
 
-<<libraries, message=FALSE, warning=FALSE>>=
-library(plyr)
-library(dplyr)
-library(ggplot2)
-library(gridExtra)
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("plyr")
+library("dplyr")
+library("ggplot2")
+library("gridExtra")
 @
 
 <<set_seed>>=
@@ -88,7 +88,7 @@ $n = \sum_{k=1}^K y_k$ being the total number of individuals.
 
 \vspace{0.2in} \pause 
 
-Then $Y = (Y_1,\ldots,Y_n)$ has a multinomial distribution, i.e. $Y\sim Mult(n,\pi)$, \pause with probability mass function (pmf)
+Then $Y = (Y_1,\ldots,Y_K)$ has a multinomial distribution, i.e. $Y\sim Mult(n,\pi)$, \pause with probability mass function (pmf)
 \[ 
 p(y) = n! \prod_{k=1}^k \frac{\pi_k^{y_k}}{y_k!}.
 \]
@@ -265,7 +265,8 @@ Let $Y\sim N(\mu,\mS)$ with precision matrix $\mO = \mS^{-1}$. \pause
 \begin{frame}
 \frametitle{Default inference with an unknown mean}
 
-Let $Y_i\ind N(\mu,S)$ with default prior $p(\mu)\propto 1$, then 
+Let $Y_i\ind N_K(\mu,S)$ with default prior $p(\mu)\propto 1$
+where $Y_i = (Y_{i1},\ldots,Y_{iK})$, then 
 \[ \begin{array}{rl}
 p(\mu|y) &\propto p(y|\mu)p(\mu) \pause \\
 &\propto \exp\left(-\frac{1}{2}\sum_{i=1}^n (y_i-\mu)^\top S^{-1} (y_i-\mu) \right) \pause \\
@@ -276,9 +277,9 @@ where
 \pause
 This posterior is proper if $n\ge K$ and, in that case, is 
 \[ 
-\mu|y \sim N\left(\overline{y}, \frac{1}{n}S\right).
+\mu|y \sim N_K\left(\overline{y}, \frac{1}{n}S\right).
 \]
-where this $\overline{y}$ has elements
+where this $\overline{y} = (\overline{y}_1,\ldots,\overline{y}_K)$ has elements
 \[ 
 \overline{y}_k = \frac{1}{n} \sum_{i=1}^n \overline{y}_{ik}.
 \]
@@ -301,7 +302,7 @@ and thus
 where 
 \[ \begin{array}{rl}
 C' &= \left[C^{-1} + nS^{-1}\right]^{-1} \\
-m' &= C'\left[ C^{-1}m + n S^{-1}\overline{y} \right]
+m' &= C'\left[ C^{-1}m + n S^{-1}\overline{y} \right].
 \end{array} \]
 \end{frame}
 
@@ -309,13 +310,17 @@ m' &= C'\left[ C^{-1}m + n S^{-1}\overline{y} \right]
 \begin{frame}
 \frametitle{Inverse Wishart distribution}
 
-Let the $K\times K$ matrix $\mS$ have an inverse Wishart distribution, i.e. $\mS \sim IW(v,W^{-1})$, with degrees of freedom $v>K-1$ and positive definite scale matrix $W$. 
+Let the $K\times K$ matrix $\mS$ have an inverse Wishart distribution, 
+i.e. $\mS \sim IW(v,W^{-1})$, 
+with degrees of freedom $v>K-1$ and positive definite scale matrix $W$. 
 
 \vspace{0.2in} \pause
 
 The pdf for $\mS$ is 
 \[ 
-p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \right).
+p(\mS) \propto 
+|\mS|^{-(v+K+1)/2}
+\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \right).
 \]
 
 
@@ -328,11 +333,13 @@ p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \ri
 
 The inverse Wishart distribution with pdf 
 \[ 
-p(\mS) \propto |W|^{v-K-1}/2\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \right).
+p(\mS) \propto 
+|\mS|^{-(v+K+1)/2}
+\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \right).
 \]
 has the following properties:
-\begin{itemize}
-\item $E[\mS] = (v-K-1)^{-1} W$.
+\begin{itemize}[<+->]
+\item $E[\mS] = (v-K-1)^{-1} W$ for $v>K+1$.
 \item Marginally, $\sigma_k^2 = \mS_{kk} \sim Inv-\chi^2(v,W_{kk})$.
 \item If a $K\times K$ matrix $W$ has a Wishart distribution, i.e. $W\sim Wishart(v,S)$,  then $W^{-1} \sim IW(v,S^{-1})$. 
 \end{itemize}
@@ -406,7 +413,8 @@ S = \sum_{i=1}^n (y_i-\overline{y})(y_i-\overline{y})^\top.
 \item The prior 
 \[ p(\mu,\mS) \propto |\mS|^{-(K+1)/2}, \]
 \pause
-which can be thought of as a normal-inverse-Wishart distribution with $c\to 0, v\to -1, and |W|\to 0$, \pause results in the posterior distribution
+which can be thought of as a normal-inverse-Wishart distribution with $c\to 0$, 
+$v\to -1$, and $|W|\to 0$, \pause results in the posterior distribution
 \[ \begin{array}{rl} 
 \mu|\mS,y &\sim N(\overline{y}, \mS/n) \\
 \mS|y &\sim IW(n-1,S^{-1}).
@@ -436,7 +444,8 @@ Remedies:
 \begin{itemize}
 \item Don't blindly use $\I$ for the scale matrix in an IW, instead use a reasonable diagonal matrix for your data set.
 \item Use the scaled Inverse wishart distribution (see pg 74)
-\item Use the separation strategy, i.e. $\mS = DCD$ where $D$ is diagonal and $C$ is a correlation matrix, where you specify the standard deviations (or variances) and correlations separately. \pause In this case, Gelman recommends putting the LKJ prior (see page 582) on the correlation matrix.
+\item Use the separation strategy, i.e. $\mS = \Delta \Lambda \Delta$ where $\Delta$ 
+is diagonal and $\Lambda$ is a correlation matrix, where you specify the standard deviations (or variances) and correlations separately. \pause In this case, Gelman recommends putting the LKJ prior (see page 582) on the correlation matrix.
 \end{itemize}
 }
 \end{frame}
