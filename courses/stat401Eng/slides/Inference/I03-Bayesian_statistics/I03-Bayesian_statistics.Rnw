@@ -314,4 +314,37 @@ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)} \propto p(y|\theta)p(\theta).
 
 \end{frame}
 
+
+\begin{frame}[fragile]
+\frametitle{Bayesian analysis for binomial model summary}
+
+Let $Y\sim Bin(n,\theta)$ and assume $\theta\sim Be(a,b)$. 
+\pause
+Then 
+\[
+\theta|y \sim Be(a+y,b+n-y).
+\]
+\pause
+A default prior is $\theta\sim Be(1,1) \stackrel{d}{=} Unif(0,1)$.
+
+\vspace{0.2in} \pause
+
+R code for binomial analysis
+<<eval = FALSE, echo = TRUE>>=
+a <- 1; b <- 1                  # default uniform prior
+y <- 3; n <- 10                 # data
+
+curve(dbeta(x,ay,b+n-y))        # posterior (pdf)
+(a+y)/(a+b+n)                   # posterior mean
+qbeta(.5, a+y, b+n-y)           # posterior median
+qbeta(c(.025,.975), a+y, b+n-y) # 95% equal tail credible interval
+
+# Special cases
+qbeta(.95, a+y, b+n-y)          # if y=0, use a lower one-sided credible interval (0 up to here)
+qbeta(.05, a+y, b+n-y)          # if y=n, use a upper one-sided credible interval (here up to 1)
+@
+
+\end{frame}
+
+
 \end{document}
