@@ -21,16 +21,16 @@ opts_chunk$set(comment=NA,
 options(width=120)
 @
 
-<<libraries, message=FALSE, warning=FALSE>>=
-library(reshape2)
-library(plyr)
-library(xtable)
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+# library("reshape2")
+library("dplyr")
+library("xtable")
 
-library(ggplot2)
-library(GGally)
-library(RColorBrewer)
+library("ggplot2")
+library("GGally")
+library("RColorBrewer")
 
-library(rstan)
+library("rstan")
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 @
@@ -111,7 +111,7 @@ set.seed(1)
   \end{itemize}
 }
 
-<<data, results='hide'>>=
+<<dawkins_data, results='hide'>>=
 d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L, 
 14L, 15L, 20L, 17L, 18L, 19L, 21L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 
 6L, 22L, 23L, 24L), .Label = c("1/11/14", "1/13/14", "1/18/14", 
@@ -130,22 +130,29 @@ d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L,
 3L, 2L, 3L, 6L, 4L, 4L, 0L), attempts = c(0L, 0L, 8L, 6L, 1L, 
 9L, 2L, 1L, 2L, 8L, 5L, 10L, 7L, 4L, 5L, 4L, 1L, 7L, 6L, 6L, 
 7L, 9L, 7L, 1L)), .Names = c("date", "opponent", "made", "attempts"
-), class = "data.frame", row.names = c(NA, -24L))
+), class = "data.frame", row.names = c(NA, -24L)) 
+
+d = rbind(d, 
+          
+          # Add a total row
+          data.frame(date     = NA, 
+                     opponent = 'Total', 
+                     made     = sum(d$made), 
+                     attempts = sum(d$attempts))) %>%
+  
+  # Add posterior parameters
+  mutate(a        = 0.5 + made,
+         b        = 0.5 + attempts-made,
+         lcl      = qbeta(0.025,a,b),
+         ucl      = qbeta(0.975,a,b),
+         Estimate = ifelse(opponent=="Total", "Combined", "Individual"),
+         game     = 1:n())
 @
 
 
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
-<<dawkins_data, out.width='0.7\\textwidth'>>=
-d = rbind(d, data.frame(date=NA, opponent='Total', made=sum(d$made), attempts=sum(d$attempts)))
-d = mutate(d, 
-           a = 0.5 + made,
-           b = 0.5 + attempts-made,
-           lcl = qbeta(0.025,a,b),
-           ucl = qbeta(0.975,a,b),
-           Estimate = ifelse(opponent=="Total", "Combined", "Individual"))
-d$game = 1:nrow(d)
-
+<<dawkins_plot, out.width='0.7\\textwidth', dependson="dawkins_data">>=
 ggplot(d, 
        aes(x     = lcl, 
            xend  = ucl, 
@@ -166,7 +173,7 @@ ggplot(d,
 {\tiny
 <<results='asis'>>=
 xtable(d)
-d = subset(d, opponent!="Total")
+d = d %>% filter(opponent != "Total")
 @
 }
 \end{frame}
@@ -281,7 +288,7 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
   
   Place priors on these parameters or transformed to the real line:
   \begin{itemize}[<+->]
-  \item $\mbox{logit } \mu = \log(\mu/[1-\mu]) = \log(\alpha/\beta)$
+  \item $\text{logit } \mu = \log(\mu/[1-\mu]) = \log(\alpha/\beta)$
   \item $\log \eta$
   \end{itemize}
 \end{frame}
@@ -290,15 +297,7 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
 \frametitle{A prior distribution for $\alpha$ and $\beta$}
   It seems reasonable to assume the mean ($\mu$) and size ($\eta$) are independent \emph{a priori}:
   \[ p(\mu,\eta) = p(\mu)p(\eta) \]
-  
-    \vspace{0.1in} \pause
-  
-<<informative_prior, echo=TRUE>>=
-a = 20
-b = 30
-m = 0
-C = 3
-@
+
   
   \vspace{0.1in} \pause
   
@@ -309,7 +308,14 @@ C = 3
   \end{itemize}
   \pause where $LN(\Sexpr{m},\Sexpr{C})$ is a log-normal distribution, i.e. $\log(\eta) \sim N(\Sexpr{m},\Sexpr{C})$.
   
-
+    \vspace{0.1in} \pause
+  
+<<informative_prior, echo=TRUE>>=
+a = 20
+b = 30
+m = 0
+C = 3
+@
   
 \end{frame}
 
@@ -317,10 +323,19 @@ C = 3
 \frametitle{Prior draws}
 <<informative_prior_plot, dependson='informative_prior', echo=TRUE>>=
 n = 1e4
-prior_draws = mutate(data.frame(mu  = rbeta(n, a, b), eta = rlnorm(n, m, C)),
-                      alpha = eta*   mu,
-                      beta  = eta*(1-mu))
-ddply(melt(prior_draws), .(variable), function(x) quantile(x$value, prob=c(.025,.5,.975)))
+
+prior_draws = data.frame(mu  = rbeta(n, a, b), 
+                         eta = rlnorm(n, m, C)) %>%
+  mutate(alpha = eta*   mu,
+         beta  = eta*(1-mu))
+
+prior_draws %>%
+  tidyr::gather(parameter, value) %>%
+  group_by(parameter) %>%
+  summarize(lower95 = quantile(value, prob = 0.025),
+            median  = quantile(value, prob = 0.5),
+            upper95 = quantile(value, prob = 0.975))
+
 cor(prior_draws$alpha, prior_draws$beta)
 @
 \end{frame}
@@ -365,7 +380,7 @@ model {
   mu    ~ beta(a,b);
   eta   ~ lognormal(m,C);
 
-  # implicit joint distributions
+  // implicit joint distributions
   theta ~ beta(alpha,beta); 
   y     ~ binomial(n,theta);
 }
@@ -375,10 +390,12 @@ model {
 
 \begin{frame}[fragile]
 \frametitle{Stan}
-<<stan_run, dependson=c('informative_prior','stan'), echo=TRUE, results='hide'>>=
-dat = list(y=d$made, n=d$attempts, N=nrow(d),a=a, b=b, m=m, C=C)
-m = stan_model(model_code=model_informative_prior)
-r = sampling(m, dat, c("mu","eta","alpha","beta","theta"), iter = 10000)
+<<stan_run, dependson=c('informative_prior','stan',"dawkins_data"), echo=TRUE, results='hide'>>=
+dat = list(y = d$made, n = d$attempts, N = nrow(d),a = a, b = b, m = m, C = C)
+m = stan_model(model_code = model_informative_prior)
+r = sampling(m, dat, c("mu","eta","alpha","beta","theta"), 
+             iter = 10000,
+             control = list(adapt_delta = 0.9))
 @
 \end{frame}
 
@@ -472,10 +489,10 @@ parameters {
 }
 
 model {
-  # default prior
+  // default prior
   target += -5*log(alpha+beta)/2;
 
-  # implicit joint distributions
+  // implicit joint distributions
   theta ~ beta(alpha,beta); 
   y     ~ binomial(n,theta);
 }
@@ -489,7 +506,7 @@ r2 = sampling(m2, dat, c("alpha","beta","theta"), iter=10000,
 
 \begin{frame}[fragile]
 \frametitle{Stan - default prior}
-<<stan_post2, dependson="stan2_run", echo=TRUE, out.width='0.7\\textwidth'>>=
+<<stan_post2, dependson=c("stan2_run","stan_run"), echo=TRUE, out.width='0.7\\textwidth'>>=
 r2
 @
 \end{frame}
@@ -565,7 +582,7 @@ The maginal posterior for $\alpha,\beta$ is
 
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
-<<stan3_run, echo=TRUE, results='hide'>>=
+<<stan3_run, echo=TRUE, results='hide',dependson="stan_run">>=
 # Marginalized (integrated) theta out of the model
 model_marginalized = "
 data {
@@ -682,9 +699,12 @@ generated quantities {
 }
 "
 
-dat  = list(N=nrow(d), y=d$y, n=d$n, a=20, b=30, m=0, C=2)
-m4 = stan_model(model_code=model_seasons)
-r_seasons = sampling(m4, dat, c("alpha","beta","mu","eta","theta"))
+dat  = list(N = nrow(d), y = d$y, n = d$n, a = 20, b = 30, m = 0, C = 2)
+m4 = stan_model(model_code = model_seasons)
+r_seasons = sampling(m4, 
+                     dat, 
+                     c("alpha","beta","mu","eta","theta"),
+                     iter = 1000)
 @
 \end{frame}
 
@@ -702,10 +722,15 @@ r_seasons
 \frametitle{Stan - hierarchical model for seasons}
 
 <<stan_season_posteriors, dependson="stan_season">>=
-posterior = melt(extract(r_seasons, "theta")[[1]])
-names(posterior)[2] = "season"
-posterior$season = factor(posterior$season)
-ggplot(posterior, aes(x=value, fill=season)) + geom_density(alpha=0.5) +
+posterior = extract(r_seasons, "theta") %>%
+  as.data.frame() %>%
+  tidyr::gather(parameter, value) %>%
+  mutate(parameter = as.factor(parameter))
+
+ggplot(posterior, 
+       aes(x = value, 
+           fill = parameter)) + 
+  geom_density(alpha = 0.5) +
   theme_bw()
 @
 
