@@ -10,9 +10,9 @@ Instructions for compiling the Rnw files can be found below.
 
 ## Chapter slide set files
 
-If the files are ever not available here or if you are interested in the source
-files, 
-you can find them [here](https://github.com/jarad/jarad.github.com/tree/master/courses/stat401Eng/slides).
+If the files are ever not available here, 
+you can find them 
+[here](https://github.com/jarad/jarad.github.com/tree/master/courses/stat401Eng/slides).
 
 ### Probability
 
