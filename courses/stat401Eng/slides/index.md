@@ -33,6 +33,7 @@ you can find them
 |Likelihood|[pdf](Inference/I02-Likelihood/I02-Likelihood.pdf)|[R](Inference/I02-Likelihood/I02-Likelihood.R)|
 |Bayesian statistics|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_statistics.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_statistics.R)|
 |Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|
+|Normal model|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|
 
  ============ updated to here =================
 
