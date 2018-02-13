@@ -6,16 +6,28 @@ output: html_document
 ---
 
 
-To follow along, use the [lab05 code](lab05.R).
+To follow along, use the [lab05 code](lab05.R) 
+and install the `plyr` and `ggplot2` packages 
+(if they are not already installed).
+If you are on a lab computer, these will already be installed.
+
+```{r, eval=FALSE}
+install.packages(c("plyr","ggplot2"))
+```
 
 ## Binomial probability of success estimation
 
-Let's let $y_i\stackrel{ind}{\sim} Bin(n,\theta)$. 
-Recall that the MLE is $\hat{\theta}_{MLE} = \frac{y_i}{n}$.
+Let's let $y\sim Bin(n,\theta)$. 
+Recall that the MLE is $\hat{\theta}_{MLE} = \frac{y}{n}$.
 If we assume the prior $\theta \sim Be(a,b)$, then the posterior is 
-$\theta|y \sim Be(a+y_i,b+n-y_i)$
+$\theta|y \sim Be(a+y,b+n-y)$
 and the posterior expectation is 
-\[ \hat{\theta}_{Bayes} = E[\theta|y] = \frac{a+y_i}{a+b+n}. \] 
+\[ \hat{\theta}_{Bayes} = E[\theta|y] = \frac{a+y}{a+b+n}. \] 
+Specifically, if we assume a Uniform prior on (0,1), i.e. $a=b=1$, then 
+$\theta|y \sim Be(1+y,1+n-y)$
+and the posterior expectation is 
+\[ \hat{\theta}_{Bayes} = E[\theta|y] = \frac{1+y}{2+n}. \] 
+This is equivalent to adding one success and one failure to the data.
 
 Suppose you randomly sample 22 buildings in Ames and find that 15 of them are 
 residential buildings.
@@ -27,12 +39,13 @@ y <- 15
 ```
 the Bayes estimator is 
 ```{r}
-(bayes <- (1+y)/(2+n))
+a <- b <- 1
+(bayes <- (a+y)/(a+b+n))
 ```
 and a 95\% credible interval is 
 
 ```{r}
-qbeta(c(.025,.975), 1+y, 1+n-y)
+qbeta(c(.025,.975), a+y, b+n-y)
 ```
 
 #### Binomial posterior activity
@@ -47,8 +60,8 @@ a house in Ames being residential.
 n <- 222
 y <- 153
 (mle <- y/n)
-(bayes <- (1+y)/(2+n))
-qbeta(c(.05,.95), 1+y, 1+n-y) 
+(bayes <- (a+y)/(a+b+n))
+qbeta(c(.05,.95), a+y, b+n-y) 
 ```
 Can you calculate a posterior median?
 </div> 
@@ -97,8 +110,8 @@ To do this, we are going to repeatedly
 
 Then we will 
 
-1. take an average of all the MLE estimates and subtract 0.5
-2. take an average of all the Bayes estimates and subtract 0.5
+1. take an average of all the MLE estimates and subtract $\theta$ (the true value)
+2. take an average of all the Bayes estimates and subtract $\theta$ (the true value)
 
 
 ```{r}
@@ -112,12 +125,12 @@ bayes <- numeric(n_reps)
 for (i in 1:n_reps) {
   y <- rbinom(1, size = n, prob = theta)
   mle[i] <- y/n
-  bayes[i] <- (1+y)/(2+n)
+  bayes[i] <- (a+y)/(a+b+n)
 }
 
 
-mean(mle)  -0.5 # estimate of MLE bias
-mean(bayes)-0.5 # estimate of Bayes bias
+mean(mle)  - theta # estimate of MLE bias
+mean(bayes)- theta # estimate of Bayes bias
 ```
 Now, we probably want some idea of how close we are to the true bias.
 We will use the CLT. 
@@ -138,7 +151,7 @@ We could have written the code a bit more succinctly (and, perhaps, obtusely).
 ```{r}
 y <- rbinom(n_reps, size = n, prob = theta)
 mle   <- y/n
-bayes <- (1+y)/(2+n)
+bayes <- (a+y)/(a+b+n)
 
 mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
 mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
@@ -158,7 +171,7 @@ theta <- 0.2
 
 y <- rbinom(n_reps, size = n, prob = theta)
 mle   <- y/n
-bayes <- (1+y)/(2+n)
+bayes <- (a+y)/(a+b+n)
 
 mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
 mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
@@ -181,7 +194,7 @@ settings <- expand.grid(n = 10^(0:3),
 ```
 
 We will use the [plyr](https://cran.r-project.org/web/packages/plyr/index.html)
-to help us iterate over all of these values of $n$ and $\theta$. 
+package to help us iterate over all of these values of $n$ and $\theta$. 
 If the `plyr` package isn't installed, you will need to install it using the
 command below:
 
@@ -212,7 +225,7 @@ perform our simulation study.
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
-  bayes <- (1+y)/(2+x$n)
+  bayes <- (a+y)/(a+b+x$n)
   
   d <- data.frame(
     estimator = c("mle", "bayes"),
@@ -240,6 +253,8 @@ ggplot(sim_study, aes(x=theta, y=bias, color=estimator)) +
   theme_bw()
 ```
 
+We can see that the Bayes estimator has the most bias when 1) the sample size
+is small and 2) $\theta$ is far away from 0.5.
 But the variance of the Bayes estimator is smaller than the variance of the 
 MLE estimator.
 
@@ -252,11 +267,15 @@ ggplot(sim_study, aes(x=theta, y=var, color=estimator)) +
   theme_bw()
 ```
 
+We can see that the Bayes estimator always has smaller variance than the MLE.
+
 Thus, we often use a new property of an estimator called the 
 [mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error):
 \[ MSE(\hat{\theta}) = 
 E[(\hat\theta-\theta)^2] = 
 Var(\hat{\theta}) + Bias(\hat{\theta},\theta)^2 \]
+This property combines both the bias and the variance into a single term.
+Generally the estimator with the smallest MSE should be utilized.
 
 ```{r}
 sim_study$mse <- sim_study$var + sim_study$bias^2
@@ -281,7 +300,7 @@ settings <- expand.grid(n = 13,
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
-  bayes <- (1+y)/(2+x$n)
+  bayes <- (a+y)/(a+b+x$n)
   
   d <- data.frame(
     estimator = c("mle", "bayes"),
@@ -297,7 +316,9 @@ ggplot(sim_study, aes(x=theta, y=mse, color=estimator)) +
   facet_wrap(~n) + # This line isn't necessary
   theme_bw()
 ```
+
 Why does the alternative approach give the same answer?
+(I'm not sure what I mean by this.)
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('binomial_mse_activity_solution') .style.display=='none') {document.getElementById('binomial_mse_activity_solution') .style.display=''}else{document.getElementById('binomial_mse_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
@@ -314,7 +335,7 @@ P(|\hat\theta_n-\theta|<\epsilon) \to 1 \quad\mbox{ as }\quad n\to\infty
 for any $\epsilon>0$.
 Here I have made explicit that the estimator depends on $n$. 
 
-So evaluate consistency by simulation, 
+To evaluate consistency by simulation, 
 we will perform a sequence of experiments, 
 i.e. one coin flip at a time, 
 and calculate the estimator after each coin flip.
@@ -332,7 +353,7 @@ d <- ddply(data.frame(rep=1:1e3), .(rep), function(x) {
   for (n in 1:n_max) {
     y <- sum(x[1:n])
     mle[n] <- y/n
-    bayes[n] <- (1+y)/(2+n)
+    bayes[n] <- (a+y)/(a+b+n)
   }
   
   data.frame(n     = 1:n_max,
@@ -356,6 +377,11 @@ ggplot(sum, aes(x=n, y=prob, color=estimator)) +
   theme_bw() 
 ```
 
+This is an illustration of the property called consistency. 
+For both the Bayes estimator and the MLE, 
+the probability of being within $\epsilon$ of $\theta$ (the true success 
+probability) converges to 1 as the number of observations increases.
+
 #### Binomial consistency activity
 
 Via simulation, show that if $\theta=0.01$ that both the MLE and Bayes 
@@ -373,7 +399,7 @@ d <- ddply(data.frame(rep=1:1e3), .(rep), function(x) {
   for (n in 1:n_max) {
     y <- sum(x[1:n])
     mle[n] <- y/n
-    bayes[n] <- (1+y)/(2+n)
+    bayes[n] <- (a+y)/(a+b+n)
   }
   
   data.frame(n     = 1:n_max,
@@ -418,10 +444,10 @@ theta <- 0.5
 n_reps <- 1e4
 y <- rbinom(n_reps, size = n, prob = theta)
 
-lower <- qbeta(.025, 1+y, 1+n-y)
-upper <- qbeta(.975, 1+y, 1+n-y)
+lower <- qbeta(.025, a+y, b+n-y)
+upper <- qbeta(.975, a+y, b+n-y)
 
-mean( lower < theta & theta < upper)
+mean( lower < theta & theta < upper )
 ```
 
 If we want to understand our Monte Carlo uncertainty in this coverage, 
@@ -446,8 +472,8 @@ theta <- 0.2
 n_reps <- 1e4
 y <- rbinom(n_reps, size = n, prob = theta)
 
-lower <- qbeta(.025, 1+y, 1+n-y)
-upper <- qbeta(.975, 1+y, 1+n-y)
+lower <- qbeta(.025, a+y, b+n-y)
+upper <- qbeta(.975, a+y, b+n-y)
 
 (p <- mean( lower < theta & theta < upper))
 
@@ -471,10 +497,10 @@ settings <- expand.grid(n = 10^(0:3),
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
-  bayes <- (1+y)/(2+x$n)
+  bayes <- (a+y)/(a+b+x$n)
   
-  lower <- qbeta(.025, 1+y, 1+x$n-y)
-  upper <- qbeta(.975, 1+y, 1+x$n-y)
+  lower <- qbeta(.025, a+y, b+x$n-y)
+  upper <- qbeta(.975, a+y, b+x$n-y)
   
   data.frame(coverage = mean( lower <= x$theta & x$theta <= upper))
 })
@@ -486,6 +512,8 @@ Now plot the results
 ggplot(sim_study, aes(x=theta, y=coverage)) +
   geom_line() +
   facet_wrap(~n) + 
+  geom_hline(yintercept = 0.95, color = "red") +
+  ylim(0,1) + 
   theme_bw()
 ```
 
@@ -503,18 +531,18 @@ Specifically,
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
-  bayes <- (1+y)/(2+x$n)
+  bayes <- (a+y)/(a+b+x$n)
   
-  lower <- qbeta(.025, 1+y, 1+x$n-y)
-  upper <- qbeta(.975, 1+y, 1+x$n-y)
+  lower <- qbeta(.025, a+y, b+x$n-y)
+  upper <- qbeta(.975, a+y, b+x$n-y)
   
   # Fix intervals when y=0
   lower[y==0] <- 0
-  upper[y==0] <- qbeta(.95, 1+0, 1+x$n-0)
+  upper[y==0] <- qbeta(.95, a+0, b+x$n-0)
   
   # Fix intervals when y=n
   upper[y==x$n] <- 1
-  lower[y==x$n] <- qbeta(.05, 1+x$n, 1+x$n-x$n)
+  lower[y==x$n] <- qbeta(.05, a+x$n, b+x$n-x$n)
   
   data.frame(coverage = mean( lower <= x$theta & x$theta <= upper))
 })
@@ -526,10 +554,13 @@ Now plot the results
 ggplot(sim_study, aes(x=theta, y=coverage)) +
   geom_line() +
   facet_wrap(~n) + 
+  geom_hline(yintercept = 0.95, color = "red") +
+  ylim(0,1) + 
   theme_bw()
 ```
 
-Make sure to look at the y-axis.
+The plot here has been constructed to have y-axis limits set to 0 and 1 for
+comparison with the previous plot.
 
 
 #### Coverage for Jeffreys prior
@@ -540,21 +571,22 @@ Run a simulation study to look at coverage for Jeffreys prior.
 
 <div id="jeffreys_coverage_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
+a <- b <- 0.5
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
-  bayes <- (1+y)/(2+x$n)
+  bayes <- (a+y)/(a+b+x$n)
   
-  lower <- qbeta(.025, 0.5+y, 0.5+x$n-y)
-  upper <- qbeta(.975, 0.5+y, 0.5+x$n-y)
+  lower <- qbeta(.025, a+y, b+x$n-y)
+  upper <- qbeta(.975, a+y, b+x$n-y)
   
   # Fix intervals when y=0
   lower[y==0] <- 0
-  upper[y==0] <- qbeta(.95, 0.5+0, 0.5+x$n-0)
+  upper[y==0] <- qbeta(.95, a+0, b+x$n-0)
   
   # Fix intervals when y=n
   upper[y==x$n] <- 1
-  lower[y==x$n] <- qbeta(.05, 0.5+x$n, 0.5+x$n-x$n)
+  lower[y==x$n] <- qbeta(.05, a+x$n, b+x$n-x$n)
   
   data.frame(coverage = mean( lower <= x$theta & x$theta <= upper))
 })
@@ -568,3 +600,7 @@ ggplot(sim_study, aes(x=theta, y=coverage)) +
 <button title="Show a solution" type="button" onclick="if(document.getElementById('jeffreys_coverage_activity_solution') .style.display=='none') {document.getElementById('jeffreys_coverage_activity_solution') .style.display=''}else{document.getElementById('jeffreys_coverage_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
+
+```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
+knitr::knit("lab05.Rmd", tangle = TRUE)
+```

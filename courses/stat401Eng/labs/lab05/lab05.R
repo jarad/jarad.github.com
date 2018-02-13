@@ -1,13 +1,17 @@
+## ---- eval=FALSE---------------------------------------------------------
+## install.packages(c("plyr","ggplot2"))
+
 ## ------------------------------------------------------------------------
 n <- 22
 y <- 15
 (mle <- y/n)
 
 ## ------------------------------------------------------------------------
-(bayes <- (1+y)/(2+n))
+a <- b <- 1
+(bayes <- (a+y)/(a+b+n))
 
 ## ------------------------------------------------------------------------
-qbeta(c(.025,.975), 1+y, 1+n-y)
+qbeta(c(.025,.975), a+y, b+n-y)
 
 ## ------------------------------------------------------------------------
 n <- 10
@@ -20,12 +24,12 @@ bayes <- numeric(n_reps)
 for (i in 1:n_reps) {
   y <- rbinom(1, size = n, prob = theta)
   mle[i] <- y/n
-  bayes[i] <- (1+y)/(2+n)
+  bayes[i] <- (a+y)/(a+b+n)
 }
 
 
-mean(mle)  -0.5 # estimate of MLE bias
-mean(bayes)-0.5 # estimate of Bayes bias
+mean(mle)  - theta # estimate of MLE bias
+mean(bayes)- theta # estimate of Bayes bias
 
 ## ------------------------------------------------------------------------
 mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
@@ -34,7 +38,7 @@ mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
 ## ------------------------------------------------------------------------
 y <- rbinom(n_reps, size = n, prob = theta)
 mle   <- y/n
-bayes <- (1+y)/(2+n)
+bayes <- (a+y)/(a+b+n)
 
 mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
 mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
@@ -56,7 +60,7 @@ library("plyr")
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
-  bayes <- (1+y)/(2+x$n)
+  bayes <- (a+y)/(a+b+x$n)
   
   d <- data.frame(
     estimator = c("mle", "bayes"),
@@ -105,7 +109,7 @@ d <- ddply(data.frame(rep=1:1e3), .(rep), function(x) {
   for (n in 1:n_max) {
     y <- sum(x[1:n])
     mle[n] <- y/n
-    bayes[n] <- (1+y)/(2+n)
+    bayes[n] <- (a+y)/(a+b+n)
   }
   
   data.frame(n     = 1:n_max,
@@ -132,10 +136,10 @@ theta <- 0.5
 n_reps <- 1e4
 y <- rbinom(n_reps, size = n, prob = theta)
 
-lower <- qbeta(.025, 1+y, 1+n-y)
-upper <- qbeta(.975, 1+y, 1+n-y)
+lower <- qbeta(.025, a+y, b+n-y)
+upper <- qbeta(.975, a+y, b+n-y)
 
-mean( lower < theta & theta < upper)
+mean( lower < theta & theta < upper )
 
 ## ------------------------------------------------------------------------
 p <- mean( lower < theta & theta < upper)
@@ -149,10 +153,10 @@ settings <- expand.grid(n = 10^(0:3),
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
-  bayes <- (1+y)/(2+x$n)
+  bayes <- (a+y)/(a+b+x$n)
   
-  lower <- qbeta(.025, 1+y, 1+x$n-y)
-  upper <- qbeta(.975, 1+y, 1+x$n-y)
+  lower <- qbeta(.025, a+y, b+x$n-y)
+  upper <- qbeta(.975, a+y, b+x$n-y)
   
   data.frame(coverage = mean( lower <= x$theta & x$theta <= upper))
 })
@@ -161,24 +165,26 @@ sim_study <- ddply(settings, .(n, theta), function(x) {
 ggplot(sim_study, aes(x=theta, y=coverage)) +
   geom_line() +
   facet_wrap(~n) + 
+  geom_hline(yintercept = 0.95, color = "red") +
+  ylim(0,1) + 
   theme_bw()
 
 ## ------------------------------------------------------------------------
 sim_study <- ddply(settings, .(n, theta), function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
-  bayes <- (1+y)/(2+x$n)
+  bayes <- (a+y)/(a+b+x$n)
   
-  lower <- qbeta(.025, 1+y, 1+x$n-y)
-  upper <- qbeta(.975, 1+y, 1+x$n-y)
+  lower <- qbeta(.025, a+y, b+x$n-y)
+  upper <- qbeta(.975, a+y, b+x$n-y)
   
   # Fix intervals when y=0
   lower[y==0] <- 0
-  upper[y==0] <- qbeta(.95, 1+0, 1+x$n-0)
+  upper[y==0] <- qbeta(.95, a+0, b+x$n-0)
   
   # Fix intervals when y=n
   upper[y==x$n] <- 1
-  lower[y==x$n] <- qbeta(.05, 1+x$n, 1+x$n-x$n)
+  lower[y==x$n] <- qbeta(.05, a+x$n, b+x$n-x$n)
   
   data.frame(coverage = mean( lower <= x$theta & x$theta <= upper))
 })
@@ -187,5 +193,7 @@ sim_study <- ddply(settings, .(n, theta), function(x) {
 ggplot(sim_study, aes(x=theta, y=coverage)) +
   geom_line() +
   facet_wrap(~n) + 
+  geom_hline(yintercept = 0.95, color = "red") +
+  ylim(0,1) + 
   theme_bw()
 
