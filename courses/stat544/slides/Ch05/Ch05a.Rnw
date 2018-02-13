@@ -11,7 +11,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=6, fig.height=4.5, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -60,7 +60,7 @@ set.seed(1)
   \item Posterior distribution
   \item Prior distributions
   \end{itemize}
-\item Stan for binomial hierarchical model
+\item Stan analysis of binomial hierarchical model
   \begin{itemize}
   \item informative prior
   \item default prior
@@ -75,19 +75,19 @@ set.seed(1)
 \frame{\frametitle{Andre Dawkin's three-point percentage}
   Suppose $Y_i$ are the number 3-pointers Andre Dawkin's makes in season $i$, \pause and assume
   \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \]
-  where 
+  where
   \begin{itemize}[<+->]
   \item $n_i$ are the number of 3-pointers attempted and
-  \item $\theta_i$ is the probability of making a 3-pointer in season$i$.
+  \item $\theta_i$ is the probability of making a 3-pointer in season $i$.
   \end{itemize}
-  
+
   \vspace{0.2in} \pause
-  
+
   Do these models make sense?
   \begin{itemize}[<+->]
-  \item The 3-point percentage every season is the same, i.e. $\theta_i=\theta$. 
-  \item The 3-point percentage every season is independent of other seasons. 
-  \item The 3-point percentage every season should be similar to other seasons. 
+  \item The 3-point percentage every season is the same, i.e. $\theta_i=\theta$.
+  \item The 3-point percentage every season is independent of other seasons.
+  \item The 3-point percentage every season should be similar to other seasons.
   \end{itemize}
 }
 
@@ -95,51 +95,51 @@ set.seed(1)
 \frame{\frametitle{Andre Dawkin's three-point percentage}
   Suppose $Y_i$ are the number of 3-pointers Andre Dawkin's makes in \alert{game} $i$, \pause and assume
   \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \]
-  where 
+  where
   \begin{itemize}[<+->]
   \item $n_i$ are the number of 3-pointers attempted in \alert{game} $i$ and
   \item $\theta_i$ is the probability of making a 3-pointer in \alert{game} $i$.
   \end{itemize}
-  
+
   \vspace{0.2in} \pause
-  
+
   Do these models make sense?
   \begin{itemize}[<+->]
-  \item The 3-point percentage every game is the same, i.e. $\theta_i=\theta$. 
-  \item The 3-point percentage every game is independent of other games. 
-  \item The 3-point percentage every game should be similar to other games. 
+  \item The 3-point percentage every game is the same, i.e. $\theta_i=\theta$.
+  \item The 3-point percentage every game is independent of other games.
+  \item The 3-point percentage every game should be similar to other games.
   \end{itemize}
 }
 
 <<dawkins_data, results='hide'>>=
-d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L, 
-14L, 15L, 20L, 17L, 18L, 19L, 21L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 
-6L, 22L, 23L, 24L), .Label = c("1/11/14", "1/13/14", "1/18/14", 
-"1/22/14", "1/25/14", "1/27/14", "1/4/14", "1/7/14", "11/12/13", 
-"11/15/13", "11/18/13", "11/19/13", "11/24/13", "11/27/13", "11/29/13", 
-"11/8/13", "12/16/13", "12/19/13", "12/28/13", "12/3/13", "12/31/13", 
-"2/1/14", "2/4/14", "2/8/14"), class = "factor"), opponent = structure(c(5L, 
-13L, 9L, 21L, 6L, 22L, 1L, 2L, 15L, 11L, 20L, 7L, 8L, 17L, 12L, 
-4L, 23L, 16L, 14L, 10L, 18L, 19L, 24L, 3L), .Label = c("alabama", 
-"arizona", "boston college", "clemson", "davidson", "east carolina", 
-"eastern michigan", "elon", "florida atlantic", "florida state", 
-"gardner-webb", "georgia tech", "kansas", "miami", "michigan", 
-"nc state", "notre dame", "pitt", "syracuse", "ucla", "unc asheville", 
-"vermont", "virginia", "wake forest"), class = "factor"), made = c(0L, 
-0L, 5L, 3L, 0L, 3L, 0L, 1L, 2L, 4L, 1L, 6L, 5L, 1L, 1L, 0L, 1L, 
-3L, 2L, 3L, 6L, 4L, 4L, 0L), attempts = c(0L, 0L, 8L, 6L, 1L, 
-9L, 2L, 1L, 2L, 8L, 5L, 10L, 7L, 4L, 5L, 4L, 1L, 7L, 6L, 6L, 
+d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L,
+14L, 15L, 20L, 17L, 18L, 19L, 21L, 7L, 8L, 1L, 2L, 3L, 4L, 5L,
+6L, 22L, 23L, 24L), .Label = c("1/11/14", "1/13/14", "1/18/14",
+"1/22/14", "1/25/14", "1/27/14", "1/4/14", "1/7/14", "11/12/13",
+"11/15/13", "11/18/13", "11/19/13", "11/24/13", "11/27/13", "11/29/13",
+"11/8/13", "12/16/13", "12/19/13", "12/28/13", "12/3/13", "12/31/13",
+"2/1/14", "2/4/14", "2/8/14"), class = "factor"), opponent = structure(c(5L,
+13L, 9L, 21L, 6L, 22L, 1L, 2L, 15L, 11L, 20L, 7L, 8L, 17L, 12L,
+4L, 23L, 16L, 14L, 10L, 18L, 19L, 24L, 3L), .Label = c("alabama",
+"arizona", "boston college", "clemson", "davidson", "east carolina",
+"eastern michigan", "elon", "florida atlantic", "florida state",
+"gardner-webb", "georgia tech", "kansas", "miami", "michigan",
+"nc state", "notre dame", "pitt", "syracuse", "ucla", "unc asheville",
+"vermont", "virginia", "wake forest"), class = "factor"), made = c(0L,
+0L, 5L, 3L, 0L, 3L, 0L, 1L, 2L, 4L, 1L, 6L, 5L, 1L, 1L, 0L, 1L,
+3L, 2L, 3L, 6L, 4L, 4L, 0L), attempts = c(0L, 0L, 8L, 6L, 1L,
+9L, 2L, 1L, 2L, 8L, 5L, 10L, 7L, 4L, 5L, 4L, 1L, 7L, 6L, 6L,
 7L, 9L, 7L, 1L)), .Names = c("date", "opponent", "made", "attempts"
-), class = "data.frame", row.names = c(NA, -24L)) 
+), class = "data.frame", row.names = c(NA, -24L))
 
-d = rbind(d, 
-          
+d = rbind(d,
+
           # Add a total row
-          data.frame(date     = NA, 
-                     opponent = 'Total', 
-                     made     = sum(d$made), 
+          data.frame(date     = NA,
+                     opponent = 'Total',
+                     made     = sum(d$made),
                      attempts = sum(d$attempts))) %>%
-  
+
   # Add posterior parameters
   mutate(a        = 0.5 + made,
          b        = 0.5 + attempts-made,
@@ -153,15 +153,15 @@ d = rbind(d,
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
 <<dawkins_plot, out.width='0.7\\textwidth', dependson="dawkins_data">>=
-ggplot(d, 
-       aes(x     = lcl, 
-           xend  = ucl, 
-           y     = game, 
-           yend  = game, 
+ggplot(d,
+       aes(x     = lcl,
+           xend  = ucl,
+           y     = game,
+           yend  = game,
            color = Estimate))+
   geom_segment(lwd=1) +
-  scale_color_brewer(palette='Set1') + 
-  labs(x=expression(theta), title='95% Credible Intervals') + 
+  scale_color_brewer(palette='Set1') +
+  labs(x=expression(theta), title='95% Credible Intervals') +
   scale_y_reverse() +
   theme_bw()
 @
@@ -187,60 +187,60 @@ d = d %>% filter(opponent != "Total")
 	\theta_i &\stackrel{ind}{\sim} p(\theta|\phi) \pause \\
 	\phi &\sim p(\phi)
 	\end{array} \]
-  \pause where 
+  \pause where
   \begin{itemize}
-  \item $y_i$ is observed\pause, 
-	\item $\theta=(\theta_1,\ldots,\theta_n)$ and $\phi$ are parameters\pause, and 
+  \item $y_i$ is observed\pause,
+	\item $\theta=(\theta_1,\ldots,\theta_n)$ and $\phi$ are parameters\pause, and
 	\item only $\phi$ has a prior that is set.
 	\end{itemize}
-	
-	\vspace{0.2in} \pause 
-	
+
+	\vspace{0.2in} \pause
+
 	This is a hierarchical or multilevel model.
 }
 
 \subsection{Posteriors}
 \frame{\frametitle{Posterior distribution for hierarchical models}
-	The joint posterior distribution of interest in hierarchical models is 
+	The joint posterior distribution of interest in hierarchical models is
 {\small
 	\[ \begin{array}{rl}
-  p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause = 
-  p(y|\theta)p(\theta|\phi)p(\phi)\pause = 
-  \Big[ \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi)\Big] p(\phi). 
+  p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause =
+  p(y|\theta)p(\theta|\phi)p(\phi)\pause =
+  \Big[ \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi)\Big] p(\phi).
   \end{array} \]
 }
-	\pause The joint posterior distribution can be decomposed via 
+	\pause The joint posterior distribution can be decomposed via
   \[ p(\theta,\phi|y) = p(\theta|\phi,y)p(\phi|y) \]
-  where 
+  where
 {\small
   \[ \begin{array}{rl}
   p(\theta|\phi,y) &\propto p(y|\theta)p(\theta|\phi) \pause = \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi) \pause \propto \prod_{i=1}^n p(\theta_i|\phi,y_i) \pause \\
   p(\phi|y) &\propto p(y|\phi)p(\phi) \pause \\
-  p(y|\phi) &= 
+  p(y|\phi) &=
   \int p(y|\theta)p(\theta|\phi) d\theta \pause \\
   &= \int \cdots \int  \prod_{i=1}^n  \left[ p(y_i|\theta_i)p(\theta_i|\phi) \right] d\theta_1 \cdots d\theta_n \pause \\
   &= \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\phi) d\theta_i \pause \\
-  &= \prod_{i=1}^n p(y_i|\phi)  
+  &= \prod_{i=1}^n p(y_i|\phi)
   \end{array} \]
 }
 }
 
 \section{Binomial hierarchical model}
 \frame{\frametitle{Three-pointer example}
-	Our statistical model 
+	Our statistical model
 	\[ \begin{array}{ll}
 	Y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \pause \\
 	\theta_i&\stackrel{ind}{\sim} Be(\alpha,\beta) \pause \\
-	\alpha,\beta &\sim p(\alpha,\beta) 
+	\alpha,\beta &\sim p(\alpha,\beta)
 	\end{array} \]
-	
+
 	\vspace{0.2in} \pause
-	
+
 	In this example,
 	\begin{itemize}
 	\item $\phi=(\alpha,\beta)$\pause\,
 	\item $Be(\alpha,\beta)$ describes the variability in 3-point percentage across games\pause, and
-	\item we are going to learn about this variability. 
+	\item we are going to learn about this variability.
 	\end{itemize}
 }
 
@@ -249,20 +249,20 @@ d = d %>% filter(opponent != "Total")
   \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \quad \theta_i\stackrel{ind}{\sim} Be(\alpha,\beta) \quad \alpha,\beta \sim p(\alpha,\beta) \]
   Conditional posterior for $\theta$:
 \[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_i|\alpha,\beta,y_i) \pause = \prod_{i=1}^n Be(\theta_i|\alpha+y_i,\beta+n_i-y_i) \]
-\pause 
+\pause
 Marginal posterior for $(\alpha,\beta)$:
-{\small 
+{\small
 \[ \begin{array}{rl}
 p(\alpha,\beta|y) &\propto p(y|\alpha,\beta)p(\alpha,\beta) \pause \\
 p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_i|\alpha,\beta) \pause = \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\alpha,\beta) d\theta_i \pause \\
 &= \prod_{i=1}^n \int Bin(y_i|n_i,\theta_i)Be(\theta_i|\alpha,\beta) d\theta_i \pause \\
 &= \prod_{i=1}^n \int_0^1 {n_i\choose y_i} \theta_i^{y_i} (1-\theta_i)^{n_i-y_i} \frac{\theta_i^{\alpha-1}(1-\theta_i)^{\beta-1}}{B(\alpha,\beta)} d\theta_i \pause \\
 &= \prod_{i=1}^n {n_i\choose y_i}\frac{1}{B(\alpha,\beta)} \int_0^1 \theta_i^{\alpha+y_i-1} (1-\theta_i)^{\beta+n_i-y_i-1}  d\theta_i \pause \\
-&= \prod_{i=1}^n {n_i\choose y_i}\frac{B(\alpha+y_i,\beta+n_i-y_i)}{B(\alpha,\beta)} 
+&= \prod_{i=1}^n {n_i\choose y_i}\frac{B(\alpha+y_i,\beta+n_i-y_i)}{B(\alpha,\beta)}
 \end{array} \]
 }
 \pause
-Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\beta)$. 
+Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\beta)$.
 \end{frame}
 
 
@@ -275,17 +275,17 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
   \item $\alpha$: prior successes
   \item $\beta$: prior failures
   \end{itemize}
-  
-  \vspace{0.2in} \pause 
-  
-  A more natural parameterization is 
+
+  \vspace{0.2in} \pause
+
+  A more natural parameterization is
   \begin{itemize}[<+->]
   \item prior expectation: $\mu = \frac{\alpha}{\alpha+\beta}$
   \item prior sample size: $\eta = \alpha + \beta$
   \end{itemize}
-  
-  \vspace{0.2in} \pause 
-  
+
+  \vspace{0.2in} \pause
+
   Place priors on these parameters or transformed to the real line:
   \begin{itemize}[<+->]
   \item $\text{logit } \mu = \log(\mu/[1-\mu]) = \log(\alpha/\beta)$
@@ -298,33 +298,44 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
   It seems reasonable to assume the mean ($\mu$) and size ($\eta$) are independent \emph{a priori}:
   \[ p(\mu,\eta) = p(\mu)p(\eta) \]
 
-  
-  \vspace{0.1in} \pause
-  
-  Let's assume an informative prior for $\mu$ and $\eta$ \pause perhaps
-  \begin{itemize}
-  \item $\mu \sim Be(\Sexpr{a},\Sexpr{b})$
-  \item $\eta \sim LN(\Sexpr{m},\Sexpr{C}^2)$
-  \end{itemize}
-  \pause where $LN(\Sexpr{m},\Sexpr{C})$ is a log-normal distribution, i.e. $\log(\eta) \sim N(\Sexpr{m},\Sexpr{C}^2)$.
-  
     \vspace{0.1in} \pause
-  
-<<informative_prior, echo=TRUE>>=
+
+<<informative_prior>>=
 a = 20
 b = 30
 m = 0
 C = 3
 @
+
+  Let's assume an informative prior for $\mu$ and $\eta$ \pause perhaps
+  \begin{itemize}
+  \item $\mu \sim Be(\Sexpr{a},\Sexpr{b})$
+  \item $\eta \sim LN(\Sexpr{m},\Sexpr{C}^2)$
+  \end{itemize}
   
+    \vspace{0.1in} \pause
+
+  \pause where $LN(\Sexpr{m},\Sexpr{C})$ is a log-normal distribution, 
+  i.e. $\log(\eta) \sim N(\Sexpr{m},\Sexpr{C}^2)$.
+
+
+  \vspace{0.1in} \pause
+
+<<informative_prior_print, dependson="informative_prior", echo=TRUE>>=
+<<informative_prior>>
+@
+
+
 \end{frame}
+
+
 
 \begin{frame}[fragile]
 \frametitle{Prior draws}
 <<informative_prior_plot, dependson='informative_prior', echo=TRUE>>=
 n = 1e4
 
-prior_draws = data.frame(mu  = rbeta(n, a, b), 
+prior_draws = data.frame(mu  = rbeta(n, a, b),
                          eta = rlnorm(n, m, C)) %>%
   mutate(alpha = eta*   mu,
          beta  = eta*(1-mu))
@@ -358,7 +369,7 @@ model_informative_prior = "
 data {
   int<lower=0> N;    // data
   int<lower=0> n[N];
-  int<lower=0> y[N]; 
+  int<lower=0> y[N];
   real<lower=0> a;   // prior
   real<lower=0> b;
   real<lower=0> C;
@@ -381,7 +392,7 @@ model {
   eta   ~ lognormal(m,C);
 
   // implicit joint distributions
-  theta ~ beta(alpha,beta); 
+  theta ~ beta(alpha,beta);
   y     ~ binomial(n,theta);
 }
 "
@@ -393,9 +404,8 @@ model {
 <<stan_run, dependson=c('informative_prior','stan',"dawkins_data"), echo=TRUE, results='hide'>>=
 dat = list(y = d$made, n = d$attempts, N = nrow(d),a = a, b = b, m = m, C = C)
 m = stan_model(model_code = model_informative_prior)
-r = sampling(m, dat, c("mu","eta","alpha","beta","theta"), 
-             iter = 10000,
-             control = list(adapt_delta = 0.9))
+r = sampling(m, dat, c("mu","eta","alpha","beta","theta"),
+             iter = 10000)
 @
 \end{frame}
 
@@ -436,14 +446,14 @@ new_d = mutate(d,
                ucl = tmp[5:28,2])
 
 e = 0.2
-ggplot(rbind(d, new_d), aes(x=lcl, 
-                     xend=ucl, 
-                     y=game+e*(model=="hierarchical"), 
-                     yend=game+e*(model=="hierarchical"), 
+ggplot(rbind(d, new_d), aes(x=lcl,
+                     xend=ucl,
+                     y=game+e*(model=="hierarchical"),
+                     yend=game+e*(model=="hierarchical"),
                      color=model))+
-  geom_segment(lwd=1, alpha=0.5) + 
+  geom_segment(lwd=1, alpha=0.5) +
   labs(x=expression(theta), y="game", title='95% Credible Intervals') +
-  scale_color_brewer(palette='Set1') + 
+  scale_color_brewer(palette='Set1') +
   scale_y_reverse() +
   theme_bw()
 @
@@ -453,19 +463,19 @@ ggplot(rbind(d, new_d), aes(x=lcl,
 
 
 \frame{\frametitle{A prior distribution for $\alpha$ and $\beta$}
-  In Bayesian Data Analysis (3rd ed) page 110, several priors are discussed 
-  
+  In Bayesian Data Analysis (3rd ed) page 110, several priors are discussed
+
   \vspace{0.2in} \pause
-  
+
 	\begin{itemize}
 	\item $(\log(\alpha/\beta), \log(\alpha+\beta)) \propto 1$ leads to an improper posterior.
-  
+
   \vspace{0.2in} \pause
-  
+
   \item $(\log(\alpha/\beta), \log(\alpha+\beta)) \sim Unif([-10^{10},10^{10}] \times [-10^{10},10^{10}])$ \pause while proper and seemingly vague is a very informative prior.
-  
+
   \vspace{0.2in} \pause
-	
+
   \item $(\log(\alpha/\beta), \log(\alpha+\beta)) \propto \alpha\beta(\alpha+\beta)^{-5/2}$ \pause which leads to a proper posterior \pause and is equivalent to $p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}$.
 	\end{itemize}
 }
@@ -493,7 +503,7 @@ model {
   target += -5*log(alpha+beta)/2;
 
   // implicit joint distributions
-  theta ~ beta(alpha,beta); 
+  theta ~ beta(alpha,beta);
   y     ~ binomial(n,theta);
 }
 "
@@ -545,15 +555,15 @@ bind_d = rbind(d,new_d,new_d2)
 bind_d$prior = factor(bind_d$prior, c('informative','default','independent'))
 
 e = 0.2
-ggplot(bind_d, 
-       aes(x     = lcl, 
-           xend  = ucl, 
-           y     = game+e*(prior=="independent")-e*(prior=="informative"), 
-           yend  = game+e*(prior=="independent")-e*(prior=="informative"), 
+ggplot(bind_d,
+       aes(x     = lcl,
+           xend  = ucl,
+           y     = game+e*(prior=="independent")-e*(prior=="informative"),
+           yend  = game+e*(prior=="independent")-e*(prior=="informative"),
            color = prior))+
-  geom_segment(lwd=1, alpha=0.5) + 
-  labs(x=expression(theta), y="game", title='95% Credible Intervals') + 
-  scale_color_brewer(palette='Set1') + 
+  geom_segment(lwd=1, alpha=0.5) +
+  labs(x=expression(theta), y="game", title='95% Credible Intervals') +
+  scale_color_brewer(palette='Set1') +
   scale_y_reverse() +
   theme_bw()
 @
@@ -566,15 +576,15 @@ ggplot(bind_d,
 \begin{frame}
 \frametitle{Marginal posterior for $\alpha,\beta$}
 
-An alternative to jointly sampling $\theta,\alpha,\beta$ is to 
+An alternative to jointly sampling $\theta,\alpha,\beta$ is to
 \begin{enumerate}
 \item sample $\alpha,\beta\sim p(\alpha,\beta|y)$\pause, and then
-\item sample $\theta_i \stackrel{ind}{\sim} p(\theta_i|\alpha,\beta,y_i) \stackrel{d}{=} Be(\alpha+y_i,\beta+n_i-y_i)$. 
+\item sample $\theta_i \stackrel{ind}{\sim} p(\theta_i|\alpha,\beta,y_i) \stackrel{d}{=} Be(\alpha+y_i,\beta+n_i-y_i)$.
 \end{enumerate}
 
 \vspace{0.2in} \pause
 
-The maginal posterior for $\alpha,\beta$ is 
+The maginal posterior for $\alpha,\beta$ is
 \[ p(\alpha,\beta|y) \propto p(y|\alpha,\beta)p(\alpha,\beta) = \left[ \prod_{i=1}^n \mbox{Beta-binomial}(y_i|n_i,\alpha,\beta) \right] p(\alpha,\beta) \]
 
 \end{frame}
@@ -617,12 +627,12 @@ r3
 \begin{frame}[fragile]
 \frametitle{}
 
-Posterior samples for $\alpha$ and $\beta$ 
+Posterior samples for $\alpha$ and $\beta$
 
 <<stan3_alpha_beta, dependson="stan3_run", echo=TRUE, out.width='0.7\\textwidth'>>=
 samples = extract(r3, c("alpha","beta"))
 ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)), log_beta  = log(as.numeric(samples$beta))),
-        lower  = list(continuous='density'))
+        lower  = list(continuous='density')) + theme_bw()
 @
 \end{frame}
 
@@ -631,12 +641,12 @@ ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)), log_beta  = log(a
 <<stan3_theta, dependson="stan3_run", fig.width=10, echo=TRUE>>=
 samples = extract(r3, c("alpha","beta"))
 game = 22
-theta22 = rbeta(length(samples$alpha), 
-              samples$alpha + d$made[game], 
+theta22 = rbeta(length(samples$alpha),
+              samples$alpha + d$made[game],
               samples$beta  + d$attempts[game] - d$made[game])
-hist(theta22, 100, 
+hist(theta22, 100,
      main=paste("Posterior for game against", d$opponent[game], "on", d$date[game]),
-     xlab="3-point probability", 
+     xlab="3-point probability",
      ylab="Posterior")
 @
 \end{frame}
@@ -645,10 +655,10 @@ hist(theta22, 100,
 \frametitle{$\theta$s are not independent in the posterior}
 <<stan3_thetas, dependson='stan3_run'>>=
 game = 23
-theta23 = rbeta(length(samples$alpha), 
-              samples$alpha + d$made[game], 
+theta23 = rbeta(length(samples$alpha),
+              samples$alpha + d$made[game],
               samples$beta  + d$attempts[game] - d$made[game])
-ggpairs(data.frame(theta22=theta22,theta23=theta23), lower=list(continuous='density'))
+ggpairs(data.frame(theta22=theta22,theta23=theta23), lower=list(continuous='density')) + theme_bw()
 @
 \end{frame}
 
@@ -665,7 +675,7 @@ d = data.frame(season=1:4, y=c(36,64,67,64), n=c(95,150,171,152))
 xtable(d, digits=0)
 @
 
-Due to the low number of seasons (observations), we will use an informative prior for $\alpha$ and $\beta$. 
+Due to the low number of seasons (observations), we will use an informative prior for $\alpha$ and $\beta$.
 
 \end{frame}
 
@@ -681,7 +691,7 @@ data {
 parameters {
   real<lower=0,upper=1> mu;
   real<lower=0> eta;
-}  
+}
 transformed parameters {
   real<lower=0> alpha;
   real<lower=0> beta;
@@ -701,10 +711,8 @@ generated quantities {
 
 dat  = list(N = nrow(d), y = d$y, n = d$n, a = 20, b = 30, m = 0, C = 2)
 m4 = stan_model(model_code = model_seasons)
-r_seasons = sampling(m4, 
-                     dat, 
-                     c("alpha","beta","mu","eta","theta"),
-                     iter = 1000)
+r_seasons = sampling(m4, dat,
+                     c("alpha","beta","mu","eta","theta"))
 @
 \end{frame}
 
@@ -727,9 +735,9 @@ posterior = extract(r_seasons, "theta") %>%
   tidyr::gather(parameter, value) %>%
   mutate(parameter = as.factor(parameter))
 
-ggplot(posterior, 
-       aes(x = value, 
-           fill = parameter)) + 
+ggplot(posterior,
+       aes(x = value,
+           fill = parameter)) +
   geom_density(alpha = 0.5) +
   theme_bw()
 @
@@ -743,7 +751,7 @@ ggplot(posterior,
 Probabilities that 3-point percentage is greater in season 4 than in the other seasons:
 
 <<stan_season_comparison, echo=TRUE, dependson="stan_season">>=
-theta = extract(r_seasons, "theta")[[1]] 
+theta = extract(r_seasons, "theta")[[1]]
 mean(theta[,4] > theta[,1])
 mean(theta[,4] > theta[,2])
 mean(theta[,4] > theta[,3])
@@ -778,7 +786,7 @@ Three-level hierarchical model:
 	\[ y\sim p(y|\theta) \qquad \theta\sim p(\theta|\phi) \qquad \phi\sim p(\phi|\psi) \qquad \psi\sim p(\psi) \]
 
 \vspace{0.2in} \pause
-  
+
   When deriving posteriors, remember the conditional independence structure, \pause e.g.
 	\[ p(\theta,\phi,\psi|y) \propto p(y|\theta) p(\theta|\phi) p(\phi|\psi) p(\psi) \]
 \end{frame}

@@ -33,14 +33,13 @@ you can find them
 |Likelihood|[pdf](Inference/I02-Likelihood/I02-Likelihood.pdf)|[R](Inference/I02-Likelihood/I02-Likelihood.R)|
 |Bayesian statistics|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_statistics.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_statistics.R)|
 |Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|
-|Normal model|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|
+|Confidence intervals|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|
 
  ============ updated to here =================
 
 
 |Topic|Source|Handouts|
 |---|---|---|
-|Confidence intervals|[Set12.Rnw](Set12/Set12_Confidence_intervals.Rnw)|[Set12.pdf](Set12/Set12_Confidence_intervals.pdf)|
 |Pvalues|[Set13.Rnw](Set13/Set13_Pvalues.Rnw)|[Set13.pdf](Set13/Set13_Pvalues.pdf)|
 |Posterior model probability|[Set14.Rnw](Set14/Set14_Posterior_model_probability.Rnw)|[Set14.pdf](Set14/Set14_Posterior_model_probability.pdf)|
 |Comparing probabilities|[Set15.Rnw](Set15/Set15_Comparing_probabilities.Rnw)|[Set15.pdf](Set15/Set15_Comparing_probabilities.pdf)|
