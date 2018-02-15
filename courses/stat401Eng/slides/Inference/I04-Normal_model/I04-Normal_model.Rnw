@@ -67,9 +67,9 @@ We will base our analyses on the following values:
 
 In the following analyses, we will be assuming
 \begin{itemize}
-\item {\bf Mean is unknown} while SD is known to be 20
-\item Mean is known to be 200 while {\bf SD is unknown}
-\item {\bf Both are mean and standard deviation are unknown}
+\item {\bf Population mean is unknown} while population SD is known to be 20
+\item Population mean is known to be 200 while {\bf population SD is unknown}
+\item {\bf Both are population mean and population SD are unknown}
 \end{itemize}
 
 \end{frame}
@@ -81,7 +81,7 @@ In the following analyses, we will be assuming
 \begin{frame}
 \frametitle{Normal model with known population variance}
 
-Suppose $Y_i \ind N(\mu,s^2)$ and we assume the default prior $p(\mu)\propto 1$. 
+Suppose $Y_i \ind N(\mu,v^2)$ and we assume the default prior $p(\mu)\propto 1$. 
 
 \vspace{0.1in} \pause
 
@@ -94,7 +94,7 @@ If you work through the math (lots of algebra and a little calculus),
 \pause 
 you will find 
 \[ 
-\mu|y \sim N(\overline{y}, s^2/n).
+\mu|y \sim N(\overline{y}, v^2/n).
 \]
 \pause
 This looks exactly like the likelihood, but now it is normalized, i.e. it 
@@ -111,15 +111,22 @@ E[\mu|y] = \pause \overline{y}.
 
 
 \begin{frame}[fragile]
-<<data, echo=TRUE>>=
+<<population_parameters, echo=TRUE>>=
 m <- 200
-s <- 20
-n <- 9
-y <- rnorm(n, mean = m, sd = s)
+v <- 20
 @
 
-<<data_plot, echo=TRUE, fig.height=4, dependson="data">>=
-curve(dnorm(x, mean = mean(y), sd = s/sqrt(n)), mean(y)-3*s/sqrt(n), mean(y)+3*s/sqrt(n), 
+<<data, echo=TRUE, dependson="population_parameters">>=
+n <- 9
+y <- rnorm(n, mean = m, sd = v); mean(y); sd(y)
+@
+
+<<data_plot, fig.height=4, dependson=c("population_parameters","data")>>=
+curve(dnorm(x, 
+            mean = mean(y), 
+            sd = v/sqrt(n)), 
+      mean(y)-3*v/sqrt(n), 
+      mean(y)+3*v/sqrt(n), 
       xlab = expression(mu),
       ylab = expression(paste("p(",mu,"|y)")),
       main = "Posterior")
@@ -137,22 +144,22 @@ a <- .05
 qnorm(c(a/2,1-a/2), mean(y), sd = s/sqrt(n))
 @
 
-Or we can use the fact that 
-\[ 
+Or we can use the fact that
+\[
 \frac{\mu-\overline{y}}{s/\sqrt{n}} \pause = Z \sim N(0,1)
 \]
-to construct the interval using 
-\[ 
+to construct the interval using
+\[
 \overline{y} \pm z_{a/2} s/\sqrt{n}
 \]
-where $a/2 = \int_{z_{a/2}}^{\infty} \frac{1}{\sqrt{2\pi}}e^{-x^2/2} dx$, 
-i.e. the area to the right of $z_{a/2}$ under the pdf of a standard normal is 
+where $a/2 = \int_{z_{a/2}}^{\infty} \frac{1}{\sqrt{2\pi}}e^{-x^2/2} dx$,
+i.e. the area to the right of $z_{a/2}$ under the pdf of a standard normal is
 $a/2$.
 
 \pause
 
-<<echo=TRUE, dependson="data">>=
-mean(y) + c(-1,1)*qnorm(1-a/2)*s/sqrt(n)
+<<echo=TRUE, dependson=c("population_parameters","data")>>=
+mean(y) + c(-1,1)*qnorm(1-a/2)*v/sqrt(n) # equivalently mean(y) + qnorm(c(a/2,1-a/2))*v/sqrt(n)
 @
 
 \end{frame}
@@ -163,23 +170,23 @@ mean(y) + c(-1,1)*qnorm(1-a/2)*s/sqrt(n)
 \begin{frame}
 \frametitle{Normal model with known population mean}
 
-Suppose $Y_i \ind N(m,\sigma^2)$ and we assume the default prior 
-$p(\sigma^2)\propto \frac{1}{\sigma^2} \I(\sigma^2>0)$. 
+Suppose $Y_i \ind N(m,\sigma^2)$ and we assume the default prior
+$p(\sigma^2)\propto \frac{1}{\sigma^2} \I(\sigma^2>0)$.
 
 \vspace{0.1in} \pause
 
-Again, this ``prior'' is actually not a distribution at all, 
+Again, this ``prior'' is actually not a distribution at all,
 since its integral is not
-finite. 
-\pause 
-Nonetheless, we can still use it to derive a posterior. 
+finite.
+\pause
+Nonetheless, we can still use it to derive a posterior.
 
 \vspace{0.1in} \pause
 
-If you work through the math (lots of algebra and a little calculus), 
-\pause 
-you will find 
-\[ 
+If you work through the math (lots of algebra and a little calculus),
+\pause
+you will find
+\[
 \sigma^2|y \sim IG\left(\frac{n}{2}, \frac{\sum_{i=1}^n(y_i-m)^2}{2}\right)
 \]
 \pause
@@ -187,8 +194,8 @@ where $IG$ indicates an \href{https://en.wikipedia.org/wiki/Inverse-gamma_distri
 
 \vspace{0.1in} \pause
 
-The Bayes estimator is 
-\[ 
+The Bayes estimator is
+\[
 E[\sigma^2|y] = \frac{\frac{\sum_{i=1}^n(y_i-m)^2}{2}}{\frac{n}{2}-1} =
 \frac{\sum_{i=1}^n(y_i-m)^2}{n-2}
 \mbox{ for }n>2
@@ -200,12 +207,12 @@ E[\sigma^2|y] = \frac{\frac{\sum_{i=1}^n(y_i-m)^2}{2}}{\frac{n}{2}-1} =
 \begin{frame}[fragile]
 \frametitle{}
 <<variance_posterior, echo=TRUE, fig.height=4, dependson="data">>=
-S <- sum((y-m)^2)
-curve(MCMCpack::dinvgamma(x, shape = n/2, scale = S/2), 0, 3*S/n,
+SS <- sum((y-m)^2)
+curve(MCMCpack::dinvgamma(x, shape = n/2, scale = SS/2), 0, 3*SS/n,
       xlab = expression(sigma^2),
       ylab = expression(paste("p(",sigma^2,"|y)")),
       main = "Posterior")
-abline(v = (S/2)/((n/2)-1), col='red')
+abline(v = (SS/2)/((n/2)-1), col='red')
 @
 \end{frame}
 
@@ -214,7 +221,7 @@ abline(v = (S/2)/((n/2)-1), col='red')
 \begin{frame}[fragile]
 \frametitle{Credible intervals for variance - exact}
 
-For some reason, nobody has created a function to calculate the quantiles of 
+For some reason, nobody has created a function to calculate the quantiles of
 an inverse gamma. \pause So here is one
 
 <<qinvgamma, echo=TRUE>>=
@@ -224,15 +231,15 @@ qinvgamma <- function(p, shape, scale = 1) {
 @
 
 \pause
-This function is slightly confusing because the `scale` parameter for the 
+This function is slightly confusing because the `scale` parameter for the
 inverse gamma is the `rate` parameter for the gamma.
 
-\pause 
+\pause
 
 Now we can use this to calculate our credible intervals
 
 <<ci_for_variance, dependson=c("variance_posterior","qinvgamma","data"), echo=TRUE>>=
-(q <- qinvgamma(c(.025,.975), shape = n/2, scale = S/2))
+(q <- qinvgamma(c(.025,.975), shape = n/2, scale = SS/2))
 @
 
 \end{frame}
@@ -242,26 +249,27 @@ Now we can use this to calculate our credible intervals
 \begin{frame}[fragile]
 \frametitle{Credible intervals for variance - simulation}
 
-We can also obtain estimates of the interval endpoints by taking a bunch of 
+We can also obtain estimates of the interval endpoints by taking a bunch of
 simulated draws from the inverse gamma distribution and finding their sample
 quantiles.
 
-<<echo=TRUE>>=
-draws <- MCMCpack::rinvgamma(1e5, shape = n/2, scale = S/2)
+<<ci_sim, dependson=c("variance_posterior","data"), echo=TRUE>>=
+draws <- MCMCpack::rinvgamma(1e5, shape = n/2, scale = SS/2)
 quantile(draws, c(a/2, 1-a/2))
 @
 
-If you don't have the MCMCpack library, 
+If you don't have the MCMCpack library,
 you can draw from the gamma distribution and then invert the draws
 (which is the same trick that is used for the qinvgamma function).
 \pause
 
-<<variance_draws, echo=TRUE>>=
-draws <- 1/rgamma(1e5, shape = n/2, rate = S/2)
-quantile( draws, c(a/2, 1-a/2))
+<<ci_sim2, dependson=c("variance_posterior","data"), echo=TRUE>>=
+draws <- 1/rgamma(1e5, shape = n/2, rate = SS/2)
+quantile(draws, c(a/2, 1-a/2))
 @
 \pause
-These are both close to the exact values.
+These are both Monte Carlo estimates of the true credible intervals and these estimates
+improve as the number of simultions increase.
 
 \end{frame}
 
@@ -274,48 +282,48 @@ These are both close to the exact values.
 \vspace{-0.1in}
 
 <<sd_posterior, echo=TRUE, fig.height=2.5, dependson="variance_draws">>=
-sqrt(q) # Take square root of end points of the CI for the variance
+sqrt(q) # Take square root of end points of the CI for the variance to get the exact intervals
 hist(sqrt(draws), 1001, xlab = expression(sigma), ylab = expression(paste("p(",sigma,"|y)")),
      main = "Posterior for standard deviation", probability = TRUE)
 abline(v=sqrt(q), col="red")
 @
 
-\pause 
+\pause
 
-There is actually a more sophisticated way to do this via 
+There is actually a more sophisticated way to do this via
 \alert{transformations}. You can learn this technique in STAT 447.
 
 \end{frame}
 
 
 \begin{frame}
-\frametitle{Normal model (unknown population mean and  population variance)}
+\frametitle{Normal model (unknown population mean and variance)}
 
 \small
 
-Suppose $Y_i \ind N(\mu,\sigma^2)$ and we assume the default prior 
-$p(\mu,\sigma^2)\propto \frac{1}{\sigma^2} \I(\sigma^2>0)$. 
+Suppose $Y_i \ind N(\mu,\sigma^2)$ and we assume the default prior
+$p(\mu,\sigma^2)\propto \frac{1}{\sigma^2} \I(\sigma^2>0)$.
 
 \vspace{0.1in} \pause
 
-Again, this ``prior'' is actually not a distribution at all, 
-since its integral is not finite. 
-\pause 
-Nonetheless, we can still use it to derive a posterior. 
+Again, this ``prior'' is actually not a distribution at all,
+since its integral is not finite.
+\pause
+Nonetheless, we can still use it to derive a posterior.
 
 \vspace{0.1in} \pause
 
-If you work through the math (lots of algebra and a little calculus), 
-\pause 
-you will find 
+If you work through the math (lots of algebra and a little calculus),
+\pause
+you will find
 \[ \begin{array}{rl}
 \mu|\sigma^2,y &\sim N(\overline{y}, \sigma^2/n) \\
 \sigma^2|y &\sim IG\left(\frac{n-1}{2}, \frac{\sum_{i=1}^n(y_i-\overline{y})^2}{2}\right)
 \end{array} \]
 \pause
 
-The joint posterior is obtained using 
-\[ 
+The joint posterior is obtained using
+\[
 p(\mu,\sigma^2|y) = p(\mu|\sigma^2,y)p(\sigma^2|y).
 \]
 
@@ -338,25 +346,25 @@ E[\sigma^2|y] &= \frac{\frac{\sum_{i=1}^n(y_i-\overline{y})^2}{2}}{\frac{n-1}{2}
 
 Typically, the main quantity of interest in the normal model is the mean, $\mu$.
 \pause
-Thus, we are typically interested in the marginal posterior for $\mu$: 
+Thus, we are typically interested in the marginal posterior for $\mu$:
 \pause
 \[
 p(\mu|y) = \pause \int p(\mu|\sigma^2,y)p(\sigma^2|y) d\sigma^2.
 \]
 \pause
-If 
+If
 \[
 \mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) \quad \mbox{and} \quad
 \sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{\sum_{i=1}^n(y_i-\overline{y})^2}{2}\right),
 \]
-then 
-\[ 
-\mu|y \sim t_{n-1}(\overline{y}, S^2/n) \quad \mbox{where} \quad
-S^2 = \frac{1}{n-1}\sum_{i=1}^n (y_i-\overline{y})^2
+then
+\[
+\mu|y \sim t_{n-1}(\overline{y}, s^2/n) \quad \mbox{where} \quad
+s^2 = \frac{1}{n-1}\sum_{i=1}^n (y_i-\overline{y})^2
 \]
-\pause 
+\pause
 that is, $\mu|y$ has a $t$ distribution with $n-1$ degrees of freedom, location
-parameter $\overline{y}$ and scale parameter $S^2/n$.
+parameter $\overline{y}$ and scale parameter $s^2/n$.
 
 \end{frame}
 
@@ -371,15 +379,15 @@ A $t$ distributed random variable, $T\sim t_v(m,s^2)$ has probability density fu
 \pause
 with degrees of freedom $v$, location $m$, and scale $s^2$.
 \pause
-It has 
+It has
 \[ \begin{array}{rll}
 E[T] &= m & v>1 \\
 Var[T] &= s^2 \frac{v}{v-2} & v>2.
 \end{array} \]
 \pause
-In addition, 
-\[ 
-t_v(m,s^2) \stackrel{d}{\to} N(m,s^2) \quad \mbox{as} \quad 
+In addition,
+\[
+t_v(m,s^2) \stackrel{d}{\to} N(m,s^2) \quad \mbox{as} \quad
 v\to\infty.
 \]
 
@@ -399,7 +407,7 @@ d = expand.grid(v=10^(0:2), t = seq(-3,6,by=.1)) %>%
          v = factor(v))
 
 ggplot(d, aes(x=t,y=density, group=v, linetype=v, color=v)) +
-  geom_line() + 
+  geom_line() +
   theme(legend.position='bottom') +
   theme_bw()
 @
@@ -411,20 +419,20 @@ ggplot(d, aes(x=t,y=density, group=v, linetype=v, color=v)) +
 
 In R, there is no way to obtain $t$ credible intervals directly.
 \pause
-Thus we can use the fact that 
-\[ 
-\frac{\mu-\overline{y}}{S/\sqrt{n}} \pause = t \sim t_{n-1}(0,1)
+Thus we can use the fact that
+\[
+\frac{\mu-\overline{y}}{s/\sqrt{n}} \pause \sim t_{n-1}(0,1)
 \]
-to construct the interval using 
-\[ 
-\overline{y} \pm t_{n-1,a/2} S/\sqrt{n}
+to construct the interval using
+\[
+\overline{y} \pm t_{n-1,a/2} s/\sqrt{n}
 \]
-where the area to the right of $t_{n-1,a/2}$ under the pdf of a 
+where the area to the right of $t_{n-1,a/2}$ under the pdf of a
 standard $t$ is $a/2$.
 
 \pause
 
-<<echo=TRUE>>=
+<<mu_ci, dependson="data", echo=TRUE>>=
 mean(y) + c(-1,1)*qt(.975, df=n-1)*sd(y)/sqrt(n)
 @
 
@@ -448,17 +456,17 @@ Provide a 90\% credible interval for the mean yield across all fields in Iowa.
 
 \vspace{0.1in} \pause
 
-Let $Y_i$ be the yield in field $i$ and assume 
-\[ 
+Let $Y_i$ be the yield in field $i$ and assume
+\[
 Y_i\ind N(\mu,\sigma^2).
 \]
-If we assume the default prior $p(\mu,\sigma^2)\propto 1/\sigma^2$, then we have 
-\[ 
-\mu|y \sim t_{n-1}(\overline{y},S^2/n).
-\] 
+If we assume the default prior $p(\mu,\sigma^2)\propto 1/\sigma^2$, then we have
+\[
+\mu|y \sim t_{n-1}(\overline{y},s^2/n).
+\]
 \pause
-A 90\% interval is 
-<<echo=TRUE>>=
+A 90\% interval is
+<<credible_interval, echo=TRUE>>=
 a    <- 0.1
 
 mean(y) +c(-1,1)*qt(1-a/2, df=n-1)*sd(y)/sqrt(n)
@@ -467,53 +475,57 @@ mean(y) +c(-1,1)*qt(1-a/2, df=n-1)*sd(y)/sqrt(n)
 
 
 
-% \begin{frame}[fragile]
-% \frametitle{Analysis in R}
-% 
-% \small
-% 
-% There is no reason that you need to do this all yourself. 
-% In R, the function {\tt t.test} will provide you with the relevant information.
-% 
-% <<echo=TRUE>>=
-% t <- t.test(y, conf.level = 1-a)
-% t$parameter # n-1 (degrees of freedom)
-% t$estimate  # Mean
-% t$conf.int  # Credible interval
-% @
-% 
-% \end{frame}
+% % \begin{frame}[fragile]
+% % \frametitle{Analysis in R}
+% % 
+% % \small
+% % 
+% % There is no reason that you need to do this all yourself. 
+% % In R, the function {\tt t.test} will provide you with the relevant information.
+% % 
+% % <<echo=TRUE>>=
+% % t <- t.test(y, conf.level = 1-a)
+% % t$parameter # n-1 (degrees of freedom)
+% % t$estimate  # Mean
+% % t$conf.int  # Credible interval
+% % @
+% % 
+% % \end{frame}
 
 
 \subsection{Informative Bayesian analysis}
 \begin{frame}[fragile]
-\frametitle{Informative Bayesian analysis when variance is known}
+\frametitle{Informative Bayesian analysis when pop. variance is known}
 
-Let $Y_i$ be the corn yield (in bushels/ac) from field $i$. 
+\small
+
+Let $Y_i$ be the corn yield (in bushels/ac) from field $i$.
 Assume
-\[ 
-Y_i \ind N(\mu,s^2) \quad \mbox{and} \quad
-\mu \sim N(m,C).
+\[
+Y_i \ind N(\mu,v^2) \quad \mbox{and} \quad
+\mu \sim N(m,C)
 \]
+where $m$ provides your prior guess about the mean yield 
+(not the population mean as was used previously in this slide set) 
+and $C$ provides your variance around that guess.
 \pause
 Then
 \[ \begin{array}{rl}
 \mu|y &\sim N(m',C') \pause \\
-C' &= \left[ \frac{1}{C} + \frac{n}{s^2} \right]^{-1} \pause \\
-m' &= C' \left[ \frac{1}{C}m + \frac{n}{s^2}\overline{y} \right] \pause 
-= \frac{1/C}{1/C+n/s^2} m + \frac{n/s^2}{1/C+n/s^2}\overline{y}
+C' &= \left[ \frac{1}{C} + \frac{n}{v^2} \right]^{-1} \pause \\
+m' &= C' \left[ \frac{1}{C}m + \frac{n}{v^2}\overline{y} \right] \pause
+= \frac{1/C}{1/C+n/v^2} m + \frac{n/v^2}{1/C+n/v^2}\overline{y}
 \end{array} \]
 \pause
-
-<<echo=TRUE>>=
-m = 200
-C = 33^2
-Cp = 1/(1/C+n/s^2)
-mp = Cp*(m/C+n*mean(y)/s^2)
+<<prior, echo=TRUE>>=
+m = 200; C = 10^2
 @
-
-So if we assume $m=200$ and $C=33^2$ and combine this with our observed data 
-$n=$\Sexpr{length(y)} and $\overline{y}=$\Sexpr{round(mean(y))}, 
+<<posterior, echo=TRUE, dependson="prior">>=
+Cp = 1/(1/C+n/v^2); mp = Cp*(m/C+n*mean(y)/v^2)
+@
+So if we assume $m=200$ and $C=\Sexpr{sqrt(C)}^2$ and combine this with our observed data
+$n=$\Sexpr{length(y)} and $\overline{y}=$\Sexpr{round(mean(y))} with 
+population sd known to be $v=$\Sexpr{v},
 \pause
 then we have the posterior $\mu|y\sim N(\Sexpr{round(mp)},\Sexpr{round(sqrt(Cp))}^2)$.
 \end{frame}
@@ -524,10 +536,10 @@ then we have the posterior $\mu|y\sim N(\Sexpr{round(mp)},\Sexpr{round(sqrt(Cp))
 
 \vspace{-0.1in}
 
-<<echo=TRUE, fig.height=3.5>>=
-ybar = mean(y)
-se = s/sqrt(n)
+<<echo=TRUE, fig.height=3.5, dependson=c("prior","data","population_parameters")>>=
+ybar = mean(y); se = v/sqrt(n)
 curve(dnorm(x, mean=ybar, sd=se), ybar-3*se, ybar+3*se,
+      ylim=c(0,.1),
       xlab=expression(mu),
       ylab=expression(paste("p(",mu,"|y)")),
       main="Default vs informative Bayesian analysis")
@@ -542,20 +554,20 @@ legend("topleft", c("Default","Informative"), col=c("black","red"),
 
 \begin{frame}
 \frametitle{Informative Bayesian analysis}
-  The joint conjugate prior for $\mu$ and $\sigma^2$ is 
-  \[ \mu|\sigma^2\phantom{,y} \sim N(m,\sigma^2/k) \qquad \sigma^2\phantom{,y} \sim \mbox{Inv-}\chi^2(v,s^2) \]
-  \pause where $s^2$ serves as a prior guess about $\sigma^2$ and $v$ controls how certain we are about that guess. 
-  
-  \vspace{0.2in} \pause 
+  The joint conjugate prior for $\mu$ and $\sigma^2$ is
+  \[ \mu|\sigma^2\phantom{,y} \sim N(m,\sigma^2/k) \qquad \sigma^2\phantom{,y} \sim IG(d/2,dv^2/2) \]
+  \pause where $v^2$ serves as a prior guess about $\sigma^2$ and $d$ controls how certain we are about that guess.
 
-  The posterior under this prior is 
-  \[ \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v',(s')^2) \]
-  \pause where 
+  \vspace{0.2in} \pause
+
+  The posterior under this prior is
+  \[ \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim IG(d'/2,d'(v')^2/2) \]
+  \pause where
   \[ \begin{array}{rl}
   k' &= k+n \\
   m' &= [km + n\overline{y}]/k' \\
-  v' &= v+n \\
-  v'(s')^2 &= vs^2 + (n-1)S^2 + \frac{kn}{k'}(\overline{y}-m)^2
+  d' &= d+n \\
+  d'(v')^2 &= dv^2 + (n-1)s^2 + \frac{kn}{k'}(\overline{y}-m)^2
   \end{array} \]
 \end{frame}
 
