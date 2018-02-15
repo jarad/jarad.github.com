@@ -90,8 +90,9 @@ Thus, this $100(1-a)\%$ credible interval is also a $100(1-a)\%$ confidence inte
 
 \begin{frame}
 \frametitle{Data example}
-<<echo = FALSE, fig.height=4>>=
-y <- rnorm(9, mean = 200, sd = 20)
+<<data_example, echo = FALSE, fig.height=4>>=
+y <- rnorm(9, mean = 200, sd = 20) # Get some data
+
 n <- length(y)
 ybar <- mean(y)
 s <- sd(y)
@@ -123,6 +124,18 @@ will contain the true parameter.
 But because this \alert{confidence interval} happens to correspond to a 
 \alert{credible interval}, it does tell us what we should \alert{believe} about
 the true mean yield.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Data example - R code}
+<<data_example_print, echo=TRUE, eval=FALSE, dependson="data_example", size="normalsize">>=
+<<data_example>>
+@
+
+<<data_example_result, echo=TRUE, dependson="data_example", size="normalsize">>=
+c(L,U)
+@
 \end{frame}
 
 
@@ -172,7 +185,7 @@ distribution is, \pause i.e.
 \begin{example}
 If $Y_i \ind N(\mu,\sigma^2)$, then 
 \[ 
-\hat{\theta} = \overline{Y} \pause 
+\hat{\mu} = \overline{Y} \pause 
 \stackrel{\cdot}{\sim} N(E[\overline{Y}], Var[\overline{Y}])
 \]
 \pause
@@ -198,16 +211,16 @@ deviation of the sampling distribution of the estimator.
 \pause
 
 \begin{example}
-If $Y_i \ind N(\mu,\sigma^2)$ and $\hat\theta = \overline{Y}$, \pause
+If $Y_i \ind N(\mu,\sigma^2)$ and $\hat\mu = \overline{Y}$, \pause
 then
 \[
-Var[\hat\theta] = Var[\overline{Y}] =
+Var[\hat\mu] = Var[\overline{Y}] =
 \pause
 \sigma^2/n
 \quad
 \mbox{and}
 \quad
-\sqrt{Var[\hat\theta]} = \sigma/\sqrt{n}.
+\sqrt{Var[\hat\mu]} = \sigma/\sqrt{n}.
 \]
 \pause
 We have the following \emph{consistent} estimators
@@ -221,7 +234,7 @@ S/\sqrt{n} \stackrel{P}{\to} \sigma/\sqrt{n}
 \pause
 and thus 
 \[
-SE[\hat\theta] = \widehat{\sqrt{Var[\hat\theta]}} = S/\sqrt{n}.
+SE[\hat\mu] = \widehat{\sqrt{Var[\hat\mu]}} = S/\sqrt{n}.
 \]
 where $S$ is the sample standard deviation.
 \end{example}
@@ -238,13 +251,13 @@ for $E[\hat\theta]$ using
 \[ 
 \hat{\theta} \pm z_{a/2} SE[\hat\theta].
 \]
-where $SE(\hat\theta)=\sqrt{Var[\hat\theta]}$ is the \alert{standard error} of 
+where $SE(\hat\theta)=\widehat{\sqrt{Var[\hat\theta]}}$ is the \alert{standard error} of 
 the estimator.
 
 \vspace{0.1in} \pause
 
 This comes from the fact that if 
-$\hat\theta \stackrel{\cdot}{\sim} N(E[\hat\theta],Var[\hat\theta])$, \pause then
+$\hat\theta \stackrel{\cdot}{\sim} N(E[\hat\theta],SE[\hat\theta])$, \pause then
 \[ \begin{array}{rl}
 \multicolumn{2}{l}{P\left( \hat{\theta} - z_{a/2} SE(\hat\theta) < E[\hat\theta] < \hat\theta + z_{a/2} SE(\hat\theta) \right)} \pause \\
 &= P\left( -z_{a/2} < \frac{\hat\theta-E[\hat\theta]}{SE(\hat\theta)} < z_{a/2} \right) \pause \\
@@ -261,24 +274,24 @@ $\hat\theta \stackrel{\cdot}{\sim} N(E[\hat\theta],Var[\hat\theta])$, \pause the
 \frametitle{Normal example}
 
 If $Y_i \ind N(\mu,\sigma^2)$ and we have the estimator 
-$\hat\theta = \overline{Y}$, then 
+$\hat\mu = \overline{Y}$, then 
 \[ \begin{array}{rl} 
-E[\hat\theta] &= \mu \\
-SE[\hat\theta] &= S/\sqrt{n}
+E[\hat\mu] &= \mu \\
+SE[\hat\mu] &= S/\sqrt{n}
 \end{array} \]
 
 \pause
 
 Thus an \alert{approximate} $100(1-a)$\% confidence interval
-for $\mu=E[\hat\theta]$ is 
+for $\mu=E[\hat\mu]$ is 
 \[ 
-\hat\theta \pm z_{a/2} SE[\hat\theta] = \overline{Y} \pm z_{a/2} S/\sqrt{n}.
+\hat\mu \pm z_{a/2} SE[\hat\mu] = \overline{Y} \pm z_{a/2} S/\sqrt{n}.
 \]
 \pause
 Note that this is almost identical to the \alert{exact} $100(1-a)$\%  
 confidence interval for $\mu$, 
 \[ 
-\overline{Y} \pm t_{n-1,a/2} S/\sqrt{n}
+\phantom{\hat\mu \pm z_{a/2} SE[\hat\mu] = }\quad\overline{Y} \pm t_{n-1,a/2} S/\sqrt{n}
 \]
 \pause
 and when $n$ is large $z_{a/2} \approx t_{n-1,a/2}$.
