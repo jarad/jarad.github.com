@@ -27,7 +27,6 @@ tt$conf.int
 t.test(y, alternative = "less",    mu = 1,  conf.level = 0.9)
 
 ## ------------------------------------------------------------------------
-t.test(y, alternative = "less",    mu = 1,  conf.level = 0.9)
 t.test(y, alternative = "greater", mu = -1, conf.level = 0.99)
 
 ## ------------------------------------------------------------------------
