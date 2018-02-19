@@ -7,8 +7,150 @@ output: html_document
 
 
 To follow along, use the [lab06 code](lab06.R).
+Set your working directory using 
+Session > Set Working Directory > Choose Directory in RStudio or using the 
+`setwd()` function.
 You can also save [creativity.csv](creativity.csv) into your working directory
 if you want.
+
+
+
+## Normal data
+
+### Background
+
+Suppose $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$. 
+Recall that a Bayesian analysis with the default prior 
+$p(\mu,\sigma^2) \propto 1/\sigma^2$ provides the same analysis for $\mu$ as a
+non-Bayesian analysis. 
+That is 
+
+- MLE and the posterior mean/median for $\mu$ are the same
+- confidence and credible intervals for $\mu$ are exactly the same
+
+This is because the posterior for $\mu$ is 
+$$
+\mu|y \sim t_{n-1}(\overline{y}, s^2/n)
+$$
+which means that 
+$$
+\left.\frac{\mu-\overline{y}}{s/\sqrt{n}} \right|y \sim t_{n-1}(0,1).
+$$
+while the sampling distribution for $\overline{y}$ is such that 
+$$
+T=\left.\frac{\overline{Y}-\mu}{S/\sqrt{n}} \right|y \sim t_{n-1}(0,1).
+$$
+
+Please note the difference in these two statements is what is considered 
+random.
+In the first two $\mu$ is considered random while the data which are used to
+calculate $\overline{y}$ and $s$ are fixed.
+This does not mean that a Bayesian considered the actual true value of $\mu$ to
+be random. Instead it means that we are expressing our uncertainty in $\mu$ 
+through probability.
+In the last statement, the data are considered random 
+which is why $\overline{Y}$ and $S$ are capitalized while $\mu$ is considered 
+fixed.
+
+### Manual analysis
+
+Suppose you observe the following data
+```{r}
+set.seed(20180219)
+(y <- rnorm(10, mean = 3.2, sd = 1.1)) # 3.2 and 1.1 are the population parameters
+```
+Then you can manually construct an MLE and posterior mean using `mean()`.
+
+```{r}
+(ybar <- mean(y))
+```
+
+and a 95% credible/confidence interval using
+
+```{r}
+n <- length(y)
+s <- sd(y)
+
+ybar + c(-1,1)*qt(.975, df = n-1)*s/sqrt(n)
+```
+
+### Built-in analysis
+
+You can use the `t.test()` function to perform this for you.
+
+```{r}
+t.test(y)
+```
+
+You can extract the estimates and confidence/credible intervals,
+but first you need to know how to access the appropriate objects within the
+t-test object.
+
+```{r}
+tt <- t.test(y)
+names(tt)
+str(tt)
+```
+
+It isn't always obvious what object we want and thus we often need to just look
+at all of them until we figure out which ones we need. 
+In this case, `conf.int` seems like a good guess for the confidence/credible
+intervals. 
+It turns out that `estimate` will gives us the MLE and posterior mean/median.
+
+```{r}
+tt$estimate
+tt$conf.int
+```
+
+#### Modifying arguments
+
+We can also change the default argument values to
+
+- change the type of hypothesis test
+- change the null value
+- change the confidence level
+
+Suppose we wanted to test $H_0:\mu\ge 1$ vs $H_a:\mu < 1$ at a signficance
+level of 0.9 and/or we wanted to construct a 90\% one-sided lower
+confidence interval.
+
+```{r}
+t.test(y, alternative = "less",    mu = 1,  conf.level = 0.9)
+```
+
+Suppose we wanted to test $H_0:\mu\le -1$ vs $H_a:\mu > -1$ at a signficance
+level of 0.99 and/or we wanted to construct a 99\% one-sided upper
+confidence interval.
+
+```{r}
+t.test(y, alternative = "less",    mu = 1,  conf.level = 0.9)
+t.test(y, alternative = "greater", mu = -1, conf.level = 0.99)
+```
+
+
+#### Activity
+
+Using the following data, compare the point estimate and confidence/credible
+intervals obtained using the `t.test()` function to estimates and 
+intervals you create yourself
+
+```{r}
+set.seed(1)
+y <- rnorm(1001, mean = 256, sd = 34.6)
+```
+
+<div id="normal_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+t.test(y)
+mean(y)
+mean(y) + c(-1,1)*qt(.975, df = length(y)-1)*sd(y)/sqrt(length(y))
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('normal_activity_solution') .style.display=='none') {document.getElementById('normal_activity_solution') .style.display=''}else{document.getElementById('normal_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
 
 ## Binomial data
 
@@ -81,12 +223,68 @@ c(qbeta(0.05, a+y, b+n-y), 1)
 <button title="Show a solution" type="button" onclick="if(document.getElementById('beta_jeffreys_activity_solution') .style.display=='none') {document.getElementById('beta_jeffreys_activity_solution') .style.display=''}else{document.getElementById('beta_jeffreys_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
 
-### Non-Bayesian analysis
 
-Fortunately many analysis have built in functions in R. 
+
+### Non-Bayesian analyses when n is small 
+
+To perform non-Bayesian analyses when n is small,
+use the `binom.test` function.
+This will calculate pvalues and confidence intervals 
+(based on inverting hypothesis tests).
+
+Suppose you observe 9 successes out of 13 attempts. 
+
+```{r}
+n <- 13
+y <- 9
+binom.test(y, n)
+```
+
+This is equivalent to calculating the probability of observing y equal to 
+0, 1, 2, 3, 4, 9, 10, 11, 12, 13 if $\theta$ is 0.5.
+
+```{r}
+sum(dbinom(c(0:4,9:13), size = n, prob = 0.5))
+```
+
+Recall that there is a one-to-one correspondence between pvalues and confidence
+intervals.
+This confidence interval is constructed by finding those values for $\theta$
+such that the pvalue is half of the confidence level
+(since it is a two-sided interval).
+
+```{r}
+ci <- binom.test(y,n)$conf.int
+binom.test(y, n, p=ci[2])$p.value # This one matches exactly
+binom.test(y, n, p=ci[1])$p.value # This one is close
+```
+
+
+
+#### binom.test Activity
+
+Suppose you observe 11 successes out of 12 attempts. 
+Calculate a pvalue for the two-sided test that $\theta=0$ and construct
+a 95\% confidence interval.
+
+<div id="binom_ci_comparison_activity_solution" style="display:none"> 
+
+
+
+```{r, purl=FALSE}
+binom.test(11,12)
+```
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('binom_ci_comparison_activity_solution') .style.display=='none') {document.getElementById('binom_ci_comparison_activity_solution') .style.display=''}else{document.getElementById('binom_ci_comparison_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+
+### Non-Bayesian analyses when n is large (and p is not close to 0 or 1) 
+
 If you observe 78 successes out of 100 attempts, 
 then you can use the `prop.test()` function to generate a number of statistics
-automatically.
+automatically based on the CLT.
 
 ```{r}
 n <- 100
@@ -94,20 +292,10 @@ y <- 78
 prop.test(y,n)
 ```
 
-Sometimes you want all of this output, 
-but other times you want to extract exactly what you want.
-To do this we will save the object created by `prop.test()` 
-and use the `names()` or `str()` function to determine what is in this object.
-
-```{r}
-pt <- prop.test(y,n)
-names(pt)
-str(pt)
-```
-Then we can use the `$` to extract what we want.
 The estimate is 
 
 ```{r}
+pt <- prop.test(y,n)
 pt$estimate
 ```
 
@@ -117,17 +305,27 @@ An approximate 95\% confidence interval is
 pt$conf.int
 ```
 
-If we wanted an aproximate 90\% one-sided lower confidence interval, 
-we can obtain it using 
+We can construct this ourself using the following formula
 
 ```{r}
-prop.test(y, n, alternative = "less", conf.level = 0.9)$conf.int
+p <- y/n
+p + c(-1,1)*qnorm(.975)*sqrt(p*(1-p)/n)
 ```
+
+The results don't quite match because `prop.test` uses the continuity correction
+(which is the appropriate thing to do).
+
+```{r}
+prop.test(y, n, correct = FALSE)
+```
+
+Unfortunately, the results still don't quite match.
+
 
 #### Activity
 
 Suppose you observed 694 success out of 934 attempts. 
-Compute a 95\% equal-tail confidence interval using `prop.test` 
+Compute an approximate 95\% equal-tail confidence interval using `prop.test` 
 and compare this to a 95\% equal-tail confidence interval you construct using
 the Central Limit Theorem.
 
@@ -138,7 +336,7 @@ n <- 934
 prop.test(y, n)$conf.int
 
 p <- y/n
-p +c(-1,1)*qnorm(.975)*sqrt(p*(1-p)/n)
+p + c(-1,1)*qnorm(.975)*sqrt(p*(1-p)/n)
 
 # If you turn off the continuity correction, you will get closer
 prop.test(y, n, correct = FALSE)$conf.int
@@ -148,18 +346,7 @@ you can look at the function by just typing `prop.test` and hitting enter.
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('binomial_clt_activity_solution') .style.display=='none') {document.getElementById('binomial_clt_activity_solution') .style.display=''}else{document.getElementById('binomial_clt_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
-### Small sample sizes
 
-The `prop.test` function uses the Central Limit Theorem to perform its analysis.
-When n is small, you should instead use the `binom.test` function.
-
-Suppose you observe 9 successes out of 13 attempts. 
-
-```{r}
-n <- 13
-y <- 9
-binom.test(y, n)
-```
 
 #### Activity
 
@@ -169,7 +356,7 @@ an interval you construct based on the CLT and to 95% credible intervals.
 
 <div id="binom_ci_comparison_activity_solution" style="display:none"> 
 
-So this is a bit of a trick question since there was 0 successes. 
+So this is a bit of a trick question since there were 0 successes. 
 When you run `prop.test` and `binom.test` you are given one-sided confidence 
 intervals.
 The CLT interval doesn't exist since the standard error is zero.
@@ -187,125 +374,9 @@ qbeta(c(0,.95), 1+y, 1+n-y)
 
 
 
-
-
-## Normal data
-
-Suppose $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$. 
-Recall that a Bayesian analysis with the default prior 
-$p(\mu,\sigma^2) \propto 1/\sigma^2$ provides the same analysis for $\mu$ as a
-non-Bayesian analysis. 
-That is 
-
-- MLE and Bayes estimator for $\mu$ are the same
-- confidence and credible intervals for $\mu$ are exactly the same
-
-This is because the posterior for $\mu$ is 
-$$
-\mu|y \sim t_{n-1}(\overline{y}, S^2/n)
-$$
-which means that 
-$$
-\left.\frac{\mu-\overline{y}}{s/\sqrt{n}} \right|y \sim t_{n-1}(0,1).
-$$
-while the sampling distribution for $\overline{y}$ is such that 
-$$
-T=\left.\frac{\overline{Y}-\mu}{S/\sqrt{n}} \right|y \sim t_{n-1}(0,1).
-$$
-Suppose you observe the following data
-```{r}
-(y <- rnorm(10, mean = 3.2, sd = 1.1))
-```
-Then you can manually construct an MLE and Bayesian posterior using `mean()`.
-
-```{r}
-(ybar <- mean(y))
-```
-
-and a 95% credible/confidence interval using
-
-```{r}
-n <- length(y)
-s <- sd(y)
-
-ybar + c(-1,1)*qt(.975, df = n-1)*s/sqrt(n)
-```
-
-### Built-in analysis
-
-You can use the `t.test()` function to perform this for you.
-
-```{r}
-t.test(y)
-```
-
-and extract quantities using
-
-```{r}
-tt <- t.test(y)
-tt$estimate
-tt$conf.int
-```
-
-### Using the `lm()` function
-
-An alternative to `t.test()` that will be extremely useful throughout the 
-remainder of the semester is the `lm()` function.
-The `lm` stands for linear model and regression is a special case.
-
-```{r}
-lm(y~1) # The 1 stands for a single group, i.e. just an intercept
-```
-
-This function is sophisticated enough that very little is reported when you 
-just run the function.
-Instead, most of the information is in the `summary()` function.
-
-```{r}
-m <- lm(y~1)
-summary(m)
-```
-
-At this point, some of this should start to become familiar. 
-The Estimate is the sample mean, the Std. Error is the standard error
-of this mean, and the t value is the ratio of these two. 
-The residual standard error is the MLE for $\sigma$ and the degrees of freedom
-is the number of observations minus the number of parameters for the mean (n-1 
-in this case).
-
-The `confint()` function will produce the confidence/credible intervals
-
-```{r}
-confint(m)
-```
-
-#### Activity
-
-Using the following data, compare the point estimate and confidence/credible
-intervals obtained using the `t.test()` and `lm()` functions to estimates and 
-intervals you create yourself
-
-```{r}
-set.seed(1)
-y <- rnorm(1001, mean = 256, sd = 34.6)
-```
-
-<div id="normal_activity_solution" style="display:none"> 
-```{r, purl=FALSE}
-t.test(y)
-(m <- lm(y~1))
-confint(m)
-mean(y) + c(-1,1)*qt(.975, df = length(y)-1)*sd(y)/sqrt(length(y))
-```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('normal_activity_solution') .style.display=='none') {document.getElementById('normal_activity_solution') .style.display=''}else{document.getElementById('normal_activity_solution') .style.display='none'}">Show/Hide Solution</button>
-
-
-
-
 ## Reading data from files
 
-First, let's write some data to files. 
+First, let's write some data to a file. 
 
 ```{r}
 # Generate some simulated data
@@ -364,14 +435,6 @@ To analyze the normal data, you can just use `t.test()` directly.
 t.test(my_data$measurement)
 ```
 
-The data are already located in a `data.frame`. 
-You can use this in the `lm()` function. 
-
-```{r}
-m <- lm(measurement~1, data = my_data)
-summary(m)
-confint(m)
-```
 
 
 #### Online activity
@@ -417,3 +480,8 @@ library("Sleuth3")
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('online_activity_solution') .style.display=='none') {document.getElementById('online_activity_solution') .style.display=''}else{document.getElementById('online_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
+
+
+```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
+knitr::knit("lab06.Rmd", tangle = TRUE)
+```
