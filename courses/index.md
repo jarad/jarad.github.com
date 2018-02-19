@@ -8,6 +8,11 @@ group: navigation
 
 ## Regular courses
 
+- Spring 2018
+  - [STAT 401C (Engineering)](stat401Eng)
+  - [STAT 544](stat544)
+- Fall 2018
+  - [STAT 615](stat615)
 - Spring 2017
   - [STAT 401D (Engineering)](stat401Eng)
   - [STAT 544](stat544)
