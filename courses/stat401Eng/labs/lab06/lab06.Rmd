@@ -183,7 +183,7 @@ curve(dbeta(x, a+y, b+n-y))
 The posterior expectation is 
 
 ```{r}
-(a+y)/(b+n-y)
+(a+y)/(a+b+n)
 ```
 
 A 95\% equal-tail credible interval is 
@@ -206,10 +206,10 @@ Suppose you observed 17 successes out of 20 attempts and you are willing to assu
 independence and a common probability of success.
 Use Jeffreys prior on this probability of success to do the following 
 
-- Plot the posterior
-- Calculate the posterior median
-- Calculate a one-sided upper 95% credible interval
-- Calculate the probability that the probability of success is greater than 0.9.
+- Plot the posterior for the true probability of success
+- Calculate the posterior median for the true probability of success
+- Calculate a one-sided upper 95% credible interval for the true probability of success
+- Calculate the probability that the true probability of success is greater than 0.9.
 
 
 <div id="beta_jeffreys_activity_solution" style="display:none"> 
@@ -267,7 +267,7 @@ binom.test(y, n, p=ci[1])$p.value # This one is close
 #### binom.test Activity
 
 Suppose you observe 11 successes out of 12 attempts. 
-Calculate a pvalue for the two-sided test that $\theta=0$ and construct
+Calculate a pvalue for the two-sided test that $\theta=0.5$ and construct
 a 95\% confidence interval.
 
 <div id="binom_ci_comparison_activity_solution" style="display:none"> 
@@ -385,6 +385,7 @@ qbeta(c(0,.95), 1+y, 1+n-y)
 First, let's write some data to a file. 
 
 ```{r}
+set.seed(20180220)
 # Generate some simulated data
 n <- 100
 d <- data.frame(rep = 1:n,
@@ -458,20 +459,21 @@ data and then construct the intervals.
 ```{r, purl=FALSE}
 creativity <- read.csv("http://www.jarad.me/courses/stat401Eng/labs/lab06/creativity.csv")
 
+intrinsic <- subset(creativity, Treatment == "Intrinsic")
+extrinsic <- subset(creativity, Treatment == "Extrinsic")
+
+t.test(intrinsic$Score)
+t.test(extrinsic$Score)
+
+
+# Another way to subset uses the dplyr package
+# This will be prettier when you have a long sequence of commands
 library(dplyr)
 intrinsic <- creativity %>% filter(Treatment == "Intrinsic")
 extrinsic <- creativity %>% filter(Treatment == "Extrinsic")
-
-confint(lm(Score~1, data = intrinsic))
-confint(lm(Score~1, data = extrinsic))
 ```
 
-An alternative approach is to use the `subset` argument
 
-```{r, purl=FALSE}
-confint(lm(Score~1, data = creativity, subset = Treatment == "Intrinsic"))
-confint(lm(Score~1, data = creativity, subset = Treatment == "Extrinsic"))
-```
 
 If you want to find out more about these data, 
 take a look at the help file for `case0101` in the 
