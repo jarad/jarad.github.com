@@ -40,8 +40,85 @@ set.seed(2)
 \end{frame}
 
 \section{Posterior model probabilities}
+\subsection{One-sided alternative hypotheses}
 \begin{frame}
-\frametitle{Hypothesis test decisions}
+\frametitle{One-sided alternative hypotheses}
+
+For ``one-sided alternative hypotheses'' analyzed from a 
+Bayesian perspective,
+I think we should ignore the ``hypothesis test'' completely.
+\pause
+That is, we should obtain a posterior and calculate the posterior probabilities
+from that posterior. 
+
+\vspace{0.1in} \pause
+
+For example,
+let $Y_i \ind N(\mu,\sigma^2)$ with hypotheses
+\begin{itemize}
+\item $H_0: \mu \le 0$
+\item $H_A: \mu > 0$.
+\end{itemize}
+\pause
+Assume $p(\mu,\sigma^2)\propto 1/\sigma^2$ and obtain the posterior, 
+\pause
+i.e. 
+\[ 
+\mu |y \pause \sim t_{n-1}(\overline{y}, s^2/n).
+\]
+\pause
+Then calculate 
+\[ 
+P(\mu\le 0|y) = 
+P\left(T_{n-1} \le \frac{-\overline{y}}{s/\sqrt{n}}\right).
+\]
+
+\end{frame}
+
+
+
+\subsection{Posterior model probabilities}
+\begin{frame}
+\frametitle{Posterior model probabilities}
+
+From a Bayesian perspective, 
+each hypothesis is a different model that describes how the world works.
+\pause
+There is no limit to two hypotheses and hypotheses are all treated the same,
+\pause
+i.e. there is no ``special'' hypothesis.
+
+\vspace{0.1in} \pause
+
+We are interested in determine our belief about each model after we see
+the data. 
+\pause
+Thus, we calculate \alert{posterior model probabilities} over some set of $J$
+models
+\pause
+i.e,
+\[ 
+p(H_j|y) \pause
+= \frac{p(y|H_j)p(H_j)}{p(y)} \pause
+= \frac{p(y|H_j)p(H_j)}{\sum_{k=1}^J p(y|H_k)p(H_k)}.
+\]
+\pause
+In order to accomplish this, we need to determine 
+\begin{itemize}
+\item \alert{prior model probabilities}: $p(H_j) \,\forall\, j=1,\ldots,J$ 
+\pause and
+\item \alert{priors over parameters in each model}: 
+\[ 
+p(y|H_j) = \int p(y|\theta)\alert{p(\theta|H_j)} d\theta.
+\]
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Two hypotheses}
 
 A pvalue can loosely be interpreted as ``the probability of observing these
 data if the null hypothesis is true''\pause,i.e. 
@@ -50,7 +127,12 @@ p(y|H_0),
 \]
 \pause
 But what we really want is ``the probability the null hypothesis is true, 
-given that we observed this data''\pause,i.e.
+given that we observed this data''. 
+\pause
+Of course, we can never know the truth (or even the probability of the truth), 
+but we can make statements about our belief that the null hypothesis is true,
+\pause
+i.e.
 \[
 p(H_0|y) \pause = \frac{p(y|H_0)p(H_0)}{p(y)}.
 \]
@@ -61,7 +143,7 @@ then we have
 \[
 p(H_0|y) = \frac{p(y|H_0)p(H_0)}{p(y|H_0)p(H_0)+p(y|H_A)p(H_A)} 
 \pause
-= \frac{1}{1+\frac{p(y|H_A)p(H_A)}{p(y|H_0)p(H_0)}}.
+= \left[1+\frac{p(y|H_A)p(H_A)}{p(y|H_0)p(H_0)}\right]^{-1}.
 \]
 
 \end{frame}
@@ -100,41 +182,7 @@ y|H_A &\sim N(0,2).
 \end{example}
 \end{frame}
 
-\subsection{Relative frequency interpretation}
-\begin{frame}
-\frametitle{Relative frequency interpretation}
 
-\small
-
-Suppose you have a model $p(y|\theta)$\pause,
-hypotheses $H_0: \theta=\theta_0$ and $H_A:\theta\ne \theta_0$\pause,
-and you observe a pvalue equal to 0.05.
-\pause 
-Now you want to understand what that means in terms of whether the null
-hypothesis is true or not. 
-\pause 
-That is you want 
-\[
-p(H_0|pvalue = 0.05) = 
-\left[ 1+\frac{p(pvalue=0.05|H_A)}{p(pvalue= 0.05|H_0)}
-\frac{p(H_A)}{p(H_0)}\right]^{-1}
-\]
-If we are using a relative frequency interpretation of probability, 
-\pause
-then the answer depends on 
-\begin{itemize}
-\item the relative frequency of the null hypothesis being true 
-$p(H_0) = 1-p(H_A)$ 
-\pause and
-\item the ratio of the relative frequency of seeing $pvalue=0.05$ under the null 
-versus the alternative \pause which depends on the distribution for 
-$\theta$ under the alternative because
-\end{itemize}
-\[
-p(pvalue=0.05|H_A) = \int p(pvalue = 0.05|\theta)p(\theta|H_A) d\theta.
-\]
-
-\end{frame}
 
 
 
@@ -181,8 +229,8 @@ $p(H_0) = p(H_A) = 0.5$.
 \pause 
 Then the two hypotheses are really 
 \begin{itemize}
-\item $Y \sim N(0,1)$ and
-\item $Y \sim N(0,1+C)$.
+\item $H_0: Y \sim N(0,1)$ and
+\item $H_A: Y \sim N(0,1+C)$.
 \end{itemize}
 
 \vspace{0.1in} \pause 
@@ -235,7 +283,7 @@ $p(H_0) = p(H_A) = 0.5$ is
 
 \vspace{0.1in} \pause 
 
-It appears the Bayesian and pvalue completely disagree!
+It appears the posterior model probability and pvalue completely disagree!
 \end{frame}
 
 % \begin{frame}[fragile]
@@ -290,7 +338,7 @@ Pvalues:
 
 Posterior model probabilities:
 \begin{itemize}[<+->]
-\item Bayesian posterior probabilities measure how likely the data are under 
+\item Posterior model probabilities measure how likely the data are under 
 the predictive distribution for each hypothesis.
 \item The larger the posterior probability, the more predictive that hypothesis 
 was compared to the other hypotheses.
