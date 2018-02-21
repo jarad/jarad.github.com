@@ -54,7 +54,7 @@ $\theta$: \pause
 \item confidence interval for $\theta$, \pause
 \item credible interval for $\theta$, \pause
 \item posterior model probability, e.g. $p(H_0|y)$, \pause and
-\item probability statements, e.g. $P(\theta<\theta_0|y)$. 
+\item posterior probability statements, e.g. $P(\theta<\theta_0|y)$. 
 \end{itemize}
 \pause
 Now, we will consider what happens when you have multiple $\theta$s. 
@@ -104,14 +104,14 @@ produced:
 \pause
 
 In R, you can code this as two vectors: 
-<<>>=
+<<data, echo=TRUE>>=
 successes = c(135,216)
 attempts  = c(140,230)
 @
 
 \pause
 or, better yet, as a data.frame:
-<<>>=
+<<data_data_frame, dependson="data", echo=TRUE>>=
 d = data.frame(process   = factor(1:2),
                successes = successes,
                attempts  = attempts)
@@ -124,14 +124,18 @@ d = data.frame(process   = factor(1:2),
 \begin{frame}[fragile]
 \frametitle{Pvalues and confidence intervals}
 
-Because there is no indicating that you expect one of the two manufacturing 
+Because there is no indication that you expect one of the two manufacturing 
 processes to have a higher probability, 
-you should perform a two-sided hypothesis test and calculate a two-sided
-confidence interval.
+you should perform a two-sided hypothesis test, i.e.
+\begin{itemize}
+\item $H_0: \theta_1=\theta_2$
+\item $H_A: \theta_1\ne \theta_2$
+\end{itemize}
+and calculate a two-sided confidence interval for $\theta_1-\theta_2$.
 
 \pause
 
-<<>>=
+<<frequentist_analysis, dependson="data_data_frame", echo=TRUE>>=
 (pt <- prop.test(d$successes, d$attempts))
 pt$p.value; pt$conf.int
 @
@@ -139,11 +143,37 @@ pt$p.value; pt$conf.int
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Bayesian analysis}
+
+Assume 
+\[
+Y_i \ind Bin(n_i,\theta_i)
+\]
+and
+\[ 
+\theta_i \ind Be(1,1).
+\]
+\pause
+Then the posterior is 
+\[ 
+\theta_i|y \ind Be(1+y_i, 1+n_i-y_i).
+\]
+\pause
+From this we can compute
+\[ 
+P(\theta_1<\theta_2|y) = P(\theta_1-\theta_2<0|y)
+\]
+and a credible interval for $\theta_1-\theta_2$ by simulating values from the 
+posterior and computing $\theta_1-\theta_2$.
+\end{frame}
+
+
 
 \begin{frame}[fragile]
 \frametitle{Posteriors}
 
-<<fig.height=3>>=
+<<posteriors, dependson="data_data_frame", echo=TRUE, fig.height=3>>=
 posterior <- function(d) {
   data.frame(theta = seq(.85,1,length=101)) %>%
        mutate(density = dbeta(theta, 1+d$successes, 1+d$attempts-d$successes))
@@ -164,7 +194,7 @@ ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=proces
 To obtain statistical inference on the difference, 
 we draw samples from the posterior and then calculate the difference:
 
-<<>>=
+<<bayesian_analysis, dependson="data_data_frame", echo=TRUE>>=
 n      <- 1e5
 theta1 <- rbeta(n, 1+d$success[1], 1+d$attempts[1] - d$success[1])
 theta2 <- rbeta(n, 1+d$success[2], 1+d$attempts[2] - d$success[2])
@@ -176,8 +206,8 @@ mean(diff)
 # Estimated 95% equal-tail credible interval
 quantile(diff, c(.025,.975))
 
-# Estimate of the probability that theta1 is larger than theta2
-mean(diff > 0)
+# Estimate of the probability that theta1 is less than theta2
+mean(diff < 0)
 @
 
 \end{frame}
@@ -228,14 +258,14 @@ produced:
 \pause
 
 In R, you can code this as two vectors: 
-<<>>=
+<<data2, echo=TRUE>>=
 successes = c(135,216,10)
 attempts  = c(140,230,10)
 @
 
 \pause
 or, better yet, as a data.frame:
-<<>>=
+<<data2_data_frame, dependson="data2", echo=TRUE>>=
 d = data.frame(process   = factor(1:3),
                successes = successes,
                attempts  = attempts)
@@ -259,7 +289,7 @@ H_A: \theta_i \ne \theta_j \mbox{ for some }i,j
 
 \pause
 
-<<>>=
+<<data2_frequentist_analysis, dependson="data2_data_frame", echo=TRUE>>=
 prop.test(d$successes, d$attempts)
 
 # Need to specify a comparison to get confidence intervals of the difference
@@ -274,7 +304,7 @@ prop.test(d$successes[c(1,3)], d$attempts[c(1,3)])$conf.int
 
 An alternative test for equality amongst the proportions uses {\tt chisq.test()}.
 
-<<>>=
+<<data2_chi_square, dependson="data2_data_frame", echo=TRUE>>=
 d$failures <- d$attempts - d$successes
 chisq.test(d[c("successes","failures")])
 chisq.test(d[c("successes","failures")], simulate.p.value = TRUE)
@@ -288,7 +318,7 @@ chisq.test(d[c("successes","failures")], simulate.p.value = TRUE)
 \begin{frame}[fragile]
 \frametitle{Posteriors}
 
-<<fig.height=3>>=
+<<data2_bayesian, dependson="data2_data_frame", echo=TRUE,fig.height=3>>=
 posterior <- function(d) {
   data.frame(theta = seq(.85,1,length=101)) %>%
        mutate(density = dbeta(theta, 1+d$successes, 1+d$attempts-d$successes))
@@ -309,7 +339,7 @@ ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=proces
 To compare the probabilities, 
 we draw samples from the posterior and compare them.
 
-<<>>=
+<<data2_posterior_simulation, dependson="data2_data_frame", echo=TRUE>>=
 posterior_samples <- function(d) {
   data.frame(
     rep = 1:1e5,
@@ -330,7 +360,6 @@ draws %>%
 @
 
 \end{frame}
-
 
 
 \end{document}
