@@ -48,11 +48,17 @@ Consider the model $Y_i \ind N(\mu,\sigma^2)$.
 We have discussed a number of statistical procedures to draw inferences about
 $\mu$: \pause
 \begin{itemize}
-\item pvalue for a hypothesis test, e.g. $H_0: \mu=\mu_0$, \pause
-\item confidence interval for $\mu$, \pause
-\item credible interval for $\mu$, \pause
-\item posterior model probability, e.g. $p(H_0|y)$, \pause and
-\item posterior probabilities, e.g. $P(\mu<\mu_0|y)$.
+\item Frequentist: based on distribution of $\frac{\overline{Y}-\mu}{s/\sqrt{n}}$ \pause
+  \begin{itemize}
+  \item pvalue for a hypothesis test, e.g. $H_0: \mu=\mu_0$, \pause
+  \item confidence interval for $\mu$, \pause
+  \end{itemize}
+\item Bayesian: based on posterior for $\mu$
+  \begin{itemize}
+  \item credible interval for $\mu$, \pause
+  \item posterior model probability, e.g. $p(H_0|y)$, \pause and
+  \item posterior probabilities, e.g. $P(\mu<\mu_0|y)$.
+  \end{itemize}
 \end{itemize}
 \pause
 Now, we will consider what happens when you have multiple $\mu$s.
@@ -73,11 +79,19 @@ and you are interested in the relationship between $\mu_1$ and $\mu_2$.
 \pause
 We can perform the following statistical procedures:
 \begin{itemize}
-\item pvalue for a hypothesis test, e.g. $H_0: \mu_1=\mu_2$, \pause
-\item confidence interval for $\mu_1-\mu_2$, \pause
-\item credible interval for $\mu_1-\mu_2$, \pause
-\item posterior model probability, e.g. $p(H_0|y)$, \pause and
-\item probability statements, e.g. $P(\mu_1<\mu_2|y)$.
+\item Frequentist: based on distribution of
+\[\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu2)}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}\]
+\pause
+  \begin{itemize}
+  \item pvalue for a hypothesis test, e.g. $H_0: \mu_1=\mu_2$, \pause
+  \item confidence interval for $\mu_1-\mu_2$, \pause
+  \end{itemize}
+\item Bayesian: based on posterior for $\mu_1,\mu_2$, i.e. $p(\mu_1,\mu_2|y)$
+  \begin{itemize}
+  \item credible interval for $\mu_1-\mu_2$, \pause
+  \item posterior model probability, e.g. $p(H_0|y)$, \pause and
+  \item probability statements, e.g. $P(\mu_1<\mu_2|y)$.
+  \end{itemize}
 \end{itemize}
 where $y=(y_1,y_2)$.
 
@@ -98,10 +112,12 @@ but later we will use all 3 groups.
 
 <<data, echo=TRUE>>=
 set.seed(20170301)
+
+# Using the unknown population means and standard deviations
 d <- bind_rows(
   data_frame(process = "P1", sensitivity = rnorm(22,  7.8, 2.3)),
   data_frame(process = "P2", sensitivity = rnorm(34,  9.3, 2.3)),
-  data_frame(process = "P3", sensitivity = rnorm( 7, 10.0, 2.3))) 
+  data_frame(process = "P3", sensitivity = rnorm( 7, 10.0, 2.3)))
 
 # readr::write_csv(d, path="sensitivity.csv")
 @
@@ -140,6 +156,27 @@ sm
 
 
 \subsection{Frequentist analysis}
+\begin{frame}
+\frametitle{Frequentist analysis}
+
+Analyses are based on the distribution of
+\[
+\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu2)}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}.
+\]
+\pause
+Unfortunately, this distribution is unknown.
+\pause
+The standard (although somewhat controversial) approach is to assume this
+has a $t$ distribution but with an unknown degrees of freedom.
+\pause
+The degrees of freedom is often computed using the Satterthwaite approximation:
+\[
+df \approx \frac{\left( \frac{s_1^2}{n_1} + \frac{s_2^2}{n_2} \right)^2}{\frac{s_1^4}{n_1^2(n_1-1)} + \frac{s_2^4}{n_2^2(n_2-1)}}.
+\]
+
+\end{frame}
+
+
 \begin{frame}[fragile]
 \frametitle{Pvalues and confidence intervals}
 
@@ -189,12 +226,12 @@ Simulations:
 nr = 1e5
 sims <- bind_rows(
   data_frame(
-    rep = 1:nr, 
-    process = "P1", 
+    rep = 1:nr,
+    process = "P1",
     mu = sm$mean[1] + rt(nr, df = sm$n[1]-1) * sm$sd[1] / sqrt(sm$n[1])),
   data_frame(
-    rep = 1:nr, 
-    process = "P2", 
+    rep = 1:nr,
+    process = "P2",
     mu = sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2]))
 )
 @
@@ -208,7 +245,7 @@ Compare posterior histograms for $\mu_1$ and $\mu_2$.
 \pause
 
 <<mu_posteriors, dependson="mu_draws", fig.height=3.5, echo=TRUE>>=
-ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) + 
+ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) +
   geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
   theme_bw()
 @
@@ -224,7 +261,7 @@ To obtain statistical inference on the difference,
 we use the samples and take the difference
 
 <<mu_difference, dependson="mu_draws", echo=TRUE>>=
-d3 <- sims %>% 
+d3 <- sims %>%
   spread(process, mu) %>%
   mutate(diff = P1-P2)
 
@@ -256,11 +293,17 @@ and you are interested in the relationship amongst the $\mu_i$.
 
 We can perform the following statistical procedures:
 \begin{itemize}
-\item pvalue for a hypothesis test, e.g. $H_0: \mu_i=\mu$ for all $i$, \pause
-\item confidence interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
-\item credible interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
-\item posterior model probability, e.g. $p(H_0|y)$, \pause and
-\item probability statements, e.g. $P(\mu_i<\mu_i|y)$ for a specified $i$ and $j$.
+\item Frequentist: 
+  \begin{itemize}
+  \item pvalue for a hypothesis test, e.g. $H_0: \mu_i=\mu$ for all $i$, \pause
+  \item confidence interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
+  \end{itemize}
+\item Bayesian: based on posterior for $\mu_1,\ldots,\mu_I$
+  \begin{itemize}
+  \item credible interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
+  \item posterior model probability, e.g. $p(H_0|y)$, \pause and
+  \item probability statements, e.g. $P(\mu_i<\mu_i|y)$ for a specified $i$ and $j$.
+  \end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -314,9 +357,9 @@ oneway.test(sensitivity ~ process, data = d)
 Then we typically look at pairwise differences:
 
 <<pairwise, dependson="ftest", echo=TRUE>>=
-pairwise.t.test(d$sensitivity, 
-                d$process, 
-                pool.sd = FALSE, 
+pairwise.t.test(d$sensitivity,
+                d$process,
+                pool.sd = FALSE,
                 p.adjust.method = "none")
 @
 
@@ -354,7 +397,10 @@ pairwise.t.test(d$sensitivity,
 \begin{frame}[fragile]
 \frametitle{Posteriors for $\mu$}
 
-Recall that
+When
+\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2),\]
+\pause
+we have 
 \[
 \mu_i|y_i \ind t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
 \]
@@ -370,8 +416,8 @@ and that a draw for $\mu_i$ can be obtained by taking
 sims <- bind_rows(
   sims, # groups 1 and 2
   data_frame(
-    rep = 1:nr, 
-    process = "P3", 
+    rep = 1:nr,
+    process = "P3",
     mu = sm$mean[3] + rt(nr, df = sm$n[3]-1) * sm$sd[3] / sqrt(sm$n[3]))
 )
 @
@@ -389,7 +435,7 @@ to compare the posteriors.
 \pause
 
 <<mu3_posteriors, dependson="mu3_draws", fig.height=3.5, echo=TRUE>>=
-ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) + 
+ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) +
   geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
   theme_bw()
 @
@@ -405,7 +451,7 @@ ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) +
 \begin{frame}[fragile]
 \frametitle{Credible intervals for differences}
 
-Use the simulations to calculate posterior probabilities and 
+Use the simulations to calculate posterior probabilities and
 credible intervals for differences.
 
 <<mu3_comparison, dependson="mu3_draws", echo=TRUE>>=
@@ -505,9 +551,9 @@ and thus, we obtain joint samples for $\mu$ by performing the following
 
 <<mu2_draws, dependson="summary2", echo=TRUE>>=
 nr = 1e5
-sims <- data.frame(rep = 1:nr, 
-  sigma = 1/sqrt( rgamma(nr, 
-                         shape = sum(sm$n-1)/2, 
+sims <- data.frame(rep = 1:nr,
+  sigma = 1/sqrt( rgamma(nr,
+                         shape = sum(sm$n-1)/2,
                          rate = sum((sm$n-1)*sm$sd^2))/2 )) %>%
   mutate(
     mu1 = rnorm(nr, mean = sm$mean[1], sd = sigma / sqrt(sm$n[1])),
@@ -529,8 +575,8 @@ to compare the posteriors.
 
 <<mu2_posteriors, dependson="mu2_draws", fig.height=3.5, warning=FALSE>>=
 d_plot <- sims %>% gather(parameter, draw, -rep, -sigma)
-ggplot(d_plot, aes(draw, fill=parameter, group=parameter)) + 
-  geom_histogram(position = "identity", alpha = 0.5, binwidth=0.1) + 
+ggplot(d_plot, aes(draw, fill=parameter, group=parameter)) +
+  geom_histogram(position = "identity", alpha = 0.5, binwidth=0.1) +
   theme_bw()
 @
 

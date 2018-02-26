@@ -44,7 +44,6 @@ you can find them
 
 |Topic|Source|Handouts|
 |---|---|---|
-|Comparing means|[Set16.Rnw](Set16/Set16_Comparing_means.Rnw)|[Set16.pdf](Set16/Set16_Comparing_means.pdf)|
 |Multiple comparisons|[Set17.Rnw](Set17/Set17_Multiple_comparisons.Rnw)|[Set17.pdf](Set17/Set17_Multiple_comparisons.pdf)|
 
 ### Regression
