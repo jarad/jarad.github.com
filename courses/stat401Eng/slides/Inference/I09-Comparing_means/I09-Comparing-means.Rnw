@@ -23,7 +23,6 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE, cache=FALSE>>=
-library("plyr")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
@@ -39,12 +38,12 @@ set.seed(2)
 \maketitle
 \end{frame}
 
-\section{Comparing means}
+\section{One mean summary}
 \subsection{One mean}
 \begin{frame}
 \frametitle{One mean}
 
-Consider the model $Y_i \ind N(\mu,\sigma^2)$. 
+Consider the model $Y_i \ind N(\mu,\sigma^2)$.
 \pause
 We have discussed a number of statistical procedures to draw inferences about
 $\mu$: \pause
@@ -53,23 +52,24 @@ $\mu$: \pause
 \item confidence interval for $\mu$, \pause
 \item credible interval for $\mu$, \pause
 \item posterior model probability, e.g. $p(H_0|y)$, \pause and
-\item probability statements, e.g. $P(\mu<\mu_0|y)$. 
+\item posterior probabilities, e.g. $P(\mu<\mu_0|y)$.
 \end{itemize}
 \pause
-Now, we will consider what happens when you have multiple $\mu$s. 
+Now, we will consider what happens when you have multiple $\mu$s.
 
 \end{frame}
 
 
-\subsection{Two means}
+\section{Comparing two means}
+\subsection{Normal model}
 \begin{frame}
 \frametitle{Two means}
 
-Consider the model 
-\[ Y_{i,j} \sim N(\mu_i,\sigma_i^2)\] 
-for $i=1,2$ and $j=1,\ldots,n_i$.  
-\pause 
-and you are interested in the relationship between $\mu_1$ and $\mu_2$. 
+Consider the model
+\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
+for $i=1,2$ and $j=1,\ldots,n_i$.
+\pause
+and you are interested in the relationship between $\mu_1$ and $\mu_2$.
 \pause
 We can perform the following statistical procedures:
 \begin{itemize}
@@ -77,24 +77,33 @@ We can perform the following statistical procedures:
 \item confidence interval for $\mu_1-\mu_2$, \pause
 \item credible interval for $\mu_1-\mu_2$, \pause
 \item posterior model probability, e.g. $p(H_0|y)$, \pause and
-\item probability statements, e.g. $P(\mu_1<\mu_2|y)$. 
+\item probability statements, e.g. $P(\mu_1<\mu_2|y)$.
 \end{itemize}
-where $y=(y_1,y_2)$. 
+where $y=(y_1,y_2)$.
 
 \end{frame}
 
 
-\begin{frame}
+\subsection{Simulating data}
+\begin{frame}[fragile]
 \frametitle{Simulating data}
-<<data, echo=FALSE>>=
+
+We will simulate the following data
+\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
+for $i=1,2,3$ and $j=1,\ldots,n_i$. \pause
+For the moment we will only use the first two groups,
+but later we will use all 3 groups.
+
+\vspace{0.1in} \pause
+
+<<data, echo=TRUE>>=
 set.seed(20170301)
 d <- bind_rows(
-  data.frame(process = 1, sensitivity = rnorm(22,  7.8, 2.3)),
-  data.frame(process = 2, sensitivity = rnorm(34,  9.3, 2.3)),
-  data.frame(process = 3, sensitivity = rnorm( 7, 10.0, 2.3))) %>%
-  mutate(process = factor(process))
+  data_frame(process = "P1", sensitivity = rnorm(22,  7.8, 2.3)),
+  data_frame(process = "P2", sensitivity = rnorm(34,  9.3, 2.3)),
+  data_frame(process = "P3", sensitivity = rnorm( 7, 10.0, 2.3))) 
 
-readr::write_csv(d, path="sensitivity.csv")
+# readr::write_csv(d, path="sensitivity.csv")
 @
 \end{frame}
 
@@ -102,82 +111,106 @@ readr::write_csv(d, path="sensitivity.csv")
 \begin{frame}[fragile]
 \frametitle{Data example}
 
-Suppose you have two manufacturing processes to produce sensors and 
+Suppose you have two manufacturing processes to produce sensors and
 you are interested in the average sensitivity of the sensors.
 
 \vspace{0.1in} \pause
 
-So you run the two processes and record the sensitivity of each sensor in units 
+So you run the two processes and record the sensitivity of each sensor in units
 of mV/V/mm Hg (\url{http://www.ni.com/white-paper/14860/en/}).
 \pause
 And you have the following summary statistics:
-<<summary, dependson="data">>=
-d <- readr::read_csv("sensitivity.csv")
-sm <- d %>%
+<<d2, dependson="data", echo=TRUE>>=
+# d <- readr::read_csv("sensitivity.csv")
+d2 <- d %>% filter(process %in% c("P1","P2"))
+@
+
+<<sm, dependson="d2", echo=TRUE>>=
+sm <- d2 %>%
   group_by(process) %>%
   summarize(
     n    = n(),
     mean = mean(sensitivity),
     sd   = sd(sensitivity)
-  ) 
-sm %>% filter(process <= 2)
+  )
+sm
 @
 
 \end{frame}
 
 
-
+\subsection{Frequentist analysis}
 \begin{frame}[fragile]
 \frametitle{Pvalues and confidence intervals}
 
-Because there is no indication that you have any expectation of the 
-sensitivities in process 1 compared to process 2, we will conduct a two-sided
-two-sample t-test assuming the variances are not equal:
+Because there is no indication that you have any expectation regarding the
+sensitivities of process 1 compared to process 2, we will conduct a two-sided
+\alert{two-sample t-test} assuming the variances are not equal,
+\pause
+i.e.
+\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
+\pause
+and
+
+\[
+H_0: \mu_1=\mu_2
+\quad\text{and}\quad
+H_A: \mu_1\ne \mu_2
+\]
 
 \pause
 
-<<>>=
-t.test(sensitivity ~ process, data = d %>% filter(process <= 2))
+<<welch, dependson="d2",echo=TRUE>>=
+t.test(sensitivity ~ process, data = d2)
 @
 
 \end{frame}
 
 
-
+\subsection{Bayesian analysis}
 \begin{frame}[fragile]
 \frametitle{Posteriors for $\mu$}
 
-Recall that 
-\[ 
-\mu_i|y_i \sim t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
+When
+\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
+Recall that
+\[
+\mu_i|y_i \ind t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
 \]
 \pause
-and that a draw for $\mu_i$ can be obtained by taking 
-\[ 
-\overline{y}_i + T_{n_i-1} s_i/\sqrt{n_i}, \quad T_{n_i-1} \sim t_{n_i-1}(0,1).
+and that a draw for $\mu_i$ can be obtained by taking
+\[
+\overline{y}_i + T_{n_i-1} s_i/\sqrt{n_i}, \quad T_{n_i-1} \ind t_{n_i-1}(0,1).
 \]
 \pause
 
-
-<<mu_draws, dependson="summary">>=
+Simulations:
+<<mu_draws, dependson="sm", echo=TRUE>>=
 nr = 1e5
-mu1 <- sm$mean[1] + rt(nr, df = sm$n[1]-1) * sm$sd[1] / sqrt(sm$n[1])
-mu2 <- sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2])
+sims <- bind_rows(
+  data_frame(
+    rep = 1:nr, 
+    process = "P1", 
+    mu = sm$mean[1] + rt(nr, df = sm$n[1]-1) * sm$sd[1] / sqrt(sm$n[1])),
+  data_frame(
+    rep = 1:nr, 
+    process = "P2", 
+    mu = sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2]))
+)
 @
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{We can use these draws to compare the posteriors}
 
-We can obtain posteriors for $\mu$ and plot histograms (or smoothed histograms) 
-to compare the posteriors.
+Compare posterior histograms for $\mu_1$ and $\mu_2$.
 \pause
 
-<<mu_posteriors, dependson="mu_draws", fig.height=3.5>>=
-plot(density(mu1), main = "Posteriors", xlab=expression(mu))
-lines(density(mu2), col='red', lty=2)
-legend("topleft", paste("Process", 1:2), col=c("black","red"), lty=1:2)
+<<mu_posteriors, dependson="mu_draws", fig.height=3.5, echo=TRUE>>=
+ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) + 
+  geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
+  theme_bw()
 @
 
 \end{frame}
@@ -187,35 +220,37 @@ legend("topleft", paste("Process", 1:2), col=c("black","red"), lty=1:2)
 \begin{frame}[fragile]
 \frametitle{Credible interval for the difference}
 
-To obtain statistical inference on the difference, 
+To obtain statistical inference on the difference,
 we use the samples and take the difference
 
-<<mu_difference, dependson="mu_draws">>=
-diff = mu1 - mu2
+<<mu_difference, dependson="mu_draws", echo=TRUE>>=
+d3 <- sims %>% 
+  spread(process, mu) %>%
+  mutate(diff = P1-P2)
 
 # Bayes estimate for the difference
-mean(diff)
+mean(d3$diff)
 
 # Estimated 95% equal-tail credible interval
-quantile(diff, c(.025,.975))
+quantile(d3$diff, c(.025,.975))
 
 # Estimate of the probability that mu1 is larger than mu2
-mean(diff > 0)
+mean(d3$diff > 0)
 @
 
 \end{frame}
 
 
 
-\subsection{Multiple means}
+\subsection{Three or more means}
 \begin{frame}
-\frametitle{Multiple means}
+\frametitle{Three or more means}
 
-Now, let's consider the more general problem of 
-\[ Y_{i,j} \sim N(\mu_i,\sigma_i^2)\] 
+Now, let's consider the more general problem of
+\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
 for $i=1,2,\ldots,I$ and $j=1,\ldots,n_i$
 \pause
-and you are interested in the relationship amongst the $\mu_i$. 
+and you are interested in the relationship amongst the $\mu_i$.
 
 \vspace{0.1in} \pause
 
@@ -225,7 +260,7 @@ We can perform the following statistical procedures:
 \item confidence interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
 \item credible interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
 \item posterior model probability, e.g. $p(H_0|y)$, \pause and
-\item probability statements, e.g. $P(\mu_i<\mu_i|y)$ for a specified $i$ and $j$. 
+\item probability statements, e.g. $P(\mu_i<\mu_i|y)$ for a specified $i$ and $j$.
 \end{itemize}
 \end{frame}
 
@@ -234,16 +269,23 @@ We can perform the following statistical procedures:
 \begin{frame}[fragile]
 \frametitle{Data example}
 
-Suppose you have three manufacturing processes to produce sensors and 
+Suppose you have three manufacturing processes to produce sensors and
 you are interested in the average sensitivity of the sensors.
 
 \vspace{0.1in} \pause
 
-So you run the three processes and record the sensitivity of each sensor in units 
+So you run the three processes and record the sensitivity of each sensor in units
 of mV/V/mm Hg (\url{http://www.ni.com/white-paper/14860/en/}).
 \pause
 And you have the following summary statistics:
-<<summary2, dependson="summary">>=
+<<summary2, dependson="data", echo=TRUE>>=
+sm <- d %>%
+  group_by(process) %>%
+  summarize(
+    n    = n(),
+    mean = mean(sensitivity),
+    sd   = sd(sensitivity)
+  )
 sm
 @
 
@@ -256,23 +298,26 @@ sm
 
 \small
 
-When there are lots of means, the first null hypothesis is typically 
+When there are lots of means, the first null hypothesis is typically
 \[
-H_0: \mu_i = \mu \, \forall \, i 
+H_0: \mu_i = \mu \, \forall \, i
 \]
 
 \pause
 
-<<ftest, dependson="data">>=
+<<ftest, dependson="data", echo=TRUE>>=
 oneway.test(sensitivity ~ process, data = d)
 @
 
 \pause
 
-Then we typically want to look at pairwise differences:
+Then we typically look at pairwise differences:
 
-<<pairwise, dependson="ftest">>=
-pairwise.t.test(d$sensitivity, d$process, pool.sd = FALSE, p.adjust.method = "none")
+<<pairwise, dependson="ftest", echo=TRUE>>=
+pairwise.t.test(d$sensitivity, 
+                d$process, 
+                pool.sd = FALSE, 
+                p.adjust.method = "none")
 @
 
 \end{frame}
@@ -280,27 +325,27 @@ pairwise.t.test(d$sensitivity, d$process, pool.sd = FALSE, p.adjust.method = "no
 
 % \begin{frame}[fragile]
 % \frametitle{Confidence intervals}
-% 
+%
 % We can consider confidence intervals for the following quantities
 % \begin{itemize}
-% \item $\mu_i$ for all $i$ 
+% \item $\mu_i$ for all $i$
 % \item $\mu_i - \mu_j$ for any $i$ and $j$
 % \end{itemize}
-% 
+%
 % \pause
-% 
+%
 % <<>>=
 % t.test(d$sensitivity[d$process == 1])$conf.int %>% as.numeric
 % t.test(d$sensitivity[d$process == 2])$conf.int %>% as.numeric
 % t.test(d$sensitivity[d$process == 3])$conf.int %>% as.numeric
 % @
-% 
+%
 % \pause
-% 
+%
 % <<>>=
 % TukeyHSD()
 % @
-% 
+%
 % \end{frame}
 
 
@@ -309,29 +354,26 @@ pairwise.t.test(d$sensitivity, d$process, pool.sd = FALSE, p.adjust.method = "no
 \begin{frame}[fragile]
 \frametitle{Posteriors for $\mu$}
 
-Recall that 
-\[ 
-\mu_i|y_i \sim t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
+Recall that
+\[
+\mu_i|y_i \ind t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
 \]
 \pause
-and that a draw for $\mu_i$ can be obtained by taking 
-\[ 
-\overline{y}_i + T_{n_i-1} s_i/\sqrt{n_i}, \quad T_{n_i-1} \sim t_{n_i-1}(0,1).
+and that a draw for $\mu_i$ can be obtained by taking
+\[
+\overline{y}_i + T_{n_i-1} s_i/\sqrt{n_i}, \quad T_{n_i-1} \ind t_{n_i-1}(0,1).
 \]
 \pause
 
 
-<<mu3_draws, dependson="summary">>=
-posterior_samples <- function(d) {
-  data.frame(
-    rep = 1:1e5,
-    parameter = paste0("mu", d$process),
-    value = d$mean + rt(1e5, df = d$n-1) * d$sd / sqrt(d$n),
-    stringsAsFactors = FALSE) 
-}
-
-draws <- sm %>% group_by(process) %>% do(posterior_samples(.)) %>% ungroup() %>%
-  select(-process)
+<<mu3_draws, dependson="summary2", echo=TRUE>>=
+sims <- bind_rows(
+  sims, # groups 1 and 2
+  data_frame(
+    rep = 1:nr, 
+    process = "P3", 
+    mu = sm$mean[3] + rt(nr, df = sm$n[3]-1) * sm$sd[3] / sqrt(sm$n[3]))
+)
 @
 
 
@@ -342,13 +384,14 @@ draws <- sm %>% group_by(process) %>% do(posterior_samples(.)) %>% ungroup() %>%
 \begin{frame}[fragile]
 \frametitle{We can use these draws to compare the posteriors}
 
-We can obtain posteriors for $\mu$ and plot histograms (or smoothed histograms) 
+We can obtain posteriors for $\mu$ and plot histograms (or smoothed histograms)
 to compare the posteriors.
 \pause
 
-<<mu3_posteriors, dependson="mu3_draws", fig.height=3.5, warning=FALSE>>=
-ggplot(draws, aes(x=value, color = parameter, linetype = parameter)) + 
-  geom_density() + theme_bw() + xlim(6,16)
+<<mu3_posteriors, dependson="mu3_draws", fig.height=3.5, echo=TRUE>>=
+ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) + 
+  geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
+  theme_bw()
 @
 
 \end{frame}
@@ -360,20 +403,26 @@ ggplot(draws, aes(x=value, color = parameter, linetype = parameter)) +
 
 
 \begin{frame}[fragile]
-\frametitle{Credible interval for the difference}
+\frametitle{Credible intervals for differences}
 
-To compare the means, 
-we compare the samples drawn from the posterior. 
+Use the simulations to calculate posterior probabilities and 
+credible intervals for differences.
 
-
-<<mu3_comparison, dependson="mu3_draws">>=
+<<mu3_comparison, dependson="mu3_draws", echo=TRUE>>=
 # Estimate of the probability that one mean is larger than another
-draws %>% 
-  tidyr::spread(parameter, value) %>%
-  summarize(`P(mu1>mu2|y)` = mean(mu1 > mu2),
-            `P(mu1>mu3|y)` = mean(mu1 > mu3),
-            `P(mu2>mu3|y)` = mean(mu2 > mu3)) %>%
-  gather(comparison, probability)
+sims %>%
+  spread(process, mu) %>%
+  mutate(`mu1-mu2` = P1-P2,
+            `mu1-mu3` = P1-P3,
+            `mu2-mu3` = P2-P3) %>%
+  select(`mu1-mu2`,`mu1-mu3`,`mu2-mu3`) %>%
+  gather(comparison, diff) %>%
+  group_by(comparison) %>%
+  summarize(probability = mean(diff>0) %>% round(4),
+            lower = quantile(diff, .025) %>% round(2),
+            upper = quantile(diff, .975) %>% round(2)) %>%
+  mutate(credible_interval = paste("(",lower,",",upper,")", sep="")) %>%
+  select(comparison, probability, credible_interval)
 @
 
 \end{frame}
@@ -385,11 +434,11 @@ draws %>%
 \begin{frame}[fragile]
 \frametitle{Common variance model}
 
-Especially when there is a small amount of data, 
+Especially when there is a small amount of data,
 it is common to assume that each group has the same variability.
 \pause
 So we typically assume
-\[ 
+\[
 Y_{ij} \ind N(\mu_i,\sigma^2)
 \]
 \pause
@@ -399,7 +448,7 @@ H_0:\sigma_i = \sigma \, \forall i
 \]
 \pause
 
-<<>>=
+<<bartlett, dependson="data", echo=TRUE>>=
 bartlett.test(sensitivity ~ process, data = d)
 @
 
@@ -410,23 +459,23 @@ bartlett.test(sensitivity ~ process, data = d)
 \begin{frame}[fragile]
 \frametitle{Comparing means when the variances are equal}
 
-Now we can test 
-\[ 
+Now we can test
+\[
 H_0: \mu_i = \mu \, \forall \, i
 \]
 within the model $Y_{ij} \ind N(\mu_i,\sigma^2)$.
 
 \pause
 
-<<ftest2, dependson="data">>=
+<<ftest2, dependson="data", echo=TRUE>>=
 oneway.test(sensitivity ~ process, data = d, var.equal = TRUE)
 @
 
 \pause
 
-Then we typically want to look at pairwise differences:
+Then we typically look at pairwise differences:
 
-<<pairwise2, dependson="ftest">>=
+<<pairwise2, dependson="ftest", echo=TRUE>>=
 pairwise.t.test(d$sensitivity, d$process, p.adjust.method = "none")
 @
 
@@ -437,29 +486,33 @@ pairwise.t.test(d$sensitivity, d$process, p.adjust.method = "none")
 \begin{frame}[fragile]
 \frametitle{Posteriors for $\mu$}
 
-If $Y_{ij} \ind N(\mu_i,\sigma^2)$ and we use the prior 
-$p(\mu_1,\ldots,\mu_I,\sigma^2) \propto 1/\sigma^2$, 
-\pause then 
-\[ 
-\mu_i|y_i,\sigma^2 \ind N(\overline{y}_i, \sigma^2/n_i) 
+If $Y_{ij} \ind N(\mu_i,\sigma^2)$ and we use the prior
+$p(\mu_1,\ldots,\mu_I,\sigma^2) \propto 1/\sigma^2$,
+\pause then
+\[
+\mu_i|y_i,\sigma^2 \ind N(\overline{y}_i, \sigma^2/n_i)
 \quad
 \sigma^2|y \sim IG\left( \frac{n-I}{2}, \frac{1}{2}\sum_{i=1}^I \sum_{j=1}^{n_i} (y_{ij}-\overline{y}_i)^2\right)
 \]
-where $n=\sum_{i=1}^I n_i$. 
+where $n=\sum_{i=1}^I n_i$.
 \pause
-and thus, we obtain joint samples for the $\mu$ by performing the following
+and thus, we obtain joint samples for $\mu$ by performing the following
 \begin{enumerate}
 \item $\sigma^{2(m)} \sim p(\sigma^2|y)$ \\
 \item For $i=1,\ldots,I$, $\mu_i \sim p(\mu|y_i,\sigma^{2(m)})$.
 \end{enumerate}
 
 
-<<mu2_draws, dependson="summary">>=
+<<mu2_draws, dependson="summary2", echo=TRUE>>=
 nr = 1e5
-sigma <- 1/sqrt( rgamma(nr, shape = sum(sm$n-1)/2, rate = sum((sm$n-1)*sm$sd^2))/2 )
-mu1 <- rnorm(nr, sm$mean[1], sigma / sqrt(sm$n[1]))
-mu2 <- rnorm(nr, sm$mean[2], sigma / sqrt(sm$n[2]))
-mu3 <- rnorm(nr, sm$mean[3], sigma / sqrt(sm$n[3]))
+sims <- data.frame(rep = 1:nr, 
+  sigma = 1/sqrt( rgamma(nr, 
+                         shape = sum(sm$n-1)/2, 
+                         rate = sum((sm$n-1)*sm$sd^2))/2 )) %>%
+  mutate(
+    mu1 = rnorm(nr, mean = sm$mean[1], sd = sigma / sqrt(sm$n[1])),
+    mu2 = rnorm(nr, mean = sm$mean[2], sd = sigma / sqrt(sm$n[2])),
+    mu3 = rnorm(nr, mean = sm$mean[3], sd = sigma / sqrt(sm$n[3])))
 @
 
 
@@ -470,13 +523,15 @@ mu3 <- rnorm(nr, sm$mean[3], sigma / sqrt(sm$n[3]))
 \begin{frame}[fragile]
 \frametitle{We can use these draws to compare the posteriors}
 
-We can obtain posteriors for $\mu$ and plot histograms (or smoothed histograms) 
+We can obtain posteriors for $\mu$ and plot histograms (or smoothed histograms)
 to compare the posteriors.
 \pause
 
 <<mu2_posteriors, dependson="mu2_draws", fig.height=3.5, warning=FALSE>>=
-ggplot(draws, aes(x=value, color = parameter, linetype = parameter)) + 
-  geom_density() + theme_bw() + xlim(6,16)
+d_plot <- sims %>% gather(parameter, draw, -rep, -sigma)
+ggplot(d_plot, aes(draw, fill=parameter, group=parameter)) + 
+  geom_histogram(position = "identity", alpha = 0.5, binwidth=0.1) + 
+  theme_bw()
 @
 
 \end{frame}
@@ -486,17 +541,23 @@ ggplot(draws, aes(x=value, color = parameter, linetype = parameter)) +
 \begin{frame}[fragile]
 \frametitle{Credible interval for the differences}
 
-To compare the means, 
-we compare the samples drawn from the posterior. 
+To compare the means,
+we compare the samples drawn from the posterior.
 
 
-<<mu2_comparison, dependson="mu2_draws">>=
-# Estimate of the probability that one mean is larger than another
-draws %>% tidyr::spread(parameter, value) %>%
-  summarize(`P(mu1>mu2|y)` = mean(mu1 > mu2),
-            `P(mu1>mu3|y)` = mean(mu1 > mu3),
-            `P(mu2>mu3|y)` = mean(mu2 > mu3)) %>%
-  gather(comparison, probability)
+<<mu2_comparison, dependson="mu2_draws", echo=TRUE>>=
+sims %>%
+  mutate(`mu1-mu2` = mu1-mu2,
+         `mu1-mu3` = mu1-mu3,
+         `mu2-mu3` = mu2-mu3) %>%
+  select(`mu1-mu2`,`mu1-mu3`,`mu2-mu3`) %>%
+  gather(comparison, diff) %>%
+  group_by(comparison) %>%
+  summarize(probability = mean(diff>0) %>% round(4),
+            lower = quantile(diff, .025) %>% round(2),
+            upper = quantile(diff, .975) %>% round(2)) %>%
+  mutate(credible_interval = paste("(",lower,",",upper,")", sep="")) %>%
+  select(comparison, probability, credible_interval)
 @
 
 \end{frame}
