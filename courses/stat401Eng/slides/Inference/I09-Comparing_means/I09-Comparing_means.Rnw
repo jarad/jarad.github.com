@@ -72,15 +72,16 @@ Now, we will consider what happens when you have multiple $\mu$s.
 \frametitle{Two means}
 
 Consider the model
-\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
-for $i=1,2$ and $j=1,\ldots,n_i$.
+\[ Y_{g,i} \ind N(\mu_g,\sigma_g^2)\]
+for $g=1,2$ and $i=1,\ldots,n_g$.
 \pause
 and you are interested in the relationship between $\mu_1$ and $\mu_2$.
 \pause
 We can perform the following statistical procedures:
 \begin{itemize}
 \item Frequentist: based on distribution of
-\[\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu2)}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}\]
+\[\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}}\]
+where $S_g^2$ is the (random) sample variance of group $g$.
 \pause
   \begin{itemize}
   \item pvalue for a hypothesis test, e.g. $H_0: \mu_1=\mu_2$, \pause
@@ -93,7 +94,7 @@ We can perform the following statistical procedures:
   \item probability statements, e.g. $P(\mu_1<\mu_2|y)$.
   \end{itemize}
 \end{itemize}
-where $y=(y_1,y_2)$.
+where $y=(y_{1,1},\ldots,y_{1,n_1},y_{2,1},\ldots,y_{2,n_2})$.
 
 \end{frame}
 
@@ -103,8 +104,8 @@ where $y=(y_1,y_2)$.
 \frametitle{Simulating data}
 
 We will simulate the following data
-\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
-for $i=1,2,3$ and $j=1,\ldots,n_i$. \pause
+\[ Y_{g,i} \ind N(\mu_g,\sigma_g^2)\]
+for $g=1,2,3$ and $i=1,\ldots,n_g$. \pause
 For the moment we will only use the first two groups,
 but later we will use all 3 groups.
 
@@ -161,7 +162,8 @@ sm
 
 Analyses are based on the distribution of
 \[
-\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu2)}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}.
+\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}}
+\uncover<3->{\sim t_{df}(0,1).}
 \]
 \pause
 Unfortunately, this distribution is unknown.
@@ -185,7 +187,7 @@ sensitivities of process 1 compared to process 2, we will conduct a two-sided
 \alert{two-sample t-test} assuming the variances are not equal,
 \pause
 i.e.
-\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
+\[ Y_{g,i} \ind N(\mu_g,\sigma_g^2)\]
 \pause
 and
 
@@ -206,18 +208,22 @@ t.test(sensitivity ~ process, data = d2)
 
 \subsection{Bayesian analysis}
 \begin{frame}[fragile]
-\frametitle{Posteriors for $\mu$}
+\frametitle{Posterior for $\mu_1,\mu_2$}
 
-When
-\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
-Recall that
+Assume
+\[ Y_{g,i} \ind N(\mu_g,\sigma_g^2) 
+\quad \text{and} \quad
+p(\mu_1,\mu_2,\sigma_1^2,\sigma_2^2) \propto 
+\frac{1}{\sigma_1^2} \frac{1}{\sigma_2^2}.
+\]
+Then
 \[
-\mu_i|y_i \ind t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
+\mu_g|y \ind t_{n_g-1}(\overline{y}_g, s_g^2/n_g)
 \]
 \pause
-and that a draw for $\mu_i$ can be obtained by taking
+and a draw for $\mu_g$ can be obtained by taking
 \[
-\overline{y}_i + T_{n_i-1} s_i/\sqrt{n_i}, \quad T_{n_i-1} \ind t_{n_i-1}(0,1).
+\overline{y}_g + T_{n_g-1} s_g/\sqrt{n_g}, \quad T_{n_g-1} \ind t_{n_g-1}(0,1).
 \]
 \pause
 
@@ -284,10 +290,10 @@ mean(d3$diff > 0)
 \frametitle{Three or more means}
 
 Now, let's consider the more general problem of
-\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2)\]
-for $i=1,2,\ldots,I$ and $j=1,\ldots,n_i$
+\[ Y_{g,i} \ind N(\mu_g,\sigma_g^2)\]
+for $g=1,2,\ldots,G$ and $i=1,\ldots,n_g$
 \pause
-and you are interested in the relationship amongst the $\mu_i$.
+and you are interested in the relationship amongst the $\mu_g$.
 
 \vspace{0.1in} \pause
 
@@ -295,14 +301,14 @@ We can perform the following statistical procedures:
 \begin{itemize}
 \item Frequentist: 
   \begin{itemize}
-  \item pvalue for a hypothesis test, e.g. $H_0: \mu_i=\mu$ for all $i$, \pause
-  \item confidence interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
+  \item pvalue for a hypothesis test, e.g. $H_0: \mu_g=\mu$ for all $g$, \pause
+  \item confidence interval for $\mu_k-\mu_{k'}$ for a specified $k$ and $k'$, \pause
   \end{itemize}
-\item Bayesian: based on posterior for $\mu_1,\ldots,\mu_I$
+\item Bayesian: based on posterior for $\mu_1,\ldots,\mu_G$
   \begin{itemize}
-  \item credible interval for $\mu_i-\mu_j$ for a specified $i$ and $j$, \pause
+  \item credible interval for $\mu_k-\mu_{k'}$ for a specified $k$ and $k'$, \pause
   \item posterior model probability, e.g. $p(H_0|y)$, \pause and
-  \item probability statements, e.g. $P(\mu_i<\mu_i|y)$ for a specified $i$ and $j$.
+  \item probability statements, e.g. $P(\mu_k<\mu_{k'}|y)$ for a specified $k$ and $k'$.
   \end{itemize}
 \end{itemize}
 \end{frame}
@@ -343,7 +349,7 @@ sm
 
 When there are lots of means, the first null hypothesis is typically
 \[
-H_0: \mu_i = \mu \, \forall \, i
+H_0: \mu_g = \mu \, \forall \, g
 \]
 
 \pause
@@ -371,8 +377,8 @@ pairwise.t.test(d$sensitivity,
 %
 % We can consider confidence intervals for the following quantities
 % \begin{itemize}
-% \item $\mu_i$ for all $i$
-% \item $\mu_i - \mu_j$ for any $i$ and $j$
+% \item $\mu_g$ for all $g$
+% \item $\mu_g - \mu_j$ for any $i$ and $j$
 % \end{itemize}
 %
 % \pause
@@ -398,16 +404,16 @@ pairwise.t.test(d$sensitivity,
 \frametitle{Posteriors for $\mu$}
 
 When
-\[ Y_{i,j} \ind N(\mu_i,\sigma_i^2),\]
+\[ Y_{g,i} \ind N(\mu_g,\sigma_g^2),\]
 \pause
 we have 
 \[
-\mu_i|y_i \ind t_{n_i-1}(\overline{y}_i, s_i^2/n_i)
+\mu_g|y \ind t_{n_g-1}(\overline{y}_g, s_g^2/n_g)
 \]
 \pause
-and that a draw for $\mu_i$ can be obtained by taking
+and that a draw for $\mu_g$ can be obtained by taking
 \[
-\overline{y}_i + T_{n_i-1} s_i/\sqrt{n_i}, \quad T_{n_i-1} \ind t_{n_i-1}(0,1).
+\overline{y}_g + T_{n_g-1} s_g/\sqrt{n_g}, \quad T_{n_g-1} \ind t_{n_g-1}(0,1).
 \]
 \pause
 
@@ -480,23 +486,27 @@ sims %>%
 \begin{frame}[fragile]
 \frametitle{Common variance model}
 
-Especially when there is a small amount of data,
-it is common to assume that each group has the same variability.
-\pause
-So we typically assume
+In the model 
 \[
-Y_{ij} \ind N(\mu_i,\sigma^2)
+Y_{g,i} \ind N(\mu_g,\sigma^2)
+\]
+we can calculate a pvalue for the following null hypothesis:
+\[
+H_0:\sigma_g = \sigma \, \forall i
 \]
 \pause
-We can calculate a pvalue for the following null hypothesis:
-\[
-H_0:\sigma_i = \sigma \, \forall i
-\]
-\pause
-
 <<bartlett, dependson="data", echo=TRUE>>=
 bartlett.test(sensitivity ~ process, data = d)
 @
+\pause
+This may give us reason to proceed as if the variances is the same in all 
+groups, i.e. 
+\[
+Y_{g,i} \ind N(\mu_g,\sigma^2).
+\]
+\pause
+This assumption is common when the number of observations in the groups is 
+small.
 
 \end{frame}
 
@@ -505,11 +515,10 @@ bartlett.test(sensitivity ~ process, data = d)
 \begin{frame}[fragile]
 \frametitle{Comparing means when the variances are equal}
 
-Now we can test
+Assuming $Y_{g,i} \ind N(\mu_g,\sigma^2)$, we can test
 \[
-H_0: \mu_i = \mu \, \forall \, i
+H_0: \mu_g = \mu \, \forall \, g
 \]
-within the model $Y_{ij} \ind N(\mu_i,\sigma^2)$.
 
 \pause
 
@@ -519,7 +528,7 @@ oneway.test(sensitivity ~ process, data = d, var.equal = TRUE)
 
 \pause
 
-Then we typically look at pairwise differences:
+Then we typically look at pairwise differences, i.e. $H_0: \mu_k = \mu_{k'}$.
 
 <<pairwise2, dependson="ftest", echo=TRUE>>=
 pairwise.t.test(d$sensitivity, d$process, p.adjust.method = "none")
@@ -532,20 +541,20 @@ pairwise.t.test(d$sensitivity, d$process, p.adjust.method = "none")
 \begin{frame}[fragile]
 \frametitle{Posteriors for $\mu$}
 
-If $Y_{ij} \ind N(\mu_i,\sigma^2)$ and we use the prior
-$p(\mu_1,\ldots,\mu_I,\sigma^2) \propto 1/\sigma^2$,
+If $Y_{g,i} \ind N(\mu_g,\sigma^2)$ and we use the prior
+$p(\mu_1,\ldots,\mu_G,\sigma^2) \propto 1/\sigma^2$,
 \pause then
 \[
-\mu_i|y_i,\sigma^2 \ind N(\overline{y}_i, \sigma^2/n_i)
+\mu_g|y,\sigma^2 \ind N(\overline{y}_g, \sigma^2/n_g)
 \quad
-\sigma^2|y \sim IG\left( \frac{n-I}{2}, \frac{1}{2}\sum_{i=1}^I \sum_{j=1}^{n_i} (y_{ij}-\overline{y}_i)^2\right)
+\sigma^2|y \sim IG\left( \frac{n-G}{2}, \frac{1}{2}\sum_{g=1}^G \sum_{i=1}^{n_g} (y_{g,i}-\overline{y}_g)^2\right)
 \]
-where $n=\sum_{i=1}^I n_i$.
+where $n=\sum_{g=1}^G n_g$.
 \pause
 and thus, we obtain joint samples for $\mu$ by performing the following
 \begin{enumerate}
 \item $\sigma^{2(m)} \sim p(\sigma^2|y)$ \\
-\item For $i=1,\ldots,I$, $\mu_i \sim p(\mu|y_i,\sigma^{2(m)})$.
+\item For $g=1,\ldots,G$, $\mu_g \sim p(\mu_g|y,\sigma^{2(m)})$.
 \end{enumerate}
 
 
