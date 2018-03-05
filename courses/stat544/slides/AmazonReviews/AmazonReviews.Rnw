@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -23,11 +23,10 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(reshape2)
-library(plyr)
-library(ggplot2)
-library(xtable)
-library(rstan)
+library("dplyr")
+library("ggplot2")
+library("xtable")
+library("rstan")
 @
 
 <<set_seed>>=
@@ -46,29 +45,32 @@ set.seed(1)
 
 <<reviews>>=
 tmp = read.csv("reviews.csv",header=FALSE)[,c(3,4)]
-names(tmp) = c("product_pd","stars")
+names(tmp) = c("product_id","stars")
 
-product_pds = read.csv("upright_bagless_cyclonic_vacuum_cleaners_amazon_pds.csv", 
+product_ids = read.csv("upright_bagless_cyclonic_vacuum_cleaners_amazon_ids.csv", 
                        stringsAsFactors = FALSE)$ids
 
-d = tmp[tmp$product_pd %in% product_pds & 
+d = tmp[tmp$product_id %in% product_ids & 
             tmp$stars %in% c("1.0","2.0","3.0","4.0","5.0"),]
-d$product_pd = factor(d$product_pd)
+
+d$product_id = factor(d$product_id)
 d$stars      = as.numeric(factor(d$stars))
 @
 
 \small
 <<table, results='asis', dependson='reviews'>>=
-for_table = ddply(d, .(product_pd), summarise, 
-          n1 = sum(stars==1),
-          n2 = sum(stars==2),
-          n3 = sum(stars==3),
-          n4 = sum(stars==4),
-          n5 = sum(stars==5), 
-          n_total = length(stars),
-          mean = mean(stars), 
-          sd   = sd(stars),
-          .drop=FALSE)
+for_table = d %>%
+  group_by(product_id) %>%
+  summarize(
+    n1 = sum(stars==1),
+    n2 = sum(stars==2),
+    n3 = sum(stars==3),
+    n4 = sum(stars==4),
+    n5 = sum(stars==5), 
+    n_total = length(stars),
+    mean = mean(stars), 
+    sd   = sd(stars)
+  )
 
 print(xtable(for_table, 
              digits = c(NA,NA,1,1,1,1,1,1,2,2), 
@@ -164,9 +166,9 @@ model {
 <<run_normal_model, echo=TRUE, dependson=c('normal_model','reviews')>>=
 m = stan_model(model_code = normal_model)
 dat = list(n = nrow(d),
-           n_products = nlevels(d$product_pd),
+           n_products = nlevels(d$product_id),
            stars = d$stars,
-           product_pd = as.numeric(d$product_pd))
+           product_id = as.numeric(d$product_id))
 r = sampling(m, dat)
 @
 \end{frame}
@@ -191,7 +193,7 @@ draws = extract(r)
 theta = draws$theta
 colnames(theta) = paste("theta_",1:ncol(theta), sep="")
 theta_m = melt(theta, varnames=c("iterations", "theta"))
-theta_m$product = levels(d$product_pd)[theta_m$theta]
+theta_m$product = levels(d$product_id)[theta_m$theta]
 
 ggplot(theta_m, aes(x=value, fill=product)) +  
   geom_density(alpha=0.5) +
@@ -285,7 +287,7 @@ Thus IMDB uses a Bayesian estimate for the rating for each movie where $m=\sigma
 
 We assumed 
 \[ y_{rp} \stackrel{ind}{\sim} N(\theta_p,\sigma^2) \]
-for the $j$th star rating of product $i$. \pause Clearly this model is incorrect since $y_{ij} \in \{1,2,3,4,5\}$. 
+for the $r$th star rating of product $p$. \pause Clearly this model is incorrect since $y_{ij} \in \{1,2,3,4,5\}$. 
 
 \vspace{0.2in} 
 
@@ -345,9 +347,9 @@ model {
 <<run_binomial_model, echo=TRUE, dependson=c('binomial_model','reviews')>>=
 m = stan_model(model_code = binomial_model)
 dat = list(n = nrow(d),
-           n_products = nlevels(d$product_pd),
+           n_products = nlevels(d$product_id),
            stars = d$stars,
-           product_pd = as.numeric(d$product_pd))
+           product_id = as.numeric(d$product_id))
 r = sampling(m, dat)
 @
 \end{frame}
@@ -373,7 +375,7 @@ draws = extract(r)
 theta = draws$theta
 colnames(theta) = paste("theta_",1:ncol(theta), sep="")
 theta_m = melt(theta, varnames=c("iterations", "theta"))
-theta_m$product = levels(d$product_pd)[theta_m$theta]
+theta_m$product = levels(d$product_id)[theta_m$theta]
 
 ggplot(theta_m, aes(x=value, fill=product)) +  
   geom_density(alpha=0.5) +
@@ -438,7 +440,9 @@ ggplot(other, aes(x=value)) +
 \begin{frame}
 \frametitle{Uniform use of star ratings}
 
-This binomial model has the proper support $\{0,1,2,3,4\}$ for stars minus 1, \pause but does it have the correct proportion of observations in each star category? 
+This binomial model has the proper support $\{0,1,2,3,4\}$ for stars minus 1, 
+\pause 
+but does it have the correct proportion of observations in each star category? 
 
 \vspace{0.2in} \pause
 
@@ -446,10 +450,12 @@ As an example, $\hat{\theta}_2 = 0.81$.
 \pause 
 Thus, we would expect if we used $\hat{\theta}_2$
 
-<<results='asis'>>=
+<<proportion_table, dependson="table", results='asis'>>=
+n <- as.numeric(for_table[2,2:6])
+nt <- as.numeric(for_table[2,7])
 tmp = data.frame(stars = 1:5,
            theoretical = dbinom(0:4, 4, .81),
-           observed = as.numeric(for_table[2,2:6]/for_table[2,7]))
+           observed = n/nt) 
 print(xtable(tmp, digits=c(NA, 0, 3, 3)), include.rownames=FALSE)
 @
 
@@ -469,7 +475,7 @@ so perhaps this difference is due to this uncertainty.
 \small
 
 To assess this model fit, we will simulate posterior predictive star ratings for product 2 and compare to the observed ratings:
-<<results='asis'>>=
+<<proportion_table2, dependson="table", results='asis'>>=
 print(xtable(for_table[2,1:7]), include.rownames=FALSE)
 @
 \pause
@@ -494,7 +500,8 @@ Let $\tilde{z}_2$ be all the predictive data for product 2, i.e. $\tilde{z}_2 = 
 
 <<posterior_predictive_binomial, dependson='run_binomial_model', echo=TRUE>>=
 theta2 = as.numeric(draws$theta[,2])
-ztilde2 = adply(theta2, 1, function(x) {
+
+ztilde2 = plyr::adply(theta2, 1, function(x) {
   ztilde = rbinom(526, 4, x) + 1
   data.frame(n1 = sum(ztilde==1),
              n2 = sum(ztilde==2),
@@ -511,8 +518,11 @@ head(ztilde2)
 \begin{frame}[fragile]
 \frametitle{Posterior predictive distribution in R}
 
-<<>>=
-ztilde2_m = melt(ztilde2, id.vars="X1")
+<<posterior_predictive_binomial_distribution, dependson="posterior_predictive_binomial">>=
+
+ztilde2_m = ztilde2 %>%
+  tidyr::gather(variable, value, -X1)
+  
 truth = data.frame(variable = paste("n",1:5,sep=""),
                    observed = as.numeric(for_table[2,2:6]))
 
@@ -622,7 +632,7 @@ model {
 \begin{frame}[fragile]
 \frametitle{Fit model}
 
-<<run_ordinal_model, echo=TRUE, dependson='ordinal_model'>>=
+<<run_ordinal_model, echo=TRUE, dependson=c("table",'ordinal_model')>>=
 m = stan_model(model_code = ordinal_model)
 dat = list(n_products = nrow(for_table),
            s = as.matrix(for_table[,2:6]))
@@ -649,7 +659,7 @@ draws = extract(r)
 mu = draws$mu
 colnames(mu) = paste("mu_",1:ncol(mu), sep="")
 mu_m = melt(mu, varnames=c("iterations", "mu"))
-mu_m$product = levels(d$product_pd)[mu_m$mu]
+mu_m$product = levels(d$product_id)[mu_m$mu]
 
 ggplot(mu_m, aes(x=value, fill=product)) +  
   geom_density(alpha=0.5) +
