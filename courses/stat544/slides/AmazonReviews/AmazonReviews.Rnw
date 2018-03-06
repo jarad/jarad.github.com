@@ -23,11 +23,10 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(reshape2)
-library(plyr)
-library(ggplot2)
-library(xtable)
-library(rstan)
+library("dplyr")
+library("ggplot2")
+library("xtable")
+library("rstan")
 @
 
 <<set_seed>>=
@@ -53,22 +52,25 @@ product_ids = read.csv("upright_bagless_cyclonic_vacuum_cleaners_amazon_ids.csv"
 
 d = tmp[tmp$product_id %in% product_ids & 
             tmp$stars %in% c("1.0","2.0","3.0","4.0","5.0"),]
+
 d$product_id = factor(d$product_id)
 d$stars      = as.numeric(factor(d$stars))
 @
 
 \small
 <<table, results='asis', dependson='reviews'>>=
-for_table = ddply(d, .(product_id), summarise, 
-          n1 = sum(stars==1),
-          n2 = sum(stars==2),
-          n3 = sum(stars==3),
-          n4 = sum(stars==4),
-          n5 = sum(stars==5), 
-          n_total = length(stars),
-          mean = mean(stars), 
-          sd   = sd(stars),
-          .drop=FALSE)
+for_table = d %>%
+  group_by(product_id) %>%
+  summarize(
+    n1 = sum(stars==1),
+    n2 = sum(stars==2),
+    n3 = sum(stars==3),
+    n4 = sum(stars==4),
+    n5 = sum(stars==5), 
+    n_total = length(stars),
+    mean = mean(stars), 
+    sd   = sd(stars)
+  )
 
 print(xtable(for_table, 
              digits = c(NA,NA,1,1,1,1,1,1,2,2), 
@@ -85,15 +87,38 @@ print(xtable(for_table,
 \begin{frame}
 \frametitle{Model for Amazon Reviews}
 
-Let $y_{ij}$ be the $j$th review for the $i$th product. \pause Assume 
-\[ y_{ij} \stackrel{ind}{\sim} N(\theta_i, \sigma^2) \]
+Let $y_{pr}$ be the $r$th review for the $p$th product. \pause Assume 
+\[ y_{pr} \stackrel{ind}{\sim} N(\theta_p, \sigma^2) \]
 \pause
 and
-\[ \theta_i \stackrel{ind}{\sim} N(\mu,\tau^2) \]
+\[ \theta_p \stackrel{ind}{\sim} N(\mu,\tau^2) \]
 \pause
 and 
 \[ p(\mu,\tau, \sigma) \propto Ca^+(\sigma;0,1) Ca^+(\tau;0,1) \]
 
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Model parameterization convenient for Stan/JAGS}
+
+Let 
+\begin{itemize}
+\item $Y_i$ be number of stars for review $i$ and 
+\item $p[i]$ be the numeric product id for review $i$.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Then the model can be rewritten as 
+\[
+Y_i \ind N(\theta_{p[i]}, \sigma^2) 
+\]
+\pause
+and the hierarchical portion is 
+\[ \theta_p \stackrel{ind}{\sim} N(\mu,\tau^2) \]
+and the prior is
+\[ p(\mu,\tau, \sigma) \propto Ca^+(\sigma;0,1) Ca^+(\tau;0,1). \]
 \end{frame}
 
 
@@ -107,7 +132,7 @@ data {
   int <lower=1> n;
   int <lower=1> n_products;
   int <lower=1,upper=5> stars[n];
-  int <lower=1,upper=n_products> id[n];
+  int <lower=1,upper=n_products> product_id[n];
 }
 
 parameters {
@@ -126,7 +151,7 @@ model {
   theta ~ normal(mu,tau);
 
   // Data model
-  for (i in 1:n) stars[i] ~ normal(theta[id[i]], sigma);
+  for (i in 1:n) stars[i] ~ normal(theta[product_id[i]], sigma);
 }
 "
 @
@@ -143,7 +168,7 @@ m = stan_model(model_code = normal_model)
 dat = list(n = nrow(d),
            n_products = nlevels(d$product_id),
            stars = d$stars,
-           id = as.numeric(d$product_id))
+           product_id = as.numeric(d$product_id))
 r = sampling(m, dat)
 @
 \end{frame}
@@ -161,7 +186,7 @@ r
 
 
 \begin{frame}[fragile]
-\frametitle{Vacuum cleaner mean posteriors ($\theta_i$)}
+\frametitle{Vacuum cleaner mean posteriors ($\theta_p$)}
 
 <<dependson='run_normal_model'>>=
 draws = extract(r)
@@ -261,18 +286,18 @@ Thus IMDB uses a Bayesian estimate for the rating for each movie where $m=\sigma
 \frametitle{Clearly incorrect model}
 
 We assumed 
-\[ y_{ij} \stackrel{ind}{\sim} N(\theta_i,\sigma^2) \]
-for the $j$th star rating of product $i$. \pause Clearly this model is incorrect since $y_{ij} \in \{1,2,3,4,5\}$. 
+\[ y_{rp} \stackrel{ind}{\sim} N(\theta_p,\sigma^2) \]
+for the $r$th star rating of product $p$. \pause Clearly this model is incorrect since $y_{ij} \in \{1,2,3,4,5\}$. 
 
 \vspace{0.2in} 
 
 An alternative model is 
-\[ z_{ij} \stackrel{ind}{\sim} Bin(4, \theta_i) \]
+\[ z_{ij} \stackrel{ind}{\sim} Bin(4, \theta_p) \]
 where $z_{ij}=y_{ij}-1$ is the $j$th star rating minus 1 of product $i$ \pause and 
-\[ \theta_i \sim Be(\alpha,\beta) \pause \qquad \mbox{and} \qquad p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}. \]
+\[ \theta_p \sim Be(\alpha,\beta) \pause \qquad \mbox{and} \qquad p(\alpha,\beta) \propto (\alpha+\beta)^{-5/2}. \]
 \pause
 The idea behind this model would be that product $i$ the probability of earning
-each star is $\theta_i$ and each star is independent.
+each star is $\theta_p$ and each star is independent.
 
 \end{frame}
 
@@ -286,7 +311,7 @@ data {
   int <lower=1> n;
   int <lower=1> n_products;
   int <lower=1,upper=5> stars[n];
-  int <lower=1,upper=n_products> id[n];
+  int <lower=1,upper=n_products> product_id[n];
 }
 
 transformed data {
@@ -308,7 +333,7 @@ model {
   theta ~ beta(alpha,beta);
 
   // Data model
-  for (i in 1:n) z[i] ~ binomial(4, theta[id[i]]);
+  for (i in 1:n) z[i] ~ binomial(4, theta[product_id[i]]);
 }
 "
 @
@@ -324,7 +349,7 @@ m = stan_model(model_code = binomial_model)
 dat = list(n = nrow(d),
            n_products = nlevels(d$product_id),
            stars = d$stars,
-           id = as.numeric(d$product_id))
+           product_id = as.numeric(d$product_id))
 r = sampling(m, dat)
 @
 \end{frame}
@@ -343,7 +368,7 @@ r
 
 
 \begin{frame}[fragile]
-\frametitle{Review mean posteriors ($\theta_i$)}
+\frametitle{Review mean posteriors ($\theta_p$)}
 
 <<dependson='run_binomial_model'>>=
 draws = extract(r)
@@ -374,7 +399,7 @@ Recall that
 So 
 \begin{itemize}
 \item $\alpha+\beta$ is the prior sample size
-\item $E[\theta_i|\alpha,\beta] = \frac{\alpha}{\alpha+\beta}$ is the prior expectation for the probability
+\item $E[\theta_p|\alpha,\beta] = \frac{\alpha}{\alpha+\beta}$ is the prior expectation for the probability
 \end{itemize}
 
 \vspace{0.2in} \pause
@@ -415,7 +440,9 @@ ggplot(other, aes(x=value)) +
 \begin{frame}
 \frametitle{Uniform use of star ratings}
 
-This binomial model has the proper support $\{0,1,2,3,4\}$ for stars minus 1, \pause but does it have the correct proportion of observations in each star category? 
+This binomial model has the proper support $\{0,1,2,3,4\}$ for stars minus 1, 
+\pause 
+but does it have the correct proportion of observations in each star category? 
 
 \vspace{0.2in} \pause
 
@@ -423,10 +450,12 @@ As an example, $\hat{\theta}_2 = 0.81$.
 \pause 
 Thus, we would expect if we used $\hat{\theta}_2$
 
-<<results='asis'>>=
+<<proportion_table, dependson="table", results='asis'>>=
+n <- as.numeric(for_table[2,2:6])
+nt <- as.numeric(for_table[2,7])
 tmp = data.frame(stars = 1:5,
            theoretical = dbinom(0:4, 4, .81),
-           observed = as.numeric(for_table[2,2:6]/for_table[2,7]))
+           observed = n/nt) 
 print(xtable(tmp, digits=c(NA, 0, 3, 3)), include.rownames=FALSE)
 @
 
@@ -446,7 +475,7 @@ so perhaps this difference is due to this uncertainty.
 \small
 
 To assess this model fit, we will simulate posterior predictive star ratings for product 2 and compare to the observed ratings:
-<<results='asis'>>=
+<<proportion_table2, dependson="table", results='asis'>>=
 print(xtable(for_table[2,1:7]), include.rownames=FALSE)
 @
 \pause
@@ -471,7 +500,8 @@ Let $\tilde{z}_2$ be all the predictive data for product 2, i.e. $\tilde{z}_2 = 
 
 <<posterior_predictive_binomial, dependson='run_binomial_model', echo=TRUE>>=
 theta2 = as.numeric(draws$theta[,2])
-ztilde2 = adply(theta2, 1, function(x) {
+
+ztilde2 = plyr::adply(theta2, 1, function(x) {
   ztilde = rbinom(526, 4, x) + 1
   data.frame(n1 = sum(ztilde==1),
              n2 = sum(ztilde==2),
@@ -488,8 +518,11 @@ head(ztilde2)
 \begin{frame}[fragile]
 \frametitle{Posterior predictive distribution in R}
 
-<<>>=
-ztilde2_m = melt(ztilde2, id.vars="X1")
+<<posterior_predictive_binomial_distribution, dependson="posterior_predictive_binomial">>=
+
+ztilde2_m = ztilde2 %>%
+  tidyr::gather(variable, value, -X1)
+  
 truth = data.frame(variable = paste("n",1:5,sep=""),
                    observed = as.numeric(for_table[2,2:6]))
 
@@ -508,13 +541,13 @@ ggplot(ztilde2_m, aes(x=value)) +
 \begin{frame}
 \frametitle{Ordinal data model}
 
-Let $s_i = (s_{i1},\ldots,s_{i5})$ be the vector of the number of 
+Let $s_p = (s_{i1},\ldots,s_{i5})$ be the vector of the number of 
 1-star to 5-star ratings for product $i$, \pause assume
 \begin{align*}
-S_{i} \stackrel{ind}{\sim} Mult(n_i,\theta_i)
+S_{i} \stackrel{ind}{\sim} Mult(n_p,\theta_p)
 \end{align*}
-where $\theta_i$ is a probability vector \pause
-\[ \theta_{ik} = \int_{\alpha_{k-1}}^{\alpha_k} N(x|\mu_i,1) dx = \mathrm{\Phi}(\alpha_k-\mu_i) - \mathrm{\Phi}(\alpha_{k-1}-\mu_i) \]
+where $\theta_p$ is a probability vector \pause
+\[ \theta_{ik} = \int_{\alpha_{k-1}}^{\alpha_k} N(x|\mu_p,1) dx = \mathrm{\Phi}(\alpha_k-\mu_p) - \mathrm{\Phi}(\alpha_{k-1}-\mu_p) \]
 \pause 
 where $\alpha_0=-\infty$, $\alpha_1=0$, and $\alpha_5=\infty$, \pause and $\mathrm{\Phi}$ is the standard normal cumulative distribution function (cdf). 
 
@@ -540,13 +573,13 @@ text((-1:3)+.5, 0, 1:5, col="seagreen")
 
 \begin{frame}
 \frametitle{Hierarchical model}
-So each product has its own mean $\mu_i$. \pause The larger $\mu_i$ is the more 5-star ratings the product will receive and the fewer 1-star ratings the product will review. 
+So each product has its own mean $\mu_p$. \pause The larger $\mu_p$ is the more 5-star ratings the product will receive and the fewer 1-star ratings the product will review. 
 
 \vspace{0.2in} \pause
 
-In order to borrow information across different products, we might assume a hierarchical model for the $\mu_i$\pause, e.g. 
+In order to borrow information across different products, we might assume a hierarchical model for the $\mu_p$\pause, e.g. 
 
-\[ \mu_i \stackrel{ind}{\sim} N(\eta,\tau^2) \]
+\[ \mu_p \stackrel{ind}{\sim} N(\eta,\tau^2) \]
 \pause 
 with a prior 
 \[ p(\eta,\tau) \propto Ca(\tau;0,1). \]
@@ -599,7 +632,7 @@ model {
 \begin{frame}[fragile]
 \frametitle{Fit model}
 
-<<run_ordinal_model, echo=TRUE, dependson='ordinal_model'>>=
+<<run_ordinal_model, echo=TRUE, dependson=c("table",'ordinal_model')>>=
 m = stan_model(model_code = ordinal_model)
 dat = list(n_products = nrow(for_table),
            s = as.matrix(for_table[,2:6]))
@@ -619,7 +652,7 @@ r
 
 
 \begin{frame}[fragile]
-\frametitle{Review mean posteriors ($\theta_i$)}
+\frametitle{Review mean posteriors ($\theta_p$)}
 
 <<dependson='run_ordinal_model'>>=
 draws = extract(r)
