@@ -1,0 +1,419 @@
+\documentclass[10pt]{article}
+
+\usepackage{verbatim,multicol,color,amsmath,ifdraft, graphicx, wrapfig,setspace,comment}
+
+\title{STAT 544 Mid-term Exam \\ Thursday 8 March 2018, 8:00-9:20}
+\author{Instructor: Jarad Niemi}
+\date{}
+
+\newenvironment{longitem}{
+\begin{itemize}
+  \setlength{\itemsep}{15pt}
+  \setlength{\parskip}{20pt}
+  \setlength{\parsep}{20pt}
+}{\end{itemize}}
+
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{-0.125in}
+\setlength{\oddsidemargin}{-.2in}
+\setlength{\evensidemargin}{-.2in}
+\setlength{\headsep}{0in}
+
+\newcommand{\bigbrk}{\vspace*{2in}}
+\newcommand{\smallbrk}{\vspace*{.3in}}
+
+\newcommand{\iid}{\stackrel{iid}{\sim}}
+\newcommand{\Yiid}{Y_1,\ldots,Y_n\stackrel{iid}{\sim}}
+
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\excludecomment{answer}
+
+
+\begin{document}
+
+Student Name: \underline{\phantom{XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}}
+
+{\let\newpage\relax\maketitle}
+
+
+
+\bigskip
+
+
+\textbf{INSTRUCTIONS}
+
+\bigskip
+
+Please check to make sure you have 4 pages with writing on the front and back 
+(some pages are marked `intentionally left blank'). 
+Feel free to remove the last page, i.e. the one with R code.
+
+\bigskip
+
+On the following pages you will find short answer questions related to the 
+topics we covered in class for a total of 50 points. Please read the directions 
+carefully.
+
+\bigskip
+
+You are allowed to use a calculator and one $8\frac{1}{2}\times 11$ sheet of 
+paper with writing on both front and back. A non-exhaustive list of items you 
+are not allowed to use are {\bf cell phones, laptops, PDAs, and textbooks}. 
+Cheating will not be tolerated. 
+Anyone caught cheating will receive an automatic F on the exam. 
+In addition the incident will be reported, and dealt with according to 
+University's Academic Dishonesty regulations. Please refrain from talking to 
+your peers, exchanging papers, writing utensils or other objects, or walking 
+around the room. All of these activities can be considered cheating. 
+{\bf If you have any questions, please raise your hand.}
+
+\bigskip
+
+You will be given only the time allotted for the course; 
+no extra time will be given.
+
+\bigskip
+
+
+Good Luck!
+
+\begin{enumerate}
+
+\newpage
+\item In a location that rains only 5 days out of the year, a meteorologist has
+predicted rain for tomorrow. 
+The meteorologist correctly predicts rain 95\% of the time when it does rain
+and correctly predicts no rain 90\% of the time when it does not rain.
+What is the probability it will rain tomorrow? (20 points)
+
+\begin{answer}
+Let 
+\begin{itemize}
+\item $R$ be the event that it rains and 
+\item $F$ be the event that rain is forecasted.
+\end{itemize}
+From the above information, we know
+\begin{itemize}
+\item $P(R) = 5/365$
+\item $P(F|R) = 0.95$ and 
+\item $P(F^C|R^C) = 0.90$
+\end{itemize}
+From this information, 
+we can calculate the probability it will rain using Bayes Rule.
+
+\[ \begin{array}{rl}
+P(R|F) &= \frac{P(F|R)P(R)}{P(F|R)P(R)+P(F|R^C)P(R^C)} \\
+&= \frac{P(F|R)P(R)}{P(F|R)P(R)+[1-P(F^C|R^C)][1-P(R)]} \\
+\end{array} \]
+
+<<>>=
+prev = 5/365
+sens = .95
+spec = 0.9
+
+prob = (sens*prev)/(sens*prev + (1-spec)*(1-prev)); prob
+@
+
+Thus,
+based on this information,
+there is only a \Sexpr{round(prob,2)*100}\% probability it will rain tomorrow.
+\end{answer}
+
+\newpage
+\item A Pareto distribution for the random variable $Y$ has a probability 
+density function 
+\[ 
+p(y|\alpha,\beta) = \frac{\alpha \beta^\alpha}{y^{\alpha+1}}\mathrm{I}(\beta\le y)
+\]
+for shape $\alpha>0$ and scale $\beta>0$.
+For the following, assume you have observed $y_1,\ldots,y_n$ independent 
+observations from the same Pareto distribution.
+
+\begin{enumerate}
+\item Suppose $\alpha$ is known and $\beta$ is given a Pareto prior with 
+shape $a$ and scale $b$. 
+Derive the posterior for $\beta$. (10 points)
+
+\begin{answer}
+\[ \begin{array}{rl}
+p(\beta|y) &\propto p(y|\beta)p(\beta) \\
+&\propto 
+\beta^{n\alpha} \mathrm{I}(\beta<\min(y_i)) 
+\frac{1}{\beta^{a+1}} \mathrm{I}(b<\beta) \\
+&= \frac{1}{\beta^{a-n\alpha+1}}\mathrm{I}(b<\beta<\min(y_i))
+\end{array} \]
+where $\min(y_i)$ is the minimum of the data. 
+This appears to be a Pareto distribution with shape $a-n\alpha$ and 
+scale $b$, but truncated to be less than $\min(y_i)$.
+\end{answer}
+\vfill
+
+\item Suppose $\beta$ is known and $\alpha\sim Ga(a,b)$, 
+i.e. $p(\alpha) \propto \alpha^{a-1}e^{-b \alpha}$.
+Derive the posterior for $\alpha$. (10 points)
+
+\begin{answer}
+Let $m=\prod_{i=1}^n y_i$.
+\[ \begin{array}{rl}
+p(\alpha|y) &\propto p(y|\alpha,\beta) p(\alpha) \\
+&\propto \left[ \prod_{i=1}^n \frac{\alpha \beta^{\alpha}}{y_i^\alpha}\right] \alpha^{a-1}e^{-b\alpha} \\
+&= \frac{\alpha^n \beta^{n\alpha}}{m^\alpha}
+\alpha^{a-1}e^{-b\alpha} \\
+&= \alpha^{a+n-1} e^{-b\alpha + n\alpha \log\beta + \alpha \log m} \\
+&= \alpha^{a+n-1} e^{-\alpha\left(b - n \log\beta + \log m\right)} 
+\end{array} \]
+This is the kernel of $Ga(a+n,b-n\log\beta+\log m)$.
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+\newpage
+\item Assume the model $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$ $i=1,\ldots,n$ with prior where the  
+probability density function is $p(y) = (2\pi\sigma^2)^{-1/2}\exp(-[y-\mu]^2/2\sigma^2)$. 
+Assume the prior 
+\[ 
+p(\mu,\sigma^2) \propto 
+\exp\left(-\frac{1}{2C}(\mu-m)^2\right) 
+(\sigma^2)^{-a-1} e^{-b/\sigma^2}.
+\]
+with $a>0$, $b>0$, and $C>0$.
+Let $y=(y_1,\ldots,y_n)$ 
+
+\begin{enumerate}
+\item Derive the conditional posterior for $\mu$, i.e. $p(\mu|\sigma^2,y)$. (10 points)
+
+\begin{answer}
+This is exactly the same as having normal data with an unknown mean, 
+but with a known variance equal to $\sigma^2$.
+The prior is independent, i.e. $p(\mu,\sigma^2) = p(\mu)p(\sigma^2)$.
+\[ \begin{array}{rl}
+p(\mu|\sigma^2,y) &\propto p(y|\mu,\sigma^2)p(\mu)p(\sigma^2) \\
+&\propto \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-\mu)^2 \right) 
+\exp\left(-\frac{1}{2C}(\mu-m)^2\right)  \\
+&= \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i^2-2\mu y_i+\mu^2) \right) 
+\exp\left(-\frac{1}{2C}(\mu^2-2\mu m+m^2)\right)  \\
+&\propto \exp\left(-\frac{1}{2}\left[ 
+\left(\frac{n}{\sigma^2}+\frac{1}{C}\right)\mu^2 + 
+\left(\frac{n}{\sigma^2}\overline{y}+\frac{1}{C}m\right)\mu\right] \right)
+\end{array} \]
+This is the kernel of normal and thus 
+\[ 
+\mu|\sigma^2,y \sim N(m',C')
+\]
+with 
+\[ \begin{array}{rl}
+C' &= [1/C+n/\sigma^2]^{-1} \\
+m' &= C'[m/C+n\overline{y}/\sigma^2].
+\end{array} \]
+
+\end{answer}
+\vfill
+
+\item Derive the conditional posterior for $\sigma^2$, i.e. $p(\sigma^2|\mu,y)$. (10 points)
+
+\begin{answer}
+This is like a normal distribution with an unknown variance and a known mean 
+$\mu$.
+\[ \begin{array}{rl}
+p(\sigma^2|\mu,y) &\propto p(y|\mu,\sigma^2)p(\mu)p(\sigma^2) \\
+&\propto (\sigma^2)^{-n/2}\exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-\mu)^2 \right) (\sigma^2)^{-a-1}\exp\left(-b/\sigma^2\right) \\
+&(\sigma^2)^{-a-n/2-1} \exp\left(-1/\sigma^2\left[b + \frac{1}{2}\sum_{i=1}^n (y_i-\mu)^2\right]\right)
+\end{array} \]
+This is the kernel of an inverse gamma and thus
+\[
+\sigma^2|\mu,y \sim IG\left(a+n/2,b+b + \frac{1}{2}\sum_{i=1}^n (y_i-\mu)^2\right).
+\]
+\end{answer}
+\vfill
+\end{enumerate}
+
+
+\newpage
+\item For the following questions, please refer to the pages titled 
+R/Stan code and R/Stan output.
+
+\begin{enumerate}
+\item Write down the model that is being fit including priors. (14 points)
+
+\begin{answer}
+The model is 
+\[ \begin{array}{rl}
+Y_i \stackrel{ind}{\sim} N(\theta_{g[i]}, \sigma_{g[i]}^2) \\
+\theta_g \stackrel{ind}{\sim} N(\mu,\tau^2) \\
+\sigma_g \stackrel{ind}{\sim} Ga(\eta\beta,\beta) \\
+\end{array} \]
+for $i=1,\ldots,n$, $g[i]$ giving the group number for observation $i$, 
+and $g=1,\ldots,G$.
+The priors on the hierarchical parameter are independent with marginal
+distributions 
+\[ \begin{array}{rl}
+p(\mu) &\propto 1 \\
+\tau &\sim Ca^+(0,1) \\
+\eta &\sim Ca^+(0,1) \\
+\beta &\sim Ca^+(0,1) \\
+\end{array} \]
+\end{answer}
+\vfill
+\vfill
+\vfill
+\vfill
+\vfill
+
+\item For {\bf group 1}, provide estimates for the following quantities to 2 decimal places:
+  \begin{enumerate}
+  \item posterior expectation for the group mean (1 point)
+  
+\begin{answer}
+-0.38
+\end{answer}
+  \vfill
+  
+  \item equal-tail 95\% credible interval for the group mean (1 point)
+  
+\begin{answer}
+(-1.07,0.31)
+\end{answer}
+  \vfill
+  
+  \item posterior expectation for the group standard deviation (2 points)
+  
+\begin{answer}
+1.38
+\end{answer}
+  \vfill
+  
+  \item equal-tail 95\% credible interval for the group standard deviation (2 points)
+  
+\begin{answer}
+(0.92,2.14)
+\end{answer}
+  \vfill
+  
+  \end{enumerate}
+\end{enumerate}
+  
+\newpage
+\item Consider the hierarchical model 
+\[ 
+Y_{gi} \stackrel{ind}{\sim} Po(\lambda_g) 
+\quad \text{and} \quad
+\lambda_g \stackrel{ind}{\sim} Ga(\alpha,\beta)
+\]
+for groups $g=1,\ldots,G$ and individuals within a group $i=1,\ldots,n_i$.
+Assume some reasonable prior on $\alpha$ and $\beta$ such that you can obtain
+posterior samples 
+$\lambda_1^{(m)},\ldots,\lambda_G^{(m)},\alpha^{(m)},\beta^{(m)}$ 
+from the joint posterior 
+$p(\lambda_1,\ldots,\lambda_G,\alpha,\beta|y)$ for $m=1,\ldots,M$.
+
+  \begin{enumerate}
+  \item The predictive distribution for a new, 
+  independent observation from group 1, 
+  $\tilde{y}_1$, is 
+  \[ 
+  p(\tilde{y}_1|y) = \int p(\tilde{y}_1|\lambda_1)p(\lambda_1|y) d\lambda_1.
+  \]
+  Describe an algorithm to simulate values from this marginal distribution.
+  (10 points)
+
+\begin{answer}
+For $m=1,\ldots,M$, sample $\tilde{y}^{(m)}_1 \sim Po(\lambda_1^{(m)})$.
+\end{answer}
+\vfill
+
+\item State an integral equation (like that in the previous question) 
+that would allow you to find the predictive
+distribution for a new observation from a new group, $\tilde{y}_*$.
+(10 points)
+
+\begin{answer}
+\[
+p(\tilde{y}_*|y) = \int \int \int 
+p(\tilde{y}_*|\lambda_*)p(\lambda_*|\alpha,\beta)p(\alpha,\beta|y) 
+d\lambda_* d\alpha d\beta
+\]
+\end{answer}
+\vfill 
+
+\end{enumerate}
+
+\newpage
+{\Large R/Stan code}
+
+<<knitr_options, purl=FALSE, echo=FALSE>>=
+opts_chunk$set(highlight = FALSE, background = "white")
+@
+
+<<options, echo=FALSE, message=FALSE>>=
+options(width=121)
+library("rstan")
+library("dplyr")
+@
+
+<<data, results="hide", cache=TRUE, echo=FALSE>>=
+set.seed(20180306)
+G     <- 10
+mu    <- rnorm(G)
+sigma <- rgamma(G,1,1)
+n     <- rpois(G, 10)
+group <- rep(1:10, times=n)
+y     <- rnorm(length(group), mu[group], sigma[group])
+d     <- data.frame(y=y, group=factor(group))
+@
+
+<<summary_statistics, dependson="data">>=
+d %>% group_by(group) %>% summarize(n=n(), mean=mean(y), sd=sd(y))
+@
+
+
+<<model, dependson="data", cache=TRUE, results='hide'>>=
+library("rstan")
+
+model = "
+data {
+  int n; 
+  int G;
+  int<lower=1,upper=G> group[n];
+  real y[n];
+}
+parameters {
+  real mu; 
+  real theta[G];
+  real<lower=0> eta;
+  real<lower=0> tau;
+  real<lower=0> beta;
+  real<lower=0> sigma[G];
+}
+model {
+  tau ~ cauchy(0,1); eta ~ cauchy(0,1); beta ~ cauchy(0,1);
+  theta ~ normal(mu,tau);
+  sigma ~ gamma(eta*beta, beta);
+  y ~ normal(theta[group],sigma[group]);
+}
+"
+
+dat = list(y = d$y, group = as.numeric(d$group), n = nrow(d), G = nlevels(d$group))
+m = stan_model(model_code = model)
+@
+
+\newpage
+{\Large R/Stan output}
+<<analysis, dependson="model", cache=TRUE, results='hide'>>=
+res = sampling(m, dat, seed=20180305)
+@
+
+<<output, dependson="analysis">>=
+res
+@
+
+\end{enumerate}
+
+\end{document}
+
