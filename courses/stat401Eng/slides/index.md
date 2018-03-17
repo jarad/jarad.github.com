@@ -47,14 +47,13 @@ you can find them
 |---|---|---|
 |Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|
 |Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|
+|Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|
 
  ============ updated to here =================
 
 
 |Topic|Source|Handouts|
-|---|---|---| 
-|Regression diagnostics|[SetR02.Rnw](SetR02/SetR02_Regression_diagnostics.Rnw)|[SetR02.pdf](SetR02/SetR02_Regression_diagnostics.pdf)|  
-|Logarithms|[SetR03.Rnw](SetR03/SetR03_Logarithms.Rnw)|[SetR03.pdf](SetR03/SetR03_Logarithms.pdf)|  
+|---|---|---|   
 |Categorical explanatory variables |[SetR04.Rnw](SetR04/SetR04_Categorical_explanatory_variables.Rnw)|[SetR04.pdf](SetR04/SetR04_Categorical_explanatory_variables.pdf)|  
 |Multiple regression|[SetR05.Rnw](SetR05/SetR05_Multiple_regression.Rnw)|[SetR05.pdf](SetR05/SetR05_Multiple_regression.pdf)| 
 |ANOVA/F-tests|[SetR06.Rnw](SetR06/SetR06_ANOVA_F-tests.Rnw)|[SetR06.pdf](SetR06/SetR06_ANOVA_F-tests.pdf)|  

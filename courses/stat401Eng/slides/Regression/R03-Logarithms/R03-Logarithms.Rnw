@@ -2,13 +2,10 @@
 
 \usepackage{verbatim,multicol,amsmath}
 
-\input{../frontmatter}
-\input{../commands}
+\input{../../frontmatter}
+\input{../../commands}
 
-\title{Set R03 - Logarithms in Regression}
-
-\newenvironment{remark}[1][Remark]{\begin{trivlist}
-\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\title{R03 - Using logarithms in regression}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -17,11 +14,12 @@ opts_chunk$set(comment=NA,
                out.width='0.8\\textwidth', 
                fig.align='center', 
                message=FALSE,
-               echo=TRUE)
+               echo=TRUE,
+               cache=TRUE)
 options(width=120)
 @
 
-<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE, cache=FALSE>>=
 library("dplyr")
 library("ggplot2")
 @
@@ -70,17 +68,41 @@ then
 
 For the following discussion,
 \begin{itemize}[<+->]
-\item $Y$ is always going to be the original response and
-\item $X$ is always going to be the original explanatory variable.
+\item $Y$ is always going to be the \alert{original} response and
+\item $X$ is always going to be the \alert{original} explanatory variable.
 \end{itemize}
 
 \end{frame}
 
 
 \begin{frame}
-<<echo=FALSE>>=
-library("Sleuth3")
-ggplot(case0802, aes(Voltage, Time)) + 
+<<data, echo=FALSE>>=
+# Sleuth3::case0802
+insulating <- structure(list(Time = c(5.79, 1579.52, 2323.7, 68.85, 108.29, 
+110.29, 426.07, 1067.6, 7.74, 17.05, 20.46, 21.02, 22.66, 43.4, 
+47.3, 139.07, 144.12, 175.88, 194.9, 0.27, 0.4, 0.69, 0.79, 2.75, 
+3.91, 9.88, 13.95, 15.93, 27.8, 53.24, 82.85, 89.29, 100.59, 
+215.1, 0.19, 0.78, 0.96, 1.31, 2.78, 3.16, 4.15, 4.67, 4.85, 
+6.5, 7.35, 8.01, 8.27, 12.06, 31.75, 32.52, 33.91, 36.71, 72.89, 
+0.35, 0.59, 0.96, 0.99, 1.69, 1.97, 2.07, 2.58, 2.71, 2.9, 3.67, 
+3.99, 5.35, 13.77, 25.5, 0.09, 0.39, 0.47, 0.73, 0.74, 1.13, 
+1.4, 2.38), Voltage = c(26L, 26L, 26L, 28L, 28L, 28L, 28L, 28L, 
+30L, 30L, 30L, 30L, 30L, 30L, 30L, 30L, 30L, 30L, 30L, 32L, 32L, 
+32L, 32L, 32L, 32L, 32L, 32L, 32L, 32L, 32L, 32L, 32L, 32L, 32L, 
+34L, 34L, 34L, 34L, 34L, 34L, 34L, 34L, 34L, 34L, 34L, 34L, 34L, 
+34L, 34L, 34L, 34L, 34L, 34L, 36L, 36L, 36L, 36L, 36L, 36L, 36L, 
+36L, 36L, 36L, 36L, 36L, 36L, 36L, 36L, 38L, 38L, 38L, 38L, 38L, 
+38L, 38L, 38L), Group = structure(c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 
+2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 4L, 4L, 4L, 4L, 
+4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 4L, 5L, 5L, 5L, 5L, 5L, 
+5L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 6L, 6L, 
+6L, 6L, 6L, 6L, 6L, 6L, 6L, 6L, 6L, 6L, 6L, 6L, 6L, 7L, 7L, 7L, 
+7L, 7L, 7L, 7L, 7L), .Label = c("Group1", "Group2", "Group3", 
+"Group4", "Group5", "Group6", "Group7"), class = "factor")), .Names = c("Time", 
+"Voltage", "Group"), class = "data.frame", row.names = c(NA, 
+-76L))
+
+ggplot(insulating, aes(Voltage, Time)) + 
   geom_point() +
   stat_smooth(method="lm") + 
   theme_bw()
@@ -91,14 +113,12 @@ ggplot(case0802, aes(Voltage, Time)) +
 
 \begin{frame}[fragile]
 \frametitle{Run the regression and look at diagnostics}
-<<>>=
-m <- lm(Time ~ Voltage, case0802)
+<<model, dependson="data">>=
+m <- lm(Time ~ Voltage, insulating)
 @
 
-<<echo=FALSE>>=
-opar = par(mfrow=c(2,3))
-plot(m, 1:6, ask=FALSE)
-par(opar)
+<<diagnostics, dependson="model">>=
+opar = par(mfrow=c(2,3)); plot(m, 1:6, ask=FALSE); par(opar)
 @
 \end{frame}
 
@@ -194,13 +214,13 @@ since
 \begin{frame}
 \frametitle{Response is logged}
 
-Suppose 
+Suppose
 \begin{itemize}
 \item $Y$ is corn yield per acre
 \item $X$ is fertilizer level in lbs/acre
 \end{itemize}
 
-\pause 
+\pause
 
 If we assume
 \[ E[\log(Y)|X] = \beta_0 + \beta_1 X \]
@@ -208,10 +228,10 @@ then
 \[ \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 X} \]
 
 \begin{itemize}[<+->]
-\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 0 
-and 
-\item $e^{\beta_1}$ is the multiplicative effect in median corn yield per acre 
-when fertilizer is increased by 1 lbs/acre. 
+\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 0
+and
+\item $e^{\beta_1}$ is the multiplicative effect in median corn yield per acre
+when fertilizer is increased by 1 lbs/acre.
 \end{itemize}
 
 \end{frame}
@@ -222,27 +242,27 @@ when fertilizer is increased by 1 lbs/acre.
 \begin{frame}
 \frametitle{Explanatory variable is logged}
 
-If 
+If
 \[ E[Y|X] = \beta_0 + \beta_1 \log(X),  \]
 \pause
 then
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected response when $\log(X)$ is zero and
-\item $\beta_1$ is the expected change in the response for a one unit increase 
-in $\log(X)$. 
+\item $\beta_1$ is the expected change in the response for a one unit increase
+in $\log(X)$.
 \end{itemize}
 
-\pause 
+\pause
 Alternatively,
 
 \begin{itemize}[<+->]
-\item $\beta_0$ is the expected response when $X$ is 1 and 
-\item $\beta_1 \log(d)$ is the expected change in the response when $X$ increase 
+\item $\beta_0$ is the expected response when $X$ is 1 and
+\item $\beta_1 \log(d)$ is the expected change in the response when $X$ increase
 multiplicatively by $d$, e.g.
   \begin{itemize}
-  \item $\beta_1 \log(2)$ is the expected change in the response for each 
+  \item $\beta_1 \log(2)$ is the expected change in the response for each
   doubling of $X$ or
-  \item $\beta_1 \log(10)$ is the expected change in the response for each 
+  \item $\beta_1 \log(10)$ is the expected change in the response for each
   ten-fold increase in $X$.
   \end{itemize}
 \end{itemize}
@@ -255,20 +275,20 @@ multiplicatively by $d$, e.g.
 \begin{frame}
 \frametitle{Explanatory variable is logged}
 
-Suppose 
+Suppose
 \begin{itemize}
 \item $Y$ is corn yield per acre
 \item $X$ is fertilizer level in lbs/acre
 \end{itemize}
 
-\pause 
+\pause
 
-Then, if 
+Then, if
 \[ E[Y|X] = \beta_0 + \beta_1 \log(X)  \]
 
 \begin{itemize}[<+->]
-\item $\beta_0$ is the expected corn yield per acre when fertilizer level is 1 lb/acre and 
-\item $\beta_1 \log(2)$ is the expected change in corn yield when fertilizer level is doubled. 
+\item $\beta_0$ is the expected corn yield per acre when fertilizer level is 1 lb/acre and
+\item $\beta_1 \log(2)$ is the expected change in corn yield when fertilizer level is doubled.
 \end{itemize}
 
 \end{frame}
@@ -284,24 +304,24 @@ If we assume
 then
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected $\log(Y)$ when $\log(X)$ is zero and
-\item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in $\log(X)$. 
+\item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in $\log(X)$.
 \end{itemize}
 
 \vspace{0.1in} \pause
 
-But we also have 
-\[ 
+But we also have
+\[
 \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1}, \]
 \pause
 and thus
 \begin{itemize}[<+->]
-\item $e^{\beta_0}$ is the median of $Y$ when $X$ is 1 and 
-\item $d^{\beta_1}$ is the multiplicative change in the median of the response 
+\item $e^{\beta_0}$ is the median of $Y$ when $X$ is 1 and
+\item $d^{\beta_1}$ is the multiplicative change in the median of the response
 when $X$ increase multiplicatively by $d$, e.g.
   \begin{itemize}
-  \item $2^{\beta_1}$ is the multiplicative effect on the median of the response 
+  \item $2^{\beta_1}$ is the multiplicative effect on the median of the response
   for each doubling of $X$ or
-  \item $10^{\beta_1}$ is the multiplicative effect on the median of the 
+  \item $10^{\beta_1}$ is the multiplicative effect on the median of the
   response for each ten-fold increase in $X$.
   \end{itemize}
 \end{itemize}
@@ -314,19 +334,19 @@ when $X$ increase multiplicatively by $d$, e.g.
 \begin{frame}
 \frametitle{Both response and explanatory variables are logged}
 
-Suppose 
+Suppose
 \begin{itemize}
 \item $Y$ is corn yield per acre
 \item $X$ is fertilizer level in lbs/acre
 \end{itemize}
 
-\pause 
+\pause
 
-Then, if 
+Then, if
 \[ E[\log(Y)|X] = \beta_0 + \beta_1 \log(X) \quad \mbox{or} \quad \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1} \]
 
 \begin{itemize}[<+->]
-\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 1 lb/acre and 
+\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 1 lb/acre and
 \item $2^{\beta_1}$ is the multiplicative effect on median corn yield per acre when fertilizer level doubles.
 \end{itemize}
 
@@ -337,7 +357,7 @@ Then, if
 \frametitle{Summary of interpretations when using logarithms}
 
 \begin{itemize}[<+->]
-\item When using the log of the response, 
+\item When using the log of the response,
   \begin{itemize}
   \item $\beta_0$ will affect the median response
   \item $\beta_1$ will affect the multiplicative change in the median response
@@ -345,17 +365,17 @@ Then, if
 \item When using the log of the explanatory variable ($X$),
   \begin{itemize}
   \item $\beta_0$ will affect the response when $X=1$
-  \item $\beta_1$ will affect the change in the response when there is a 
+  \item $\beta_1$ will affect the change in the response when there is a
   multiplicative change in $X$
   \end{itemize}
 \end{itemize}
 
 \vspace{0.2in} \pause
 
-To construct confidence intervals for $e^\beta$, 
-find a confidence interval for $\beta$ and exponentiate the endpoints, 
-i.e. if $(L,U)$ is a confidence interval for $\beta$, 
-then $(e^L, e^U)$ is a confidence interval for $e^\beta$. 
+To construct confidence intervals for $e^\beta$,
+find a confidence interval for $\beta$ and exponentiate the endpoints,
+i.e. if $(L,U)$ is a confidence interval for $\beta$,
+then $(e^L, e^U)$ is a confidence interval for $e^\beta$.
 
 \end{frame}
 
@@ -366,43 +386,36 @@ then $(e^L, e^U)$ is a confidence interval for $e^\beta$.
 \frametitle{Breakdown times}
 
 \begin{quote}
-In an industrial laboratory, under uniform conditions, 
+In an industrial laboratory, under uniform conditions,
 batches of electrical insulating fluid were subjected to constant voltages (kV)
-until the insulating property of the fluids broke down. 
-Seven different voltage levels were studied and the measured reponses were the 
+until the insulating property of the fluids broke down.
+Seven different voltage levels were studied and the measured reponses were the
 times (minutes) until breakdown.
 \end{quote}
 
 \pause
 
-<<>>=
-library("Sleuth3")
-summary(case0802)
+<<summary, dependson="data">>=
+summary(insulating)
 @
 
 \end{frame}
 
 
 
-\begin{frame}
-<<echo=FALSE>>=
-ggplot(case0802, aes(Voltage, Time)) + 
-  geom_point() +
-  theme_bw()
+\begin{frame}[fragile]
+<<plot, dependson="data">>=
+g <- ggplot(insulating, aes(Voltage, Time)) + geom_point() + theme_bw(); g
 @
 \end{frame}
 
 
 
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Take log of time}
-<<echo=FALSE>>=
-ggplot(case0802, aes(Voltage, Time)) + 
-  geom_point() +
-  stat_smooth(method="lm") +
-  theme_bw() +
-  scale_y_log10()
+<<plot_logy, dependson="plot">>=
+g + stat_smooth(method="lm") + scale_y_log10()
 @
 \end{frame}
 
@@ -410,14 +423,9 @@ ggplot(case0802, aes(Voltage, Time)) +
 \begin{frame}[fragile]
 \frametitle{Take log of time}
 
-<<>>=
-m <- lm(log(Time) ~ Voltage, case0802)
-@
-
-<<echo=FALSE>>=
-opar = par(mfrow=c(2,3))
-plot(m, 1:6, ask=FALSE)
-par(opar)
+<<logy_model, dependson="data">>=
+m <- lm(log(Time) ~ Voltage, insulating)
+opar = par(mfrow=c(2,3)); plot(m, 1:6, ask=FALSE); par(opar)
 @
 
 \end{frame}
@@ -426,13 +434,13 @@ par(opar)
 \begin{frame}[fragile]
 \frametitle{Summary}
 
-<<>>=
+<<logy_summary, dependson="logy_model">>=
 m$coefficients %>% exp
 confint(m) %>% exp()
-lm(log(Time) ~ Voltage, case0802, subset= Time != 5.79) %>% confint() %>% exp() # remove first observation
+lm(log(Time) ~ Voltage, insulating, subset= Time != 5.79) %>% confint() %>% exp() # remove first observation
 @
 
-<<echo=FALSE>>=
+<<logy_estimates, dependson="logy_model", echo=FALSE>>=
 b <- m$coefficients
 ci <- confint(m)
 @
@@ -441,9 +449,10 @@ ci <- confint(m)
 
 Summary:
 
-Each 1 kV increase in voltage caused a multiplicative effect of 
-\Sexpr{exp(b[2]) %>% round(1)} (\Sexpr{exp(ci[2,1]) %>% round(1)},\Sexpr{exp(ci[2,2]) %>% round(1)})
-on median breakdown time. 
+Each 1 kV increase in voltage caused a multiplicative effect of
+\Sexpr{exp(b[2]) %>% round(1)}
+(\Sexpr{exp(ci[2,1]) %>% round(1)},\Sexpr{exp(ci[2,2]) %>% round(1)})
+on median breakdown time.
 
 \end{frame}
 
