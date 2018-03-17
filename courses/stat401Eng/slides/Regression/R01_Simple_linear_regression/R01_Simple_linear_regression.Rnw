@@ -2,13 +2,10 @@
 
 \usepackage{verbatim,multicol,amsmath}
 
-\input{../frontmatter}
-\input{../commands}
+\input{../../frontmatter}
+\input{../../commands}
 
-\title{Set R01 - Simple linear regression}
-
-\newenvironment{remark}[1][Remark]{\begin{trivlist}
-\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\title{R01 - Simple linear regression}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -17,7 +14,8 @@ opts_chunk$set(comment=NA,
                out.width='0.8\\textwidth', 
                fig.align='center', 
                message=FALSE,
-               echo=TRUE)
+               echo=TRUE,
+               cache=TRUE)
 options(width=120)
 @
 
@@ -63,17 +61,30 @@ Telomere length values were measured from DNA by a quantitative PCR assay that d
 
 \begin{frame}[fragile]
 \frametitle{}
-<<echo=FALSE>>=
-Telomeres <- abd::Telomeres
+<<telomere_data, echo=FALSE>>=
+# From `abd` package
+Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L, 
+4L, 4L, 5L, 5L, 3L, 4L, 4L, 5L, 5L, 5L, 6L, 6L, 6L, 6L, 6L, 7L, 
+6L, 8L, 8L, 8L, 7L, 7L, 8L, 8L, 8L, 10L, 10L, 12L, 12L, 9L), 
+    telomere.length = c(1.63, 1.24, 1.33, 1.5, 1.42, 1.36, 1.32, 
+    1.47, 1.24, 1.51, 1.31, 1.36, 1.34, 0.99, 1.03, 0.84, 0.94, 
+    1.03, 1.14, 1.17, 1.23, 1.25, 1.31, 1.34, 1.36, 1.22, 1.32, 
+    1.28, 1.26, 1.18, 1.03, 1.1, 1.13, 0.98, 0.85, 1.05, 1.15, 
+    1.14, 1.24)), .Names = c("years", "telomere.length"), class = "data.frame", row.names = c(NA, 
+-39L))
+@
+
+<<telomere_plot, dependson="telomere_data", echo=FALSE>>=
 ggplot(Telomeres, aes(x=years, y=telomere.length)) + 
   geom_point() + 
   geom_smooth(method='lm', se=FALSE) + 
+  labs(x = "Years", y = "Telomere length (ratio)") + 
   theme_bw()
 @
 \end{frame}
 
 
-
+\subsection{Model}
 \frame{\frametitle{Simple Linear Regression}
   The \alert{simple linear regression} model is 
 	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
@@ -139,6 +150,9 @@ ggplot(Telomeres, aes(x=years, y=telomere.length)) +
 	\end{itemize}
 }
 
+
+
+
 \subsection{Parameter estimation}
 \frame{\frametitle{}
 	\small
@@ -196,19 +210,23 @@ The coefficient of determination ($R^2$) is the proportion of the total response
 
 \begin{frame}[fragile]
 \frametitle{}
-<<echo=FALSE>>=
-Telomeres$jyears = jitter(Telomeres$years)
-plot(telomere.length~jyears, Telomeres,
-     main="Telomere length vs years post diagnosis",
-     xlab="Years post diagnosis (jittered)",
-     ylab="Telomere length")
+<<residual_plot, dependson="telomere_data", echo=FALSE>>=
+m <- lm(telomere.length ~ years, data = Telomeres)
+Telomeres <- Telomeres %>%
+  mutate(predict = predict(m),
+         residuals = residuals(m),
+         jittered_years = jitter(years))
 
-m = lm(telomere.length~years, Telomeres)
-abline(m, col="red", lwd=2)
-
-segments(Telomeres$jyears, predict(m), 
-         Telomeres$jyears, predict(m)+residuals(m), 
-         lty=2, col="red")
+ggplot(Telomeres, 
+       aes(x = jittered_years, 
+           y = telomere.length)) +
+  geom_jitter(height = 0) + 
+  geom_segment(aes(xend = jittered_years, yend = predict), color = "red") + 
+  stat_smooth(method = "lm", se = FALSE) + 
+  labs(main = "Telomere length vs years post diagnosis",
+    x    = "Years post diagnosis (jittered)",
+    y    = "Telomere length") + 
+  theme_bw()
 @
 \end{frame}
 
@@ -227,51 +245,137 @@ segments(Telomeres$jyears, predict(m),
 }
 
 
-
+\subsection{by hand}
 \begin{frame}[fragile]
-\frametitle{Calculations by hand in "R"}
-{\tiny
-<<echo=TRUE>>=
-sm <- Telomeres %>% summarize(n = n(), Xbar = mean(years), Ybar = mean(telomere.length),
-                              s_X = sd(years), s_Y = sd(telomere.length), r_XY = cor(telomere.length,years)) 
+\frametitle{Calculations ``by hand'' in R}
+<<hand_calculations, dependson="telomere_data", echo=TRUE>>=
+sm <- Telomeres %>% 
+  summarize(n    = n(), 
+            Xbar = mean(years), 
+            Ybar = mean(telomere.length),
+            s_X  = sd(years), 
+            s_Y  = sd(telomere.length), 
+            r_XY = cor(telomere.length,years)) 
 sm
 @
 
-\[ \begin{array}{rl}
-SXX &= (n-1) s_x^2 = (\Sexpr{sm$n}-1)\times \Sexpr{sm$s_X}^2 = \Sexpr{(sm$n-1)*sm$s_X^2} \\
-SYY &= (n-1) s_Y^2 = (\Sexpr{sm$n}-1)\times \Sexpr{sm$s_Y}^2 = \Sexpr{(sm$n-1)*sm$s_Y^2} \\
-SXY &= (n-1) s_X s_Y r_{XY} = (\Sexpr{sm$n}-1) \times \Sexpr{sm$s_X} \times \Sexpr{sm$s_Y} \times \Sexpr{sm$r_XY} = \Sexpr{(sm$n-1)*sm$s_X*sm$s_Y*sm$r_XY} \\
-\hat{\beta}_1 &= SXY/SXX = -8.635897/327.4358 = -0.02637432 \\
-\hat{\beta}_0 &= \overline{Y}-\hat{\beta}_1\overline{X} = 1.220256 - (-0.02637432)\times 5.589744 = 1.367682 \\
-R^2 &= r_{XY}^2 = (-0.4306534)^2 = 0.1854624 \\
-SSE &= SYY(1-R^2) = 1.228098(1-0.1854624) = 1.000332 \\
-\hat{\sigma}^2 &= SSE/(n-2) = 1.000332/(39-2) = 0.027036 \\
-\hat{\sigma} &= \sqrt{\hat{\sigma}^2} = \sqrt{0.027036} = 0.1644263 \\
-SE(\hat{\beta}_0) &= \hat{\sigma}\sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_x^2}} =  0.1644263 \sqrt{\frac{1}{39} + \frac{ 5.589744^2}{327.4358}} = 0.05721115 \\
-SE(\hat{\beta}_1) &= \hat{\sigma}\sqrt{\frac{1}{(n-1)s_x^2}} =  0.1644263 \sqrt{\frac{1}{327.4358}} = 0.009086742 \\
-p_{H_0:\beta_0=0} &= 2P\left(t_{n-2} < -\left| \frac{1.367682}{0.05721115} \right|\right) = 2P(t_{37} < - 23.90586) < 0.0001 \\
-p_{H_0:\beta_1=0} &= 2P\left(t_{n-2} < -\left| \frac{-0.02637432 }{0.009086742} \right|\right) = 2P(t_{37} < - 2.902506) < 0.0062 \\
-CI_{95\%\, \beta_0} &= \hat{\beta}_0 \pm t_{n-2,1-a/2} SE(\hat{\beta}_0) = 1.367682 \pm 2.026192\times  0.05721115 = (1.251761, 1.483603) \\
-CI_{95\%\, \beta_1} &= \hat{\beta}_1 \pm t_{n-2,1-a/2} SE(\hat{\beta}_1) = -0.02637432  \pm 2.026192\times  0.009086742 = (-0.044785804 -0.007962836)
-\end{array} \]
-}
+<<hand_calculations2, dependson="hand_calculations", echo=FALSE>>=
+SXX <- (sm$n-1)*sm$s_X^2
+SYY <- (sm$n-1)*sm$s_Y^2
+SXY <- (sm$n-1)*sm$s_X*sm$s_Y*sm$r_XY
+beta1 <- SXY/SXX
+beta0 <- sm$Ybar - beta1 * sm$Xbar
+R2 <- sm$r_XY^2
+SSE <- SYY*(1-R2)
+sigma2 <- SSE/(sm$n-2)
+sigma <- sqrt(sigma2)
+SE_beta0 <- sigma*sqrt(1/sm$n + sm$Xbar^2/((sm$n-1)*sm$s_X^2))
+SE_beta1 <- sigma*sqrt(                 1/((sm$n-1)*sm$s_X^2))
+T0 <- -abs(beta0/SE_beta0)
+T1 <- -abs(beta1/SE_beta1)
+@
+
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{Calculations ``by hand'' in R (continued)}
+\tiny 
 
+\[ \begin{array}{rl}
+SXX &
+= (n-1) s_x^2 
+= (\Sexpr{sm$n}-1)\times \Sexpr{sm$s_X}^2 
+= \Sexpr{(sm$n-1)*sm$s_X^2} \\
+
+SYY &
+= (n-1) s_Y^2 
+= (\Sexpr{sm$n}-1)\times \Sexpr{sm$s_Y}^2 
+= \Sexpr{(sm$n-1)*sm$s_Y^2} \\
+
+SXY &
+= (n-1) s_X s_Y r_{XY} 
+= (\Sexpr{sm$n}-1) \times \Sexpr{sm$s_X} \times \Sexpr{sm$s_Y} \times \Sexpr{sm$r_XY} 
+= \Sexpr{(sm$n-1)*sm$s_X*sm$s_Y*sm$r_XY} \\
+
+\hat{\beta}_1 &
+= SXY/SXX 
+= \Sexpr{SXY}/\Sexpr{SXX} 
+= \Sexpr{beta1} \\
+
+\hat{\beta}_0 &
+= \overline{Y}-\hat{\beta}_1\overline{X} 
+= \Sexpr{sm$Ybar} - (\Sexpr{beta1})\times \Sexpr{sm$Xbar} 
+= \Sexpr{beta0} \\
+
+R^2 &
+= r_{XY}^2 
+= (\Sexpr{sm$r_XY})^2 
+= \Sexpr{R2} \\
+
+SSE &
+= SYY(1-R^2) 
+= \Sexpr{SYY}(1-\Sexpr{R2}) 
+= \Sexpr{SSE} \\
+
+\hat{\sigma}^2 &
+= SSE/(n-2) 
+= \Sexpr{SSE}/(\Sexpr{sm$n}-2)
+= \Sexpr{sigma2} \\
+
+\hat{\sigma} &
+= \sqrt{\hat{\sigma}^2} 
+= \sqrt{\Sexpr{sigma2}} 
+= \Sexpr{sigma} \\
+
+SE(\hat{\beta}_0) &
+= \hat{\sigma}\sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_x^2}} 
+=  \Sexpr{sigma} \sqrt{\frac{1}{\Sexpr{sm$n}} 
+  + \frac{\Sexpr{sm$Xbar}^2}{(\Sexpr{sm$n}-1)*\Sexpr{sm$s_X}^2}} 
+= \Sexpr{SE_beta1} \\
+
+SE(\hat{\beta}_1) &
+= \hat{\sigma}\sqrt{\frac{1}{(n-1)s_x^2}} 
+=  \Sexpr{sigma} \sqrt{\frac{1}{(\Sexpr{sm$n}-1)*\Sexpr{sm$s_X}^2}} 
+= \Sexpr{SE_beta0} \\
+
+p_{H_0:\beta_0=0} &
+= 2P\left(t_{n-2} < -\left| \frac{\hat\beta_0}{SE(\hat\beta_0)} \right|\right) 
+= 2P(t_{\Sexpr{sm$n-2}} < \Sexpr{T0}) 
+= \Sexpr{2*pt(T0,sm$n-2)} \\
+
+p_{H_0:\beta_1=0} &
+= 2P\left(t_{n-2} < -\left| \frac{\hat\beta_1}{SE(\hat\beta_1)} \right|\right) 
+= 2P(t_{\Sexpr{sm$n-2}} < \Sexpr{T1}) 
+= \Sexpr{2*pt(T1,sm$n-2)} \\
+
+CI_{95\%\, \beta_0} &
+= \hat{\beta}_0 \pm t_{n-2,1-a/2} SE(\hat{\beta}_0) \\
+&= \Sexpr{beta0} \pm \Sexpr{qt(.975,sm$n-2)}\times  \Sexpr{SE_beta0} 
+= (\Sexpr{beta0 - qt(.975,sm$n-2) * SE_beta0}, 
+   \Sexpr{beta0 + qt(.975,sm$n-2) * SE_beta0}) \\
+
+CI_{95\%\, \beta_1} &
+= \hat{\beta}_1 \pm t_{n-2,1-a/2} SE(\hat{\beta}_1) \\
+&= \Sexpr{beta1} \pm \Sexpr{qt(.975,sm$n-2)}\times  \Sexpr{SE_beta1} 
+= (\Sexpr{beta1 - qt(.975,sm$n-2) * SE_beta1}, 
+   \Sexpr{beta1 + qt(.975,sm$n-2) * SE_beta1}) \\
+\end{array} \]
+\end{frame}
+
+
+\subsection{in R}
 \begin{frame}[fragile]
 \frametitle{Regression in R}
-
-<<>>=
+<<regression_in_r, dependson="telomere_data", echo=TRUE>>=
 m = lm(telomere.length~years, Telomeres)
 summary(m)
 confint(m)
 @
-
 \end{frame}
 
 
-
+\subsection{Conclusion}
 \begin{frame}
 \frametitle{Conclusion}
 
@@ -328,8 +432,8 @@ $\hat{\sigma}^2$, $R^2$, pvalues, CIs, etc.
 
 
 
-\section{Statements about a particular value of $X$}
 
+\subsection{Confidence and prediction intervals at a particular X}
 \begin{frame}
 \frametitle{What is $E[Y|X=x]$?}
 
@@ -363,11 +467,11 @@ and a $100(1-a)$\% confidence interval is
 
 
 \begin{frame}[fragile]
-\frametitle{Confidence and prediction intervals fo r}
+\frametitle{Confidence and prediction intervals for different values of X}
 
-<<>>=
+<<intervals, dependson="telomere_data", echo=TRUE>>=
 m = lm(telomere.length~years, Telomeres)
-new = data.frame(years=4)
+new = data.frame(years=4:6)
 new %>% bind_cols(predict(m, new, interval="confidence") %>% as.data.frame)
 new %>% bind_cols(predict(m, new, interval="prediction") %>% as.data.frame)
 @
@@ -420,8 +524,10 @@ so our new parameters for the mean are
 
 
 
+\subsection{Shifting the intercept}
 \begin{frame}[fragile]
-<<>>=
+\frametitle{Shifting the intercept (continued)}
+<<shifting_the_intercept, dependson="telomere_data", echo=TRUE>>=
 m0 = lm(telomere.length ~   years   , Telomeres) 
 m4 = lm(telomere.length ~ I(years-4), Telomeres) 
 

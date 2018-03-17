@@ -40,9 +40,15 @@ you can find them
 |Comparing means|[pdf](Inference/I09-Comparing_means/I09-Comparing_means.pdf)|[R](Inference/I09-Comparing_means/I09-Comparing_means.R)|
 |Multiple comparisons|[pdf](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.pdf)|[R](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.R)|
 
- ============ updated to here =================
 
 ### Regression
+
+|Topic|slides|code|
+|---|---|---|
+|Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|
+
+ ============ updated to here =================
+
 
 |Topic|Source|Handouts|
 |---|---|---|
