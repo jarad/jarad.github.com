@@ -19,11 +19,12 @@ opts_chunk$set(comment=NA,
 options(width=120)
 @
 
-<<libraries, message=FALSE, warning=FALSE>>=
-library(reshape2)
-library(plyr)
-library(ggplot2)
-library(xtable)
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("reshape2")
+library("plyr")
+library("dplyr")
+library("ggplot2")
+library("xtable")
 @
 
 <<set_seed>>=
@@ -89,9 +90,9 @@ Approaches:
   \pause which is not a known distribution. \pause We might be interested in
   \begin{enumerate}
   \item  normalizing this posterior, i.e. calculating
-  \[ q(y) = \int q(\theta|y) d\theta \]
+  \[ c(y) = \int q(\theta|y) d\theta \]
   \item or in calculating the posterior mean, i.e. 
-  \[ E[\theta|y] = \int \theta p(\theta|y) d\theta = \int \theta \frac{q(\theta|y)}{q(y)} d\theta. \]
+  \[ E[\theta|y] = \int \theta p(\theta|y) d\theta = \int \theta \frac{q(\theta|y)}{c(y)} d\theta. \]
   \end{enumerate}
 \end{frame}
 
@@ -104,16 +105,16 @@ y = 1 # Data
 @
 
 <<normal_cauchy_posterior, dependson='data', echo=TRUE>>=
-q = function(theta,y,log=FALSE) {
+q = function(theta, y, log = FALSE) {
   out = -(y-theta)^2/2-log(1+theta^2)
   if (log) return(out)
   return(exp(out))
 }
 
-# Find marginal likelihood for y
+# Find normalizing constant for q(theta|y)
 w = 0.1
 theta = seq(-5,5,by=w)+y
-(qy = sum(q(theta,y)*w))                 # gridding based approach
+(cy = sum(q(theta,y)*w))                 # gridding based approach
 
 integrate(function(x) q(x,y), -Inf, Inf) # numerical integration
 @
@@ -122,20 +123,20 @@ integrate(function(x) q(x,y), -Inf, Inf) # numerical integration
 \begin{frame}[fragile]
 \frametitle{Normal-Cauchy: distribution}
 <<normal_cauchy_posterior_plot, dependson=c('data','normal_cauchy_posterior'), echo=TRUE, fig.width=8>>=
-curve(q(x,y), -5, 5, n=1001)
+curve(q(x,y)/cy, -5, 5, n=1001)
 points(theta,rep(0,length(theta)), cex=0.5, pch=19)
-segments(theta,0,theta,q(theta,y))
+segments(theta,0,theta,q(theta,y)/cy)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Posterior expectation}
-\[ E[h(\theta)|y] \approx \sum_{s=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) = \sum_{s=1}^S w_s h\left(\theta^{(s)}\right) \frac{q\left(\left.\theta^{(s)}\right|y\right)}{q(y)} \]
+\[ E[h(\theta)|y] \approx \sum_{s=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) = \sum_{s=1}^S w_s h\left(\theta^{(s)}\right) \frac{q\left(\left.\theta^{(s)}\right|y\right)}{c(y)} \]
 <<normal_cauchy_posterior_expectation, dependson=c('data','normal_cauchy_posterior'), echo=TRUE>>=
 h = function(theta) theta
 
-sum(w*h(theta)*q(theta,y)/qy)
+sum(w*h(theta)*q(theta,y)/cy)
 @
 
 \end{frame}
@@ -400,7 +401,9 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 
 \subsection{Gridding}
 \frame{\frametitle{Monte Carlo approximation via gridding}
-  Rather than approximate $p(y)$ and then $E[\theta|y]$ via deterministic gridding (all $w_i$ are equal), we can use the grid as a discrete approximation to the posterior, i.e. 
+Rather than determining $c(y)$ and then $E[\theta|y]$ via deterministic gridding (all $w_i$ are equal), 
+we can use the grid as a discrete approximation to the posterior, 
+i.e. 
   \[ p(\theta|y) \approx \sum_{i=1}^N p_i \delta_{\theta_i}(\theta) \qquad p_i = \frac{q(\theta_i|y)}{\sum_{j=1}^N q(\theta_j|y)}  \]
   \pause where $\delta_{\theta_i}(\theta)$ is the Dirac delta function, i.e. 
   \[ \delta_{\theta_i}(\theta) = 0 \,\forall\, \theta\ne \theta_i \qquad \int \delta_{\theta_i}(\theta) d\theta=1. \]
@@ -608,7 +611,7 @@ where $M^*$ satisfies $M^*\, g(\theta)\ge q(\theta|y)$ for all $\theta$.
 \begin{itemize}[<+->]
 \item For a given proposal distribution $g(\theta)$, 
 the optimal $M^*$ is $M^*=\sup_\theta q(\theta|y)/g(\theta)$. 
-\item The acceptance probability is $1/M = p(y)/M^*$.
+\item The acceptance probability is $1/M = c(y)/M^*$.
 \end{itemize}
 \pause 
 The accept-reject idea is to create an envelope, $M\, g(\theta)$, above $q(\theta|y)$.
@@ -627,33 +630,40 @@ The accept-reject idea is to create an envelope, $M\, g(\theta)$, above $q(\thet
   with 
   \[ M^* = \sup_\theta \frac{q(\theta|y)}{g(\theta)} \pause 
   = \sup_\theta \frac{e^{-(y-\theta)^2/2} \frac{1}{(1+\theta^2)}}{\frac{1}{\sqrt{2\pi}}  e^{-(\theta-y)^2/2} } \pause 
-  = \frac{\sqrt{2\pi}}{(1+\theta^2)} \le \sqrt{2\pi} \]
-  The acceptance rate is $1/M = p(y)/M^* = 1.643545 / \sqrt{2\pi} = 0.656$.
+  = \frac{\sqrt{2\pi}}{(1+\theta^2)} \pause 
+  \le \sqrt{2\pi} \]
+  \pause
+  The acceptance rate is 
+  $1/M = c(y)/M^* = \Sexpr{cy} / \sqrt{2\pi} = \Sexpr{cy/sqrt(2*pi)}$.
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
-<<rejection_sampling_plot, dependson='data', echo=FALSE, fig.width=8>>=
+<<rejection_sampling_plot, dependson=c("data","normal_cauchy_posterior"), echo=FALSE, fig.width=8>>=
 M = sqrt(2*pi)
 g = function(theta,y,log=FALSE) dnorm(theta,y,log=log)
 
 n = 1e2
-d = data.frame(x = rnorm(n), u = runif(n))
-d$u_scaled = d$u*M*g(d$x,0)
-d$accept = d$u_scaled < q(d$x,0)
+d = data.frame(x = rnorm(n,y), 
+               u = runif(n)) %>%
+  mutate(u_scaled = u*M*g(x,y),
+         accept   = u_scaled < q(x,y))
 
-xx = seq(-3,3,by=0.01)
-dd = data.frame(x=xx,
-                y=c(M*g(xx,0),q(xx,0)),
-                distribution = c(rep("envelope",length(xx)),
-                                 rep("target",length(xx))))
+# xx = seq(-3,5,by=0.01)
+# dd = data.frame(x=xx,
+#                 y=c(M*g(xx,y),q(xx,y)),
+#                 distribution = c(rep("envelope",length(xx)),
+#                                  rep("target",length(xx))))
 
-gg = ggplot(d, aes(x=x,y=u_scaled,col=accept)) +geom_point()
+gg = ggplot(d, aes(x=x,y=u_scaled,col=accept)) + 
+  geom_point()
+
 clrs = unique(ggplot_build(gg)$data[[1]]$colour)
-gg + stat_function(fun=function(x) M*g(x,0), col=clrs[2]) +
-  stat_function(fun=function(x) q(x,0), col=clrs[1]) + 
+
+gg + stat_function(fun=function(x) M*g(x,y), col=clrs[2]) +
+  stat_function(fun=function(x) q(x,y), col=clrs[1]) + 
   labs(x="sample",y=expression(paste("u M g(",theta,")"))) +
   theme_bw()
 
