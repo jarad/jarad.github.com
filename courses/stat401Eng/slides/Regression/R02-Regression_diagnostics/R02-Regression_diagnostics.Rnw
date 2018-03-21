@@ -130,8 +130,8 @@ we will calculate a variety of \alert{case statistics}:
 \vspace{0.1in} \pause
 
 \begin{itemize}
-\item Fitted values
 \item Leverage
+\item Fitted values
 \item Residuals
   \begin{itemize}
   \item Standardized residuals
@@ -146,40 +146,12 @@ we will calculate a variety of \alert{case statistics}:
 \begin{frame}[fragile]
 \frametitle{Default diagnostic plots in R}
 <<default_diagnostics, dependson = "data">>=
-opar = par(mfrow=c(2,3))
 m <- lm(telomere.length ~ years, Telomeres)
-plot(m, 1:6, ask = FALSE)
-par(opar)
+opar = par(mfrow=c(2,3)); plot(m, 1:6, ask = FALSE); par(opar)
 @
 \end{frame}
 
 
-\subsection{Residuals}
-\begin{frame}
-\frametitle{Residuals and Fitted values}
-
-Another rewrite of a regression model is 
-\[ \begin{array}{rl}
-Y_i &\ind N(\mu_i,  \sigma^2) \\
-\mu_i &= \beta_0 + \beta_1 X_i
-\end{array} \]
-
-\pause
-
-A fitted value $\hat{Y}_i$ for an observation $i$ is 
-\[ 
-\hat{Y}_i = \hat\mu_i = \hat{\beta}_0+\hat{\beta}_1 X_i
-\]
-\pause
-and thus the residual is 
-\[ \begin{array}{rl}
-r_i &= Y_i - \hat{Y}_i \pause \\
-&= Y_i - \hat\mu_i \pause \\
-&= Y_i - (\hat{\beta}_0+\hat{\beta}_1 X_i) \pause \\
-&= Y_i - \hat{\beta}_0-\hat{\beta}_1 X_i \\
-\end{array} \]
-
-\end{frame}
 
 
 \subsection{Leverage}
@@ -224,6 +196,35 @@ cbind(Telomeres, leverage = hatvalues(m)) %>%
   arrange(-years)
 @
 \end{frame}
+
+
+\subsection{Residuals}
+\begin{frame}
+\frametitle{Residuals and Fitted values}
+
+A regression model can be expressed as 
+\[ \begin{array}{rl}
+Y_i &\ind N(\mu_i,  \sigma^2) \\
+\mu_i &= \beta_0 + \beta_1 X_i
+\end{array} \]
+
+\pause
+
+A fitted value $\hat{Y}_i$ for an observation $i$ is 
+\[ 
+\hat{Y}_i = \hat\mu_i = \hat{\beta}_0+\hat{\beta}_1 X_i
+\]
+\pause
+and thus the residual is 
+\[ \begin{array}{rl}
+r_i &= Y_i - \hat{Y}_i \pause \\
+&= Y_i - \hat\mu_i \pause \\
+&= Y_i - (\hat{\beta}_0+\hat{\beta}_1 X_i) \pause \\
+&= Y_i - \hat{\beta}_0-\hat{\beta}_1 X_i \\
+\end{array} \]
+
+\end{frame}
+
 
 \subsection{Standardized residuals}
 \begin{frame}
@@ -396,6 +397,8 @@ This plot is pretty confusing.
 \begin{frame}
 \frametitle{Summary}
 
+\small
+
 Case statistics:
 \begin{itemize}
 \item Fitted values
@@ -421,8 +424,42 @@ Model assumptions:
 \pause
 
 Default plots in R do not assess all model assumptions.
-So we'll need to make more.
+Two additional suggested plots:
+\begin{itemize}
+\item Residuals vs row number
+\item Residuals vs (each) explanatory variable
+\end{itemize}
 \end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Plot residuals vs row number (index)}
+\tiny
+<<residuals_vs_index, dependson="residuals", fig.height=3.5, echo=TRUE>>=
+plot(residuals(m))
+@
+\begin{tabular}{ll}
+Assumption & Violation \\
+\hline
+Independence & A pattern suggests temporal correlation \\
+\hline
+\end{tabular}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Residual vs explanatory variable}
+\tiny
+<<residual_vs_explanatory, dependson="residuals", fig.height=3.5, echo=TRUE>>=
+plot(Telomeres$years, residuals(m))
+@
+\begin{tabular}{ll}
+Assumption & Violation \\
+\hline
+Linearity & A pattern suggests non-linearity \\
+\hline
+\end{tabular}
+\end{frame}
+
 
 \end{document}
 
