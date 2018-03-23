@@ -61,7 +61,9 @@ If
 then
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected response when $X$ is zero and
-\item $\beta_1$ is the expected change in the response for a one unit increase in the explanatory variable.
+\item $\beta_1$ is the expected increase in the response for a one unit increase in the explanatory variable.
+\item $d\beta_1$ is the expected increase in the response for a $d$ unit increase
+in the explanatory variable.
 \end{itemize}
 
 \vspace{0.1in} \pause
@@ -117,7 +119,7 @@ ggplot(insulating, aes(Voltage, Time)) +
 m <- lm(Time ~ Voltage, insulating)
 @
 
-<<diagnostics, dependson="model">>=
+<<diagnostics, dependson="model", fig.height=4>>=
 opar = par(mfrow=c(2,3)); plot(m, 1:6, ask=FALSE); par(opar)
 @
 \end{frame}
@@ -132,7 +134,8 @@ is to take logarithms
 because
 \begin{itemize}[<+->]
 \item linearity will often then be approximately true,
-\item the variance will likely be approximately constant, and
+\item the variance will likely be approximately constant, 
+\item influence of some observations may decrease, and
 \item there is a (relatively) convenient interpretation.
 \end{itemize}
 
@@ -152,7 +155,7 @@ We will talk about interpretation of $\beta_0$ and $\beta_1$ when
 
 Suppose 
 \begin{itemize}
-\item $Y$ is corn yield per acre
+\item $Y$ is corn yield (bushels/acre)
 \item $X$ is fertilizer level in lbs/acre
 \end{itemize}
 
@@ -162,8 +165,10 @@ Then, if
 \[ E[Y|X] = \beta_0 + \beta_1 X \]
 
 \begin{itemize}[<+->]
-\item $\beta_0$ is the expected corn yield per acre when fertilizer level is zero and 
-\item $\beta_1$ is the expected change in corn yield per acre when fertilizer is increase by 1 lbs/acre. 
+\item $\beta_0$ is the expected corn yield (bushels/acre) when fertilizer level is zero and 
+\item $\beta_1$ is the expected change in corn yield (bushels/acre) when fertilizer is increased by 1 lb/acre or
+\item $d\beta_1$ is the expected change in corn yield (bushels/acre) when 
+fertilizer is increased by $d$ lb/acre.
 \end{itemize}
 
 \end{frame}
@@ -180,8 +185,9 @@ If
 \[ E[\log(Y)|X] = \beta_0 + \beta_1 X \]
 then
 \begin{itemize}[<+->]
-\item $\beta_0$ is the expected $\log(Y)$ when $X$ is zero and
-\item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in the explanatory variable. 
+\item $\beta_0$ is the expected $\log(Y)$ when $X$ is zero, 
+\item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in the explanatory variable, and
+\item $d\beta_1$ is the expected change in $\log(Y)$ for a $d$ unit increase in the explanatory variable. 
 \end{itemize}
 
 \vspace{0.1in} \pause
@@ -192,12 +198,14 @@ E[\log(Y)|X] = \mbox{Median}[\log(Y)|X] = \log(\mbox{Median}[Y|X])
 \]
 \pause
 we have 
-\[ \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 X} \]
+\[ \mbox{Median}[Y|X] = e^{\beta_0+\beta_1 X} = e^{\beta_0} e^{\beta_1 X} \]
 \pause
 then
 \begin{itemize}[<+->]
-\item $e^{\beta_0}$ is the median of $Y$ when $X$ is zero and 
+\item $e^{\beta_0}$ is the median of $Y$ when $X$ is zero, 
 \item $e^{\beta_1}$ is the multiplicative effect on the median of $Y$ for a one 
+unit increase in the explanatory variable, and
+\item $e^{d\beta_1}$ is the multiplicative effect on the median of $Y$ for a $d$ 
 unit increase in the explanatory variable.
 \end{itemize}
 
@@ -216,7 +224,7 @@ since
 
 Suppose
 \begin{itemize}
-\item $Y$ is corn yield per acre
+\item $Y$ is corn yield (bushels/acre)
 \item $X$ is fertilizer level in lbs/acre
 \end{itemize}
 
@@ -228,14 +236,22 @@ then
 \[ \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 X} \]
 
 \begin{itemize}[<+->]
-\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 0
-and
-\item $e^{\beta_1}$ is the multiplicative effect in median corn yield per acre
-when fertilizer is increased by 1 lbs/acre.
+\item $e^{\beta_0}$ is the median corn yield (bushels/acre) when fertilizer level is 0, 
+\item $e^{\beta_1}$ is the multiplicative effect in median corn yield (bushels/acre)
+when fertilizer is increased by 1 lb/acre, and 
+\item $e^{d\beta_1}$ is the multiplicative effect in median corn yield (bushels/acre)
+when fertilizer is increased by $d$ lb/acre.
 \end{itemize}
 
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Response is logged}
+<<echo=FALSE>>=
+beta0 = 1; beta1 = 2; curve(exp(beta0 + beta1*x), 0, 2, ylab="Median Y")
+@
+\end{frame}
 
 
 \subsection{Explanatory variable is logged}
@@ -247,9 +263,9 @@ If
 \pause
 then
 \begin{itemize}[<+->]
-\item $\beta_0$ is the expected response when $\log(X)$ is zero and
+\item $\beta_0$ is the expected response when $\log(X)$ is zero and 
 \item $\beta_1$ is the expected change in the response for a one unit increase
-in $\log(X)$.
+in $\log(X)$
 \end{itemize}
 
 \pause
@@ -257,7 +273,7 @@ Alternatively,
 
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected response when $X$ is 1 and
-\item $\beta_1 \log(d)$ is the expected change in the response when $X$ increase
+\item $\beta_1 \log(d)$ is the expected change in the response when $X$ increases
 multiplicatively by $d$, e.g.
   \begin{itemize}
   \item $\beta_1 \log(2)$ is the expected change in the response for each
@@ -277,7 +293,7 @@ multiplicatively by $d$, e.g.
 
 Suppose
 \begin{itemize}
-\item $Y$ is corn yield per acre
+\item $Y$ is corn yield (bushels/acre)
 \item $X$ is fertilizer level in lbs/acre
 \end{itemize}
 
@@ -287,11 +303,20 @@ Then, if
 \[ E[Y|X] = \beta_0 + \beta_1 \log(X)  \]
 
 \begin{itemize}[<+->]
-\item $\beta_0$ is the expected corn yield per acre when fertilizer level is 1 lb/acre and
+\item $\beta_0$ is the expected corn yield (bushels/acre) when fertilizer level is 1 lb/acre and
 \item $\beta_1 \log(2)$ is the expected change in corn yield when fertilizer level is doubled.
 \end{itemize}
 
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Response is logged}
+<<echo=FALSE>>=
+beta0 = 1; beta1 = 2; curve(beta0 + beta1*log(x), 0, 2, ylab="Mean Y")
+@
+\end{frame}
+
 
 
 
@@ -311,13 +336,16 @@ then
 
 But we also have
 \[
-\mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1}, \]
+\mbox{Median}[Y|X] 
+= e^{\beta_0+\beta_1 \log(X)} 
+= e^{\beta_0} e^{\beta_1 \log(X)} 
+= e^{\beta_0} X^{\beta_1}, \]
 \pause
 and thus
 \begin{itemize}[<+->]
 \item $e^{\beta_0}$ is the median of $Y$ when $X$ is 1 and
 \item $d^{\beta_1}$ is the multiplicative change in the median of the response
-when $X$ increase multiplicatively by $d$, e.g.
+when $X$ increases multiplicatively by $d$, e.g.
   \begin{itemize}
   \item $2^{\beta_1}$ is the multiplicative effect on the median of the response
   for each doubling of $X$ or
@@ -336,7 +364,7 @@ when $X$ increase multiplicatively by $d$, e.g.
 
 Suppose
 \begin{itemize}
-\item $Y$ is corn yield per acre
+\item $Y$ is corn yield (bushels/acre)
 \item $X$ is fertilizer level in lbs/acre
 \end{itemize}
 
@@ -346,11 +374,21 @@ Then, if
 \[ E[\log(Y)|X] = \beta_0 + \beta_1 \log(X) \quad \mbox{or} \quad \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1} \]
 
 \begin{itemize}[<+->]
-\item $e^{\beta_0}$ is the median corn yield per acre when fertilizer level is 1 lb/acre and
-\item $2^{\beta_1}$ is the multiplicative effect on median corn yield per acre when fertilizer level doubles.
+\item $e^{\beta_0}$ is the median corn yield (bushels/acre) when fertilizer level is 1 lb/acre and
+\item $2^{\beta_1}$ is the multiplicative effect on median corn yield (bushels/acre) when fertilizer level doubles.
 \end{itemize}
 
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Both response and explanatory variables are logged}
+<<echo=FALSE>>=
+beta0 = 1; beta1 = 0.2; curve(exp(beta0)*x^beta1, 0, 2, ylab="Mean Y")
+@
+\end{frame}
+
+
 
 
 \begin{frame}
@@ -372,10 +410,12 @@ Then, if
 
 \vspace{0.2in} \pause
 
-To construct confidence intervals for $e^\beta$,
-find a confidence interval for $\beta$ and exponentiate the endpoints,
+To construct confidence intervals for $f(\beta)$ 
+(when $f()$ is monotonic, e.g. $f(x) = dx$ or $f(x) = \exp(x)$),
+find a confidence interval for $\beta$ and 
+evaluate the function at the endpoints,
 i.e. if $(L,U)$ is a confidence interval for $\beta$,
-then $(e^L, e^U)$ is a confidence interval for $e^\beta$.
+then $(f(L), f(U))$ is a confidence interval for $f(\beta)$.
 
 \end{frame}
 
