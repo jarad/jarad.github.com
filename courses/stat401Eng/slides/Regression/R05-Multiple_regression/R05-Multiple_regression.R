@@ -1,0 +1,354 @@
+## ----options, echo=FALSE, warning=FALSE, message=FALSE-------------------
+options(width=120)
+opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+
+## ----libraries, message=FALSE, warning=FALSE, echo=FALSE-----------------
+library("dplyr")
+library("ggplot2")
+library("Sleuth3")
+
+## ----set_seed, echo=FALSE------------------------------------------------
+set.seed(2)
+
+## ----echo=FALSE----------------------------------------------------------
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+## ----echo=FALSE----------------------------------------------------------
+g = ggplot(case1001, aes(x=Height, y=Distance)) + geom_point(size=3)
+multiplot(
+  g+theme_bw(),
+  g+stat_smooth(method="lm")+theme_bw(),
+  g+stat_smooth(method="lm", formula=y~x+I(x^2))+theme_bw(),
+  g+stat_smooth(method="lm", formula=y~x+I(x^2)+I(x^3))+theme_bw(),
+  layout = matrix(1:4,2,byrow=TRUE)
+)
+
+## ----tidy=FALSE----------------------------------------------------------
+# Construct the variables by hand
+case1001$Height2 = case1001$Height^2
+case1001$Height3 = case1001$Height^3
+
+m1 = lm(Distance~Height,                 case1001)
+m2 = lm(Distance~Height+Height2,         case1001)
+m3 = lm(Distance~Height+Height2+Height3, case1001)
+
+coefficients(m1)
+coefficients(m2)
+coefficients(m3)
+
+## ----tidy=FALSE----------------------------------------------------------
+# Let R construct the variables for you
+m = lm(Distance~poly(Height, 3, raw=TRUE), case1001)
+summary(m)
+
+## ----echo=FALSE----------------------------------------------------------
+longnosedace <- structure(list(stream = structure(1:67, .Label = c("BASIN_RUN", 
+"BEAR_BR", "BEAR_CR", "BEAVER_DAM_CR", "BEAVER_RUN", "BENNETT_CR", 
+"BIG_BR", "BIG_ELK_CR", "BIG_PIPE_CR", "BLUE_LICK_RUN", "BROAD_RUN", 
+"BUFFALO_RUN", "BUSH_CR", "CABIN_JOHN_CR", "CARROLL_BR", "COLLIER_RUN", 
+"CONOWINGO_CR", "DEAD_RUN", "DEEP_RUN", "DEER_CR", "DORSEY_RUN", 
+"FALLS_RUN", "FISHING_CR", "FLINTSTONE_CR", "GREAT_SENECA_CR", 
+"GREENE_BR", "GUNPOWDER_FALLS", "HAINES_BR", "HAWLINGS_R", "HAY_MEADOW_BR", 
+"HERRINGTON_RUN", "HOLLANDS_BR", "ISRAEL_CR", "LIBERTY_RES", 
+"LITTLE_ANTIETAM_CR", "LITTLE_BEAR_CR", "LITTLE_CONOCOCHEAGUE_CR", 
+"LITTLE_DEER_CR", "LITTLE_FALLS", "LITTLE_GUNPOWDER_R", "LITTLE_HUNTING_CR", 
+"LITTLE_PAINT_BR", "MAINSTEM_PATUXENT_R", "MEADOW_BR", "MILL_CR", 
+"MORGAN_RUN", "MUDDY_BR", "MUDLICK_RUN", "NORTH_BR", "NORTH_BR_CASSELMAN_R", 
+"NORTHWEST_BR", "NORTHWEST_BR_ANACOSTIA_R", "OWENS_CR", "PATAPSCO_R", 
+"PINEY_BR", "PINEY_CR", "PINEY_RUN", "PRETTYBOY_BR", "RED_RUN", 
+"ROCK_CR", "SAVAGE_R", "SECOND_MINE_BR", "SENECA_CR", "SOUTH_BR_CASSELMAN_R", 
+"SOUTH_BR_PATAPSCO", "SOUTH_FORK_LINGANORE_CR", "TUSCARORA_CR"
+), class = "factor"), count = c(13L, 12L, 54L, 19L, 37L, 2L, 
+72L, 164L, 18L, 1L, 53L, 16L, 32L, 21L, 23L, 18L, 112L, 25L, 
+5L, 26L, 8L, 15L, 11L, 11L, 87L, 33L, 22L, 98L, 1L, 5L, 1L, 38L, 
+30L, 12L, 24L, 6L, 15L, 38L, 84L, 3L, 18L, 63L, 239L, 234L, 6L, 
+76L, 25L, 8L, 23L, 16L, 6L, 100L, 80L, 28L, 48L, 18L, 36L, 19L, 
+32L, 3L, 106L, 62L, 23L, 2L, 26L, 20L, 38L), acreage = c(2528L, 
+3333L, 19611L, 3570L, 1722L, 583L, 4790L, 35971L, 25440L, 2217L, 
+1971L, 12620L, 19046L, 8612L, 3896L, 6298L, 27350L, 4145L, 1175L, 
+8297L, 7814L, 1745L, 5046L, 18943L, 8624L, 2225L, 12659L, 1967L, 
+1172L, 639L, 7056L, 1934L, 6260L, 424L, 3488L, 3330L, 2227L, 
+8115L, 1600L, 15305L, 7121L, 5794L, 8636L, 4803L, 1097L, 9765L, 
+4266L, 1507L, 3836L, 17419L, 8735L, 22550L, 9961L, 4706L, 4011L, 
+6949L, 11405L, 904L, 3332L, 575L, 29708L, 2511L, 18422L, 6311L, 
+1450L, 4106L, 10274L), do2 = c(9.6, 8.5, 8.3, 9.2, 8.1, 9.2, 
+9.4, 10.2, 7.5, 8.5, 11.9, 8.3, 8.3, 8.2, 10.4, 8.6, 8.5, 8.7, 
+7.7, 9.9, 6.8, 9.4, 7.6, 9.2, 8.6, 9.1, 9.7, 8.6, 8.3, 9.5, 6.4, 
+10.5, 9.5, 8.3, 9.3, 9.1, 6.8, 9.6, 10.2, 9.7, 9.5, 9.4, 8.4, 
+8.5, 8.3, 9.3, 8.9, 7.4, 8.3, 7.4, 8.2, 8.4, 8.6, 8.9, 8.3, 9.3, 
+9.2, 9.8, 8.4, 6.8, 7.7, 10.2, 9.9, 7.6, 7.9, 10, 9.3), maxdepth = c(80L, 
+83L, 96L, 56L, 43L, 51L, 91L, 81L, 120L, 46L, 56L, 37L, 120L, 
+103L, 105L, 42L, 65L, 51L, 57L, 60L, 160L, 48L, 109L, 50L, 78L, 
+41L, 65L, 50L, 73L, 26L, 60L, 85L, 133L, 62L, 44L, 67L, 54L, 
+110L, 56L, 85L, 58L, 34L, 150L, 93L, 53L, 130L, 68L, 51L, 121L, 
+48L, 63L, 107L, 79L, 61L, 52L, 100L, 70L, 39L, 73L, 33L, 73L, 
+60L, 45L, 46L, 60L, 96L, 90L), no3 = c(2.28, 5.34, 0.99, 5.44, 
+5.66, 2.26, 4.1, 3.2, 3.53, 1.2, 3.25, 0.61, 2.93, 1.57, 2.77, 
+0.26, 6.95, 0.34, 1.3, 5.26, 0.44, 2.19, 0.73, 0.25, 3.37, 2.3, 
+3.3, 7.71, 2.62, 3.53, 0.25, 2.34, 2.41, 3.49, 2.11, 0.81, 0.33, 
+3.4, 3.54, 2.6, 0.51, 1.19, 3.31, 5.01, 1.71, 4.38, 2.05, 0.84, 
+1.32, 0.29, 1.56, 1.41, 1.02, 4.06, 4.7, 4.57, 2.17, 6.81, 2.09, 
+2.47, 0.63, 4.17, 1.58, 0.64, 2.96, 2.62, 5.45), so4 = c(16.75, 
+7.74, 10.92, 16.53, 5.91, 8.81, 5.65, 17.53, 8.2, 10.85, 11.12, 
+18.87, 11.31, 16.09, 12.79, 17.63, 14.94, 44.93, 21.68, 6.36, 
+20.24, 10.27, 7.1, 14.21, 7.51, 9.72, 5.98, 26.44, 4.64, 4.46, 
+9.82, 11.44, 13.77, 5.82, 13.37, 8.16, 7.6, 9.22, 5.69, 6.96, 
+7.41, 12.27, 5.95, 10.98, 15.77, 5.74, 12.77, 16.3, 7.36, 2.5, 
+13.22, 14.45, 9.07, 9.9, 5.38, 17.84, 10.17, 9.2, 5.5, 7.61, 
+12.28, 10.75, 8.37, 21.16, 8.84, 5.45, 24.76), temp = c(15.3, 
+19.4, 19.5, 17, 19.3, 12.9, 16.7, 13.8, 13.7, 14.3, 22.2, 16.8, 
+18, 15, 18.4, 18.2, 24.1, 23, 21.8, 19.1, 22.6, 14.3, 19, 18.5, 
+21.3, 20.5, 18, 16.8, 20.5, 20.1, 24.5, 12, 21, 20.2, 24, 14.9, 
+24, 20.5, 19.5, 17.5, 16, 17.5, 18.1, 24.3, 13.1, 16.9, 17, 21, 
+18.5, 18, 20.8, 23, 21.8, 19.7, 18.9, 18.6, 23.6, 19.2, 17.7, 
+18, 21.4, 17.7, 20.1, 18.5, 18.6, 15.4, 15)), .Names = c("stream", 
+"count", "acreage", "do2", "maxdepth", "no3", "so4", "temp"), class = "data.frame", row.names = c(NA, 
+-67L))
+
+m <- longnosedace %>%
+  tidyr::gather(variable, value, -stream, -count, -acreage)
+
+ggplot(m, aes(x=value,y=count)) + 
+  geom_point(size=2) + 
+  facet_wrap(~variable, scales="free") +
+  theme_bw()
+
+## ------------------------------------------------------------------------
+m <- lm(count~no3+maxdepth, longnosedace)
+summary(m)
+
+## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
+opar = par(mar=c(5,5,0,0)+.1)
+plot(Lifetime~jitter(I(as.numeric(Diet)-1)), case0501, xaxt='n', pch=19, cex.lab=1.5, 
+     xlab="Diet", col='gray')
+axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
+
+yy = with(case0501, by(Lifetime, Diet, mean))
+segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
+par(opar)
+
+## ------------------------------------------------------------------------
+# by default, R uses the alphabetically first group as the reference level
+case0501$Diet = relevel(case0501$Diet, ref='N/N85') 
+
+m = lm(Lifetime~Diet, case0501)
+summary(m)
+
+## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
+opar = par(mar=c(5,5,0,4)+.1)
+plot(Lifetime~jitter(I(as.numeric(Diet)-1)), case0501, xaxt='n', pch=19, cex.lab=1.5, 
+     xlab="Diet", col='gray')
+axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
+
+axis(4, yy[1], expression(beta[0]), las=1, cex.axis=1.5)
+yy = with(case0501, by(Lifetime, Diet, mean))
+abline(h=yy[1], lwd=2)
+segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
+arrows(1:5,yy[1],1:5,yy[-1],col='red', lwd=4)
+text(1:5, (yy[2:6]+yy[1])/2, expression(beta[1],beta[2],beta[3],beta[4],beta[5]), pos=4, col='red', cex=1.5, offset=1)
+par(opar)
+
+## ----echo=FALSE, fig.width=10, out.width='\\textwidth'-------------------
+opar = par(mfrow=c(1,2))
+b = c(1,1,10,1)
+xx = seq(0,1,length=101)*10
+plot(0,0,type='n', xlim=range(xx), ylim=c(0,50), xlab=expression(x[1]), ylab=expression(mu), las=2,
+     main="Main effects only")
+x2s = 0:2
+for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2], col=i, lty=i, lwd=2)
+lgnd = c(bquote(x[2]==.(x2s[1])),
+         bquote(x[2]==.(x2s[2])),
+         bquote(x[2]==.(x2s[3])))
+legend("topleft", as.expression(lgnd), col=1:length(x2s), lty=1:length(x2s))
+
+plot(0,0,type='n', xlim=range(xx), ylim=c(0,50), xlab=expression(x[1]), ylab=expression(mu), las=2,
+     main="with an interaction")
+for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2]+b[4]*x2s[i], col=i, lty=i, lwd=2)
+par(opar)
+
+## ------------------------------------------------------------------------
+mM = lm(count ~ no3+maxdepth, longnosedace)
+summary(mM)
+
+## ------------------------------------------------------------------------
+mI = lm(count ~ no3*maxdepth, longnosedace)
+summary(mI)
+
+## ----echo=FALSE, fig.width=10, out.width='\\textwidth'-------------------
+opar = par(mfrow=c(1,2))
+b = coef(mM)
+xx = longnosedace$no3
+x2s = c(26,63,160) # values to evaluate
+plot(0,0,type='n', xlim=range(longnosedace$no3), ylim=range(longnosedace$count), 
+     xlab='Nitrate (mg/L)', ylab="Expected longnose dace count", las=2,
+     main="Main effects only")
+for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2], col=i, lty=i, lwd=2)
+legend("topleft", paste("Maxdepth=",x2s,"(cm)"), col=1:length(x2s), lty=1:length(x2s))
+
+b = coef(mI)
+plot(0,0,type='n', xlim=range(longnosedace$no3), ylim=range(longnosedace$count), 
+     xlab='Nitrate (mg/L)', ylab="Expected longnose dace count", las=2,
+     main="with an interaction")
+for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2]+b[4]*x2s[i], col=i, lty=i, lwd=2)
+par(opar)
+
+## ----echo=FALSE, fig.width=10, out.width='\\textwidth'-------------------
+b = c(0,3,7)
+opar = par(mar=c(5,5,4,2)+.1, mfrow=c(1,2))
+
+plot(0, 0, type='n', xlim=c(0,10), ylim=c(0,15), axes=F, frame=TRUE, 
+     xlab="Continuous explanatory variable", ylab="Expected response",
+     main="Main effects only", xaxs='i')
+for (i in 1:length(b)) abline(b[i],1, col=i, lty=i, lwd=2)
+axis(2, b, expression(beta[0],beta[0]+beta[2],beta[0]+beta[3]), las=1)
+loc=c(1,3,6)
+arrows(loc[1],b[1]+loc[1], loc[1], b[2]+loc[1], code=3, length=0.1)
+text(loc[1], b[2]/2+loc[1], expression(beta[2]), pos=4)
+arrows(loc[2], b[1]+loc[2], loc[2], b[3]+loc[2], code=3, length=0.1)
+text(loc[2], mean(b[c(1,3)])+loc[2]+1, expression(beta[3]), pos=4)
+arrows(loc[3], b[2]+loc[3], loc[3], b[3]+loc[3], code=3, length=0.1)
+text(loc[3], mean(b[2:3])+loc[3], expression(beta[3]-beta[2]), pos=4)
+
+segments(5, 5, 8, 5)
+segments(8, 5, 8, 8)
+text(8, 6.5, expression(beta[1]), pos=4)
+
+b0 = c(0, 10, 13)
+b1 = c(1, .5, -0.3)
+plot(0, 0, type='n', xlim=c(0,10), ylim=c(0,15), axes=F, frame=TRUE, 
+     xlab="Continuous explanatory variable", ylab="",
+     main="with an interaction", xaxs='i')
+
+x1 = 5
+x2 = 8
+i = 1
+for (i in 1:length(b)) {
+  abline(b0[i],b1[i], col=i, lty=i, lwd=2)
+  segments(x1, b0[i]+b1[i]*x1, x2, b0[i]+b1[i]*x1, col=i, lty=i)
+  segments(x2, b0[i]+b1[i]*x1, x2, b0[i]+b1[i]*x2, col=i, lty=i)
+}
+axis(2, b0, expression(beta[0],beta[0]+beta[2],beta[0]+beta[3]), las=1)
+text(8, b0+b1*(x1+x2)/2, expression(beta[1], beta[1]+beta[4], beta[1]+beta[5]), pos=4)
+par(opar)
+
+## ------------------------------------------------------------------------
+case1002$Type = relevel(case1002$Type, ref='non-echolocating bats') # match SAS
+summary(mM <- lm(log(Energy)~log(Mass)+Type, case1002))
+
+## ------------------------------------------------------------------------
+summary(mI <- lm(log(Energy)~log(Mass)*Type, case1002))
+
+## ----echo=FALSE, fig.width=10, out.width='\\textwidth'-------------------
+opar = par(mar=c(5,5,4,2)+.1, mfrow=c(1,2))
+
+plot(Energy~Mass, case1002, log='xy', 
+     pch=as.numeric(Type), col=as.numeric(Type), 
+     xlab="Mass (grams)", ylab="Energy (W)",
+     main="Main effects only")
+with(case1002, legend("topleft", legend=levels(Type), pch=1:nlevels(Type), col=1:nlevels(Type)))
+xrng = range(case1002$Mass)
+for (i in 1:3) {
+  yy = predict(mM, data.frame(Type=levels(case1002$Type)[i], Mass=xrng))
+  lines(xrng, exp(yy), col=i, lty=i, lwd=2)
+}
+
+
+b = coef(mI)
+plot(Energy~Mass, case1002, log='xy', 
+     pch=as.numeric(Type), col=as.numeric(Type), 
+     xlab="Mass (grams)", ylab="Energy (W)",
+     main="with an interaction")
+for (i in 1:3) {
+  yy = predict(mI, data.frame(Type=levels(case1002$Type)[i], Mass=xrng))
+  lines(xrng, exp(yy), col=i, lty=i, lwd=2)
+}
+par(opar)
+
+## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
+mus = function(b, cats=c("A","B","C"), types=c(0,1)) {
+  d = data.frame(type=rep(types, each=3),
+                 category = rep(cats, 2))
+  if (length(b) == 4) {
+  d$mu = c(b[1],      b[1]     +b[3], b[1]     +b[4],
+           b[1]+b[2], b[1]+b[2]+b[3], b[1]+b[2]+b[4])
+  } else {
+  d$mu = c(b[1],      b[1]     +b[3],      b[1]     +b[4],
+           b[1]+b[2], b[1]+b[2]+b[3]+b[5], b[1]+b[2]+b[4]+b[6])
+  }
+  d
+}
+opar = par(mfrow=c(1,2))
+d = mus(c(4,2,-5,-3))
+interaction.plot(d$category, d$type, d$mu, type='b', pch=1:2, lty=1:2, legend=FALSE,
+     xlab="Category", ylab=expression(mu), main="Main effect only", trace.label="Type")
+legend("topright",paste("Type=",0:1), lty=1:2, pch=1:2)
+d = mus(c(4,2,-1,-3, 2, -3))
+interaction.plot(d$category, d$type, d$mu, type='b', pch=1:2, lty=1:2, legend=FALSE,
+     xlab="Category", ylab=expression(mu), main="with interaction", trace.label="Type")
+par(opar)
+
+## ------------------------------------------------------------------------
+# Set the reference levels
+case1301$Block = relevel(case1301$Block, ref='B1')
+case1301$Treat = relevel(case1301$Treat, ref='L' )
+summary(mM <- lm(Cover~Block+Treat, case1301, subset=Block %in% c("B1","B2") & Treat %in% c("L","Lf","LfF")))
+
+## ------------------------------------------------------------------------
+summary(mI <- lm(Cover~Block*Treat, case1301, subset=Block %in% c("B1","B2") & Treat %in% c("L","Lf","LfF")))
+
+## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
+opar = par(mfrow=c(1,2))
+d = mus(coef(mM), cats=c("L","Lf","LfF"), types=c("B1","B2"))
+interaction.plot(d$category, d$type, d$mu, type='b', pch=1:2, lty=1:2, legend=FALSE,
+     xlab="Treatment", ylab=expression(mu), main="Main effect only", trace.label="Block")
+legend("topright",paste("Block=",levels(d$type)), lty=1:2, pch=1:2)
+d = mus(coef(mI), cats=c("L","Lf","LfF"), types=c("B1","B2"))
+interaction.plot(d$category, d$type, d$mu, type='b', pch=1:2, lty=1:2, legend=FALSE,
+     xlab="Treatment", ylab=expression(mu), main="with interaction", trace.label="Block")
+par(opar)
+
