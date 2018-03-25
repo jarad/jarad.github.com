@@ -39,8 +39,17 @@ ggplot(insulating, aes(Voltage, Time)) +
 ## ----model, dependson="data"---------------------------------------------
 m <- lm(Time ~ Voltage, insulating)
 
-## ----diagnostics, dependson="model"--------------------------------------
+## ----diagnostics, dependson="model", fig.height=4------------------------
 opar = par(mfrow=c(2,3)); plot(m, 1:6, ask=FALSE); par(opar)
+
+## ----echo=FALSE----------------------------------------------------------
+beta0 = 1; beta1 = 2; curve(exp(beta0 + beta1*x), 0, 2, ylab="Median Y")
+
+## ----echo=FALSE----------------------------------------------------------
+beta0 = 1; beta1 = 2; curve(beta0 + beta1*log(x), 0, 2, ylab="Mean Y")
+
+## ----echo=FALSE----------------------------------------------------------
+beta0 = 1; beta1 = 0.2; curve(exp(beta0)*x^beta1, 0, 2, ylab="Median Y")
 
 ## ----summary, dependson="data"-------------------------------------------
 summary(insulating)

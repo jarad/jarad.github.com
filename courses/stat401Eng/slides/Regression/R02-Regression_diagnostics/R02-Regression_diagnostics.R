@@ -23,10 +23,8 @@ ggplot(Telomeres, aes(years, telomere.length)) +
   theme_bw()
 
 ## ----default_diagnostics, dependson = "data"-----------------------------
-opar = par(mfrow=c(2,3))
 m <- lm(telomere.length ~ years, Telomeres)
-plot(m, 1:6, ask = FALSE)
-par(opar)
+opar = par(mfrow=c(2,3)); plot(m, 1:6, ask = FALSE); par(opar)
 
 ## ----leverage, dependson="data"------------------------------------------
 m <- lm(telomere.length~years, Telomeres)
@@ -62,4 +60,10 @@ plot(m, 5)
 
 ## ----cooks_distance_vs_leverage, dependson="residuals"-------------------
 plot(m, 6)
+
+## ----residuals_vs_index, dependson="residuals", fig.height=3.5, echo=TRUE----
+plot(residuals(m))
+
+## ----residual_vs_explanatory, dependson="residuals", fig.height=3.5, echo=TRUE----
+plot(Telomeres$years, residuals(m))
 
