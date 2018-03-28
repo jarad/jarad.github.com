@@ -460,9 +460,9 @@ legend("topright",c("Target","Proposal"), col=1:2, lwd=2)
 
 \vspace{0.2in} \pause 
 
-Use $N(\theta^{(t)},\tau^2)$ as the proposal\pause, then the acceptance probability is the $\min\{1,r\}$ \pause with 
+Use $N(\theta^{(t)},v^2)$ as the proposal\pause, then the acceptance probability is the $\min\{1,r\}$ \pause with 
 \[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \pause = \frac{p(y|\theta^*)p(\theta^*)}{p(y|\theta^{(t)})p(\theta^{(t)})}. \] 
-For this example, let $\tau^2 = 1$. 
+For this example, let $v^2 = 1$. 
 \end{frame}
 
 
@@ -504,18 +504,22 @@ qplot(1:n, samps) +
 \begin{frame}
 \frametitle{Random-walk tuning parameter}
 \small 
-  Let $p(\theta|y)$ be the target distribution\pause, the proposal is symmetric with scale $\tau^2$, \pause and $\theta^{(t)}$ is (approximately) distributed according to $p(\theta|y)$. \pause 
+  Let $p(\theta|y)$ be the target distribution\pause, the proposal is symmetric with scale $v^2$, \pause and $\theta^{(t)}$ is (approximately) distributed according to $p(\theta|y)$. \pause 
 
 \begin{itemize}
-\item If $\tau^2\approx 0$\pause, then $\theta^*\approx \theta^{(t)}$ \pause and
+\item If $v^2\approx 0$\pause, then $\theta^*\approx \theta^{(t)}$ \pause and
 \[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \approx 1 \]
 \pause and all proposals are accepted. \pause 
-\item As $\tau^2\to\infty$\pause, then $q(\theta^*|y)\approx 0$ \pause since $\theta^*$ will be far from the mass of the target distribution \pause and 
+\item As $v^2\to\infty$\pause, then $q(\theta^*|y)\approx 0$ \pause since $\theta^*$ will be far from the mass of the target distribution \pause and 
 \[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \pause \approx 0 \]
 \pause so all proposed values are rejected.
 \end{itemize}
 
-So there is an optimal $\tau^2$ somewhere. \pause For normal targets, the optimal random-walk proposal variance is $2.4^2Var(\theta|y)/d$ where $d$ is the dimension of $\theta$ which results in an acceptance rate of 40\% for $d=1$ down to 20\% as $d\to\infty$. 
+So there is an optimal $v^2$ somewhere. 
+\pause 
+For normal targets, the optimal random-walk proposal variance is 
+$2.4^2Var(\theta|y)/d$ where $d$ is the dimension of $\theta$ which results 
+in an acceptance rate of 40\% for $d=1$ down to 20\% as $d\to\infty$. 
 \end{frame}
 
 
@@ -525,21 +529,21 @@ So there is an optimal $\tau^2$ somewhere. \pause For normal targets, the optima
 Let $y|\theta \sim N(\theta,1)$, $\theta\sim Ca(0,1)$, and $y=1$. 
 
 <<tuning_parameter, fig.width=10>>=
-random_walk = function(n, tau, theta0, log_target) {
+random_walk = function(n, v, theta0, log_target) {
   theta = rep(theta0,n)
   for (i in 2:n) {
-    proposed = rnorm(1, theta[i-1], tau)
+    proposed = rnorm(1, theta[i-1], v)
     logr = log_target(proposed,y)-log_target(theta[i-1],y)
     theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
   }
   return(data.frame(iteration=1:n, theta=theta))
 }
 
-d = expand.grid(tau=c(1/10,10))
-r = ddply(d, .(tau), function(x) {
-  random_walk(100, x$tau, 0, log_q)
+d = expand.grid(v=c(1/10,10))
+r = ddply(d, .(v), function(x) {
+  random_walk(100, x$v, 0, log_q)
 })
-ggplot(r, aes(x=iteration, y=theta, color=as.factor(tau)))+geom_point()+
+ggplot(r, aes(x=iteration, y=theta, color=as.factor(v)))+geom_point()+
   theme_bw()
 @
 
@@ -621,9 +625,9 @@ p(\mu,\sigma|y) &\propto
 
 Perform a random-walk Metropolis using a normal proposal, i.e. if $\mu^{(t)}$ and $\sigma^{(t)}$ are the current values for $\mu$ and $\sigma$, then 
 \[ \left( \begin{array}{c} \mu^* \\ \sigma^*
-\end{array} \right) \sim N\left( \left[ \begin{array}{c} \mu^{(t)} \\ \sigma^{(t)} \end{array} \right], \mathrm\Sigma \right)
+\end{array} \right) \sim N\left( \left[ \begin{array}{c} \mu^{(t)} \\ \sigma^{(t)} \end{array} \right], S \right)
 \]
-where $\mathrm\Sigma$ is the tuning parameter.
+where $S$ is the tuning parameter.
 \end{frame}
 
 
@@ -637,11 +641,11 @@ Recall that the optimal random-walk tuning parameter (if the target is normal) i
 
 Proposed automatic adapting of the Metropolis-Hastings tuning parameter: \pause
 \begin{enumerate}[<+->]
-\item Start with $\mathrm\Sigma_0$. Set $b=0$.
-\item Run $M$ iterations of the MCMC using $2.4^2\mathrm\Sigma_b/d$. 
-\item Set $\mathrm\Sigma_{b+1}$ to the sample covariance matrix of all previous draws. 
+\item Start with $S_0$. Set $b=0$.
+\item Run $M$ iterations of the MCMC using $2.4^2S_b/d$. 
+\item Set $S_{b+1}$ to the sample covariance matrix of all previous draws. 
 \item If $b<B$, set $b=b+1$ and return to step 2. Otherwise, throw away all previous draws and go to step 5.
-\item Run $K$ iterations of the MCMC using $2.4^2\mathrm\Sigma_B/d$.
+\item Run $K$ iterations of the MCMC using $2.4^2S_B/d$.
 \end{enumerate}
 
 \end{frame}
@@ -668,7 +672,7 @@ samps = matrix(NA, nrow=B*M, ncol=2)
 a_rate = rep(NA, B)
 
 # Initialize
-Sigma = diag(2)  # Sigma_0
+S = diag(2)  # S_0
 current = c(0,1)
 @
 
@@ -684,17 +688,17 @@ for (b in 1:B) {
   for (m in 1:M) {
     i = (b-1)*M+m
     
-    proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
+    proposed = mvrnorm(1, current, 2.4^2*S/2)
     
     logr = log_q(proposed) - log_q(current)
     if (log(runif(1)) < logr) current = proposed
     samps[i,] = current    
   }
   a_rate[b] = length(unique(samps[1:i,1]))/length(samps[1:i,1])
-  Sigma = var(samps[1:i,])
+  S = var(samps[1:i,])
 }
 a_rate
-var(samps) # Sigma_B
+var(samps) # S_B
 @
 
 \end{frame}
@@ -725,7 +729,7 @@ ggplot(melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iterati
 K = 10000
 samps = matrix(NA, nrow=K, ncol=2)
 for (k in 1:K) {
-  proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
+  proposed = mvrnorm(1, current, 2.4^2*S/2)
     
   logr = log_q(proposed) - log_q(current)
   if (log(runif(1)) < logr) current = proposed
@@ -804,7 +808,7 @@ samps = matrix(NA, nrow=B*M, ncol=2)
 a_rate = rep(NA, B)
 
 # Initialize
-Sigma = diag(2)
+S = diag(2)
 current = c(1,1)
 
 # Adapt
@@ -812,21 +816,21 @@ for (b in 1:B) {
   for (m in 1:M) {
     i = (b-1)*M+m
     
-    proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
+    proposed = mvrnorm(1, current, 2.4^2*S/2)
     
     logr = log_q(proposed) - log_q(current)
     if (log(runif(1)) < logr) current = proposed
     samps[i,] = current    
   }
   a_rate[b] = length(unique(samps[1:i,1]))/length(samps[1:i,1])
-  Sigma = var(samps[1:i,])
+  S = var(samps[1:i,])
 }
 
 # Final run
 K = 10000
 samps = matrix(NA, nrow=K, ncol=2)
 for (k in 1:K) {
-  proposed = mvrnorm(1, current, 2.4^2*Sigma/2)
+  proposed = mvrnorm(1, current, 2.4^2*S/2)
     
   logr = log_q(proposed) - log_q(current)
   if (log(runif(1)) < logr) current = proposed
@@ -839,7 +843,8 @@ samps = as.data.frame(samps); names(samps) = c("alpha","beta")
 <<dependson='beta_binomial',message=FALSE, warning=FALSE, fig.width=10>>=
 ggpairs(samps, 
         lower = list(continuous='points'), 
-        diag  = list(continuous='bar'))
+        diag  = list(continuous='barDiag')) +
+  theme_bw()
 @
 
 \end{frame}
