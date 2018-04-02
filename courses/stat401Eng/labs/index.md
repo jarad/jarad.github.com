@@ -20,7 +20,7 @@ tagline: Statistical Methods for Research Workers
  
    === updated through here ===
   
- - [Lab09](lab09/lab09.html) - ANOVA and F-tests
- - [Lab10](lab10/lab10.html) - Contrasts
- - [Lab11](lab11/lab11.html) - Generalized linear mixed effect models
+ - [Lab10](lab10/lab10.html) - ANOVA and F-tests
+ - [Lab11](lab11/lab11.html) - Contrasts
+ - [Lab12](lab12/lab12.html) - Generalized linear mixed effect models
  - [LabData](labData/lab02.html) - Data Management in R
