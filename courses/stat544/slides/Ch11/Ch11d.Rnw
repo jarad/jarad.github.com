@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -20,13 +20,13 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library(reshape2)
-library(plyr)
-library(ggplot2)
-library(xtable)
-library(coda)
-library(mcmcse)
-library(rstan)
+library("reshape2")
+library("plyr")
+library("ggplot2")
+library("xtable")
+library("coda")
+library("mcmcse")
+library("rstan")
 @
 
 <<set_seed>>=
@@ -152,7 +152,11 @@ d[[3]]$text = 'Mixing and stationary'
 dd = rbind.fill(d)
 dd$rep = factor(dd$rep)
 dd$text = factor(dd$text, levels=c('Not mixing','Not stationary','Mixing and stationary'))
-ggplot(dd, aes(x=x,y=y,color=rep))+geom_line()+ theme(legend.position="none")+facet_wrap(~text)
+ggplot(dd, aes(x=x,y=y,color=rep)) +
+  geom_line() + 
+  theme(legend.position="none") + 
+  facet_wrap(~text) + 
+  theme_bw()
 @
 \end{frame}
 
@@ -240,27 +244,27 @@ par(opar)
 \section{What can I do with the samples?}
 \frame{\frametitle{Monte Carlo integration}
 \small
-  Consider approximating the integral via it's Markov chain Monte Carlo (MCMC) estimate, i.e. 
-  \[ E_{\theta|y}[h(\theta)|y] = \int_{\Theta} h(\theta) p(\theta|y) d\theta \quad \mbox{and} \quad 
+  Consider approximating the integral via it's Markov chain Monte Carlo (MCMC) estimate, i.e.
+  \[ E_{\theta|y}[h(\theta)|y] = \int_{\Theta} h(\theta) p(\theta|y) d\theta \quad \mbox{and} \quad
   \hat{h}_T = \frac{1}{T} \sum_{t=1}^{(t)} h\left(\theta^{(t)}\right). \]
-	\pause where $\theta^{(t)}$ is the $t^{th}$ iteration from the MCMC.  \pause Under regularity conditions, 
+	\pause where $\theta^{(t)}$ is the $t^{th}$ iteration from the MCMC.  \pause Under regularity conditions,
 	\begin{itemize}
-	\item SLLN: $\hat{h}_T$ converges almost surely to $E[h(\theta)|y]$. \pause 
+	\item SLLN: $\hat{h}_T$ converges almost surely to $E[h(\theta)|y]$. \pause
 	\item CLT: \alert{under stronger regularity conditions}, \pause
 	\[ \hat{h}_T \stackrel{d}{\to} N\left(E[h(\theta)|y], \sigma^2/T\right) \pause \]
-	where 
+	where
 	\[ \sigma^2 = Var[h(\theta)|y]\left(1+ 2\sum_{k=1}^\infty \rho_k \right) \]
   where $\rho_k$ is the $k^{th}$ autocorrelation of the $h(\theta)$ values.
 	\end{itemize}
 }
- 
- 
+
+
 \begin{frame}[fragile]
 \frametitle{Sequential estimates}
 <<running_average, dependson='effective_sample_size', fig.width=10, echo=TRUE>>=
 opar = par(mfrow=c(1,3))
-d_ply(d, .(rho), function(x) 
-  plot(cumsum(x$x)/1:length(x$x), type="l", ylim=c(-1,1), 
+d_ply(d, .(rho), function(x)
+  plot(cumsum(x$x)/1:length(x$x), type="l", ylim=c(-1,1),
        ylab="Posterior mean", xlab="Iteration (t)", main=paste("rho=", x$rho[1]))
 )
 par(opar)
@@ -276,13 +280,13 @@ Use {\tt mcmcse::mcse} to estimate the MCMC variance
 # Mean
 ddply(d, .(rho), function(x) round(as.data.frame(mcmcse::mcse(x$x)),2))
 
-# Quantiles 
-ddply(d, .(rho), function(x) round(as.data.frame(mcmcse::mcse(x$x< qnorm(0.025))),2)) 
-ddply(d, .(rho), function(x) round(as.data.frame(mcmcse::mcse(x$x< qnorm(0.975))),2))
+# Quantiles
+ddply(d, .(rho), function(x) round(as.data.frame(mcmcse::mcse.q(x$x, .025)),2))
+ddply(d, .(rho), function(x) round(as.data.frame(mcmcse::mcse.q(x$x, .975)),2))
 @
 \end{frame}
 
- 
+
 \begin{frame}[fragile]
 \frametitle{Treat the MCMC samples as samples from the posterior}
 <<summary_plots, fig.width=10>>=
@@ -304,8 +308,8 @@ The Gelman approach in practice is the following
 \begin{enumerate}[<+->]
 \item Run an initial chain or, in some other way, approximate the posterior.
 \item (Randomly) choose initial values for multiple chains well dispersed relative to this approximation to the posterior.
-\item Run the chain until all estimands of interest have potential scale reduction factors less than 1.1. 
-\item Continuing running until you have a total of around 4,000 effective draws. 
+\item Run the chain until all estimands of interest have potential scale reduction factors less than 1.1.
+\item Continuing running until you have a total of around 4,000 effective draws.
 \item Discard the first half of all the chains.
 \end{enumerate}
 
@@ -324,7 +328,7 @@ Assuming this approach correctly diagnosis convergence or lack thereof, it seems
 
 From \url{http://users.stat.umn.edu/~geyer/mcmc/one.html}
 \begin{quote}
-If you can't get a good answer with one long run, then you can't get a good answer with many short runs either. 
+If you can't get a good answer with one long run, then you can't get a good answer with many short runs either.
 \end{quote}
 
 \vspace{0.2in} \pause
@@ -349,8 +353,8 @@ d_ply(d, .(rho), function(x) geweke.plot(mcmc(x$x), auto=F, main=paste("rho=", x
 par(opar)
 @
 \end{frame}
- 
- 
+
+
 \section{Thinning}
 \begin{frame}
 \frametitle{Thinning}
@@ -379,12 +383,12 @@ ddply(d, .(rho), function(x) {
 })
 @
 \end{frame}
- 
+
 
 \begin{frame}
 \frametitle{Alternative use for burn-in}
 
-For MCMC algorithms that have tuning parameters, use burn-in (warm-up) to tune tuning parameters. 
+For MCMC algorithms that have tuning parameters, use burn-in (warm-up) to tune tuning parameters.
 
 \vspace{0.2in} \pause
 
@@ -404,7 +408,7 @@ rw = function(n, theta0, tune=1, autotune=TRUE) {
   for (i in 2:n) {
     theta_prop = rnorm(1, theta[i-1], tune)
     logr = dnorm(theta_prop, log=TRUE) - dnorm(theta[i-1], log=TRUE)
-    
+
     # This tuning tunes to an acceptance rate of 50%
     if (log(runif(1))<logr) {
       theta[i] = theta_prop
@@ -443,33 +447,33 @@ curve(dnorm, col="red", add=TRUE, lwd=2)
 Since computing time/power is not very limited these days, my suggestion is
 
 \begin{enumerate}
-\item Run one long chain and continue running it \pause 
+\item Run one long chain and continue running it \pause
 \item Run multiple chains according to suggestions in BDA
   \begin{enumerate}
   \item Start multiple chains with initial values relative to the posterior learned by the long chain
   \item Monitor the potential scale reduction factor until $<$ 1.1 for all quantities of interest
   \item Monitor traceplots and cumulative mean plots
   \item Discard burn-in (first half is probably overkill)
-  \item Run until effective sample size is around 2000 \pause 
+  \item Run until effective sample size is around 2000 \pause
   \end{enumerate}
 \item Use all samples for posterior inference
 \end{enumerate}
 
-If things are not going well, 
+If things are not going well,
 \begin{enumerate}
 \item Check for identifiability of the parameters in your model.
 \item Construct a better sampler.
 \end{enumerate}
 
 \end{frame}
- 
+
 
 \section{Stan output}
 \begin{frame}[fragile]
 \frametitle{A simple model}
 
-Let 
-\[ Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2) \qquad \mbox{and} \qquad 
+Let
+\[ Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2) \qquad \mbox{and} \qquad
 p(\mu,\sigma) \propto Ca^+(\sigma;0,1)
 \]
 
@@ -525,35 +529,30 @@ traceplot(r)
 \begin{frame}[fragile]
 \frametitle{Hierarchical binomial model}
 
-Recall the game-wise Andre Dawkins 3-point percentage data set with a 
+\small
+
+Recall the game-wise Andre Dawkins 3-point percentage data set with a
 hierarchical binomial model:
 \[ \begin{array}{rl}
 Y_i      &\ind Bin(n_i,\theta_i) \\
 \theta_i &\ind Be(\alpha,\beta) \\
 p(\alpha,\beta) &\propto (\alpha+\beta)^{-5/2}
-\]
+\end{array} \]
 
-\vspace{0.2in} \pause
+\pause
 
 In RStan,
-<<echo=TRUE>>=
+<<binomial_model, echo=TRUE>>=
 hierarchical_binomial_model = "
 data {
-  int<lower=1> N;
-  int<lower=0> n[N];
-  int<lower=0> y[N];
+  int<lower=1> N; int<lower=0> n[N]; int<lower=0> y[N];
 }
 parameters {
-  real<lower=0,upper=1> theta[N];
-  real<lower=0> alpha;
-  real<lower=0> beta;
+  real<lower=0,upper=1> theta[N]; real<lower=0> alpha; real<lower=0> beta;
 }
 transformed parameters {
-  real<lower=0,upper=1> mu;
-  real<lower=0> eta;
-
-  eta = alpha+beta;
-  mu = alpha/eta;
+  real<lower=0,upper=1> mu; real<lower=0> eta;
+  eta = alpha+beta; mu = alpha/eta;
 }
 model {
   target += -5*log(alpha+beta)/2;
@@ -565,23 +564,23 @@ model {
 \end{frame}
 
 <<dawkins_data, echo=FALSE>>=
-dawkins = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L, 
-14L, 15L, 20L, 17L, 18L, 19L, 21L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 
-6L, 22L, 23L, 24L), .Label = c("1/11/14", "1/13/14", "1/18/14", 
-"1/22/14", "1/25/14", "1/27/14", "1/4/14", "1/7/14", "11/12/13", 
-"11/15/13", "11/18/13", "11/19/13", "11/24/13", "11/27/13", "11/29/13", 
-"11/8/13", "12/16/13", "12/19/13", "12/28/13", "12/3/13", "12/31/13", 
-"2/1/14", "2/4/14", "2/8/14"), class = "factor"), opponent = structure(c(5L, 
-13L, 9L, 21L, 6L, 22L, 1L, 2L, 15L, 11L, 20L, 7L, 8L, 17L, 12L, 
-4L, 23L, 16L, 14L, 10L, 18L, 19L, 24L, 3L), .Label = c("alabama", 
-"arizona", "boston college", "clemson", "davidson", "east carolina", 
-"eastern michigan", "elon", "florida atlantic", "florida state", 
-"gardner-webb", "georgia tech", "kansas", "miami", "michigan", 
-"nc state", "notre dame", "pitt", "syracuse", "ucla", "unc asheville", 
-"vermont", "virginia", "wake forest"), class = "factor"), made = c(0L, 
-0L, 5L, 3L, 0L, 3L, 0L, 1L, 2L, 4L, 1L, 6L, 5L, 1L, 1L, 0L, 1L, 
-3L, 2L, 3L, 6L, 4L, 4L, 0L), attempts = c(0L, 0L, 8L, 6L, 1L, 
-9L, 2L, 1L, 2L, 8L, 5L, 10L, 7L, 4L, 5L, 4L, 1L, 7L, 6L, 6L, 
+dawkins = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L,
+14L, 15L, 20L, 17L, 18L, 19L, 21L, 7L, 8L, 1L, 2L, 3L, 4L, 5L,
+6L, 22L, 23L, 24L), .Label = c("1/11/14", "1/13/14", "1/18/14",
+"1/22/14", "1/25/14", "1/27/14", "1/4/14", "1/7/14", "11/12/13",
+"11/15/13", "11/18/13", "11/19/13", "11/24/13", "11/27/13", "11/29/13",
+"11/8/13", "12/16/13", "12/19/13", "12/28/13", "12/3/13", "12/31/13",
+"2/1/14", "2/4/14", "2/8/14"), class = "factor"), opponent = structure(c(5L,
+13L, 9L, 21L, 6L, 22L, 1L, 2L, 15L, 11L, 20L, 7L, 8L, 17L, 12L,
+4L, 23L, 16L, 14L, 10L, 18L, 19L, 24L, 3L), .Label = c("alabama",
+"arizona", "boston college", "clemson", "davidson", "east carolina",
+"eastern michigan", "elon", "florida atlantic", "florida state",
+"gardner-webb", "georgia tech", "kansas", "miami", "michigan",
+"nc state", "notre dame", "pitt", "syracuse", "ucla", "unc asheville",
+"vermont", "virginia", "wake forest"), class = "factor"), made = c(0L,
+0L, 5L, 3L, 0L, 3L, 0L, 1L, 2L, 4L, 1L, 6L, 5L, 1L, 1L, 0L, 1L,
+3L, 2L, 3L, 6L, 4L, 4L, 0L), attempts = c(0L, 0L, 8L, 6L, 1L,
+9L, 2L, 1L, 2L, 8L, 5L, 10L, 7L, 4L, 5L, 4L, 1L, 7L, 6L, 6L,
 7L, 9L, 7L, 1L)), .Names = c("date", "opponent", "made", "attempts"
 ), class = "data.frame", row.names = c(NA, -24L))
 @
@@ -589,26 +588,26 @@ dawkins = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L,
 \begin{frame}[fragile]
 \frametitle{Initial run}
 
-<<rstan, cache=TRUE, results='hide', echo=TRUE>>=
+<<rstan2, dependson="binomial_model", cache=TRUE, results='hide', echo=TRUE>>=
 m = stan_model(model_code = hierarchical_binomial_model)
 
-r = sampling(m, 
+r = sampling(m,
              data = list(N = nrow(dawkins),
-                            n = dawkins$attempts, 
+                            n = dawkins$attempts,
                             y = dawkins$made),
-             pars = c("alpha","beta"),
+             pars = c("alpha","beta","mu","eta"),
              chains = 1)
 @
-
-
 \end{frame}
-
+% 
+% 
+% 
 \begin{frame}[fragile]
 \frametitle{RStan}
 
-<<rstan_summary, dependson='rstan', echo=TRUE>>=
+<<rstan2_summary, dependson='rstan2', echo=TRUE>>=
 r
-laply(extract(r, c("mu","sigma")), function(x) length(unique(x))/length(x)) # Acceptance rate
+laply(rstan::extract(r, c("mu","eta")), function(x) length(unique(x))/length(x)) # Acceptance rate
 @
 
 \end{frame}
@@ -616,7 +615,7 @@ laply(extract(r, c("mu","sigma")), function(x) length(unique(x))/length(x)) # Ac
 
 \begin{frame}[fragile]
 \frametitle{RStan plot}
-<<dependson='rstan'>>=
+<<dependson='rstan2'>>=
 traceplot(r)
 @
 \end{frame}
