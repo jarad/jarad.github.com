@@ -87,13 +87,11 @@ set.seed(1)
 \section{Two-component Gibbs sampling}
 \begin{frame}
 \frametitle{Two component Gibbs sampler}
-  Suppose our target distribution is $p(\theta|y)$ with $\theta=(\theta_1,\theta_2)$  \pause and we can sample from $p\left(\theta_1|\theta_2,y\right)$ and $p\left(\theta_2|\theta_1, y\right)$\pause. Beginning with an initial value $\left(\theta_1^0, \theta_2^0\right)$\pause, an \alert{iteration} of the \alert{Gibbs sampler} involves
+  Suppose our target distribution is $p(\theta|y)$ with $\theta=(\theta_1,\theta_2)$  \pause and we can sample from $p\left(\theta_1|\theta_2,y\right)$ and $p\left(\theta_2|\theta_1, y\right)$\pause. Beginning with an initial value $\left(\theta_1^{(0)}, \theta_2^{(0)}\right)$\pause, an \alert{iteration} of the \alert{Gibbs sampler} involves
 	\begin{enumerate}[\quad1.]
 	\item Sampling $\theta_1^{(t)}\sim p\left(\theta_1|\theta_2^{(t-1)},y\right)$. \pause 
 	\item Sampling $\theta_2^{(t)}\sim p\left(\theta_2|\theta_1^{(t)},y\right)$.
 	\end{enumerate}
-	
-	By the Law of Large Numbers, $(\theta_1^{(t)},\theta_2^{(t)})$ converges to samples from $p(\theta|y)$. 
 	
   \vspace{0.2in} \pause
   
@@ -109,7 +107,7 @@ set.seed(1)
 % 	
 % 	Notes:
 % 	\begin{itemize}[<+->]
-%   \item The sequence $\{\theta^0,\theta^{(1)},\ldots,\}$ is a Markov chain with transition distribution 
+%   \item The sequence $\{\theta^{(0)},\theta^{(1)},\ldots,\}$ is a Markov chain with transition distribution 
 %   \[ p(\theta^{(t)}|\theta^{(t-1)},y) = p(\theta_2^{(t)}|\theta_1^{(t)},y)p(\theta_1^{(t)}|\theta_2^{(t-1)},y). \]
 % 	\item $\theta^{(t)} \stackrel{d}{\rightarrow} \theta$ where $\theta \sim p\left(\theta|y\right)$.  
 % %	\item 
@@ -166,17 +164,17 @@ set.seed(1)
 \begin{frame}[fragile]
 \frametitle{R code for bivariate normal Gibbs sampler}
 <<bivariate_normal_mcmc, echo=TRUE>>=
-gibbs_bivariate_normal = function(x0, n_points, rho) {
-  x = matrix(x0, nrow=n_points, ncol=2, byrow=TRUE)
+gibbs_bivariate_normal = function(theta0, n_points, rho) {
+  theta = matrix(theta0, nrow=n_points, ncol=2, byrow=TRUE)
   v = sqrt(1-rho^2)
   for (i in 2:n_points) {
-    x[i,1] = rnorm(1, rho*x[i-1,2], v)
-    x[i,2] = rnorm(1, rho*x[i  ,1], v)
+    theta[i,1] = rnorm(1, rho*theta[i-1,2], v)
+    theta[i,2] = rnorm(1, rho*theta[i  ,1], v)
   }
-  return(x)
+  return(theta)
 }
 
-x = gibbs_bivariate_normal(c(-3,3), n<-20, rho=rho<-0.9)
+theta = gibbs_bivariate_normal(c(-3,3), n<-20, rho=rho<-0.9)
 @
 \end{frame}
 
@@ -223,7 +221,7 @@ bivariate_normal_animation = function(x, rho, ask=interactive()) {
 
 \begin{frame}[fragile]
 <<bivariate_normal_animation, dependson=c('bivariate_normal_mcmc','bivariate_normal'), fig.show='animate', echo=FALSE, cache=TRUE>>=
-bivariate_normal_animation(x, rho)
+bivariate_normal_animation(theta, rho)
 @
 \end{frame}
 
@@ -391,8 +389,6 @@ ggplot(m, aes(x=value, y=..density..)) +
 	&\vdots \pause\\
 	\theta_K^{(t)} &\sim p\left(\theta_K|\theta_1^{(t)},\ldots, \theta_{K-1}^{(t)},y\right) \pause
 	\end{array} \]
-	
-	By the Law of Large Numbers, $(\theta_1^{(t)},\theta_2^{(t)})$ converges to samples from $p(\theta|y)$.
 
 \vspace{0.1in} \pause
 	
@@ -450,29 +446,29 @@ p(\tau^2|\mu,\eta,\sigma^2,y) \pause &= IG(a_\tau+\mathrm{I}/2, b_\tau + \sum_{i
 Reconsider the bivariate normal example substituting a Metropolis step in place of a Gibbs step:
 
 <<gibbs_and_metropolis_mcmc, echo=TRUE>>=
-gibbs_and_metropolis = function(x0, n_points, rho) {
-  x = matrix(x0, nrow=n_points, ncol=2, byrow=TRUE)
+gibbs_and_metropolis = function(theta0, n_points, rho) {
+  theta = matrix(theta0, nrow=n_points, ncol=2, byrow=TRUE)
   v = sqrt(1-rho^2)
   for (i in 2:n_points) {
-    x[i,1] = rnorm(1, rho*x[i-1,2], v)
+    theta[i,1] = rnorm(1, rho*theta[i-1,2], v)
     
     # Now do a random-walk Metropolis step
-    x_prop = rnorm(1, x[i-1,2], 2.4*v) # optimal proposal variance
-    logr   = dnorm(x_prop,   rho*x[i,1], v, log=TRUE) - 
-             dnorm(x[i-1,2], rho*x[i,1], v, log=TRUE)
-    x[i,2] = ifelse(log(runif(1))<logr, x_prop, x[i-1,2])
+    theta_prop = rnorm(1, theta[i-1,2], 2.4*v) # optimal proposal variance
+    logr   = dnorm(theta_prop,   rho*theta[i,1], v, log=TRUE) - 
+             dnorm(theta[i-1,2], rho*theta[i,1], v, log=TRUE)
+    theta[i,2] = ifelse(log(runif(1))<logr, theta_prop, theta[i-1,2])
   }
-  return(x)
+  return(theta)
 }
 
-x = gibbs_and_metropolis(c(-3,3), n, rho)
-length(unique(x[,2]))/length(x[,2]) # acceptance rate
+theta = gibbs_and_metropolis(c(-3,3), n, rho)
+length(unique(theta[,2]))/length(theta[,2]) # acceptance rate
 @
 \end{frame}
 
 \begin{frame}[fragile]
 <<gibbs_and_metropolis_animation, dependson='gibbs_and_metropolis_mcmc', fig.show='animate', echo=FALSE, warning=FALSE>>=
-bivariate_normal_animation(x, rho)
+bivariate_normal_animation(theta, rho)
 @
 \end{frame}
 
