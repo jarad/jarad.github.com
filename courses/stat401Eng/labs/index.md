@@ -16,6 +16,7 @@ tagline: Statistical Methods for Research Workers
  - [Lab06](lab06/lab06.html) - Built-in Analyses in R
  - [Lab07](lab07/lab07.html) - Default Regression Diagnostics
  - [Lab08](lab08/lab08.html) - Regression with Factors
+ - [Lab09](lab09/lab09/html) - Multiple Regression in R
  
    === updated through here ===
   
