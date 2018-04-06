@@ -51,13 +51,13 @@ you can find them
 |Categorical explanatory variables|[pdf](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.pdf)|[R](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.R)|
 |Multiple regression|[pdf](Regression/R05-Multiple_regression/R05-Multiple_regression.pdf)|[R](Regression/R05-Multiple_regression/R05-Multiple_regression.R)|
 |ANOVA and F-tests|[pdf](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.R)|
+|Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|
 
  ============ updated to here =================
 
 
 |Topic|Source|Handouts|
 |---|---|---|   
-|Contrasts|[SetR07.Rnw](SetR07/SetR07_Contrasts.Rnw)|[SetR07.pdf](SetR07/SetR07_Contrasts.pdf)|  
 |Experimental design|[SetR08.Rnw](SetR08/SetR08_Experimental_design.Rnw)|[SetR08.pdf](SetR08/SetR08_Experimental_design.pdf)|  
 |Two-way ANOVA|[SetR09.Rnw](SetR09/SetR09_Two-way_ANOVA.Rnw)|[SetR09.pdf](SetR09/SetR09_Two-way_ANOVA.pdf)|  
 
