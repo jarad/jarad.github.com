@@ -13,10 +13,10 @@ opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
 library("xtable")
 library("Sleuth3")
+library("emmeans")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -196,8 +196,8 @@ K
 
 \begin{frame}[fragile]
 <<warning = FALSE>>=
-library("lsmeans")
-ls = lsmeans(m, ~ Diet)
+library("emmeans")
+ls = emmeans(m, ~ Diet)
 ls
 
 co = contrast(ls, 
@@ -241,8 +241,8 @@ Cochran and Cox. (1957) Experimental Design (2nd ed). pg96 and Agron. J. 80:712-
 Scientific question:
 \begin{itemize}[<+->]
 \item Does sulfur have any impact at all?
-\item Is there a difference between spring and fall?
-\item Is there an effect of increased sulfur {\footnotesize (expect more sulfur causes less scab)}?
+\item What is the difference between spring and fall application of sulfur?
+\item What is the effect of increased sulfur application?
 \end{itemize}
 }
 
@@ -251,30 +251,73 @@ Scientific question:
 \begin{frame}[fragile]
 \frametitle{Data}
 <<echo=FALSE>>=
-d = structure(list(inf = c(9L, 12L, 18L, 10L, 24L, 17L, 30L, 16L, 
-10L, 7L, 4L, 10L, 21L, 24L, 29L, 12L, 9L, 7L, 18L, 30L, 18L, 
-16L, 16L, 4L, 9L, 18L, 17L, 19L, 32L, 5L, 26L, 4L), trt = structure(c(2L, 
-4L, 7L, 1L, 7L, 5L, 6L, 3L, 4L, 6L, 1L, 3L, 6L, 4L, 4L, 7L, 2L, 
-5L, 3L, 4L, 3L, 5L, 2L, 1L, 6L, 4L, 5L, 7L, 4L, 1L, 4L, 2L), .Label = c("F12", 
-"F3", "F6", "O", "S12", "S3", "S6"), class = "factor"), row = c(4L, 
-4L, 4L, 4L, 4L, 4L, 4L, 4L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 2L, 
-2L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L), 
-    col = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 
-    6L, 7L, 8L, 1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 1L, 2L, 3L, 4L, 
-    5L, 6L, 7L, 8L)), .Names = c("inf", "trt", "row", "col"), class = "data.frame", row.names = c(NA, 
--32L))
+text = 
+"inf trt row col
+9  F3   4   1
+12   O   4   2
+18  S6   4   3
+10 F12   4   4
+24  S6   4   5
+17 S12   4   6
+30  S3   4   7
+16  F6   4   8
+10   O   3   1
+7  S3   3   2
+4 F12   3   3
+10  F6   3   4
+21  S3   3   5
+24   O   3   6
+29   O   3   7
+12  S6   3   8
+9  F3   2   1
+7 S12   2   2
+18  F6   2   3
+30   O   2   4
+18  F6   2   5
+16 S12   2   6
+16  F3   2   7
+4 F12   2   8
+9  S3   1   1
+18   O   1   2
+17 S12   1   3
+19  S6   1   4
+32   O   1   5
+5 F12   1   6
+26   O   1   7
+4  F3   1   8"
 
+d <- read.table(textConnection(text), header=TRUE) %>%
+  mutate(sulfur = as.numeric(gsub("\\D","",trt))*100,
+         sulfur = ifelse(is.na(sulfur), 0, sulfur),
+         application = fct_recode(gsub("\\d","",trt), 
+                                  fall = "F", 
+                                  spring = "S",
+                                  NULL = "O"),
+         application = fct_explicit_na(application),
+         treatment = factor(trt, 
+               levels=c("F12","F6","F3","O","S3","S6","S12")))
+         
 d
-d$sulfur = as.numeric(gsub("\\D","",d$trt))*100
-d$sulfur[is.na(d$sulfur)] = 0
-d$application = NA
-d$application[grep("F",d$trt)] = "fall"
-d$application[grep("S",d$trt)] = "spring"
-d$application = factor(d$application)
-
-d$trt = factor(d$trt, levels=c("F12","F6","F3","O","S3","S6","S12"), ordered=TRUE)
 @
 \end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Design}
+<<echo=FALSE>>=
+plot(0,0, xlab="col", ylab="row", 
+     main="Completely randomized design\n potato scab experiment",
+     xlim=range(d$col)+c(-.5,.5), ylim=range(d$row)+c(-.5,.5), axes=F, type="n")
+text(d$col, d$row, d$trt)
+axis(1, 1:8, lwd=0)
+axis(2, 1:4, lwd=0)
+segments(1:9-.5,0.5,1:9-.5,4.5)
+segments(0.5,1:5-.5,8.5,1:5-.5)
+@
+\end{frame}
+
 
 
 \begin{frame}[fragile]
@@ -293,26 +336,14 @@ text(xc,yc, c(8,rep(4,6)))
 @
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{Design}
-<<echo=FALSE>>=
-plot(0,0, xlab="col", ylab="row", 
-     main="Completely randomized design\n potato scab experiment",
-     xlim=range(d$col)+c(-.5,.5), ylim=range(d$row)+c(-.5,.5), axes=F, type="n")
-text(d$col, d$row, d$trt)
-axis(1, 1:8, lwd=0)
-axis(2, 1:4, lwd=0)
-segments(1:9-.5,0.5,1:9-.5,4.5)
-segments(0.5,1:5-.5,8.5,1:5-.5)
-@
-\end{frame}
+
 
 \begin{frame}[fragile]
 \frametitle{Data}
 <<echo=FALSE>>=
 ggplot(d, 
-       aes(trt, inf)) + 
-  geom_boxplot(color="gray") + 
+       aes(treatment, inf)) + 
+  geom_boxplot(color="gray", outlier.shape = NA) + 
   geom_jitter(height=0) +
   labs(x = "Sulfur", y = "Average scab percent") + 
   theme_bw()
@@ -325,7 +356,7 @@ ggplot(d,
 \frametitle{Data}
 <<echo=FALSE>>=
 ggplot(d %>% 
-         mutate(application = ifelse(is.na(application), "NA", application)), 
+         mutate(application = fct_explicit_na(application)), 
        aes(sulfur, inf, shape=application, color=application)) + 
   geom_jitter(height=0, width=10) +
   labs(x = "Sulfur", y = "Average scab percent") + 
@@ -377,36 +408,35 @@ Hypotheses:
 
 
 \begin{frame}
-\frametitle{Control vs sulfur}
+\frametitle{Contrasts}
 
+\begin{itemize}
+\item \emph{Sulfur effect}: Any sulfur vs none \pause
 \[ \begin{array}{rl} 
 \gamma &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12})- \mu_O \pause \\ \\
  &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12}- 6\mu_O)  
 \end{array} \] 
 
-\end{frame}
+\vspace{0.2in} \pause
 
-
-
-\frame{\frametitle{Fall vs spring contrast}
-
-\begin{itemize}
 \item \emph{Fall vs spring}: Contrast comparing fall vs spring applications \pause 
 
 \[ \begin{array}{rl} 
 \gamma &= \frac{1}{3} (\mu_{F12}+ \mu_{F6} + \mu_{F3})+ 0 \mu_O -\frac{1}{3} (\mu_{S3} + \mu_{S6} + \mu_{S12}) \pause \\ \\
-&= \frac{1}{3} \mu_{F12} + \frac{1}{3} \mu_{F6} + \frac{1}{3} \mu_{F3} + 0 \mu_O -\frac{1}{3} \mu_{S3} -\frac{1}{3} \mu_{S6} -\frac{1}{3} \mu_{S12} \pause \\ \\
-&= \frac{1}{3} \left[\mu_{F12} + \mu_{F6} + \mu_{F3} + 0 \mu_O -1 \mu_{S3} -1 \mu_{S6} -1 \mu_{S12} \right] 
+% &= \frac{1}{3} \mu_{F12} + \frac{1}{3} \mu_{F6} + \frac{1}{3} \mu_{F3} + 0 \mu_O -\frac{1}{3} \mu_{S3} -\frac{1}{3} \mu_{S6} -\frac{1}{3} \mu_{S12} \pause \\ \\
+&= \frac{1}{3} \left[1\mu_{F12} + 1\mu_{F6} + 1\mu_{F3} + 0 \mu_O -1 \mu_{S3} -1 \mu_{S6} -1 \mu_{S12} \right] 
 \end{array} \] 
 
 \end{itemize}	
-}
+\end{frame}
 
 
-\frame{\frametitle{Sulfur level: linear trend contrasts}
+\frame{\frametitle{Contrasts (cont.)}
 
 \begin{itemize}[<+->]
-\item The group sulfur levels ($X_j$) are 12, 6, 3, 0, 3, 6, and 12 (100 lbs/acre) \pause 
+\item Sulfur linear trend
+  \begin{itemize}
+  \item The group sulfur levels ($X_j$) are 12, 6, 3, 0, 3, 6, and 12 (100 lbs/acre) \pause 
 \item and a linear trend contrast is $X_j-\overline{X}$
 \[ \begin{array}{c|rrrrrrr|}
 X_i & 12 & 6 & 3&  0 & 3 & 6 & 12 \\
@@ -420,9 +450,7 @@ X_i-\overline{X} & 6 & 0 & -3 & -6 & -3 & 0 & 6
 \gamma &= 6 \mu_{F12}+ 0 \mu_{F6} -3 \mu_{F3}-6 \mu_O -3\mu_{S3} + 0\mu_{S6} + 6\mu_{S12} 
 \end{array} \]
 
-% \pause
-% 
-% This will be proportional to the regression slope.
+\end{itemize}
 	
 \end{itemize}
 	
@@ -430,9 +458,11 @@ X_i-\overline{X} & 6 & 0 & -3 & -6 & -3 & 0 & 6
 }
 
 
-\begin{frame}
-\frametitle{Contrasts}
 
+
+\subsection{Analysis in R}
+\begin{frame}[fragile]
+\frametitle{}
 \begin{center}
 \begin{tabular}{c|ccccccc|c}
 Trt & F12 & F6 & F3 & O & S3 & S6 & S12 & Div \\
@@ -444,20 +474,15 @@ Linear Trend & -6 & 0 & -3 & -6 & -3 & 0 & 6 & 1 \\
 \end{tabular}
 \end{center}
 
+\pause 
 
-\end{frame}
-
-
-
-
-\subsection{Analysis in R}
-\begin{frame}[fragile]
-\frametitle{}
 <<potato_in_R>>=
-#                               F12 F6 F3  0 S3 S6 S12
-K = rbind("sulfur - control" = c( 1, 1, 1,-6, 1, 1,  1)/6,
-          "fall - spring"    = c( 1, 1, 1, 0,-1,-1, -1)/3,
-          "linear trend"     = c( 6, 0,-3,-6,-3, 0,  6)/1)
+K = 
+#                                         F12 F6 F3  0 S3 S6 S12           
+               list("sulfur - control" = c( 1, 1, 1,-6, 1, 1,  1)/6,
+                    "fall - spring"    = c( 1, 1, 1, 0,-1,-1, -1)/3,
+                    "linear trend"     = c( 6, 0,-3,-6,-3, 0,  6)/1)
+
 m = lm(inf ~ trt, data = d)
 anova(m)
 @
@@ -476,14 +501,9 @@ plot(m,1:6)
 \begin{frame}[fragile]
 \frametitle{}
 <<>>=
-ls <- lsmeans(m, ~trt)
-ls 
+em <- emmeans(m, ~trt); em
 
-co <- contrast(ls, 
-#                                         F12 F6 F3  0 S3 S6 S12           
-               list("sulfur - control" = c( 1, 1, 1,-6, 1, 1,  1)/6,
-                    "fall - spring"    = c( 1, 1, 1, 0,-1,-1, -1)/3,
-                    "linear trend"     = c( 6, 0,-3,-6,-3, 0,  6)/1))
+co <- contrast(em, K)
 confint(co)
 @
 \end{frame}
