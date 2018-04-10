@@ -69,6 +69,9 @@ m <- lm(Lifetime ~ X1 + X2 + X3 + X4 + X5, data= case0501)
 m
 confint(m)
 
+## ------------------------------------------------------------------------
+summary(m)
+
 ## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
 case0501 <- Sleuth3::case0501
 opar = par(mar=c(5,5,0,4)+.1)
