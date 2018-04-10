@@ -1,19 +1,19 @@
 ## ----install_packages, eval=FALSE----------------------------------------
-## install.packages("lsmeans")
+## install.packages("emmeans")
 
 ## ----load_packages-------------------------------------------------------
 library("dplyr")
 library("ggplot2")
 # library("Sleuth3")
-library("lsmeans")
+library("emmeans")
 
 ## ------------------------------------------------------------------------
-ggplot(lsmeans::fiber, aes(machine, strength)) + 
-  geom_point() + 
+ggplot(emmeans::fiber, aes(machine, strength)) + 
+  geom_jitter() + 
   theme_bw()
 
 ## ------------------------------------------------------------------------
-m <- lm(strength ~ machine, data = lsmeans::fiber)
+m <- lm(strength ~ machine, data = emmeans::fiber)
 nd <- data.frame(machine = c("A","B","C"))
 p <- predict(m, 
              newdata = nd, 
@@ -21,23 +21,23 @@ p <- predict(m,
 bind_cols(nd, p %>% as.data.frame)
 
 ## ------------------------------------------------------------------------
-lsmeans(m, ~machine)
+emmeans(m, ~machine)
 
 ## ------------------------------------------------------------------------
 ex0518 <- Sleuth3::ex0518 %>%
   mutate(Treatment = relevel(Treatment, ref="Control"))
 
 ggplot(ex0518, aes(Treatment, Protein)) + 
-  geom_point() + 
+  geom_jitter() + 
   theme_bw()
 
 ## ------------------------------------------------------------------------
 # First let's make C the reference level
-fiber <- lsmeans::fiber %>% 
+fiber <- emmeans::fiber %>% 
   mutate(machine = relevel(machine, ref="C"))
   
 m <- lm(strength ~ machine, data = fiber)
-ls <- lsmeans(m, ~ machine)
+ls <- emmeans(m, ~ machine)
 (co <- contrast(ls, method = "pairwise"))
 
 ## ------------------------------------------------------------------------
@@ -59,7 +59,7 @@ wood_glue <- data.frame(force = c(185,170,210,240,245,190,210,250,
 
 ## ------------------------------------------------------------------------
 ggplot(wood_glue, aes(wood, force, color=glue, shape=glue)) +
-  geom_point() +
+  geom_jitter() +
   theme_bw()
 
 ## ------------------------------------------------------------------------
@@ -67,32 +67,32 @@ m <- lm(force ~ wood*glue, data = wood_glue)
 anova(m)
 
 ## ------------------------------------------------------------------------
-(ls <- lsmeans(m, ~ glue))
+(ls <- emmeans(m, ~ glue))
 
 ## ------------------------------------------------------------------------
 (co <- contrast(ls, "pairwise"))
 confint(co)
 
 ## ------------------------------------------------------------------------
-(ls <- lsmeans(m, ~ glue | wood))
+(ls <- emmeans(m, ~ glue | wood))
 
 ## ------------------------------------------------------------------------
 (co <- contrast(ls, "pairwise"))
 confint(co)
 
 ## ------------------------------------------------------------------------
-ggplot(lsmeans::fiber, aes(diameter, strength, color=machine, shape=machine)) + 
-  geom_point() + 
+ggplot(emmeans::fiber, aes(diameter, strength, color=machine, shape=machine)) + 
+  geom_jitter() + 
   theme_bw()
 
 ## ------------------------------------------------------------------------
 m <- lm(strength ~ diameter*machine, data=fiber)
-ls <- lsmeans(m, ~ machine)
+ls <- emmeans(m, ~ machine)
 co <- contrast(ls, method = "pairwise")
 confint(co)
 
 ## ------------------------------------------------------------------------
-ls <- lsmeans(m, ~ machine | diameter)
+ls <- emmeans(m, ~ machine | diameter)
 co <- contrast(ls, method = "pairwise")
 confint(co)
 
@@ -100,7 +100,7 @@ confint(co)
 mean(fiber$diameter)
 
 ## ------------------------------------------------------------------------
-ls <- lsmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
+ls <- emmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
 co <- contrast(ls, method = "pairwise")
 confint(co)
 
@@ -111,7 +111,7 @@ confint(co)
 
 ## ------------------------------------------------------------------------
 m <- lm(Lifetime ~ Diet, data = Sleuth3::case0501)
-ls <- lsmeans(m, "Diet")
+ls <- emmeans(m, "Diet")
 #                                           N/N85 N/R40 N/R50  NP R/R50 lopro
 co <- contrast(ls, list(`High - Low`    = c(    4,   -1,   -1,  0,   -1,   -1) /4,
                         `Pre-wean: R-N` = c(    0,    0,   -1,  0,    1,    0) ))

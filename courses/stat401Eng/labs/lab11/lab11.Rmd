@@ -1,5 +1,5 @@
 ---
-title: "Lab10 - Contrasts"
+title: "Lab11 - Contrasts"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: html_document
@@ -8,15 +8,15 @@ output: html_document
 
 ## Preparation
 
-To follow along, use the [lab10 code](lab10.R) and make sure the following 
+To follow along, use the [lab11 code](lab11.R) and make sure the following 
 packag is installed:
 
-- lsmeans
+- emmeans
 
 You can use the following code to perform the installation:
 
 ```{r install_packages, eval=FALSE}
-install.packages("lsmeans")
+install.packages("emmeans")
 ```
 
 Now load the packages
@@ -25,40 +25,39 @@ Now load the packages
 library("dplyr")
 library("ggplot2")
 # library("Sleuth3")
-library("lsmeans")
+library("emmeans")
 ```
 
 ## One explanatory variables
 
-Consider the `fiber` data set in the lsmeans package where
+Consider the `fiber` data set in the emmeans package where
 the stregnth of fibers produced by 3 different machines is tested. 
 
 ```{r}
-ggplot(lsmeans::fiber, aes(machine, strength)) + 
-  geom_point() + 
+ggplot(emmeans::fiber, aes(machine, strength)) + 
+  geom_jitter() + 
   theme_bw()
 ```
 
 ### Means
 
 We might be interested in the mean strength of fibers produced by each machine.
-One approach would be to fit a regression model and predict for a new 
-observation for each machine type.
+One approach would be to fit a regression model and predict a new observation for each machine type.
 
 ```{r}
-m <- lm(strength ~ machine, data = lsmeans::fiber)
+m <- lm(strength ~ machine, data = emmeans::fiber)
 nd <- data.frame(machine = c("A","B","C"))
 p <- predict(m, 
              newdata = nd, 
              interval = "confidence")
 bind_cols(nd, p %>% as.data.frame)
 ```
-Alternatively, use the `lsmeans` function in the 
-[lsmeans](https://cran.r-project.org/web/packages/lsmeans/index.html) 
+Alternatively, use the `emmeans` function in the 
+[emmeans](https://cran.r-project.org/web/packages/emmeans/index.html) 
 package.
 
 ```{r}
-lsmeans(m, ~machine)
+emmeans(m, ~machine)
 ```
 
 #### Means activity
@@ -70,7 +69,7 @@ ex0518 <- Sleuth3::ex0518 %>%
   mutate(Treatment = relevel(Treatment, ref="Control"))
 
 ggplot(ex0518, aes(Treatment, Protein)) + 
-  geom_point() + 
+  geom_jitter() + 
   theme_bw()
 ```
 
@@ -81,7 +80,7 @@ each of the treatment (diet) levels.
 <div id="means_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
 m <- lm(Protein ~ Treatment, data = ex0518)
-lsmeans(m, ~Treatment)
+emmeans(m, ~Treatment)
 ```
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('means_activity_solution') .style.display=='none') {document.getElementById('means_activity_solution') .style.display=''}else{document.getElementById('means_activity_solution') .style.display='none'}">Show/Hide Solution</button>
@@ -97,16 +96,16 @@ in comparing
 - machine A to machine C and
 - machine B to machine C.
 
-We can use the `contrast`  function in the `lsmeans` package to perform the
+We can use the `contrast`  function in the `emmeans` package to perform the
 comparison.
 
 ```{r}
 # First let's make C the reference level
-fiber <- lsmeans::fiber %>% 
+fiber <- emmeans::fiber %>% 
   mutate(machine = relevel(machine, ref="C"))
   
 m <- lm(strength ~ machine, data = fiber)
-ls <- lsmeans(m, ~ machine)
+ls <- emmeans(m, ~ machine)
 (co <- contrast(ls, method = "pairwise"))
 ```
 To get the CIs, use `confint`:
@@ -115,7 +114,7 @@ To get the CIs, use `confint`:
 confint(co)
 ```
 
-By default, these functions a Tukey multiple comparison adjustment which is the 
+By default, these functions use a Tukey multiple comparison adjustment which is the 
 most appropriate adjustment for performing all pairwise comparisons. 
 
 You can turn off the adjustment by setting the `adjust` argument to "none", e.g.
@@ -138,7 +137,7 @@ confint(co)
 ```
 Notice that the adjustment method used here is the `dunnettx` method which is
 an approximation to the exact Dunnett method.
-The exact Dunnett method is appropriate choice when comparing treatments to a 
+The exact Dunnett method is an appropriate choice when comparing treatments to a 
 control and can be obtained using `adjust = "mvt"`, 
 but this requires more computing time.
 
@@ -150,7 +149,7 @@ difference in mean protein level for all treatments compared to control.
 <div id="contrasts_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
 m <- lm(Protein ~ Treatment, data = ex0518)
-ls <- lsmeans(m, ~ Treatment)
+ls <- emmeans(m, ~ Treatment)
 (co <- contrast(ls, method = "trt.vs.ctrl"))
 confint(co)
 ```
@@ -175,7 +174,7 @@ wood_glue <- data.frame(force = c(185,170,210,240,245,190,210,250,
 
 ```{r}
 ggplot(wood_glue, aes(wood, force, color=glue, shape=glue)) +
-  geom_point() +
+  geom_jitter() +
   theme_bw()
 ```
 
@@ -189,14 +188,14 @@ anova(m)
 ### Compare mean force averaged across wood type
 
 ```{r}
-(ls <- lsmeans(m, ~ glue))
+(ls <- emmeans(m, ~ glue))
 ```
 
-The note here indicates that there may be issues with comparing glue's when
+The note here indicates that there may be issues with comparing glues when
 averaged over wood since, by construction of the model, the glue's effect on 
 the force may be different depending on the wood type.
 
-If we want to compare the glue's, we can use `contrast` as before.
+If we want to compare the glues, we can use `contrast` as before.
 
 ```{r}
 (co <- contrast(ls, "pairwise"))
@@ -208,11 +207,11 @@ confint(co)
 Since the glue's effect may depend on wood type, 
 we may be interested in comparing the glues within each wood type.
 To estimate the mean force required to break the joint for every wood-glue 
-combination use the `lsmeans` function with `A|B` denoting we want to calculate
+combination use the `emmeans` function with `A|B` denoting we want to calculate
 the means for A by B. 
 
 ```{r}
-(ls <- lsmeans(m, ~ glue | wood))
+(ls <- emmeans(m, ~ glue | wood))
 ```
 
 We would have gotten the exact same result if we switched `glue` and `wood`, 
@@ -245,7 +244,7 @@ Then we can estimate the average treatment effect across the classes.
 
 ```{r, purl=FALSE}
 m <- lm(Gain ~ Treatment*Class, data = Sleuth3::ex1321)
-(ls <- lsmeans(m, ~ Treatment))
+(ls <- emmeans(m, ~ Treatment))
 (co <- contrast(ls, "pairwise"))
 confint(co)
 ```
@@ -258,7 +257,7 @@ confint(co)
 
 ## ANCOVA - Categorical explanatory variable with continuous explanatory variable
 
-Reconsider the `fiber` data set in the lsmeans package where
+Reconsider the `fiber` data set in the emmeans package where
 the strength of fibers produced by 3 different machines is tested. 
 The machines do not actually produce a uniform size fiber.
 So in addition to recording the strength, the diameter of the fiber is also 
@@ -267,8 +266,8 @@ Since we expect there to be differences in strength depending on the diameter,
 we should compare machine after adjusting for diameter. 
 
 ```{r}
-ggplot(lsmeans::fiber, aes(diameter, strength, color=machine, shape=machine)) + 
-  geom_point() + 
+ggplot(emmeans::fiber, aes(diameter, strength, color=machine, shape=machine)) + 
+  geom_jitter() + 
   theme_bw()
 ```
 
@@ -279,7 +278,7 @@ the possibility that the effect of diameter depends on the machine.
 
 ```{r}
 m <- lm(strength ~ diameter*machine, data=fiber)
-ls <- lsmeans(m, ~ machine)
+ls <- emmeans(m, ~ machine)
 co <- contrast(ls, method = "pairwise")
 confint(co)
 ```
@@ -289,7 +288,7 @@ we are warned that these results may not make sense due to the interaction.
 Perhaps we should evaluate these at a particular diameter.
 
 ```{r}
-ls <- lsmeans(m, ~ machine | diameter)
+ls <- emmeans(m, ~ machine | diameter)
 co <- contrast(ls, method = "pairwise")
 confint(co)
 ```
@@ -304,7 +303,7 @@ mean(fiber$diameter)
 To set your own value(s) for diameter use the `at` argument, e.g.
 
 ```{r}
-ls <- lsmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
+ls <- emmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
 co <- contrast(ls, method = "pairwise")
 confint(co)
 ```
@@ -343,7 +342,7 @@ As always, plot the data.
 
 ```{r, purl=FALSE}
 ggplot(Sleuth3::case1002, aes(Mass, Energy, color = Type, shape = Type)) +
-  geom_point() + 
+  geom_jitter() + 
   theme_bw()
 ```
 
@@ -351,7 +350,7 @@ Compare energy expenditure at mean mass.
 
 ```{r, purl=FALSE}
 m <- lm(Energy ~ Mass*Type, data = Sleuth3::case1002)
-ls <- lsmeans(m, ~ Type | Mass)
+ls <- emmeans(m, ~ Type | Mass)
 co <- contrast(ls, "trt.vs.ctrl") 
 confint(co)
 ```
@@ -387,7 +386,7 @@ technically part of the pairwise comarisons).
 
 ```{r}
 m <- lm(Lifetime ~ Diet, data = Sleuth3::case0501)
-ls <- lsmeans(m, "Diet")
+ls <- emmeans(m, "Diet")
 #                                           N/N85 N/R40 N/R50  NP R/R50 lopro
 co <- contrast(ls, list(`High - Low`    = c(    4,   -1,   -1,  0,   -1,   -1) /4,
                         `Pre-wean: R-N` = c(    0,    0,   -1,  0,    1,    0) ))
