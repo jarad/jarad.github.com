@@ -9,12 +9,12 @@ set.seed(2)
 ## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
 opar = par(mar=c(5,5,0,0)+.1)
 plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
-     case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+     case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
      xaxt='n', pch=19, cex.lab=1.5, 
      xlab="Diet", col='gray')
 axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
 
-# yy = with(case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+# yy = with(case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
 #           by(Lifetime, Diet, mean))
 # segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
 par(opar)
@@ -22,19 +22,19 @@ par(opar)
 ## ------------------------------------------------------------------------
 case0501$X <- ifelse(case0501$Diet == "N/R50", 1, 0)
 unique(case0501$X)
-(m <- lm(Lifetime ~ X, data = case0501, subset = Diet %in% c("NP","N/R50")))
+(m <- lm(Lifetime ~ X, data = case0501, subset = Diet %in% c("R/R50","N/R50")))
 confint(m)
 predict(m, data.frame(X=1), interval = "confidence") # Expected lifetime on N/R50
 
 ## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
 opar = par(mar=c(5,5,0,0)+.1)
 plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
-     case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+     case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
      xaxt='n', pch=19, cex.lab=1.5, 
      xlab="Diet", col='gray')
 axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
 
-yy = with(case0501 %>% filter(Diet %in% c("NP","N/R50")),
+yy = with(case0501 %>% filter(Diet %in% c("R/R50","N/R50")),
           by(Lifetime, Diet, mean))
 segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
 par(opar)
@@ -42,7 +42,7 @@ par(opar)
 ## ------------------------------------------------------------------------
 summary(m)$coefficients[2,4] # p-value
 confint(m)
-t.test(Lifetime ~ Diet, data = case0501, subset = Diet %in% c("NP","N/R50"), var.equal=TRUE)
+t.test(Lifetime ~ Diet, data = case0501, subset = Diet %in% c("R/R50","N/R50"), var.equal=TRUE)
 
 ## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
 opar = par(mar=c(5,5,0,0)+.1)
