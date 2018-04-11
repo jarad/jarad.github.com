@@ -80,18 +80,18 @@ Then
 \begin{frame}
 \frametitle{Mice lifetimes}
 
-Reconsider the mice lifetime data set but only consider the diets NP and 
+Reconsider the mice lifetime data set but only consider the diets R/R50 and 
 $N/R50$:
 \pause
 <<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
 opar = par(mar=c(5,5,0,0)+.1)
 plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
-     case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+     case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
      xaxt='n', pch=19, cex.lab=1.5, 
      xlab="Diet", col='gray')
 axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
 
-# yy = with(case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+# yy = with(case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
 #           by(Lifetime, Diet, mean))
 # segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
 par(opar)
@@ -103,7 +103,7 @@ par(opar)
 \begin{frame}
 \frametitle{Regression model for mice lifetimes}
 
-Considering only the NP and N/R50 diets. 
+Considering only the R/R50 and N/R50 diets. 
 \pause
 Let 
 \[Y_i \ind N(\beta_0+\beta_1X_i,\sigma^2) \]
@@ -115,21 +115,21 @@ and
 X_i = \mathrm{I}(Diet_i = \mbox{N/R50}) = \left\{ 
 \begin{array}{rl} 
 1 & \mbox{$i$th mouse diet is N/R50} \\ 
-0 & \mbox{$i$th mouse diet is NP} 
+0 & \mbox{$i$th mouse diet is R/R50} 
 \end{array} 
 \right.
 \]
 \pause
 then 
 \[ \begin{array}{lll}
-E[\mbox{Lifetime}|\mbox{NP}] &= \pause E[Y_i|X_i=0] &= \pause \beta_0 \pause \\
+E[\mbox{Lifetime}|\mbox{R/R50}] &= \pause E[Y_i|X_i=0] &= \pause \beta_0 \pause \\
 E[\mbox{Lifetime}|\mbox{N/R50}] &= \pause E[Y_i|X_i=1] &= \pause \beta_0 +\beta_1 \pause 
 \end{array} \]
 \pause
 and 
 \[ \begin{array}{rl}
 E[\mbox{Lifetime difference}] 
-&= E[\mbox{Lifetime}|\mbox{N/R50}] - E[\mbox{Lifetime}|\mbox{NP}] \pause \\
+&= E[\mbox{Lifetime}|\mbox{N/R50}] - E[\mbox{Lifetime}|\mbox{R/R50}] \pause \\
 &= (\beta_0+\beta_1) - \beta_0 = \beta_1.
 \end{array} \]
 
@@ -143,7 +143,7 @@ E[\mbox{Lifetime difference}]
 <<>>=
 case0501$X <- ifelse(case0501$Diet == "N/R50", 1, 0)
 unique(case0501$X)
-(m <- lm(Lifetime ~ X, data = case0501, subset = Diet %in% c("NP","N/R50")))
+(m <- lm(Lifetime ~ X, data = case0501, subset = Diet %in% c("R/R50","N/R50")))
 confint(m)
 predict(m, data.frame(X=1), interval = "confidence") # Expected lifetime on N/R50
 @
@@ -158,12 +158,12 @@ predict(m, data.frame(X=1), interval = "confidence") # Expected lifetime on N/R5
 <<echo=FALSE, fig.width=8, out.width='0.9\\textwidth'>>=
 opar = par(mar=c(5,5,0,0)+.1)
 plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
-     case0501 %>% filter(Diet %in% c("NP","N/R50")), 
+     case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
      xaxt='n', pch=19, cex.lab=1.5, 
      xlab="Diet", col='gray')
 axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
 
-yy = with(case0501 %>% filter(Diet %in% c("NP","N/R50")),
+yy = with(case0501 %>% filter(Diet %in% c("R/R50","N/R50")),
           by(Lifetime, Diet, mean))
 segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
 par(opar)
@@ -189,7 +189,7 @@ This is equivalent to our current regression model where
 \pause
 assuming 
 \begin{itemize}
-\item $\mu_0$ represents the mean for the NP group and 
+\item $\mu_0$ represents the mean for the R/R50 group and 
 \item $\mu_1$ represents the mean for N/R50 group.
 \end{itemize}
 \pause
@@ -204,7 +204,7 @@ call it a \alert{reparameterization}.
 <<>>=
 summary(m)$coefficients[2,4] # p-value
 confint(m)
-t.test(Lifetime ~ Diet, data = case0501, subset = Diet %in% c("NP","N/R50"), var.equal=TRUE)
+t.test(Lifetime ~ Diet, data = case0501, subset = Diet %in% c("R/R50","N/R50"), var.equal=TRUE)
 @
 
 \end{frame}
@@ -300,6 +300,13 @@ case0501 <- case0501 %>%
 m <- lm(Lifetime ~ X1 + X2 + X3 + X4 + X5, data= case0501)
 m
 confint(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{R code (cont.)}
+<<>>=
+summary(m)
 @
 \end{frame}
 
