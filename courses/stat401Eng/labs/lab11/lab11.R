@@ -52,18 +52,18 @@ confint(co)
 confint(co)
 
 ## ------------------------------------------------------------------------
-wood_glue <- data.frame(force = c(185,170,210,240,245,190,210,250,
+wood_glue <- data.frame(weight = c(185,170,210,240,245,190,210,250,
                                   290,280,260,270,200,280,350,350),
                         wood = rep(c("spruce","maple"),each = 8),
                         glue = rep(c("carpenter's", "weldbond","gorilla","titebond"), each=2, times=2))
 
 ## ------------------------------------------------------------------------
-ggplot(wood_glue, aes(wood, force, color=glue, shape=glue)) +
+ggplot(wood_glue, aes(wood, weight, color=glue, shape=glue)) +
   geom_jitter() +
   theme_bw()
 
 ## ------------------------------------------------------------------------
-m <- lm(force ~ wood*glue, data = wood_glue)
+m <- lm(weight ~ wood*glue, data = wood_glue)
 anova(m)
 
 ## ------------------------------------------------------------------------
@@ -74,10 +74,10 @@ anova(m)
 confint(co)
 
 ## ------------------------------------------------------------------------
-(ls <- emmeans(m, ~ glue | wood))
+(em <- emmeans(m, ~ glue | wood))
 
 ## ------------------------------------------------------------------------
-(co <- contrast(ls, "pairwise"))
+(co <- contrast(em, "pairwise"))
 confint(co)
 
 ## ------------------------------------------------------------------------
@@ -87,21 +87,21 @@ ggplot(emmeans::fiber, aes(diameter, strength, color=machine, shape=machine)) +
 
 ## ------------------------------------------------------------------------
 m <- lm(strength ~ diameter*machine, data=fiber)
-ls <- emmeans(m, ~ machine)
-co <- contrast(ls, method = "pairwise")
+em <- emmeans(m, ~ machine)
+co <- contrast(em, method = "pairwise")
 confint(co)
 
 ## ------------------------------------------------------------------------
-ls <- emmeans(m, ~ machine | diameter)
-co <- contrast(ls, method = "pairwise")
+em <- emmeans(m, ~ machine | diameter)
+co <- contrast(em, method = "pairwise")
 confint(co)
 
 ## ------------------------------------------------------------------------
 mean(fiber$diameter)
 
 ## ------------------------------------------------------------------------
-ls <- emmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
-co <- contrast(ls, method = "pairwise")
+em <- emmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
+co <- contrast(em, method = "pairwise")
 confint(co)
 
 ## ------------------------------------------------------------------------
