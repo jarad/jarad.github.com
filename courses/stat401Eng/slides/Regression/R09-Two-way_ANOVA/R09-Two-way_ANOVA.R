@@ -45,14 +45,14 @@ m = lm(Yield~Variety*Density, tomato)
 anova(m)
 
 ## ----echo=TRUE-----------------------------------------------------------
-library(lsmeans)
-lsmeans(m, pairwise~Variety)
+library(emmeans)
+emmeans(m, pairwise~Variety)
 
 ## ----echo=TRUE-----------------------------------------------------------
-lsmeans(m, pairwise~Density)
+emmeans(m, pairwise~Density)
 
 ## ----echo=TRUE-----------------------------------------------------------
-lsmeans(m, pairwise~Variety*Density)
+emmeans(m, pairwise~Variety*Density)
 
 ## ------------------------------------------------------------------------
 tomato_unbalanced = tomato[-19,]
@@ -71,13 +71,13 @@ m = lm(Yield~Variety*Density, tomato_unbalanced)
 anova(m)
 
 ## ----echo=TRUE-----------------------------------------------------------
-lsmeans(m, pairwise~Variety)
+emmeans(m, pairwise~Variety)
 
 ## ----echo=TRUE-----------------------------------------------------------
-lsmeans(m, pairwise~Density)
+emmeans(m, pairwise~Density)
 
 ## ----echo=TRUE-----------------------------------------------------------
-lsmeans(m, pairwise~Variety*Density)
+emmeans(m, pairwise~Variety*Density)
 
 ## ------------------------------------------------------------------------
 tomato_incomplete = tomato %>%
@@ -116,7 +116,7 @@ confint(t, calpha=univariate_calpha())
 
 ## ----echo=TRUE-----------------------------------------------------------
 m = lm(Yield~Variety:Density, tomato_incomplete)
-lsmeans(m, pairwise~Variety:Density)
+emmeans(m, pairwise~Variety:Density)
 # We could have used the VarietyDensity model, but this looks nicer
 
 ## ----echo=FALSE----------------------------------------------------------
