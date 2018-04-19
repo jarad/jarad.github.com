@@ -26,7 +26,7 @@ tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L,
 "Density", "Yield"), class = "data.frame", row.names = c(NA, 
 -36L))
 tomato$Variety = relevel(tomato$Variety, ref="C")
-ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + theme_bw()
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
 
 ## ------------------------------------------------------------------------
 sm = tomato %>% 
@@ -56,7 +56,7 @@ emmeans(m, pairwise~Variety*Density)
 
 ## ------------------------------------------------------------------------
 tomato_unbalanced = tomato[-19,]
-ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety)) +  geom_point() + theme_bw()
+ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety)) +  geom_jitter(height=0, width=0.1) + theme_bw()
 
 ## ------------------------------------------------------------------------
 sm_unbalanced = tomato_unbalanced %>% 
@@ -83,7 +83,7 @@ emmeans(m, pairwise~Variety*Density)
 tomato_incomplete = tomato %>%
   filter(!(Variety == "B" & Density == 30)) %>%
   mutate(VarietyDensity = paste0(Variety,Density))
-ggplot(tomato_incomplete, aes(x=Density, y=Yield, color=Variety)) + geom_point() + theme_bw()
+ggplot(tomato_incomplete, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
 
 ## ------------------------------------------------------------------------
 sm_incomplete = tomato_incomplete %>% 
@@ -103,16 +103,14 @@ anova(m)
 
 ## ----echo=TRUE-----------------------------------------------------------
 # Note the -1 in order to construct the contrast
-m = lm(Yield~VarietyDensity-1, tomato_incomplete)
-#                   A10 A20 A30 A40 B10 B20 B40 C10 C20 C30 C40   
-K = rbind('C-B' = c(  0,  0,  0,  0, -1, -1, -1,  1,  1,  0,  1)/3,
-          'C-A' = c( -1, -1, -1, -1,  0,  0,  0,  1,  1,  1,  1)/4,
-          'B-A' = c( -1, -1,  0, -1,  1,  1,  1,  0,  0,  0,  0)/3)
-
-library(multcomp)
-t = glht(m, linfct=K)
-#summary(t)
-confint(t, calpha=univariate_calpha())
+m = lm(Yield ~ VarietyDensity, tomato_incomplete)
+em <- emmeans(m, ~ VarietyDensity) 
+contrast(em, method = list(
+#         A10 A20 A30 A40 B10 B20 B40 C10 C20 C30 C40  
+"C-B" = c(  0,  0,  0,  0, -1, -1, -1,  1,  1,  0,  1)/3,
+"C-A" = c( -1, -1, -1, -1,  0,  0,  0,  1,  1,  1,  1)/4,
+"B-A" = c( -1, -1,  0, -1,  1,  1,  1,  0,  0,  0,  0)/3)) %>%
+  confint
 
 ## ----echo=TRUE-----------------------------------------------------------
 m = lm(Yield~Variety:Density, tomato_incomplete)
@@ -120,7 +118,7 @@ emmeans(m, pairwise~Variety:Density)
 # We could have used the VarietyDensity model, but this looks nicer
 
 ## ----echo=FALSE----------------------------------------------------------
-ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + theme_bw()
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
 
 ## ----fig.width=10,out.width='0.9\\textwidth',echo=FALSE------------------
 tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
@@ -137,7 +135,7 @@ tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L,
 -36L))
 tomato$Variety = relevel(tomato$Variety, ref="C")
 
-g1 = ggplot(tomato, aes(x=Density, y=Yield)) + geom_point() + 
+g1 = ggplot(tomato, aes(x=Density, y=Yield)) + geom_jitter(height=0, width=0.1) + 
   stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE, color="black") +
   labs(title="No variety") + theme_bw()
 
@@ -147,10 +145,10 @@ lines = with(tomato,expand.grid(Density=seq(min(Density),max(Density),length=41)
                                Variety=levels(Variety)))
 lines$Yield <- predict(lm(Yield~Density+I(Density^2)+Variety, tomato),lines)
 
-g2 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + 
+g2 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + 
   geom_line(data=lines) + labs(title="Parallel curves") + theme_bw()
 
-g3 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_point() + 
+g3 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + 
   stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE) +
   labs(title="Independent curves") + theme_bw()
 grid.arrange(g1,g2,g3, ncol=3)
