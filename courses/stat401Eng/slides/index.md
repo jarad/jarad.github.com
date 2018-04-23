@@ -55,6 +55,15 @@ you can find them
 |Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|
 |Two-way ANOVA|[pdf](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.pdf)|[R](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.R)|
 
+
+### Supplementary materials
+
+|Topic|slides|code|
+|---|---|---|
+|Logistic regression|[pdf](Supplementary/S01-Logistic_regression/S01-Logistic_regression.pdf)|[R](Supplementary/S01-Logistic_regression/S01-Logistic_regression.R)|
+
+
+
  ============ updated to here =================
 
 ### Supplementary topics
@@ -63,7 +72,6 @@ you can find them
 |---|---|---|
 |Data Management|[Set01.Rnw](Set01/Set01_data_management.Rnw)|[Set01.pdf](Set01/Set01_data_management.pdf)|
 |Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
-|Logistic regression|[SetS01.Rnw](SetS01/SetS01_Logistic_Regression.Rnw)|[SetS01.pdf](SetS01/SetS01_Logistic_Regression.pdf)|
 |Poisson regression|[SetS02.Rnw](SetS02/SetS02_Poisson_Regression.Rnw)|[SetS02.pdf](SetS02/SetS02_Poisson_Regression.pdf)|
 |Random effects|[SetS03.Rnw](SetS03/SetS03_Random_effects.Rnw)|[SetS03.pdf](SetS03/SetS03_Random_effects.pdf)|
 |Model comparison|[SetS04.Rnw](SetS04/SetS04_Model_comparison.Rnw)|[SetS04.pdf](SetS04/SetS04_Model_comparison.pdf)|
