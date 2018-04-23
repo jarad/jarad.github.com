@@ -2,10 +2,10 @@
 
 \usepackage{verbatim,multicol,amsmath}
 
-\input{../frontmatter}
-\input{../commands}
+\input{../../frontmatter}
+\input{../../commands}
 
-\title{Set S03 - Random effects}
+\title{S03 - Random effects}
 
 <<options, echo=FALSE, warning=FALSE, message=FALSE>>=
 options(width=120)
@@ -16,7 +16,7 @@ opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.
 library("dplyr")
 library("ggplot2")
 library("lme4")
-library("lsmeans")
+library("emmeans")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -173,7 +173,7 @@ summary(me <- lmer(Reaction ~ Days + (1|Subject), sleepstudy))
 \frametitle{Shrinkage}
 <<echo=FALSE>>=
 m <- lm(Reaction ~ Days + Subject, sleepstudy)
-d <- data.frame(fixed_effect = summary(lsmeans(m, ~Subject, at=list(Days=0)))$lsmean,
+d <- data.frame(fixed_effect = summary(emmeans(m, ~Subject, at=list(Days=0)))$emmean,
                 random_effect = ranef(me)$Subject) %>%
   mutate(fixed_effect = fixed_effect - mean(fixed_effect),
          random_effect = X.Intercept.)
@@ -249,7 +249,7 @@ summary(me <- lmer(Reaction ~ Days + (Days|Subject), sleepstudy))
 % \frametitle{Shrinkage}
 % <<echo=FALSE>>=
 % m <- lm(Reaction ~ Days * Subject, sleepstudy)
-% d <- data.frame(fixed_effect = summary(lsmeans(m, ~Days|Subject))$lsmean,
+% d <- data.frame(fixed_effect = summary(emmeans(m, ~Days|Subject))$lsmean,
 %                 random_effect = ranef(me)$Subject) %>%
 %   mutate(fixed_effect = fixed_effect - mean(fixed_effect),
 %          random_effect = X.Intercept.)
@@ -319,10 +319,10 @@ summary(me)
 Is there a linear trend in logit($\theta_{ph}$) by period?
 
 <<>>=
-ls <- lsmeans(me, ~ period, type="response") # for intrepretability
-ls
+em <- emmeans(me, ~ period, type="response") # for intrepretability
+em
 
-co <- contrast(ls, list(`linear trend` = c(-1.5, -0.5, 0.5, 1.5)))
+co <- contrast(em, list(`linear trend` = c(-1.5, -0.5, 0.5, 1.5)))
 confint(co)
 @
 \end{frame}

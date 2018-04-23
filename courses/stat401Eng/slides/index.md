@@ -62,6 +62,7 @@ you can find them
 |---|---|---|
 |Logistic regression|[pdf](Supplementary/S01-Logistic_regression/S01-Logistic_regression.pdf)|[R](Supplementary/S01-Logistic_regression/S01-Logistic_regression.R)|
 |Poisson regression|[pdf](Supplementary/S02-Poisson_regression/S02-Poisson_regression.pdf)|[R](Supplementary/S02-Poisson_regression/S02-Poisson_regression.R)|
+|Random effects|[pdf](Supplementary/S03-Random_effects/S03-Random_effects.pdf)|[R](Supplementary/S03-Random_effects/S03-Random_effects.R)|
 
 
 
@@ -73,7 +74,6 @@ you can find them
 |---|---|---|
 |Data Management|[Set01.Rnw](Set01/Set01_data_management.Rnw)|[Set01.pdf](Set01/Set01_data_management.pdf)|
 |Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
-|Random effects|[SetS03.Rnw](SetS03/SetS03_Random_effects.Rnw)|[SetS03.pdf](SetS03/SetS03_Random_effects.pdf)|
 |Model comparison|[SetS04.Rnw](SetS04/SetS04_Model_comparison.Rnw)|[SetS04.pdf](SetS04/SetS04_Model_comparison.pdf)|
 |Random forests|[SetS05.Rnw](SetS05/SetS05_Random_forests.Rnw)|[SetS05.pdf](SetS05/SetS05_Random_forests.pdf)|
 
