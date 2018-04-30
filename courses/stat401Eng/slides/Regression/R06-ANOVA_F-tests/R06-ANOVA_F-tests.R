@@ -43,7 +43,10 @@ sm <- Sleuth3::case0501 %>%
   summarize(n = n(),
             mean = mean(Lifetime),
             sd = sd(Lifetime))
-total <- Sleuth3::case0501 %>% summarize(n = n(), mean=mean(Lifetime)) %>%
+total <- Sleuth3::case0501 %>% 
+  summarize(n = n(), 
+            mean = mean(Lifetime),
+            sd = sd(Lifetime)) %>%
   mutate(Diet = "Total")
 (sm2 <- bind_rows(sm,total))
 
