@@ -377,7 +377,10 @@ sm <- Sleuth3::case0501 %>%
   summarize(n = n(),
             mean = mean(Lifetime),
             sd = sd(Lifetime))
-total <- Sleuth3::case0501 %>% summarize(n = n(), mean=mean(Lifetime)) %>%
+total <- Sleuth3::case0501 %>% 
+  summarize(n = n(), 
+            mean = mean(Lifetime),
+            sd = sd(Lifetime)) %>%
   mutate(Diet = "Total")
 (sm2 <- bind_rows(sm,total))
 @
@@ -388,16 +391,21 @@ So
 \[ \begin{array}{rl}
 SSA =& 57\times (32.7-38.8)^2+60\times (45.1-38.8)^2+71\times (42.3-38.8)^2 + 49\times (27.4-38.8)^2 \\
 &+ 56\times (42.9-38.8)^2 + 56\times(39.7-38.8)^2 = 12734 \pause \\
-SST =& (35.5-38.8)^2 + (35.4-38.8)^2 + (34.9-38.8)^2 + \cdots + (19.6-38.8)^2 + (47.6-38.8)^2 = 28031 \pause \\
-SSE =& SST-SSA = 28031 - 12734 = 15297 \\
+% SST =& (35.5-38.8)^2 + (35.4-38.8)^2 + (34.9-38.8)^2 + \cdots + (19.6-38.8)^2 + (47.6-38.8)^2 = 28031 \pause \\
+SST = & (349-1)\times 8.97^2 = 28000 \pause \\
+SSE =& SST-SSA = 28000 - 12734 = 15266 \\
 J-1 =& 5 \\
 n-J =& 349-6 = 343 \\
 n-1 =& 348 \\
 MSA =& SSA/J-1 = 12734/5 = 2547 \\
-MSE =& SSE/n-J = 15297/343 = 44.6 = \hat\sigma^2 \\
-F =& MSA/MSE = 2547/44.6 = 57.1 \\
-p =& P(F_{5,343}>57.1) < 0.0001
+MSE =& SSE/n-J = 15266/343 = 44.5 = \hat\sigma^2 \\
+F =& MSA/MSE = 2547/44.5 = 57.2 \\
+p =& P(F_{5,343}>57.2) < 0.0001
 \end{array} \]
+\pause
+F statistic is off by 0.1 relative to the table later, because of rounding
+of 8.97. 
+The real SST is 28031 which would be the F statistic of 57.1. 
 }
 \end{frame}
 
