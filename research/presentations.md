@@ -6,10 +6,13 @@ group:
 ---
 {% include JB/setup %}
 
-I've started recording my talks and posters here for ease of access to those 
+I've started archiving my talks and posters here for ease of access to those 
 who might be interested in looking at the material after the conference. 
 If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
+- 2018
+  - [JSM](https://github.com/jarad/JSM2018/raw/master/JSM2018.pdf)
+  - ISBA - to be added
 - 2017
   - [UCI](https://github.com/jarad/UCI2017/raw/master/JaradNiemi_UCI2017.pdf)
   - [Graybill](https://github.com/jarad/Graybill2017/raw/master/JaradNiemi_Graybill2017.pdf)
