@@ -24,7 +24,7 @@ Environmental Statistics
 1. Matt Simpson\*, Vivek Roy, and Jarad Niemi (2017) ``Interweaving Markov chain Monte Carlo strategies for efficient estimation of dynamic linear models.'' Journal of Computational and Graphical Statistics, 26(1), 152-159
 [url](http://www.tandfonline.com/doi/full/10.1080/10618600.2015.1105748)
 
-## Current advisees ([All advisees](students.html)
+## Current advisees ([All advisees](students.html))
 
 - Nate Garton (co-advised with Alicia Carriquiry)
 - Gulzina Kuttubekova
