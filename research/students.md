@@ -9,21 +9,10 @@ header: Students
 Here are some [resources](resources.html) for current graduate students. 
 
 
+## All advisees
 
-## Current advisees
-
-- Katie Will
-- Xiyuan Sun
-- Nehemias Ulloa
-- Eric Mittman 
-
-<img src="student_figs/kwill.jpg" height="118" />
-<img src="student_figs/xiyuansu.jpg" height="118" />
-<img src="student_figs/nulloa_resized.jpg" height="118" />
-<img src="student_figs/emittman.jpg" height="118" />
-
-## Former advisees
-
+- Eric Mittman (IBM) ([PhD](thesis/EricMittman_PhDthesis.pdf), ISU)
+- Katie Will (John Deere) ([MS](thesis/KatieWill_CC.pdf), ISU)
 - Adam Martin-Schwarze (co-advised with [Philip Dixon](http://www.public.iastate.edu/~pdixon/)) (PNNL) ([PhD](thesis/AdamMartinSchwarze_PhDthesis.pdf), ISU)
 - Ignacio Alvarez-Castro ([PhD](IgnacioAlvarezCastro_PhDthesis.pdf), ISU) ([Instituto de Estadistica, Uruguay](http://www.iesta.edu.uy/institucional/gente/))
 - [Nicholas Michaud](http://www.public.iastate.edu/~michaud/homepage.html) ([PhD](thesis/NicholasMichaud_PhDthesis.pdf), ISU)
@@ -34,7 +23,12 @@ Here are some [resources](resources.html) for current graduate students.
 - Danny Sheinson (MS & PhD, UCSB) (co-advised with [Wendy Meiring](http://www.pstat.ucsb.edu/faculty%20pages/MEIRING.htm) for PhD) (Genentech)
 - Matt Wheeler (MS, UCSB) (Polyvore/Yahoo!)
 
-
+<img src="student_figs/nmgarton.jpg" height="118" />
+<img src="student_figs/colin.jpg" height="118" />
+<img src="student_figs/xiyuansu.jpg" height="118" />
+<img src="student_figs/nulloa_resized.jpg" height="118" />
+<img src="student_figs/kwill.jpg" height="118" />
+<img src="student_figs/emittman.jpg" height="118" />
 <img src="student_figs/ialvarez.jpg" height="118" />
 <img src="student_figs/adamms.jpg" height="118" />
 <img src="student_figs/michaud.jpg" height="118" />
