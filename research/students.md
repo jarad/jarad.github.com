@@ -17,7 +17,7 @@ Here are some [resources](resources.html) for current graduate students.
 - Ignacio Alvarez-Castro ([PhD](IgnacioAlvarezCastro_PhDthesis.pdf), ISU) ([Instituto de Estadistica, Uruguay](http://www.iesta.edu.uy/institucional/gente/))
 - [Nicholas Michaud](http://www.public.iastate.edu/~michaud/homepage.html) ([PhD](thesis/NicholasMichaud_PhDthesis.pdf), ISU) (UC-Berkeley)
 - [Will Landau](http://will-landau.com/) 
-([PhD](thesis/WillLandau_PhDthesis.pdf), ISU) (Eli-Lilly)
+([PhD](thesis/WillLandau_PhDthesis.pdf), ISU) (Eli Lilly)
 - [Matt Simpson](http://www.themattsimpson.com/) ([PhD](thesis/MattSimpson_PhDthesis.pdf), ISU) (SAS)
 - Casey Oliver ([MS](thesis/CaseyOliver_CC.pdf), ISU) (co-advised with [Dan Nettleton](http://stat.iastate.edu/people/dan-nettleton)) (LifeWay Christian Resources)
 - Danny Sheinson (MS & PhD, UCSB) (co-advised with [Wendy Meiring](http://www.pstat.ucsb.edu/faculty%20pages/MEIRING.htm) for PhD) (Genentech)
