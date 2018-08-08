@@ -27,14 +27,16 @@ Environmental Statistics
 ## Current advisees ([All advisees](students.html)
 
 - Nate Garton (co-advised with Alicia Carriquiry)
+- Gulzina Kuttubekova
 - Colin Lewis-Beck (co-advised with Petrutza Caragea)
 - Xiyuan Sun
 - Nehemias Ulloa
 
-<img src="student_figs/nmgarton.jpg" height="118" />
-<img src="student_figs/colin.jpg" height="118" />
-<img src="student_figs/xiyuansu.jpg" height="118" />
-<img src="student_figs/nulloa_resized.jpg" height="118" />
+<img src="student_figs/nmgarton.jpg" style="height:118px;" />
+<img src="student_figs/gulzina.jpg" style="height:118px;" />
+<img src="student_figs/colin.jpg" style="height:118px;" />
+<img src="student_figs/xiyuansu.jpg" style="height:118px;" />
+<img src="student_figs/nulloa_resized.jpg" style="height:118px;" />
 
 ## Recent presentations ([All Presentations](presentations.html))
 
