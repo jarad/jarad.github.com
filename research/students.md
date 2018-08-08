@@ -23,24 +23,24 @@ Here are some [resources](resources.html) for current graduate students.
 - Danny Sheinson (MS & PhD, UCSB) (co-advised with [Wendy Meiring](http://www.pstat.ucsb.edu/faculty%20pages/MEIRING.htm) for PhD) (Genentech)
 - Matt Wheeler (MS, UCSB) (Polyvore/Yahoo!)
 
-<img src="student_figs/nmgarton.jpg" height="118" />
-<img src="student_figs/colin.jpg" height="118" />
-<img src="student_figs/xiyuansu.jpg" height="118" />
-<img src="student_figs/nulloa_resized.jpg" height="118" />
-<img src="student_figs/kwill.jpg" height="118" />
-<img src="student_figs/emittman.jpg" height="118" />
-<img src="student_figs/ialvarez.jpg" height="118" />
-<img src="student_figs/adamms.jpg" height="118" />
-<img src="student_figs/michaud.jpg" height="118" />
-![](student_figs/simpsonm.jpg)
-![](student_figs/oliver.jpg)
-![](student_figs/sheinson.jpg)
-![](student_figs/wheeler.jpg)
+<img src="student_figs/nmgarton.jpg" style="height:118px;" />
+<img src="student_figs/colin.jpg" style="height:118px;" />
+<img src="student_figs/xiyuansu.jpg" style="height:118px;" />
+<img src="student_figs/nulloa_resized.jpg" style="height:118px;" />
+<img src="student_figs/kwill.jpg" style="height:118px;" />
+<img src="student_figs/emittman.jpg" style="height:118px;" />
+<img src="student_figs/ialvarez.jpg" style="height:118px;" />
+<img src="student_figs/adamms.jpg" style="height:118px;" />
+<img src="student_figs/michaud.jpg" style="height:118px;" />
+<img src="student_figs/simpsonm.jpg" style="height:118px;" />
+<img src="student_figs/oliver.jpg" style="height:118px;" />
+<img src="student_figs/sheinson.jpg" style="height:118px;" />
+<img src="student_figs/wheeler.jpg" style="height:118px;" />
 
 ## Preparing future faculty (PFF) mentees
 
 - [Natalia da Silva](http://ndasilva.public.iastate.edu/)
 - [Will Landau](http://will-landau.com/)
 
-![](student_figs/ndasilva.jpg)
-![](student_figs/landau.jpg)
+<img src="student_figs/ndasilva.jpg" style="height:118px;" />
+<img src="student_figs/landau.jpg" style="height:118px;" />
