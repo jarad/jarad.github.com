@@ -40,9 +40,14 @@ Environmental Statistics
 
 ## Recent presentations ([All Presentations](presentations.html))
 
-
+- [JSM 2018](https://github.com/jarad/JSM2018/raw/master/JSM2018.pdf)
 
 ## Some software ([Additional software](software.html))
+
+- Fully Bayesian analysis of RNAseq data in R
+  - [fbseq](https://github.com/wlandau/fbseq)
+  - [fbseqOpenMP](https://github.com/wlandau/fbseqOpenMP)
+  - [fbseqCUDA](https://github.com/wlandau/fbseqCUDA)
 
 
 
