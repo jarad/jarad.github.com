@@ -5,8 +5,7 @@ tagline: slides
 ---
 {% include JB/setup %}
 
-Below are source (Rnw) and handouts for all course lectures. 
-Instructions for compiling the Rnw files can be found below.
+Below are slides (.pdf) and R code (.R).
 
 ## Chapter slide set files
 
@@ -76,27 +75,3 @@ you can find them
 |Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
 |Model comparison|[SetS04.Rnw](SetS04/SetS04_Model_comparison.Rnw)|[SetS04.pdf](SetS04/SetS04_Model_comparison.pdf)|
 |Random forests|[SetS05.Rnw](SetS05/SetS05_Random_forests.Rnw)|[SetS05.pdf](SetS05/SetS05_Random_forests.pdf)|
-
-
-## Rnw compilation instructions
-
-From the Rnw files you can construct the pdf slides or extract the R code.
-You will need to have the R package `knitr` installed, i.e. 
-
-    install.packages('knitr')
-
-### R Code
-
-To extract the R code, run 
-
-    knitr::knit('Set01_data_management.Rnw', tangle=TRUE)
-
-
-### Slides
-
-To obtain the pdf, 
-you will need to have [LaTeX installed](http://en.wikibooks.org/wiki/LaTeX/Installation) and in the path (etc). Then download the Rnw file (as an example, I will use `Set01_data_management.Rnw`) and run
-
-    knitr::knit2pdf('Set01_data_management.Rnw')
-
-Alternatively, you can install [RStudio](http://www.rstudio.com/) and click on the `Compile PDF` button.
