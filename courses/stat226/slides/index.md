@@ -15,6 +15,6 @@ you can find them
 
 ### Part I
 
-- [Introduction](M1/M1S1-Introduction.pdf)
+- [Introduction](M1S1-Introduction/M1S1-Introduction.pdf)
 
 

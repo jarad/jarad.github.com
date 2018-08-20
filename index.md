@@ -23,7 +23,7 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
 
 ## Fall 2018 Courses ([all courses](courses))
 
-  - [STAT 226](courses/sta226)
+  - [STAT 226](courses/stat226)
 
 ## Contact
 
