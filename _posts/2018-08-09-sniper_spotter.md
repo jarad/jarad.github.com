@@ -1,7 +1,7 @@
 ---
 layout: post
-title: ""
-description: "Sniper-spotter"
+title: "Sniper-spotter"
+description: ""
 category: [Consulting]
 tags: [repeated measures, split plot, cross-over, regression, contrasts]
 ---
