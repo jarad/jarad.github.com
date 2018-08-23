@@ -15,8 +15,8 @@ you can find them
 
 ### Part I
 
-- [Introduction](M1S1-Introduction/M1S1-Introduction.pdf)
-- [Data](M1S2-Data/M1S2-Data.pdf)
-- [Categorical Data](M1S3-CategoricalData/M1S3-CategoricalData.pdf)
+- [M1S1-Introduction](M1S1-Introduction/M1S1-Introduction.pdf)
+- [M1S2-Data](M1S2-Data/M1S2-Data.pdf)
+- [M1S3-Categorical Data](M1S3-CategoricalData/M1S3-CategoricalData.pdf)
 
 
