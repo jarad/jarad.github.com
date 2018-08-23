@@ -5,6 +5,30 @@
 
 \title{Categorical data}
 
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
 \begin{document}
 
 
@@ -17,14 +41,18 @@
 \frametitle{Outline}
 \begin{itemize}
 \item Distribution, frequency table
+\item Bar chart
+\item Pareto chart
+\item Pie chart
+\item Mode and median
+\item Contingency table
 \end{itemize}
 \end{frame}
 
 
 \section{Categorical data}
 \begin{frame}
-\frametitle{Data}
-\framesubtitle{Some More Definitions} 
+\frametitle{Distribution and frequency tables}
 
 \begin{definition}
 The \alert{distribution} of a variable is the collection of possible values the 
@@ -39,17 +67,9 @@ A \alert{frequency table} is a summary that shows the distribution of a variable
 
 \vspace{0.1in} \pause
 
-Depending on the type of the data (categorical or
-quantitative) we need to use different graphical and numerical tools
-to analyze and summarize the data at hand.
-
-We will start by describing data graphically:
-
-\begin{itemize}
-\item \textbf{bar charts}, \textbf{pie charts} and \textbf{pareto charts} can be used to
-graphically summarize categorical data.
-\item a common graphical display for quantitative data is a \textbf{histogram}.
-\end{itemize}
+For categorical variables, we can use the following to understand the distribution
+of a variable: frequency table, bar chart, Pareto chart, pie chart, 
+mode, median, and contingency table.
 
 \end{frame}
 
@@ -57,286 +77,188 @@ graphically summarize categorical data.
 
 
 
+\begin{frame}[fragile]
+\frametitle{Majors}
+<<>>=
+d <- read.csv("majors.csv")
+head(d,10)
+@
+\end{frame}
 
 
-\begin{frame}\frametitle{Describing Categorical Data}
-\framesubtitle{Bar charts, Pie charts, and Pareto charts}
-\textbf{Example:} data on visits to amazon from different hosts based on 188,996 (small portion of the daily activity on Amazon)
-
-Let's look at the first few of the 188,996 entries in the original data set:
-\begin{columns}[T]
-\begin{column}{0.25\textwidth}
-\footnotesize Typed amazon.com\\
-msn.com\\
-amazon.com\\
-amazon.com\\
-yahoo.com\\
-google.com\\
-amazon.com\\
-recipesource.com\\
-iwon.com\\
-amazon.com\\
-daily-blessings.com\\
-google.com\\
-\end{column}
-\begin{column}{0.25\textwidth}
-\footnotesize
-amazon.com\\
-amazon.com\\
-google.com\\
-Typed amazon.com\\
-imdb.com\\
-couponmountain.com\\
-earthlink.net\\
-overture.com\\
-amazon.com\\
-google.com\\
-dealtime.com
-\end{column}
-\begin{column}{0.5\textwidth}
-\footnotesize 
-
-\structure{Let's count the visits by each of the different hosts.\\
-When there are many different categories, then a common approach is to combine categories with very low counts into one called ``Other.'' }\end{column}
-\end{columns}
+\begin{frame}[fragile]
+\frametitle{Majors summary}
+<<>>=
+summary(d)
+@
 \end{frame}
 
 
 
 
-\begin{frame}\frametitle{Describing Categorical Data}
-\framesubtitle{Bar charts, Pie charts, and Pareto charts}
-data of counts on visits to amazon from different hosts based on 188,996 (small portion of the daily activity on Amazon)
+\begin{frame}[fragile]
+\frametitle{Recode Year}
+<<size="small">>=
+d <- d %>% 
+  mutate(Year = recode(Clsfn.Year, 
+                       `1` = "Freshman", `2` = "Sophomore",
+                       `3` = "Junior",   `4` = "Senior") %>% 
+           factor(levels = c("Freshman","Sophomore","Junior","Senior")))
 
-\footnotesize{
-\begin{center}
-\begin{tabular}{l|cc}
- Host  & Number of visits & Relative frequency\footnote{is the frequency of a category divided by the number of cases; proportion or percentage} \\ \hline
-Typed ``amazon.com'' & 89,919 & 0.47577\\
-Other	& 70,125 & 0.37104
-\\
-msn.com	& 7,258 & 0.03840 \\
-yahoo.com	& 6,078 & 0.03216\\
-google.com	& 4,381 & 0.02318\\
-recipesource.com	& 4,283 & 0.02266\\
-aol.com	& 1,639 & 0.00867\\
-iwon.com	& 1,573 & 0.00832\\
-atwola.com	& 1,289 & 0.00682\\
-bmezine.com	& 1,285 & 0.00680\\
-daily-blessings.com	& 1,166 & 0.000617\\
-  \hline\hline
-  Total & 188,996 & 1.00
-  \\
-\end{tabular}
-\end{center}
-}
+summary(d)
+@
+\end{frame}
+
+
+\subsection{Tabular summary}
+\begin{frame}[fragile]
+\frametitle{Tabular summary}
+Majors:
+<<>>=
+table(d$Major)
+@
+
+\pause
+College:
+<<>>=
+table(d$College)
+@
+
+\pause
+Year:
+<<>>=
+table(d$Year)
+@
 \end{frame}
 
 
 
-\begin{frame} \frametitle{Describing Categorical Data}
-\framesubtitle{Bar Charts}
+\subsection{Bar chart}
+\begin{frame}[fragile]
+<<>>=
+ggplot(d, aes(x=Year)) + geom_bar() + theme_bw()
+@
+\end{frame}
 
-\begin{columns}[T]
-\begin{column}{0.45\textwidth}
-\begin{definition}
-A \alert{bar chart} shows the amount of data that belong to each category as proportionally sized rectangular areas. Thus it is a display of the distribution of a categorical variable. Bar charts are more flexible than
-pie charts because we don't need to account for all possible
-categories of the variable.
-\end{definition}
-\end{column}
-\begin{column}{0.55\textwidth}
-\begin{center}
-\includegraphics[scale=0.55]{amazonbarhor.png}
-\end{center}
-\end{column}
-\end{columns}
+\begin{frame}[fragile]
+<<>>=
+ggplot(d, aes(x=Year,fill=Year)) + geom_bar() + theme_bw()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+ggplot(d, aes(x=Year)) + geom_bar() + theme_bw() + coord_flip()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+ggplot(d, aes(x=Year)) + geom_bar(aes(y=..prop..,group=1)) + theme_bw()
+@
 \end{frame}
 
 
 
-\begin{frame} \frametitle{Describing Categorical Data}
-\framesubtitle{Bar Charts}
+% \begin{frame}[fragile]
+% <<>>=
+% ggplot(d, aes(x=College)) + geom_bar() + theme_bw()
+% @
+% \end{frame}
 
-\begin{columns}[T]
-\begin{column}{0.45\textwidth}
-\begin{itemize}
-\item Bar charts are useful to display categorical data
-\item Bar charts are valuable presentation tools; they are effective at reinforcing differences in magnitude (note that bars are of equal widths and equally spaced)
-\item Bar charts can be either horizontal or vertical
-\end{itemize}
-\end{column}
-\begin{column}{0.55\textwidth}
-\begin{center}
-\includegraphics[scale=0.55]{amazonbarver.png}
-\end{center}
-\end{column}
-\end{columns}
+
+\begin{frame}[fragile]
+<<>>=
+ggplot(d, aes(x=Major)) + geom_bar() + theme_bw()
+@
 \end{frame}
 
 
-
-\begin{frame}\frametitle{Describing Categorical Data}
-\framesubtitle{Pareto Charts}
- \textbf{Comments:}
-\begin{itemize}
-\item Often classes have a ``natural order'', so it makes sense to
-put the bars in that order.\\
-For example consider how many Freshman, Sophomore, Junior, Senior are enrolled in this 226 section.
-\item[]
-\item Sometimes, however, it is more useful to arrange the bars
-with respect to their magnitude, i.e. order them from
-\textbf{tallest to shortest} in order to highlight the categories
-with the highest
-frequencies (most important classes). \\
-This type of bar chart is called a \textbf{Pareto chart}.
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}\frametitle{Describing Categorical Data}
-\framesubtitle{Pareto Charts}
-\begin{columns}[T]
-\begin{column}{0.55\textwidth}
-\includegraphics[scale=0.7]{amazonpareto2.png}
-\end{column}
-\begin{column}{0.35\textwidth}
-\begin{itemize}
-\item popular in quality control to identify problems in a business process 
-\item cumulative frequency line is not necessary and is often omitted
-\end{itemize}
-\end{column}
-\end{columns}
+\subsection{Pareto chart}
+\begin{frame}[fragile]
+<<>>=
+t <- table(d$Major)
+d <- d %>% mutate(Major = factor(Major, levels = names(t)[order(-t)]))
+ggplot(d, aes(x=Major)) + geom_bar() + theme_bw()
+@
 \end{frame}
 
 
-
-\begin{frame}\frametitle{Describing Categorical Data}
-\framesubtitle{Pie Charts}
-\begin{definition}
-A \alert{pie chart} shows the amount of data that belong to each category as a proportional slice of the circle.
-\begin{itemize}
-\item useful when only one variable is of interest
-
-\item larger slices indicate larger relative frequencies
-\item \textbf{Total percentage of all displayed categories equals 100}, i.e. a pie chart is deceiving of the real relative frequencies unless we display all categories
-\end{itemize}
-\end{definition}
-
-Note:
-The area of a plot that shows data should be proportional to the amount of data.
+\subsection{Pie chart}
+\begin{frame}[fragile]
+<<>>=
+dd <- data.frame(table(d$Major)) %>%
+  mutate(Percentage = Freq/sum(Freq) * 100) %>%
+  rename(Major = Var1)
+ggplot(dd, aes(x=factor(1), y=Percentage, fill=Major)) + 
+  geom_bar(width=1,stat="identity") +coord_polar("y") + theme_bw()
+@
 \end{frame}
-
-\begin{frame}\frametitle{Describing Categorical Data}
-\framesubtitle{Pie Charts}
-
-\begin{columns}[T]
-\begin{column}{0.55\textwidth}
-\includegraphics[scale=0.6]{amazon.png}
-\end{column}
-\begin{column}{0.45\textwidth}
-How is this graph misleading?
-\begin{itemize}
-\item In the graph the category ``other'' was omitted.
-\item The pie chart now only accounts for  100 - 37.10396 = 62.79604 $\approx$ 63.8 \% of all the activities to amazon.com
-\item JMP (unfortunately) is not particular suitable for making quality pie charts, see for example pie chart on next slide for all the amazon.com activity
-\end{itemize}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}
-\frametitle{Describing Categorical Data}
-\framesubtitle{Pie Charts}
-
-\begin{columns}[T]
-\begin{column}{0.55\textwidth}
-\includegraphics[scale=0.6]{amazonpie2.png}
-\end{column}
-\begin{column}{0.45\textwidth}
-This is a rather bad display of the data. Reordering of the slices is not straightforward in JMP and involves renaming the categories. 
-
-See the text book, page 34, for a much better display. 
-
-Additionally, the category ``Other'' dominates all smaller categories implying this to be a a bigger host when it really is an aggregation of all remaining hosts that have lower frequencies.
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}
-\frametitle{Describing Categorical Data}
-\framesubtitle{Examples of bad graphical displays.}
-\begin{columns}[T]
-\begin{column}{0.4\textwidth}
-\begin{center}
-\includegraphics[scale=0.10]{3d_pie_chart.png}
-\end{center}
-\end{column}
-\begin{column}{0.6\textwidth}
-\footnotesize{(1) The area principle is severely violated in this pie chart. Without the 3-dimensional effect the pie chart suggests that all slices are of equal size (equal frequencies) and equally important. \\
-Raising the slices to different heights (adding the 3rd dimension) and doing so in an order causes the 3-dimensional slices to be of different volumes. Different volumes, by the area principle, imply that the categories with a higher volume have higher frequencies. It is not clear, however, which of the two effects the graph is going for.   
-(2) 3-dimensional pie-charts are more difficult to interpret because the third dimension typically creates a distorted effect of perspective and makes the comparison among the slices much more difficult.} 
-\end{column}
-\end{columns} 
-
-%\footnotesize{\texttt{Sources: http://www.techlearning.com/Default.aspx?tabid=67&EntryId=3794}\\ 
-%\texttt{http://www.datavis.ca/gallery/goosed-up.php}, images retrieved on 08/14/2012}
-
-\end{frame}
-
-%http://www.techlearning.com/Default.aspx?tabid=67&EntryId=3794
-%http://www.datavis.ca/gallery/goosed-up.php
-
-\begin{frame}
-\frametitle{Describing Categorical Data}
-\framesubtitle{Examples of bad graphical displays.}
-
-\begin{center}
-\includegraphics[scale=0.35]{fox-news-piechart.png}
-\end{center}
-
-\footnotesize{(1) The three categories add up to 193\%! (2) The display suggests that the red slice is smaller than the blue and the green slice; of the 70\% label the red slice should, however, be the largest one.  (Note that the 3 dimensional display and the rotation of the pie chart make it difficult to validate the area principal.)} 
-
-%\footnotesize{\texttt{Sources: http://www.techlearning.com/Default.aspx?tabid=67&EntryId=3794}\\ 
-%\texttt{http://www.datavis.ca/gallery/goosed-up.php}, images retrieved on 08/14/2012}
-
-\end{frame}
-
-
 
 
 
 \begin{frame}
-\frametitle{Describing Categorical Data}
-\framesubtitle{Mode and Median, p.40 of text book}
-
-\begin{definition}
-The \alert{mode} is the value of the variable that
-occurs most common, i.e. has the highest frequency.
-Most useful for \textbf{categorical data} with a relatively small
-number of possible values.
-When two (more than two) categories tie for highest frequency the distribution of the data is said to be bi- (multi-)modal.
-\end{definition}
-\textbf{Example:} Fall 2009: Stat 226, Section A -- classification \begin{center} Fr -- 5 
-\qquad So -- 36 \qquad J -- 24 \qquad S -- 15\end{center}
-
-The mode for this section was the category \underline{So} with 36 students.
+\frametitle{Arguments against pie charts}
+\url{https://www.darkhorseanalytics.com/blog/salvaging-the-pie}
 \end{frame}
 
-\begin{frame}\frametitle{Describing Categorical Data}
-\framesubtitle{Mode and Median, p.40 of text book}
+
+\begin{frame}
+\includegraphics{fox-news-piechart}
+\end{frame}
+
+
+
+\subsection{Mode}
+\begin{frame}[fragile]
+\frametitle{Mode}
+\begin{definition}
+The \alert{mode} is the most common value. 
+\pause
+The mode may not be unique.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+<<>>=
+table(d$Major)
+table(d$College)
+table(d$Year)
+@
+\end{frame}
+
+
+
+\subsection{Median}
+\begin{frame}[fragile]
+\begin{definition}
+The \alert{median} of an ordinal variable is the middle value when the values
+are ordered.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+<<size='tiny'>>=
+sort(d$Year)
+@
+
+\end{frame}
+
+
+\subsection{Contingency table}
+\begin{frame}[fragile]
+\frametitle{Contingency table}
 
 \begin{definition}
-The \alert{median} of an ordinal variable is the category of the middle observation of the sorted values.  
-Not appropriate for nominal data.
+A \alert{contingency table} shows the distribution of one variable in the rows 
+and another in the columns. 
 \end{definition}
-\textbf{Example:} Fall 2009: Stat 226, Section A -- classification \begin{center} Fr -- 5 
-\qquad So -- 36 \qquad J -- 24 \qquad S -- 15\end{center}
 
-$$\underbrace{\mbox{Fr\; Fr\; Fr\; Fr\; Fr}}_{n_{Fr}=5} \; \underbrace{\mbox{So\; So\; So\; \ldots  
-So\; So}}_{n_{So}=36}\;\underbrace{\mbox{J\; J\; J\; \ldots J\; J}}_{n_{J}=24} \; \underbrace{\mbox{S\; S\; S\; \ldots S\; S}}_{n_{S}=15} $$
- 
-The median for this section was the category \underline{So} with M=So.
+\vspace{0.1in} \pause
+
+<<>>=
+with(d, table(Major,Year))
+@
 \end{frame}
 
 \end{document}
