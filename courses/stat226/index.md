@@ -15,10 +15,6 @@ This course meets
 
 - TR 9:30-10:50 @ [Mol-Bio 1414](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1206&ycenter=1748&background=map&xshow=1206&yshow=1748)
 
-Office hours are
-
-- TBD
-
 ## Relevant course pages
 
 - [Slides](slides)
