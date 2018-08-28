@@ -1,0 +1,475 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{Numerical data}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Summary statistics
+  \begin{itemize}
+  \item Measures of location
+    \begin{itemize}
+    \item Mean
+    \item Median
+    \item Quartiles
+    \item Minimum/maximum
+    \end{itemize}
+  \item Measures of spread
+    \begin{itemize}
+    \item Range
+    \item Interquartile range
+    \item Variance
+    \item Standard deviation
+    \end{itemize}
+  \item Robustness
+  \end{itemize}
+\item Boxplots
+\end{itemize}
+
+\end{frame}
+
+
+\section{Numerical variables}
+\begin{frame}
+\frametitle{Numerical variables}
+
+\begin{definition}
+A \alert{numerical, or quantitative, variable} 
+take numerical values 
+\pause
+for which arithmetic
+operations such as adding and averaging make sense.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Examples:
+\begin{itemize}
+\item height/weight of a person
+\item temperature
+\item time it takes to run a mile
+\item currency exchange rates
+\item number of webpage hits in an hour
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+For numerical variables, 
+we also consider whether the variable is a \alert{count} and whether or not
+that count has a technical upper limit.
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Toyota Sienna Gas Mileage data set}
+<<>>=
+library("ToyotaSiennaGasMileage")
+d <- ToyotaSiennaGasMileage %>%
+  mutate(mpg = miles/fuel)
+tail(d,15)
+mpg <- na.omit(d$mpg)
+@
+\end{frame}
+
+
+\subsection{Summary statistics}
+\begin{frame}
+\frametitle{Summary statistics}
+\begin{definition}
+A \alert{summary statistic} is a numerical value calculated from the sample.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item Measures of location: mean, median, quartiles, minimum/maximum
+\item Measures of spread: range, interquartile range, variance, standard deviation
+\end{itemize}
+\end{frame}
+
+
+\section{Measures of location}
+\subsection{Mean}
+\begin{frame}
+\frametitle{Sample mean}
+\begin{definition}
+The \alert{sample mean} of a set of observations $y_1,y_2,\ldots,y_n$ is the 
+arithmetic average of all observations\pause:
+\[ 
+\overline{y} = \frac{y_1+y_2+\cdots+y_n}{n}
+\pause = \frac{1}{n} \sum_{i=1}^n y_i
+\]
+\pause
+where $\sum$ is the summation sign. 
+\end{definition}
+
+\pause
+
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,2. 
+\pause
+The sample mean of these observations is 
+\[
+\overline{y} = \frac{0+1+2+0+4+0+1+2+3+2}{10} = 1.5.
+\]
+\end{example}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Sample mean is not robust}
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,60. 
+\pause
+The sample mean of these observations is 
+\[
+\overline{y} = \frac{0+1+2+0+4+0+1+2+3+60}{10} = 7.3.
+\]
+\end{example}
+
+\pause
+
+\begin{definition}
+A summary statistic is \alert{robust} if the value of the statistic does not 
+change very much with a (possibly large) change in a small number of observations.
+\end{definition}
+
+\pause
+
+The sample mean is \alert{not} robust.
+
+\end{frame}
+
+
+
+
+\subsection{Median}
+\begin{frame}
+\frametitle{Sample median}
+\begin{definition}
+The \alert{sample median} corresponds to the value of the data that is in the 
+\alert{middle} when all observations are ordered from smallest to largest.
+\pause
+If there are two such observations, their arithmetic average is the median.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,2. 
+\pause
+The \alert{ordered} observations are 0,0,0,1,1,2,2,2,3,4 
+\pause 
+and the median is 
+\[
+\frac{1+2}{2} = 1.5.
+\]
+\end{example}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Sample median is robust}
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,60. 
+\pause
+The \alert{ordered} observations are 0,0,0,1,1,2,2,3,4,60 
+\pause 
+and the median is 
+\[
+\frac{1+2}{2} = 1.5.
+\]
+\end{example}
+
+\vspace{0.1in} \pause
+
+The sample median \alert{is} robust.
+\end{frame}
+
+
+\subsection{Quartile}
+\begin{frame}
+\frametitle{Quartiles}
+\small
+\begin{definition}
+The \alert{sample quartiles} (Q1,Q2,Q3) are the 3 numbers that divide the ordered 
+observations into 4 equally sized groups, \pause i.e. each group contains 25\%
+of all observations.
+\pause
+\begin{itemize}[<+->]
+\item The first quartile, Q1, is the 25th percentile and the median of the observations below the sample median.
+\item The second quartile, Q2, is the 50th percentile and the sample median.
+\item The third quartile, Q3, is the 75th percentile and the median of the observations above the sample median.
+\end{itemize}
+\end{definition}
+
+\pause
+
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,2.
+\pause
+The \alert{ordered} observations are 0,0,0,1,1,2,2,2,3,4.
+\pause 
+The second quartile (median) is 1.5, 
+the first quartile is 0, and the third quartile is 2.
+\end{example}
+
+\end{frame}
+
+
+\subsection{5-number summary}
+\begin{frame}[fragile]
+\frametitle{5-number summary}
+\begin{definition}
+A (typical) \alert{5-number summary} consists of the following measures
+\begin{center}
+\begin{tabular}{ccccc}
+Minimum & Q1 & Median & Q3 & Maximum
+\end{tabular}
+\end{center}
+\end{definition}
+
+\pause
+
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,2.
+\pause
+The \alert{ordered} observations are 0,0,0,1,1,2,2,2,3,4.
+\pause 
+The 5-number summary is 0,0,1.5,2,4.
+\end{example}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Let software find this for you}
+
+For the Toyota Sienna miles per gallon data set, we have 
+<<echo=TRUE, size='scriptsize'>>=
+mean(mpg)
+min(mpg); max(mpg)
+quantile(mpg, c(.25,.5,.75), type=2)
+summary(mpg)
+@
+
+\end{frame}
+
+
+
+\section{Measures of spread}
+\begin{frame}
+\frametitle{Measures of spread}
+
+Measures of location:
+\begin{itemize}
+\item Mean
+\item Median
+\item Quartiles
+\item Minimum/maximum
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Measures of spread:
+\begin{itemize}
+\item Range
+\item Interquartile range
+\item Variance
+\item Standard deviation
+\end{itemize}
+
+\pause
+
+Measures of spread are 0 if the data are all identical and increase as the 
+data become more variable.
+
+\end{frame}
+
+
+\subsection{Range}
+\begin{frame}
+\frametitle{Range}
+\begin{definition}
+The \alert{range} is the maximum minus the minimum.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,2. 
+\pause
+The minimum is 0, the maximum is 4, and the range is 4-0=4.
+\end{example}
+\end{frame}
+
+
+\subsection{Interquartile range}
+\begin{frame}
+\frametitle{Interquartile range}
+\begin{definition}
+The \alert{interquartile range} is Q3 minus Q1.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,2. 
+\pause
+The Q1 is 0, Q3 is 2, and the interquartile range is 2-0=2.
+\end{example}
+\end{frame}
+
+
+\subsection{Sample variance}
+\begin{frame}
+\frametitle{Sample variance}
+\begin{definition}
+The \alert{sample variance} is
+\[ 
+s^2 = \frac{(y_1-\overline{y})^2 + (y_2-\overline{y})^2 + \cdots + (y_n-\overline{y})^2}{n-1} 
+\pause = \frac{1}{n-1} \sum_{i=1}^n (y_i-\overline{y})^2.
+\]
+\end{definition}
+
+\pause
+
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,2. 
+\pause
+The sample mean is 1.5 and the sample variance is 
+\[ 
+s^2 = \frac{(0-1.5)^2 + (1-1.5)^2 + \cdots (2-1.5)^2}{10-1} = 1.8\overline{3}.
+\]
+\end{example}
+\end{frame}
+
+
+
+
+\subsection{Standard deviation}
+\begin{frame}
+\frametitle{Sample standard deviation}
+\begin{definition}
+The \alert{sample standard deviation} is the square root of the sample variance,
+i.e.
+\[
+s = \sqrt{s^2}.
+\]
+\end{definition}
+
+\pause
+
+\begin{example}
+The number of sick days employees took during the past year in a small local
+business is 0,1,2,0,4,0,1,2,3,2. 
+\pause
+The sample variance is $1.8\overline{3}$ and the 
+sample standard deviation 
+\[ 
+s = \sqrt{1.8\overline{3}} \approx 1.354.
+\]
+\end{example}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Let software find this for you}
+
+For the Toyota Sienna miles per gallon data set, we have 
+<<echo=TRUE, size='scriptsize'>>=
+diff(range(mpg))
+diff(quantile(mpg, c(.25,.75), type=2))
+var(mpg)
+sd(mpg)
+@
+
+\end{frame}
+
+
+\section{Graphical summaries}
+\subsection{Boxplot}
+\begin{frame}
+\frametitle{Boxplot}
+\begin{definition}
+A \alert{boxplot} is a graphical representation of the 5-number summary. 
+\pause
+A boxplot is typically constructed like this
+\begin{itemize}[<+->]
+\item A box with endpoints at Q1 and Q3 with a line in the middle at Q2 (median).
+\item Whiskers that extend out to 
+  \begin{itemize}
+  \item Q1-1.5IQR on the low side and 
+  \end{itemize} Q3+1.5IQR on the high side.
+  \end{itemize}
+\item Dots for points beyond these whiskers.
+\end{itemize}
+\end{definition}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Sick days boxplot}
+<<>>=
+boxplot(c(0, 1, 2, 0, 4, 0, 1, 2, 3, 2))
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Miles per gallon boxplot}
+<<>>=
+boxplot(mpg)
+@
+\end{frame}
+
+
+
+\end{document}

@@ -18,5 +18,6 @@ you can find them
 - [M1S1-Introduction](M1S1-Introduction/M1S1-Introduction.pdf)
 - [M1S2-Data](M1S2-Data/M1S2-Data.pdf)
 - [M1S3-Categorical Data](M1S3-CategoricalData/M1S3-CategoricalData.pdf)
+- [M2S1-Numerical Data](M2S1-NumericalData/M2S1-NumericalData.pdf)
 
 
