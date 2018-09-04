@@ -1,0 +1,668 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M3S1 - Binomial Distribution}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Random variables
+  \begin{itemize}
+  \item Probability distribution function
+  \item Expectation (mean)
+  \item Variance
+  \end{itemize}
+\item Discrete distributions
+  \begin{itemize}
+  \item Bernoulli
+  \item Binomial
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+\section{Probability}
+\begin{frame}
+\frametitle{Probability}
+
+\begin{definition}
+A \alert{probability} is a mathematical function, $P(E)$, 
+that describes how likely an event $E$ is to occur. 
+\pause
+This function adheres to two basic rules: 
+\pause
+\begin{enumerate}[<+->]
+\item $0\le P(E) \le 1$
+\item For mutually exclusive events $E_1,\ldots,E_K$, 
+\[
+P(E_1 \mbox{ or } E_2 \mbox{ or } \cdots \mbox{ or } E_K) = 
+P(E_1) + P(E_2) + \cdots + P(E_K).
+\]
+\end{enumerate}
+\end{definition}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Flipping a coin}
+
+Suppose we are flipping an unbiased coin that has two sides:
+\alert{heads} ($H$) and \alert{tails} ($T$). 
+\pause
+Then 
+\[ 
+P(H) = \pause 0.5 
+\qquad \pause P(T) = \pause 0.5.
+\]
+which adheres to rule 1) 
+\pause
+and
+\[ 
+P(H \mbox{ or } T) = 
+\pause P(H) + P(T) = 
+\pause 0.5 + 0.5 = 1
+\]
+which adheres to rule 2).
+\pause
+So this is a \alert{valid} probability.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Rolling a 6-sided die}
+
+Suppose we are rolling an unbiased 6-sided die.
+\pause
+If we count the number of \alert{pips} on the upturned face,
+then the possible events are 
+\pause
+1, 2, 3, 4, 5, and 6.
+\pause 
+Then 
+\[
+P(1) \pause = P(2) = P(3) = P(4) = P(5) = P(6) = 1/6
+\]
+which adheres to 1).
+What is 
+\[ 
+P(1 \mbox{ or } 2 \mbox{ or } 3 \mbox{ or } 4 \mbox{ or } 5 \mbox{ or } 6) = 
+\pause 1.
+\]
+\pause 
+To verify 2), we would need to calculate the probability of the 
+$2^6$ possible colections of mutually exclusive events and find that their 
+probability is the sum of the individual probabilities.
+
+\end{frame}
+
+
+
+
+
+\subsection{Random variable}
+\begin{frame}
+\frametitle{Random variable}
+
+\scriptsize
+
+\begin{definition}
+A \alert{random variable} is the uncertain, numeric outcome of a random process.
+\pause
+A \alert{discrete random variable} takes on one of a list of possible values.
+\pause
+A \alert{continuous random variable} takes on any value in an interval.
+\end{definition}
+\pause
+A random variable is denoted by a capital letter, e.g. X or Y.
+
+\vspace{0.1in} \pause
+
+Discrete random variables:
+\begin{itemize}[<+->]
+\item result of a coin flip
+\item the number of pips on the upturned face of a 6-sided die roll
+\item whether or not a company beats its earnings forecast
+\item the number of HR incidents next month
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Continuous random variables:
+\begin{itemize}[<+->]
+\item my height
+\item how far away a 6-sided die lands
+\item a company's next quarterly earnings
+\item a company's closing stock price tomorrow
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
+\subsection{Probability distribution function}
+\begin{frame}
+\frametitle{Probability distribution function}
+
+\begin{definition}
+A \alert{probability distribution function} describes all possible outcomes for
+a random variable and the probability of those outcomes.
+\end{definition}
+
+\pause 
+
+For example,
+\begin{itemize}[<+->]
+\item Coin flipping:
+\[ 
+P(H) = P(T) = 1. 
+\]
+\item Unbiased 6-sided die rolling
+\[ 
+P(1)=P(2)=P(3)=P(4)=P(5)=P(6)=1/6. 
+\]
+\item Company earnings compared to forecasts
+\[ \begin{array}{rl}
+P(\mbox{Earnings within 5\% of forecast}) &= 0.6 \\
+P(\mbox{Earnings less than 5\% of forecast}) &= 0.1 \\
+P(\mbox{Earnings greater than 5\% of forecast}) &= 0.3
+\end{array} \]
+\end{itemize}
+
+
+\end{frame}
+
+
+
+\subsection{Events}
+\begin{frame}
+\frametitle{Events}
+
+\begin{definition}
+An \alert{event} is a set of possible outcomes of a random variable.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Discrete random variables:
+\begin{itemize}[<+->]
+\item a coin flipping heads \alert{is heads}
+\item the number of pips on the upturned face of a 6-sided die roll \alert{is less than 3}
+\item a company beats its earnings forecast 
+\item the number of HR incidents next month \alert{is less between 5 and 10}
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Continuous random variables:
+\begin{itemize}[<+->]
+\item my height \alert{is greater than 6 feet}
+\item how far away a 6-sided die lands \alert{is less than 3 feet}
+\item a company's next quarterly earnings \alert{is within 5\% of forecast}
+\item a company's closing stock price tomorrow \alert{is less than today's}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Die rolling}
+
+Suppose we roll an unbiased 6-sided die. 
+\pause
+Determine the probabilities of the following events.
+The number of pips is 
+\pause
+\begin{itemize}[<+->]
+\item exactly 3
+\item less than 3
+\item is greater than or equal to 3
+\item is odd
+\item is even and less than 5
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\section{Bernoulli}
+\begin{frame}
+\frametitle{Bernoulli random variable}
+
+\scriptsize
+
+\begin{definition}
+A \alert{Bernoulli random variable} has two possible outcomes:
+\begin{itemize}
+\item 1 (success)
+\item 0 (failure)
+\end{itemize}
+\pause
+A Bernoulli random variable is completey characterized by a single probability
+$p$, the \alert{probability of success (1)}. 
+\pause
+We write $X\sim Ber(p)$ to indicate that $X$ is a random variable that 
+has a Bernoulli distribution with probability of success $p$.
+\pause
+If $X\sim Ber(p)$, then we know $P(X=1) = p$ and $P(X=0) = 1-p$.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Examples:
+\begin{itemize}
+\item a coin flip landing heads
+\item a 6-sided die landing on 1
+\item a 6-sided die landing on 1 or 2
+\item a company beating its earnings forecast
+\item a company's stock price closing higher tomorrow
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Coin flipping}
+
+Suppose we are flipping an unbiased coin \pause and we let 
+\[
+X = \left\{ \begin{array}{rl} 
+0 & \text{if coin flip lands on tails} \\
+1 & \text{if coin flip lands on heads}
+\end{array} \right.
+\]
+
+\vspace{0.1in} \pause
+
+Then 
+\pause
+$X\sim Ber(0.5)$ 
+\pause
+which means $p=0.5$ is the probability of success (heads)
+\pause 
+and $P(X=1) = 0.5$ and $P(X=0)=0.5$.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Die rolling}
+
+Suppose we are rolling an unbiased 6-sided die and we let 
+\[
+X = \left\{ \begin{array}{rl} 
+0 & \text{if die lands on 3, 4, 5, or 6} \\
+1 & \text{if die lands on 1 or 2}
+\end{array} \right.
+\]
+
+\vspace{0.1in} \pause
+
+Then 
+\pause
+$X\sim Ber(1/3)$ 
+\pause
+which means $p=1/3$ is the probability of success (a 1 or 2)
+\pause 
+and $P(X=1) = 1/3$ and $P(X=0)=2/3$.
+
+\end{frame}
+
+
+
+\subsection{Mean of a random variable}
+\begin{frame}
+\frametitle{Mean of a random variable}
+\begin{definition}
+The \alert{mean of a random variable} is a probability weighted average of the 
+outcomes of that random variable.
+\pause
+This mean is also called the \alert{expectation of the random variable} and 
+for a random variable $X$ is denoted $E[X]$ (or $E(X)$).
+\end{definition}
+
+\vspace{0.1in} \pause
+
+For a Bernoulli random variable $X\sim Ber(p)$, we have  
+\[ 
+E[X] = 
+\pause (1-p)\times 0 + p \times 1 = 
+\pause p.
+\]
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Variance of a random variable}
+\begin{definition}
+The \alert{variance of a random variable} is the probability-weighted average
+of the squared difference from the mean.
+\pause
+The variance of a random variable $X$ is denoted $Var[X]$ (or $Var(X)$).
+\end{definition}
+
+\vspace{0.1in} \pause
+
+For a Bernoulli random variable $X\sim Ber(p)$, we have  
+\[ \begin{array}{rl}
+Var[X] &= 
+\pause (1-p)\times (0-p)^2 + p \times (1-p)^2 \pause \\
+&= (1-p)\times p^2 + p \times (1-2p+p^2) \pause \\
+&= p^2-p^3 + p -2p^2+p^3) \pause \\
+&= p-p^2 \pause \\
+&= p (1-p).
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Coin flipping}
+
+If $X\sim Ber(0.5)$, then
+\begin{itemize}
+\item $E[X] = \pause 1/2$ 
+\item $Var[X] = \pause 1/2\times(1-1/2) = 1/2\times 1/2 = 1/4$.
+\end{itemize}
+
+\vspace{0.2in} \pause 
+
+If $X\sim Ber(1/3)$, then
+\begin{itemize}
+\item $E[X] = \pause 1/3$ 
+\item $Var[X] = \pause 1/3\times (1-1/3) = 1/3\times 2/3= 2/9$.
+\end{itemize}
+
+\vspace{0.2in} \pause 
+
+If $X\sim Ber(2/9)$, then
+\begin{itemize}
+\item $E[X] = \pause 2/9$ 
+\item $Var[X] = \pause 2/9\times (1-2/9) = 2/9 \times 7/9 = 14/81$.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Die rolling}
+
+Let $X$ be the number of pips on the upturned face of an unbiased 6-sided die.
+Find the probability distribution function, the expected value (mean), and
+the variance.
+
+\vspace{0.1in} \pause
+
+{\scriptsize
+
+Then the probability distribution function is 
+\pause
+\[ 
+P(X=1) = P(X=2) = P(X=3) = P(X=4) = P(X=5) = P(X=6) = 1/6.
+\]
+\pause
+The expected value, $E[X]$, is 
+\pause 
+\[ \begin{array}{rcl}
+E[X] &=&
+1/6\times 1 + 1/6 \times 2 + 1/6 \times 3 + 1/6 \times 4 + 1/6 \times 5 + 1/6 \times 6 \\
+&=& 3.5.
+\end{array}
+\]
+\pause
+The variance, $Var[X]$, is 
+\pause 
+\[ \begin{array}{rcl}
+Var[X] &=&
+1/6\times (1-3.5)^2 + 1/6 \times (2-3.5)^2 + 1/6 \times (3-3.5)^2 \\
+&&+ 1/6 \times (4-3.5)^2 + 1/6 \times (5-3.5)^2 + 1/6 \times (6-3.5)^2 \\
+&=& 2.91\overline{6}.
+\end{array}
+\]
+
+}
+\end{frame}
+
+
+
+\subsection{Independence}
+\begin{frame}
+\frametitle{Independence}
+\begin{definition}
+Two random variables are \alert{independent} if the outcome of one random 
+variable does not affect the probabilities of the outcomes of the other random 
+variable.
+\end{definition}
+
+\vspace{0.1in} \pause 
+
+For independent random variables $X$ and $Y$ and constants $a$, $b$, and $c$, 
+\pause
+we have the following properties
+\[
+E[aX+bY+c] = aE[X] + bE[Y] + c
+\]
+and 
+\[
+Var[aX + bY + c] = a^2 Var[X] + b^2 Var[Y].
+\]
+
+\end{frame}
+
+
+
+
+\section{Binomial}
+\begin{frame}
+\frametitle{Sum of independent Bernoulli random variables}
+
+Let $X_i$, for $i=1,\ldots,n$ be independent Bernoulli random variable with a 
+common probability of success $p$. 
+\pause 
+We write
+\[ 
+X_i \ind Ber(p).
+\]
+Then the sum 
+\[ 
+Y = \sum_{i=1}^n X_i 
+\]
+is a binomial random variable.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Binomial}
+
+\begin{definition}
+A \alert{binomial random variable} with \alert{$n$ attempts} and 
+\alert{probability of success $p$} \pause 
+has a probability distribution function
+\[
+P(Y=y) = {n\choose y} p^y (1-p)^{n-y}
+\]
+\pause
+for $0\le p \le 1$ and $y=0,1,\ldots,n$
+\pause
+where 
+\[
+{n\choose y} = \frac{n!}{(n-y)!y!}.
+\]
+\pause
+We write $Y\sim Bin(n,p)$.
+\end{definition}
+\end{frame}
+
+
+
+\begin{frame}
+<<>>=
+n <- 10
+p <- 0.3
+plot(0:n, dbinom(0:n, n, p), type='h',
+     xlab="y", ylab="P(Y=y)", 
+     main = paste0("Bin(",n,",",p,")"))
+@
+\end{frame}
+
+
+\subsection{Expected values}
+\begin{frame}
+\frametitle{Binomial expected value and variance}
+
+The expected value (mean) is 
+\[ \begin{array}{rl}
+E[Y] &= E[X_1+X_2+\cdots+X_n] \pause \\
+&= E[X_1] + E[X_2] + \cdots + E[X_n] \pause \\
+&= p + p + \cdots + p \pause \\
+&= np.
+\end{array} \]
+\pause 
+The variance is 
+\[ \begin{array}{rl}
+Var[Y] &= Var[X_1+X_2+\cdots+X_n] \pause \\
+&= Var[X_1] + Var[X_2] + \cdots + Var[X_n] \pause \\
+&= p(1-p) + p(1-p) + \cdots + p(1-p) \pause \\
+&= np(1-p).
+\end{array} \]
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Examples}
+
+If $Y\sim Bin(10,.3)$, 
+\pause 
+then 
+\[
+E[Y] \pause = 10\times 0.3 = 3
+\]
+and 
+\[
+Var[Y] \pause = 10\times 0.3 \times (1-0.3) = 10\times 0.3 \times 0.7 = 2.1.
+\]
+
+\vspace{0.1in} \pause
+
+If $Y\sim Bin(65, 1/4)$,
+then
+\[
+E[Y] \pause = 65 \times 1/4 = 16.25
+\]
+and 
+\[
+Var[Y] \pause = 65 \times 1/4 \times (1-1/4) = 65 \times 1/4 \times 3/4 = 12.1875.
+\]
+\end{frame}
+
+
+
+% \subsection{AVP Example}
+% \begin{frame}
+% \frametitle{AVP Example}
+% 
+% <<>>=
+% p <- 
+% @
+% 
+% In the 2018 AVP Gold Series Championships in Chicago, IL, 
+% Alex Klineman and April Ross beat Sara Hughes and Summer Ross in 2 sets with 
+% scores 25-23, 21-16. 
+% \pause
+% Suppose that these scores actually determine the probability that Klineman/Ross
+% will score a point against Hughes/Ross, 
+% \pause
+% i.e. $p=(25+21)/(25+23+21+16)=0.54$ and that each point is independent.
+% 
+% \vspace{0.1in} \pause
+% 
+% Let $X$ be the number of points Klineman/Ross will win (against Hughes/Ross) 
+% if we assume there are 42 points in the set. 
+% \pause
+% Based on our assumptions $X\sim Bin(42,0.54)$. 
+% 
+% \pause 
+% 
+% Here are some questions we can answer
+% \begin{itemize}
+% \item How many points do we expect Klineman/Ross to score? \pause
+% \[ E[X] = 42\times .54 = 22.68 \mbox{ points}\]
+% \pause
+% \item What is the variance around this number? \pause
+% \[ Var[X] = 42\times .54 \times (1-.54) = 10.4328 \mbox{ points}^2 \]
+% 
+% \item What is the probability that Klineman/Ross win the set?
+% \[ P(X>21) = P(X=21) + P(X=22) + \cdots + P(X=42) \]
+% 
+% \end{itemize}
+% 
+% 
+% 
+% \end{frame}
+
+
+\subsection{Large $n$}
+\begin{frame}
+<<>>=
+n <- 99
+p <- 0.29
+plot(0:n, dbinom(0:n, n, p), type='h',
+     xlab="y", ylab="P(Y=y)", 
+     main = paste0("Bin(",n,",",p,")"))
+@
+\end{frame}
+
+
+
+\end{document}
