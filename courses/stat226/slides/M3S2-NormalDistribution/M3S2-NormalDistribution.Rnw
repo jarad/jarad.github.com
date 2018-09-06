@@ -50,6 +50,8 @@ set.seed(2)
   \item Expectation/mean
   \item Variance/standard deviation
   \item Standardizing (z-score)
+  \item Calculating probabilities (areas under the bell curve)
+  \item Empirical rule: 68\%, 95\%, 99.7\%
   \end{itemize}
 \end{itemize}
 
@@ -196,7 +198,7 @@ curve(dnorm, -3, 3,
 \end{frame}
 
 
-
+\section{z-table}
 \begin{frame}
 \setkeys{Gin}{width=\textwidth}
 \includegraphics[trim={0 0 0 2.5cm},clip]{TableA}
@@ -207,9 +209,7 @@ curve(dnorm, -3, 3,
 \begin{frame}
 \frametitle{Calculating probabilities by standardizing}
 
-Tables exist for areas under the curve for standard normal random variables. 
-\pause
-Using these tables, we can calculate the probabilities for any normal random 
+Using z-tables, we can calculate the probabilities for any normal random 
 variable.
 
 \vspace{0.1in} \pause
@@ -217,17 +217,34 @@ variable.
 Suppose $Y\sim N(\mu,\sigma^2)$ and we want to calculate $P(Y<c)$, then 
 
 
-\[ \begin{array}{rl}
-P\left( Y<c\right) &= P\left( \frac{Y-\mu}{\sigma} < \frac{c-\mu}{\sigma} \right) \\
-&= P\left(Z < \frac{c-\mu}{\sigma}\right)
-\end{array} \]
+\[ 
+P\left( Y<c\right) 
+\pause = P\left( \frac{Y-\mu}{\sigma} < \frac{c-\mu}{\sigma} \right) 
+\pause= P\left(Z < \frac{c-\mu}{\sigma}\right).
+\]
 
 \pause
 
 Since $c$, $\mu$, and $\sigma$ are all known, $\frac{c-\mu}{\sigma}$ is just a 
 number.
 
+\vspace{0.1in} \pause
+
+In addition, we have the following rules
+\[ \begin{array}{rll}
+P(Y>c)    &= 1-P(Y\le \phantom{-{}}c) & \mbox{probabilities sum to 1} \pause \\
+P(Y\le c) &= \phantom{1-{}} P(Y<\phantom{-{}}c) & \mbox{continuous random variable} \pause \\
+P(Y< c)   &= \phantom{1-{}} P(Y>-c) & \mbox{symmetric around 0}
+\end{array} \]
+
+
 \end{frame}
+
+
+
+
+
+
 
 
 
@@ -245,7 +262,7 @@ P(Y<0) \pause &= P\left( \frac{Y-5}{3} < \frac{0-5}{3} \right) & \mbox{standardi
 P(Y>6) 
 \pause &= P\left( \frac{Y-5}{3} > \frac{6-5}{3} \right) & \mbox{standardize} \\
 \pause &\approx P\left( \frac{Y-5}{3} > 0.33 \right) & \mbox{calculation} \\
-\pause &= P\left( \frac{Y-5}{3} < -0.33 \right) & \mbox{symmetry} \\
+\pause &= P\left( \frac{Y-5}{3} < -0.33 \right) & \mbox{symmetric around 0} \\
 \pause &= 0.3707  & \mbox{z-table lookup} \\
 \\
 P(0<Y<6) \pause &= P(Y<6) - P(Y<0) \\
@@ -254,5 +271,115 @@ P(0<Y<6) \pause &= P(Y<6) - P(Y<0) \\
 \pause &= 0.5818 
 \end{array} \]
 \end{frame}
+
+
+\subsection{Inventory management}
+\begin{frame}
+\frametitle{Inventory management}
+
+Suppose that based on past history Wheatsfield Coop knows that during any given
+month, the amount of wheat flour that is purchased follows a normal distribution
+with mean 20 lbs and standard deviation 4 lbs. 
+\pause 
+Currently, Wheatsfield has 25 lbs of wheat flour in stock for this month. 
+\pause 
+What is the probability Wheatsfield runs out of wheat flour this month?
+
+\vspace{0.1in} \pause
+
+Let $Y$ be the amount of wheat flour purchased this month and assume 
+$Y\sim N(20,4^2)$. 
+Then 
+\[ \begin{array}{rl}
+P(Y>22) 
+&= P\left( \frac{Y-20}{3} > \frac{25-20}{4} \right) \\
+&= P(Z>1.25) \\
+&= P(Z<-1.25) \\
+&= 0.1056
+\end{array} \]
+\pause
+There is approximately an 11\% probability Wheatsfield will run out of wheat
+flour this month.
+
+\end{frame}
+
+
+
+\subsection{Empircal rule}
+\begin{frame}
+\frametitle{Empirical rule}
+\begin{definition}
+The \alert{empirical rule} states that for a normal distribution, on average,
+\pause
+\begin{itemize}[<+->]
+\item 68\% of observations will fall within 1 standard deviation of the mean,
+\item 95\% of observations will fall within 2 standard deviations of the mean, and
+\item 99.7\% of observations will fall within 3 standard deviations of the mean.
+\end{itemize}
+\end{definition}
+
+\pause
+
+For a standard normal, i.e. $Z\sim N(0,1)$, \pause
+\[ \begin{array}{rll}
+P(-1<Z<1) &= P(Z<1) - P(Z<-1) \\
+&= [1-P(Z<-1)]- P(Z<-1) \\
+&= 1-2\cdot P(Z<-1) = 1 - 2\cdot 0.1587 &\approx 0.68 \\
+P(-2<Z<2) &= 1-2\cdot P(Z<-2) = 1 - 2\cdot 0.0228 &\approx 0.95 \\
+P(-3<Z<3) &= 1-2\cdot P(Z<-3) = 1 - 2\cdot 0.0013 &\approx 0.997 \\
+\end{array} \]
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Empirical rule - graphically}
+<<>>=
+curve(dnorm, -4, 4, ylim=c(0,0.55),
+      main = "N(0,1)", xlab="z", ylab="f(z)")
+segments(c(-3:-1,1:3), 0, c(-3:-1,1:3), c(.5,.45,.4,.4,.45,.5))
+arrows(-3:-1, c(.5,.45,.4)+.01, 3:1, c(.5,.45,.4)+.01, code=3, length=0.1)
+text(0,c(.4,.45,.5), paste0(c(68,95,99.7),"%"), pos=3)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Empirical rule}
+
+Let $Y\sim N(\mu,\sigma^2)$, then 
+\[ P(\mu-c\cdot \sigma < Y < \mu+c\cdot \sigma)  = 
+P\left(-c < \frac{Y-\mu}{\sigma} \right) = P(-c < Z < c) \]
+where $c$ is the number of standard deviations $Y$ is from the mean.
+
+\vspace{0.1in} \pause
+
+Thus 
+\begin{itemize}
+\item 68\% of observations will fall within 1 standard deviation of the mean,
+\item 95\% of observations will fall within 2 standard deviations of the mean, and
+\item 99.7\% of observations will fall within 3 standard deviations of the mean.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Empirical rule - graphically}
+<<>>=
+curve(dnorm, -4, 4, ylim=c(0,0.55),
+      main = expression(N(mu,sigma^2)), xlab="y", ylab="f(y)",
+      axes=FALSE, frame.plot=TRUE)
+segments(c(-3:-1,1:3), 0, c(-3:-1,1:3), c(.5,.45,.4,.4,.45,.5))
+arrows(-3:-1, c(.5,.45,.4)+.01, 3:1, c(.5,.45,.4)+.01, code=3, length=0.1)
+text(0,c(.4,.45,.5), paste0(c(68,95,99.7),"%"), pos=3)
+axis(1,-3:3,expression(mu-3*sigma,mu-2*sigma,mu-sigma,mu,mu+sigma,mu+2*sigma,mu+3*sigma))
+@
+\end{frame}
+
+
+
+
+
 
 \end{document}
