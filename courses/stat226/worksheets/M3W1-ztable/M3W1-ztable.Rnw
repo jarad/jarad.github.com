@@ -1,16 +1,17 @@
 \documentclass{article}
 
 \usepackage[margin=1in,headheight=13.6pt]{geometry}
-\usepackage{fancyhdr}
+\usepackage{fancyhdr,color,comment}
 
 \pagenumbering{gobble}
-% \pagestyle{headings}
 
 \pagestyle{fancy}
-% \fancyhf
 \lhead{M3W1-ztable}
-% \rhead{right head}
-% \rfoot{foot}
+
+
+\newenvironment{answer}{\noindent\textcolor{blue}{\textbf{Answer: \\}}}{}
+\excludecomment{answer}
+
 
 \begin{document}
 
@@ -21,17 +22,43 @@
 \item Let $Z$ have a standard normal distribution. 
 Calculate the following probabilities.
 
+\begin{answer}
+We write $Z\sim N(0,1)$. See page 3 for areas under the curve depicting these
+probabilities.
+\end{answer}
+
 \begin{enumerate}
-\item $P(Z<0.5)$
+\item $P(Z<0.67)$
 
+
+\begin{answer}
+\[ \begin{array}{rll}
+P(Z<0.67) &= 0.7486 & \mbox{$z$-table}
+\end{array} \]
+\end{answer}
 \vfill
 
-\item $P(Z>1.3)$
+\item $P(Z>1.32)$
 
+\begin{answer}
+\[ \begin{array}{rll}
+P(Z>1.32) &= 1-P(Z\le 1.32) & \mbox{probabilities sum to 1} \\
+ &= 1-P(Z<   1.32) & \mbox{continuous} \\
+ &= 1-0.9066 &\mbox{$z$-table} \\
+ &= 0.0934 &\mbox{calculation}
+\end{array} \]
+\end{answer}
 \vfill
 
-\item $P(-1.1<Z<0.4)$
+\item $P(-1.10<Z<0.49)$
 
+\begin{answer}
+\[ \begin{array}{rll}
+P(-1.10<Z<0.49) &= P(Z<0.49) - P(Z<-1.10)  \\
+ &= 0.6879 - 0.1357 &\mbox{$z$-table} \\
+ &= 0.5522 &\mbox{calculation}
+\end{array} \]
+\end{answer}
 \vfill
 
 \end{enumerate}
@@ -40,24 +67,98 @@ Calculate the following probabilities.
 \item Let $Y$ be a normal random variable with mean -3 and standard deviation
 4. Calculate the following probabilities.
 
+\begin{answer}
+We write $Y\sim N(-3,4^2)$. 
+\end{answer}
+
 \begin{enumerate}
 \item $P(Y<-5)$
 
+\begin{answer}
+\[ \begin{array}{rll}
+P(Y<-5) &= P\left(\frac{Y-(-3)}{4} < \frac{-5-(-3)}{4} \right) & \mbox{standardize}  \\
+&= P(Z<-0.50) & \mbox{calculation} \\
+&= 0.3085 & \mbox{$z$-table}
+\end{array} \]
+\end{answer}
 \vfill
 
-\item $P(Y>-10)$
+\item $P(Y>-9)$
 
+\begin{answer}
+\[ \begin{array}{rll}
+P(Y>-10) &= 1-P(Y\le -10)  & \mbox{probabilities sum to 1}  \\
+&= 1-P(Y<-10) & \mbox{continuous} \\
+&= 1-P\left(\frac{Y-(-3)}{4} < \frac{-10-(-3)}{4} \right) & \mbox{standardize} \\
+&= 1-P(Z<-1.75) & \mbox{calculation} \\
+&= 1-0.0401 & \mbox{$z$-table} \\
+&= 0.9599 &\mbox{calculation}
+\end{array} \]
+\end{answer}
 \vfill
 
 \item $P(0<Y<1)$
 
+\begin{answer}
+\[ \begin{array}{rll}
+P(0<Y<1) &= P(Y<1) - P(Y\le 0)  &  \\
+&= P(Y<1) - P(Y<0) & \mbox{continuous} \\
+&= P\left(\frac{Y-(-3)}{4} < \frac{1-(-3)}{4} \right)-P\left(\frac{Y-(-3)}{4} < \frac{0-(-3)}{4} \right) & \mbox{standardize} \\
+&= P(Z<1)-P(Z<0.75) & \mbox{calculation} \\
+&= 0.8413-0.7734 & \mbox{$z$-table} \\
+&= 0.0679 &\mbox{calculation}
+\end{array} \]
+\end{answer}
 \vfill
 
 
 \end{enumerate}
-
-
 \end{enumerate}
+
+
+\begin{answer}
+\newpage
+
+All the probabilities correspond to areas under the associated bell curve.
+For problem 1), this is the standard normal curve, i.e. centered at 0 with
+standard deviation of 1. 
+For problem 2), this is the normal curve associated with a normal with mean
+-3 and standard deviation of 4.
+The areas associated with all the problems are shown below.
+
+
+<<echo=FALSE>>=
+opar = par(mfrow=c(2,3), mar=c(5,4,4,2)+0.1)
+curve(dnorm, -4, 4, main="1a) P(Z<0.67)", xlab='z', ylab='pdf')
+xx <- seq(-5,.67,length=100) 
+polygon(c(xx,rev(xx)), c(dnorm(xx), rep(0,length(xx))), col='red', border = NA)
+
+curve(dnorm, -4, 4, main="1b) P(Z>1.32)", xlab='z', ylab='pdf')
+xx <- seq(1.32,5,length=100) 
+polygon(c(xx,rev(xx)), c(dnorm(xx), rep(0,length(xx))), col='red', border = NA)
+
+curve(dnorm, -4, 4, main="1c) P(-1.10<Z<0.49)", xlab='z', ylab='pdf')
+xx <- seq(-1.10,0.49,length=100) # P(Z>1.32)
+polygon(c(xx,rev(xx)), c(dnorm(xx), rep(0,length(xx))), col='red', border = NA)
+
+
+m <- -3
+s <- 4
+curve(dnorm(x,m,s), m-4*s, m+4*s, main="2a) P(Y<-5)", xlab='y', ylab='pdf')
+xx <- seq(m-5*s,-5,length=100) 
+polygon(c(xx,rev(xx)), c(dnorm(xx,m,s), rep(0,length(xx))), col='red', border = NA)
+
+curve(dnorm(x,m,s), m-4*s, m+4*s, main="2b) P(Y> -10)", xlab='y', ylab='pdf')
+xx <- seq(-10,m+5*s,length=100) 
+polygon(c(xx,rev(xx)), c(dnorm(xx,m,s), rep(0,length(xx))), col='red', border = NA)
+
+curve(dnorm(x,m,s), m-4*s, m+4*s, main="2c) P(0<Y<1)", xlab='y', ylab='pdf')
+xx <- seq(0,1,length=100) 
+polygon(c(xx,rev(xx)), c(dnorm(xx,m,s), rep(0,length(xx))), col='red', border = NA)
+par(opar)
+
+@
+\end{answer}
 
 
 \end{document}
