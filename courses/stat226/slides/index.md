@@ -21,5 +21,6 @@ you can find them
 - [M2S1-Numerical Data](M2S1-NumericalData/M2S1-NumericalData.pdf)
 - [M2S2-Distributions](M2S2-Distributions/M2S2-Distributions.pdf)
 - [M3S1-BinomialDistribution](M3S1-BinomialDistribution/M3S1-BinomialDistribution.pdf)
+- [M3S2-NormalDistribution](M3S2-NormalDistribution/M3S2-NormalDistribution.pdf)
 
 
