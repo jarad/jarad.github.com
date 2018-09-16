@@ -18,6 +18,7 @@ This course meets
 ## Relevant course pages
 
 - [Slides](slides)
+- [Worksheets](worksheets)
 
 
 ## Textbook
