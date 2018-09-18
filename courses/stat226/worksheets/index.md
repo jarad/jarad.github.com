@@ -19,3 +19,7 @@ you can find them
 
 - [z-table](M3W1-ztable/M3W1-ztable.pdf) ([solutions](M3W1-ztable/M3W1-ztable_sol.pdf))
 - [Empirical Rule](M3W2-EmpiricalRule/M3W2-EmpiricalRule.pdf) ([solutions](M3W2-EmpiricalRule/M3W2-EmpiricalRule_sol.pdf))
+
+### Module 4
+
+- [Central Limit Theorem](M4S1-CLT/M4S1-CLT.pdf) ([solutions](M4S1-CLT/M4S1-CLT_sol.pdf))
