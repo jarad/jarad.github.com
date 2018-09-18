@@ -1,0 +1,344 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M4S1 - Central Limit Theorem}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Sampling distribution
+\end{itemize}
+
+\end{frame}
+
+
+\section{Sampling distribution}
+\begin{frame}
+\frametitle{Sampling distribution}
+
+\begin{definition}
+A \alert{summary statistic} is a numerical value calculated from the sample.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+But this sample is only one of many possibilities. 
+\pause
+What could have happened if we had a different sample?
+
+\vspace{0.1in} \pause
+
+\begin{definition}
+The \alert{sampling distribution of a statistic} is the distribution of that 
+statistic over different samples of a given size.
+\end{definition}
+\end{frame}
+
+
+\subsection{Binomial distribution}
+\begin{frame}
+\frametitle{Flipping a coin}
+Suppose we repeatedly tossed a fair coin 10 times and recorded the number of heads.
+\pause
+The sampling distribution is the binomial distribution with 10 attempts and 
+probability of success 0.5.
+<<fig.width=8>>=
+plot(0:10, dbinom(0:10, 10, 0.5), lwd=2, type='h', main='Bin(10,0.5)', xlab='y', ylab='P(Y=y)')
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Rolling a die}
+<<>>=
+n <- 25
+@
+Suppose we repeatedly rolled a fair 6-sided die \Sexpr{n} times and recorded the number of 1s.
+\pause
+The sampling distribution is the binomial distribution with \Sexpr{n} attempts and probability of success 1/6.
+<<fig.width=8>>=
+plot(0:n, dbinom(0:n, n, 1/6), lwd=2, type='h', main=paste0('Bin(',n,',1/6)'), xlab='y', ylab='P(Y=y)')
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Rolling a die}
+<<>>=
+n <- 100
+@
+Suppose we repeatedly rolled a fair 6-sided die \Sexpr{n} times and recorded the number of 1s.
+\pause
+The sampling distribution is the binomial distribution with \Sexpr{n} attempts and probability of success 1/6.
+<<fig.width=8>>=
+plot(0:n, dbinom(0:n, n, 1/6), lwd=2, type='h', main=paste0('Bin(',n,',1/6)'), xlab='y', ylab='P(Y=y)')
+@
+\end{frame}
+
+
+\subsection{Maximum}
+\begin{frame}
+\frametitle{Rolling a die}
+<<>>=
+n <- 5
+@
+Suppose we repeatedly rolled a fair 6-sided die \Sexpr{n} times and recorded the maximum.
+\pause
+It's hard to analytically determine what happens, 
+but we can use a computer to perform the experiment.
+<<fig.width=8>>=
+x <- replicate(1e3, {
+  mm <- sample(6, n, replace=TRUE)
+  max(mm)
+})
+hist(x, (0:6)+0.5, prob=TRUE, main="Histogram of simulated die rolls")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Rolling a die}
+<<>>=
+n <- 50
+@
+Suppose we repeatedly rolled a fair 6-sided die \Sexpr{n} times and recorded the maximum.
+\pause
+It's hard to analytically determine what happens, 
+but we can use a computer to perform the experiment.
+<<fig.width=8>>=
+x <- replicate(1e3, {
+  mm <- sample(6, n, replace=TRUE)
+  max(mm)
+})
+hist(x, (0:6)+0.5, prob=TRUE, main="Histogram of simulated die rolls")
+@
+\end{frame}
+
+
+
+\subsection{Mean}
+\begin{frame}
+\frametitle{Sample mean}
+<<>>=
+n <- 8
+@
+Suppose we repeatedly rolled a fair 6-sided die \Sexpr{n} times and recorded the mean.
+\pause
+It's hard to analytically determine what happens, 
+but we can use a computer to perform the experiment.
+\pause
+<<fig.width=8>>=
+x <- replicate(1e4, {
+  mm <- sample(6, n, replace=TRUE)
+  mean(mm)
+})
+hist(x, seq(1,6,by=1/8)+1/16, prob=TRUE, main="Histogram of mean of simulated die rolls")
+@
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Sample mean}
+<<>>=
+n <- 80
+@
+Suppose we repeatedly rolled a fair 6-sided die \Sexpr{n} times and recorded the mean.
+\pause
+It's hard to analytically determine what happens, 
+but we can use a computer to perform the experiment.
+\pause
+<<fig.width=8>>=
+x <- replicate(1e4, {
+  mm <- sample(6, n, replace=TRUE)
+  mean(mm)
+})
+hist(x, seq(1,6,by=1/80)+1/160, prob=TRUE, main="Histogram of mean of simulated die rolls")
+@
+\end{frame}
+
+
+
+
+\section{Central Limit Theorem}
+\begin{frame}
+\frametitle{Central Limit Theorem}
+\begin{theorem}
+Suppose you have a sequence of independent and identically distributed 
+random variables $X_1,X_2,\ldots$ with 
+mean $E[X_i]=\mu$ and variance $Var[X_i]=\sigma^2$.
+\pause
+The \alert{Central Limit Theorem} (CLT) says the \alert{sampling distribution of the sample mean} \pause
+converges to a normal distribution.
+\pause
+Specifically
+\[ 
+\frac{\overline{X}_n-\mu}{\sigma/\sqrt{n}} \to N(0,1) \quad \mbox{as} \quad n\to\infty
+\]
+\pause
+where $\overline{X}_n = \frac{1}{n}\sum_{i=1}^n X_i$. 
+\pause
+Thus, for large $n$, we can approximate the sample mean by a normal distribution, \pause i.e.
+\[
+\overline{X} \stackrel{\cdot}{\sim} N(\mu,\sigma^2/n)
+\]
+\pause
+where $\stackrel{\cdot}{\sim}$ means ``approximately distributed.''
+\end{theorem}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Mean of the sample mean}
+
+Recall the following property:
+\[
+E[aX+bY+c] = aE[X] + bE[Y] + c
+\]
+\pause 
+
+If we have $E[X_i]=\mu$ for all $i$, 
+\pause
+then
+\[ \begin{array}{rl}
+E[\overline{X}] &= E\left[ \frac{1}{n} \sum_{i=1}^n X_i \right] \\
+&= \frac{1}{n} E\left[ \sum_{i=1}^n X_i \right] \\
+&= \frac{1}{n} \sum_{i=1}^n E[X_i] \\
+&= \frac{1}{n} \sum_{i=1}^n \mu \\
+&= \frac{1}{n} n\cdot \mu \\
+&= \mu
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Variance of the sample mean}
+
+Recall the following property for independent random variables $X$ and $Y$:
+\[
+Var[aX+bY+c] = a^2Var[X] + b^2Var[Y]
+\]
+\pause 
+
+If we have $Var[X_i]=\sigma^2$ for all $i$, 
+\pause
+then
+\[ \begin{array}{rl}
+Var[\overline{X}] &= Var\left[ \frac{1}{n} \sum_{i=1}^n X_i \right] \\
+&= \frac{1}{n^2} Var\left[ \sum_{i=1}^n X_i \right] \\
+&= \frac{1}{n^2} \sum_{i=1}^n Var[X_i] \\
+&= \frac{1}{n^2} \sum_{i=1}^n \sigma^2 \\
+&= \frac{1}{n^2} n\cdot \sigma^2 \\
+&= \sigma^2/n
+\end{array} \]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sampling distribution of sample mean}
+
+If $X_1,X_2,\ldots$ are a sequence of independent and identically distributed
+random variables with $E[X_i]=\mu$ and $Var[X_i]=\sigma^2$, \pause
+then 
+\[
+E[\overline{X}_n] = \mu \qquad Var[\overline{X}_n] = \sigma^2/n
+\]
+\pause
+for any $n$. 
+\pause
+The CLT says that, as $n$ gets large, the sampling distribution converges to 
+a normal distribution.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Coin flipping}
+Sampling distribution for the proportion of heads on an unbiased coin flip.
+\pause
+<<fig.width=8>>=
+opar = par(mfrow=c(1,3))
+for (n in c(10,30,50)) {
+  plot( 0:n/n, dbinom(0:n, n, 0.5), type='h', main=paste0('Bin(',n,',1/2)'), xlab='y', ylab='P(Y=y)')
+  curve(dnorm(x, 0.5, sqrt(0.25/n))/n, col='red', add=TRUE)
+}
+par(opar)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Die rolling}
+Sampling distribution for the proportion of 1s on an unbiased 6-sided die roll.
+\pause
+<<fig.width=8>>=
+opar = par(mfrow=c(1,3))
+for (n in c(10,30,50)) {
+  plot( 0:n/n, dbinom(0:n, n, 1/6), type='h', main=paste0('Bin(',n,',1/6)'), xlab='y', ylab='P(Y=y)')
+  curve(dnorm(x, 1/6, sqrt(5/6/6/n))/n, col='red', add=TRUE)
+}
+par(opar)
+@
+\end{frame}
+
+
+
+% \begin{frame}
+% \frametitle{Die rolling}
+% Sampling distribution for the sample mean of an unbiased 6-sided die roll.
+% \pause
+% <<fig.width=8>>=
+% opar = par(mfrow=c(1,3))
+% for (n in c(10,30,50)) {
+%   plot( 0:n/n, dbinom(0:n, n, 1/6), type='h', main=paste0('Bin(',n,',1/6)'), xlab='y', ylab='P(Y=y)')
+%   curve(dnorm(x, 1/6, sqrt(5/6/6/n))/n, col='red', add=TRUE)
+% }
+% par(opar)
+% @
+% \end{frame}
+
+
+\end{document}
