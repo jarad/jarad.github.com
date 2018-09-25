@@ -22,4 +22,4 @@ you can find them
 
 ### Module 4
 
-- [Central Limit Theorem](M4S1-CLT/M4S1-CLT.pdf) ([solutions](M4S1-CLT/M4S1-CLT_sol.pdf))
+- [Central Limit Theorem](M4W1-CLT/M4W1-CLT.pdf) ([solutions](M4W1-CLT/M4W1-CLT_sol.pdf))
