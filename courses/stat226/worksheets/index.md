@@ -23,3 +23,4 @@ you can find them
 ### Module 4
 
 - [Central Limit Theorem](M4W1-CLT/M4W1-CLT.pdf) ([solutions](M4W1-CLT/M4W1-CLT_sol.pdf))
+- [Bias](M4W2-Bias/M4W2-Bias.pdf) ([solutions](M4W2-Bias/M4W2-Bias_sol.pdf))
