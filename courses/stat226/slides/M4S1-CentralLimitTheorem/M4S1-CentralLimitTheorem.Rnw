@@ -41,8 +41,15 @@ set.seed(2)
 
 \begin{itemize}
 \item Sampling distribution
+  \begin{itemize}
+  \item Standard error
+  \end{itemize}
 \item Central Limit Theorem
-\item Standard error
+\item Estimation
+  \begin{itemize}
+  \item Bias
+  \item Variability
+  \end{itemize}
 \end{itemize}
 
 \end{frame}
@@ -224,7 +231,7 @@ Thus, for large $n$, we can approximate the sample mean by a normal distribution
 \pause
 where $\stackrel{\cdot}{\sim}$ means ``approximately distributed.''
 The standard deviation of the sampling distribution of a statistic is known as 
-the \alert{standard error}, i.e. $\sigma/\sqrt{n}$ is the standard error 
+the \alert{standard error} (SE), i.e. $\sigma/\sqrt{n}$ is the standard error 
 from the CLT.
 \end{theorem}
 \end{frame}
@@ -411,5 +418,172 @@ Given a scientific question, do the following
 \item Calculate your answer.
 \end{enumerate}
 \end{frame}
+
+
+
+\section{Estimation}
+\begin{frame}
+\frametitle{Estimation}
+
+\begin{definition}
+An \alert{estimator} is a summary statistic that is used to estimate 
+a population parameter.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+\begin{definition}
+An estimator is \alert{unbiased} for a population parameter if the 
+expectation/mean of the estimator is equal to the population parameter.
+\pause
+Otherwise the estimator is \alert{biased}.
+\end{definition}
+
+\vspace{0.1in} \pause 
+
+The standard error of a statistic describes the \alert{variability} of the 
+statistic.
+
+\end{frame}
+
+
+\subsection{Sample mean}
+\begin{frame}
+\frametitle{Sample mean}
+
+Let $X_1,X_2,\ldots$ be independent and identically distributed with 
+expectation/mean $\mu$ and variance $\sigma^2$. 
+\pause
+Then the sample mean 
+\[
+\overline{X} = \frac{1}{n}\sum_{i=1}^n X_i
+\]
+\pause 
+has $E[\overline{X}] = \pause \mu$ 
+\pause
+and standard error $SE[\overline{X}] \pause = \sigma/\sqrt{n}$. 
+
+\vspace{0.1in} \pause
+
+Thus, the sample mean \pause is 
+\begin{itemize}
+\item an unbiased estimator of the population mean \pause and
+\item its variability (standard error) decreases by the square root of the sample size. 
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Bayesian estimator}
+\begin{frame}
+\frametitle{Bayesian estimator}
+
+In a Bayesian analysis, 
+you specify your prior belief about $\mu$ before you observe the data.
+\pause
+Suppose you are willing to specify that your prior belief about $\mu$ is 
+normally distributed with mean $m$ and variance $v^2$. 
+\pause
+Then you plan to collect data $X_1,X_2,\ldots$ that are independent and 
+identically distributed with expectation/mean $\mu$ and variance $\sigma^2$. 
+
+\vspace{0.1in} \pause
+
+A Bayesian estimator of the population mean $\mu$ is 
+\[ 
+\frac{1/v^2}{1/v^2+n/\sigma^2}m + \frac{n/\sigma^2}{1/v^2+n/\sigma^2}\overline{X},
+\]
+\pause
+and it has standard error 
+\[
+\frac{\sqrt{n/\sigma^2}}{1/v^2+n/\sigma^2}.
+\]
+\pause
+Note that as $v^2\to\infty$ (indicating a very uncertainty prior belief), 
+\pause
+then this estimator becomes $\overline{X}$ which is unbiased and 
+has standard error $\sigma/\sqrt{n}$.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Bayesian estimator (cont.)}
+
+The Bayesian estimator is biased because 
+\[ \begin{array}{rl}
+E\left[ \frac{1/v^2}{1/v^2+n/\sigma^2}m + \frac{1/v^2}{1/v^2+n/\sigma^2}\overline{X} \right] &= \pause
+\frac{1/v^2}{1/v^2+n/\sigma^2}m + \frac{1/v^2}{1/v^2+n/\sigma^2}E[\overline{X}] \\
+&= \pause
+\frac{1/v^2}{1/v^2+n/\sigma^2}m + \frac{1/v^2}{1/v^2+n/\sigma^2}\mu
+\end{array} \]
+\pause
+but it has less variability because 
+\pause
+\[ \begin{array}{rl}
+\frac{\sqrt{n/\sigma^2}}{1/v^2+n/\sigma^2} &=
+\frac{1}{\frac{1/v^2}{n/\sigma^2}+\sqrt{n/\sigma^2}} \pause \\
+&< \frac{1}{\sqrt{n/\sigma^2}} \pause \\
+&= \frac{1}{\sqrt{n}/\sigma} \pause \\
+&= \sigma/\sqrt{n}.
+\end{array} \]
+
+\pause 
+
+Thus the Bayesian estimator adds some bias to reduce variability. 
+\pause
+We call this the \alert{bias-variance} tradeoff. 
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Bias and variability}
+
+Suppose you have the ability to take samples from one of two populations that 
+both have the same mean. 
+\pause
+Population 1 has a standard deviation of 10 while population 2 has a standard
+deviation of 5. 
+\pause
+Due to the cost of sampling, you can either 
+\begin{enumerate}
+\item take 100 samples of population 1 or 
+\item take 49 samples of population 2. 
+\end{enumerate}
+\pause 
+If your goal is to estimate the population mean using a sample mean, 
+\pause
+which of these two samples would you prefer to take?
+
+\vspace{0.1in}\pause
+
+The sample mean will have the same expectation/mean, so they are both unbiased.
+\pause
+The standard error of population 1 is $10/\sqrt{100} = 10/10=1$ \pause
+while the standard error of population 2 is $5/\sqrt{49} = 5/7 < 1$.
+\pause
+Thus, on average, the sample mean from population 2 will be closer to the 
+population mean than the sample mean from population 1. 
+\pause
+How few sample of population 2 would have the same standard error as the sample
+from population 1? 
+\pause
+25
+
+\end{frame}
+
+
+
+% \section{CLT Sample size}
+% \begin{frame}
+% \frametitle{CONAN}
+% 
+% 
+% 
+% \end{frame}
 
 \end{document}
