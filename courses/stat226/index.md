@@ -19,6 +19,7 @@ This course meets
 
 - [Slides](slides)
 - [Worksheets](worksheets)
+- [Practice problems](practice)
 
 
 ## Textbook
