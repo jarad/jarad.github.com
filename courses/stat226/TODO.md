@@ -1,0 +1,2 @@
+- Introduce CONAN when discussing normal distributions
+- Separate sampling distribution and Central Limit Theorem into separate slide sets.
