@@ -1,7 +1,7 @@
 ---
 layout: post
-title: ""
-description: "Flow cytometry"
+title: "Flow cytometry"
+description: ""
 category: [Consulting]
 tags: [manova, repeated measures]
 ---
