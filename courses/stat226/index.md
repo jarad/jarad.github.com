@@ -20,6 +20,7 @@ This course meets
 - [Slides](slides)
 - [Worksheets](worksheets)
 - [Practice problems](practice)
+- Tables: [z](tables/z-table.pdf) and [t](tables/t-table.pdf)
 
 
 ## Textbook
