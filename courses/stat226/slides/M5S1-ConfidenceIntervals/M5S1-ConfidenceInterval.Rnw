@@ -121,7 +121,7 @@ P\left( \overline{X}-3\frac{\sigma}{\sqrt{n}} < \mu < \overline{X}+3\frac{\sigma
 \end{array} \]
 \pause
 We will call these intervals, e.g. $\left(\overline{X}-\frac{\sigma}{\sqrt{n}},\overline{X}+\frac{\sigma}{\sqrt{n}}\right)$, \alert{confidence intervals} and their \alert{confidence level} is the 
-probability (usually written as a proportion). 
+probability (usually written as a percentage). 
 
 \end{frame}
 
@@ -139,7 +139,7 @@ student savings accounts.
 They know the standard deviation of balances is \$20. 
 \pause
 They take a random sample of 64 student savings accounts and record that at the 
-end of the month the sample mean savings was $\$105. 
+end of the month the sample mean savings was \$105. 
 \pause
 Construct a 68\% confidence interval for the mean monthly balance. 
 
@@ -147,14 +147,17 @@ Construct a 68\% confidence interval for the mean monthly balance.
 
 Let $X_i$ be the end of the month balance for student $i$. 
 \pause
-Then $E[X_i]=\mu$ is unknown, \pause but $SD[X_i] = \sigma = \$20$ is known. 
+Then $E[X_i]=\mu$, the mean monthly balance, is unknown, \pause but $SD[X_i] = \sigma = \$20$ is known. 
 \pause 
 We obtained a sample of size $n=64$ with a sample mean $\overline{x}=\$105$. 
 \pause 
-To obtain the 68\% confidence interval, we calculate
+To obtain the 68\% confidence interval for $\mu$, we calculate
 \[ \begin{array}{rl} 
-\overline{x} \pm \frac{\sigma}{\sqrt{n}} = \pause 
-(\overline{x} - \frac{\sigma}{\sqrt{n}},\overline{x} + \frac{\sigma}{\sqrt{n}}) =
+\overline{x} \pm \frac{\sigma}{\sqrt{n}} 
+&= \pause 
+\left(\overline{x} - \frac{\sigma}{\sqrt{n}},\overline{x} + \frac{\sigma}{\sqrt{n}}\right) \pause \\
+&=  \left(105-\frac{20}{\sqrt{64}}, 105+\frac{20}{\sqrt{64}}\right) \pause \\
+&= \left(102.5,107.5\right)
 \end{array} 
 \]
 
@@ -163,13 +166,92 @@ To obtain the 68\% confidence interval, we calculate
 
 \subsection{General Confidence Intervals}
 \begin{frame}
-\frametitle{General Confidence Intervals}
+\frametitle{Confidence Intervals for $\mu$ when $\sigma$ is known}
 
-Suppose you have a \alert{significance level} $\alpha$ 
-\pause which you can convert to a \alert{confidence level} $C=100(1-\alpha)\%$
-and obtain a \alert{z critical value} $z_{\alpha,2}$
+\begin{definition}
+Let $\mu$ be the population mean and $\sigma$ be the \alert{known} population 
+standard deviation. 
+\pause
+Choose a \alert{significance level} $\alpha$
+\pause 
+which you can convert to a \alert{confidence level} $C=100(1-\alpha)\%$
+\pause
+and a \alert{z critical value} $z_{\alpha/2}$ where $P(Z>z_{\alpha/2})=\alpha/2$.
+\pause
+You obtain a \alert{random sample} of observations from the population and 
+calculate the sample mean $\overline{X}$.
+\pause 
+Then a \alert{$C=100(1-\alpha)$\% confidence interval for $\mu$} is 
+\[
+\overline{X} \pm z_{\alpha/2} \frac{\sigma}{\sqrt{n}} \pause =
+\left(\overline{X} - z_{\alpha/2} \frac{\sigma}{\sqrt{n}}, 
+\overline{X} + z_{\alpha/2} \frac{\sigma}{\sqrt{n}}\right).
+\]
+\end{definition}
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Finding $z$ critical values}
+\small
+
+\vspace{-0.1in}
+
+<<fig.width=10>>=
+curve(dnorm, -4, 4) 
+x<- 1.5
+axis(1, x, expression(z[alpha/2]))
+xx <- seq(x,5, length=100)
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dnorm(rev(xx))), col="red", border=NA)
+@
+\pause
+Recall that 
+\[ 
+P(Z>z_{\alpha/2}) = P(Z<-z_{\alpha/2}).
+\]
+\pause
+Check that 
+\[\begin{array}{llll}
+C & \alpha & \alpha/2 & z_{\alpha/2} \\
+\hline
+68\% & 0.32 & 0.16 & \approx 1 \\
+95\% & 0.05 & 0.025 & \approx 2 \\
+99.7\% & 0.003 & 0.0015 & \approx 3
+\end{array}\]
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Example}
+
+US Bank provides students with savings accounts having no monthly maintenance
+fee and a low minimum monthly transfer.
+US Bank is interested in knowing the mean monthly balance of all its 
+student savings accounts.
+They know the standard deviation of balances is \$20. 
+They take a random sample of 64 student savings accounts and record that at the 
+end of the month the sample mean savings was \$105. 
+Construct a 80\% confidence interval for the mean monthly balance. 
+
+\vspace{0.1in} \pause
+
+Let $X_i$ be the end of the month balance for student $i$. 
+Then $E[X_i]=\mu$, the mean monthly balance, is unknown, 
+but $SD[X_i] = \sigma = \$20$ is known. 
+We obtained a sample of size $n=64$ with a sample mean $\overline{x}=\$105$. 
+For a confidence level of 80\%, \pause we have $\alpha=0.2$, \pause
+$\alpha/2 = 0.1$ and \pause $z_{\alpha/2} \approx 1.28$. 
+\pause
+Then we calculate
+\[ 
+\overline{x} \pm \frac{\sigma}{\sqrt{n}} = 105 \pm 1.28 \frac{20}{\sqrt{64}}
+= (101.8,108.2)
+\]
+\pause
+which is an 80\% confidence interval for $\mu$
+
+\end{frame}
 
 
 
