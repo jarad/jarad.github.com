@@ -13,7 +13,7 @@ If the files are ever not available on this page,
 you can find them 
 [here](https://github.com/jarad/jarad.github.com/tree/master/courses/stat226/worksheets).
 
-## Modules
+## Part I
 
 ### Module 3
 
@@ -24,3 +24,10 @@ you can find them
 
 - [Central Limit Theorem](M4W1-CLT/M4W1-CLT.pdf) ([solutions](M4W1-CLT/M4W1-CLT_sol.pdf))
 - [Bias](M4W2-Bias/M4W2-Bias.pdf) ([solutions](M4W2-Bias/M4W2-Bias_sol.pdf))
+
+
+## Part II
+
+### Module 5
+
+- [CI](M5W1-CI/M5W1-CI.pdf) ([solutions](M5W1-CI/M5W1-CI_sol.pdf))

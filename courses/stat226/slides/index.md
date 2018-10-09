@@ -24,4 +24,6 @@ you can find them
 - [M3S2-NormalDistribution](M3S2-NormalDistribution/M3S2-NormalDistribution.pdf)
 - [M4S1-CentralLimitTheorem](M4S1-CentralLimitTheorem/M4S1-CentralLimitTheorem.pdf)
 
+### Part II
 
+- [M5S1-ConfidenceIntervals](M5S1-ConfidenceIntervals/M5S1-ConfidenceIntervals.pdf)
