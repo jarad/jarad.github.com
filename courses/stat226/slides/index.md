@@ -26,4 +26,4 @@ you can find them
 
 ### Part II
 
-- [M5S1-ConfidenceIntervals](M5S1-ConfidenceIntervals/M5S1-ConfidenceIntervals.pdf)
+- [M5S1-CI_sd_known](M5S1-CI_sd_known/M5S1-CI_sd_known.pdf)
