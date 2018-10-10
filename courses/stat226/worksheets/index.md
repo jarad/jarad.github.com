@@ -30,4 +30,5 @@ you can find them
 
 ### Module 5
 
-- [CI](M5W1-CI_sd_known/M5W1-CI_sd_known.pdf) ([solutions](M5W1-CI_sd_known/M5W1-CI_sd_known_sol.pdf))
+- [CI sd known](M5W1-CI_sd_known/M5W1-CI_sd_known.pdf) ([solutions](M5W1-CI_sd_known/M5W1-CI_sd_known_sol.pdf))
+- [CI sd unknown](M5W2-CI_sd_unknown/M5W2-CI_sd_unknown.pdf) ([solutions](M5W2-CI_sd_unknown/M5W2-CI_sd_unknown_sol.pdf))
