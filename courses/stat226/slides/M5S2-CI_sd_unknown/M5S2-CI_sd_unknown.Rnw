@@ -55,13 +55,23 @@ deviation is \alert{unknown}
 \end{frame}
 
 
-
+\section{Student's $t$-distribution}
+\subsection{CIs when $\sigma$ is known}
 \begin{frame}
 \frametitle{Confidence intervals when $\sigma$ is known}
 
+Recall that by the CLT
+\[
+\frac{\overline{X}-\mu}{\sigma/\sqrt{n}} \stackrel{\cdot}{\sim} N(0,1)
+\]
+where $\overline{X}$ is the (random) sample mean, $\mu$ is the population mean,
+$\sigma$ is the population standard deviation, and $n$ is the sample size.
+
+\vspace{0.1in} 
+
 When the population standard deviation $\sigma$ is known,
-a 100(1-\alpha)\% confidence interval for the population mean 
-can be constructed using the formula
+we used this result to construct a $100(1-\alpha)$\% confidence interval for the 
+population mean $\mu$ using the formula
 \pause
 \[
 \overline{x} \pm z_{\alpha/2} \frac{\sigma}{\sqrt{n}}
@@ -71,100 +81,210 @@ for a given \alert{significance level $\alpha$}.
 
 \vspace{0.1in} \pause
 
-But what if $\sigma$ is unknown?
+If $\sigma$ is unknown, 
+then we can't use $\sigma$ to calculate this interval.
 
 \end{frame}
+
+
+
+
+\subsection{CIs when $\sigma$ is known}
+\begin{frame}
+\frametitle{Replace $\sigma$ with $s$, the sample standard deviation}
+
+If $X_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$, 
+\pause
+we have a similar result when using the sample standard deviation,
+\[
+S = \sqrt{\frac{1}{n-1}\sum_{i=1}^n (X_i-\overline{X})^2}
+\]
+instead of $\sigma$:
+\pause
+\[
+\frac{\overline{X}-\mu}{S/\sqrt{n}} \pause \sim t_{n-1}
+\]
+\pause
+where $t_{n-1}$ is a Student's $t$ distribution with $n-1$ degrees of freedom.
+
+\vspace{0.1in} \pause
+
+For a $100(1-\alpha)$\% confidence interval,
+\pause
+we can find a $t$ critical value $t_{n-1,\alpha/2}$ and construct the
+confidence interval using the following formula:
+\[
+\overline{x} \pm t_{n-1,\alpha/2} \frac{s}{\sqrt{n}}
+\]
+for the observed sample mean $\overline{x}$ and sample standard deviation
+$s$.
+\end{frame}
+
+
+
+
+\subsection{definition}
+\begin{frame}
+\frametitle{Student's $t$-distribution}
+
+Student's $t$-distribution was derived by William Gosset, 
+a statistician working for the Guiness Brewing Company.
+\pause
+A random variable $T$ has a (standard) \alert{$t$-distribution} with 
+\alert{$\nu$ degrees of freedom} 
+\pause
+if it has the pdf 
+\[
+f(t) = \frac{\Gamma\!\left(\frac{\nu+1}{2}\right)}{\sqrt{\nu\pi}\,\,\Gamma\!\left(\frac{\nu}{2}\right)}
+\left( 1+\frac{t^2}{\nu} \right)^{-\frac{\nu+1}{2}}
+\]
+\pause
+where $\Gamma(x) = \int_0^\infty a^{x-1}e^{a} da$ \pause and 
+
+\vspace{0.05in}
+
+
+\begin{itemize}
+\item $E[T] = 0$ for $\nu>1$ and 
+\item $Var[T] = \frac{\nu}{\nu-2}$ for $\nu>2$.
+\end{itemize}
+\pause
+A (standard) $t$-distribution converges to a standard normal distribution 
+as $\nu\to\infty$.
+
+\end{frame}
+
+
+
+
+\subsection{Student's $t$-distribution pdf}
+\begin{frame}
+\frametitle{Student's $t$-distribution pdf}
+<<fig.width=8>>=
+d <- data.frame(xx = seq(-4,4,length=101)) %>%
+  mutate(t1 = dt(xx,1),
+         t5 = dt(xx,5),
+         t30 = dt(xx,30),
+         z = dnorm(xx)) %>%
+  tidyr::gather(distribution, density, -xx)
+
+ggplot(d, aes(xx, density, group=distribution, color=distribution, linetype = distribution)) + 
+  geom_line() + 
+  theme_bw() +
+  labs(x = "t", y = "f(t)")
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Finding $t$ critical values}
+\small
+
+A $t$ critical value $t_{\nu,\alpha/2}$ is the value such that 
+\[
+P(T_{\nu} > t_{\nu,\alpha/2}) = \alpha/2
+\]
+where $T_{\nu}$ is the $t$-distribution with $\nu$ degrees of freedom.
+
+\pause
+
+<<fig.width=8>>=
+xx <- seq(1.5,5,length=100)
+curve(dt(x,10), -4, 4, xlab='t', ylab='f(t)', main=expression(paste(t[10]," distribution")) )
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), 10)), col="red", border=NA)
+axis(1, 1.5, expression(t[10*","~alpha/2]))
+@
+
+\pause
+
+If the degrees of freedom aren't included on the table, 
+use the next smallest degrees of freedom, i.e. use the larger critical value.
+
+\end{frame}
+
+
+\subsection{$t$-table}
+\setkeys{Gin}{width=0.65\textwidth}
+\begin{frame}
+\includegraphics{../../tables/t-table}
+\end{frame}
+
+
+
+
+
+
+
+
 
 
 
 \subsection{General Confidence Intervals}
 \begin{frame}
-\frametitle{Confidence Intervals for $\mu$ when $\sigma$ is known}
+\frametitle{Confidence Intervals for $\mu$ when $\sigma$ is unknown}
 
 \begin{definition}
-Let $\mu$ be the population mean and $\sigma$ be the \alert{known} population 
-standard deviation. 
+Let $\mu$ be the population mean and $\sigma$ be the \alert{unknown} population
+standard deviation for a \alert{normal} population.
 \pause
 Choose a \alert{significance level} $\alpha$
-\pause 
+\pause
 which you can convert to a \alert{confidence level} $C=100(1-\alpha)\%$
 \pause
-and a \alert{z critical value} $z_{\alpha/2}$ where $P(Z>z_{\alpha/2})=\alpha/2$.
+and a \alert{t critical value} $t_{n-1,\alpha/2}$ where 
+$P(T_{n-1}>t_{n-1,\alpha/2})=\alpha/2$.
+
+\vspace{0.05in} \pause
+
+You obtain a \alert{random sample} of $n$ observations from the population and
+calculate the sample mean $\overline{x}$ and sample standard deviation $s$.
 \pause
-You obtain a \alert{random sample} of observations from the population and 
-calculate the sample mean $\overline{X}$.
-\pause 
-Then a \alert{$C=100(1-\alpha)$\% confidence interval for $\mu$} is 
+Then a \alert{$C=100(1-\alpha)$\% confidence interval for $\mu$} is
 \[
-\overline{X} \pm z_{\alpha/2} \frac{\sigma}{\sqrt{n}} \pause =
-\left(\overline{X} - z_{\alpha/2} \frac{\sigma}{\sqrt{n}}, 
-\overline{X} + z_{\alpha/2} \frac{\sigma}{\sqrt{n}}\right)
+\overline{x} \pm t_{n-1,\alpha/2} \frac{s}{\sqrt{n}} \pause =
+\left(\overline{x} - t_{n-1,\alpha/2} \frac{s}{\sqrt{n}},
+\overline{x} + t_{n-1,\alpha/2} \frac{s}{\sqrt{n}}\right)
 \]
 \pause
-where $z_{\alpha/2} \cdot \sigma/\sqrt{n}$ is called the \alert{margin of error}.
+where $t_{n-1,\alpha/2} \cdot s/\sqrt{n}$ is called the \alert{margin of error}.
 \end{definition}
 \end{frame}
 
 
 \begin{frame}
-\frametitle{Finding $z$ critical values}
-\small
-
-\vspace{-0.1in}
-
-<<fig.width=10>>=
-curve(dnorm, -4, 4) 
-x<- 1.5
-axis(1, x, expression(z[alpha/2]))
-xx <- seq(x,5, length=100)
-polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dnorm(rev(xx))), col="red", border=NA)
-@
-\pause
-Recall that 
-\[ 
-P(Z>z_{\alpha/2}) = P(Z<-z_{\alpha/2}).
-\]
-\pause
-Check that 
-\[\begin{array}{llll}
-C & \alpha & \alpha/2 & z_{\alpha/2} \\
-\hline
-68\% & 0.32 & 0.16 & \approx 1 \\
-95\% & 0.05 & 0.025 & \approx 2 \\
-99.7\% & 0.003 & 0.0015 & \approx 3
-\end{array}\]
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Example}
+\frametitle{Savings account balances}
 
 US Bank provides students with savings accounts having no monthly maintenance
 fee and a low minimum monthly transfer.
-US Bank is interested in knowing the mean monthly balance of all its 
+US Bank is interested in knowing the mean monthly balance of all its
 student savings accounts.
-They know the standard deviation of balances is \$20. 
-They take a random sample of 64 student savings accounts and record that at the 
-end of the month the sample mean savings was \$105. 
-Construct a 80\% confidence interval for the mean monthly balance. 
+\pause
+They take a random sample of 23 student savings accounts and record that at the
+end of the month the sample mean savings was \$105 and the standard deviation 
+was \$20.
+\pause
+\alert{Assuming savings account balances are normally distributed}\pause,
+construct an 80\% confidence interval for the mean monthly balance.
 
 \vspace{0.1in} \pause
 
-Let $X_i$ be the end of the month balance for student $i$. 
-Then $E[X_i]=\mu$, the mean monthly balance, is unknown, 
-but $SD[X_i] = \sigma = \$20$ is known. 
-We obtained a sample of size $n=64$ with a sample mean $\overline{x}=\$105$. 
+Let $X_i$ be the end of the month balance for student $i$.
+Then $E[X_i]=\mu$, the mean monthly balance, is unknown,
+$SD[X_i] = \sigma$ is \alert{unknown}.
+We obtained a sample of size $n=23$ with a sample mean $\overline{x}=\$105$
+and a sample standard deviation of $s=\$20$.
 For a confidence level of 80\%, \pause we have $\alpha=0.2$, \pause
-$\alpha/2 = 0.1$ and \pause $z_{\alpha/2} \approx 1.28$. 
+$\alpha/2 = 0.1$ and \pause $t_{n-1,\alpha/2} \approx 1.319$.
 \pause
 Then we calculate
-\[ 
-\overline{x} \pm z_{\alpha/2} \frac{\sigma}{\sqrt{n}} = \$105 \pm 1.28 \frac{\$20}{\sqrt{64}}
-= (\$ 101.8,\$ 108.2)
+\[
+\overline{x} \pm t_{n-1,\alpha/2} \frac{s}{\sqrt{n}} = 
+\$105 \pm 1.319 \frac{\$20}{\sqrt{23}}
+= (\$ 99.5,\$ 110.5)
 \]
 \pause
-which is an 80\% confidence interval for $\mu$
+which is an 80\% confidence interval for $\mu$.
 
 \end{frame}
 
