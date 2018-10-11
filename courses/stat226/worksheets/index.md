@@ -1,6 +1,6 @@
 ---
 layout: page
-title: STAT 401 (Engineering)
+title: STAT 226
 tagline: worksheet
 ---
 {% include JB/setup %}
