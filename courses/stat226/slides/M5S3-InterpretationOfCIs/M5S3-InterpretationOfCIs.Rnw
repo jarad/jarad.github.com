@@ -1,0 +1,400 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M5S3 - Interpretation of Confidence Intervals}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\newtheorem{interpretation}{Interpretation}
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Interpretation of probability
+  \begin{itemize}
+  \item Frequentist
+  \item Bayesian
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\section{Frequentist interpretation of probability}
+\subsection{Definition}
+\begin{frame}
+\frametitle{Frequentist interpretation of probability}
+
+\begin{interpretation}
+The \alert{frequentist interpretation of probability} is that probability is 
+the long-run relative frequency of an event.
+\end{interpretation}
+
+\vspace{0.1in} \pause
+
+Thus, if we have a sequence of independent and identically distributed binary 
+random variables $X_1,X_2,\ldots$ where $I_i$ is the indicator of the event, i.e.
+\[
+I_i = \left\{ \begin{array}{rl} 
+1 & \mbox{if the event occurs in the $i$th trial} \\
+0 & \mbox{if the event does not occur in the $i$th trial},
+\end{array} \right.
+\]
+\pause 
+the probability $p$ is defined as 
+\[ 
+p = \lim_{i \to \infty} \frac{I_i}{i}.
+\]
+
+\end{frame}
+
+
+\subsection{Coin flipping example}
+\begin{frame}
+\frametitle{Coin flipping example}
+
+Let $I_i$ be the indicator that the $i$th coin flip is heads, i.e.
+\[
+I_i = \left\{ \begin{array}{rl} 
+1 & \mbox{if he $i$th coin flip is heads} \\
+0 & \mbox{if the $i$th coin flip is not heads},
+\end{array} \right.
+\]
+
+\pause
+
+Now we define the probability as the proportion of heads as the number of 
+flips tends to infinity.
+
+\pause
+
+<<fig.width=11>>=
+n <- 1000; p <- 1/2
+d <- data.frame(i = 1:n, x = rbinom(n, 1, p)) %>% mutate(proportion = cumsum(x)/(1:n))
+ggplot(d, aes(i,proportion)) + 
+  geom_line() + 
+  theme_bw() + 
+  ylim(0,1) + 
+  geom_hline(yintercept=p, color='red')
+@
+\end{frame}
+
+
+\subsection{Die rolling example}
+\begin{frame}
+\frametitle{Die rolling example}
+
+Let $I_i$ be the indicator of the $i$th die roll being a 1, i.e.
+\[
+I_i = \left\{ \begin{array}{rl} 
+1 & \mbox{if the $i$th die roll is 1} \\
+0 & \mbox{if the $i$th die roll is not 1},
+\end{array} \right.
+\]
+
+\pause
+
+Now we define the probability as the proportion of 1s as the number of 
+rolls tends to infinity.
+
+\pause
+
+<<fig.width=11>>=
+n <- 1000; p <- 1/6
+d <- data.frame(i = 1:n, x = rbinom(n, 1, p)) %>% mutate(proportion = cumsum(x)/(1:n))
+ggplot(d, aes(i,proportion)) + 
+  geom_line() + 
+  theme_bw() + 
+  ylim(0,1) + 
+  geom_hline(yintercept=p, color='red')
+@
+\end{frame}
+
+
+
+\section{Interpretation of Confidence Intervals}
+\begin{frame}
+\frametitle{Construction of confidence intervals}
+
+Recall that the formula for a $100(1-\alpha)$\% confidence interval (CI) based 
+on the standard normal is 
+\pause 
+\[ 
+\overline{X} \pm z_{\alpha/2} \frac{\sigma}{\sqrt{n}}.
+\]
+
+\pause
+
+We obtained this interval by calculating the following probability 
+\[
+P\left(\overline{X} - z_{\alpha/2} \frac{\sigma}{\sqrt{n}} < \mu < 
+       \overline{X} + z_{\alpha/2} \frac{\sigma}{\sqrt{n}}\right) = 1-\alpha.
+\]
+\pause
+Thus a confidence interval has random endpoints since $\overline{X}$ is random.
+\pause
+We can imagine performing this procedure repeatedly and calculating the 
+proportion of times the CI includes $\mu$. 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{}
+Let $X_i\iid N(10,1^2)$ with $n=4$.
+\pause
+Then a 95\% CI based on the Empirical Rule is
+\pause
+$\overline{X} \pm 2\cdot 1/\sqrt{4} = \overline{X}\pm 1$.
+
+<<fig.width=7>>=
+n <- 100; mu = 10
+d <- data.frame(i=1:n, xbar = rnorm(n,mu,1/sqrt(4))) %>%
+  mutate(lower = xbar - 1,
+         upper = xbar + 1,
+         includes = ifelse(lower < mu & mu < upper, "Yes", "No"))
+
+ggplot(d, aes(x=lower, xend=upper, y=i, yend=i, color = includes)) +
+  geom_segment() +
+  theme_bw() +
+  geom_vline(xintercept = mu) +
+  labs(x="Confidence interval", y = "Trial (i)") +
+  scale_y_reverse()
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Interpretation of Confidence Intervals}
+
+Let $I_i$ be the indicator that the $i$th $100(1-\alpha)$\% confidence interval 
+(CI) for the population mean $\mu$ contains $\mu$, i.e.
+\[
+I_i = \left\{ \begin{array}{rl} 
+1 & \mbox{if the $i$th CI includes $\mu$} \\
+0 & \mbox{if the $i$th CI does not include $\mu$},
+\end{array} \right.
+\]
+\pause
+Then 
+\[
+\lim_{i\to\infty} \frac{I_i}{i} = 1-\alpha.
+\]
+\pause
+<<fig.width=12>>=
+d <- d %>% mutate(proportion = cumsum(includes == "Yes")/(1:n))
+g <- ggplot(d, aes(i,proportion)) + 
+  geom_line() + 
+  theme_bw() + 
+  ylim(0,1) + 
+  geom_hline(yintercept=0.95, color='red')
+g
+@
+
+\end{frame}
+
+
+\subsection{Relation to the binomial distribution}
+\begin{frame}
+\frametitle{Relation to binomial distribution}
+
+Recall that a random variable $Y$ has a binomial distribution if 
+\[ 
+Y = \sum_{i=1}^n I_i
+\]
+where $I_i$ are independent and identically distributed (iid) Bernoulli random 
+variables with a common probability of success $p$.
+\pause
+Here 
+\[ 
+I_i = \left\{ 
+\begin{array}{rl}
+1 & \mbox{if CI $i$ includes $\mu$} \\
+0 & \mbox{if CI $i$ does not include $\mu$} 
+\end{array} 
+\right.
+\]
+\pause
+Since each CI has probability $1-\alpha$ of including $\mu$, 
+\pause 
+we have $I_i \iid Ber(1-\alpha)$ and $Y \sim Bin(n,1-\alpha)$.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Expected number of CIs that cover $\mu$}
+
+If we construct $n$ CIs each with probability $1-\alpha$ of including $\mu$,
+then how many CIs do we expect will include $\mu$.
+\pause
+Since $Y$ is the random number of CIs that \alert{will include the truth}
+\pause 
+and $Y\sim Bin(n,1-\alpha)$, 
+\pause
+we have 
+\[ 
+E[Y] = n(1-\alpha).
+\]
+\pause 
+Calculate the expected number that \alert{will include the truth} for the following
+scenarios:
+\begin{itemize}
+\item $n=100, 1-\alpha=0.95$ then $E[Y] = \pause 100\cdot 0.95 = 95$ \pause
+\item $n=1000, 1-\alpha=0.7$ then $E[Y] = \pause 1000\cdot 0.70 = 700$ \pause
+\item $n=77, 1-\alpha=0.66$ then $E[Y] = \pause 77\cdot 0.66 = 50.82$ \pause
+\end{itemize}
+If we are interested in how many will not cover the truth, 
+this is the random variable $n-Y$ and $E[n-Y] = n-E[Y]$.
+\pause 
+Calculate the expected number that \alert{will not include the truth} for the 
+same scenarios:
+\begin{itemize}
+\item $n=100, 1-\alpha=0.95$ then $E[n-Y] = \pause 100-95 = 5$ \pause
+\item $n=1000, 1-\alpha=0.7$ then $E[n-Y] = \pause 1000-700 = 300$ \pause
+\item $n=77, 1-\alpha=0.66$ then $E[n-Y] = \pause 77-50.82 = 26.18$ \pause
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+Here are the interpretation statements for a $100(1-\alpha)$\% confidence 
+interval for the population mean $\mu$:
+\begin{itemize}
+\item Out of $n$ $100(1-\alpha)$\% confidence interval for $\mu$, 
+we expect $n(1-\alpha)$ confidence intervals to include/cover $\mu$ 
+(and $n\alpha$ to not cover $\mu$.
+\item We are $100(1-\alpha)$\% confident that $\mu$ falls within the bounds
+of the constructed interval.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+I really \alert{hate} the second statement as I believe it gives you a 
+false sense for that you have actually learned.
+\pause
+The second interpretation \alert{DOES NOT} tell you what you should believe, 
+it is really a succinct version of the prevous interpretation.
+
+\vspace{0.1in} \pause
+
+When you see the words confidence or confident, 
+think in your head, the word \alert{frequency}.
+
+\end{frame}
+
+
+
+
+\subsection{Issues with a frequentist interpretation of probability}
+\begin{frame}
+\frametitle{Issues with a frequentist interpretation of probability}
+
+How can you interpret the following probability statements:
+\pause
+\begin{itemize}[<+->]
+\item What is the probability it will rain \alert{tomorrow}?
+\item What is the probability the Vikings will their \alert{next game}?
+\item What is the probability \alert{my unborn child} has Down syndrome?
+\item What is the probability humans are the main cause of climate change on \alert{Earth}?
+\end{itemize}
+
+\end{frame}
+
+
+
+\section{Bayesian interpretation of probability}
+\begin{frame}
+\frametitle{Bayesian interpretation  of probability}
+
+\begin{interpretation}
+The \alert{Bayesian interpretation of probability} is that probability is 
+a statement about your degree of belief that an event will (or has) occurred.
+\end{interpretation}
+
+\vspace{0.1in} \pause
+
+Advantages:
+\begin{itemize}
+\item Can interpret probability for one time events.
+\item States what you should believe.
+\item Natural to make decisions based on your belief.
+\item Everyone has their own probability.
+\end{itemize}
+
+\pause
+
+Disadvantages:
+\begin{itemize}
+\item Requires more math (integration).
+\item Requires you to specify your belief before seeing data.
+\item Has no relation to relative frequency.
+\item Everyone has their own probability.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Credible intervals}
+\begin{frame}
+\frametitle{Credible intervals}
+
+The Bayesian analog to confidence intervals are credible intevals.
+These intervals tell you where \alert{you} should believe the parameter to be.
+\pause
+Thus a $100(1-\alpha)$\% credible interval for $\mu$ tells you that you should 
+believe that the true population mean $\mu$ is in the interval with probability
+$1-\alpha$.
+
+
+
+\vspace{0.1in} \pause
+
+It turns out, under a particular prior, 
+the confidence intervals that we construct are exactly the same as credible
+intervals.
+\pause
+Thus, you will actually be correct even when you misinterpret confidence intervals.
+
+\end{frame}
+
+
+\end{document}

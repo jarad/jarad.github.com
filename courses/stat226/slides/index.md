@@ -28,3 +28,4 @@ you can find them
 
 - [M5S1-CI_sd_known](M5S1-CI_sd_known/M5S1-CI_sd_known.pdf)
 - [M5S2-CI_sd_unknown](M5S2-CI_sd_unknown/M5S2-CI_sd_unknown.pdf)
+- [M5S3-InterpretationOfCIs](M5S3-InterpretationOfCIs/M5S3-InterpretationOfCIs.pdf)
