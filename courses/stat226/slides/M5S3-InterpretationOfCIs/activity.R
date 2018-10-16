@@ -18,7 +18,17 @@ write_csv(d, "CIs.csv")
 
 
 # Calculate these from the population
-mu = 10; sigma = 1
+mu = 69.2; 
+
+
+
+
+
+
+
+
+
+sigma = 4.3
 
 # Ask students to construct CIs based on the known population standard deviation
 # and assuming the population is normally distributed.
