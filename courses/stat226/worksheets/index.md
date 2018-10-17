@@ -33,3 +33,4 @@ you can find them
 - [CI sd known](M5W1-CI_sd_known/M5W1-CI_sd_known.pdf) ([solutions](M5W1-CI_sd_known/M5W1-CI_sd_known_sol.pdf))
 - [CI sd unknown](M5W2-CI_sd_unknown/M5W2-CI_sd_unknown.pdf) ([solutions](M5W2-CI_sd_unknown/M5W2-CI_sd_unknown_sol.pdf))
 - [Interpretation of CIs](M5W3-InterpretationOfCIs/M5W3-InterpretationOfCIs.pdf) ([solutions](M5W3-InterpretationOfCIs/M5W3-InterpretationOfCIs_sol.pdf))
+- [Practice with CIs](M5W4-Practice_with_CIs/M5W4-Practice_with_CIs.pdf) ([solutions](M5W4-Practice_with_CIs/M5W4-Practice_with_CIs_sol.pdf))
