@@ -1,0 +1,187 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M5S4 - Practice with CIs}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\newtheorem{interpretation}{Interpretation}
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Constructing confidence intervals
+  \begin{itemize}
+  \item Review
+  \item Bayesian
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Confidence Interval Review}
+\scriptsize
+Two methods of constructing confidence intervals for the population mean $\mu$:
+\pause
+\[
+\overline{x} \pm z_{\alpha/2} \frac{\sigma}{\sqrt{n}} \pause 
+\qquad \mbox{and} \qquad
+\overline{x} \pm t_{n-1,\alpha/2} \frac{s}{\sqrt{n}}
+\]
+\pause
+where 
+\begin{itemize}[<+->]
+\item $\overline{x}$ is the sample mean,
+\item $s$ is the sample standard deviation,
+\item $n$ is the sample size,
+\item $\sigma$ is the known population standard deviation,
+\item $z_{\alpha/2}$ is the z critical value such that $P(Z>z_{\alpha/2})=\alpha/2$, 
+\item $t_{n-1,\alpha/2}$ is the t critical value such that $P(T_{n-1} > t_{n-1,\alpha/2})$ and
+$n-1$ is the degrees of freedom,
+\item $\alpha$ is the significance (error) level, and
+\item $100(1-\alpha)$\% is the confidence level.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+The interpretation of a $100(1-\alpha)$\% confidence interval is that, on average,
+$100(1-\alpha)$\% of the intervals constructed with this procedure will cover $\mu$.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Deciding which method to use}
+
+\begin{tabular}{llll}
+Data & $\sigma$ & Sample size & Interval \\
+\hline
+Normal & Known & any & $z$ is exact \\
+Normal & Unknown & any & $t$ is exact \pause \\
+\hline
+% Normal & Unknown & large & $z$ is approximate \\
+Not normal & Known & large & $z$ is approximate \\
+Not normal & Unknown & any & $t$ is approximate \\
+\hline
+\end{tabular}
+
+\end{frame}
+
+
+
+
+\section{Estimation of a proportion}
+\subsection{Estimator}
+\begin{frame}
+\frametitle{Estimator for a proportion}
+
+Let $X_i \iid Ber(p)$, then $Y=\sum_{i=1}^n X_i \sim \pause Bin(n,p)$.
+\pause
+An estimator for $p$ is \pause 
+\[ 
+\hat{p} = \frac{Y}{n}
+\]
+\pause
+with 
+\[
+E[\hat{p}] \pause = E\left[ \frac{Y}{n} \right] = \frac{E[Y]}{n} = \frac{np}{p}
+\]
+thus $\hat{p}$ is an unbiased estimator
+\pause
+and 
+\[ 
+Var[\hat{p}] \pause = Var\left[ \frac{Y}{n} \right] = \frac{1}{n^2} Var[Y] = \frac{np(1-p)}{n^2} = \frac{p(1-p)}{n}
+\]
+thus
+\[
+SD[\hat{p}] = \sqrt{Var[\hat{p}] } = \sqrt{\frac{p(1-p)}{n}}.
+\]
+\end{frame}
+
+
+
+\subsection{Confidence interval}
+\begin{frame}
+\frametitle{Confidence interval for a proportion}
+
+To construct a $100(1-\alpha)$\% confidence interval for $p$, 
+we use the formula
+\[
+\hat{p} \pm z_{\alpha/2} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}
+\]
+where $SE[\hat{p}] = \sqrt{\hat{p}(1-\hat{p})/n}$, 
+\pause
+i.e. our estimate of the SD.
+
+\vspace{0.1in} \pause
+
+It is common in polling to report $\hat{p}$ and 
+the \alert{margin of error} $z_{\alpha/2} \sqrt{\hat{p}(1-\hat{p})/n}$.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{2018 Iowa Governor Poll}
+
+In the most recent Des Moines register poll of 555 likely voters
+{\tiny \url{https://www.realclearpolitics.com/epolls/2018/governor/ia/iowa_governor_reynolds_vs_hubbell-6477.html}}
+\pause
+43\% indicated they would vote for Fred Hubbell with a margin of error of 4.2.
+
+\vspace{0.2in} \pause
+
+Thus a 95\% confidence interval for the actual proportion who say they would 
+vote for Fred Hubbell is 
+\[
+0.43 \pm 0.042 = (0.388,0.472) = (38.8\%,47.2\%).
+\]
+\pause
+The margin of error calculation is 
+\[ 
+2\cdot \sqrt{\frac{0.43(1-0.43)}{555}} = 0.042 = 4.2\%.
+\]
+The best resource for combining all the information from polls is 538:
+{\tiny \url{https://projects.fivethirtyeight.com/2018-midterm-election-forecast/governor/}}
+
+
+\end{frame}
+
+\end{document}
