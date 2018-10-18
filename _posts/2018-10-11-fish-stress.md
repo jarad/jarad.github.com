@@ -1,7 +1,7 @@
 ---
 layout: post
-title: ""
-description: "Fish stress"
+title: "Fish stress"
+description: ""
 category: [Consulting]
 tags: [regression, exploratory, clustering]
 ---
