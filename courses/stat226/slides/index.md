@@ -30,3 +30,4 @@ you can find them
 - [M5S2-CI_sd_unknown](M5S2-CI_sd_unknown/M5S2-CI_sd_unknown.pdf)
 - [M5S3-InterpretationOfCIs](M5S3-InterpretationOfCIs/M5S3-InterpretationOfCIs.pdf)
 - [M5S4-Practice_with_CIs](M5S4-Practice_with_CIs/M5S4-Practice_with_CIs.pdf)
+- [M6S1-StatisticalHypotheses](M6S1-StatisticalHypotheses/M6S1-StatisticalHypotheses.pdf)

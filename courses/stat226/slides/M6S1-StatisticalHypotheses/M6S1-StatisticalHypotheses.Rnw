@@ -1,0 +1,430 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M6S1 - Statistical Hypotheses}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Statistical Modeling:
+  \begin{itemize}
+  \item Independent
+  \item Identically distributed
+  \item Normal
+  \item Parameters
+  \end{itemize}
+\item Statistical Hypotheses
+  \begin{itemize}
+  \item Scientific hypotheses
+  \item Statistical hypotheses
+  \item Null vs alternative hypotheses
+  \item One-sided vs two-sided
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\section{Statistical Modeling}
+\begin{frame}
+\frametitle{Confidence interval construction}
+
+\small
+
+The United State Department of Agriculture National Agricultural Statistics 
+Service reports the estimated corn yield in Iowa every year. 
+\pause
+To do so, they survey a random sample of corn growers and ask those growers
+to report the mean yield per acre on their farm.
+\pause
+In 2017, the 110 surveyed growers had an average yield of 202.0 bushels per 
+acre with a standard deviation of 31.6 bushels per acre.
+\pause
+Construct a 95\% confidence interval for the mean corn yield across Iowa.
+
+\vspace{0.1in}
+
+Let $X_i$ be the mean yield on farm $i$ with $E[X_i] = \mu$ and 
+$SD[X_i] = \sigma$ which are both unknown.
+\pause
+We had a sample size of 110 with $\overline{x}=202.2$ bushels per acre and 
+$s=31.6$ bushels per acre.
+\pause
+With a confidence level of 95\%, we have a significance level of 0.05, and 
+a critical value of $t_{109,0.025} < t_{100,0.025} = 1.984$.
+\pause
+Thus a 95\% confidence interval for the mean yield across growers is 
+\[ 
+202 \pm 1.984\frac{31.6}{\sqrt{110}} = 
+(196.3 \mbox{ bushels per acre}, 207.7 \mbox{ bushels per acre}).
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Assumptions}
+
+Let $X_i$ be the mean yield on farm $i$ and assume
+\[
+X_i \iid N(\mu,\sigma^2).
+\]
+where $iid$ stands for independent and identically distributed.
+\pause
+We are assuming
+\begin{itemize}[<+->]
+\item $X_i$ are independent,
+\item $X_i$ are identically distributed, i.e. each $X_i$ is $N(\mu,\sigma^2)$,
+\item $X_i$ are normally distributed, and
+\item $X_i$ have a common mean $\mu$ and standard deviation $\sigma$.
+\end{itemize}
+\end{frame}
+
+
+
+
+\subsection{Independent}
+\begin{frame}
+\frametitle{Independence}
+
+Recall that $X_1$ is \alert{statistically independent} of $X_2$ if the value of 
+$X_1$ does not affect the distribution of $X_2$. 
+\pause
+In the corn yield example, $X_2 \sim N(\mu,\sigma^2)$, but suppose I told you 
+that one farm had a yield of 210 bushels per acre. 
+\pause
+Does that change the distribution of $X_2$?
+
+\vspace{0.1in}\pause
+
+Common ways for independence to be violated:
+\pause
+\begin{itemize}[<+->]
+\item Temporal effects, e.g. yield this year is likely similar to yield last year
+\item Spatial effects, e.g. yield nearby is probably similar
+\item Clustering, e.g. these growers all used the same corn variety
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Everything we do in this class requires the independence assumption, 
+but you should be aware that it may violated easily.
+
+\end{frame}
+
+
+
+
+\subsection{Identically distributed}
+\begin{frame}
+\frametitle{Identically distributed}
+
+\alert{Identically distributed} means that each random variable has the same
+distribution, 
+\pause
+e.g. $X_i \sim N(\mu,\sigma^2)$ means that each $X_i$ has a normal distribution
+with mean $\mu$ and standard deviation $\sigma$.
+\pause
+
+<<fig.width=8>>=
+m <- 202
+s <- 31.6
+curve(dnorm(x, m, s), m-3*s, m+3*s,
+      main = paste0("N(",m,",",round(s^2,1),")"),
+      xlab='x', ylab='f(x)')
+@
+
+\end{frame}
+
+
+
+\subsection{Normal}
+\begin{frame}
+\frametitle{Normal}
+
+We can plot a histogram of the data to determine whether it is approximately
+normal.
+\pause
+
+<<fig.width=7>>=
+n <- 110
+xbar <- 202
+s <- 31.6
+y <- 202 + 31.6*rnorm(n)
+hist(y, 30, prob = TRUE, 
+     main="Plot of grower corn yields", xlab="yield (bushels per acre)",
+     ylab="pdf")
+curve(dnorm(x,xbar,s), col='red', add=TRUE)
+@
+
+\end{frame}
+
+
+
+\subsection{Robustness}
+\begin{frame}
+\frametitle{Robustness}
+
+Typically none of our assumptions are met exactly.
+\pause
+But the $t$-tools, e.g. confidence intervals based on the $t$ distribution, are
+pretty robust to deviations from these assumptions.
+\pause
+I would focus on lack of independence, e.g. 
+\begin{itemize}
+\item temporal effects,
+\item spatial effects, and
+\item clustering.
+\end{itemize}
+\pause
+A \alert{random sample} will go a long way to help ensure that your data are
+independent.
+
+\end{frame}
+
+
+\subsection{Parameters}
+\begin{frame}
+\frametitle{Parameters}
+
+Recall that 
+\begin{itemize}
+\item $\mu$ is the population mean and
+\item $\sigma$ is the population standard deviation.
+\end{itemize}
+\pause
+We've assumed each observation has the same mean and standard deviation. 
+\pause
+Often we would like to make formal statements about these parameters
+(typically the mean), e.g.
+\begin{itemize}[<+->]
+\item The mean corn yield in Iowa is greater than 200 bushels per acre.
+\item The mean corn yield in Iowa is greater than last year. 
+\item The mean corn yield in Iowa is different than last year.
+\item The mean corn yield in Iowa is less than last year.
+\end{itemize}
+\pause
+To make these formal statements about a population parameter, 
+we turn to \alert{Statistical Hypotheses}.
+
+\end{frame}
+
+
+
+
+
+\section{Statisticl Hypotheses}
+\subsection{Scientific Hypotheses}
+\begin{frame}
+\frametitle{Scientific Hypotheses}
+
+A \alert{scientific hypothesis} is a statement about how we think the world
+may work. 
+
+\vspace{0.1in} \pause
+
+Here are some scientific hypotheses that we may be 
+interested in testing
+\pause
+\begin{itemize}[<+->]
+\item The coin is biased.
+\item Subway's chicken breast is less than half chicken.
+\item Average human body temperature is $98.6^o$F.
+\item Corn yield is higher when fertilizer is added.
+\item High doses of vitamin C help prevent illness (or reduce illness duration).
+\item Training at least 10 hours a week helps prevent injury.
+\item An advertising strategy increased sales.
+\end{itemize}
+
+\end{frame}
+
+\subsection{Statistical Hypotheses}
+\begin{frame}
+\frametitle{Statistical hypotheses}
+
+\alert{Statistical hypotheses} are statements about the model assumptions.
+\pause
+In this course, they will always be statements about the population parameters,
+specifically the population mean.
+\pause
+Examples:
+\begin{itemize}[<+->]
+\item Let $X_i$ be an indicator the $i$th coin flipped heads with $E[X_i] = p$. 
+An unbiased coin has $p=0.5$ and a biased coin has $p\ne 0.5$.
+\item Let $X_i$ be the percentage of chicken in breast $i$ with $E[X_i] = \mu$.
+If $\mu<50\%$, then (on average) the chicken breasts are less than half chicken.
+\item Let $X_i$ be the body temperature for individual $i$ with $E[X_i] = \mu$.
+If $\mu=98.6^o$F, then the average human body temperature is $98.6^o$F and 
+$\mu\ne 98.6^o$F otherwise.
+\end{itemize}
+\pause
+The hypotheses are always about the population and never about an individual.
+
+\end{frame}
+
+
+\subsection{Null vs alternative hypotheses}
+\begin{frame}
+\frametitle{Null vs alternative hypotheses}
+
+The methodology we will use (based on \pvalue{}s) requires us to specify a 
+null hypothesis and an alternative hypothesis.
+\pause
+\begin{definition}
+The \alert{null hypotheses, $H_0$,} is the generally accepted (or default) state of the 
+world. 
+\pause
+The \alert{alternative hypothesis, $H_a$,} is a proposed deviation from the generally
+accepted (or default) state of the world. 
+\end{definition}
+
+\pause
+
+Examples:
+\begin{itemize}[<+->]
+\item Coin flipping: $H_0: p=0.5$ versus $H_a: p\ne 0.5$.
+\item Subway: $H_0: \mu\ge 50\%$ versus $H_a: \mu <50\%$.
+\item Temperature: $H_0: \mu = 98.6^o$F versus $H_a: \mu \ne 98.6^o$F.
+\end{itemize}
+
+\pause
+
+The null hypothesis always includes the equality 
+\pause 
+and, typically, we ignore the inequality, e.g. 
+
+\begin{itemize}
+\item Subway: $H_0: \mu= 50\%$ versus $H_a: \mu <50\%$.
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{One-sided vs two-sided hypotheses}
+\begin{frame}
+\frametitle{One-sided vs two-sided hypotheses}
+
+\begin{definition}
+A \alert{one-sided alternative hypothesis} has an inequality, i.e. $<$ or $>$,
+is is associated with the scientific hypotheses that include the words
+\emph{less than} or \emph{greater than}.
+\pause 
+A \alert{two-sided alternative hypothesis} has a \emph{not equal to sign}, 
+i.e. $\ne$ and is associated with the scientific hypotheses that does not 
+specify a direction.
+\end{definition}
+\pause
+
+Examples:
+\begin{itemize}[<+->]
+\item Coin flipping: two-sided $H_0: p=0.5$ versus $H_a: p\ne 0.5$.
+\item Subway: one-sided $H_0: \mu\ge 50\%$ versus $H_a: \mu <50\%$.
+\item Temperature: two-sided $H_0: \mu = 98.6^o$F versus $H_a: \mu \ne 98.6^o$F.
+\end{itemize}
+
+\end{frame}
+
+
+
+\section{Examples}
+\subsection{ACT scores}
+\begin{frame}
+\frametitle{ACT scores}
+
+The mean composite score on the ACT among the students at a large Midwestern 
+University is 24. 
+We wish to know whether the average composite ACT score for business majors is 
+different from the average for the University. We sample 100 business majors 
+and calculate an average score of 26 with a standard deviation of 4.
+
+\vspace{0.1in} \pause
+
+Let $X_i$ be the composite ACT score for business student $i$ with 
+$E[X_i]=\mu$. 
+\pause
+We have a null hypothesis that the average composite ACT score for business 
+students is 24 and two-sided alternative hypothesis.
+\pause
+So we have 
+\[
+H_0: \mu=24 \quad\mbox{versus} \quad
+H_a: \mu\ne 24.
+\]
+
+{\tiny \url{https://wiki.uiowa.edu/display/bstat/Hypothesis+Testing}}
+
+\end{frame}
+
+
+\subsection{Foothill Hosiery socks}
+\begin{frame}
+\frametitle{Foothill Hosiery socks}
+
+\footnotesize
+
+Foothill Hosiery recently received an order for children’s socks decorated with embroidered patches of cartoon characters. Foothill did not have the right machinery to sew on the embroidered patches and contracted out the sewing. While the order was filled and Foothill made a profit on it, the sewing contractor’s price seemed high, and Foothill had to keep pressure on the contractor to deliver the socks by the date agreed upon. Foothill’s CEO, John McGrath, has explored buying the machinery necessary to allow Foothill to sew patches on socks themselves. He has discovered that if more than a quarter of the children’s socks they make are ordered with patches, the machinery will be a sound investment. John asks Kevin to find out if more than 35 percent of children’s socks are being sold with patches.
+
+
+\vspace{0.1in} \pause
+
+Let $X_i$ be an indicator that sock $i$ has patches with 
+$E[X_i]=\mu$ (or $p$). 
+\pause
+We have an alternative hypothesis that more than 35 percent of socks have 
+patches and a null hypothesis that is the opposite.
+\pause
+So we have 
+\[
+H_0: \mu\le 0.35 \quad\mbox{versus} \quad
+H_a: \mu> 0.35
+\]
+\pause
+or
+\[
+H_0: \mu= 0.35 \quad\mbox{versus} \quad
+H_a: \mu> 0.35
+\]
+
+{\tiny \url{https://opentextbc.ca/introductorybusinessstatistics/chapter/hypothesis-testing-2/}}
+
+\end{frame}
+
+
+
+\end{document}
