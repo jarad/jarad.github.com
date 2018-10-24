@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Proportion of individuals who have cell phones"
+title: "Percentage of individuals who have cell phones"
 description: ""
 category: [News]
 tags: [percentage]
