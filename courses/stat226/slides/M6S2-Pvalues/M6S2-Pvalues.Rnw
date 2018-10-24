@@ -1,0 +1,517 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M6S2 - P-values}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Review of statistical hypotheses
+  \begin{itemize}
+  \item Null vs alternative
+  \item One-sided vs two-sided
+  \end{itemize}
+\item Pvalues
+  \begin{itemize}
+  \item test statistic
+  \item as or more extreme
+  \item interpretation
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\section{Statistical hypotheses}
+\begin{frame}
+\frametitle{Statistical hypotheses}
+
+Most statistical hypotheses are statements about a population parameters.
+
+\vspace{0.1in} \pause
+
+For example, for a population mean $\mu$, we could have the following 
+null hypothesis with a two-sided alternative hypothesis:
+\[
+H_0: \mu=0 \quad \mbox{versus} \quad H_a: \mu\ne 0
+\]
+\pause
+Or we could have the following null hypothesis with a one-sided alternative
+\[ 
+H_0: \mu = 98.6 \quad \mbox{versus} \quad H_a: \mu > 98.6
+\]
+or, equivalently
+\[ 
+H_0: \mu lle 98.6 \quad \mbox{versus} \quad H_a: \mu > 98.6
+\]
+
+\end{frame}
+
+
+
+% \subsection{Decision errors}
+% \begin{frame}
+% \frametitle{Decision errors}
+% 
+% At some point, 
+% we will make a decision about which hypothesis we
+% think is true. 
+% \pause 
+% When we make a decision, we can be correct or incorrect, 
+% i.e. we could have made an error:
+% \pause
+% \begin{center}
+% \begin{tabular}{lrr}
+% & \multicolumn{2}{c}{Decision} \\
+% Truth & Accept $H_0$ & Accept $H_a$ \\
+% \hline
+% $H_0$ is true & Correct & \alert{Type I error} \\
+% $H_a$ is true & \alert{Type II error} & Correct \\
+% \hline
+% \end{tabular}
+% \end{center}
+% 
+% By \alert{accept}, we really mean to \emph{proceed as though this hypothesis
+% is true}.
+% \pause
+% \alert{Be careful}, in the future we will \alert{never} use the \alert{accept}
+% terminology!
+% 
+% \end{frame}
+
+
+
+
+\section{P-values}
+\begin{frame}
+\frametitle{P-values}
+
+\begin{definition}
+A \alert{test statistic} is a \alert{summary statistic} that you use to make
+a statement about a hypothesis.
+\pause
+A \alert{p-value} is the (frequency) probability 
+\pause 
+of obtaining a test statistic
+\pause 
+as or more extreme than you observed 
+\pause 
+if the null hypothesis (model) is true.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+We will discuss the following phrases one at a time
+\begin{itemize}
+\item if the null hypothesis (model) is true,
+\item test statistic, 
+\item as or more extreme than you observed, and
+\item (frequency) probability.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Null hypothesis (model)}
+\begin{frame}
+\frametitle{Null hypothesis (model)}
+
+Recall that we have a null hypothesis, e.g. 
+\[ 
+H_0: \mu = m_0
+\]
+for some known value $m_0$, e.g. 0. 
+\pause
+But we also have statistical assumptions, e.g. 
+\[ 
+X_i \iid N(\mu,\sigma^2).
+\]
+\pause
+Thus, the statement \alert{if the null hypothesis (model) is true} means that 
+we assume 
+\[
+X_i \iid N(m_0,\sigma^2).
+\]
+If the null hypothesis is true, we have
+\[ 
+\frac{\overline{X}-m_0}{S/\sqrt{n}} \sim \pause t_{n-1}
+\]
+where $\overline{X}$ is the sample mean and $S$ is the sample standard deviation.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{ACT scores example}
+
+The mean composite score on the ACT among the students at Iowa State 
+University is 24. 
+We wish to know whether the average composite ACT score for business majors is 
+different from the average for the University. We sample 100 business majors 
+and calculate an average score of 26 with a standard deviation of 4.
+
+\vspace{0.1in} \pause
+
+Let $X_i$ be the composite ACT score for student $i$ who is a business major
+at Iowa State University with $E[X_i]=\mu$.
+
+\vspace{0.1in} \pause
+
+\alert{What is the null hypothesis?}
+\pause
+The null hypothesis is 
+\[
+H_0: \mu = 24.
+\]
+
+\vspace{0.1in} \pause
+
+\alert{What is the null hypothesis model?}
+\pause
+\[
+X_i \iid N(24,\sigma^2).
+\]
+\end{frame}
+
+
+
+\subsection{Test statistic}
+\begin{frame}
+\frametitle{Test statistic}
+
+Let $X_i \iid N(\mu,\sigma^2)$. 
+\pause
+The following are all summary statistics:
+\begin{itemize}
+\item sample mean ($\overline{X}$),
+\item sample median (Q2),
+\item sample standard deviation ($S$),
+\item sample variance ($S^2$),
+\item min, max, range, Q1, Q3, interquartile range, etc.
+\end{itemize}
+
+\pause
+
+The \alert{test statistic ... you observed} is just the actual value you 
+calculate from your sample, e.g. the observed sample mean ($\overline{x}$), 
+the observed sample standard deviation ($s$), etc.
+
+\vspace{0.1in} \pause
+
+We will be primarily interested in the \alert{t-statistic}:
+\[
+t = \frac{\overline{x}-\mu}{s/\sqrt{n}}.
+\]
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{ACT scores example}
+
+The mean composite score on the ACT among the students at Iowa State 
+University is 24. 
+We wish to know whether the average composite ACT score for business majors is 
+different from the average for the University. We sample 100 business majors 
+and calculate an average score of 26 with a standard deviation of 4.
+
+\vspace{0.1in} \pause
+
+\alert{What is the observed sample mean?}
+\pause
+\[ \overline{x} = 26\]
+
+\pause
+
+\alert{What is the observed sample standard deviation?}
+\pause
+\[
+s = 4
+\]
+
+\pause
+
+\alert{What is the t-statistic when the null hypothesis is true?}
+\[
+t=\frac{26-24}{4/\sqrt{100}} = 5
+\]
+\end{frame}
+
+
+
+\subsection{As or more extreme}
+\begin{frame}
+\frametitle{As or more extreme}
+
+The sampling distribution of the t-statistic is a $t$-distribution with $n-1$
+degrees of freedom where $n$ is the sample size, i.e. 
+\[ 
+T_{n-1} = \frac{\overline{X}-\mu}{S/\sqrt{n}} \sim t_{n-1}.
+\]
+If the null hypothesis is true, replace $\mu$ with $m_0$.
+\pause
+The \alert{as or more extreme} regions depend on the \alert{alternative}
+hypothesis.
+When the null hypothesis is true and 
+for an observed $t$-statistic $t$ and a random variable $T_{n-1}$ that has a 
+$t$-distribution with $n-1$ degrees of freedom,
+\pause
+the \alert{as or more extreme regions} are
+\pause
+\begin{itemize}[<+->]
+\item $H_a: \mu\ne m_0$ implies the region $T_{n-1}<-|t|$ or $T_{n-1}>|t|$, 
+\item $H_a: \mu< m_0$ implies the region $T_{n-1}<t$, and
+\item $H_a: \mu> m_0$ implies the region $T_{n-1}>t$.
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Graphical depiction of as or more extreme regions}
+<<fig.width=7>>=
+t <- 2; df <- 5
+xx <- seq(t,5,length=101)
+
+opar = par(mfrow=c(1,3), mar=c(2,0,4,0)+0.1)
+
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="Two-sided", xlab="", ylab="")
+axis(1,0,"0"); axis(1, t, "t")
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
+polygon(c(-xx,rev(-xx)), c(rep(0,length(xx)), dt(rev(-xx), df)), col='red', border=NA)
+
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="One-sided lower", xlab="", ylab="")
+axis(1,0,"0"); axis(1, t, "t")
+xx2 <- seq(t,-5,length=100)
+polygon(c(xx2,rev(xx2)), c(rep(0,length(xx2)), dt(rev(xx2), df)), col='red', border=NA)
+
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="One-sided upper", xlab="", ylab="")
+axis(1,0,"0"); axis(1, t, "t")
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
+
+par(opar)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Graphical depiction of as or more extreme regions}
+<<fig.width=7>>=
+t <- -2; df <- 5
+xx <- seq(abs(t),5,length=101)
+
+opar = par(mfrow=c(1,3), mar=c(2,0,4,0)+0.1)
+
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="Two-sided", xlab="", ylab="")
+axis(1,0,"0"); axis(1, t, "t")
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
+polygon(c(-xx,rev(-xx)), c(rep(0,length(xx)), dt(rev(-xx), df)), col='red', border=NA)
+
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="One-sided lower", xlab="", ylab="")
+axis(1,0,"0"); axis(1, t, "t")
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
+
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="One-sided upper", xlab="", ylab="")
+axis(1,0,"0"); axis(1, t, "t")
+xx <- seq(t,5,length=100)
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
+
+par(opar)
+@
+\end{frame}
+
+
+\subsection{Probability}
+\begin{frame}
+\frametitle{(Frequency) Probability}
+
+The \alert{probability of being as or more extreme than you observed} is just 
+the areas depicted on the previous slides.
+\pause
+In particular,
+\begin{itemize}[<+->]
+\item $H_a: \mu\ne m_0$ implies the probability 
+\[ \begin{array}{rl}
+P(T_{n-1}<-|t| \mbox{ or } T_{n-1}>|t|) 
+&= \pause P(T_{n-1}<-|t|) + P(T_{n-1}>|t|)) \pause \\
+&= 2P(T_{n-1}>|t|)
+\end{array} \]
+\item $H_a: \mu< m_0$ implies the probability
+\[
+P(T_{n-1}<t) = P(T_{n-1} > -t)
+\]
+\item $H_a: \mu> m_0$ implies the probability
+\[
+P(T_{n-1}>t).
+\]
+\end{itemize}
+
+
+\end{frame}
+
+
+\subsection{based on the population mean}
+\begin{frame}
+\frametitle{P-values (based on the population mean)}
+
+\begin{definition}
+A \alert{p-value} is the (frequency) probability
+of obtaining a test statistic
+as or more extreme than you observed
+if the null hypothesis (model) is true.
+\end{definition}
+
+So for the null hypothesis $H_0: \mu=m_0$, calculate
+\[
+t = \frac{\overline{x}-m_0}{s/\sqrt{n}}
+\]
+\pause
+and find the appropriate probability:
+\begin{itemize}[<+->]
+\item $H_a: \mu\ne m_0$ implies \pvalue{} = $2P(T_{n-1}>\,\,|t|),$
+\item $H_a: \mu< m_0$ implies \pvalue{} = $\phantom{2}P(T_{n-1} > -t),$ and
+\item $H_a: \mu> m_0$ implies \pvalue{} = $\phantom{2}P(T_{n-1} > \phantom{-}t).$
+\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{ACT scores example}
+
+\footnotesize
+
+The mean composite score on the ACT among the students at Iowa State 
+University is 24. 
+We wish to know whether the average composite ACT score for business majors is 
+different from the average for the University. We sample 100 business majors 
+and calculate an average score of 26 with a standard deviation of 4.
+
+\vspace{0.1in} \pause
+
+Let $X_i$ be the composite ACT score for student $i$ who is a business major
+at Iowa State University.
+\pause
+Assume $X_i\iid N(\mu,\sigma^2)$.
+\pause
+
+\begin{itemize}
+\item Null hypothesis \pause $H_0:\mu=24$ \pause
+\item Alternative hypothesis \pause $H_a:\mu\ne 24$ \pause
+\item $t$-statistic:
+\[
+t = \frac{26-24}{4/\sqrt{100}} = 5
+\]
+\pause
+\item \pvalue{}:
+\[ \begin{array}{rll}
+2P(T_{n-1}>|t|) \pause
+&= 2P(T_{99}>5) \pause \\
+&< 2P(T_{80}>5) \pause&< 2P(T_{80} > 3.416) \pause \\
+&= 2\cdot 0.0005 \pause&= 0.001 \\
+\end{array} \]
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Use}
+\begin{frame}
+\frametitle{Interpretation}
+
+In 2016, the American Statistical Association published 
+\href{https://amstat.tandfonline.com/doi/abs/10.1080/00031305.2016.1154108}{Statement on $p$-values}
+\pause
+that states the following principles:
+\begin{enumerate}[<+->]
+\item \alert{$P$-values can indicate how incompatible the data are with a specified 
+statistical model.}
+\item $P$-values do \alert{not} measure the probability that the studied hypothesis is true,
+or the probability that the data were produced by random chance alone.
+\item Scientific conclusions and business or policy decisions should \alert{not} be 
+based only on whether a \pvalue{} passes a specific threshold.
+\item Proper inference requires full reporting and transparency.
+\item A \pvalue{}, or statistical significance, does \alert{not} measure the size of an
+effect or the importance of a result.
+\item By itself, a \pvalue{} does \alert{not} provide a good measure of evidence regarding 
+a model or hypothesis.
+\end{enumerate}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Interpretation (cont.)}
+
+\footnotesize
+
+The null hypothesis model is 
+\[ 
+X_i \iid N(m_0,\sigma^2)
+\]
+for some specificed value $m_0$. 
+
+\vspace{0.1in} \pause
+
+$P$-values can indicate how incompatible the data are with [the null hypothesis] model.
+
+\vspace{0.1in} \pause
+
+\alert{The smaller the \pvalue{} the larger the incompatibility of the data with the 
+null hypothesis model.}
+
+\vspace{0.1in} \pause
+
+Thus, a small \pvalue{} indicates the null hypothesis model is likely not correct.
+\pause
+But there are many assumptions in this model that may be wrong, \pause e.g. 
+\begin{itemize}
+\item independence,
+\item identically distributed,
+\item normality,
+\item mean is $m_0$, and
+\item constant variance.
+\end{itemize}
+The \pvalue{} doesn't tell us which one is wrong.
+
+\end{frame}
+
+\end{document}
