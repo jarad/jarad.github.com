@@ -27,7 +27,14 @@ library("xtable")
 set.seed(2)
 @
 
+<<>>=
+hypothesis <- list(
+  upper = expression(paste(H[a],":",mu,">",m[0])),
+  lower = expression(paste(H[a],":",mu,"<",m[0])),
+  twosided = expression(paste(H[a],":",mu!=m[0]))
+)
 
+@
 
 \begin{document}
 
@@ -164,11 +171,11 @@ we assume
 \[
 X_i \iid N(m_0,\sigma^2).
 \]
-If the null hypothesis is true, we have
-\[ 
-\frac{\overline{X}-m_0}{S/\sqrt{n}} \sim \pause t_{n-1}
-\]
-where $\overline{X}$ is the sample mean and $S$ is the sample standard deviation.
+% If the null hypothesis is true, we have
+% \[ 
+% \frac{\overline{X}-m_0}{S/\sqrt{n}} \sim \pause t_{n-1}
+% \]
+% where $\overline{X}$ is the sample mean and $S$ is the sample standard deviation.
 \end{frame}
 
 
@@ -179,8 +186,8 @@ where $\overline{X}$ is the sample mean and $S$ is the sample standard deviation
 The mean composite score on the ACT among the students at Iowa State 
 University is 24. 
 We wish to know whether the average composite ACT score for business majors is 
-different from the average for the University. We sample 100 business majors 
-and calculate an average score of 26 with a standard deviation of 4.
+different from the average for the University. We sample 51 business majors 
+and calculate an average score of 26 with a standard deviation of 4.38.
 
 \vspace{0.1in} \pause
 
@@ -230,12 +237,15 @@ the observed sample standard deviation ($s$), etc.
 
 \vspace{0.1in} \pause
 
-We will be primarily interested in the \alert{t-statistic}:
+We will be primarily interested in the \alert{$t$-statistic}:
 \[
-t = \frac{\overline{x}-\mu}{s/\sqrt{n}}.
+t = \frac{\overline{x}-m_0}{s/\sqrt{n}}.
 \]
 
 \end{frame}
+
+
+
 
 
 
@@ -245,8 +255,8 @@ t = \frac{\overline{x}-\mu}{s/\sqrt{n}}.
 The mean composite score on the ACT among the students at Iowa State 
 University is 24. 
 We wish to know whether the average composite ACT score for business majors is 
-different from the average for the University. We sample 100 business majors 
-and calculate an average score of 26 with a standard deviation of 4.
+different from the average for the University. We sample 51 business majors 
+and calculate an average score of 26 with a standard deviation of 4.38.
 
 \vspace{0.1in} \pause
 
@@ -266,7 +276,7 @@ s = 4
 
 \alert{What is the t-statistic when the null hypothesis is true?}
 \[
-t=\frac{26-24}{4/\sqrt{100}} = 5
+t=\frac{26-24}{4.38/\sqrt{51}} \approx 3.261
 \]
 \end{frame}
 
@@ -274,119 +284,244 @@ t=\frac{26-24}{4/\sqrt{100}} = 5
 
 \subsection{As or more extreme}
 \begin{frame}
-\frametitle{As or more extreme}
+\frametitle{As or more extreme than you observed}
 
-The sampling distribution of the t-statistic is a $t$-distribution with $n-1$
-degrees of freedom where $n$ is the sample size, i.e. 
-\[ 
-T_{n-1} = \frac{\overline{X}-\mu}{S/\sqrt{n}} \sim t_{n-1}.
+When you collect data and assume the null hypothesis is true, 
+i.e. $H_0: \mu=m_0$, 
+\pause
+you calculate the $t$-statistic using the formula
+\[
+t = \frac{\overline{x} - m_0}{s/\sqrt{n}}.
 \]
-If the null hypothesis is true, replace $\mu$ with $m_0$.
 \pause
-The \alert{as or more extreme} regions depend on the \alert{alternative}
-hypothesis.
-When the null hypothesis is true and 
-for an observed $t$-statistic $t$ and a random variable $T_{n-1}$ that has a 
-$t$-distribution with $n-1$ degrees of freedom,
+This is what \alert{you observe}. 
 \pause
-the \alert{as or more extreme regions} are
+If 
+\begin{itemize}
+\item $\mu=m_0$ then it is likely that $t \approx 0$,
+\item $\mu > m_0$ then it is likely that $t > 0$, and
+\item $\mu < m_0$ then it is likely that $t < 0$.
+\end{itemize}
+\pause
+The phrase \alert{as or more extreme} means \alert{away from the null hypothesis
+and toward the alternative}.
+
+\vspace{0.1in} \pause
+
+Thus the \alert{as or more extreme} regions are
 \pause
 \begin{itemize}[<+->]
-\item $H_a: \mu\ne m_0$ implies the region $T_{n-1}<-|t|$ or $T_{n-1}>|t|$, 
-\item $H_a: \mu< m_0$ implies the region $T_{n-1}<t$, and
-\item $H_a: \mu> m_0$ implies the region $T_{n-1}>t$.
+\item $H_a: \mu> m_0$ implies the region $T_{n-1}>t$,
+\item $H_a: \mu< m_0$ implies the region $T_{n-1}<t$, and 
+\item $H_a: \mu\ne m_0$ implies the region $T_{n-1}<-|t|$ or $T_{n-1}>|t|$.
 \end{itemize}
-
 \end{frame}
 
 
 
 \begin{frame}
-\frametitle{Graphical depiction of as or more extreme regions}
+\frametitle{As or more extreme than you observed (graphically)}
+<<>>=
+t = 1
+plot(c(-4,4), c(-0.5,3.5), 
+     xlim = c(-4,4), ylim=c(-.5,3.5),
+     type="n", axes=FALSE, frame=TRUE, xlab="", ylab="",
+     main = "Positive t statistic")
+axis(1,0,0); axis(1,t,"t"); axis(1,-t,"-t")
+abline(v = c(-t,t), col='gray', lty=3)
+
+y <- 3
+text(0,y,hypothesis$upper, pos=3)
+segments(-4,y,4,y); arrows(t,y,4,y, col='red', lwd=3)
+
+y <- 2
+text(0,y,hypothesis$lower, pos=3)
+segments(-4,y,4,y); arrows(t,y,-4,y, col='red', lwd=3)
+
+y <- 0
+text(0,y,hypothesis$twosided, pos=3)
+segments(-4,y,4,y); arrows(abs(t),y,4,y, col='red', lwd=3); arrows(-abs(t),y,-4,y, col='red', lwd=3)
+
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{As or more extreme than you observed (graphically)}
+<<>>=
+t = -1
+plot(c(-4,4), c(-0.5,3.5), 
+     xlim = c(-4,4), ylim=c(-.5,3.5),
+     type="n", axes=FALSE, frame=TRUE, xlab="", ylab="",
+     main = "Negative t statistic")
+axis(1,0,0); axis(1,t,"t"); axis(1,-t,"-t")
+abline(v = c(-t,t), col='gray', lty=3)
+
+y <- 3
+text(0,y,hypothesis$upper, pos=3)
+segments(-4,y,4,y); arrows(t,y,4,y, col='red', lwd=3)
+
+y <- 2
+text(0,y,hypothesis$lower, pos=3)
+segments(-4,y,4,y); arrows(t,y,-4,y, col='red', lwd=3)
+
+y <- 0
+text(0,y,hypothesis$twosided, pos=3)
+segments(-4,y,4,y); arrows(abs(t),y,4,y, col='red', lwd=3); arrows(-abs(t),y,-4,y, col='red', lwd=3)
+
+@
+\end{frame}
+
+
+
+
+\subsection{Sampling distribution}
+\begin{frame}
+\frametitle{Sampling distribution of the $t$-statistic}
+Recall that if $X_i \iid N(\mu,\sigma^2)$, then 
+\[ 
+T_{n-1} = \frac{\overline{X}-\mu}{S/\sqrt{n}} \sim \pause t_{n-1}
+\]
+i.e. $T_{n-1}$ has a $t$ distribution with $n-1$ degrees of freedom. 
+
+\vspace{0.1in} \pause
+
+If the null hypothesis, $H_0: \mu = m_0$ is true, then 
+\[ 
+T_{n-1} = \frac{\overline{X}-m_0}{S/\sqrt{n}} \sim \pause t_{n-1}.
+\] 
+
+\pause
+
+Recall that for random variables, we can calculate probabilities such as the 
+following by calculating areas under the pdf.
+\pause
+\begin{itemize}
+\item $P(T_5 > 2.015) = \pause 0.05$ \pause
+\item $P(T_{18} > 3.197) = \pause 0.0025$ \pause
+\item $P(T_{26} < -1.315) = \pause P(T_{26} > 1.315) = \pause 0.10$ (by symmetry).
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Probability}
+\begin{frame}
+\frametitle{Probability}
+
+The \alert{ (frequency) probability} of being as or more extreme than you 
+observed is just the areas under the pdf of a $t$-distribution with $n-1$ 
+degrees of freedom for the \alert{as or more extreme than you observed} regions.
+
+\vspace{0.1in} \pause
+
+In particular if you observe the $t$-statistic $t$ and have $n$ observations, 
+then these are the probability calculations associated with each alternative
+hypothesis:
+
+\[ \begin{array}{lll}
+\mbox{Alternative hypothesis} & \mbox{Probability} \pause \\ \\
+H_a: \mu> m_0 & P(T_{n-1}>t) \pause \\
+H_a: \mu< m_0 & P(T_{n-1}<t) \pause \\ \\
+H_a: \mu\ne m_0 & P(T_{n-1}<-|t| \mbox{ or } T_{n-1}>|t|) \pause \\
+&= P(T_{n-1}<-|t|) + P(T_{n-1}>|t|) \\
+\end{array} \]
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Probability (graphically) - positive $t$}
 <<fig.width=7>>=
 t <- 2; df <- 5
 xx <- seq(t,5,length=101)
 
 opar = par(mfrow=c(1,3), mar=c(2,0,4,0)+0.1)
 
-curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="Two-sided", xlab="", ylab="")
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, 
+      main=hypothesis$upper, xlab="", ylab="")
 axis(1,0,"0"); axis(1, t, "t")
 polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
-polygon(c(-xx,rev(-xx)), c(rep(0,length(xx)), dt(rev(-xx), df)), col='red', border=NA)
 
-curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="One-sided lower", xlab="", ylab="")
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, 
+      main=hypothesis$lower, xlab="", ylab="")
 axis(1,0,"0"); axis(1, t, "t")
 xx2 <- seq(t,-5,length=100)
 polygon(c(xx2,rev(xx2)), c(rep(0,length(xx2)), dt(rev(xx2), df)), col='red', border=NA)
 
-curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="One-sided upper", xlab="", ylab="")
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, 
+      main=hypothesis$twosided, xlab="", ylab="")
 axis(1,0,"0"); axis(1, t, "t")
 polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
-
+polygon(c(-xx,rev(-xx)), c(rep(0,length(xx)), dt(rev(-xx), df)), col='red', border=NA)
 par(opar)
 @
 \end{frame}
 
 
 \begin{frame}
-\frametitle{Graphical depiction of as or more extreme regions}
+\frametitle{Probability (graphically) - negative $t$}
 <<fig.width=7>>=
 t <- -2; df <- 5
 xx <- seq(abs(t),5,length=101)
 
 opar = par(mfrow=c(1,3), mar=c(2,0,4,0)+0.1)
 
-curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="Two-sided", xlab="", ylab="")
-axis(1,0,"0"); axis(1, t, "t")
-polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
-polygon(c(-xx,rev(-xx)), c(rep(0,length(xx)), dt(rev(-xx), df)), col='red', border=NA)
-
-curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="One-sided lower", xlab="", ylab="")
-axis(1,0,"0"); axis(1, t, "t")
-polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
-
-curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, main="One-sided upper", xlab="", ylab="")
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, 
+      main=hypothesis$upper, xlab="", ylab="")
 axis(1,0,"0"); axis(1, t, "t")
 xx <- seq(t,5,length=100)
 polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
+
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, 
+      main=hypothesis$lower, xlab="", ylab="")
+axis(1,0,"0"); axis(1, t, "t")
+xx <- seq(t,-5,length=100)
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
+
+curve(dt(x, df), -4, 4, axes=FALSE, frame=TRUE, 
+      main=hypothesis$twosided, xlab="", ylab="")
+axis(1,0,"0"); axis(1, t, "t")
+polygon(c(xx,rev(xx)), c(rep(0,length(xx)), dt(rev(xx), df)), col='red', border=NA)
+polygon(c(-xx,rev(-xx)), c(rep(0,length(xx)), dt(rev(-xx), df)), col='red', border=NA)
 
 par(opar)
 @
 \end{frame}
 
 
-\subsection{Probability}
+
 \begin{frame}
-\frametitle{(Frequency) Probability}
+\frametitle{Calculating probabilities using the $t$ table}
 
-The \alert{probability of being as or more extreme than you observed} is just 
-the areas depicted on the previous slides.
+Since the $t$ table is constucted for areas to the right, 
+i.e. probabilities such as $P(T_{n-1}>t)$,
+we need to convert all our probability statements to only have a $>$ sign.
+
+\vspace{0.1in} \pause
+
+Using symmetry properties of the $t$ distribution, 
 \pause
-In particular,
-\begin{itemize}[<+->]
-\item $H_a: \mu\ne m_0$ implies the probability 
-\[ \begin{array}{rl}
-P(T_{n-1}<-|t| \mbox{ or } T_{n-1}>|t|) 
-&= \pause P(T_{n-1}<-|t|) + P(T_{n-1}>|t|)) \pause \\
-&= 2P(T_{n-1}>|t|)
+we have 
+
+\[ \begin{array}{lll}
+\mbox{Alternative hypothesis} & \mbox{Probability} \pause \\ \\
+H_a: \mu> m_0 & P(T_{n-1}>t) \pause \\ \\
+H_a: \mu< m_0 & P(T_{n-1}<t) \pause \\ 
+&= P(T_{n-1}>-t) \pause \\ \\ 
+H_a: \mu\ne m_0 & P(T_{n-1}<-|t| \mbox{ or } T_{n-1}>|t|) \pause \\
+&= P(T_{n-1}<-|t|) + \phantom{2}P(T_{n-1}>|t|) \pause \\
+&= \phantom{P(T_{n-1}<-|t|) + {}}2P(T_{n-1}>|t|)
 \end{array} \]
-\item $H_a: \mu< m_0$ implies the probability
-\[
-P(T_{n-1}<t) = P(T_{n-1} > -t)
-\]
-\item $H_a: \mu> m_0$ implies the probability
-\[
-P(T_{n-1}>t).
-\]
-\end{itemize}
-
-
 \end{frame}
 
 
-\subsection{based on the population mean}
+
+
+\subsection{for $H_0:\mu=m_0$}
 \begin{frame}
-\frametitle{P-values (based on the population mean)}
+\frametitle{P-values for $H_0:\mu=m_0$}
 
 \begin{definition}
 A \alert{p-value} is the (frequency) probability
@@ -394,6 +529,8 @@ of obtaining a test statistic
 as or more extreme than you observed
 if the null hypothesis (model) is true.
 \end{definition}
+
+\vspace{0.1in} \pause
 
 So for the null hypothesis $H_0: \mu=m_0$, calculate
 \[
@@ -419,8 +556,8 @@ and find the appropriate probability:
 The mean composite score on the ACT among the students at Iowa State 
 University is 24. 
 We wish to know whether the average composite ACT score for business majors is 
-different from the average for the University. We sample 100 business majors 
-and calculate an average score of 26 with a standard deviation of 4.
+different from the average for the University. We sample 51 business majors 
+and calculate an average score of 26 with a standard deviation of 4.38.
 
 \vspace{0.1in} \pause
 
@@ -435,15 +572,15 @@ Assume $X_i\iid N(\mu,\sigma^2)$.
 \item Alternative hypothesis \pause $H_a:\mu\ne 24$ \pause
 \item $t$-statistic:
 \[
-t = \frac{26-24}{4/\sqrt{100}} = 5
+t = \frac{26-24}{4.38/\sqrt{51}} \approx 3.261
 \]
 \pause
 \item \pvalue{}:
 \[ \begin{array}{rll}
 2P(T_{n-1}>|t|) \pause
-&= 2P(T_{99}>5) \pause \\
-&< 2P(T_{80}>5) \pause&< 2P(T_{80} > 3.416) \pause \\
-&= 2\cdot 0.0005 \pause&= 0.001 \\
+&= 2P(T_{50}>3.261) \pause \\
+&= 2\cdot 0.001 \pause \\
+&= 0.002
 \end{array} \]
 \end{itemize}
 
