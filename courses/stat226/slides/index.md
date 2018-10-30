@@ -32,3 +32,4 @@ you can find them
 - [M5S4-Practice_with_CIs](M5S4-Practice_with_CIs/M5S4-Practice_with_CIs.pdf)
 - [M6S1-StatisticalHypotheses](M6S1-StatisticalHypotheses/M6S1-StatisticalHypotheses.pdf)
 - [M6S2-Pvalues](M6S2-Pvalues/M6S2-Pvalues.pdf)
+- [M6S3-PvalueInterpretation](M6S3-PvalueInterpretation/M6S3-PvalueInterpretation.pdf)
