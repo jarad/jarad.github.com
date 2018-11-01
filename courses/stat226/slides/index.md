@@ -33,3 +33,4 @@ you can find them
 - [M6S1-StatisticalHypotheses](M6S1-StatisticalHypotheses/M6S1-StatisticalHypotheses.pdf)
 - [M6S2-Pvalues](M6S2-Pvalues/M6S2-Pvalues.pdf)
 - [M6S3-PvalueInterpretation](M6S3-PvalueInterpretation/M6S3-PvalueInterpretation.pdf)
+- [M6S4-HypothesisTests](M6S4-HypothesisTests/M6S4-HypothesisTests.pdf)

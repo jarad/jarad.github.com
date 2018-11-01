@@ -1,0 +1,361 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M6S4 - Hypothesis Tests}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("dplyr")
+library("ggplot2")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Hypothesis Tests
+  \begin{itemize}
+  \item Review
+  \item Decision making
+  \item Practical vs Statistical Significance
+  \item Relationship between confidence intervals and pvalues
+  \item Plot your data and calculate summary statistics
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\section{Hypothesis Tests}
+\begin{frame}
+\frametitle{Hypothesis test for a population mean $\mu$}
+
+\begin{enumerate}[<+->]
+\item Specify the null and alternative hypothesis.
+  \begin{itemize}
+  \item $H_0: \mu = m_0$ is the default or current belief
+  \item $H_a: \mu > m_0$ or $\mu<m_0$ or $\mu \ne m_0$ is what you believe
+  \end{itemize}
+\item Specify a significance level $\alpha$.
+\item Calculate the $t$-statistic.
+\item Calculate the \pvalue{}.
+\item Make a conclusion:
+  \begin{itemize}
+  \item If \pvalue{} $< \alpha$, \alert{reject null hypothesis}.
+  \item If \pvalue{} $\ge \alpha$, \alert{fail to reject null hypothesis}.
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Paired data}
+
+\begin{definition}
+Two data sets and \alert{paired} when each data point in one data set is 
+related to one, and only one, data point in the other data set. 
+\end{definition}
+
+\pause
+
+Examples:
+\begin{itemize}
+\item Record the moisturizing effect of hand lotion by using the hand lotion
+on only one of two hands for each study participant, but measure both hands.
+\item Record participant weight before and after a weight loss program.
+\item Assess environmental affects by studying identical twins who have grown
+up in different households.
+\end{itemize}
+
+\pause
+
+Using paired data will increase your \alert{power} where power is the probability 
+of reject a null hypothesis that is not true, 
+\pause i.e. it is one minus the probability of a Type II error.
+\pause
+Thus paired data will decrease the probability of a Type II error.
+
+\end{frame}
+
+
+\subsection{Water quality hypothesis test}
+\begin{frame}
+\frametitle{Water quality hypothesis test}
+
+\small
+
+The Ames Water Treatment Plant is considering two different processing methods
+for removing sediments from drinking water: active vs passive.
+\pause
+They would like to know which method is better. 
+\pause
+They set up a pilot study where each method was implemented in parallel 
+and observations were taken simultaneously from each method at random times.
+\pause
+After 25 random times, they find the mean difference (active-passive) is 
+77 ppm with a standard deviation of 364 ppm. 
+
+\vspace{0.1in} \pause
+
+\begin{enumerate}[<+->]
+\item Let $\mu$ be the true mean difference (active-passive) in sediment
+\item $H_0: \mu = 0$ versus $H_a: \mu \ne 0$
+\item $t$-statistic is:
+\[ 
+t = \frac{77-0}{364/\sqrt{25}} = 1.058
+\]
+\item \pvalue{} is:
+\[
+\mbox{\pvalue{}} = 2P(T_{24}>|1.058|) = 0.30 
+\]
+\item Fail to reject the null of no difference between active and passive methods
+based on a significance level $\alpha=0.05$.
+\end{enumerate}
+\end{frame}
+
+
+\subsection{Water quality confidence interval}
+\begin{frame}
+\frametitle{Water quality confidence interval}
+
+\small
+
+The plant manager thinks maybe a confidence interval will show a 
+``significant'' result by not including 0.
+\pause
+So he asks a data scientist to construct a 95\% confidence interval
+based on the sample size of $25$, the sample mean of $77$ ppm of the difference
+(active-passive), 
+and the sample standard deviation of $364$ ppm.  
+
+\vspace{0.1in} \pause
+
+The data scientists finds the $t$-critical value:
+\pause 
+\[ 
+t_{24,0.025} = 2.064
+\]
+and constructs a confidence interval for the difference (active-passive)
+\pause 
+\[ 
+77 \pm 2.064 \cdot 364/\sqrt{25} = (-73 \mbox{ ppm},227 \mbox{ ppm}).
+\]
+\pause
+This interval includes $0$ which is consistent with no difference, 
+\pause
+but it is suggestive that the passive method is better
+\pause
+because lower sediments is better and the interval covers more positive
+values than negative values.
+
+\end{frame}
+
+
+\subsection{Water quality sample size}
+\begin{frame}
+\frametitle{Water quality sample size}
+
+\small
+
+The plant manager asks the data scientist how many samples they will need 
+to reject the null hypothesis.
+\pause
+The data scientists finds an online app, 
+e.g. \url{https://www.stat.ubc.ca/~rollin/stats/ssize/n1.html},
+and plugs in some numbers to find a sample size of $n=176$.
+
+\vspace{0.1in}
+
+\includegraphics{figs/sample_size}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Water quality ample size (cont.)}
+
+\small
+
+The manager asks a statistician to verify this sample size.
+\pause
+The statistician explains that  with a sample size of $176$ and significance 
+level $\alpha=0.05$ we reject if $|t| > 1.984$ since $2P(T_{100}>1.984) = 0.05$.
+\pause 
+Assuming $X_i \iid N(77, 364^2)$, we have
+\[
+\frac{\overline{X}-77}{364/\sqrt{176}} \pause 
+= \frac{\overline{X}-0}{364/\sqrt{176}}-\frac{77}{364/\sqrt{176}} 
+= \pause T_{175} - 2.806 
+\sim t_{175}
+\]
+and the power is
+\[ \begin{array}{rl}
+\multicolumn{2}{l}{P\left(\frac{\overline{X}-0}{364/\sqrt{176}} < -1.984 \mbox{  or  } 
+\frac{\overline{X}-0}{364/\sqrt{176}} > 1.984 \right)} \pause \\ \\
+&= \phantom{1-}P\left(T_{175} < -1.984 + 2.806 \mbox{  or  } 
+T_{175} > 1.984 + 2.806 \right) \pause \\
+&= \phantom{1-}P(T_{175} < 0.822) + P(T_{175} > 4.79) \pause \\
+&\approx 1-P(T_{175} > 0.822) + 0 \pause \\
+&\approx 1-0.2 \\
+&= 0.8
+\end{array} \]
+\pause
+Thus, the app is correct.
+
+\end{frame}
+
+
+
+\subsection{Water quality big data}
+\begin{frame}
+\frametitle{Water quality big data}
+
+Since samples are automated, 
+the manager goes overboard and takes $17,600$ random samples. 
+\pause
+He doesn't even bother looking at the data or calculating summary statistics.
+\pause
+Instead, he immediately calculates a pvalue of $0.04$ and rejects the null 
+hypothesis of no difference between active and passive 
+\pause
+and runs around the water treatment plant screaming in excitement. 
+
+\vspace{0.1in} \pause
+
+Had he bothered to calculate summary statistics, he would have found
+a mean difference (active-passive) of $4.1$ ppm with a standard deviation of 
+$257$ ppm.
+\pause
+This results in a 95\% confidence interval \pause 
+of 
+\[
+4.1 \pm 1.962 \cdot \frac{257}{\sqrt{17600}} = (0.3 \mbox{ ppm}, 7.9 \mbox{ ppm}).
+\]
+\pause
+Compared to the EPA limit of $500$ ppm, it is likely that even an $8$ ppm difference
+is not important.
+
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+This example demonstrated a 
+\begin{itemize}
+\item Difference between practical and statistical significance
+\item Correspondence between confidence intervals and pvalues
+\item Informativeness of confidence intervals compared to pvalues
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Practical versus statistical significance}
+
+\begin{definition}
+A result is \alert{statistical significant} if your \pvalue{} is less than 
+your significance level.
+\pause
+A result is \alert{practically significant} if the size of the effect is 
+meaningful.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+In our example, we had two situations:
+\begin{itemize}[<+->]
+\item pilot study:
+  \begin{itemize}
+  \item statistically insignificant result with \pvalue{}$=0.3>0.05$
+  \item practically significant result with estimated $77$ ppm difference
+  \end{itemize}
+\item big data study:
+  \begin{itemize}
+  \item statistically significant result with \pvalue{}$=0.04<0.05$
+  \item practically insignificant result with estimated difference $<8$ ppm
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Correspondence between confidence intervals and pvalues}
+
+For a null hypothesis $H_0: \mu=m_0$ and an alternative hypothesis
+$H_a:\mu\ne m_0$ with a \pvalue{} $p$:
+\pause
+\begin{itemize}
+\item if $p<\alpha$ then a $100(1-\alpha)$\% CI will not include $m_0$
+\item if $p\ge \alpha$ then a $100(1-\alpha)$\% CI will include $m_0$
+\end{itemize}
+
+\vspace{0.1in}
+
+In our example, we had two situations:
+\begin{itemize}[<+->]
+\item pilot study:
+  \begin{itemize}
+  \item \pvalue{}$=0.3>0.05$ and
+  \item 95\% CI of ($-73$ ppm,$227$ ppm) included 0
+  \end{itemize}
+\item big data study:
+  \begin{itemize}
+  \item \pvalue{}$=0.04<0.05$ and
+  \item 95\% CI of ($0.3$ ppm, $7.9$ ppm) did not include 0
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Reasons to ignore hypothesis tests and \pvalue{}s}
+
+\begin{itemize}
+\item Point null hypotheses, e.g $H_0: \mu = m_0$, are never true
+\item A \pvalue{} and decision (reject/fail to reject) is never enough information
+\item When we reject, we don't know what assumption is to blame:
+  \begin{itemize}
+  \item $\mu=m_0$?
+  \item independent and identically distributed with common variance? \pause (random sample)
+  \item normal? \pause (procedure is robust)
+  \end{itemize}
+\item A confidence interval provides an estimate with uncertainty and thus
+allows you to assess statistical and practical significance.
+\end{itemize}
+\end{frame}
+
+
+
+\end{document}
