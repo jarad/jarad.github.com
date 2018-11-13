@@ -34,6 +34,15 @@ you can find them
 - [M5W2-CI_sd_unknown](M5W2-CI_sd_unknown/M5W2-CI_sd_unknown.pdf) ([solutions](M5W2-CI_sd_unknown/M5W2-CI_sd_unknown_sol.pdf))
 - [M5W3-InterpretationOfCIs](M5W3-InterpretationOfCIs/M5W3-InterpretationOfCIs.pdf) ([solutions](M5W3-InterpretationOfCIs/M5W3-InterpretationOfCIs_sol.pdf))
 - [M5W4-Practice_with_CIs](M5W4-Practice_with_CIs/M5W4-Practice_with_CIs.pdf) ([solutions](M5W4-Practice_with_CIs/M5W4-Practice_with_CIs_sol.pdf))
+
+### Module 6
+
 - [M6W1-StatisticalHypotheses](M6W1-StatisticalHypotheses/M6W1-StatisticalHypotheses.pdf) ([solutions](M6W1-StatisticalHypotheses/M6W1-StatisticalHypotheses_sol.pdf))
 - [M6W2-Pvalues](M6W2-Pvalues/M6W2-Pvalues.pdf) ([solutions](M6W2-Pvalues/M6W2-Pvalues_sol.pdf))
 - [M6W3-PvalueInterpretation](M6W3-PvalueInterpretation/M6W3-PvalueInterpretation.pdf) ([solutions](M6W3-PvalueInterpretation/M6W3-PvalueInterpretation_sol.pdf))
+
+## Part II
+
+### Module 7
+
+- [M7W1-Correlation](M7W1-Correlation/M7W1-Correlation.pdf) ([solutions](M7W1-Correlation/M7W1-Correlation_sol.pdf))
