@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -7,7 +7,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=7, fig.height=5, 
                size='small', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -18,8 +18,7 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -35,6 +34,49 @@ set.seed(2)
 \titlepage
 \end{frame}
 
+
+\section{Overview}
+\begin{frame}
+\frametitle{Overview}
+
+\begin{itemize}
+\item Part 1 - Data and Probability
+\item Part 2 - Inferential Statistics \pause (for a single variable) \pause
+  \begin{itemize}
+  \item Confidence intervals
+  \item Pvalues (hypothesis tests) \pause
+  \end{itemize}
+\item Part 3 - Regression \pause 
+  \begin{itemize}
+  \item Linear relationship between two variables: explanatory and response variables
+  \item Scatterplot
+  \item Fitting a line: intercept and slope
+  \item Confidence intervals and tests for the intercept and slope
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\subsection{Regression in JMP}
+\begin{frame}
+\frametitle{Regression in JMP}
+\begin{center}
+\includegraphics{JMP/plot}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Regression in JMP (cont.)}
+\begin{center}
+\includegraphics{JMP/statistics}
+\end{center}
+\end{frame}
+
+
+
+
+\section{Outline}
 \begin{frame}
 \frametitle{Outline}
 
@@ -44,12 +86,16 @@ set.seed(2)
   \item Location: \pause mean, median, quartiles \pause
   \item Spread: \pause standard deviation, variance, IQR \pause
   \end{itemize}
-\item Statistics \pause for two quantitative variables:
+\item Statistics \pause for two quantitative variables: \pause
   \begin{itemize}
+  \item Same statistics for each variable individually \pause
   \item Linear relationship: covariance, correlation
   \end{itemize}
 \end{itemize}
 \end{frame}
+
+
+
 
 
 \section{Statistics for two quantitative variables}
@@ -77,13 +123,317 @@ These relationships won't be exact as there is always \alert{variation}.
 \end{frame}
 
 
+\subsection{Explanatory vs response}
+\begin{frame}
+\frametitle{Explanatory vs response variable}
+
+\begin{definition}
+The \alert{response variable} (or dependent variable) is the outcome of interest
+\pause
+and is often denoted using the letter $y$.
+\pause
+The \alert{explanatory variable} (or independent variable) is the variable that
+explains (some of the) changes is the response variable 
+\pause
+and is often denoted using the letter $x$.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Examples:
+\begin{center}
+\begin{tabular}{ll}
+Explanatory & Response \\
+\hline
+assessed value of a home & selling price of a home \pause \\
+years of education & starting salary \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{frame}
+
+
+\subsection{Scatterplot}
+\begin{frame}
+\frametitle{Scatterplot}
+\setkeys{Gin}{width=\textwidth}
+
+When constructing a scatterplot, 
+the explanatory variable is on the x-axis and the response variable is on the
+y-axis.
+
+\pause
+
+\begin{center}
+\includegraphics{figs/scatterplots}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Scatterplots (cont.)}
+
+When looking at a scatterplot consider these 4 features:
+\begin{itemize}
+\item Form: 
+  \begin{itemize}
+  \item Linear
+  \item Curved
+  \item Scattered \pause
+  \end{itemize}
+\item Direction:
+  \begin{itemize}
+  \item Positive association
+  \item Negative association \pause
+  \end{itemize}
+\item Strength:
+  \begin{itemize}
+  \item Weak
+  \item Moderate
+  \item Strong \pause
+  \end{itemize}
+\item (Possible) Outliers
+\end{itemize}
+\end{frame}
 
 
 
 
+\begin{frame}
+\frametitle{Form}
+<<>>=
+n <- 50
+x <- runif(n)
+d <- data.frame(x = runif(n)) %>%
+  mutate(linear = rnorm(n,(x-0.5)/2,0.1),
+         curved = rnorm(n,(x-0.4)^2,0.1),
+         scattered = rnorm(n,0,0.2)) %>%
+  gather(form,response,-x) %>%
+  rename(explanatory = x) %>%
+  mutate(form = factor(form, levels=c("linear","curved","scattered")))
+
+ggplot(d, aes(explanatory, response)) + 
+  geom_point() + 
+  facet_grid(.~form) +
+  theme_bw()
+@
+\end{frame}
 
 
-\section{temp2}
+
+\begin{frame}
+\frametitle{Strength}
+<<>>=
+n <- 50
+x <- runif(n)
+d <- data.frame(x = runif(n)) %>%
+  mutate(strong = rnorm(n,x,0.05),
+         moderate = rnorm(n,x,0.2),
+         weak = rnorm(n,x,0.5)) %>%
+  gather(strength,response,-x) %>%
+  rename(explanatory = x) %>%
+  mutate(strength = factor(strength, levels=c("strong","moderate","weak")))
+
+ggplot(d, aes(explanatory, response)) + 
+  geom_point() + 
+  facet_grid(.~strength) +
+  theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Direction}
+<<>>=
+n <- 50
+x <- runif(n)
+d <- data.frame(x = runif(n)-0.5) %>%
+  mutate(positive = rnorm(n, x,0.2),
+         negative = rnorm(n,-x,0.2)) %>%
+  gather(direction,response,-x) %>%
+  rename(explanatory = x) %>%
+  mutate(direction = factor(direction, levels=c("positive","negative")))
+
+ggplot(d, aes(explanatory, response)) + 
+  geom_point() + 
+  facet_grid(.~direction) +
+  theme_bw()
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Outliers}
+Observation(s) that differ from the pattern:
+<<>>=
+n <- 50
+x <- runif(n)
+
+outlier <- data_frame(outlier = TRUE,
+                      outlier_direction = c("x","y","x_and_y","pattern"),
+                      explanatory = c(1.5,.5,1.5,.2),
+                      response    = c(0.5,1.5,1.5,1.2))
+
+d <- data.frame(explanatory = runif(n)) %>%
+  mutate(x = rnorm(n,explanatory,0.2),
+         y = rnorm(n,explanatory,0.2),
+         pattern = rnorm(n,explanatory,0.2),
+         x_and_y = rnorm(n,explanatory,0.2),
+         outlier = FALSE) %>%
+  gather(outlier_direction,response,-explanatory,-outlier) %>%
+  bind_rows(outlier) %>%
+  mutate(outlier_direction = factor(outlier_direction, levels=c("x","y","x_and_y","pattern")))
+
+ggplot(d, aes(explanatory, response, color=outlier, shape=outlier)) + 
+  geom_point() + 
+  facet_wrap(~outlier_direction) +
+  theme_bw()
+@
+\end{frame}
+
+
+
+\section{Correlation}
+\begin{frame}
+\frametitle{Correlation}
+
+\begin{definition}
+For two variables $x$ and $y$,
+\pause
+the \alert{sample covariance} is 
+\[
+s_{x,y}^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i-\overline{x})(y_i-\overline{y}).
+\]
+\pause
+and the \alert{sample correlation (coefficient)} is the sample covariance divided by the 
+product of the sample standard deviations\pause,
+i.e.
+\[
+r = \frac{s_{x,y}^2}{s_x s_y} \pause
+= \frac{\sum_{i=1}^n (x_i-\overline{x})(y_i-\overline{y})}{\sqrt{\sum_{i=1}^n (x_i-\overline{x})^2 \sum_{i=1}^n (y_i-\overline{y})^2}}
+\]
+where 
+\begin{itemize}
+\item $s_x$ is the sample standard deviation for the variable $x$ and 
+\item $s_y$ is the sample standard deviation for the variable $y$.
+\end{itemize}
+
+\end{definition}
+\end{frame}
+
+
+\subsection{Interpretation}
+\begin{frame}
+\frametitle{Interpreting a correlation}
+
+The sample correlation is a measure of the strength and direction of a 
+\alert{linear} relationship between two variables.
+
+\vspace{0.1in} \pause
+
+\begin{itemize}[<+->]
+\item Direction:
+  \begin{itemize}
+  \item $r<0$ indicates a negative direction
+  \item $r>0$ indicates a positive direction
+  \end{itemize}
+\item Strength:
+  \begin{itemize}
+  \item $r=0$ indicates not \alert{linearly} related
+  \item $0<|r|\le 0.3$ indicates \alert{weak} strength
+  \item $0.4<|r|\le 0.7$ indicates \alert{moderate} strength
+  \item $0.7<|r|\le 1$ indicates \alert{strong} strength
+  \item $r=1$ indicates a \alert{perfect, positive} linear relationship
+  \item $r=-1$ indicates a \alert{perfect, negative} linear relationship
+  \end{itemize}
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Notes:
+\begin{itemize}
+\item sample correlation has no units
+\item sample correlation is easily influenced by outliers
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Examples}
+\begin{frame}[fragile]
+\frametitle{Guess sample correlation $r$}
+<<fig.width=8>>=
+n <- 50
+x <- runif(n)
+y <- rnorm(n,x,0.1)
+ggplot(data.frame(x=x,y=y), aes(x,y)) + geom_point() + theme_bw()
+@
+
+\pause
+
+<<echo=TRUE>>=
+cor(x,y)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Guess sample correlation $r$}
+<<fig.width=8>>=
+n <- 50
+x <- runif(n)
+y <- rnorm(n,-x,0.5)
+ggplot(data.frame(x=x,y=y), aes(x,y)) + geom_point() + theme_bw()
+@
+
+\pause
+
+<<echo=TRUE>>=
+cor(x,y)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Guess sample correlation $r$}
+<<fig.width=8>>=
+n <- 50
+x <- runif(n)
+y <- rnorm(n,-x,0.1)
+x[50] <- 2; y[50] <- 3
+ggplot(data.frame(x=x,y=y), aes(x,y)) + geom_point() + theme_bw()
+@
+
+\pause
+
+<<echo=TRUE>>=
+cor(x,y)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Guess sample correlation $r$}
+<<fig.width=8>>=
+n <- 500
+x <- runif(n)
+y <- rnorm(n,x,0.4)
+ggplot(data.frame(x=x,y=y), aes(x,y)) + geom_point() + theme_bw()
+@
+
+\pause
+
+<<echo=TRUE>>=
+cor(x,y)
+@
+\end{frame}
+
 
 
 \end{document}
