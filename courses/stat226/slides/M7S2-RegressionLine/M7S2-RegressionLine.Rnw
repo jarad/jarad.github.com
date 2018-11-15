@@ -1,0 +1,403 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M7S2 - Regression Line}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=7, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Regression line
+  \begin{itemize}
+  \item Residual
+  \item Sample intercept and interpretation
+  \item Sample slope and interpretation
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\section{Line}
+\subsection{Interpreting}
+\begin{frame}
+\frametitle{Interpreting a line}
+
+Suppose there is a line
+\[ 
+y = m \cdot x + b
+\]
+\pause
+Interpret 
+\begin{itemize}
+\item $b$: \pause is the $x$-intercept, i.e. the value of $y$ when $x=0$ \pause
+\item $m$: \pause is the slope, i.e. the change in $y$ for each unit change in $x$ 
+\end{itemize}
+\pause
+If $x$ increases by one unit, then $y$ changes by 
+\[ \begin{array}{l}
+m\cdot (x+1)+b - (m\cdot x + b) \\
+= m\cdot x + m + b - m\cdot x -b \\
+= m.
+\end{array} \]
+
+\end{frame}
+
+
+
+\subsection{Finding}
+\begin{frame}
+\frametitle{Finding the line}
+
+\vspace{-0.21in}
+
+<<line1>>=
+m <- 5
+b <- 10
+d <- data.frame(x=0:10) %>%
+  mutate(y = m*x+b)
+g <- ggplot(d, aes(x,y)) + 
+  geom_point() + 
+  scale_x_continuous(breaks=0:10) +
+  theme_bw()
+@
+
+<<>>=
+g
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Finding the line}
+
+<<>>=
+g + geom_abline(intercept = b, slope = m, color="blue")
+@
+
+\vspace{-0.1in}
+
+\[
+y = \Sexpr{m}x + \Sexpr{b}
+\]
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Finding the line}
+
+\vspace{-0.21in}
+
+<<line2>>=
+m <- -3
+b <- -6
+d <- data.frame(x=-10:0) %>%
+  mutate(y = m*x+b)
+g <- ggplot(d, aes(x,y)) + 
+  geom_point() + 
+  scale_x_continuous(breaks=-10:0) +
+  theme_bw()
+g
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Finding the line}
+
+<<>>=
+g + geom_abline(intercept = b, slope = m, color="blue")
+@
+
+\vspace{-0.1in}
+
+\[
+y = \Sexpr{m}x + \Sexpr{b}
+\]
+
+\end{frame}
+
+
+
+
+\section{Regression line}
+\begin{frame}
+\frametitle{Noisy data}
+
+When the data are noisy, finding the line is not so easy
+
+<<>>=
+m <- 5
+b <- 10
+d <- data.frame(x=0:10) %>%
+  mutate(y = m*x+b+rnorm(n(),0,5))
+g <- ggplot(d, aes(x,y)) + 
+  geom_point() + 
+  scale_x_continuous(breaks=0:10) +
+  theme_bw()
+g
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Noisy data}
+
+When the data are noisy, finding the line is not so easy
+
+<<>>=
+g = g + geom_abline(intercept = b, slope = m, color="blue") 
+@
+
+<<>>=
+# Depict another possible line by running the reverse regression and backsolving
+model <- lm(x~y, d)
+m2 <- 1/coef(model)[2]
+b2 <- -coef(model)[1]/coef(model)[2]
+g + geom_abline(intercept = b2, slope = m2, color="red", linetype = 2)
+@
+
+\end{frame}
+
+
+
+\subsection{Prediction equation}
+\begin{frame}
+\frametitle{Prediction equation}
+
+\begin{definition}
+
+\end{definition}
+
+\end{frame}
+
+\subsection{Residuals}
+\begin{frame}
+\frametitle{Residuals}
+\small
+\begin{definition}
+A \alert{prediction equation} is given by 
+\[
+\hat{y} = b_0 + b_1 \cdot x
+\]
+\pause
+where $\hat{y}$ is the \alert{predicted value of $y$} for a specified value of $x$ 
+\pause
+for some intercept $b_0$ and slope $b_1$.
+\pause
+For a collection of observations $(x_i,y_i)$ for $i=1,\ldots,n$, 
+\pause
+we can calculate the predicted value for each observation, 
+\pause 
+i.e. 
+\[
+\hat{y}_i = b_0 + b_1\cdot x_i.
+\]
+\pause
+The \alert{residual}, $r_i$, for an observation is the observed value minus the 
+predicted value, 
+\pause
+i.e. 
+\[ 
+r_i = y_i - \hat{y}_i = y_i - (b_0 +b_1 \cdot x_i) = y_i - b_0 - b_1 \cdot x_i.
+\]
+\pause
+The residual is the \alert{vertical} distance from the observation to the line.
+\end{definition}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Residuals graphically}
+<<>>=
+d2 <- d %>%
+  mutate(residual = y-(m*x+b),
+         start = m*x+b,
+         end = start+residual)
+
+g + geom_segment(data = d2, aes(x=x,xend=x, y = start, yend=end), color="red")
+@
+\end{frame}
+
+
+
+\subsection{Least squares regression line}
+\begin{frame}
+\frametitle{Regression line}
+\begin{definition}
+The \alert{(least squares) regression line} is the value for $b_0$ and $b_1$
+in the prediction equation that minimizes the sum of the squared residuals, 
+\pause
+i.e. minimizes 
+\[
+\sum_{i=1}^n r_i^2 
+= \sum_{i=1}^n (y_i-\hat{y}_i)^2 
+= \sum_{i=1}^n (y_i-b_0-b_1 \cdot x_i)^2.
+\]
+\pause
+We call
+\begin{itemize}
+\item $b_0$ the \alert{sample intercept} \pause and
+\item $b_1$ the \alert{sample slope}.
+\end{itemize}
+Sometimes the regression line is referred to as the \alert{prediction line}.
+\end{definition}
+\pause
+
+\url{https://gallery.shinyapps.io/simple_regression/}
+\end{frame}
+
+
+
+\subsection{Example}
+\begin{frame}
+\frametitle{Speed vs stopping distance of cars}
+
+We run an experiment where we record
+\begin{itemize}
+\item the speed (mph) a car is going \pause and
+\item the distance (ft) it takes for the car to stop. \pause
+\end{itemize}
+We are interested in constructing a regression line to understand the 
+relationship between speed and distance.
+
+\vspace{0.1in} \pause
+
+Let 
+\begin{itemize}
+\item the explanatory variable be \pause the speed and 
+\item the response be \pause the distance.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Speed vs stopping distance graphically}
+<<>>=
+ggplot(cars, aes(speed, dist)) +
+  geom_point() +
+  stat_smooth(method="lm", se=FALSE) + 
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Estimated intercept and slope}
+
+<<>>=
+model <- lm(dist~speed, cars); model
+b0 <- round(coef(model)[1],0)
+b1 <- round(coef(model)[2],0)
+@
+
+\pause
+
+Thus the regression line is (approximately)
+\[
+\hat{y} = \Sexpr{b0} + \Sexpr{b1} \cdot x
+\]
+\pause
+where 
+\begin{itemize}
+\item $x$ represents speed (mph) \pause and
+\item $y$ represents distance (ft).
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Interpretation}
+\begin{frame}
+\frametitle{Interpretation}
+
+\begin{definition}
+The \alert{sample intercept} ($b_0$) 
+is the predicted value of the response, i.e. $\hat{y}$, when
+the explanatory variable ($x$) is zero, i.e. $x=0$.
+\pause
+The \alert{sample slope} ($b_1$) is the predicted \alert{change} in the response
+when the explanatory variable increases by one unit.
+\end{definition}
+
+\pause
+
+Notes:
+\begin{itemize}[<+->]
+\item The intercept may not be meaningful.
+\item A \alert{positive slope}, $b_1>0$, indicates a positive direction $(r>0)$.
+\item A \alert{negative slope}, $b_1<0$, indicates a negative direction $(r<0)$.
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Example (cont.)}
+\begin{frame}
+\frametitle{Speed vs stopping distance of cars}
+
+Thus the regression line is (approximately)
+\[
+\hat{y} = \Sexpr{b0} + \Sexpr{b1} \cdot x
+\]
+\pause
+where 
+\begin{itemize}
+\item $x$ represents speed (mph) \pause and
+\item $y$ represents distance (ft).
+\end{itemize}
+
+\pause
+
+Thus
+\begin{itemize}
+\item The predicted stopping distance of a car at 0 mph is -18 ft. \pause
+This is not meaninful! \pause
+\item For each additional mile per hour the car is traveling, 
+the predicted additional distance to stop is 4 ft.
+\end{itemize}
+
+
+\end{frame}
+
+
+\end{document}

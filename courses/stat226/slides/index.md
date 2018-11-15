@@ -38,3 +38,4 @@ you can find them
 ### Part III
 
 - [M7S1-Correlation](M7S1-Correlation/M7S1-Correlation.pdf)
+- [M7S2-RegressionLine](M7S2-RegressionLine/M7S2-RegressionLine.pdf)
