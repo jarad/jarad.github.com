@@ -46,3 +46,4 @@ you can find them
 ### Module 7
 
 - [M7W1-Correlation](M7W1-Correlation/M7W1-Correlation.pdf) ([solutions](M7W1-Correlation/M7W1-Correlation_sol.pdf))
+- [M7W2-RegressionLine](M7W2-RegressionLine/M7W2-RegressionLine.pdf) ([solutions](M7W2-RegressionLine/M7W2-RegressionLine_sol.pdf))
