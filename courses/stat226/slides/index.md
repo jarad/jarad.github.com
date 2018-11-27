@@ -39,3 +39,4 @@ you can find them
 
 - [M7S1-Correlation](M7S1-Correlation/M7S1-Correlation.pdf)
 - [M7S2-RegressionLine](M7S2-RegressionLine/M7S2-RegressionLine.pdf)
+- [M7S3-RegressionThoughts](M7S3-RegressionThoughts/M7S3-RegressionThoughts.pdf)

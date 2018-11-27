@@ -1,0 +1,499 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M7S3 - Regression Thoughts}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=7, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item Regression thoughts
+  \begin{itemize}
+  \item Properties
+    \begin{itemize}
+    \item Coefficient of determination ($r^2$) is amount of variation explained
+    \item Not reversible
+    \item Always through $(\overline{x},\overline{y})$
+    \item Residuals sum to zero
+    \item Residual plots
+    \item Leverage and influence
+    \end{itemize}
+  \item Cautions
+    \begin{itemize}
+    \item Extrapolation
+    \item Correlation does not imply causation
+    \item Lurking variables (Simpson's Paradox)
+    \item Correlations based on average data
+    \end{itemize}
+  \item Sample slope and interpretation
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\section{Simple linear regression}
+\subsection{Review}
+\begin{frame}
+\frametitle{Simple linear regression}
+
+For a collection of observations $(x_i,y_i)$ for $i=1,\ldots,n$, 
+\pause
+we can fit a regression line
+\[
+y_i = b_0 + b_1 x_i + e_i
+\]
+\pause 
+where 
+\begin{itemize}
+\item $b_0$ is the \alert{sample intercept},
+\item $b_1$ is the \alert{sample slope}, and
+\item $e_i$ is the \alert{residual for individual $i$}
+\end{itemize}
+\pause
+by minimizing the sum of squared residuals
+\[
+\sum_{i=1}^n e_i^2 
+\qquad \mbox{where} \qquad
+e_i = y_i - \hat{y}_i = y_i - (b_0 + b_1 x_i)
+\]
+\pause
+and $\hat{y}_i$ is the \alert{predicted value for individual $i$}.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Simple linear regression graphically}
+<<>>=
+m <- -3
+b <- -1
+
+d <- data.frame(x=0:10) %>%
+  mutate(y = m*x+b+rnorm(n(),0,5))
+
+model <- lm(y~x, d)
+b <- coef(model)[1]
+m <- coef(model)[2]
+
+d <- d %>%
+  mutate(residual = y-(b+m*x),
+         predicted = m*x+b)
+
+ggplot(d, aes(x,y)) + 
+  geom_point() + 
+  scale_x_continuous(breaks=0:10) +
+  theme_bw() + 
+  geom_abline(intercept = b, slope = m, color="blue") + 
+  geom_segment(data = d, aes(x=x,xend=x, y = predicted, yend=y), color="red")
+@
+\end{frame}
+
+
+
+\section{Properties}
+\subsection{Coefficient of determination}
+\begin{frame}
+\frametitle{Coefficient of determination}
+
+The sample correlation $r$ measures the \alert{direction} and \alert{strength} 
+of the linear relationship between $x$ and $y$. 
+
+\vspace{0.1in} \pause
+
+\begin{definition}
+The \alert{coefficient of determination}
+\[
+r^2 \pause = 1 - \frac{\sum_{i=1}^n e_i^2}{\sum_{i=1}^n (y_i-\overline{y})^2}
+\]
+\pause
+measures the amount of variability in y that can be explained by the linear 
+relationship between x and y.
+\end{definition}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Example}
+
+The correlation between weekly sales amount and weekly radio ads is 0.98.
+\pause
+The coefficient of variation is $r^2\approx 0.96$. 
+\pause
+Thus about 96\% of the variability in weekly sales amount can be explained 
+by the linear relationsihp with weekly radio ads.
+
+\vspace{0.1in} \pause
+
+If you are only told $r^2$, 
+you cannot determine the direction of the relationship.
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Reversibility}
+
+Correlation is reversible, 
+\pause
+the correlation of x with y is the same as the correlation of y with x.
+\pause
+
+<<>>=
+attach(d)
+@
+
+<<echo=TRUE>>=
+cor(x,y)
+cor(y,x)
+@
+
+\pause
+
+Thus the coefficient of determination is reversible.
+
+\end{frame}
+
+
+
+
+\subsection{Not reversible}
+\begin{frame}[fragile]
+\frametitle{Equation not reversible}
+
+The regression line is
+\[
+y = b_0 + b_1 x
+\]
+but the opposite regression line is \alert{not} 
+\[ 
+x = -\frac{b_0}{b_1} + \frac{1}{b_1} y.
+\]
+
+<<>>=
+regress <- function(y,x) coef(lm(y~x))
+b0 <- as.numeric(regress(y,x)[1])
+b1 <- as.numeric(regress(y,x)[2])
+@
+
+<<echo=TRUE, size='tiny'>>=
+regress(y,x)
+-b0/b1; 1/b1
+regress(x,y)
+@
+\end{frame}
+
+
+
+
+\subsection{Always through $(\overline{x},\overline{y})$}
+\begin{frame}[fragile]
+\frametitle{Always through $(\overline{x},\overline{y})$}
+
+Recall that knowing any two points is enough to determine a straight line. 
+\pause
+It can be proved that the regression line always passes through the point
+$(\overline{x},\overline{y})$.
+
+\pause
+
+<<>>=
+xbar <- round(mean(x))
+ybar <- round(mean(y))
+b0 <- round(b0)
+@
+
+Suppose you know that $\overline{x}=\Sexpr{xbar}$, 
+$\overline{y}=\Sexpr{ybar}$, 
+\pause
+and the $y$-intercept is $\Sexpr{b0}$.
+\pause
+What is the slope?
+\pause
+\[
+\overline{y} = b_0 + b_1 \overline{x} \implies b_1 = (\overline{y}-b_0)/\overline{x}
+\]
+\pause
+So the slope is
+<<echo=TRUE>>=
+(ybar-b0)/xbar
+@
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{}
+<<>>=
+ggplot(d, aes(x,y)) + 
+  geom_point() + 
+  stat_smooth(method="lm", se=FALSE) +
+  geom_point(data=data.frame(x=mean(x),y=mean(y)), color="red", size=5) +
+  scale_x_continuous(breaks=0:10) +
+  theme_bw() 
+@
+\end{frame}
+
+
+
+\subsection{Residuals sum to zero}
+\begin{frame}
+\frametitle{Residuals sum to zero}
+
+When the regression includes an intercept ($b_0$), 
+it can be proved that the residuals sum to zero, 
+\pause
+i.e. 
+\[
+\sum_{i=1}^n e_i = 0.
+\]
+
+\pause
+
+We will often look at residual plots:
+\begin{itemize}
+\item Residuals vs explanatory variable
+\item Residuals vs predicted value
+\end{itemize}
+\pause
+These will be centered on 0 due to the result above.
+
+\end{frame}
+
+
+
+
+\subsection{Residual plots}
+\begin{frame}
+\frametitle{Residual vs explanatory variable}
+<<>>=
+ggplot(d, aes(x,residual)) + 
+  geom_point() + 
+  geom_hline(yintercept = 0) + 
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Residual vs predicted}
+<<>>=
+ggplot(d, aes(predicted,residual)) + 
+  geom_point() + 
+  geom_hline(yintercept = 0) + 
+  theme_bw()
+@
+\end{frame}
+
+
+
+\subsection{Leverage and influence}
+\begin{frame}
+\frametitle{Leverage and influence}
+
+\begin{definition}
+An individual has high \alert{leverage} if its explanatory variable value 
+is far from the explanatory variable values of the other observations.
+\pause
+An individual with high leverage will be an outlier in the $x$ direction.
+\pause
+An individual has high \alert{influence} if its inclusion dramatically affects 
+the fitted regression line.
+\pause
+Only individuals with high leverage can have high influence.
+\end{definition}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Leverage and influence}
+
+<<>>=
+newx = 15
+
+d2 <- d %>%
+  mutate(influence = "low",
+         leverage = "low",
+         color = ifelse(x==5, "Yes", "No"))
+
+
+d3 <- d2 %>%
+  mutate(x = ifelse(x==5, newx, x),
+         y = ifelse(x==newx, 0, y),
+         leverage = "high",
+         influence = "high")
+
+d4 <- d3 %>%
+  mutate(y = ifelse(x==newx, m*x+b, y),
+         influence = "low")
+
+ggplot(bind_rows(d2,d3,d4), aes(x,y)) + 
+  geom_point(aes(color=color, shape=color)) + 
+  stat_smooth(method="lm", se=FALSE, color="red") +
+  scale_color_manual(values = c("black","red")) + 
+  facet_grid(leverage~influence) +
+  theme_bw() +
+  theme(legend.position = "none")
+@
+
+\end{frame}
+
+
+
+\section{Cautions}
+\subsection{Correlation does not imply causation}
+\begin{frame}
+\frametitle{Correlation does not imply causation}
+
+You have all likely heard the addage
+\begin{quote}
+correlation does not imply causation.
+\end{quote}
+\vspace{0.1in} \pause
+
+If two variables have a correlation that is close to -1 or 1, 
+\pause
+the two variables are highly correlated.
+\pause
+This does \alert{not} mean that one variable \alert{causes} the other.
+
+\vspace{0.1in} \pause
+
+Spurious correlations:
+\url{http://www.tylervigen.com/spurious-correlations}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Correlation does not imply causation (cont.)}
+
+\tiny
+
+From \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5402407/}:
+\begin{quote}
+My attention was drawn to the recent article by Song at al. entitled “How jet lag impairs Major League Baseball performance” (1), not only by its slightly unusual subject but more importantly because I wondered how one could ever actually prove the effect of jet lag on baseball performance.
+\end{quote}
+\pause
+\begin{quote}
+...Although I do not dispute the large amount of work involved and would be well-nigh incapable of judging the validity of the analyses performed, I must admit that I was taken aback by the way Song et al. (1) systematically present the correlations they identify as direct proof of causality between jet lag and the affected variables. It is actually quite remarkable to me that the word “correlation” does not appear even once in the paper, when this is actually what the authors have been looking at and, in my opinion, to be scientifically accurate, the title of the article should really read: “How jet lag correlates with impairments in Major League Baseball performance.”
+\end{quote}
+\pause
+\begin{quote}
+...this tendency to amalgamate correlation with causality is apparently extremely frequent in this field of investigation. But given the broad readership of PNAS and the subject of this article, I feel that it is likely to be relayed by the press and to attract the attention of many people, both scientists and nonscientists.
+\end{quote}
+\pause
+\begin{quote}
+Considering the current tendency to misinterpret scientific data, via the misuse of statistics in particular, I feel that a journal such as PNAS should aim to educate by example, and thus ought to enforce more rigor in the presentation of scientific articles regarding the difference between correlations and proven causality.
+\end{quote}
+
+\end{frame}
+
+
+
+\subsection{Lurking variables}
+\begin{frame}
+\frametitle{Lurking variables}
+
+\begin{definition}
+A \alert{lurking variable} is a variable that has an important effect on the 
+relationship of the variables under investigation, 
+\pause
+but that is not included in the variables being studied.
+\end{definition}
+
+\pause
+
+What is the relationship between a person's height and their ideal partner's 
+height?
+\pause
+\begin{center}
+\includegraphics{figs/regression_heights}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Ideal partner height}
+
+In this example, \alert{gender} is a lurking variable:
+
+\begin{center}
+\includegraphics{figs/regression_heightsbygender1}
+\end{center}
+
+\end{frame}
+
+
+\subsection{Correlations based on average data}
+\begin{frame}
+\frametitle{Correlations based on average data}
+
+Correlations based on average data are often much higher (closer to -1 or 1)
+than correlations based on individual data.
+\pause
+This occurs because the averages smooth out the variability between individuals.
+
+\end{frame}
+
+
+\subsection{Extrapolation}
+\begin{frame}
+\frametitle{Extrapolation}
+
+\begin{definition}
+\alert{Extrapolation} occurs when making predictions for explanatory variable
+values below the sample minimum or above the sample maximum of the explanatory
+variable.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Regression assumes a linear pattern between the response variable and the 
+explanatory variable. 
+\pause
+Even if this linear assumption is correct for a range of explanatory variable
+values, 
+there is no reason to expect that this will continue beyond that range.
+
+\end{frame}
+
+
+\end{document}
