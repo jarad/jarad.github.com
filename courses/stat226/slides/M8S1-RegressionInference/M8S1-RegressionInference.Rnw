@@ -1,0 +1,381 @@
+\documentclass[handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{M8S1 - Regression Inference}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=7, fig.height=5, 
+               size='small', 
+               out.width='0.8\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+
+\begin{document}
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Regression Inference}
+
+\begin{itemize}
+\item Review of population mean inference
+  \begin{itemize}
+  \item Assumptions
+  \item Confidence interval
+  \item \pvalue{}
+  \item Hypothesis test
+  \end{itemize}
+\item Regression inference
+  \begin{itemize}
+  \item Assumptions
+  \item Confidence interval
+  \item \pvalue{}
+  \item Hypothesis test
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\section{Population mean}
+\subsection{Assumptions}
+\begin{frame}
+\frametitle{Population mean assumptions}
+
+What is an \alert{inference}? 
+\pause
+Making a statement about the population based on a sample.
+
+\vspace{0.1in} \pause
+
+What are our assumptions when making an inference about a population mean? 
+\pause
+\begin{itemize}
+\item Data are independent
+\item Data are normally distributed
+\item Data are identically distributed with a common mean and a common variance
+\end{itemize}
+\pause
+This is encapsulated with the statistical notation
+\[
+Y_i \iid N(\mu,\sigma^2)
+\]
+
+\end{frame}
+
+
+\subsection{Statistics}
+\begin{frame}
+\frametitle{Statistics for a population mean}
+
+If we have the assumption $Y_i \iid N(\mu,\sigma^2)$,
+
+\begin{itemize}
+\item What is our estimator for $\mu$?
+\pause
+
+sample mean, so $\hat\mu = overline{y}$
+\pause
+\item What is our estimator for $\sigma^2$?
+\pause
+
+sample variance, $s^2$
+\pause
+\item What is the standard error of $\hat{\mu}$?
+\pause
+
+$SE[\hat\mu] = s/\sqrt{n}$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Confidence intervals for a population mean}
+
+If we have the assumption $Y_i \iid N(\mu,\sigma^2)$,
+\pause
+what is the formula to construct a $100(1-\alpha)\%$ confidence interval for 
+the population mean $\mu$?
+
+\pause
+
+\[
+\overline{y} \pm t_{n-1,1-\alpha/2} s/\sqrt{n}
+\]
+
+\pause
+
+where $P(T_{n-1} > t_{n-1,1-\alpha/2}) = \alpha/2$.
+
+\vspace{0.1in} \pause
+
+More generally, we have 
+
+\[
+\hat\mu \pm t^* \times SE[\hat\mu]
+\]
+where 
+\begin{itemize}
+\item $\hat\mu$ is the estimator of the population mean
+\item $t^*$ is the appropriate $t$-critical value
+\item $SE[\hat\mu]$ is the standard error of the estimator
+\end{itemize}
+\end{frame}
+
+
+\subsection{Statistics}
+\begin{frame}
+\frametitle{$t$-statistic for a population mean}
+
+Suppose you have the null hypothesis
+\[
+H_0: \mu = m_0 
+\]
+\pause
+What is the formula for the $t$-statistic?
+\pause
+\[
+t = \frac{\overline{y}-m_0}{s/\sqrt{n}} \pause = \frac{\hat\mu - m_0}{SE[\hat\mu]}
+\]
+\pause
+Thus we have the estimator minus the hypothesized value in the numerator
+\pause
+and the standard error of the estimator in the denominator.
+
+\vspace{0.1in} \pause
+
+If the null hypothesis is true, 
+what is the distribution for $t$?
+\pause
+\[
+t \sim T_{n-1}
+\]
+\end{frame}
+
+\subsection{Hypothesis test}
+\begin{frame}
+\frametitle{Hypothesis test for population mean}
+
+Suppose you have the hypotheses
+\[
+H_0: \mu = m_0
+\qquad \mbox{versus} \qquad
+H_a: \mu > 0
+\]
+\pause
+
+How can you calculate the \pvalue{} for this test?
+
+\pause
+
+\[
+p\mbox{-value} = P(T_{n-1} > t) \pause = P\left(T_{n-1} > \frac{\hat\mu - m_0}{SE[\hat\mu]} \right)
+\]
+
+At level $\alpha$, you 
+\begin{itemize}
+\item reject $H_0$ if \pvalue{} $\le \alpha$ and conclude that there is 
+statistically significant evidence that $\mu > 0$ 
+\item fail to reject $H_0$ if \pvalue{} $> \alpha$ and conclude that there is 
+insufficient evidence that $\mu > 0$.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+\section{Regression}
+\subsection{Assumptions}
+\begin{frame}
+\frametitle{Assumptions}
+
+In statistical notation, 
+the regression assumptions can be written as 
+\[ 
+y_i = \beta_0 + \beta_1 x_i + \epsilon_i \pause 
+\qquad 
+\epsilon_i \iid N(0,\sigma^2)
+\]
+for some unknown population intercept ($\beta_0$), population slope ($\beta_1$), 
+and error for individual $i$ ($\epsilon_i$).
+
+\vspace{0.1in} \pause
+
+What are the assumptions for the regression model?
+\pause 
+\begin{itemize}
+\item Errors are independent \pause
+\item Errors are normal \pause
+\item Errors are identically distributed with a mean of 0 and a variance of $\sigma^2$ \pause
+\item Linear relationship between the explanatory variable and the \alert{mean} 
+of the response: 
+\pause
+\[ 
+E[Y_i] = \beta_0 + \beta_1 x_i
+\]
+\end{itemize}
+\pause
+You might also see regression written like 
+\[ 
+Y_i \ind N(\beta_0+\beta_1 x_i, \sigma^2).
+\]
+
+\end{frame}
+
+
+\subsection{Statistics for regression}
+\begin{frame}
+\frametitle{Statistics for regression}
+{\tiny (You do not need to know the formulas.)}
+\[ 
+y_i = \beta_0 + \beta_1 x_i + \epsilon_i \pause 
+\qquad 
+\epsilon_i \iid N(0,\sigma^2)
+\]
+\pause
+\begin{itemize}
+\item For the slope ($\beta_1$), \pause
+the estimator is the sample slope 
+\[ \hat\beta_1 = b_1 = r \times s_y / s_x \]
+\pause
+\item For the intercept ($\beta_0$), \pause
+the estimator is the sample intercept 
+\[ \hat\beta_0 = b_0 = \overline{y} - b_1 \overline{x} \]
+\pause
+\item For the variance $(\sigma^2)$, \pause
+the estimator is 
+\[
+\hat\sigma^2 = \frac{1}{n-2} \sum_{i=1}^n e_i^2 \pause = \frac{1}{n-2} \sum_{i=1}^n (y-b_0-b_1 x_i)^2
+\]
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Standard errors for regression}
+{\tiny (You do not need to know the formulas.)}
+\[ 
+y_i = \beta_0 + \beta_1 x_i + \epsilon_i \pause 
+\qquad 
+\epsilon_i \iid N(0,\sigma^2)
+\]
+
+\pause
+
+The important standard errors are 
+\[ 
+SE[\hat\beta_1] = SE[b_1] = \hat\sigma \sqrt{\frac{1}{(n-1)s_x^2}}
+\]
+and 
+\[ 
+SE[\hat\beta_0] = SE[b_0] = \hat\sigma \sqrt{\frac{1}{n} + \frac{\overline{x}^2}{(n-1)s_x^2}}
+\]
+\pause
+We can use these to construct confidence intervals and pvalues.
+\end{frame}
+
+
+\subsection{Confidence intervals for regression}
+\begin{frame}
+\frametitle{Confidence intervals for regression}
+\[ 
+y_i = \beta_0 + \beta_1 x_i + \epsilon_i \pause 
+\qquad 
+\epsilon_i \iid N(0,\sigma^2)
+\]
+\pause
+$100(1-\alpha)$\% confidence interval for the slope:
+\[
+b_1 \pm t_{n-2, 1-\alpha/2} \times SE[b_1]
+\]
+\pause
+$100(1-\alpha)$\% confidence interval for the intercept:
+\[
+b_0 \pm t_{n-2, 1-\alpha/2} \times SE[b_0]
+\]
+\pause
+To remember the degrees of freedom, 
+it is always the sample size minus \alert{the number of parameters in the mean}.
+\pause
+In this case, there are two parameters in the mean: $\beta_0$ and $\beta_1$.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Hypothesis tests}
+
+Although alternative hypothesis tests can be constructed for different 
+hypothesized values, \pause
+the vast majority of the time we are testing versus a hypothesized value of 0
+\pause
+and typically only caring about the slope. 
+
+\vspace{0.1in} 
+
+Suppose you have these hypotheses about the slope 
+\[ 
+H_0: \beta_1 = 0
+\qquad \mbox{versus} \qquad 
+H_a: \beta_1 \ne 0
+\]
+\pause
+Then our $t$-statistic is 
+\[ 
+t = \frac{\hat\beta_1 - 0}{SE[\hat\beta_1]} \pause = \frac{b_1 - 0}{SE[b_1]}
+\]
+\pause
+and a \pvalue{} is 
+\[ 
+\mbox{\pvalue{}} = 2P(T_{n-2} > |t|).
+\]
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Why do we care about $\beta_1=0$?}
+
+\pause
+
+If $\beta_1=0$, then $y_i = \beta_0 + \epsilon_i$, 
+\pause
+i.e. our response variable is independent of our explanatory variable.
+\pause
+
+<<>>=
+n <- 20
+d <- data.frame(x = runif(n), y = runif(n))
+ggplot(d, aes(x,y)) + 
+  geom_point() + 
+  stat_smooth(method="lm") + 
+  geom_hline(yintercept = mean(d$y)) + 
+  theme_bw()
+@
+
+\end{frame}
+
+
+\end{document}
