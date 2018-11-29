@@ -47,3 +47,7 @@ you can find them
 
 - [M7W1-Correlation](M7W1-Correlation/M7W1-Correlation.pdf) ([solutions](M7W1-Correlation/M7W1-Correlation_sol.pdf))
 - [M7W2-RegressionLine](M7W2-RegressionLine/M7W2-RegressionLine.pdf) ([solutions](M7W2-RegressionLine/M7W2-RegressionLine_sol.pdf))
+
+### Module 8
+
+- [M8W1-RegressionInference](M8W1-RegressionInference/M8W1-RegressionInference.pdf) ([solutions](M8W1-RegressionInference/M8W1-RegressionInference_sol.pdf))
