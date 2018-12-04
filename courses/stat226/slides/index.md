@@ -41,3 +41,4 @@ you can find them
 - [M7S2-RegressionLine](M7S2-RegressionLine/M7S2-RegressionLine.pdf)
 - [M7S3-RegressionThoughts](M7S3-RegressionThoughts/M7S3-RegressionThoughts.pdf)
 - [M8S1-RegressionInference](M8S1-RegressionInference/M8S1-RegressionInference.pdf)
+- [M8S2-RegressionInPractice](M8S2-RegressionInPractice/M8S2-RegressionInPractice.pdf)

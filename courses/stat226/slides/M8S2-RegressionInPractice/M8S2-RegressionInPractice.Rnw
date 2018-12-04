@@ -40,9 +40,171 @@ set.seed(2)
 \end{frame}
 
 
+
+
+
+\section{Assumptions}
+\begin{frame}
+\frametitle{Regression assumptions}
+
+Regression model
+\[ 
+y_i = \beta_0 + \beta_1 x_i +\epsilon_i 
+\qquad 
+\epsilon_i \stackrel{iid}{\sim} N(0,\sigma^2)
+\]
+\pause
+Regression assumptions are
+\begin{itemize}
+\item Errors are \alert{independent}
+\item Errors are \alert{normally distributed}
+\item Errors are identically distributed with a mean of 0 and \alert{constant variance} of $\sigma^2$
+\item Linear relationship between explanatory variable and mean of the response
+\end{itemize}
+\end{frame}
+
+
+\subsection{Linearity}
+\begin{frame}
+\frametitle{Assessing linearity assumption}
+
+Look for non-linearity in 
+\begin{itemize}
+\item response vs explanatory plot
+\item residuals vs explanatory plot
+\item residuals vs predicted value plot
+\end{itemize}
+
+\pause
+
+<<fig.width=8.5>>=
+n <- 30
+x <- runif(n,0,8)
+y <- x^2 + rnorm(n)
+m <- lm(y~x)
+residuals <- residuals(m)
+predicted <- fitted(m)
+response <- y
+explanatory <- x
+
+opar <- par(mfrow=c(1,3), mar=c(5,4,0,0)+0.1)
+plot(explanatory, response); abline(m)
+plot(explanatory, residuals); abline(h=0)
+plot(predicted, residuals); abline(h=0)
+par(opar)
+@
+\end{frame}
+
+\subsection{Constant variance}
+\begin{frame}
+\frametitle{Assessing constant variance assumption}
+
+Look for a bugle horn pattern 
+\begin{itemize}
+\item residuals vs explanatory plot
+\item residuals vs predicted value plot
+\end{itemize}
+
+\pause
+
+<<fig.width=8.5>>=
+n <- 30
+x <- runif(n,0,8)
+y <- x + rnorm(n, 0, x^2)
+m <- lm(y~x)
+residuals <- residuals(m)
+predicted <- fitted(m)
+response <- y
+explanatory <- x
+
+opar <- par(mfrow=c(1,3), mar=c(5,4,0,0)+0.1)
+plot(explanatory, response); abline(m)
+plot(explanatory, residuals); abline(h=0)
+plot(predicted, residuals); abline(h=0)
+par(opar)
+@
+
+\end{frame}
+
+
+\subsection{Normality}
+\begin{frame}
+\frametitle{Assessing normality assumption}
+
+Deviations from a straight line in a normal quantile plot (qq-plot)
+
+\pause
+
+<<fig.width=8.5>>=
+n <- 30
+x <- runif(n,0,8)
+y <- x + rt(n, 1)
+m <- lm(y~x)
+residuals <- residuals(m)
+predicted <- fitted(m)
+response <- y
+explanatory <- x
+
+
+opar <- par(mfrow=c(1,2))
+plot(explanatory, response); abline(m)
+qqnorm(residuals); qqline(residuals)
+par(opar)
+@
+
+\end{frame}
+
+
+
+\subsection{Independence}
+\begin{frame}
+\frametitle{Assessing the independence assumption}
+
+The main ways that the independence assumption is violated are 
+\pause
+\begin{itemize}[<+->]
+\item temporal effects
+\item spatial effects
+\item clustering effects
+\end{itemize}
+
+\pause
+
+Each of these requires a relatively sophisticated plot or analysis 
+\pause 
+and thus, for this course, we will assess the independence assumption using 
+the context of the problem.
+\pause
+If one of the above effects are present in the problem, then there \alert{may}
+be a violation of the independence assumption.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Influential individuals}
+
+In addition to violation of model assumptions, 
+we should be on the lookout for individuals who are influential.
+
+\vspace{0.1in} \pause
+
+Recall
+\begin{itemize}
+\item if the explanatory variable value is far from the other explanatory variable
+values, then the individual has high \alert{leverage}\pause, and
+\item if removing an observation changes the intercept or slope a lot, then 
+the individual has high \alert{influence}.
+\end{itemize}
+
+\end{frame}
+
+
 \begin{frame}
 \frametitle{Regression analysis procedure}
 \begin{enumerate}
+\item Determine hypotheses, i.e. why are you collecting data
 \item Collect data (at least two variables per individual)
 \item Identify explanatory and response variables
 \item Plot the data
@@ -54,6 +216,160 @@ set.seed(2)
 
 
 
+
+\section{Gas mileage}
+\begin{frame}
+\frametitle{Gas mileage}
+
+To understand changes in our 2011 Toyota Sienna, 
+we record the miles driven and amount of fuel consumed since our last fill-up.
+\pause
+From this we can calculate the miles per gallon (mpg) since out last fill-up. 
+\pause
+Understanding changes in mpg through time may give us an indication of 
+problems with our car.
+
+\pause
+
+In the following analysis, 
+we use 
+\begin{itemize}
+\item miles per gallon as our response variable
+\item days since purchase as our explanatory variable
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Data sheet}
+\begin{frame}
+\frametitle{Example data sheet}
+\includegraphics{data/20180608}
+\end{frame}
+
+
+\subsection{Plot}
+\begin{frame}
+\frametitle{Plot}
+\setkeys{Gin}{width=0.7\textwidth}
+\begin{center}
+\includegraphics{data/gas_plot}
+\end{center}
+\end{frame}
+
+
+\subsection{Regression output}
+\begin{frame}
+\frametitle{Regression}
+\setkeys{Gin}{width=0.4\textwidth}
+\begin{center}
+\includegraphics{data/gas_regression}
+\end{center}
+\end{frame}
+
+
+\subsection{Residual plots}
+\begin{frame}
+\frametitle{Residuals}
+\setkeys{Gin}{width=0.5\textwidth}
+\begin{center}
+\includegraphics{data/gas_residuals}
+\end{center}
+\end{frame}
+
+
+\subsection{Normal quantile plot}
+\begin{frame}
+\frametitle{Normal quantile plot}
+\begin{center}
+\includegraphics{data/gas_qqplot}
+\end{center}
+\end{frame}
+
+
+\subsection{Regression output}
+\begin{frame}
+\frametitle{Regression}
+\setkeys{Gin}{width=\textwidth}
+\begin{center}
+\includegraphics{data/gas_regressionFit}
+\end{center}
+\end{frame}
+
+
+
+\subsection{Interpretation}
+\begin{frame}
+\frametitle{Interpretation}
+
+\begin{itemize}
+\item When the car was purchased (day 0), the predicted miles per gallons was
+18.6 mpg. 
+\item Each additional day that passes, the miles per gallons increases by 
+0.0008 mpg on average. Over the course of a year, this is an increase of 
+0.29 mpg on average.
+\item Only 2.9\% of the variability in miles per gallon is explained by day.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Confidence intervals}
+\begin{frame}
+\frametitle{Confidence intervals}
+
+To construct a $100(1-\alpha)$\% confidence interval, we use the generic 
+formula
+\[
+\mbox{estimate } \pm t_{n-2,\alpha/2} \mbox{ SE(estimate)}
+\]
+\pause
+Suppose we are interested in 90\% confidence intervals for the intercept and 
+slope. 
+\pause
+We have 
+\[ 
+t_{275,0.05} < t_{100,0.05} = 1.66.
+\]
+Thus, a 90\% confidence interval for the intercept is 
+\[ 
+18.567468 \pm 1.66 \times 0.373457 = (17.9,19.2)
+\]
+\pause
+and a 90\% confidence interval for the slope is 
+\[
+0.0008083 \pm 1.66 \times 0.00028 = (0.0003,0.0013).
+\]
+\end{frame}
+
+
+
+\subsection{Hypothesis tests}
+\begin{frame}
+\frametitle{Hypothesis tests}
+JMP reports two \pvalue{}s:
+\begin{center}
+\includegraphics{data/gas_estimates}
+\end{center}
+
+\pause
+
+These correspond to the hypothesis tests
+\[ \begin{array}{ll}
+\mbox{Intercept} & H_0: \beta_0 = 0 \quad \mbox{ vs }\quad H_a: \beta_0 \ne 0 \\
+\mbox{day} & H_0: \beta_1 = 0 \quad \mbox{ vs }\quad H_a: \beta_1 \ne 0 
+\end{array} \]
+To obtain the one-sided \pvalue{}s, you need to divided the \pvalue{} in half 
+and, if the alternative is \alert{not} consistent with the estimate, subtract from 1.
+\pause
+So the 
+\[ \begin{array}{ll}
+\mbox{Hypotheses} & \mbox{\pvalue} \pause \\
+H_0: \beta_0 = 0 \quad \mbox{ vs }\quad H_a: \beta_0 > 0 & \pause < 0.0001 \pause \\
+H_0: \beta_1 = 0 \quad \mbox{ vs }\quad H_a: \beta_1 < 0 & \pause 0.9979
+\end{array} \]
+
+
+\end{frame}
 
 
 \end{document}
