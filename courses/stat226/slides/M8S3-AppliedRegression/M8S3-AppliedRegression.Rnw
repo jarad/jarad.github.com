@@ -4,7 +4,6 @@
 \input{../commands}
 
 \title{M8S3 - Applied Regression}
-\subtitle{CPI vs Unemployment}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -20,6 +19,7 @@ options(width=120)
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
 library("tidyverse")
+library("zoo")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -40,7 +40,7 @@ set.seed(2)
 \begin{frame}
 \frametitle{Regression analysis procedure}
 \begin{enumerate}
-\item Determine hypotheses, i.e. why are you collecting data
+\item Determine scientific question, i.e. why are you collecting data
 \item Collect data (at least two variables per individual)
 \item Identify explanatory and response variables
 \item Plot the data
@@ -48,6 +48,265 @@ set.seed(2)
 \item Assess regression assumptions
 \item Interpret regression output
 \end{enumerate}
+
+\vspace{0.1in} \pause
+
+Two examples:
+\begin{itemize}
+\item Inflation vs Unemployment
+\item Frozen Foods: Sales vs Visibility
+\end{itemize}
+\end{frame}
+
+
+\section{Inflation vs Unemployment}
+\subsection{Scientific question}
+\begin{frame}
+\frametitle{Inflation vs Unemployment}
+
+\begin{definition}
+\alert{Inflation} is a systained increase in the price level of goods and 
+services in an economy over a period of time.
+\pause
+\alert{Unemployment percentage} is calculated by dividing the number of 
+unemployed individuals by all individuals currently in the labor force.
+\end{definition}
+
+\pause
+
+Scientific question: 
+\begin{itemize}
+\item What is the relationship between inflation and unemployment? \pause
+\item Economic theory suggests lower unemployment leads to higher inflation. 
+Is there evidence in the U.S. to support this theory?
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Data}
+\begin{frame}
+\frametitle{Data}
+
+Obtained from \url{https://www.bls.gov/}:
+\pause
+
+\begin{center}
+\includegraphics{data/inflation_vs_unemployment-data}
+\end{center}
+\end{frame}
+
+
+\subsection{Plot}
+\begin{frame}
+\frametitle{Plot}
+\begin{center}
+\includegraphics{data/inflation_vs_unemployment-plot}
+\end{center}
+\end{frame}
+
+\subsection{Regression}
+\begin{frame}
+\frametitle{Regression}
+\begin{center}
+\includegraphics{data/inflation_vs_unemployment-line}
+\end{center}
+\end{frame}
+
+
+\subsection{Residuals}
+\begin{frame}
+\frametitle{}
+\begin{center}
+\includegraphics{data/inflation_vs_unemployment-residuals}
+\end{center}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{}
+\begin{center}
+\includegraphics{data/inflation_vs_unemployment-qq}
+\end{center}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Regression}
+\begin{center}
+\includegraphics{data/inflation_vs_unemployment-regression}
+\end{center}
+\end{frame}
+
+
+\subsection{Confidence interval}
+\begin{frame}
+\frametitle{Confidence intervals}
+
+Critical value for 80\% confidence interval
+\[
+t_{848,0.1} \pause < t_{100,0.1} \pause = 1.29
+\]
+\pause
+Intercept
+\[
+0.0023679 \pm 1.29 \times 0.000457 = (0.0018, 0.0030)
+\]
+\pause
+Slope
+\[
+0.000072832 \pm 1.29 \times 0.00007621 = (-0.000025, 0.000171)
+\]
+
+\end{frame}
+
+\subsection{Hypothesis test}
+\begin{frame}
+\frametitle{Hypothesis tests}
+Scientific question: 
+Economic theory suggests lower unemployment leads to higher inflation. 
+Is there evidence in the U.S. to support this theory?
+
+\vspace{0.1in} \pause
+
+Hypothesis test: \pause
+\[
+H_0: \beta_1 = 0 \qquad \mbox{vs} \qquad H_a: \beta_1 < 0
+\]
+\pause
+The point estimate for the slope (7.3e-5) is not consistent with this 
+alternative hypothesis.
+\pause
+Thus the \pvalue{} for this hypothesis test is $1-(0.3395/2) \approx 0.83$.
+
+\end{frame}
+
+
+
+\section{Sales vs Visibility}
+\subsection{Scientific question}
+\begin{frame}
+\frametitle{Sales vs Visibility}
+
+\begin{definition}
+\alert{Item\_Outlet\_Sales} is the sales revenue for the particular product 
+at a particular outlet for a given period of time.
+\pause
+\alert{Item\_Visibility} is the \% of total display area of all products in a 
+store allocated to the particular product.
+\end{definition}
+
+\pause
+
+Scientific question: 
+\begin{itemize}
+\item What is the relationship between visibility and sales for frozen foods? \pause
+\item Marketing theory suggests that increased visibility should increase 
+sales.
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Data}
+\begin{frame}
+\frametitle{Data}
+
+Obtained from \url{https://datahack.analyticsvidhya.com/contest/practice-problem-big-mart-sales-iii/}:
+\pause
+
+\begin{center}
+\includegraphics{data/sales_vs_visibility-data}
+\end{center}
+\end{frame}
+
+
+\subsection{Plot}
+\begin{frame}
+\frametitle{Plot}
+\begin{center}
+\includegraphics{data/sales_vs_visibility-plot}
+\end{center}
+\end{frame}
+
+\subsection{Regression}
+\begin{frame}
+\frametitle{Regression}
+\begin{center}
+\includegraphics{data/sales_vs_visibility-line}
+\end{center}
+\end{frame}
+
+
+\subsection{Residuals}
+\begin{frame}
+\frametitle{}
+\begin{center}
+\includegraphics{data/sales_vs_visibility-residuals}
+\end{center}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{}
+\begin{center}
+\includegraphics{data/sales_vs_visibility-qq}
+\end{center}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Regression}
+\begin{center}
+\includegraphics{data/sales_vs_visibility-regression}
+\end{center}
+\end{frame}
+
+
+\subsection{Confidence interval}
+\begin{frame}
+\frametitle{Confidence intervals}
+
+Critical value for 95\% confidence interval
+\[
+t_{758,0.1} \pause < t_{100,0.1} \pause = 1.984
+\]
+\pause
+Intercept
+\[
+2439.0525 \pm 1.984 \times 119.5942 \approx (2200,2680)
+\]
+\pause
+Slope
+\[
+-3923.018 \pm 1.984 \times 1624.367 = (-7150,-700)
+\]
+
+\end{frame}
+
+\subsection{Hypothesis test}
+\begin{frame}
+\frametitle{Hypothesis tests}
+Scientific question:
+Marketing theory suggests that increased visibility should increase
+sales.
+
+\vspace{0.1in} \pause
+
+Hypothesis test: \pause
+\[
+H_0: \beta_1 = 0 \qquad \mbox{vs} \qquad H_a: \beta_1 > 0
+\]
+\pause
+The point estimate for the slope (-3923) is not consistent with this
+alternative hypothesis.
+\pause
+Thus the \pvalue{} for this hypothesis test is $1-(0.016/2) \approx 0.99$.
+
 \end{frame}
 
 
