@@ -10,7 +10,7 @@ group:
 
 ## Refereed Journal Articles
 
-1. Will Landau, Jarad Niemi, and Dan Nettleton. ``Fully Bayesian analysis of RNA-seq counts for the detection of gene expression heterosis.'' Journal of the American Statistical Association (in press)
+1. Will Landau\*, Jarad Niemi, and Dan Nettleton. ``Fully Bayesian analysis of RNA-seq counts for the detection of gene expression heterosis.'' Journal of the American Statistical Association (in press)
 1. Lisa A. Schulte, Jarad Niemi, Matthew J. Helmers, Matt Liebman, J. Gordon
 Arbuckle, David E. James, Randall K. Kolka, Matthew E. O'Neal, Mark D. Tomer, 
 John C. Tyndall, Heidi Asbjornsen, Pauline Drobney, Jeri Neal, Gary Van Ryswyk,
