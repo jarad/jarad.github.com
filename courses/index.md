@@ -8,6 +8,9 @@ group: navigation
 
 ## Regular courses
 
+- Spring 2019
+  - [STAT 587C (Engineering)](stat587Eng)
+  - [STAT 544](stat544)
 - Fall 2018
   - [STAT 226](stat226)
 - Spring 2018
