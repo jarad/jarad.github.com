@@ -1,11 +1,11 @@
 ---
 layout: page
-title: STAT 401C (Engineering)
+title: STAT 587C (Engineering)
 tagline: Statistical Methods for Research Workers
 ---
 {% include JB/setup %}
 
-This website is designed to host course material for STAT 401C (Engineering) - 
+This website is designed to host course material for STAT 587C (Engineering) - 
 Statistical Methods for Research Workers at 
 [Iowa State University](http://www.iastate.edu).
 
@@ -14,19 +14,19 @@ Statistical Methods for Research Workers at
 
 This course meets
 
-- MWF 1:10-2 @ [Town 0270](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1206&ycenter=1748&background=map&xshow=1206&yshow=1748)
+- MWF 1:10-2 @ [Gilman 1810](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1206&ycenter=1748&background=map&xshow=1206&yshow=1748)
 - T 10-11:50 @ [Snedecor 1105](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1456&ycenter=1854&background=map&xshow=1456&yshow=1854)
 
 Office hours are
 
-- Instructor: R 9:30-11:30 @ Snedecor 2208
-- TA: MW 10-11 @ Snedecor 2404
+- Instructor: TBD
+- TA: TBD
 
 ## Relevant course pages
 
 - [Labs](labs)
 - [Slides](slides)
-- [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
+- [587A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 - [Next courses](../next_courses.html)
 
 
@@ -40,7 +40,7 @@ Here are some free resources that can be used:
 - [Data Camp](https://www.datacamp.com/)
 - [Introduction to R for Data Science](https://www.edx.org/course/introduction-r-data-science-microsoft-dat204x-3)
 - [Introduction to Linear Regression Analysis (5) by Montgomery, Peck, and Vining](http://iowa-primo.hosted.exlibrisgroup.com/01IASU:ComboPrimocentral:01IASU_ALMA51248876230002756)
-- [Steve Vardeman's Notes](http://www.public.iastate.edu/~vardeman/stat401/401BNotes.pdf)
+- [Steve Vardeman's Notes](http://www.public.iastate.edu/~vardeman/stat587/587BNotes.pdf)
 
 
 Other resources:
@@ -91,7 +91,7 @@ statistics (STAT) courses: 101, 104, 105, 201, or 226.
 
 ## Q&A
 
-Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum. 
+Please use the [Canvas](http://canvas.iastate.edu/) discussion forum. 
 
 
 
@@ -101,7 +101,7 @@ Please use the [Blackboard](http://bb.its.iastate.edu/) discussion forum.
 |----|-----|-------|
 |   1|Probability |       |
 |   2|Random variables| |
-|   3|Random variables| |
+|   3|                | |
 |   4|Modeling| |
 |   5|Inference| |
 |   6|         | |
