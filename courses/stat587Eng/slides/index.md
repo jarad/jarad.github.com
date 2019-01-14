@@ -11,7 +11,7 @@ Below are slides (.pdf) and R code (.R).
 
 If the files are ever not available here, 
 you can find them 
-[here](https://github.com/jarad/jarad.github.com/tree/master/courses/stat401Eng/slides).
+[here](https://github.com/jarad/jarad.github.com/tree/master/courses/stat587Eng/slides).
 
 ### Probability
 
