@@ -1,138 +1,140 @@
+## ------------------------------------------------------------------------
+add1 <- function(a) {
+  return(a+1)
+}
+
+add1(2)
+add1(a = 3)
+
+## ------------------------------------------------------------------------
+add <- function(a, b) {
+  return(a+b)
+}
+
+add(1,1)
+add(a = 2, b = 3)
+
+## ------------------------------------------------------------------------
+add1(a = 1:2)
+add(a = 1:2, b = 3:4)
+
 ## ---- eval=FALSE---------------------------------------------------------
-## install.packages("tidyverse")
+## add(a = 1:4, b = 1:2)
+
+## ------------------------------------------------------------------------
+f <- function(first, second) {
+  return(first/2 + second)
+}
+
+f(1,2)
+f(1, second = 2)
+f(first = 1, second = 2)
+f(second = 2, 1) # I thought this was going to be an error
+f(f = 1, s = 2)
+
+## ------------------------------------------------------------------------
+add <- function(a, b = 1) {
+  return(a+b)
+}
+
+add(a = 1)
+add(a = 1:2)
+add(a = 2:3, b =  2)
+add(a = 3:4, b = -1)
+
+## ------------------------------------------------------------------------
+hist(rnorm(1e6), probability = TRUE)
+curve(dnorm(x), add = TRUE, col = 'red')
+
+## ------------------------------------------------------------------------
+summary(c(TRUE,FALSE,TRUE))
+summary(1:10)
 
 ## ---- eval=FALSE---------------------------------------------------------
-## install.packages(c("dplyr","tidyr","ggplot2"))
-
-## ---- eval=FALSE---------------------------------------------------------
-## library("dplyr")
-## library("tidyr")
-## library("ggplot2")
+## ?summary
 
 ## ------------------------------------------------------------------------
-library("tidyverse")
+n <- 10
+x <- rnorm(n)
+y <- rnorm(n, x)
+m <- lm(y~x) # a linear regression
+summary(m)
 
 ## ------------------------------------------------------------------------
-dim(airquality)
-head(airquality)
-tail(airquality)
-summary(airquality)
-
-## ---- eval=FALSE---------------------------------------------------------
-## ?airquality
+class(m)
 
 ## ------------------------------------------------------------------------
-airquality <- airquality %>%
-  mutate(Date = as.Date(paste("1973",Month,Day,sep="/"))) 
+summary(m)
+anova(m)
+opar <- par(mfrow=c(2,2)); plot(m); par(opar)
 
 ## ------------------------------------------------------------------------
-ggplot(airquality,     # data.frame containing the data
-       aes(x=Ozone)) + # a column name from the data.frame
-  geom_histogram()     # create a histogram
+a <- 1
+f <- function() {
+  return(a)
+}
+f()
 
 ## ------------------------------------------------------------------------
-ggplot(airquality, aes(x=Ozone)) + 
-  geom_histogram(bins = 40)
+f <- function() {
+  a <- 2
+  return(a)
+}
+f()
+a
 
 ## ------------------------------------------------------------------------
-ggplot(airquality, aes(x=Ozone)) + 
-  geom_histogram(aes(y=..density..), bins = 40)
+f <- function() {
+  a <<- a + 1
+  return(a)
+}
+a
+f()
+a
 
 ## ------------------------------------------------------------------------
-ggplot(airquality,     
-       aes(x=1,y=Ozone)) + 
-  geom_boxplot()     
+for (i in 1:3) {
+  print(i)
+}
 
 ## ------------------------------------------------------------------------
-ggplot(airquality,     
-       aes(x=Month, y=Ozone, group=Month)) + 
-  geom_boxplot()     
+i <- 0
+while (i < 3) {
+  i <- i + 1
+  print(i)
+}
 
 ## ------------------------------------------------------------------------
-ggplot(airquality,     
-       aes(x=Month, y=Ozone, group=Month)) + 
-  geom_boxplot(color='grey',                 # make the boxes not so obvious
-               outlier.shape = NA) +         # remove outliers, 
-  geom_jitter() +                            # because they get plotted here
-  theme_bw()                                 # Change the theme to remove gray
+for (i in 1:10) {
+  if (i<5) {
+    print(-i)
+  } else {
+    print(i*2)
+  }
+}
 
 ## ------------------------------------------------------------------------
-ggplot(airquality, aes(x = Date, y = Ozone)) +
-  geom_point()
+ifelse((1:10) < 5, "Less than 5", "Not less than 5")
 
 ## ------------------------------------------------------------------------
-ggplot(airquality, aes(x = Date, y = Ozone)) +
-  geom_line()
+x <- sample(0:3, size = 1e5, prob = c(.5,.25,.1,.15), replace = TRUE)
 
 ## ------------------------------------------------------------------------
-ggplot(airquality, aes(x = Solar.R, y = Ozone)) +
-  geom_point()
+(m <- mean(x))
+(s <- sd(x))
+s^2 # variance
 
 ## ------------------------------------------------------------------------
-airquality_long <- airquality %>%
-  select(-Month, -Day) %>%              # Remove these columns
-  tidyr::gather(response, value, -Date)
+mean(x) + c(-1,1) * 
+  qnorm(.95) * 
+  sd(x) / sqrt( length(x) )
 
 ## ------------------------------------------------------------------------
-dim(airquality)
-dim(airquality_long)
-
-head(airquality_long)
-summary(airquality_long)
-table(airquality_long$response)
+n <- 1e5
+x <- runif(n)
+y <- rnorm(n)
+(p <- mean(x>y))
 
 ## ------------------------------------------------------------------------
-ggplot(airquality_long, 
-       aes(Date, value, color = response, group = response)) +
-  geom_line()
-
-## ------------------------------------------------------------------------
-ggplot(airquality_long, aes(Date, value)) +
-  geom_point() + 
-  facet_wrap(~response)
-
-## ------------------------------------------------------------------------
-ggplot(airquality_long, aes(Date, value)) +
-  geom_line() + 
-  facet_wrap(~response,scales="free_y")
-
-## ------------------------------------------------------------------------
-airquality2 <- airquality_long %>%
-  tidyr::spread(response, value)
-
-## ------------------------------------------------------------------------
-g <- ggplot(airquality2,
-       aes(x = Temp, y = Wind)) +
-  geom_point()
-
-g # Then you can see the plot by just typing the object name
-
-## ------------------------------------------------------------------------
-g <- g +
-  labs(x = "Temperature (F)",
-       y = "Wind speed (mph)",
-       title = "New York (May-September 1973)")
-
-g
-
-## ------------------------------------------------------------------------
-g <- g + theme_bw()
-g
-
-## ------------------------------------------------------------------------
-g <- g + geom_smooth(method="lm")
-g
-
-## ------------------------------------------------------------------------
-ggplot(airquality2,
-       aes(x = Temp, y = Wind)) +
-  geom_point() +
-  geom_smooth(method = "lm") + 
-  labs(x = "Temperature (F)",
-       y = "Wind speed (mph)",
-       title = "New York (May-September 1973)") + 
-  theme_bw()
-
-## ----eval=FALSE----------------------------------------------------------
-## ggsave(filename = "plot.png", plot = g, width = 5, height = 4)
+p + c(-1,1) * qnorm(.975) * sqrt(p*(1-p)/n)
 

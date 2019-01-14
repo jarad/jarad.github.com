@@ -10,7 +10,7 @@ Statistical Methods for Research Workers at
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Yan Wang (<wangyan@iastate.edu>)
+- TA: Qihao Zhang (<qihaoz@iastate.edu>)
 
 This course meets
 

@@ -1,170 +1,93 @@
 ## ------------------------------------------------------------------------
-add1 <- function(a) {
-  return(a+1)
-}
-
-add1(2)
-add1(a = 3)
+n <- 13
+p <- 0.7
+dbinom(6, size = n, prob = p)
 
 ## ------------------------------------------------------------------------
-add <- function(a, b) {
-  return(a+b)
-}
-
-add(1,1)
-add(a = 2, b = 3)
+x <- 0:n
+plot(x, dbinom(x, size = n, prob = p), main = "Probability mass function for Bin(13,0.7)")
 
 ## ------------------------------------------------------------------------
-add1(a = 1:2)
-add(a = 1:2, b = 3:4)
-
-## ---- eval=FALSE---------------------------------------------------------
-## add(a = 1:4, b = 1:2)
+pbinom(9, size = n, prob = p)
 
 ## ------------------------------------------------------------------------
-f <- function(first, second) {
-  return(first/2 + second)
-}
-
-f(1,2)
-f(1, second = 2)
-f(first = 1, second = 2)
-f(second = 2, 1) # I thought this was going to be an error
-f(f = 1, s = 2)
+plot(x, pbinom(x, size = n, prob = p), type="s", main = "Cumulative distribution function for Bin(13,0.7)")
 
 ## ------------------------------------------------------------------------
-add <- function(a, b = 1) {
-  return(a+b)
-}
-
-add(a = 1)
-add(a = 1:2)
-add(a = 2:3, b =  2)
-add(a = 3:4, b = -1)
+p_seq <- seq(from = 0, to = 1, length = 101)
+plot(p_seq, qbinom(p_seq, size = n, prob = p), type="s", main = "Quantile function for Bin(13,0.7)")
 
 ## ------------------------------------------------------------------------
-hist(rnorm(1e6), probability = TRUE)
-curve(dnorm(x), add = TRUE, col = 'red')
-
-## ---- eval=FALSE---------------------------------------------------------
-## ?print
+draws <- rbinom(100, size = n, prob = p) # draw 100
+brks  <- (0:(n+1)) - 0.5
+hist(draws, breaks = brks, main = "Random draws from Bin(13,0.7)") 
 
 ## ------------------------------------------------------------------------
-n <- 10
-x <- rnorm(n)
-y <- rnorm(n, x)
-m <- lm(y~x) # a linear regression
-summary(m)
+hist(draws, breaks = brks, probability = TRUE)
+points(x, dbinom(x, size = n, prob = p), col="red")
 
 ## ------------------------------------------------------------------------
-class(m)
+rate <- 2
+x <- 0:10 # with no upper limit we need to decide on an upper limit
+
+plot(x, dpois(x, lambda = rate), main = "Probability mass function for Po(2)") 
 
 ## ------------------------------------------------------------------------
-summary(m)
-anova(m)
-opar <- par(mfrow=c(2,2)); plot(m); par(opar)
+plot(x, ppois(x, lambda = rate), type="s", main = "Cumulative distribution function for Po(2)")
 
 ## ------------------------------------------------------------------------
-a <- 1
-f <- function() {
-  return(a)
-}
-f()
+plot(p_seq, qpois(p_seq, lambda = rate), type="s", ylim=c(0,10), main = "Quantile function for Po(2)") # Change the y limits for comparison purposes
 
 ## ------------------------------------------------------------------------
-f <- function() {
-  a <- 2
-  return(a)
-}
-f()
-a
+draws <- rpois(100, lambda = rate)
+
+hist(draws, breaks = (0:(max(draws)+1)) - 0.5, probability = TRUE, main = "Random draws from Po(2)")
+points(x, dpois(x, lambda = rate), col="red")
 
 ## ------------------------------------------------------------------------
-f <- function() {
-  a <<- a + 1
-  return(a)
-}
-a
-f()
-a
+a <- 0
+b <- 1
+
+# The curve function expects you to give a function of `x` and then it 
+# (internally) creates a sequence of values from `from` and to `to` and creates
+# plots similar to what we had before, but using a line rather than points.
+curve(dunif(x, min = a, max = b), from = -1, to = 2,
+      xlab='y', ylab='f(y)', main='Probability density function for Unif(0,1)')
 
 ## ------------------------------------------------------------------------
-for (i in 1:3) {
-  print(i)
-}
+curve(punif(x, min = a, max = b), from = -1, to = 2,
+      xlab='y', ylab='F(y)', main='Cumulative distribution function for Unif(0,1)')
 
 ## ------------------------------------------------------------------------
-i <- 0
-while (i < 3) {
-  i <- i + 1
-  print(i)
-}
+curve(qunif(x, min = a, max = b), from = 0, to = 1,
+      xlab='p', ylab='F^{-1}(p)', main='Quantile function for Unif(0,1)')
 
 ## ------------------------------------------------------------------------
-for (i in 1:10) {
-  if (i<5) {
-    print(-i)
-  } else {
-    print(i*2)
-  }
-}
+random_uniforms <- runif(100, min = a, max = b)
+hist(random_uniforms, probability = TRUE, main = "Random draws from Unif(0,1)")
+curve(dunif(x, min = a, max = b), add = TRUE, col="red")
 
 ## ------------------------------------------------------------------------
-ifelse((1:10) < 5, "Less than 5", "Not less than 5")
+mu    <- 0
+sigma <- 1 # standard deviation
+
+curve(dnorm(x, mean = mu, sd = sigma), # notice the 3rd argument is the sd
+      from = -4, to = 4,
+      main = "PDF for a standard normal")
 
 ## ------------------------------------------------------------------------
-n <- 1e4
-sum <- 0
-for (i in 1:n) {
-  x <- runif(1)
-  sum <- sum + x^2
-}
-sum/n
+curve(pnorm(x, mean = mu, sd = sigma), 
+      from = -4, to = 4,
+      main = "CDF for a standard normal",
+      ylab = "F(x)")
 
 ## ------------------------------------------------------------------------
-y <- runif(n)^2
-mean(y)
+curve(qnorm(x, mean = mu, sd = sigma),
+      from = 0, to = 1, 
+      main = "Quantile function for a standard normal")
 
 ## ------------------------------------------------------------------------
-plot( cumsum(y)/(1:length(y)), type='l', main='Convergence', ylim=c(.3,.4))
-abline(h=1/3, col='red')
-
-## ------------------------------------------------------------------------
-mean(y) # Notice that this is the estimate of the integral that we are trying to find
-var(y)
-
-## ------------------------------------------------------------------------
-mean(y) + c(-1,1)*qnorm(0.975)*sd(y)/sqrt(length(y))
-
-## ------------------------------------------------------------------------
-m <- cumsum(y)/(1:length(y))
-s <- numeric(n)
-for (i in 1:n) {
-  s[i] <- qnorm(0.975)*sd(y[1:i])/sqrt(i)
-}
-
-plot(m, type='l', col='gray', main='Convergence', ylim=c(.3,.4))
-abline(h=1/3, col='red')
-lines(m+s)
-lines(m-s)
-
-## ------------------------------------------------------------------------
-x <- sample(0:3, size = 1e5, prob = c(.5,.25,.1,.15), replace = TRUE)
-
-## ------------------------------------------------------------------------
-(m <- mean(x))
-(s <- sd(x))
-s^2 # variance
-
-## ------------------------------------------------------------------------
-m + c(-1,1) * qnorm(.95) * s / sqrt( length(x) )
-
-## ------------------------------------------------------------------------
-n <- 1e5
-x <- runif(n)
-y <- rnorm(n)
-(p <- mean(x>y))
-
-## ------------------------------------------------------------------------
-p + c(-1,1) * qnorm(.975) * sqrt(p*(1-p)/n)
+draws <- rnorm(100, mean = mu, sd = sigma)
+hist(draws, probability = TRUE)
+curve(dnorm(x, mean = mu, sd = sigma), add = TRUE, col = "red")
 

@@ -1,93 +1,141 @@
-## ------------------------------------------------------------------------
-n <- 13
-p <- 0.7
-dbinom(6, size = n, prob = p)
+## ---- eval=FALSE---------------------------------------------------------
+## install.packages("tidyverse")
+
+## ---- eval=FALSE---------------------------------------------------------
+## install.packages(c("dplyr","tidyr","ggplot2"))
+
+## ---- eval=FALSE---------------------------------------------------------
+## library("dplyr")
+## library("tidyr")
+## library("ggplot2")
 
 ## ------------------------------------------------------------------------
-x <- 0:n
-plot(x, dbinom(x, size = n, prob = p), main = "Probability mass function for Bin(13,0.7)")
+library("tidyverse")
 
 ## ------------------------------------------------------------------------
-pbinom(9, size = n, prob = p)
+dim(airquality)
+head(airquality)
+tail(airquality)
+summary(airquality)
+
+## ---- eval=FALSE---------------------------------------------------------
+## ?airquality
 
 ## ------------------------------------------------------------------------
-plot(x, pbinom(x, size = n, prob = p), type="s", main = "Cumulative distribution function for Bin(13,0.7)")
+airquality <- airquality %>%
+  mutate(Date = as.Date(paste("1973",Month,Day,sep="/"))) 
 
 ## ------------------------------------------------------------------------
-p_seq <- seq(from = 0, to = 1, length = 101)
-plot(p_seq, qbinom(p_seq, size = n, prob = p), type="s", main = "Quantile function for Bin(13,0.7)")
+ggplot(airquality,     # data.frame containing the data
+       aes(x=Ozone)) + # a column name from the data.frame
+  geom_histogram()     # create a histogram
 
 ## ------------------------------------------------------------------------
-draws <- rbinom(100, size = n, prob = p) # draw 100
-brks  <- (0:(n+1)) - 0.5
-hist(draws, breaks = brks, main = "Random draws from Bin(13,0.7)") 
+ggplot(airquality, aes(x=Ozone)) + 
+  geom_histogram(bins = 40)
 
 ## ------------------------------------------------------------------------
-hist(draws, breaks = brks, probability = TRUE)
-points(x, dbinom(x, size = n, prob = p), col="red")
+ggplot(airquality, aes(x=Ozone)) + 
+  geom_histogram(aes(y=..density..), bins = 40)
 
 ## ------------------------------------------------------------------------
-rate <- 2
-x <- 0:10 # with no upper limit we need to decide on an upper limit
-
-plot(x, dpois(x, lambda = rate), main = "Probability mass function for Po(2)") 
-
-## ------------------------------------------------------------------------
-plot(x, ppois(x, lambda = rate), type="s", main = "Cumulative distribution function for Po(2)")
+ggplot(airquality,     
+       aes(x=1,y=Ozone)) + 
+  geom_boxplot()     
 
 ## ------------------------------------------------------------------------
-plot(p_seq, qpois(p_seq, lambda = rate), type="s", ylim=c(0,10), main = "Quantile function for Po(2)") # Change the y limits for comparison purposes
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_boxplot()     
 
 ## ------------------------------------------------------------------------
-draws <- rpois(100, lambda = rate)
-
-hist(draws, breaks = (0:(max(draws)+1)) - 0.5, probability = TRUE, main = "Random draws from Po(2)")
-points(x, dpois(x, lambda = rate), col="red")
-
-## ------------------------------------------------------------------------
-a <- 0
-b <- 1
-
-# The curve function expects you to give a function of `x` and then it 
-# (internally) creates a sequence of values from `from` and to `to` and creates
-# plots similar to what we had before, but using a line rather than points.
-curve(dunif(x, min = a, max = b), from = -1, to = 2,
-      xlab='y', ylab='f(y)', main='Probability density function for Unif(0,1)')
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_boxplot(color='grey',                 # make the boxes not so obvious
+               outlier.shape = NA) +         # remove outliers, 
+  geom_jitter() +                            # because they get plotted here
+  theme_bw()                                 # Change the theme to remove gray
 
 ## ------------------------------------------------------------------------
-curve(punif(x, min = a, max = b), from = -1, to = 2,
-      xlab='y', ylab='F(y)', main='Cumulative distribution function for Unif(0,1)')
+ggplot(airquality, aes(x = Date, y = Ozone)) +
+  geom_point()
 
 ## ------------------------------------------------------------------------
-curve(qunif(x, min = a, max = b), from = 0, to = 1,
-      xlab='p', ylab='F^{-1}(p)', main='Quantile function for Unif(0,1)')
+ggplot(airquality, aes(x = Date, y = Ozone)) +
+  geom_line()
 
 ## ------------------------------------------------------------------------
-random_uniforms <- runif(100, min = a, max = b)
-hist(random_uniforms, probability = TRUE, main = "Random draws from Unif(0,1)")
-curve(dunif(x, min = a, max = b), add = TRUE, col="red")
+ggplot(airquality, aes(x = Solar.R, y = Ozone)) +
+  geom_point()
 
 ## ------------------------------------------------------------------------
-mu    <- 0
-sigma <- 1 # standard deviation
-
-curve(dnorm(x, mean = mu, sd = sigma), # notice the 3rd argument is the sd
-      from = -4, to = 4,
-      main = "PDF for a standard normal")
+airquality_long <- airquality %>%
+  select(-Month, -Day) %>%              # Remove these columns
+  tidyr::gather(response, value, -Date)
 
 ## ------------------------------------------------------------------------
-curve(pnorm(x, mean = mu, sd = sigma), 
-      from = -4, to = 4,
-      main = "CDF for a standard normal",
-      ylab = "F(x)")
+dim(airquality)
+dim(airquality_long)
+
+head(airquality_long)
+summary(airquality_long)
+table(airquality_long$response)
 
 ## ------------------------------------------------------------------------
-curve(qnorm(x, mean = mu, sd = sigma),
-      from = 0, to = 1, 
-      main = "Quantile function for a standard normal")
+ggplot(airquality_long, 
+       aes(x = Date, y = value, 
+           linetype = response,
+           color = response, 
+           group = response)) +
+  geom_line()
 
 ## ------------------------------------------------------------------------
-draws <- rnorm(100, mean = mu, sd = sigma)
-hist(draws, probability = TRUE)
-curve(dnorm(x, mean = mu, sd = sigma), add = TRUE, col = "red")
+ggplot(airquality_long, aes(Date, value)) +
+  geom_point() + 
+  facet_wrap(~response)
+
+## ------------------------------------------------------------------------
+ggplot(airquality_long, aes(Date, value)) +
+  geom_line() + 
+  facet_wrap(~response,scales="free_y")
+
+## ------------------------------------------------------------------------
+airquality2 <- airquality_long %>%
+  tidyr::spread(response, value)
+
+## ------------------------------------------------------------------------
+g <- ggplot(airquality2,
+       aes(x = Temp, y = Wind)) +
+  geom_point()
+
+g # Then you can see the plot by just typing the object name
+
+## ------------------------------------------------------------------------
+g <- g +
+  labs(x = "Temperature (F)",
+       y = "Wind speed (mph)",
+       title = "New York (May-September 1973)")
+
+g
+
+## ------------------------------------------------------------------------
+g <- g + theme_bw()
+g
+
+## ------------------------------------------------------------------------
+g <- g + geom_smooth(method="lm")
+g
+
+## ------------------------------------------------------------------------
+ggplot(airquality2,
+       aes(x = Temp, y = Wind)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  labs(x = "Temperature (F)",
+       y = "Wind speed (mph)",
+       title = "New York (May-September 1973)") + 
+  theme_bw()
+
+## ----eval=FALSE----------------------------------------------------------
+## ggsave(filename = "plot.png", plot = g, width = 5, height = 4)
 
