@@ -9,7 +9,7 @@ tagline: Bayesian Statistics
 This website is designed to host course material for [STAT 544 - Bayesian Statistics](http://catalog.iastate.edu/showcourse/?code=STAT-544&edition=2015-16) at [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: [Luis Damiano](https://twitter.com/ldamiano0) (<ldamiano@iastate.edu>, [@mayatecs](https://twitter.com/mayatecs))
+- TA: [Luis Damiano](https://twitter.com/ldamiano0) (<ldamiano@iastate.edu>)
 
 This course meets
 
