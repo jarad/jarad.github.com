@@ -78,7 +78,7 @@ angleRadians <- angleDegrees * pi/180
 
 ## ------------------------------------------------------------------------
 a = 3.14159265 
-b = "STAT 401 (Eng)" 
+b = "STAT 587 (Eng)" 
 c = TRUE
 
 ## ------------------------------------------------------------------------
@@ -88,7 +88,7 @@ c
 
 ## ------------------------------------------------------------------------
 a = c(1,2,-5,3.6)
-b = c("STAT","401", "(Eng)")
+b = c("STAT","587", "(Eng)")
 c = c(TRUE, FALSE, TRUE, TRUE)
 
 ## ------------------------------------------------------------------------
@@ -182,13 +182,13 @@ m = rbind(c(1, 12, 8, 6),
 m
 
 ## ---- echo=FALSE---------------------------------------------------------
-# Reconstruct the matrix 
-
 # Print the element in the 3rd-row and 4th column
 
 # Print the 2nd column
 
 # Print all but the 3rd row
+
+# Reconstruct the matrix if time allows
 
 ## ------------------------------------------------------------------------
 class(warpbreaks) # warpbreaks is a built-in data.frame
@@ -262,6 +262,13 @@ ggplot(warpbreaks, aes(x = wool, y = breaks)) + geom_jitter(width = 0.2, height 
 ## # Construct a scatterplot of the number of breaks by amount of tension.
 ## # Jitter the points horizontally.
 ## # (Advanced) Use a different shape and color for the wool type.
+
+## ---- eval=FALSE---------------------------------------------------------
+## install.packages("swirl")
+
+## ---- eval=FALSE---------------------------------------------------------
+## library("swirl")
+## swirl()
 
 ## ---- eval=FALSE---------------------------------------------------------
 ## ?mean
