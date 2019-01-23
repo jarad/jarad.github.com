@@ -161,22 +161,21 @@ ggplot(airquality,
 
 #### Boxplot activity
 
-Create a scatterplot of wind speed by month and add a boxplot for each month
-in the background.
-See if you can google to find out how to swap the axes, i.e. have month on the 
-y-axis and Wind on the x-axis.
+Create boxplots of wind speed by month.
+See if you can google to find out how to swap the axes, 
+i.e. have Month on the y-axis and Wind on the x-axis.
 
 <div id="boxplot_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
 ggplot(airquality,     
        aes(x=Month, y=Wind, group=Month)) + 
-  geom_boxplot(outlier.shape = NA, color='grey') +         
-  geom_jitter() +                       
+  geom_boxplot(outlier.shape = NA, color='grey') +                           
   theme_bw() +
   coord_flip()
 ```
 
-Flipping the axes makes the comparisons vertical and therefore, I think, easier.
+Flipping the axes makes the comparisons vertical and therefore, I think, 
+easier to interpret.
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('boxplot_activity_solution') .style.display=='none') {document.getElementById('boxplot_activity_solution') .style.display=''}else{document.getElementById('boxplot_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
@@ -226,6 +225,76 @@ ggplot(airquality, aes(x = Temp, y = Wind)) +
 </div> 
 <button title="Show a solution" type="button" onclick="if(document.getElementById('scatterplot_activity_solution') .style.display=='none') {document.getElementById('scatterplot_activity_solution') .style.display=''}else{document.getElementById('scatterplot_activity_solution') .style.display='none'}">Show/Hide Solution</button>
 
+
+
+### Boxplots with scatterplots
+
+Scatterplots don't look so good when there are data points that overlap. 
+For example, when plotting Ozone vs Month the points may overlap due to Month
+only having 5 values in the data set.
+
+```{r}
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_point() 
+```
+
+So, instead we will typically jitter the points a bit to remove the overlap, 
+e.g.
+
+```{r}
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_jitter() 
+```
+
+Now, we can combine the boxplots we discussed earlier with scatterplots or 
+jittered scatterplots, e.g. 
+
+```{r}
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_boxplot(color='grey',                 # make the boxes not so obvious
+               outlier.shape = NA) +         # remove outliers, 
+  geom_point() +                             # because they get plotted here
+  theme_bw()                                 # Change the theme to remove gray
+```
+
+or 
+
+```{r}
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_boxplot(color='grey',                 # make the boxes not so obvious
+               outlier.shape = NA) +         # remove outliers, 
+  geom_jitter() +                            # because they get plotted here
+  theme_bw()                                 # Change the theme to remove gray
+```
+
+
+#### Boxplot with scatterplot activity
+
+Create a scatterplot of wind speed by month and add a boxplot for each month
+in the background.
+
+<div id="boxplot_scatterplot_activity_solution" style="display:none"> 
+```{r, purl=FALSE}
+ggplot(airquality,     
+       aes(x=Month, y=Wind, group=Month)) + 
+  geom_boxplot(outlier.shape = NA, color='grey') +         
+  geom_jitter() +                       
+  theme_bw() +
+  coord_flip()
+```
+
+Flipping the axes makes the comparisons vertical and therefore, I think, 
+easier to interpret.
+</div> 
+<button title="Show a solution" type="button" onclick="if(document.getElementById('boxplot_scatterplot_activity_solution') .style.display=='none') {document.getElementById('boxplot_scatterplot_activity_solution') .style.display=''}else{document.getElementById('boxplot_scatterplot_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+
+
+
+### Multiple responses
 
 If we want to put all the response variables on the same plot, we can color 
 them.

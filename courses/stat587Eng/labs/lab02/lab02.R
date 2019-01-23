@@ -69,6 +69,32 @@ ggplot(airquality, aes(x = Solar.R, y = Ozone)) +
   geom_point()
 
 ## ------------------------------------------------------------------------
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_point() 
+
+## ------------------------------------------------------------------------
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_jitter() 
+
+## ------------------------------------------------------------------------
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_boxplot(color='grey',                 # make the boxes not so obvious
+               outlier.shape = NA) +         # remove outliers, 
+  geom_point() +                             # because they get plotted here
+  theme_bw()                                 # Change the theme to remove gray
+
+## ------------------------------------------------------------------------
+ggplot(airquality,     
+       aes(x=Month, y=Ozone, group=Month)) + 
+  geom_boxplot(color='grey',                 # make the boxes not so obvious
+               outlier.shape = NA) +         # remove outliers, 
+  geom_jitter() +                            # because they get plotted here
+  theme_bw()                                 # Change the theme to remove gray
+
+## ------------------------------------------------------------------------
 airquality_long <- airquality %>%
   select(-Month, -Day) %>%              # Remove these columns
   tidyr::gather(response, value, -Date)
