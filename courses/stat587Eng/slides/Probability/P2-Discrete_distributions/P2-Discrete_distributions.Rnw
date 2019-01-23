@@ -37,7 +37,8 @@ set.seed(2)
 \setkeys{Gin}{width=0.15\textwidth}
 
 \begin{definition}
-A \alert{random variable} $X$ is a function $X:\mOmega \mapsto \mathbb{R}$.
+If $\Omega$ is the sample space of an experiment, 
+a \alert{random variable} $X$ is a function $X:\Omega \mapsto \mathbb{R}$.
 \end{definition}
 \pause
 {\bf Idea}: 
@@ -54,8 +55,9 @@ Examples of random variables from rolling two 6-sided dice:
 
 \vspace{0.1in} \pause
 
-Generally, we will use an upper case Roman letter to indicate a random variable
-and a lower case Roman letters to indicate a realized value of the random
+Generally, we will use an upper case Roman letter (late in the alphabeta) 
+to indicate a random variable
+and a lower case Roman letter to indicate a realized value of the random
 variable.
 
 \end{frame}
@@ -98,13 +100,15 @@ We are interested in the number of bits that are received incorrectly.
 \begin{frame}
 \frametitle{Image of random variables}
 
+\footnotesize 
+
 \begin{definition}
 The \alert{image} of a random variable $X$ is defined as 
 \[ 
-Im(X) := \{x: x=X(\omega) \text{ for some }\omega \in \mOmega \}
+Im(X) := \{x: x=X(\omega) \text{ for some }\omega \in \Omega \}
 \]
 \pause
-If the image is finite or countable, we have a \alert{discrete} random variable. \pause
+If the image is finite or countably infinite, we have a \alert{discrete} random variable. \pause
 If the image is uncountably infinite, we have a \alert{continuous} random variable.
 \end{definition}
 
@@ -112,12 +116,23 @@ If the image is uncountably infinite, we have a \alert{continuous} random variab
 
 \begin{example}
 \begin{itemize}
-\item Put a hard drive into service, measure $Y$ = ``time till the first major failure'' \pause and thus
-		$Im(Y) = (0, \infty)$. \pause Image of $Y$ is an interval (uncountable image), so $Y$ is a
-  continuous random variable.
-\item Communication channel: $X$ = ``\# of incorrectly received bits'' \pause with 
-		$Im(X) = \{ 0,1,2,3,4,5,6,7,8 \}$. \pause Image of $X$ is a finite set, so $X$ is
-	a discrete random variable.
+\item Put a hard drive into service, 
+measure $Y$ = ``time till the first major failure'' 
+\pause 
+and thus $Im(Y) = (0, \infty)$. 
+\pause 
+Image of $Y$ is an interval (uncountable image), 
+so $Y$ is a continuous random variable.
+\item Communication channel: $X$ = ``\# of incorrectly received bits out of 8 bits sent'' 
+\pause 
+with $Im(X) = \{ 0,1,2,3,4,5,6,7,8 \}$. 
+\pause 
+Image of $X$ is a finite set, so $X$ is	a discrete random variable.
+\item Communication channel: $Z$ = ``\# of incorrectly received bits in 10 minutes''
+\pause
+with $Im(Z) = \{0,1,\ldots\}$.
+\pause
+Image of $Z$ is a countably infinite set, so $Z$ is a discrete random variable
 \end{itemize}
 \end{example}
 \end{frame}
@@ -132,7 +147,6 @@ If the image is uncountably infinite, we have a \alert{continuous} random variab
 \begin{definition}
 The collection of all the probabilities related to $X$ is the 
 \alert{distribution} of $X$. 
-\end{definition}
 
 \vspace{0.1in} \pause 
 
@@ -147,8 +161,10 @@ and the \alert{cumulative distribution function} (cdf) is
 F(x) = P(X\le x) =\sum_{y\le x} P(y).
 \]
 \pause 
-The set of possible values of $X$ is called the \alert{support} of the 
-distribution $F$ and is the same as the image of $X$. 
+The set of non-zero probability values of $X$ is called the 
+\alert{support} of the distribution $F$. 
+
+\end{definition}
 \end{frame}
 
 
@@ -156,11 +172,8 @@ distribution $F$ and is the same as the image of $X$.
 
 \begin{frame}
 \frametitle{Examples}
-A probability mass function is valid if it defines a valid set of probabilities, i.e. 
-\begin{itemize}
-\item the probabilities are non-negative,
-\item the probabilities sum to 1. 
-\end{itemize}
+A probability mass function is valid if it defines a valid set of probabilities, 
+i.e. they obey Kolmogorov's axioms.
 
 \vspace{0.1in} \pause
 
@@ -195,7 +208,7 @@ Which of the following functions are a valid probability mass functions?
 \frametitle{Rolling a fair 6-sided die}
 \begin{example}
 Let $Y$ be the number of pips on the upturned face of a die. \pause 
-The image of $Y$ is  \pause $\{1,2,3,4,5,6\}$.	\pause
+The support of $Y$ is  \pause $\{1,2,3,4,5,6\}$.	\pause
 If we believe the die has equal probability for each face, 
 then the pmf and cdf for $Y$ are
 \[ \arraycolsep=2pt\def\arraystretch{2.2} 
@@ -219,7 +232,8 @@ Dragonwood has 6-sided dice with the following \# on the 6 sides: $\{1,2,2,3,3,4
 
 \vspace{0.1in} \pause
 
-What is the image, pmf, and cdf for the sum of the upturned numbers when rolling 3 Dragonwood dice? \pause
+What is the support, pmf, and cdf for the sum of the upturned numbers when 
+rolling 3 Dragonwood dice? \pause
 <<dragonwood, echo=TRUE, tidy=FALSE>>=
 # Three dice
 die   = c(1,2,2,3,3,4)
@@ -644,17 +658,17 @@ a Bernoulli distribution with success probability $p$, i.e. $P(X=1)=p$.
 
 \begin{example}
 \begin{itemize}
-\item Toss a coin: $\mOmega = \{H,T\}$
+\item Toss a coin: $\Omega = \{H,T\}$
 % \item Win/Loss outcome of a HootOwlHoot! game
 \item Throw a fair die and ask if the face value is a six: 
-$\mOmega = \{{\text{face value is a six},\text{face value is not a six}}\}$
+$\Omega = \{{\text{face value is a six},\text{face value is not a six}}\}$
 \item Send a message through a network and record whether or not it is received: 
-$\mOmega = \{ \text{successful transmission}, \text{ unsuccessful transmission}\}$
+$\Omega = \{ \text{successful transmission}, \text{ unsuccessful transmission}\}$
 \item Draw a part from an assembly line and record whether or not it is 
-defective: $\mOmega = \{\text{defective}, \text{ good}\}$
+defective: $\Omega = \{\text{defective}, \text{ good}\}$
 \item Response to the question ``Are you in favor of the above measure''? 
 (in reference to a new tax levy to  be imposed on city residents): 
-$\mOmega = \{\text{yes}, \text{no}\}$
+$\Omega = \{\text{yes}, \text{no}\}$
 \end{itemize}
 \end{example}
 \end{frame}
@@ -788,7 +802,7 @@ Then we use the notation $Y\sim Bin(n,p)$ to indicate a binomial distribution wi
 
 We need to obtain 
 \[ 
-p_Y(y) = P(Y=y) \quad \forall \, y\in \mOmega \pause = \{0,1,2,\ldots,n\}.
+p_Y(y) = P(Y=y) \quad \forall \, y\in \Omega \pause = \{0,1,2,\ldots,n\}.
 \]
 
 \pause
