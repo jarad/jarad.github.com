@@ -481,9 +481,9 @@ ggplot(dd %>% gather(Distribution, density, -theta),
 \end{frame}
 
 
-\frame{\frametitle{Mixtures of conjugate priors are conjugate}
+\frame{\frametitle{Discrete mixtures of conjugate priors are conjugate}
 	\begin{theorem}
-	Mixtures of conjugate priors are conjugate. \pause
+	Discrete mixtures of conjugate priors are conjugate. \pause
 	\end{theorem}
 	
 	\begin{proof}
@@ -511,23 +511,41 @@ ggplot(dd %>% gather(Distribution, density, -theta),
 }
 
 
-\frame{\frametitle{Mixture of beta distributions}
-  Recall, if $Y\sim Bin(n,\theta)$ and $\theta\sim \mbox{Be}(a,b)$, then 
+
+\begin{frame}
+\frametitle{Mixture of beta distributions}
+
+\small
+
+  Recall, if $Y\sim Bin(n,\theta)$ and $\theta\sim \mbox{Be}(a,b)$, 
+  \pause
+  then the marginal likelihood is
   \[ \begin{array}{ll}
-  p(y) &= \int p(y|\theta) p(\theta) d\theta \\
+  p(y) &= \int p(y|\theta) p(\theta) d\theta \pause \\
   &= \int {n \choose y} \theta^y (1-\theta)^{n-y} \frac{\theta^{a-1}(1-\theta)^{b-1}}{\mbox{Beta}(a,b)} \\
   &= {n \choose y} \frac{1}{\mbox{Beta}(a,b)} \int  \theta^{a+y-1} (1-\theta)^{b+n-y-1} d\theta \\
   &= {n \choose y} \frac{\mbox{Beta}(a+y,b+n-y)}{\mbox{Beta}(a,b)} \quad y=0,\ldots,n 
   \end{array} \]
+  which is called the beta-binomial distribution with parameters $a+y$ and 
+  $b+n-y$.
+  
+  \pause
+  
   If $Y\sim Bin(n,\theta)$ and 
   \[ \theta \sim p\, \mbox{Be}(a_1,b_1) + (1-p) \mbox{Be}(a_2,b_2), \]
+  \pause
   then
   \[ \theta|y \sim p'\, \mbox{Be}(a_1+y,b_1+n-y) + (1-p') \mbox{Be}(a_2+y,b_2+n-y) \]
+  \pause
   with 
   \[ 
-  p' = \frac{p\, p_1(y)}{p\, p_1(y) + (1-p) p_2(y)} \qquad p_i(y) = {n \choose y} \frac{\mbox{Beta}(a_i+y,b_i+n-y)}{\mbox{Beta}(a_i,b_i)}
+  p' = \frac{p\, p_1(y)}{p\, p_1(y) + (1-p) p_2(y)} 
+  \pause
+  \qquad p_i(y) = {n \choose y} \frac{\mbox{Beta}(a_i+y,b_i+n-y)}{\mbox{Beta}(a_i,b_i)}
   \]
-}
+\end{frame}
+
+
 
 \begin{frame}[fragile]
 \frametitle{Mixture priors}
@@ -580,14 +598,57 @@ legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 	
 	\[ \begin{array}{ll}
 	p_\theta(\theta) \propto & 1 \left| \frac{d}{d\theta} \log(\theta/[1-\theta]) \right| \pause \\
-	&= \frac{1-\theta}{\theta} \left[ \frac{1}{1-\theta} + \frac{\theta}{[1-\theta]^2} \right] \pause \\	
-	&= \frac{1-\theta}{\theta} \left[ \frac{[1-\theta]+\theta}{[1-\theta]^2} \right] \pause \\
-	&= \theta^{-1}[1-\theta]^{-1} \pause \\
+	&= \frac{1-\theta}{\theta} \left[ \frac{1}{1-\theta} + \frac{\theta}{[1-\theta]^2} \right]  \\	
+	&= \frac{1-\theta}{\theta} \left[ \frac{[1-\theta]+\theta}{[1-\theta]^2} \right]  \\
+	&= \theta^{-1}[1-\theta]^{-1}
 	\end{array} \]
-	a Be(0,0), if that were a proper distribution, \pause and is different from setting $p(\theta)\propto 1$ which results in the Be(1,1) prior.  
+	\pause 
+	a Be(0,0), if that were a proper distribution, 
+	\pause 
+	and is different from setting $p(\theta)\propto 1$ which results in the 
+	Be(1,1) prior.  
+	\pause
+	Thus, the constant prior is not invariant to the parameterization used.
 }
 
 \subsection{Jeffreys prior}
+\begin{frame}
+\frametitle{Fisher information background}
+
+\small
+
+\begin{definition}
+\alert{Fisher information}, $\mathcal{I}(\theta)$, for a scalar parameter 
+$\theta$ is the expectation of the second derivative of the log-likelihood, 
+\pause
+i.e.
+\[
+\mathcal{I}(\theta) = 
+E\left[\left. \frac{\partial^2}{\partial\theta^2} \log p(y|\theta) \right|\theta\right].
+\]
+\end{definition}
+
+\pause
+
+\begin{theorem}[Casella \& Berger (2nd ed) Lemma 7.3.11]
+For exponential families, 
+\[
+\mathcal{I}(\theta) = 
+-E\left[\left. \left(\frac{\partial}{\partial\theta} \log p(y|\theta)\right)^2 \right|\theta\right].
+\]
+\end{theorem}
+
+\pause
+
+If $\theta=(\theta_1,\ldots,\theta_n)$, then the Fisher information is the expectation of the
+Hessian matrix, which has the $i$th row and $j$th column that is the partial derivative
+with respect to $\theta_i$ followed by the partial derivative with 
+respect to $\theta_j$, of the log-likelihood.
+
+\end{frame}
+
+
+
 \frame{\frametitle{Jeffreys prior}
 	\begin{definition}
 	\alert{Jeffreys prior} is a prior that is invariant to parameterization \pause and is obtained  via 
@@ -602,24 +663,29 @@ legend("topright", c("Prior","Posterior"), col=c("blue","red"), lwd=2)
 	\pause a Be(1/2,1/2) distribution. 
 }
 
-\frame{\frametitle{Fisher information}
+
+
+\begin{frame}
+\frametitle{Fisher information}
   \begin{theorem}
   The Fisher information for $Y\sim Bin(n,\theta)$ is $\mathcal{I}(\theta) = \frac{n}{\theta(1-\theta)}$.
   \end{theorem}
   \begin{proof}
-  Since the binomial is an exponential family, we can use Lemma 7.3.11 of Casella and Berger (2nd ed). 
+  Since the binomial is an exponential family, 
   
   \[ \begin{array}{ll}
   \mathcal{I}(\theta) &= -E_{y|\theta} \left[ \frac{\partial^2 }{\partial \theta^2} \log p(y|\theta) \right] \pause \\
   &= -E_{y|\theta} \left[ \frac{\partial^2 }{\partial \theta^2} \log {n\choose y} + y\log\theta + (n-y)\log(1-\theta)  \right] \pause \\
-  &= -E_{y|\theta} \left[ \frac{\partial }{\partial \theta} \frac{y}{\theta}-\frac{n-y}{1-\theta}  \right] \pause \\
-  &= -E_{y|\theta} \left[ -\frac{y}{\theta^2}-\frac{n-y}{(1-\theta)^2}  \right] \pause \\
-  &= - \left[ -\frac{n\theta}{\theta^2}-\frac{n-n\theta}{(1-\theta)^2}  \right] \pause = 
-   \frac{n}{\theta}+\frac{n}{(1-\theta)} \pause \\
+  &= -E_{y|\theta} \left[ \frac{\partial }{\partial \theta} \frac{y}{\theta}-\frac{n-y}{1-\theta}  \right]  \\
+  &= -E_{y|\theta} \left[ -\frac{y}{\theta^2}-\frac{n-y}{(1-\theta)^2}  \right]  \\
+  &= - \left[ -\frac{n\theta}{\theta^2}-\frac{n-n\theta}{(1-\theta)^2}  \right]  = 
+   \frac{n}{\theta}+\frac{n}{(1-\theta)} \\
   &= \frac{n}{\theta(1-\theta)}
   \end{array} \]
   \end{proof}
-}
+\end{frame}
+
+
 
 \begin{frame}[fragile]
 <<jeffreys>>=
