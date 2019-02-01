@@ -25,6 +25,8 @@ options(width=120)
 library("MCMCpack")
 library("rjags")
 library("rstan")
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
 
 # In order to have Arial font (default of stan_plot) 
 # library("extrafont")
@@ -531,8 +533,8 @@ Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$.
 <<stan_binomial, echo=TRUE>>=
 model = "
 data {
-  int<lower=0> n;              # define range and type 
-  int<lower=0> a;              # and notice semicolons
+  int<lower=0> n;              // define range and type 
+  int<lower=0> a;              // and notice semicolons
   int<lower=0> b;
   int<lower=0,upper=n> y;
 }
@@ -557,14 +559,10 @@ m = stan_model(model_code = model) # Only needs to be done once
 \begin{frame}[fragile]
 \frametitle{Stan - Binomial model sampling}
 
-<<stan_binomial_sampling, dependson='stan_binomial', echo=TRUE, message=FALSE>>=
-r = sampling(m, data=dat)
+<<stan_binomial_sampling, dependson='stan_binomial', echo=TRUE, message=TRUE>>=
+r = sampling(m, data=dat, iter = 11000, warmup = 1000, refresh=5000)
 @
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Stan - Binomial model results}
-<<stan_binomial_results, dependson='stan_binomial_sampling', echo=TRUE, message=FALSE>>=
+<<stan_binomial_results, dependson='stan_binomial_sampling', echo=TRUE, message=TRUE>>=
 r
 @
 \end{frame}
@@ -593,23 +591,23 @@ Let $Y_i \ind N(\mu,s^2)$ and $\mu\sim N(0,1)$.
 model = "
 data {
   int<lower=0> n;
-  real y[n];            # vector
+  real y[n];            // vector
   real<lower=0> s2;
   real m;
   real<lower=0> C;
 }
-transformed data {      # run once
+transformed data {      // run once
   real<lower=0> s;
   real<lower=0> sqrtC;
   s     = sqrt(s2);
   sqrtC = sqrt(C);
 }
 parameters {
-  real mu;              # if used alone, implies a uniform prior 
+  real mu;              // if used alone, implies a uniform prior 
 }
 model {
-  y  ~ normal(mu,s);    # vectorized, i.e. assumed independent
-  mu ~ normal(m,sqrtC); # standard deviation
+  y  ~ normal(mu,s);    // vectorized, i.e. assumed independent
+  mu ~ normal(m,sqrtC); // standard deviation
 }
 "
 
@@ -619,16 +617,9 @@ dat$n = length(dat$y)
 m = stan_model(model_code = model)
 @
 
-<<stan_normal_mean_sampling, dependson='stan_normal_mean', echo=TRUE, message=FALSE>>=
-r = sampling(m, data = dat)
+<<stan_normal_mean_sampling, dependson='stan_normal_mean', echo=TRUE, message=TRUE>>=
+r = sampling(m, data = dat, iter = 11000, warmup = 1000, refresh=5000)
 @
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Normal model, unknown mean}
-
 <<stan_normal_mean_results, dependson='stan_normal_mean_sampling', echo=TRUE>>=
 r
 @
@@ -663,15 +654,15 @@ data {
   real<lower=0> b;
 }
 parameters {
-  real<lower=0> sigma2;     # if used alone, implies a uniform prior on (0,Inf)
+  real<lower=0> sigma2;     // if used alone, implies a uniform prior on (0,Inf)
 }
-transformed parameters {    # deterministic function of parameters
+transformed parameters {    // deterministic function of parameters
   real<lower=0> sigma;
   sigma = sqrt(sigma2);
 }
 model {
   y  ~ normal(m,sigma); 
-  sigma2 ~ inv_gamma(a,b);  # built in inverse gamma distribution
+  sigma2 ~ inv_gamma(a,b);  // built in inverse gamma distribution
 }
 "
 
@@ -681,16 +672,9 @@ dat$n = length(dat$y)
 m = stan_model(model_code = model)
 @
 
-<<stan_normal_var_sampling, dependson='stan_normal_var', echo=TRUE, message=FALSE>>=
-r = sampling(m, data = dat)
+<<stan_normal_var_sampling, dependson='stan_normal_var', echo=TRUE, message=TRUE>>=
+r = sampling(m, data = dat, iter = 11000, warmup = 1000, refresh=5000)
 @
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Normal model, unknown variance}
-
 <<stan_normal_var_results, dependson='stan_normal_var_sampling', echo=TRUE>>=
 r
 @
