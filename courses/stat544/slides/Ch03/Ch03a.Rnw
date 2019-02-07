@@ -48,7 +48,7 @@ set.seed(2)
   \begin{itemize}
   \item Scaled Inv-$\chi^2$ distribution
   \item $t$-distribution
-  \item Normal-Inv$\chi^2$ distribution
+  \item Normal-Inv-$\chi^2$ distribution
   \end{itemize}
 \item Normal model with unknown mean and variance
   \begin{itemize}
@@ -71,7 +71,8 @@ set.seed(2)
 \section{Independent binomials}
 \subsection{3-point success in basketball}
 \frame{\frametitle{Motivating example}
-  	Is Andre Dawkins 3-point percentage higher in 2013-2014 than past years?
+  	Is Andre Dawkins 3-point percentage higher in 2013-2014 than each of the
+  	past years?
 		
 		\vspace{0.2in} \pause
 		
@@ -133,7 +134,7 @@ legend("topright", paste("Season", 1:nrow(d)), col=1:4, lwd=2, lty=1:4)
 \begin{frame}[fragile]
 \frametitle{Monte Carlo estimates}
 Estimated means, medians, and quantiles.
-<<theta_sims>>=
+<<theta_sims, echo=TRUE>>=
 sim = ddply(d, .(year), 
             function(x) data.frame(theta=rbeta(1e3, x$a, x$b),
                                    a = x$a, b = x$b))
@@ -160,13 +161,16 @@ ddply(sim, .(year), summarize,
 
 
 \frame{\frametitle{Comparing probabilities across years}
-	The scientific question of interest here is whether Dawkins's 3-point percentage is higher in 2013-2014 than previously. \pause In probability notation this is 
+	The scientific question of interest here is whether Dawkins's 3-point 
+	percentage is higher in 2013-2014 than in each of the previous years. 
+	\pause 
+	Using probability notation, this is 
 	\[ P(\theta_4>\theta_s|y)\mbox{ for } s=1,2,3.\]
 	\pause which can be approximated via Monte Carlo as 
-	\[ P(\theta_4>\theta_s|y) = E_{\theta|y}[\mathrm{I}(\theta_4>\theta_s)]\approx \frac{1}{J} \sum_{j=1}^J \mathrm{I}\left(\theta_4^{(j)} > \theta_s^{(j)}\right) \]
+	\[ P(\theta_4>\theta_s|y) = E_{\theta|y}[\mathrm{I}(\theta_4>\theta_s)]\approx \frac{1}{M} \sum_{m=1}^M \mathrm{I}\left(\theta_4^{(m)} > \theta_s^{(m)}\right) \]
 	\pause where
 	\begin{itemize}
-	\item $\theta_s^{(j)} \stackrel{ind}{\sim} Be(a_s + y_s,b_s+n_s-y_s)$ \pause 
+	\item $\theta_s^{(m)} \stackrel{ind}{\sim} Be(a_s + y_s,b_s+n_s-y_s)$ \pause 
 	\item $\mathrm{I}(A)$ is in indicator function that is 1 if $A$ is true and zero otherwise. 
 	\end{itemize}
 }
@@ -248,25 +252,32 @@ mean(theta[,4] > theta[,3])
 \subsection{Scaled-inverse $\chi$-square}
 \begin{frame}
 \frametitle{Scaled-inverse $\chi^2$-distribution}
-  If $\sigma^2\sim IG(a,b)$, then $\sigma^2\sim \mbox{Inv-}\chi^2(v, s^2)$ \pause with 
+  If $\sigma^2\sim IG(a,b)$ with shape $a$ and scale $b$, 
+  \pause
+  then $\sigma^2\sim \mbox{Inv-}\chi^2(v, z^2)$ with
+  degrees of freedom $v$ and scale $z^2$ 
+  \pause 
+  have the following 
   \begin{itemize}[<+->]
-  \item $a=v/2$ and $b=vs^2/2$, \pause or, equivalently,
-  \item $v=2a$ and $s^2=b/a$. 
+  \item $a=v/2$ and $b=vz^2/2$, \pause or, equivalently,
+  \item $v=2a$ and $z^2=b/a$. 
   \end{itemize}
    
   \vspace{0.2in} \pause 
   
-  Deriving from the inverse gamma, the scaled-inverse $\chi^2$ has 
+  Deriving from the inverse gamma, 
+  the scaled-inverse $\chi^2$ has 
   \begin{itemize}[<+->]
-  \item Mean: $vs^2/(v-2)$ for $v>2$
-  \item Mode: $vs^2/(v+2)$
-  \item Variance: $2v^2(s^2)^2/[(v-2)^2(v-4)]$ for $v>4$
+  \item Mean: $vz^2/(v-2)$ for $v>2$
+  \item Mode: $vz^2/(v+2)$
+  \item Variance: $2v^2(z^2)^2/[(v-2)^2(v-4)]$ for $v>4$
   \end{itemize}
    
   \vspace{0.2in} \pause 
   
-  So $s^2$ is a point estimate and $v\to \infty$ means the variance decreases, since, for large $v$, 
-  \[ \frac{2v^2(s^2)^2}{(v-2)^2(v-4)} \approx \frac{2v^2(s^2)^2}{v^3} = \frac{2(s^2)^2}{v}.   \]
+  So $z^2$ is a point estimate and $v\to \infty$ means the variance decreases, 
+  since, for large $v$, 
+  \[ \frac{2v^2(z^2)^2}{(v-2)^2(v-4)} \approx \frac{2v^2(z^2)^2}{v^3} = \frac{2(z^2)^2}{v}.   \]
 \end{frame}
 
 
@@ -300,11 +311,11 @@ ggplot(d, aes(x,density, color=v_f, linetype=v_f, group=v_f)) +
 \frametitle{Location-scale $t$-distribution}
   The $t$-distribution is a location-scale family (Casella \& Berger Thm 3.5.6), \pause i.e. if $T_v$ has a standard $t$-distribution with $v$ degrees of freedom and pdf
   \[ f_t(t) = \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}}\left(1+t^2/v\right)^{-(v+1)/2}, \]
-  \pause then $X=m+sT_v$ has pdf 
-  \[ f_X(x) = f_t([x-m]/s)/s \pause = \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}s}\left(1+\frac{1}{v}\left[\frac{x-m}{s}\right]^2\right)^{-(v+1)/2}. \]
-  \pause This is referred to as a $t$ distribution with $v$ degrees of freedom, location $m$, and scale $s$; it is written as $t_{v}(m,s^2)$. \pause Also,
+  \pause then $X=m+zT_v$ has pdf 
+  \[ f_X(x) = f_t([x-m]/z)/z \pause = \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}z}\left(1+\frac{1}{v}\left[\frac{x-m}{z}\right]^2\right)^{-(v+1)/2}. \]
+  \pause This is referred to as a $t$ distribution with $v$ degrees of freedom, location $m$, and scale $z$; it is written as $t_{v}(m,z^2)$. \pause Also,
 \[ 
-t_v(m,s^2) \stackrel{v\to\infty}{\longrightarrow} N(m,s^2).
+t_v(m,z^2) \stackrel{v\to\infty}{\longrightarrow} N(m,z^2).
 \]
 \end{frame}
 
@@ -314,13 +325,13 @@ t_v(m,s^2) \stackrel{v\to\infty}{\longrightarrow} N(m,s^2).
 \frametitle{$t$ distribution as $v$ changes}
 <<t_distribution, fig.height=4.5, warning=FALSE>>=
 dtms = function(x,v,m=0,s=1) dt((x-m)/s,v)/s
-#opar = par(mar=c(5,4,0,0)+.1, mfrow=c(1,2))
 
-d = ddply(data.frame(v=c(1,10,100)), .(v), function(x) {
-  data.frame(x = seq(-3,6,by=.1)) %>%
-    mutate(density = dtms(x, x$v))
-})
-d$v = factor(d$v)
+d = expand.grid(v=c(1,10,100), 
+               x = seq(-3,6,by=.1)) %>%
+  group_by(v) %>%
+  mutate(density = dtms(x, v)) %>%
+  ungroup %>%
+  mutate(v = factor(v))
 
 ggplot(d, aes(x=x,y=density, group=v, linetype=v, color=v)) +
   geom_line() + 
@@ -337,22 +348,25 @@ ggplot(d, aes(x=x,y=density, group=v, linetype=v, color=v)) +
 \begin{frame}
 \frametitle{Normal-Inv-$\chi^2$ distribution}
 
-Let $\mu|\sigma^2 \sim N(m,\sigma^2/k)$ and $\sigma^2 \sim \mbox{Inv-}\chi^2(v,s^2)$, \pause then the kernel of this joint density is
+Let $\mu|\sigma^2 \sim N(m,\sigma^2/k)$ and $\sigma^2 \sim \mbox{Inv-}\chi^2(v,z^2)$, \pause then the kernel of this joint density is
 
 \[ \begin{array}{rl}
 p(\mu,\sigma^2) &= p(\mu|\sigma^2)p(\sigma^2) \pause \\
-&\propto (\sigma^2)^{-1/2} e^{-\frac{1}{2\sigma^2/k}(\mu-m)^2} (\sigma^2)^{-\frac{v}{2}-1} e^{-\frac{vs^2}{2\sigma^2}} \pause \\
-&= (\sigma^2)^{-(v+3)/2} e^{-\frac{1}{2\sigma^2}\left[ k(\mu-m)^2 + vs^2 \right]}
+&\propto (\sigma^2)^{-1/2} e^{-\frac{1}{2\sigma^2/k}(\mu-m)^2} (\sigma^2)^{-\frac{v}{2}-1} e^{-\frac{vz^2}{2\sigma^2}} \pause \\
+&= (\sigma^2)^{-(v+3)/2} e^{-\frac{1}{2\sigma^2}\left[ k(\mu-m)^2 + vz^2 \right]}
 \end{array} \]
 
 \vspace{0.2in} \pause
 
-In addition, the marginal distribution for $\mu$ is 
+In addition, 
+the marginal distribution for $\mu$ is 
   \[ \begin{array}{rl}
-  p(\mu) &= \int p(\mu|\sigma^2) p(\sigma^2) d\sigma^2 \pause \\
-  &= \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}s/\sqrt{k}}\left(1+\frac{1}{v}\left[\frac{\mu-m}{s/\sqrt{k}}\right]^2\right)^{-(v+1)/2}. \pause 
+  p(\mu) &= \int p(\mu|\sigma^2) p(\sigma^2) d\sigma^2 \pause = \cdots \\
+  &= \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}z/\sqrt{k}}\left(1+\frac{1}{v}\left[\frac{\mu-m}{z/\sqrt{k}}\right]^2\right)^{-(v+1)/2}. \pause 
   \end{array} \]
-Thus $\mu \sim t_{v}(m, s^2/k)$. 
+with $\mu \in \mathbb{R}$.
+\pause
+Thus $\mu \sim t_{v}(m, z^2/k)$. 
   
 \end{frame}
 
@@ -378,17 +392,31 @@ text(x/2,dnorm(x), expression(sigma^2), pos=3)
 \subsection{Confidence interval}
 \begin{frame}
 \frametitle{Confidence interval for $\mu$}
-  Let \pause 
-  \[ \overline{y} = \frac{1}{n} \sum_{i=1}^n y_i \qquad \mbox{and} \qquad S^2 = \frac{1}{n-1} \sum_{i=1}^n (y_i-\overline{y})^2.\]
+\small
+
+Let \pause
+\[ \overline{Y} = \frac{1}{n} \sum_{i=1}^n Y_i \qquad \mbox{and} \qquad S^2 = \frac{1}{n-1} \sum_{i=1}^n (Y_i-\overline{Y})^2.\]
   
-  \pause Then, 
-  \[ T = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \pause \sim t_{n-1} \]
+\pause 
+Then, 
+\[ T_{\visible<4->{n-1}} = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \pause \sim t_{n-1} \]
   
-  \pause and an equal-tail $100(1-\alpha)$\% confidence interval can be constructed via 
+\pause and an equal-tail $100(1-\alpha)$\% confidence interval can be constructed via 
   
-  \[ 1-\alpha = P\left(-c \le T\le c\right) = P\left( \overline{Y} -\frac{cS}{\sqrt{n}} \le \mu \le \overline{Y} +\frac{cS}{\sqrt{n}} \right) \]
+\[ \begin{array}{rl}
+1-\alpha &= P\left(-t_{n-1,1-\alpha/2} \le T_{n-1}\le t_{n-1,1-\alpha/2}\right) \pause \\
+&= P\left( \overline{Y} -\frac{t_{n-1,1-\alpha/2} S}{\sqrt{n}} \le \mu \le \overline{Y} +\frac{ t_{n-1,1-\alpha/2}S}{\sqrt{n}} \right) 
+\end{array} \]
+  where $t_{n-1,1-\alpha/2}$ is the t-critical value, 
+  \pause
+  i.e. $P(T_{n-1} > t_{n-1,1-\alpha/2}) = \alpha/2$.
   
-  \pause and thus $\overline{y} \pm c S/\sqrt{n}$ is an equal-tail 95\% confidence interval where $c=t_{n-1,1-\alpha/2}$ is the t-critical value.
+\pause 
+Thus 
+\[ \overline{y} \pm t_{n-1,1-\alpha/2} s/\sqrt{n}\]
+is an equal-tail $100(1-\alpha)$\% confidence interval with
+$\overline{y}$ and $s$ the observed values of $\overline{Y}$ and $S$.
+  
 \end{frame}
   
 
@@ -405,23 +433,34 @@ The posterior under the reference prior is
 p(\mu,\sigma^2|y) &\propto (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i\phantom{{}-\overline{y}{}+\overline{y}}-\mu)^2 \right) \times \frac{1}{\sigma^2} \pause \\
 &= (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-\overline{y}+\overline{y}-\mu)^2 \right) \times \frac{1}{\sigma^2} \pause \\
 & \vdots \\
-&= (\sigma^2)^{-(n-1+3)/2} \exp\left( -\frac{1}{2\sigma^2} \left[ n(\mu-\overline{y})^2 + (n-1) S^2 \right]\right)  
+&= (\sigma^2)^{-(n-1+3)/2} \exp\left( -\frac{1}{2\sigma^2} \left[ n(\mu-\overline{y})^2 + (n-1) s^2 \right]\right)  
 \end{array} \]
 \pause Thus
-\[ \mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(n-1,S^2). \]
+\[ \mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(n-1,s^2). \]
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Marginal posterior for $\mu$}
-  The marginal posterior for $\mu$ is 
-  \[ \mu|y \sim t_{n-1}(\overline{y}, S^2/n). \]
+
+The marginal posterior for $\mu$ is 
+
+\[ \mu|y \sim t_{n-1}(\overline{y}, s^2/n). \]
   
-  \vspace{0.2in} \pause
+\vspace{0.2in} \pause
   
-  An equal-tailed $100(1-\alpha)$\% credible inteval can be obtained via 
-  \[ \overline{y} \pm c S/\sqrt{n} \]
-  where $c = t_{n-1,1-\alpha/2}$ is the t-critical value from before. \pause This is exactly the same as the $100(1-\alpha/2)$\% confidence inteval.
+An equal-tailed $100(1-\alpha)$\% credible interval can be obtained via 
+  
+\[ \overline{y} \pm t_{n-1,1-\alpha/2} s/\sqrt{n}. \]
+  
+\pause 
+
+This formula is exactly the same as the formula for a 
+$100(1-\alpha/2)$\% confidence interval.
+\pause
+But the interpretation of this credible interval is a statement about your 
+belief when your prior belief is represented by the prior 
+$p(\mu,\sigma^2) \propto 1/\sigma^2$.
 \end{frame}
 
 
@@ -435,8 +474,10 @@ p(\mu,\sigma^2|y) &\propto (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_
   independent of each other. \pause Thus
   \[ \tilde{y}|\sigma^2,y \sim N(\overline{y}, \sigma^2[1+1/n]). \]
   \pause
-  with $\sigma^2|y \sim \mbox{Inv-}\chi^2(n-1,S^2)$. \pause Now, we can use the Normal-Inv-$\chi^2$ theory, to find that 
-  \[ \tilde{y}|y \sim t_{n-1}(\overline{y}, S^2[1+1/n]). \]
+  with $\sigma^2|y \sim \mbox{Inv-}\chi^2(n-1,s^2)$. 
+  \pause 
+  Now, we can use the Normal-Inv-$\chi^2$ theory, to find that 
+  \[ \tilde{y}|y \sim t_{n-1}(\overline{y}, s^2[1+1/n]). \]
 \end{frame}
 
 
@@ -444,19 +485,19 @@ p(\mu,\sigma^2|y) &\propto (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_
 \begin{frame}
 \frametitle{Conjugate prior for $\mu$ and $\sigma^2$}
   The joint conjugate prior for $\mu$ and $\sigma^2$ is 
-  \[ \mu|\sigma^2\phantom{,y} \sim N(m,\sigma^2/k) \qquad \sigma^2\phantom{,y} \sim \mbox{Inv-}\chi^2(v,s^2) \]
-  \pause where $s^2$ serves as a prior guess about $\sigma^2$ and $v$ controls how certain we are about that guess. 
+  \[ \mu|\sigma^2\phantom{,y} \sim N(m,\sigma^2/k) \qquad \sigma^2\phantom{,y} \sim \mbox{Inv-}\chi^2(v,z^2) \]
+  \pause where $z^2$ serves as a prior guess about $\sigma^2$ and $v$ controls how certain we are about that guess. 
   
   \vspace{0.2in} \pause 
 
   The posterior under this prior is 
-  \[ \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v',(s')^2) \]
+  \[ \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v',(z')^2) \]
   \pause where 
   \[ \begin{array}{rl}
   k' &= k+n \\
   m' &= [km + n\overline{y}]/k' \\
   v' &= v+n \\
-  v'(s')^2 &= vs^2 + (n-1)S^2 + \frac{kn}{k'}(\overline{y}-m)^2
+  v'(z')^2 &= vz^2 + (n-1)S^2 + \frac{kn}{k'}(\overline{y}-m)^2
   \end{array} \]
 \end{frame}
 
@@ -465,13 +506,12 @@ p(\mu,\sigma^2|y) &\propto (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_
 \begin{frame}
 \frametitle{Marginal posterior for $\mu$}
   The marginal posterior for $\mu$ is 
-  \[ \mu|y \sim t_{v'}(m', (s')^2/k'). \]
+  \[ \mu|y \sim t_{v'}(m', (z')^2/k'). \]
   
   \vspace{0.2in} \pause
   
   An equal-tailed $100(1-\alpha)$\% credible inteval can be obtained via 
-  \[ m' \pm c s'/\sqrt{k'} \]
-  where $c = t_{v',1-\alpha/2}$ is the t-critical value from before. 
+  \[ m' \pm t_{v',1-\alpha/2} z'/\sqrt{k'}. \]
 \end{frame}
 
 
@@ -480,12 +520,12 @@ p(\mu,\sigma^2|y) &\propto (\sigma^2)^{-n/2}\exp\left( -\frac{1}{2\sigma^2}\sum_
 \frametitle{Marginal posterior via simulation}
 
 An alternative to deriving the closed form posterior for $\mu$ is to simulate from the distribution. \pause Recall that 
-\[  \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v',(s')^2) \]
+\[  \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v',(z')^2) \]
 \pause
 To obtain a simulation from the posterior distribution $p(\mu,\sigma^2|y)$, 
-calculate $m', k', v',$ and $s'$ and then 
+calculate $m', k', v',$ and $z'$ and then 
 \begin{enumerate}[<+->]
-\item simulate $\sigma^2 \sim \mbox{Inv-}\chi^2(v',(s')^2)$ and
+\item simulate $\sigma^2 \sim \mbox{Inv-}\chi^2(v',(z')^2)$ and
 \item using the simulated $\sigma^2$, simulate $\mu\sim  N(m',\sigma^2/k')$. 
 \end{enumerate}
 \pause
@@ -502,9 +542,9 @@ Similarly, we can obtain the predictive distribution via simulation. \pause Reca
 \[  p(\tilde{y}|y) = \int \int p(\tilde{y}|\mu,\sigma^2) p(\mu|\sigma^2,y) p(\sigma^2|y) d\mu d\sigma^2 \]
 \pause
 To obtain a simulation from the predictive distribution $p(\tilde{y}|y)$,
-calculate $m', k', v',$ and $s'$
+calculate $m', k', v',$ and $z'$
 \begin{enumerate}[<+->]
-\item simulate $\sigma^2 \sim \mbox{Inv-}\chi^2(v',(s')^2)$,
+\item simulate $\sigma^2 \sim \mbox{Inv-}\chi^2(v',(z')^2)$,
 \item using this $\sigma^2$, simulate $\mu\sim  N(m',\sigma^2/k')$, and
 \item using these $\mu$ and $\sigma^2$, simulate $\tilde{y}\sim N(\mu,\sigma^2)$.
 \end{enumerate}
@@ -526,12 +566,12 @@ calculate $m', k', v',$ and $s'$
 \item Conjugate analysis
   \begin{itemize}
   \item Prior: 
-  \[ \mu|\sigma^2 \sim N(m, \sigma^2/k) ,\,  \sigma^2 \sim  \mbox{Inv-}\chi^2(v,s^2) ,\,  \mu \sim t_{v}(m, s^2/k) \] 
+  \[ \mu|\sigma^2 \sim N(m, \sigma^2/k) ,\,  \sigma^2 \sim  \mbox{Inv-}\chi^2(v,z^2) ,\,  \mu \sim t_{v}(m, z^2/k) \] 
   \item Posterior:
-  \[ \mu|\sigma^2,y \sim N(m', \sigma^2/k') ,\,  \sigma^2|y \sim  \mbox{Inv-}\chi^2(v',(s')^2) ,\,  \mu|y \sim t_{v'}(m', (s')^2/k') \]
+  \[ \mu|\sigma^2,y \sim N(m', \sigma^2/k') ,\,  \sigma^2|y \sim  \mbox{Inv-}\chi^2(v',(z')^2) ,\,  \mu|y \sim t_{v'}(m', (z')^2/k') \]
   with 
   \[ k' = k+n, m' = [km+n\overline{y}]/k', v'=v+n, \]
-  \[ v'(s')^2 = vs^2 + (n-1)S^2 + \frac{kn}{k'}(\overline{y}-m)^2\]
+  \[ v'(z')^2 = vz^2 + (n-1)S^2 + \frac{kn}{k'}(\overline{y}-m)^2\]
   \end{itemize}
 \end{itemize}
 \end{frame}
