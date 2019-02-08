@@ -284,17 +284,16 @@ mean(theta[,4] > theta[,3])
 \begin{frame}[fragile]
 \frametitle{Scaled-inverse $\chi^2$-distribution}
 <<scaled_inverse_chi_square, echo=TRUE>>=
-dinvgamma = function(x, a, b, ...) dgamma(1/x, a, b,...)/x^2
-dsichisq = function(x, v, s2, ...) dinvgamma(x, v/2, v*s2/2, ...)
+dinvgamma = function(x, shape, scale, ...) dgamma(1/x, shape = shape, rate  = scale,       ...) / x^2
+dsichisq  = function(x, dof, scale, ...)dinvgamma(  x, shape = dof/2, scale = dof*scale/2, ...)
 @
 
 <<scaled_inverse_chi_square_plot, dependson='scaled_inverse_chi_square', out.width='0.7\\textwidth'>>=
-d = ddply(expand.grid(v=c(10,5,1), s2=c(1,2,3), x=seq(.01,5,.01)), .(v,s2,x), function(x) {
-  data.frame(density = dsichisq(x$x,x$v,x$s2))
-})
+d = expand.grid(v = c(10,5,1), s2 = c(1,2,3), x = seq(.01,5,.01)) %>%
+  mutate(density = dsichisq(x, dof = v, scale = s2),
+         v_f  = as.factor(v),
+         s2_f = as.factor(s2))
 
-d$v_f = as.factor(d$v)
-d$s2_f = as.factor(d$s2)
 levels(d$s2_f) = paste('s2=',levels(d$s2_f))
 
 ggplot(d, aes(x,density, color=v_f, linetype=v_f, group=v_f)) + 
