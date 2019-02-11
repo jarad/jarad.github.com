@@ -26,6 +26,7 @@ Office hours are
 
 - [Labs](labs)
 - [Slides](slides)
+- [Previous exams](exams)
 - [587A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 - [Next courses](../next_courses.html)
 
