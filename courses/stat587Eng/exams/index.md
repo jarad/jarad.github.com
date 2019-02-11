@@ -5,7 +5,7 @@ tagline: previous exams
 ---
 {% include JB/setup %}
 
-Below are slides (.pdf) and R code (.R).
+Below are exams, keys, and data used in the exam.
 
 Exams before 2017 were in-class (as opposed to in-lab) exams and students 
 could use only a one-page formula sheet.
