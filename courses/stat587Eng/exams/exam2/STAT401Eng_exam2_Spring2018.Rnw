@@ -1,0 +1,339 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 401C}
+\newcommand{\semester}{Spring 2018}
+\newcommand{\exam}{Exam II}
+
+
+% \excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+
+\textbf{Instructions:}\\
+\begin{itemize}
+\item {\large Full credit will be given only if you show your work.}
+\item {\large The questions are not necessarily ordered from easiest to hardest.}
+\item {\large You are allowed to use any resource except aid from another individual.}
+\item {\large Aid from another individual, will automatically earn you a 0.}
+\end{itemize}
+
+
+\newpage
+\begin{enumerate}
+
+\item Please answer the following questions using your own words. 
+If I find that you have copied your answers from the internet, 
+you will receive a 0.
+
+\begin{enumerate}
+\item What is the population? (5 points)
+
+\begin{answer}
+All the units being studied.
+\end{answer}
+\vfill
+
+\item What is a sample? (5 points)
+
+\begin{answer}
+The subset of the population that you actually have data on.
+\end{answer}
+\vfill
+
+\item For the model $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$ name two statistics. (5 points)
+
+\begin{answer}
+sample mean ($\overline{y}$) and sample standard deviation ($s$) although
+there are many others that you could have answered, 
+e.g. quantiles
+\end{answer}
+\vfill
+
+\item Describe what it means for an estimator to be unbiased. (5 points)
+
+\begin{answer}
+An estimator $\hat{\theta}$ is unbiased for a population parameter $\theta$ if 
+$E[\hat\theta] = \theta$ where the expectation is taken with respect to the data
+being random.
+\end{answer}
+\vfill
+
+
+\end{enumerate}
+
+
+\newpage
+\item Iowa State University has a goal that 95\% of PhD Engineering students
+are employed full time within 6 months of graduation. 
+Of the 69 individuals who graduated in the spring of 2016 with a PhD in 
+Engineering, 
+67 of those individual were employed full time within 6 months of graduation.
+
+\begin{enumerate}
+\item State an appropriate model for these data. (5 points)
+
+\begin{answer}
+Let $Y$ be the number of employed students. 
+Then a reasonable model is $Y\sim Bin(n,\theta)$ where 
+$n=69$ and $y=67$.
+\end{answer}
+\vfill
+
+\item Compute an exact pvalue for the hypothesis test with null hypothesis
+that the 6-month employment probability is less than or equal to 95\% versus the 
+alternative that the 6-month employment probability is greater than 95\%. (5 points)
+
+\begin{answer}
+<<>>=
+y <- 67
+n <- 69
+binom.test(y, n, p=.95, alternative="greater")$p.value
+@
+\end{answer}
+\vfill
+
+\item Using the default prior, 
+calculate the posterior probability that the 6-month employment probability
+is greater than 95\%. (5 points)
+
+\begin{answer}
+<<>>=
+a <- b <- 1
+1-pbeta(.95, a+y, b+n-y)
+@
+\end{answer}
+\vfill
+
+\item Using the default prior,
+calculate an upper one-sided 99\% credible interval. (5 points)
+
+\begin{answer}
+<<>>=
+qbeta(c(.01,1), a+y,b+n-y)
+@
+\end{answer}
+\vfill
+
+
+
+\end{enumerate}
+
+
+\newpage
+\item A research group at Iowa State believes they have developed a material
+just as hard as diamond. 
+They tested 9 randomly chosen samples of this material.
+The sample average Vickers hardness was 8 Mg/mm$^2$ and the sample standard deviation was 4 Mg/mm$^2$.
+Assume the samples are independent, normally distributed with a common mean
+and variance.
+Also assume the default prior.
+
+\begin{enumerate}
+\item Calculate a 95\% credible interval for the true mean hardness. (5 points)
+
+\begin{answer}
+<<>>=
+n = 9
+ybar = 8
+s = 4
+ybar + qt(c(.025,.975),n-1)*s/sqrt(n)
+@
+\end{answer}
+\vfill
+
+\item Calculate a 95\% credible interval for the true standard deviation of hardness. (5 points)
+
+\begin{answer}
+<<>>=
+1/sqrt(qgamma(c(.975,.025), (n-1)/2, s^2*(n-1)/2))
+@
+\end{answer}
+\vfill
+
+\item Diamond is known to have a Vickers hardness of 10 Mg/mm$^2$. 
+Calculate the posterior probability the mean hardness of this material is 
+greater than that of diamond. (5 points)
+
+\begin{answer}
+<<>>=
+1-pt((10-ybar)/(s/sqrt(n)), n-1)
+@
+\end{answer}
+\vfill
+
+\item The predictive distribution for a new observation $\tilde{Y}$ is 
+$\tilde{Y}\sim t_{n-1}(\overline{y}, s^2(1+1/n))$. Calculate the probability 
+a new observation is over 10 Mg/mm$^2$. (5 points)
+
+\begin{answer}
+\[ \begin{array}{rl}
+P(\tilde{Y} > 10) &= P\left( \frac{\tilde{Y}-\overline{y}}{s\sqrt{1+1/n}} > \frac{10-\Sexpr{ybar}}{\Sexpr{s}\sqrt{1+1/\Sexpr{n}}} \right) \\
+& = P(T_{n-1} > \Sexpr{(10-ybar)/s/sqrt(1+1/n)}) \\
+& = 1 - P(T_{n-1} < \Sexpr{(10-ybar)/s/sqrt(1+1/n)})
+\end{array} \]
+<<>>=
+1-pt((10-ybar)/(s*sqrt(1+1/n)), df = n-1)
+@
+\end{answer}
+\vfill
+
+
+\end{enumerate}
+
+\newpage
+\item In an attempt to slow down traffic, police installed a stationary radar
+gun with a sign that displays the speed of cars approaching it. 
+Prior to placing the sign, 
+police randomly selected 100 cars passing that position and recorded 65 cars
+in excess of the posted speed limit.
+After placing the sign, 
+police randomly selected 100 cars passing the same position and recorded 
+55 cars in excess of the posted speed limit.
+
+\begin{enumerate}
+\item Calculate an approximate pvalue for the hypothesis test with alternative hypothesis that the true population proportion decreased after the sign was 
+  posted. (5 points)
+  
+\begin{answer}
+<<>>=
+y <- c(65,55)
+n <- c(100,100)
+prop.test(y,n, alternative="greater")$p.value                # or
+prop.test(y,n, alternative="greater", correct=FALSE)$p.value # or
+1 - pnorm((0.65-0.55)/sqrt(0.65*(1-0.65)+0.55*(1-0.55))*sqrt(100))
+@
+\end{answer}
+\vfill
+  
+\item Calculate an approximate 90\% confidence interval for the decrease in true
+  population proportion after the sign was posted. (5)
+  
+\begin{answer}
+<<>>=
+prop.test(y,n, conf.level=0.9)$conf.int
+prop.test(y,n, conf.level=0.9, correct=FALSE)$conf.int
+(0.65-0.55) + c(-1,1) * qnorm(0.95) * sqrt(0.65*(1-0.65)+0.55*(1-0.55))/sqrt(100)
+@
+\end{answer}
+\vfill
+  
+  
+\item Calculate an approximate posterior probability that the true population proportion decreased after the sign was posted. (5 points)
+  
+\begin{answer}
+Assume $Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i)$ and 
+$\theta_i\stackrel{ind}{\sim} Be(a,b)$ with $a=b=1$.
+<<>>=
+a <- b <- 1
+nr <- 1e5
+diff <- rbeta(nr, a+y[1], b+n[1]-y[1]) - rbeta(nr, a+y[2], b+n[2]-y[2])
+mean(diff>0)
+@
+\end{answer}
+\vfill
+  
+  \item Calculate an approximate 90\% credible interval for the decrease in true
+  population proportion after the sign was posted. (5 points)
+  
+\begin{answer}
+<<>>=
+quantile(diff, probs = c(.05,.95))
+@
+\end{answer}
+\vfill
+\end{enumerate}
+
+
+
+\newpage 
+\item The file {\tt carbon\_dating.csv} contains carbon dating ages 
+(in years before present time) on replicate measurements wood. 
+For the following questions, let $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$
+where $Y_i$ is the carbon dated age of the $i$ replicate piece of wood.
+
+<<echo=FALSE, message=FALSE>>=
+library("dplyr")
+set.seed(20180301)
+# based on https://journals.uair.arizona.edu/index.php/radiocarbon/article/viewFile/2942/2701
+d <- data.frame(carbon_age = c(4483,4442,4509,4511,4519,4482,4542,4540,4494,4522))
+readr::write_csv(d, path = "carbon_dating.csv")
+@
+
+\begin{enumerate}
+\item Calculate the maximum likelihood estimator for $\mu$. (5 points)
+
+\begin{answer}
+<<>>=
+d <- read.csv("carbon_dating.csv")
+mean(d$carbon_age)
+@
+\end{answer}
+\vfill
+
+\item Calculate the maximum likelihood estimator for $\sigma^2$. (5 points)
+
+\begin{answer}
+<<>>=
+n <- length(d$carbon_age)
+var(d$carbon_age)*(n-1)/n
+@
+\end{answer}
+\vfill
+
+\item Calculate a 99\% confidence interval for $\mu$. (5 points)
+
+\begin{answer}
+<<>>=
+d <- read.csv("carbon_dating.csv")
+t.test(d$carbon_age, conf.level = 0.99)$conf.int
+@
+\end{answer}
+\vfill
+
+\item Calculate a pvalue for the hypothesis test $H_0: \mu\le 4500$ vs 
+$H_A: \mu> 4500$. (5 points)
+
+\begin{answer}
+<<>>=
+t.test(d$carbon_age, mu=4500, alternative="greater")$p.value
+@
+\end{answer}
+\vfill
+
+
+\end{enumerate}
+
+
+
+\end{enumerate}
+
+\end{document}

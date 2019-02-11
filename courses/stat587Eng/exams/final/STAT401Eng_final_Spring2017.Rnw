@@ -1,0 +1,385 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+\usepackage[hidelinks]{hyperref}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 401}
+\newcommand{\semester}{Spring 2017}
+\newcommand{\exam}{Final exam}
+
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+{\large
+\textbf{Instructions:}\\
+\begin{itemize}
+\item Full credit will be given only if you show your work.
+\item The questions are not necessarily ordered from easiest to hardest.
+\item You are allowed to use any resource except aid from another individual.
+\item Aid from another individual will automatically earn you a 0.
+\item Feel free to tear off the last page. There is no need to turn it in.
+\end{itemize}
+}
+
+
+\newpage
+\noindent
+{\Large One-way ANOVA}
+
+\noindent
+Suppose you fit two regression models: an intercept-only model and a model
+with a categorical variable named ``Var''. 
+The table below provides an estimate for the error variance and its 
+degrees of freedom. 
+\begin{center}
+\begin{tabular}{lrr}
+Model & df & $\hat\sigma$ \\
+\hline
+Intercept-only & 20 & 3 \\
+Intercept with Var & 14 & 2 \\
+\end{tabular}
+\end{center}
+Use this information to answer the following questions.
+
+\begin{enumerate}
+\item How many levels of the categorical variable ``Var'' are there? (1 pts)
+
+\begin{answer}
+Since we have added 6 (=20-14) $\beta$s (indicator variables) to the model and
+there must be a reference level, 
+then there are 7 levels to this categorical variable.
+\end{answer} 
+\vfill
+
+\item How many total observations are there? (1 pts)
+
+\begin{answer}
+Since the intercept-only model has 20 degrees of freedom and this model only 
+has a single $\beta$, we have 21 observations.
+\end{answer} 
+\vfill
+
+
+\item If the design is balanced, how many replicates are there for each level
+of the categorical variable ``Var''? (2 pts)
+
+\begin{answer}
+Since there are 21 observations and 7 levels, we have 3 observations per level
+in a balanced design.
+\end{answer}
+\vfill
+
+\item Fill out this one-way ANOVA table below (12 pts)
+
+\begin{center}
+{\Large
+\begin{tabular}{l@{\qquad}r@{\qquad}r@{\qquad}r@{\qquad}r@{\qquad}r@{\qquad}r}
+& SS & df & MS & F & p & \phantom{p}\\
+\hline
+Var & \\
+Error &  \\
+\hline
+Total & 
+\end{tabular}
+}
+\end{center}
+
+\begin{answer}
+\begin{center}
+\begin{tabular}{lrrrrr}
+& SS & df & MS & F & p \\
+\hline
+Var & 124 & 6 & 21 & 5.25 & 0.005 \\
+Error & 56 & 14 & 4 \\
+\hline
+Total & 180 & 20
+\end{tabular}
+\end{center}
+\end{answer}
+\vfill \vfill \vfill \vfill \vfill
+
+\item Interpret this p-value. (4 pts)
+
+\begin{answer}
+This p-value indicates the data are incompatible with the null hypothesis model.
+The null hypothesis model is a normal model with a common mean (intercept-only, i.e. does not include Var) and that assumes the errors are independent, 
+normally distributed, and have a constant variance.
+\end{answer}
+\vfill \vfill
+
+\end{enumerate}
+
+
+\newpage
+\noindent
+{\Large Regression diagnostics}
+
+<<echo=FALSE, message=FALSE>>=
+library("dplyr")
+set.seed(20170502)
+n <- 100
+d <- data.frame(x = runif(n)) %>%
+  mutate(y1 = x + rt(n,1),
+         y2 = x + arima.sim(n=n, list(ar=c(.95))),
+         y3 = x + rnorm(n,0,x^2),
+         y4 = x + rnorm(n),
+         y5 = 10*(x-0.5)^2 + rnorm(n))
+readr::write_csv(d, path="diagnostics.csv")
+@
+
+\noindent
+The file {\tt diagnostics.csv} contains a set of 5 response variables ({\tt y1}, {\tt y2}, {\tt y3}, {\tt y4}, and {\tt y5}) and a common explanatory variable x. 
+Consider simple linear regression models for each of the five response
+variables separately. 
+One of the five response variables meets all model assumptions while each of 
+the other four violates exactly one model assumption. 
+For each response, 1) identify the model assumption violation (if any) and 2) describe how you know that assumption is violated, e.g. what diagnostic plot is informative and what does it look like. (4 pts each)
+
+\begin{enumerate}
+\setlength{\itemsep}{\fill}
+\item[{\tt y1}]
+
+\begin{answer}
+Normality of errors is violated. 
+The qq-plot shows heavy tails.
+\end{answer}
+
+\item[{\tt y2}]
+
+\begin{answer}
+Independence. A plot of residuals vs row number indicates a pattern to the 
+residuals.
+\end{answer}
+
+\item[{\tt y3}]
+
+\begin{answer}
+Constant variance. The residuals vs fitted values plot shows a funnel pattern 
+and the scale-location plot shows increasing residuals as a function of fitted
+values.
+\end{answer}
+
+\item[{\tt y4}]
+
+\begin{answer}
+No assumptions are violated. All diagnostic plots look reasonable as do
+residuals vs row number and response vs explanatory value plots.
+\end{answer}
+
+\item[{\tt y5}]
+
+\begin{answer}
+Linearity. Curvature in the residuals vs fitted values plot and 
+response vs explanatory values plot.
+\end{answer}
+\end{enumerate}
+\vfill
+
+
+
+
+\newpage
+\noindent
+{\Large Wool}
+
+\noindent
+For the following questions, please refer to the ``Wool - R Code'' page.
+If you need any background information, please see {\tt ?warpbreaks} in {\tt R}.
+
+\vspace{0.1in}
+
+\noindent
+Write down the model that was used in this analysis. 
+Make sure to define any notation you introduce. (20 pts)
+
+\begin{answer}
+Define the following notation
+\begin{itemize}
+\item $Y_i$ is the number of breaks for loom $i$
+\item $W_i$ is the type of wool for loom $i$ (A or B)
+\item $T_i$ is the level of tension for loom $i$ (L, M, and H)
+\end{itemize}
+The model is 
+\[ \begin{array}{rl}
+Y_i &\stackrel{ind}{\sim} N(\mu_i,\sigma^2) \\
+\mu_i &= \beta_0 + \beta_1 \mathrm{I}(W_i=B) + \beta_2 \mathrm{I}(T_i=M) + \beta_3 \mathrm{I}(T_i=H)
+\end{array}\]
+\end{answer}
+
+\newpage
+\noindent
+{\Large Wool (continued)}
+
+Provide an interpretation for the following quantities (4 pts each):
+\begin{itemize}
+\item 39.278
+
+\begin{answer}
+The is the estimated mean number of breaks for wool A and tension L.
+\end{answer}
+\vfill
+
+\item 11.62
+
+\begin{answer}
+The is the estimated error standard deviation, i.e. $\hat\sigma$ on the 
+previous page. 
+\end{answer}
+\vfill
+
+\item (-17.77790,-2.2221006)
+
+\begin{answer}
+This is a 95\% confidence/credible inteval for the different in mean 
+number of breaks between tension M and tension L (for both types of wool). 
+Both endpoints of the interval are less than 0 indicating there is 
+statistically significant evidence that tension M has fewer breaks than 
+tension L.
+\end{answer}
+\vfill
+
+\item 26.38889
+
+\begin{answer}
+This is the estimated mean number of breaks for tension M averaged over the levels of wool. 
+More formally, it is the average of the means of the number of breaks under 
+tension M for wool A and wool B. 
+\end{answer}
+\vfill
+
+\item 4.722222
+
+\begin{answer}
+This is the estimated difference in means between tension M and tension H 
+averaged across wool types A and B. 
+\end{answer}
+\vfill
+
+
+\end{itemize}
+
+
+\newpage
+\noindent
+{\Large Donation}
+
+\noindent
+For the following questions, please use the {\tt donation.csv} data file. 
+These data are filtered version of the data used in the Data Mining competition (see \url{https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/kddcup98.html}) where the filtering only includes Iowa.
+In addition, only three variables remain: 
+the donation amount from the last targetted mailing (TARGET\_D),
+the type of neighborhood the donor lives in (DOMAIN),
+and a measure of the donor's wealth (WEALTH2). 
+Fit a linear regression model using log(TARGET\_D+1) as the response and 
+DOMAIN and WEALTH2 as the explanatory variables treating WEALTH2 as continuous.
+
+
+<<echo=FALSE, message=FALSE, cache=TRUE, warning=FALSE>>=
+# d <- readr::read_csv("~/Downloads/cup98LRN.txt")
+# dd <- d %>% 
+#   filter(STATE=="IA") %>%
+#   filter(!(DOMAIN %in% c("U1","U2"))) %>%
+#   select(DOMAIN, WEALTH2, TARGET_D) %>%
+#   # mutate(domain = substr(DOMAIN, 1, 1)) %>%
+# 
+# readr::write_csv("donation.csv")
+@
+
+
+\begin{enumerate}
+\item Write the R code you used to fit this model. (4 pts)
+
+\begin{answer}
+<<message=FALSE>>=
+d <- readr::read_csv("donation.csv") # Not necessary for answer
+m <- lm(log(TARGET_D+1) ~ WEALTH2 + DOMAIN, data = d)
+@
+\end{answer}
+\vfill
+
+\item Provide an estimate for the multiplicative effect of a one-unit increase in WEALTH2 level on the median TARGET\_D. (4 pts)
+
+\begin{answer}
+<<>>=
+exp(coef(m)[2])
+@
+\end{answer}
+\vfill
+
+
+\item Provide a 95\% credible interval for a contrast estimate to compare mean log(TARGET\_D+1) for rural (R1,R2, and R3) 
+vs city (C1, C2, and C3) domains averaged over WEALTH2. (8 pts)
+
+\begin{answer}
+<<>>=
+library("emmeans")
+em <- emmeans(m, ~DOMAIN)
+#                                       C1 C2 C3 R1 R2 R3 S1 S2 S3 T1 T2 T3
+co <- contrast(em, list(`Rural-City`= c(-1,-1,-1, 1, 1, 1, 0, 0, 0, 0, 0, 0)/3))
+confint(co)[,5:6]
+@
+\end{answer}
+\vfill 
+\vfill
+\vfill
+
+
+\item Why might this model not be appropriate for these data? (4 pts)
+
+\begin{answer}
+The vast majority of the data have zero for the non-logged response.
+Also, we may want to treat WEALTH2 as categorical. 
+\end{answer} 
+\vfill
+
+\end{enumerate}
+
+\newpage
+(intentionally left blank)
+
+\newpage
+{\Large Wool - R Code}
+
+<<message=FALSE, size="small", background="white", highlight=FALSE>>=
+library("emmeans")
+m <- lm(breaks ~ wool + tension, data = warpbreaks)
+summary(m)
+confint(m)
+(em <- emmeans(m, ~tension))
+co <- contrast(em, "pairwise")
+confint(co)
+@
+
+
+
+
+\end{document}
+
