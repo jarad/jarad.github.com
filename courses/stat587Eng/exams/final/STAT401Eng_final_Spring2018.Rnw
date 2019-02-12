@@ -1,0 +1,445 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+\usepackage[hidelinks]{hyperref}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 401 Eng}
+\newcommand{\semester}{Spring 2018}
+\newcommand{\exam}{Final exam}
+
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+{\large
+\textbf{Instructions:}\\
+\begin{itemize}
+\item Full credit will be given only if you show your work.
+\item The questions are not necessarily ordered from easiest to hardest.
+\item You are allowed to use any resource except aid from another individual.
+\item Aid from another individual will automatically earn you a 0.
+\item Feel free to tear off the last page. There is no need to turn it in.
+\end{itemize}
+}
+
+
+\newpage
+\noindent
+{\Large Regression assumptions}
+\noindent
+State the 4 simple linear regression assumptions and describe one way that each 
+of those assumptions could be violated. 
+Just saying ``This assumption is not true.'' will earn you no points. 
+(5 pts each)
+\begin{itemize}
+\setlength{\itemsep}{\fill}
+\item 
+
+\begin{answer}
+Assumption: Normality of the errors
+
+Violations: right-skewed errors, left-skewed errors, heavy-tailed errors
+\end{answer}
+
+\item 
+
+\begin{answer}
+Assumption: Constant variance of the errors
+
+Violations: Variance is increasing with fitted value
+\end{answer}
+
+\item 
+
+\begin{answer}
+Assumption: Independence of the errors
+
+Violations: Clustering, temporal data, spatial data
+\end{answer}
+
+\item 
+
+\begin{answer}
+Assumption: Linearity 
+
+Violations: Quadratic relationship
+\end{answer}
+
+\item[]
+\end{itemize}
+
+
+
+
+
+
+\newpage
+\noindent
+{\Large Material hardness}
+
+\noindent
+Researchers at Iowa State University are attempting to make a material as hard
+as diamond. 
+Using a cubic boron nitride composite, the researchers use a laser followed by
+a water beam to etch the composite and thereby inscrease its hardness.
+The researchers ran a randomized block design experiment to determine the 
+effect of water distance on hardness (in gigaPascals [GPa]). 
+They used 3 different 
+composite \emph{pucks} (the material looks like a small hockey puck) with the 
+water jet shooting at 4 different distances (in millimeters [mm]) 
+behind the laser.
+Use the file {\tt hardness.csv}, to answer the following questions.
+
+<<echo = FALSE>>=
+library("dplyr", warn.conflicts = FALSE)
+set.seed(20180426)
+sim <- function(d) {
+  mu <- 50 +
+    2 * (d$puck == 1) + -3 * (d$puck == 2) +
+    -3*(d$water_distance - 2.3)^2
+  data.frame(mean = mu, hardness = rnorm(d$n, mu, 2.3))
+}
+
+hardness_data = expand.grid(puck = 1:3,
+                water_distance = 1:4,
+                n = 2) %>%
+  group_by(puck,water_distance) %>%
+  do(sim(.)) %>%
+  ungroup
+
+readr::write_csv(hardness_data, path = "hardness.csv")
+@
+
+<<echo = FALSE, eval=FALSE>>=
+library("ggplot2")
+ggplot(hardness_data %>% mutate(puck = as.factor(puck)), 
+       aes(water_distance, hardness, color=puck, shape=puck)) +
+  geom_jitter(height = 0, width = 0.1) + 
+  theme_bw()
+@
+
+\begin{enumerate}
+\item Is this experiment complete? Explain why or why not. (2 pts)
+
+\begin{answer}
+Yes, every combination of puck and water distance exists.
+<<>>=
+table(hardness_data$puck, hardness_data$water_distance)
+@
+\end{answer}
+\vfill
+
+\item Is this experiment replicated? Explain why or why not. (2 pts)
+
+\begin{answer}
+Yes, every combination of puck and water distance exists twice.
+\end{answer}
+\vfill
+
+\item Fit a regression model with hardness as the response, puck as a 
+categorical explanatory variable and water distance and water distance squared 
+as continuous explanatory variables. Write the code that you used here. (6 pts)
+
+\begin{answer}
+<<>>=
+m <- lm(hardness ~ factor(puck) + water_distance + I(water_distance^2),
+        data = hardness_data)
+@
+\end{answer}
+\vfill 
+\vfill 
+
+\item Conduct an F-test to determine whether there are differences due to puck.
+Provide the F statistic, pvalue, and an interpretation. (6 pts)
+
+\begin{answer}
+<<>>=
+drop1(m, test="F")[2,]
+@
+\end{answer}
+\vfill 
+\vfill
+
+\item Provide an estimate for the water distance that provides the maximum 
+hardness. (4 pts)
+
+\begin{answer}
+<<>>=
+as.numeric(-coef(m)[4]/(2*coef(m)[5]))
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\newpage
+\noindent
+{\Large Simple linear regression}
+
+<<slr_data, echo=FALSE>>=
+library("dplyr", warn.conflicts = FALSE)
+set.seed(20180426)
+n <- rpois(1,100)
+x <- rnorm(n,5,2)
+y <- -1.5*x + rnorm(n, 0, 3)
+m_X <- mean(x)  %>% round(2)
+s_X <- sd(x)    %>% round(2)
+m_Y <- mean(y)  %>% round(2)
+s_Y <- sd(y)    %>% round(2)
+rxy <- cor(x,y) %>% round(2)
+@
+\noindent
+The following table contains summary statistics for a response variable ($y$)
+and explanatory variable ($x$). 
+\begin{table}[!h]
+\centering
+\begin{tabular}{lrrr}
+Variable & N & Mean & SD \\
+\hline
+$x$ & \Sexpr{n} & \Sexpr{m_X} & \Sexpr{s_X} \\
+$y$ & \Sexpr{n} & \Sexpr{m_Y} & \Sexpr{s_Y} \\
+\hline
+\end{tabular}
+\end{table}
+Assume the model $y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1x_i,\sigma^2)$.
+Using these summary statistics and the estimated correlation between $x$ and 
+$y$ is \Sexpr{rxy}, calculate the following (4 pts each):
+
+\begin{answer}
+We are given the following quantities:
+<<>>=
+n; m_X; s_X; m_Y; s_Y; rxy
+@
+\end{answer}
+
+\begin{enumerate}
+\item Maximum likelihood estimate (MLE) for $\beta_1$
+
+\begin{answer}
+\[ \beta_1 = SXY/SXX \]
+<<>>=
+SXY <- rxy*s_X*s_Y*(n-1)
+SXX <- s_X^2*(n-1)
+(beta1 = SXY/SXX)
+@
+\end{answer}
+\vfill
+
+\item MLE for $\beta_0$
+
+\begin{answer}
+\[ \beta_0 = \overline{Y} - \hat\beta_1 \overline{X} \]
+<<>>=
+(beta0 = m_Y - beta1 * m_X)
+@
+\end{answer}
+\vfill
+
+\item Coefficient of variation $R^2$
+
+\begin{answer}
+\[ R^2 = r_{XY}^2 \]
+<<>>=
+(R2 <- rxy^2)
+@
+\end{answer}
+\vfill
+
+\item MLE for $\sigma^2$
+
+\begin{answer}
+\[ SSE = SST(1-R^2) = SYY(1-R^2) \]
+and 
+\[ \hat\sigma^2 = SSE/(n-2) \]
+<<>>=
+SYY = s_Y^2*(n-1)
+SSE = SYY*(1-R2)
+(sigma2 = SSE/(n-2))
+@
+\end{answer}
+\vfill
+
+\item Standard error for $\hat\beta_1$
+
+\begin{answer}
+\[ SE(\beta_1) = \hat\sigma\sqrt{\frac{1}{(n-1)s_X^2}} \]
+<<>>=
+sqrt(sigma2)*sqrt(1/((n-1)*s_X^2))
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\newpage
+\noindent
+{\Large Hard Drive Failure}
+
+\noindent
+Backblaze, a company that provides computer backups, provides data on hard 
+drive failures.
+On the {\tt Hard Drive Failure - R Code} page, there is an analysis of failure
+times (in years) for hard drives of various brands at capacities of 2 TB 
+(terabytes), 4 TB, and 8 TB. 
+
+<<hd_data, echo=FALSE>>=
+library("dplyr", warn.conflicts = FALSE)
+set.seed(20180426)
+
+sim <- function(d) {
+  mu <- log(1.3) + 
+    0 * (d$brand == "Toshiba") + 0.1 * (d$brand == "WDC") +
+    0.01 * d$capacity
+  data.frame(failure_time = exp(rnorm(d$n, mu, 0.2)))
+}
+
+hd_data = expand.grid(brand = c("Seagate","Toshiba","HGST","WDC"),
+                capacity = c(2,4,8)) %>%
+  mutate(n = rpois(n(), 10)) %>%
+  group_by(brand,capacity) %>%
+  do(sim(.))
+@
+
+<<hd_analysis, echo=FALSE, results='hide'>>=
+table(hd_data$brand, hd_data$capacity)
+
+m <- lm(log(failure_time) ~ I(capacity-2) + brand, data = hd_data)
+
+summary(m)
+
+anova(m)
+@
+
+<<echo=FALSE, eval=FALSE>>=
+m0 <- lm(log(failure_time) ~ 1, data = hd_data)
+mB <- lm(log(failure_time) ~ brand , data = hd_data)
+mC <- lm(log(failure_time) ~ brand + capacity, data = hd_data)
+anova(m0,mB,mC)
+@
+
+\begin{enumerate}
+\item Write down the model that was used in this analysis. Make sure to define 
+any notation you introduce. (20 pts)
+
+\begin{answer}
+For hard drive $i=1,\ldots,n$, let 
+\begin{itemize}
+\item $Y_i$ be the log failure time (years),
+\item $C_i$ be the capacity minus 2TB,
+\item $T_i$ be an indicator of the brand Toshiba,
+\item $H_i$ be an indicator of the brand HGST, and
+\item $W_i$ be an indicator of the brand WDC.
+\end{itemize}
+
+The model is 
+
+\[ Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \]
+with 
+\[
+\mu_i = \beta_0 + \beta_1 C_i +\beta_2 T_i + \beta_3 H_i + \beta_4 W_i.
+\]
+\end{answer}
+
+
+\newpage
+\item Provide an interpretation for the following quantities.
+You may transform these quantities if it makes interpretation easier.
+(4 pts each)
+
+\begin{enumerate}
+\item \Sexpr{round(coef(m)[1],6)}
+
+\begin{answer}
+The median failure time in years for 2TB Seagate hard drives is 
+$e^{\Sexpr{round(coef(m)[1],6)}}\approx\Sexpr{round(exp(round(coef(m)[1],6)),2)}$.
+\end{answer}
+\vfill
+
+\item \Sexpr{round(coef(m)[2],6)}
+
+\begin{answer}
+For each 1TB increase in hard drive capacity while keeping brand constant,
+the median hard failure time increases by
+$100(e^{\Sexpr{round(coef(m)[2],6)}}-1)\approx
+\Sexpr{round(100*(exp(round(coef(m)[2],6))-1),2)}$\%.
+\end{answer}
+\vfill
+
+\item \Sexpr{round(coef(m)[3],6)}
+
+\begin{answer}
+While keeping capcity constant, median failure time on Toshiba hard drives is
+$100(e^{\Sexpr{round(coef(m)[3],6)}}-1)\approx
+\Sexpr{round(100*(1-exp(round(coef(m)[3],6))),2)}$\% sooner
+than on Seagate drives.
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\item Construct a 95\% confidence interval for the multiplicative effect of
+brand WDC compared to brand Seagate (while holding capacity constant)
+on the median failure time. (4 pts)
+
+\begin{answer}
+<<>>=
+exp(0.062923 + c(-1,1)*qt(.975,118)*0.049972)
+@
+\end{answer}
+\vfill
+
+\item Describe the null hypothesis for the ANOVA line the begins with {\tt brand}. (4 pts)
+
+
+\begin{answer}
+The null hypothesis here is the model where $\beta_2=\beta_3=\beta_4=0$.
+That is, the model without brand, but with capacity.
+\end{answer}
+\vfill
+
+
+\end{enumerate}
+
+
+
+\noindent
+\newpage
+(intentionally left blank - scratch paper)
+
+\newpage
+{\Large Hard Drive Failure - R Code (Feel free to remove this page)}
+
+<<highlight=FALSE, background='white', prompt=TRUE, comment="">>=
+<<hd_analysis>>
+@
+
+
+
+
+\end{document}
+

@@ -1,0 +1,311 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 401D}
+\newcommand{\semester}{Spring 2017}
+\newcommand{\exam}{Exam II}
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+
+\textbf{Instructions:}\\
+\begin{itemize}
+\item {\large Full credit will be given only if you show your work.}
+\item {\large The questions are not necessarily ordered from easiest to hardest.}
+\item {\large You are allowed to use any resource except aid from another individual.}
+\item {\large Aid from another individual, will automatically earn you a 0.}
+\end{itemize}
+
+
+\newpage
+\begin{enumerate}
+
+\item Please answer the following questions using your own words. 
+If I find that you have copied your answers from the internet, 
+you will receive a 0.
+
+\begin{enumerate}
+\item What is the likelihood? (5 points)
+
+\begin{answer}
+The likelihood is the joint probability mass or density function thought of as 
+a function of the parameters.
+\end{answer}
+\vfill
+
+\item What does a pvalue measure? (5 points)
+
+\begin{answer}
+The pvalue measures how incompatible the data are with the model associated 
+with the null hypothesis.
+It is also a measure of how extreme a test statistic could have been had you 
+observed different data. 
+\end{answer}
+\vfill
+
+\item What does ``95\% confidence'' mean in a 95\% confidence interval? (5 points)
+
+\begin{answer}
+A 95\% confidence interval means that if you were to repeat the procedure that
+constructed the confident interval on different data sets, 
+then on average 95\% of these confidence intervals would cover the truth.
+\end{answer}
+\vfill
+
+\item What does ``95\% credible'' mean in a 95\% credible interval? (5 points)
+
+\begin{answer}
+A 95\% credible interval measures your personal degree of belief about where
+a parameter is. Thus you are more sure the parameter is contained within a 95\% 
+credible interval than a 90\% credible interval and less sure than a 99\% 
+credible interval.
+\end{answer}
+\vfill
+
+
+\end{enumerate}
+
+
+\newpage
+\item SpaceX has successfully completed 28 of its 30 Falcon 9 launches.
+SpaceX claims it is ``right in the ballpark'' to the industry standard of 
+95\% of launches being successful. 
+For the following assume $Y\sim Bin(n,\theta)$ where $Y$ is the number of 
+successful launches, $n$ is the number of attempted launches, and 
+$\theta$ is the unknown probability of success.
+Also assume $\theta \sim Unif(0,1)$. 
+
+\begin{enumerate}
+\item State the posterior distribution for $\theta$. (5 points)
+
+\begin{answer}
+<<>>=
+y <- 28
+n <- 30
+@
+\[\theta|y \sim Bin(\Sexpr{1+y},\Sexpr{1+n-y})\]
+\end{answer}
+\vfill
+
+\item State the Bayes estimate for $\theta$. (5 points)
+
+\begin{answer}
+<<>>=
+(1+y)/(2+n)
+@
+\end{answer}
+\vfill
+
+\item Find a 95\% equal-tail credible interval for $\theta$. (5 points)
+
+\begin{answer}
+<<>>=
+qbeta(c(.025,.975), 1+y, 1+n-y)
+@
+\end{answer}
+\vfill
+
+\item Find the probability that $\theta$ is less than the industry standard of 
+0.95. (5 points)
+
+\begin{answer}
+<<>>=
+pbeta(.95, 1+y, 1+n-y)
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+\newpage
+\item A manufacturing process for maple syrup has a target viscosity for the 
+maple syrup of 5,000 cP @ 25$^oC$. 
+A random sample of 25 lots of maple syrup had an average viscosity of 4,956 cP 
+with a sample standard deviation of 100 cP.
+Assume $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$ where $Y_i$ is the $i$th 
+viscosity measurement. 
+
+\begin{enumerate}
+\item Calculate a pvalue for $H_0: \mu = 5,000$ vs $H_A: \mu \ne 5,000$. (5 points)
+
+\begin{answer}
+<<>>=
+n = 25; ybar = 4956; s = 100; mu0 = 5000
+2*pt(-abs((ybar-mu0)/(s/sqrt(n))), df=n-1)
+@
+\end{answer}
+\vfill
+
+\item Calculate a 95\% confidence interval for $\mu$. (5 points)
+
+\begin{answer}
+<<>>=
+ybar + c(-1,1)*qt(.975,df=n-1)*s/sqrt(n)
+@
+\end{answer}
+\vfill
+
+\item If you were to calculate a 99\% confidence interval for $\mu$, 
+would the interval be wider or narrower than 95\% confidence interval for $\mu$?
+Why? (5 points)
+
+\begin{answer}
+Wider, as can be seen below
+because if we must cover the truth more often, then the interval will 
+necessarily be wider.
+<<>>=
+ybar + c(-1,1)*qt(.995,df=n-1)*s/sqrt(n)
+@
+\end{answer}
+\vfill
+
+\item The predictive distribution for a new observation $\tilde{Y}$ is 
+$\tilde{Y}\sim t_{n-1}(\overline{y}, s^2(1+1/n))$. Calculate the probability 
+a new observation is over 5,000 cP. (5 points)
+
+\begin{answer}
+\[ \begin{array}{rl}
+P(\tilde{Y} > 5000) &= P\left( \frac{\tilde{Y}-\overline{y}}{s\sqrt{1+1/n}} > \frac{5000-\Sexpr{ybar}}{\Sexpr{s}\sqrt{1+1/\Sexpr{n}}} \right) \\
+& = P(T_{n-1} > \Sexpr{(5000-ybar)/s/sqrt(1+1/n)}) \\
+& = 1 - P(T_{n-1} < \Sexpr{(5000-ybar)/s/sqrt(1+1/n)})
+\end{array} \]
+<<>>=
+1-pt((5000-ybar)/(s*sqrt(1+1/n)), df = n-1)
+@
+\end{answer}
+\vfill
+
+
+\end{enumerate}
+
+\newpage
+\item A random sample of homes in Ames found that 35 out of 100 use ``smart 
+thermostats'' while a random sample of homes in Des Moines found that 
+245 out of 923 use ``smart thermostats''. 
+
+\begin{enumerate}
+\item State an appropriate model to use for these data. (10 points)
+
+\begin{answer}
+Let $Y_i$ be the number of homes in our sample from region $i$ (where $i=1$
+indicates Ames and $i=2$ indicates Des Moines) that have smart thermostats and
+$n_i$ is the number samples taken from region $i$. 
+Assume 
+\[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i). \]
+\end{answer}
+\vfill
+\vfill
+
+\item Calculate a pvalue for the null hypothesis that the proportion of homes in
+Ames that use smart thermostats is less than or equal to the proportion in Des 
+Moines versus the alternative that the proportion is higher in Ames. (5 points)
+
+\begin{answer}
+
+<<>>=
+y <- c(35,245)
+n <- c(100,923)
+prop.test(y, n, alternative = "greater")$p.value
+@
+\end{answer}
+\vfill
+
+\item Calculate a 90\% equal-tail confidence interval for the difference in the true 
+proportions. (5 points)
+
+\begin{answer}
+<<>>=
+prop.test(y, n, conf.level = 0.9)$conf.int
+@
+\end{answer}
+\vfill
+
+
+
+
+
+
+\end{enumerate}
+
+\newpage 
+\item The file {\tt skin.csv} contains data on a study where participants were
+randomly assigned one arm to receive skin lotion while the other arm served as
+a control. After using the lotion for one week, the dryness on each arm was 
+measured. 
+
+<<echo=FALSE, message=FALSE>>=
+library(dplyr)
+set.seed(20170305)
+n = 10
+d = data.frame(Lotion = rnorm(n, 10, 2), NoLotion = rnorm(n, 12, 2)) %>% round(1)
+readr::write_csv(d, path="skin.csv")
+@
+
+\begin{enumerate}
+\item State an appropriate model to use for these data. (10 points)
+
+\begin{answer}
+Let $D_i$ be the difference in dryness for the lotion arm minus the control arm.
+Assume 
+\[ D_i \stackrel{ind}{\sim} N(\mu,\sigma^2). \]
+You could have defined the difference in the opposite direction and then your
+answers below would have been the negative of the answers here.
+\end{answer}
+\vfill
+\vfill
+
+\item Calculate the Bayes estimate for the difference in skin dryness. (5 points)
+
+\begin{answer}
+<<>>=
+skin = read.csv("skin.csv")
+t.test(skin$Lotion, skin$NoLotion, paired=TRUE)$estimate
+@
+\end{answer}
+\vfill
+
+\item Calculate a 95\% equal-tail credible interval for the difference in skin dryness. (5 points)
+
+\begin{answer}
+<<>>=
+t.test(skin$Lotion, skin$NoLotion, paired=TRUE)$conf.int
+@
+\end{answer}
+\vfill
+\end{enumerate}
+
+
+
+\end{enumerate}
+
+\end{document}

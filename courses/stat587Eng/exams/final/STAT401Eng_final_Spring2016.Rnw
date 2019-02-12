@@ -1,0 +1,374 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 401}
+\newcommand{\semester}{Spring 2016}
+\newcommand{\exam}{Final}
+
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+
+\textbf{Instructions:}\\
+\begin{itemize}
+\item {\large Full credit will be given only if you show your work.}
+\item {\large The questions are not necessarily ordered from easiest to hardest.}
+\item {\large You are allowed to use any resource except aid from another individual.}
+\item {\large Aid from another individual, will automatically earn you a 0.}
+\end{itemize}
+
+
+\newpage
+Suppose the following summary statistics are available for a given data set.
+<<echo=FALSE>>=
+set.seed(20170502)
+n <- 100
+x <- rnorm(n)
+y <- x + rnorm(n,0,0.8)
+@
+
+<<>>=
+length(x); mean(x); sd(x)
+length(y); mean(y); sd(y)
+cor(x,y)
+@
+
+Assume the model $y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 x_i, \sigma^2)$.
+Use the summary statistics above to calculate the following quantities.
+
+\begin{enumerate}
+\item Maximum likelihood estimate (MLE) for $\beta_0$
+
+\begin{answer}
+To find the MLE, we have $\hat\beta_0 = \overline{y} - \hat\beta_1 \overline{x}$.
+See below for $\hat\beta_1$.
+<<>>=
+mean(y) - cor(x,y)*sd(y)/sd(x) * mean(x)
+@
+\end{answer}
+\vfill
+
+\item MLE for $\beta_1$
+
+\begin{answer}
+\[ 
+\hat\beta_1 = \frac{SXY}{SXX} = \frac{r_{XY}s_Xs_Y}{s_X^2} = 
+\frac{r_{XY}s_Y}{s_X}
+\]
+<<>>=
+cor(x,y)*sd(y)/sd(x)
+@
+\end{answer}
+\vfill
+
+\item MLE for $\sigma^2$
+
+
+\begin{answer}
+We have $\sigma^2 = SSE/(n-2)$ and $SSE = (1-R^2)SYY = (1-R^2)\times (n-1) * s_Y^2$. 
+
+<<>>=
+n = length(y)
+SSE = (1-cor(x,y)^2)*(n-1)*sd(y)^2
+(sigma2 <- SSE/(n-2))
+@
+\end{answer}
+\vfill
+
+\item Coefficient of variation $R^2$
+
+\begin{answer}
+The coefficient of variation is the correlation squared, i.e. 
+<<>>=
+cor(x,y)^2
+@
+\end{answer}
+\vfill
+
+\item Standard error for $\hat\beta_1$
+
+\begin{answer}
+The standard error for $\hat\beta_1$ is $\hat\sigma\sqrt{1/(n-1)s_X^2}$.
+<<>>=
+sqrt(sigma2)*sqrt(1/((n-1)*sd(x)^2))
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\newpage
+State the 4 assumptions in a simple linear regression model and how you would
+evaluate these assumptions.
+
+\begin{itemize}
+\item 1
+
+\begin{answer}
+There is a linear relationship between the expected response and the 
+explanatory variable. The best way to evaluate this assumption is to plot the
+response vs the explanatory variable or the residuals vs the explanatory 
+variable. If these show curvature, then there is a departure from this 
+assumption.
+\end{answer}
+\vfill
+
+\item 2
+
+\begin{answer}
+The errors are normally distributed. In the normal Q-Q plot normality can be determined by how well the points comparing standardized residuals versus the theoretical quantiles fall along the line. If points don't generally fall along the line then normality is violated.
+\end{answer}
+\vfill
+
+\item 3
+
+\begin{answer}
+The errors errors have a constant variance. If a plot of residuals vs 
+fitted values shows a funnel pattern or if the (square root of absolute values)
+of standardized residuals vs fitted values shows an increasing/decreasing
+trend, these are both indications of lack of constant variance.
+\end{answer}
+\vfill
+
+\item 4
+
+\begin{answer}
+The errors are independent. This is the most difficult assuption to evaluate, 
+but one plot that should be done is a residuals vs row index (or time, if
+available) plot. If this plot shows a pattern, then there is a violation of 
+this assumption. 
+\end{answer}
+\vfill
+\end{itemize}
+
+
+
+\newpage
+For the questions on this page and the following page, 
+use the code and output on the {\tt R Code - Math Scores} page.
+
+\begin{enumerate}
+\item How many total observations were used in this analysis?
+
+\begin{answer}
+861
+\end{answer}
+\vfill
+
+\item Write down the model used in this analysis making sure to define any 
+notation you introduce.
+
+\begin{answer}
+Define
+\begin{itemize}
+\item $Y_i$ be the IQ score for student $i$
+\item $S_i$ be the sex for student $i$ (Male/Female)
+\item $HM_i$ be the highest math taken by student $i$ (Algebra/Geometry/Calculus)
+\end{itemize}
+The model is 
+\[ 
+Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \qquad 
+\mu_i = \beta_0 + \beta_1 \mathrm{I}(S_i=male) + 
+\beta_2 \mathrm{I}(HM_i = Geometry) + \beta_3 \mathrm{I}(HM_i = Calculus)
+\]
+\end{answer}
+\vfill \vfill \vfill \vfill
+
+
+\newpage
+\item Provide an interpretation for the following quantities.
+\begin{enumerate}
+\item 9.3629
+
+\begin{answer}
+This is the estimated mean IQ score for female students whose highest math is 
+algebra.
+\end{answer}
+\vfill
+
+\item 1.6006
+
+\begin{answer}
+This is the estimated difference in IQ score between males and females across
+all levels of highest math.
+\end{answer}
+\vfill
+
+\item 4.6012
+
+\begin{answer}
+This is the estimated difference in IQ score between those whose highest math
+is geometry compared to algebra across both sexes.
+\end{answer}
+\vfill
+
+\item 0.4335
+
+\begin{answer}
+The model accounts for those amount of variation in IQ score.
+\end{answer}
+\vfill
+
+\end{enumerate}
+\item Construct a 95\% confidence/credible interval for the effect of having 
+calculus compared to only having algebra after adjusting for sex.
+
+\begin{answer}
+\[\hat\beta_3 \pm t_{0.975,857} SE(\hat\beta_3) = 
+14.8252 \pm 1.962736 \times 0.6273 = (13.59398,16.05642) \approx (14,16).\]
+\end{answer}
+\vfill
+
+\item Construct a 95\% prediction interval for the score of the next male 
+student who has taken geometry. 
+If you cannot derive the interval, then explain what you would need and 
+why you don't have it. 
+
+\begin{answer}
+The point estimate here is $\beta_0+\beta_1+\beta_2$ and the 
+$t$ critical value is the same as in the previous problem, 
+i.e. $t_{0.975,857} = 1.962736$. 
+The difficulty is in obtaining a standard error for 
+$\hat\beta_0+\hat\beta_1+\hat\beta_2$ and this standard error is a function
+of the explanatory variable values (male and geometry) and the means of 
+these levels. Although we could probably derive it based on the table provided,
+it would take a while. 
+
+In addition, the standard error for prediction is slightly different than the 
+standard error of the mean. 
+If $SE(\hat\mu)$ is the standard error of the mean where
+$\hat\mu = \hat\beta_0+\hat\beta_1+\hat\beta_2$, 
+then $SE(Pred) = \hat\sigma\sqrt{1+SE(\hat\mu)^2/\hat\sigma^2}$. 
+
+Thus our interval is 
+\[ \begin{array}{rl}
+\multicolumn{2}{l}{\hat\beta_0+\hat\beta_1+\hat\beta_2 \pm t_{0.975,857} SE(Pred)} \\
+&= 9.3629 + 1.6006 + 4.6012 \pm 1.962736 SE(Pred) \\ 
+&= 15.5647 \pm 1.962736 \hat\sigma\sqrt{1+SE(\hat\mu)^2/\hat\sigma^2} .
+\end{array} \]
+\end{answer}
+\vfill
+
+\item Explain why these data are insufficient to claim that, genetically, women 
+are worse than men at math. 
+
+\begin{answer}
+The main point is that sex is not randomized. 
+So, despite the positive and significant $\beta_1$, this is not evidence of a 
+causal relationship. 
+One issue here is that our environment in our educational system and elsewhere
+may play a role in the process that results in, on average, women scoring 
+worse on standardized tests. 
+In addition, the standardized tests themselves may be biased in their ability to 
+estimate mathematically ability. 
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+
+\newpage
+Using the {\tt ex1220} data set in the {\tt Sleuth3} R package, 
+fit a multiple regression model with $\log$ of the total number of observed 
+species as the response and area, elevation, and their interaction as the 
+explanatory variables.
+Answer the following questions based on this model.
+
+\begin{enumerate}
+\item Provide estimates of all $\beta$s in this model.
+
+\begin{answer}
+<<>>=
+(m <- lm(log(Total) ~ Area*Elev, data = Sleuth3::ex1220))
+@
+\end{answer}
+
+
+\item Provide an estimate for the effect of a 100 m increase in elevation when
+the area is 200 km$^2$ on the total number of observed species.
+
+\begin{answer}
+The effect of a 100 m increase in elevation when the are is 200 km$^2$ is 
+$e^{100\beta_2+200\times 100 \beta_3}$.
+In R, we can campute this with.
+
+<<>>=
+exp(sum(coef(m)*c(0,0,100,200*100)))
+@
+\end{answer}
+\vfill
+
+\item Aside from considering alternative explanatory variables, 
+explain why this is a poor model for the data. 
+
+\begin{answer}
+Observation 16 has huge leverage and Cook's distance due to its extremely
+large area and elevation.
+<<message=FALSE>>=
+library("dplyr")
+Sleuth3::ex1220 %>%
+  mutate(leverage = hatvalues(m),
+         cooksd   = cooks.distance(m)) %>%
+  filter(Island == "Isabela")
+# summary(Sleuth3::ex1220 %>% select(Total, Area, Elev))
+@
+\end{answer}
+\vfill \vfill \vfill
+
+\end{enumerate}
+
+
+
+
+
+\newpage
+R Code - Math Scores
+
+<<echo=FALSE, message=FALSE>>=
+library("dplyr")
+d <- Sleuth3::ex1320 %>%
+  mutate(HighestMath = plyr::revalue(Background,
+                                    c("a" = "Algebra",
+                                      "b" = "Geometry",
+                                      "c" = "Calculus"))) 
+@
+
+<<>>=
+d %>% group_by(Sex,HighestMath) %>% 
+  summarize(n = n(), mean = mean(Score), sd = sd(Score))
+m <- lm(Score ~ Sex+HighestMath, data = d)
+summary(m)
+@
+
+
+\end{document}

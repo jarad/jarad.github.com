@@ -1,0 +1,372 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 401D}
+\newcommand{\semester}{Spring 2017}
+\newcommand{\exam}{Exam I}
+
+
+% \excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+
+\textbf{Instructions:}\\
+\begin{itemize}
+\item {\large Partial credit will be given only if you show your work.}
+\item {\large The questions are not necessarily ordered from easiest to hardest.}
+\end{itemize}
+
+
+
+\begin{enumerate}
+
+\newpage
+\item Consider the system below with all routers acting independently and each
+having probability 0.80 of successfully transmitting a signal.
+
+\tikzstyle{block} = [draw, rectangle,  minimum height=3em, minimum width=6em]
+\tikzstyle{cir} = [draw, circle, node distance=2cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+
+\begin{center}
+% The block diagram code is probably more verbose than necessary
+\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+    % We start by placing the blocks
+    \node [input, name=input] {};
+    \node [cir, right of=input] (a) {A};
+    \node [cir, right of=a] (c) {C};
+    \node [block, right of=c] (router1) {Router 1};
+    \node [block, right of=router1, node distance=3cm] (router2) {Router 2};
+    \node [cir, right of=router2, node distance=2cm] (d) {D};
+    \node [cir, right of=d] (e) {E};
+
+    % We draw an edge between the router1 and router2 block to
+    % calculate the coordinate u. We need it to place the measurement block.
+    \draw [->] (router1) -- node[name=u] {} (router2);
+    \node [output, right of=e] (output) {};
+    \node [block, below of=u] (router3) {Router 3};
+    \node [block, above of=u] (router5) {Router 5};
+    \node [block, left of=router5, node distance=3cm] (router4) {Router 4};
+    \node [block, right of=router5, node distance=3cm] (router6) {Router 6};
+    \node [cir, right of=router6] (b) {B};
+
+    % Once the nodes are placed, connecting them is easy.
+    \draw [draw,->] (input) -- node {} (a);
+    \draw [->] (a) -- node {} (c);
+    \draw [->] (d) -- node {} (e);
+    \draw [->] (c) -- node {} (router1);
+    \draw [->] (router2) -- node {}(d);
+    \draw [->] (router3) -| (d);
+    \draw [->] (c) |- node[pos=0.99] {} node [near end] {} (router3);
+    \draw [->] (a) |- node {}(router4);
+    \draw [->] (router4) -- node {}(router5);
+    \draw [->] (router5) -- node {}(router6);
+    \draw [->] (router6) -- node {}(b);
+    \draw [->] (b) -| node {}(e);
+    \draw [draw,->] (e) -- node {} (output);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+\item Calculate the probability of a signal passing from A to B. (6 points)
+
+\begin{answer}
+The probability of a successful signal from A to B is the product of the
+probabilities for each component to be successful.
+\[
+0.8^3 \approx 0.512
+\]
+\end{answer}
+\vfill \vfill
+
+\item Calculate the probability of a signal passing from C to D. (6 points)
+
+\begin{answer}
+The probability a signal successfully passes through router 1 and 2 is
+$0.95^2 = 0.64$.
+Here the signal can travel through router 1 and 2 or through router 3.
+So the probability of a successful transmission is one minus the probability
+that both routes are unsuccessful, i.e.
+\[
+1-(1-0.64)(1-0.8) \approx 0.928
+\]
+\end{answer}
+\vfill \vfill
+
+\item Calculate the system reliability. (4 points)
+
+\begin{answer}
+The reliability is just the probability the system will successfully transmit
+a signal from A to E which can take the route through 4, 5, and 6 (part a) or
+a route through 1 and 2 or 3 (part b). Thus
+\[
+1-(1-0.64)(1-0.8)(1-.512) = 1-(1-0.928)(1-0.512) \approx 0.96
+\]
+\end{answer}
+\vfill \vfill
+
+\item If you could replace one router with a perfect router that has 100\%
+success which router would it be and why? (4 points)
+
+\begin{answer}
+If router 3 is replaced with a perfect router, then all messages will
+successfully pass through the system.
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+
+
+\newpage
+% Modified from http://sites.stat.psu.edu/~lsimon/stat250/homework/chapter3/bayes.pdf
+
+\item In Colorado, seventy percent of skiers lost
+during an avalanche are subsequently discovered.  
+Of the skiers that are discovered, 60\% have an emergency locator,
+whereas 90\% of the skiers not discovered do not have such a locator.  
+Suppose that a skier has disappeard in an avalanche.  
+If she has an emergency locator, 
+what is the probability that she will be discovered?
+
+\begin{answer}
+Let $D$ indicate the event the skier will be discovered and
+let $L$ indicate the event the skier has an emergency locator.
+We are given
+\[ \begin{array}{rl}
+P(L|D) &= 0.6 \\
+P(L^C|D^C) &= 0.9 \\
+P(D) &= 0.70
+\end{array} \]
+
+We are asked to find
+\[ \begin{array}{rl}
+P(D|L)
+&= \frac{P(L|D)P(D)}{P(L|D)P(D) + P(L|D^C)P(D^C)} \\
+&= \frac{P(L|D)P(D)}{P(L|D)P(D) + [1-P(L^C|D^C)][1-P(D)]} \\
+&= \frac{0.6 \times 0.7}{0.6 \times 0.7 + [1-0.9][1-0.7]} \\
+&= \frac{0.42}{0.42+0.03} = 0.933
+\end{array} \]
+So the probability the aircraft will be discovered givent that it has an
+emergency locator, is about 933\%.
+\end{answer} 
+
+
+
+
+\newpage
+\item Let $X$ represent a discrete random variable with the following probability mass function
+\[ \begin{array}{r|cccc}
+\hline
+x      & 1 & 2 & 3 & 4 \\
+P(X=x) & 0.1 & 0.2 & 0.3 & c \\
+\hline
+\end{array} \]
+
+\begin{enumerate}
+
+\item What is the value for $c$ that makes this a valid probability mass function? (6 pts)
+
+\begin{answer}
+We need
+\[
+\sum_{x=1}^4 P(X=x) = 1
+\]
+which occurs if $c=P(X=4)=0.4$.
+\end{answer}
+\vfill
+
+\item What is the expectation of $X$? (6 pts)
+
+\begin{answer}
+\[ \begin{array}{rl}
+E[X] &= \sum_{x=1}^4 x \cdot P(X=x) \\
+&= 1\times 0.1 + 2\times 0.2 + 3\times 0.3 + 4\times 0.4 \\
+&= 0.1+0.4+0.9+1.6 \\
+&= 3
+\end{array} \]
+\end{answer}
+\vfill
+
+\item What is the variance of $X$? (7 pts)
+
+\begin{answer}
+\[ \begin{array}{rl}
+Var[X] &= \sum_{x=1}^4 (x-\mu)^2 P(X=x) \\
+& = (1-3)^2\times 0.1 + (2-3)^2\times 0.2 + (3-3)^2\times 0.3 + (4-3)^2\times 0.4 \\
+& = 4\times 0.1+1\times 0.2+0\times 0.3+1\times 0.4 \\
+&= 0.4+0.2+0+0.4 = 1
+\end{array} \]
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+
+\newpage
+\item Suppose we are performing an experiment to study the effect of skin
+lotions.
+Participants have dry skin and Lotion A is randomly assigned to one arm and
+Lotion B is then used on the other arm.
+For each participant, we record whether Lotion A worked better than Lotion B.
+Since have no reason to believe which lotion is better,
+we assume the probability that A works better than B is 0.5.
+For the following questions, assume there are 10 participants and
+the response from each participant is independent.
+
+\begin{enumerate}
+\item What is the probability that exactly 2 of the 10 responses indicate that
+Lotion A worked better than Lotion B? (6 points)
+
+\begin{answer}
+Let $Y$ be the number of participants that indicate Lotion A worked better than
+Lotion B and assume $Y\sim Bin(n,p)$ with $n=10$ and $p=0.5$.
+
+Thus we have
+\[
+P(Y=2) = {10\choose 2} 0.5^2(1-0.5)^{10-2} = 0.0439.
+\]
+
+<<>>=
+n <- 10
+p <- 0.5
+dbinom(2, size = n, prob = p)
+@
+\end{answer}
+\vfill
+
+\item What is the probability that 2 or fewer of the response indicate that
+Lotion A worked better than Lotion B? (7 points)
+
+\begin{answer}
+We have
+\[
+P(Y\le 2) = \sum_{y=0}^2 {10\choose y} 0.5^y(1-0.5)^{10-y} = 0.0547.
+\]
+
+<<>>=
+pbinom(2, size = n, prob = p)
+sum(dbinom(0:2, size = n, prob = p))
+@
+\end{answer}
+\vfill
+
+
+\item What is the probability between 3 and 7 responses (inclusive, i.e. 3 and
+7 are included) indicate that Lotion A worked better than Lotion B? (7 points)
+
+
+\begin{answer}
+We have
+\[
+P(3\le Y\le 7) = \sum_{y=3}^7 {10\choose y} 0.5^y(1-0.5)^{10-y} = 0.0547.
+\]
+or, equivalently
+\[
+P(3\le Y\le 7) = P(Y\le 7) - P(Y<3) = P(Y\le 7) - P(Y\le 2)
+\]
+
+<<>>=
+sum(dbinom(3:7, size = n, prob = p))
+pbinom(7, size = n, prob = p) - pbinom(2, size = n, prob = p)
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\newpage
+%!TEX root = exam1.tex
+
+\item A network of 100 temperature sensors is deployed to measure the ocean
+temperature near an underwater volcano. The sensors act independently and have
+an expected value that is actual temperature with a variance of
+0.36$^oC$. The sensors each report to a single hub and the hub reports to a base
+station if at least one of the sensors reports a temperature more than 2$^oC$
+different from the last reported sensor.
+
+\begin{enumerate}
+\item Suppose the last reported temperature was $80.1^oC$ and the current actual
+temperature is $80.3^oC$. What is the probability the hub will report to the
+base station? (10 points)
+
+\begin{answer}
+Let $X_i$ be the temperature reported by sensor $i$ for $i=1,\ldots,n$.
+Assume $E[X_i]=80.3^oC$ and $Var[X_i]=0.4^oC$.
+
+\[ \begin{array}{rll}
+P(\mbox{hub reports}) &= P(\mbox{at least one $X_i< 78.1$ or $X_i>82.1$}) \\
+&= 1-P(\mbox{all }78.1<X_i<82.1) \\
+&= 1-P(78.1<X_i<82.1)^n & \mbox{independence} \\
+&= 1-\left[ P(X_i<82.1) - P(X_i<78.1) \right]^n \\
+\end{array} \]
+
+<<>>=
+n <- 100
+mu <- 80.3
+sigma <- sqrt(0.36)
+1-(pnorm(82.1, mean = mu, sd = sigma)-pnorm(78.1, mean = mu, sd = sigma))^n
+@
+\end{answer} 
+\vfill
+
+
+\item Since communication to the base station is the battery draining operation,
+the scientist set the hub to only report to the base station if the average of
+all sensors is more than 0.4$^oC$ different from the previous report. Using
+the temperatures in the previous problem, what is the probability the hub will
+report to the base station? (10 points)
+
+\begin{answer}
+Using the notation in the previous answer, we have
+$\overline{X} \sim N(80.3, 0.6/10)$.
+
+\[ \begin{array}{rll}
+P(\mbox{hub reports}) &= P(\overline{X}<79.7 \mbox{ or } \overline{X}>80.5) \\
+&= 1-P(79.7<\overline{X}<80.5) \\
+&= 1-\left[ P(X_i<80.5) - P(X_i<79.7) \right] \\
+\end{array} \]
+
+<<>>=
+1-(pnorm(80.5, mean = mu, sd = sigma/10)-pnorm(79.7, mean = mu, sd = sigma/10))
+@
+\end{answer} 
+\vfill
+
+\end{enumerate}
+
+\end{enumerate}
+
+\end{document}

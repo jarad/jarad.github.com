@@ -5,7 +5,14 @@ tagline: slides
 ---
 {% include JB/setup %}
 
-Below are source (Rnw) and handouts for all course lectures. Instructions for compiling the Rnw files can be found below.
+Below are source (Rnw) and handouts for all course lectures. 
+In order to compile these documents, you will need the 
+[frontmatter.tex](https://github.com/jarad/jarad.github.com/tree/master/courses/stat544/slides/frontmatter.tex)
+and 
+[commands.tex](https://github.com/jarad/jarad.github.com/tree/master/courses/stat544/slides/commands.tex) 
+files which are available 
+[where all the source files can be found](https://github.com/jarad/jarad.github.com/tree/master/courses/stat544/slides).
+Instructions for compiling the Rnw files can be found below.
 
 ## Chapter slide source files
 
