@@ -7,7 +7,7 @@ tagline: previous exams
 
 Below are exams, keys, and data used in the exam.
 
-Exams before 2017 were in-class (as opposed to in-lab) exams and students 
+2017 exams were in-class (as opposed to in-lab) exams and students 
 could use only a one-page formula sheet.
 
 ## Exam 1
