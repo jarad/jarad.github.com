@@ -1,0 +1,354 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 587C}
+\newcommand{\semester}{Spring 2019}
+\newcommand{\exam}{Exam I}
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+
+\textbf{Instructions:}\\
+\begin{itemize}
+\item {\large Full credit will be given only if you show your work.}
+\item {\large The questions are not necessarily ordered from easiest to hardest.}
+\item {\large You are allowed to use any resource except aid from another individual.}
+\item {\large Aid from another individual, will automatically earn you a 0.}
+\end{itemize}
+
+
+\newpage
+\begin{enumerate}
+\item The State of California is out-sourcing its bridge crack detection program
+to Amazon Mechanical Turk. The process works like this 1) a citizen takes a 
+picture of a bridge, 2) using a mobile app, they upload the picture to Amazon,
+and 3) a user in the Mechanical Turk program indicates whether or not the 
+picture shows a crack in the bridge. Based on prior experience, 
+the probability of the user indicating a crack when there really is a crack
+is 0.98, the probability of the user indicating no crack when there really is 
+no crack is 0.90, and only 2 out of every 1000 pictures uploaded actually have
+cracks in bridges. Calculate the probability the bridge actually has a crack 
+when the Mechnical Turk program user indicates it has a crack. (20 points)
+
+\begin{answer}
+Let 
+\begin{itemize}
+\item $C$ indicate the bridge has a crack
+\item $Y$ indicate the Mechanical Turk user indicates that ``Yes, there is a crack.''
+\end{itemize}
+We are given the following probabilities
+\[ \begin{array}{rl}
+P(Y|C) &= 0.98 \\
+P(Y^C|C^C) &= 0.90 \\
+P(C) &= 2/1000 = 0.002.
+\end{array} \]
+We are interested in 
+\[ \begin{array}{rl}
+P(C|Y) 
+&= \frac{P(Y|C)P(C)}{P(Y|C)P(C) + P(Y|C^C)P(C^C)} \\
+&= \frac{P(Y|C)P(C)}{P(Y|C)P(C) + [1-P(Y^C|C^C)][1-P(C)]} \\
+&= \frac{0.98*0.002}{0.98*0.002 + (1-0.90)*(1-0.002)}
+\end{array} \]
+<<>>=
+(0.98*0.002)/(0.98*0.002 + (1-0.90)*(1-0.002))
+@
+\end{answer}
+
+
+\newpage
+
+
+
+
+
+\newpage
+\item Let $X$ be a random variable with the following probability mass function:
+\begin{center}
+\begin{tabular}{l|ccccc}
+x & 1 & 2 & 3 & 4 & 5 \\
+\hline
+P(X=x) & 0.1 & 0.1 & 0.2 & 0.3 & 0.3 \\
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+\item Show that this is a valid probability mass function. (4 points)
+
+\begin{answer}
+<<>>=
+p <- c(0.1, 0.1, 0.2, 0.3, 0.3)
+x <- 1:5
+all(p>=0)
+sum(p)==1
+@
+Thus this is a valid probability mass function.
+\end{answer}
+\vfill
+
+\item Determine the expected value of $X$. (4 points)
+
+\begin{answer}
+<<>>=
+(mu <- sum(p*x))
+@
+\end{answer}
+\vfill
+
+\item Determine the variance of $X$. (4 points)
+
+\begin{answer}
+<<>>=
+(vr <- sum(p*(x-mu)^2))
+@
+\end{answer}
+\vfill
+
+\item Let $Y=2\times X-5$. Determine the expected value of $Y$. (4 points)
+
+\begin{answer}
+$E[Y] = 2\times E[X] - 5 = 2*\Sexpr{mu}-5 = \Sexpr{2*mu-5}$
+\end{answer}
+\vfill
+
+\item Let $Y=2\times X-5$. Determine the variance of $Y$. (4 points)
+
+\begin{answer}
+$Var[Y] = 2^2Var[X] = 4\times \Sexpr{vr} = \Sexpr{4*vr}$
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+
+
+
+\newpage
+% Binomial question
+\item A distributed censor network has 650 censors each with an 11\% probability
+of failure. Assume censor failures are independent.
+
+\begin{answer}
+Let $Y$ be the number of censors that have failed. 
+Then $Y \sim Bin(n,p)$ with 
+<<>>=
+n <- 650
+p <- 0.11
+@
+\end{answer}
+
+\begin{enumerate}
+\item Calculate the expected number of censor failures. (5 points)
+
+\begin{answer}
+<<>>=
+n*p
+@
+\end{answer}
+\vfill
+
+\item Calculate the standard deviation of the number of censor failures. 
+(5 points)
+
+\begin{answer}
+<<>>=
+sqrt(n*p*(1-p))
+@
+\end{answer}
+\vfill
+
+\item Calculate the probability of exactly 72 failures. (5 points)
+
+\begin{answer}
+$P(Y=72)$
+<<>>=
+dbinom(72,n,p)
+@
+\end{answer}
+\vfill
+
+\item Calculate the probability that there are fewer than 100 failures. (5 points)
+
+\begin{answer}
+$P(Y<100) = P(Y\le 99)$
+<<>>=
+pbinom(99,n,p)
+@
+\end{answer}
+\vfill 
+
+\end{enumerate}
+
+
+\newpage
+\item Electrical resistors indicate their expected resistance in ohms and 
+tolerance around this resistance using a series of bands. 
+The standard deviation of the resistance is the tolerance times the expected
+resistance.
+For example, if the bands indicate an expected resistance of 200 ohms and a 
+tolerance of 10\%, then the standard deviation is 200$\times$ 0.1 = 20 ohms. 
+Variability in manufacturing means the actual resistance of a partiular resistor is normally distributed with a mean that is the expected resistance and 
+standard deviation that can be calculated as described above. 
+
+The following questions concern a particular resistor with bands that indicate 
+an expected resistance of 350 ohms and a tolerance of 5\%.
+
+\begin{enumerate}
+\item Calculate the standard deviation for resistors with these bands. (5 points)
+
+\begin{answer}
+Let $X$ be the actual resistance of the resistor and assume
+$X \sim N(\mu,\sigma^2)$ with
+<<>>=
+mu <- 350
+tolerance <- 0.05
+(sigma <- 350*tolerance)
+@
+Thus the standard deviation for resistors with these bands is \Sexpr{sigma} 
+ohms.
+\end{answer}
+\vfill
+
+\item Calculate the probability the actual resistance is greater than 400.
+(5 points)
+
+\begin{answer}
+<<>>=
+1-pnorm(400, mean = mu, sd = sigma)
+@
+\end{answer}
+\vfill
+
+\item Calculate the probability the actual resistance is within 20 ohms of the 
+expected resistance. (5 points)
+
+\begin{answer}
+<<>>=
+pnorm(mu + 20, mean = mu, sd = sigma) - pnorm(mu - 20, mean = mu, sd = sigma)
+@
+\end{answer}
+\vfill
+
+\item Determine the tolerance needed so that the probability the actual 
+resistance is within 10 ohms of the expected value is at least 90\%. (5 points)
+
+\begin{answer}
+\[ 
+0.90 = P(|X-\mu|<10) 
+\implies
+0.05 = P(X-\mu < -10) = 
+P\left( \frac{X-\mu}{\sigma} < \frac{-10}{\sigma} \right) =
+P(Z < -10/\sigma)
+\]
+<<>>=
+qnorm(0.05)
+@
+So $\sigma = -10/\Sexpr{qnorm(0.05)} = \Sexpr{-10/qnorm(0.05)}$ and 
+thus the tolerance must be smaller than $\sigma/\mu = \Sexpr{-10/qnorm(0.05)/mu * 100}\%$.
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+
+\newpage
+\item The time it takes for a printer to complete a print job can be modeled as
+an exponential random variable. 
+The distribution for an exponential random variable has a single parameter 
+$\lambda$ which is both the mean and standard deviation for the random variable. 
+Suppose you sent a job to the single lab printer and there are 64 jobs in line
+before yours.
+Assume the mean time to completion for a job is 30 seconds and that completion
+time for each job is independent of all other jobs and is exponentially 
+distributed.
+
+\begin{enumerate}
+\item Determine the approximate distribution for the time until your job starts
+based on the Central Limit Theorem. (5 points)
+
+\begin{answer}
+Let $X_i$ be the time for the $i$th job. 
+Then $S = \sum_{i=1}^{64} X_i$ is the time until your job starts and,
+by the CLT, $S \stackrel{\cdot}{\sim} N(64 \times 30, 64\times 30^2)$. (5 points)
+<<>>=
+n <- 64
+(mu <- n*30)
+(vr <- n*30^2)
+(sigma <- sqrt(vr))
+@
+In minutes, this is $S \stackrel{\cdot}{\sim} N(\Sexpr{n*0.5}, \Sexpr{n*0.5^2})$.
+\end{answer}
+\vfill
+
+\item Determine the probability it will take exactly 15 minutes for your 
+job to start. (5 points)
+
+\begin{answer}
+Since the probability for any continuous random variable being equal to a 
+particular value is 0, this probability is 0.
+\end{answer}
+\vfill
+
+
+\item Calculate the approximate probability that it will take more than 10
+minutes for your job to start. (5 points)
+
+\begin{answer}
+<<>>=
+1-pnorm(10*60, mean = mu, sd = sigma)
+@
+\end{answer}
+\vfill
+
+\item The electricity costs while the printer is running is \$0.20/hour. 
+Determine the expected costs to print the 64 jobs. (5 points)
+
+\begin{answer}
+Expected cost in dollars is the cost times the expected time. In order for the 
+units to cancel, we convert the expected time in seconds to expected time
+in hours.
+<<>>=
+0.20*mu/60^2
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+
+
+
+\end{enumerate}
+
+\end{document}
