@@ -7,13 +7,14 @@ tagline: previous exams
 
 Below are exams, keys, and data used in the exam.
 
-Exams before 2017 were in-class (as opposed to in-lab) exams and students 
+2017 exams were in-class (as opposed to in-lab) exams and students 
 could use only a one-page formula sheet.
 
 ## Exam 1
 
 - 2017: [exam](exam1/STAT401Eng_exam1_Spring2017.pdf) [key](exam1/STAT401Eng_exam1_Spring2017_key.pdf)
 - 2018: [exam](exam1/STAT401Eng_exam1_Spring2018.pdf) [key](exam1/STAT401Eng_exam1_Spring2018_key.pdf)
+- 2019: [exam](exam1/STAT587Eng_exam1_Spring2019.pdf) [key](exam1/STAT587Eng_exam1_Spring2019_key.pdf)
 
 ## Exam 2
 
