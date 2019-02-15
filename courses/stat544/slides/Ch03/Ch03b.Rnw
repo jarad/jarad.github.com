@@ -3,6 +3,8 @@
 \input{../frontmatter}
 \input{../commands}
 
+\newcommand{\bk}{{\bold k}}
+
 \title{Multiparameter models (cont.)}
 
 \begin{document}
@@ -112,7 +114,7 @@ has the following properties:
 \begin{itemize}
 \item $E[Y_k] = n\pi_k$ \pause
 \item $Var[Y_k] = n\pi_k(1-\pi_k)$ \pause 
-\item $CoVar[Y_k,Y_{k'}] = -n\pi_k\pi_{k'}$ for $k\ne k'$
+\item $Cov[Y_k,Y_{k'}] = -n\pi_k\pi_{k'}$ for $k\ne k'$
 \end{itemize}
 
 \vspace{0.2in} \pause
@@ -137,7 +139,7 @@ with $\sum_{k=1}^K \pi_k = 1$
 \pause 
 and $Beta(a)$ is the beta function, i.e. 
 \[
-\Beta(a) = \frac{\prod_{k=1}^K \mG(a_k)}{\mG(\sum_{k=1}^K a_k)}.
+\Beta(a) = \frac{\prod_{k=1}^K \Gamma(a_k)}{\Gamma(\sum_{k=1}^K a_k)}.
 \]
 
 \end{frame}
@@ -154,7 +156,7 @@ has the following properties (where $a_0 = \sum_{k=1}^K a_k$): \pause
 \begin{itemize}
 \item $E[\pi_k] = \frac{a_k}{a_0}$
 \item $Var[\pi_k] = \frac{a_k(a_0-a_k)}{a_0^2(a_0+1)}$
-\item $CoVar[\pi_k,\pi_{k'}] = \frac{-a_k a_{k'}}{a_0^2(a_0+1)}$
+\item $Cov[\pi_k,\pi_{k'}] = \frac{-a_k a_{k'}}{a_0^2(a_0+1)}$
 \end{itemize}
 
 \vspace{0.2in} \pause
@@ -188,13 +190,13 @@ Thus $\pi|y \sim Dir(a+y)$.
 \begin{frame}
 \frametitle{Multivariate normal distribution}
 
-Let $Y=(Y_1,\ldots,Y_K)\in \mathbb{R}^K$ have a multivariate normal distribution, i.e. $Y\sim N_K(\mu,\mS)$ with mean $\mu$ and positive definite variance-covariance matrix $\mS$.
+Let $Y=(Y_1,\ldots,Y_K)$ have a multivariate normal distribution, i.e. $Y\sim N_K(\mu,\Sigma)$ with mean $\mu$ and variance-covariance matrix $\Sigma$.
 
 \vspace{0.2in} \pause
 
 The probability density function (pdf) for $Y$ is 
 \[
-p(y) = (2\pi)^{-k/2}|\mS|^{-1/2} \exp\left(-\frac{1}{2}(y-\mu)^\top \mS^{-1} (y-\mu) \right).
+p(y) = (2\pi)^{-k/2}|\Sigma|^{-1/2} \exp\left(-\frac{1}{2}(y-\mu)^\top \Sigma^{-1} (y-\mu) \right)
 \]
 
 \end{frame}
@@ -224,35 +226,55 @@ contour(x,y, matrix(z,n,n), levels=(0:10), col = terrain.colors(11),
 \begin{frame}
 \frametitle{Properties of the multivariate normal distribution}
 
-The multivariate normal distribution with pdf 
-\[
-p(y) = (2\pi)^{-k/2}|\mS|^{-1/2} \exp\left(-\frac{1}{2}(y-\mu)^\top \mS^{-1} (y-\mu) \right)
-\]
-has the following properties: \pause
+\small
+
+The multivariate normal distribution has the following properties: 
+\pause
 \begin{itemize}
-\item $E[Y_k] = \mu_k$
-\item $Var[Y_k] = \mS_{kk}$
-\item $CoVar[Y_k,Y_{k'}] = \mS_{k,k'}$ \pause
-\item Marginally, each component of a multivariate normal distribution is a normal distribution with $Y_k \sim N(\mu,\mS_{kk})$. 
-\item Conditional distributions are also normal, i.e. if 
-\[
-\left( \begin{array}{c} Y_1 \\ Y_2 \end{array}\right) \sim N\left(\left[ \begin{array}{c} \mu_1 \\ \mu_2 \end{array} \right],\left[ \begin{array}{cc} \mS_{11} & \mS_{12} \\ \mS_{21} & \mS_{22} \end{array} \right]\right)
+% \item Marginally, $Y_k \sim N_1(\mu_k, \Sigma_{kk})$ \pause where 
+%   \begin{itemize}
+%   \item $\mu_k$ is the $k$th element of $\mu$ and 
+%   \item $\Sigma_{kk}$ is the $k$th diagonal element of $\Sigma$. \pause
+%   \end{itemize}
+\item For any subvector $Y_{\bk}$ of $Y$ where $\bk \subset \{1,2,\ldots,K\}$ 
+with $|\bk|=d$, 
+\pause
+we have $Y_{\bk} \sim N_d(\mu_{\bk},\Sigma_{\bk,\bk})$ 
+\pause where 
+  \begin{itemize}
+  \item $\mu_{\bk}$ contains the corresponding elements from $\mu$ and 
+  \item $\Sigma_{\bk,\bk}$ is the submatrix of $\Sigma$ constructed by 
+  extracting rows $\bk$ and columns $\bk$. \pause 
+  \item $Cov[Y_{\bk},Y_{\bk'}] = \Sigma_{\bk,\bk'}$ is the submatrix of $\Sigma$
+  constructed by extracting rows $\bk$ and columns $\bk'$. \pause
+  \end{itemize}
+\item Conditional distributions are also normal, i.e. for $\bk \cap \bk' = \emptyset$
+\[ \left( \begin{array}{c} Y_{\bk} \\ Y_{\bk'} \end{array}\right) \sim 
+N\left(\left[ \begin{array}{c} \mu_{\bk} \\ \mu_{\bk'} \end{array} \right],
+\left[ \begin{array}{cc} 
+\Sigma_{\bk,\bk} & \Sigma_{\bk,\bk'} \\ 
+\Sigma_{\bk',\bk} & \Sigma_{\bk',\bk'} \end{array} 
+\right]\right)
 \]
 then 
 \[ 
-Y_1|Y_2 = y_2 \sim N\left(\mu_1 + \mS_{12}\mS_{22}^{-1}(y_2-\mu_2), \mS_{11}-\mS_{12}\mS_{22}^{-1}\mS_{21}\right).
+Y_{\bk}|Y_{\bk'} = y_{\bk'} \sim 
+N\left(\mu_{\bk} + \Sigma_{\bk,\bk'} \Sigma_{\bk',\bk'}^{-1}(y_{\bk'}-\mu_{\bk'}), 
+\Sigma_{\bk,\bk}-\Sigma_{\bk,\bk'}\Sigma_{\bk',\bk'}^{-1}\Sigma_{\bk',\bk}\right).
 \]
 \end{itemize}
 \end{frame}
 
 
+
+
 \begin{frame}
 \frametitle{Representing independence in a multivariate normal}
 
-Let $Y\sim N(\mu,\mS)$ with precision matrix $\mO = \mS^{-1}$. \pause
+Let $Y\sim N(\mu,\Sigma)$ with precision matrix $\Omega = \Sigma^{-1}$. \pause
 \begin{itemize}
-\item If $\mS_{k,k'}=0$, then $Y_k$ and $Y_{k'}$ are independent of each other.
-\item If $\mO_{k,k'}=0$, then $Y_k$ and $Y_{k'}$ are conditionally independent of each other given $Y_j$ for $j\ne k,k'$.
+\item If $\Sigma_{k,k'}=0$, then $Y_k$ and $Y_{k'}$ are independent of each other.
+\item If $\Omega_{k,k'}=0$, then $Y_k$ and $Y_{k'}$ are conditionally independent of each other given $Y_j$ for $j\ne k,k'$.
 \end{itemize}
 
 % \vspace{1in}
@@ -311,21 +333,24 @@ m' &= C'\left[ C^{-1}m + n S^{-1}\overline{y} \right].
 \end{array} \]
 \end{frame}
 
+
+
+
 %\subsection{Unknown covariance}
 \begin{frame}
 \frametitle{Inverse Wishart distribution}
 
-Let the $K\times K$ matrix $\mS$ have an inverse Wishart distribution, 
-i.e. $\mS \sim IW(v,W^{-1})$, 
+Let the $K\times K$ matrix $\Sigma$ have an inverse Wishart distribution, 
+i.e. $\Sigma \sim IW(v,W^{-1})$, 
 with degrees of freedom $v>K-1$ and positive definite scale matrix $W$. 
 
 \vspace{0.2in} \pause
 
-The pdf for $\mS$ is 
+The pdf for $\Sigma$ is 
 \[ 
-p(\mS) \propto 
-|\mS|^{-(v+K+1)/2}
-\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \right).
+p(\Sigma) \propto 
+|\Sigma|^{-(v+K+1)/2}
+\exp\left( -\frac{1}{2} tr\left(W\Sigma^{-1}\right) \right).
 \]
 
 
@@ -338,15 +363,16 @@ p(\mS) \propto
 
 The inverse Wishart distribution with pdf 
 \[ 
-p(\mS) \propto 
-|\mS|^{-(v+K+1)/2}
-\exp\left( -\frac{1}{2} tr\left(W\mS^{-1}\right) \right).
+p(\Sigma) \propto 
+|\Sigma|^{-(v+K+1)/2}
+\exp\left( -\frac{1}{2} tr\left(W\Sigma^{-1}\right) \right).
 \]
 has the following properties:
 \begin{itemize}[<+->]
-\item $E[\mS] = (v-K-1)^{-1} W$ for $v>K+1$.
-\item Marginally, $\sigma_k^2 = \mS_{kk} \sim Inv-\chi^2(v,W_{kk})$.
-\item If a $K\times K$ matrix $W$ has a Wishart distribution, i.e. $W\sim Wishart(v,S)$,  then $W^{-1} \sim IW(v,S^{-1})$. 
+\item $E[\Sigma] = (v-K-1)^{-1} W$ for $v>K+1$.
+\item Marginally, $\sigma_k^2 = \Sigma_{kk} \sim Inv-\chi^2(v,W_{kk})$.
+\item If a $K\times K$ matrix $\Sigma^{-1}$ has a Wishart distribution, 
+i.e. $\Sigma^{-1}\sim Wishart(v,W)$,  then $\Sigma \sim IW(v,W^{-1})$. 
 \end{itemize}
 
 \end{frame}
@@ -356,17 +382,17 @@ has the following properties:
 \frametitle{Normal-inverse Wishart distribution}
 
 A multivariate generalization of the normal-scaled-inverse-$\chi^2$ distribution is the normal-inverse Wishart distribution. \pause
-For a vector $\mu\in \mathbb{R}^K$ and $K\times K$ matrix $\mS$, the normal-inverse Wishart distribution is 
+For a vector $\mu\in \mathbb{R}^K$ and $K\times K$ matrix $\Sigma$, the normal-inverse Wishart distribution is 
 \[ \begin{array}{rl}
-\mu|\mS &\sim N(m,\mS/c) \\
-\mS &\sim IW(v,W^{-1})
+\mu|\Sigma &\sim N(m,\Sigma/c) \\
+\Sigma &\sim IW(v,W^{-1})
 \end{array} \]
 
 \vspace{0.2in} \pause
 
 The marginal distribution for $\mu$, i.e. 
 \[ 
-p(\mu) = \int p(\mu|\mS)p(\mS) d\mS,
+p(\mu) = \int p(\mu|\Sigma)p(\Sigma) d\Sigma,
 \]
 \pause
 is a multivariate t-distribution, i.e. 
@@ -386,12 +412,12 @@ is a multivariate t-distribution, i.e.
 \begin{frame}
 \frametitle{Conjugate inference with unknown mean and covariance}
 
-Let $Y_i\ind N(\mu,\mS)$ with conjugate prior 
+Let $Y_i\ind N(\mu,\Sigma)$ with conjugate prior 
 \[ 
-\mu|\mS \sim N(m,\mS/c) \quad \mS \sim IW(v,W^{-1})
+\mu|\Sigma \sim N(m,\Sigma/c) \quad \Sigma \sim IW(v,W^{-1})
 \]
 which has pdf \[ 
-p(\mu,\mS) \propto |\mS|^{-((v+K)/2+1)} \exp\left(-\frac{1}{2} tr(W\mS^{-1}) - \frac{c}{2}(\mu-m)^\top \mS^{-1}(\mu-m)\right).
+p(\mu,\Sigma) \propto |\Sigma|^{-((v+K)/2+1)} \exp\left(-\frac{1}{2} tr(W\Sigma^{-1}) - \frac{c}{2}(\mu-m)^\top \Sigma^{-1}(\mu-m)\right).
 \]
 
 \vspace{0.1in} \pause
@@ -400,8 +426,8 @@ The posterior is a normal-inverse Wishart with parameters
 \[ \begin{array}{rl}
 c' &= c+n \\
 v' &= v+n \\
-m' &= \frac{k}{k+n}m + \frac{n}{k+n}\overline{y} \\
-W' &= W + S + \frac{kn}{k+n}(\overline{y}-m)(\overline{y}-m)^\top
+m' &= \frac{c}{c'}m + \frac{n}{c'}\overline{y} \\
+W' &= W + S + \frac{cn}{c'}(\overline{y}-m)(\overline{y}-m)^\top
 \end{array} \]
 where 
 \[ 
@@ -414,15 +440,15 @@ S = \sum_{i=1}^n (y_i-\overline{y})(y_i-\overline{y})^\top.
 \frametitle{Default inference with unknown mean and covariance}
 
 \begin{itemize}
-\item The prior $\mS \sim IW(K+1,\I)$ is non-informative in the sense that marginally each correlation has a uniform distribution on (-1,1). \pause
+\item The prior $\Sigma \sim IW(K+1,\I)$ is non-informative in the sense that marginally each correlation has a uniform distribution on (-1,1). \pause
 \item The prior 
-\[ p(\mu,\mS) \propto |\mS|^{-(K+1)/2}, \]
+\[ p(\mu,\Sigma) \propto |\Sigma|^{-(K+1)/2}, \]
 \pause
 which can be thought of as a normal-inverse-Wishart distribution with $c\to 0$, 
 $v\to -1$, and $|W|\to 0$, \pause results in the posterior distribution
 \[ \begin{array}{rl} 
-\mu|\mS,y &\sim N(\overline{y}, \mS/n) \\
-\mS|y &\sim IW(n-1,S^{-1}).
+\mu|\Sigma,y &\sim N(\overline{y}, \Sigma/n) \\
+\Sigma|y &\sim IW(n-1,S^{-1}).
 \end{array}
 \]
 \end{itemize}
@@ -448,8 +474,8 @@ $v\to -1$, and $|W|\to 0$, \pause results in the posterior distribution
 Remedies:
 \begin{itemize}
 \item Don't blindly use $\I$ for the scale matrix in an IW, instead use a reasonable diagonal matrix for your data set.
-\item Use the scaled Inverse wishart distribution (see BDA3 pg 74)
-\item Use the separation strategy, i.e. $\mS = \Delta \Lambda \Delta$ where $\Delta$ 
+\item Use the scaled Inverse wishart distribution (see pg 74)
+\item Use the separation strategy, i.e. $\Sigma = \Delta \Lambda \Delta$ where $\Delta$ 
 is diagonal and $\Lambda$ is a correlation matrix, where you specify the standard deviations (or variances) and correlations separately. \pause In this case, Gelman recommends putting the LKJ prior (see page 582) on the correlation matrix.
 \end{itemize}
 }
