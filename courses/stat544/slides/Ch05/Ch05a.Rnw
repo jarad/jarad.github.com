@@ -132,7 +132,7 @@ d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L,
 7L, 9L, 7L, 1L)), .Names = c("date", "opponent", "made", "attempts"
 ), class = "data.frame", row.names = c(NA, -24L))
 
-d = rbind(d,
+d2 = rbind(d,
 
           # Add a total row
           data.frame(date     = NA,
@@ -153,7 +153,7 @@ d = rbind(d,
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
 <<dawkins_plot, out.width='0.7\\textwidth', dependson="dawkins_data">>=
-ggplot(d,
+ggplot(d2,
        aes(x     = lcl,
            xend  = ucl,
            y     = game,
@@ -173,7 +173,6 @@ ggplot(d,
 {\tiny
 <<results='asis'>>=
 xtable(d)
-d = d %>% filter(opponent != "Total")
 @
 }
 \end{frame}
@@ -293,6 +292,8 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
   \end{itemize}
 \end{frame}
 
+
+
 \begin{frame}[fragile]
 \frametitle{A prior distribution for $\alpha$ and $\beta$}
   It seems reasonable to assume the mean ($\mu$) and size ($\eta$) are independent \emph{a priori}:
@@ -300,24 +301,24 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
 
     \vspace{0.1in} \pause
 
+Let's construct a prior that has 
+\begin{itemize}
+\item $P(0.1<\mu<0.5) \approx 0.95$ since most college basketball players have 
+a three-point percentage between 10\% and 50\% \pause and
+\item is somewhat diffuse for $\eta$ but has more mass for smaller values. 
+\end{itemize}
+
 <<informative_prior>>=
 a = 20
 b = 30
-m = 0
-C = 3
+e = 1/20
 @
 
   Let's assume an informative prior for $\mu$ and $\eta$ \pause perhaps
   \begin{itemize}
   \item $\mu \sim Be(\Sexpr{a},\Sexpr{b})$
-  \item $\eta \sim LN(\Sexpr{m},\Sexpr{C}^2)$
+  \item $\eta \sim Exp(\Sexpr{e})$
   \end{itemize}
-  
-    \vspace{0.1in} \pause
-
-  \pause where $LN(\Sexpr{m},\Sexpr{C})$ is a log-normal distribution, 
-  i.e. $\log(\eta) \sim N(\Sexpr{m},\Sexpr{C}^2)$.
-
 
   \vspace{0.1in} \pause
 
@@ -336,7 +337,7 @@ C = 3
 n = 1e4
 
 prior_draws = data.frame(mu  = rbeta(n, a, b),
-                         eta = rlnorm(n, m, C)) %>%
+                         eta = rexp(n, d)) %>%
   mutate(alpha = eta*   mu,
          beta  = eta*(1-mu))
 
@@ -372,8 +373,7 @@ data {
   int<lower=0> y[N];
   real<lower=0> a;   // prior
   real<lower=0> b;
-  real<lower=0> C;
-  real m;
+  real<lower=0> e;
 }
 parameters {
   real<lower=0,upper=1> mu;
@@ -389,7 +389,7 @@ transformed parameters {
 }
 model {
   mu    ~ beta(a,b);
-  eta   ~ lognormal(m,C);
+  eta   ~ exponential(e);
 
   // implicit joint distributions
   theta ~ beta(alpha,beta);
@@ -402,7 +402,7 @@ model {
 \begin{frame}[fragile]
 \frametitle{Stan}
 <<stan_run, dependson=c('informative_prior','stan',"dawkins_data"), echo=TRUE, results='hide'>>=
-dat = list(y = d$made, n = d$attempts, N = nrow(d),a = a, b = b, m = m, C = C)
+dat = list(y = d$made, n = d$attempts, N = nrow(d),a = a, b = b, e = e)
 m = stan_model(model_code = model_informative_prior)
 r = sampling(m, dat, c("mu","eta","alpha","beta","theta"),
              iter = 10000)
@@ -485,7 +485,7 @@ ggplot(rbind(d, new_d), aes(x=lcl,
 \subsection{default prior}
 \begin{frame}[fragile]
 \frametitle{Stan - default prior}
-<<stan2_run, echo=TRUE, results='hide'>>=
+<<stan2_run, echo=TRUE, results='hide', dependson="stan_run">>=
 model_default_prior = "
 data {
   int<lower=0> N;
@@ -513,63 +513,6 @@ r2 = sampling(m2, dat, c("alpha","beta","theta"), iter=10000,
               control = list(adapt_delta = 0.9))
 @
 \end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Stan - default prior}
-<<stan_post2, dependson=c("stan2_run","stan_run"), echo=TRUE, out.width='0.7\\textwidth'>>=
-r2
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Stan - default prior}
-<<stan2_plot, dependson="stan2_run", echo=TRUE, out.width='0.7\\textwidth'>>=
-plot(r2, pars=c('alpha','beta'))
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Stan - default prior}
-<<stan2_plot2, dependson="stan2_run", out.width='0.7\\textwidth'>>=
-plot(r2, pars=c('theta'))
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{Comparing all models}
-<<quantiles2, dependson=c("stan_run","stan2_run"), out.width='0.7\\textwidth'>>=
-d$prior     = "independent"
-new_d$prior = "informative"
-
-tmp = data.frame(summary(r2)$summary[,c(4,8)])
-new_d2 = mutate(new_d,
-                prior = "default",
-                lcl = tmp[3:26,1],
-                ucl = tmp[3:26,2])
-
-bind_d = rbind(d,new_d,new_d2)
-bind_d$prior = factor(bind_d$prior, c('informative','default','independent'))
-
-e = 0.2
-ggplot(bind_d,
-       aes(x     = lcl,
-           xend  = ucl,
-           y     = game+e*(prior=="independent")-e*(prior=="informative"),
-           yend  = game+e*(prior=="independent")-e*(prior=="informative"),
-           color = prior))+
-  geom_segment(lwd=1, alpha=0.5) +
-  labs(x=expression(theta), y="game", title='95% Credible Intervals') +
-  scale_color_brewer(palette='Set1') +
-  scale_y_reverse() +
-  theme_bw()
-@
-\end{frame}
-
-
 
 
 \subsection{beta-binomial}
@@ -608,10 +551,15 @@ model {
   target += -5*log(alpha+beta)/2;
   y     ~ beta_binomial(n,alpha,beta);
 }
+generated quantities {
+  real<lower=0,upper=1> theta[N];
+  for (i in 1:N)
+    theta[i] = beta_rng(alpha+y[i],beta+n[i]-y[i]);
+}
 "
 
 m3 = stan_model(model_code=model_marginalized)
-r3 = sampling(m3, dat, c("alpha","beta"))
+r3 = sampling(m3, dat, iter = 10000)
 @
 \end{frame}
 
@@ -638,14 +586,63 @@ ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)),
 @
 \end{frame}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Comparing all models}
+<<quantiles2, dependson=c("stan_run","stan3_run"), out.width='0.7\\textwidth'>>=
+d$prior     = "independent"
+new_d$prior = "informative"
+
+d = d %>%
+  mutate(lcl = qbeta(0.025,a,b),
+         ucl = qbeta(0.975,a,b))
+  
+tmp = data.frame(summary(r3)$summary[,c(4,8)])
+new_d2 = mutate(new_d,
+                prior = "default",
+                lcl = tmp[3:26,1],
+                ucl = tmp[3:26,2])
+
+bind_d = rbind(d,new_d,new_d2)
+bind_d$prior = factor(bind_d$prior, c('informative','default','independent'))
+
+e = 0.2
+ggplot(bind_d,
+       aes(x     = lcl,
+           xend  = ucl,
+           y     = game+e*(prior=="independent")-e*(prior=="informative"),
+           yend  = game+e*(prior=="independent")-e*(prior=="informative"),
+           color = prior))+
+  geom_segment(lwd=1, alpha=0.5) +
+  labs(x=expression(theta), y="game", title='95% Credible Intervals') +
+  scale_color_brewer(palette='Set1') +
+  scale_y_reverse() +
+  theme_bw()
+@
+\end{frame}
+
+
+
+
+
 \begin{frame}[fragile]
 \frametitle{Posterior sample for $\theta_{22}$}
 <<stan3_theta, dependson="stan3_run", fig.width=10, echo=TRUE>>=
-samples = extract(r3, c("alpha","beta"))
 game = 22
-theta22 = rbeta(length(samples$alpha),
-              samples$alpha + d$made[game],
-              samples$beta  + d$attempts[game] - d$made[game])
+theta22 = extract(r3, "theta")$theta[,game]
+
 hist(theta22, 100,
      main=paste("Posterior for game against", d$opponent[game], "on", d$date[game]),
      xlab="3-point probability",
@@ -655,11 +652,8 @@ hist(theta22, 100,
 
 \begin{frame}[fragile]
 \frametitle{$\theta$s are not independent in the posterior}
-<<stan3_thetas, dependson='stan3_run'>>=
-game = 23
-theta23 = rbeta(length(samples$alpha),
-              samples$alpha + d$made[game],
-              samples$beta  + d$attempts[game] - d$made[game])
+<<stan3_thetas, dependson=c('stan3_run','stan3_theta')>>=
+theta23 = extract(r3, "theta")$theta[,23]
 ggpairs(data.frame(theta22=theta22,theta23=theta23), 
         lower=list(continuous='density')) + 
   theme_bw()
@@ -690,7 +684,7 @@ Due to the low number of seasons (observations), we will use an informative prio
 model_seasons = "
 data {
   int<lower=0> N; int<lower=0> n[N]; int<lower=0> y[N];
-  real<lower=0> a; real<lower=0> b; real<lower=0> C; real m;
+  real<lower=0> a; real<lower=0> b; real<lower=0> e;
 }
 parameters {
   real<lower=0,upper=1> mu;
@@ -704,7 +698,7 @@ transformed parameters {
 }
 model {
   mu  ~ beta(a,b);
-  eta ~ lognormal(m,C);
+  eta ~ exponential(e);
   y   ~ beta_binomial(n,alpha,beta);
 }
 generated quantities {
@@ -713,7 +707,7 @@ generated quantities {
 }
 "
 
-dat  = list(N = nrow(d), y = d$y, n = d$n, a = 20, b = 30, m = 0, C = 2)
+dat  = list(N = nrow(d), y = d$y, n = d$n, a = 20, b = 30, e = 1/20)
 m4 = stan_model(model_code = model_seasons)
 r_seasons = sampling(m4, dat,
                      c("alpha","beta","mu","eta","theta"))
