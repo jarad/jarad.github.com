@@ -6,13 +6,16 @@ output: html_document
 ---
 
 
-To follow along, use the [lab05 code](lab05.R) 
-and install the `plyr` and `ggplot2` packages 
-(if they are not already installed).
-If you are on a lab computer, these will already be installed.
+To follow along, use the [lab05 code](lab05.R).
 
-```{r, eval=FALSE}
-install.packages(c("plyr","ggplot2"))
+```{r}
+library("tidyverse")
+```
+
+For reproducibility, set the seed.
+
+```{r}
+set.seed(20190219)
 ```
 
 ## Binomial probability of success estimation
@@ -193,36 +196,13 @@ settings <- expand.grid(n = 10^(0:3),
                         theta = seq(0,1,by=0.1))
 ```
 
-We will use the [plyr](https://cran.r-project.org/web/packages/plyr/index.html)
+We will use the [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html)
 package to help us iterate over all of these values of $n$ and $\theta$. 
-If the `plyr` package isn't installed, you will need to install it using the
-command below:
-
-```{r, eval=FALSE}
-install.packages("plyr")
-```
-
-Then make sure to load the package using 
+First we need to construct the function to do a simulation study for every value
+of `n` and `theta`.
 
 ```{r}
-library("plyr")
-```
-
-The `plyr` package has a function called `ddply` which expects a `data.frame` 
-as input (thus the first d) and returns a `data.frame` as output (thus the 
-second d).
-
-Check the help file to learn about the function.
-
-```{r, eval=FALSE}
-?plyr
-```
-
-We will use the first three arguments to loop over $n$ and $\theta$ and to 
-perform our simulation study. 
-
-```{r}
-sim_study <- ddply(settings, .(n, theta), function(x) {
+sim_function <- function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
   mle   <- y/x$n
   bayes <- (a+y)/(a+b+x$n)
@@ -237,16 +217,20 @@ sim_study <- ddply(settings, .(n, theta), function(x) {
   # d$upper <- d$bias+qnorm(.975)*d$se
   
   return(d)
-})
+}
 ```
 
-To plot this, we will use the 
-[ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html)
-package which you may need to install.
+Then we can loop over all the values of `n` and `theta`. 
 
 ```{r}
-library("ggplot2")
+sim_study <- settings %>% 
+  group_by(n, theta) %>%
+  do(sim_function(.))
+```
 
+Let's plot the Monte Carlo estimated bias.
+
+```{r}
 ggplot(sim_study, aes(x=theta, y=bias, color=estimator)) +
   geom_line() +
   facet_wrap(~n) + 
@@ -259,8 +243,6 @@ But the variance of the Bayes estimator is smaller than the variance of the
 MLE estimator.
 
 ```{r}
-library("ggplot2")
-
 ggplot(sim_study, aes(x=theta, y=var, color=estimator)) +
   geom_line() +
   facet_wrap(~n) + 
@@ -297,19 +279,11 @@ binomial probability of success when $n=13$ for various values of $\theta$.
 settings <- expand.grid(n = 13,
                         theta = seq(0,1,by=0.1))
 
-sim_study <- ddply(settings, .(n, theta), function(x) {
-  y     <- rbinom(1e4, size = x$n, prob = x$theta)
-  mle   <- y/x$n
-  bayes <- (a+y)/(a+b+x$n)
-  
-  d <- data.frame(
-    estimator = c("mle", "bayes"),
-    bias      = c(mean(mle), mean(bayes)) - x$theta,
-    var       = c(var( mle), var( bayes)))
-  d$mse <- d$var + d$bias^2
-  
-  return(d)
-})
+sim_study <- settings %>% 
+  group_by(n, theta) %>%
+  do(sim_function(.))
+
+sim_study$mse <- sim_study$var + sim_study$bias^2
 
 ggplot(sim_study, aes(x=theta, y=mse, color=estimator)) +
   geom_line() +
@@ -344,9 +318,9 @@ from $\theta$.
 
 ```{r}
 theta = 0.51
-n_max <- 1e3
+n_max <- 999
 
-d <- ddply(data.frame(rep=1:1e3), .(rep), function(x) {
+sim_function <- function(d) {
   x <- rbinom(n_max, size = 1, prob = theta)
   
   mle <- bayes <- numeric(n_max)
@@ -359,20 +333,24 @@ d <- ddply(data.frame(rep=1:1e3), .(rep), function(x) {
   data.frame(n     = 1:n_max,
              mle   = mle,
              bayes = bayes)
-})
+}
+
+d <- data.frame(rep=1:1e3) %>%
+  group_by(rep) %>%
+  do(sim_function(.))
 
 epsilon <- 0.05
-sum <- ddply(d, .(n), function(x) {
-  data.frame(estimator = c("mle","bayes"),
-             prob = c(mean(abs(x$mle   - theta) < epsilon),
-                      mean(abs(x$bayes - theta) < epsilon)))
-})
+sum <- d %>% 
+  gather(estimator, estimate, mle, bayes) %>%
+  group_by(n, estimator) %>%
+  summarize(prob = mean(abs(estimate - theta) < epsilon))
 ```
 
 Now plot the results
 
 ```{r}
-ggplot(sum, aes(x=n, y=prob, color=estimator)) + 
+ggplot(sum, aes(x=n, y=prob, 
+                color=estimator, linetype = estimator)) + 
   geom_line() +
   theme_bw() 
 ```
@@ -390,31 +368,17 @@ estimators are consistent.
 <div id="binomial_consistency_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
 theta = 0.01
-n_max <- 1e3
 
-d <- ddply(data.frame(rep=1:1e3), .(rep), function(x) {
-  x <- rbinom(n_max, size = 1, prob = theta)
-  
-  mle <- bayes <- numeric(n_max)
-  for (n in 1:n_max) {
-    y <- sum(x[1:n])
-    mle[n] <- y/n
-    bayes[n] <- (a+y)/(a+b+n)
-  }
-  
-  data.frame(n     = 1:n_max,
-             mle   = mle,
-             bayes = bayes)
-})
+d <- data.frame(rep=1:1e3) %>%
+  group_by(rep) %>%
+  do(sim_function(.))
 
-epsilon <- 0.01
-sum <- ddply(d, .(n), function(x) {
-  data.frame(estimator = c("mle","bayes"),
-             prob = c(mean(abs(x$mle   - theta) < epsilon),
-                      mean(abs(x$bayes - theta) < epsilon)))
-})
+sum <- d %>% 
+  gather(estimator, estimate, mle, bayes) %>%
+  group_by(n, estimator) %>%
+  summarize(prob = mean(abs(estimate - theta) < epsilon))
 
-ggplot(sum, aes(x=n, y=prob, color=estimator)) + 
+ggplot(sum, aes(x = n, y = prob, color = estimator, linetype = estimator)) + 
   geom_line() +
   theme_bw()
 ```
@@ -491,19 +455,21 @@ Now try with $\theta=0.01$.
 Let's now look at coverage across a wide range of $n$ and $\theta$. 
 
 ```{r}
-settings <- expand.grid(n = 10^(0:3),
-                        theta = seq(0,1,by=0.1))
+binomial_coverage_function <- function(d) {
+  y     <- rbinom(1e4, size = d$n, prob = d$theta)
+  mle   <- y/d$n
+  bayes <- (a+y)/(a+b+d$n)
+  
+  lower <- qbeta(.025, a+y, b+d$n-y)
+  upper <- qbeta(.975, a+y, b+d$n-y)
+  
+  data.frame(coverage = mean( lower <= d$theta & d$theta <= upper))
+}
 
-sim_study <- ddply(settings, .(n, theta), function(x) {
-  y     <- rbinom(1e4, size = x$n, prob = x$theta)
-  mle   <- y/x$n
-  bayes <- (a+y)/(a+b+x$n)
-  
-  lower <- qbeta(.025, a+y, b+x$n-y)
-  upper <- qbeta(.975, a+y, b+x$n-y)
-  
-  data.frame(coverage = mean( lower <= x$theta & x$theta <= upper))
-})
+sim_study <- expand.grid(n = 10^(0:3),
+                        theta = seq(0,1,by=0.1)) %>%
+  group_by(n,theta) %>%
+  do(binomial_coverage_function(.))
 ```
 
 Now plot the results
@@ -528,24 +494,31 @@ Specifically,
 - if $y=n$, then use the one-sided interval (L,1)
 
 ```{r}
-sim_study <- ddply(settings, .(n, theta), function(x) {
-  y     <- rbinom(1e4, size = x$n, prob = x$theta)
-  mle   <- y/x$n
-  bayes <- (a+y)/(a+b+x$n)
+binomial_coverage_function_fixed <- function(d) {
+  n <- d$n
+  theta <- d$theta
+  y     <- rbinom(1e4, size = n, prob = theta)
+  mle   <- y/d$n
+  bayes <- (a+y)/(a+b+n)
   
-  lower <- qbeta(.025, a+y, b+x$n-y)
-  upper <- qbeta(.975, a+y, b+x$n-y)
+  lower <- qbeta(.025, a+y, b+n-y)
+  upper <- qbeta(.975, a+y, b+n-y)
   
   # Fix intervals when y=0
   lower[y==0] <- 0
-  upper[y==0] <- qbeta(.95, a+0, b+x$n-0)
+  upper[y==0] <- qbeta(.95, a+0, b+n)
   
   # Fix intervals when y=n
-  upper[y==x$n] <- 1
-  lower[y==x$n] <- qbeta(.05, a+x$n, b+x$n-x$n)
+  upper[y==n] <- 1
+  lower[y==n] <- qbeta(.05, a+n, b+0)
   
-  data.frame(coverage = mean( lower <= x$theta & x$theta <= upper))
-})
+  data.frame(coverage = mean( lower <= theta & theta <= upper))
+}
+
+sim_study <- expand.grid(n = 10^(0:3),
+                        theta = seq(0,1,by=0.1)) %>%
+  group_by(n,theta) %>%
+  do(binomial_coverage_function_fixed(.))
 ```
 
 Now plot the results
@@ -572,28 +545,17 @@ Run a simulation study to look at coverage for Jeffreys prior.
 <div id="jeffreys_coverage_activity_solution" style="display:none"> 
 ```{r, purl=FALSE}
 a <- b <- 0.5
-sim_study <- ddply(settings, .(n, theta), function(x) {
-  y     <- rbinom(1e4, size = x$n, prob = x$theta)
-  mle   <- y/x$n
-  bayes <- (a+y)/(a+b+x$n)
-  
-  lower <- qbeta(.025, a+y, b+x$n-y)
-  upper <- qbeta(.975, a+y, b+x$n-y)
-  
-  # Fix intervals when y=0
-  lower[y==0] <- 0
-  upper[y==0] <- qbeta(.95, a+0, b+x$n-0)
-  
-  # Fix intervals when y=n
-  upper[y==x$n] <- 1
-  lower[y==x$n] <- qbeta(.05, a+x$n, b+x$n-x$n)
-  
-  data.frame(coverage = mean( lower <= x$theta & x$theta <= upper))
-})
+
+sim_study <- expand.grid(n = 10^(0:3),
+                        theta = seq(0,1,by=0.1)) %>%
+  group_by(n,theta) %>%
+  do(binomial_coverage_function_fixed(.))
 
 ggplot(sim_study, aes(x=theta, y=coverage)) +
   geom_line() +
   facet_wrap(~n) + 
+  geom_hline(yintercept = 0.95, color = "red") +
+  ylim(0,1) + 
   theme_bw()
 ```
 </div> 
