@@ -112,33 +112,31 @@ set.seed(1)
 }
 
 <<dawkins_data, results='hide'>>=
-d = structure(list(date = structure(c(16L, 9L, 10L, 11L, 12L, 13L,
-14L, 15L, 20L, 17L, 18L, 19L, 21L, 7L, 8L, 1L, 2L, 3L, 4L, 5L,
-6L, 22L, 23L, 24L), .Label = c("1/11/14", "1/13/14", "1/18/14",
-"1/22/14", "1/25/14", "1/27/14", "1/4/14", "1/7/14", "11/12/13",
-"11/15/13", "11/18/13", "11/19/13", "11/24/13", "11/27/13", "11/29/13",
-"11/8/13", "12/16/13", "12/19/13", "12/28/13", "12/3/13", "12/31/13",
-"2/1/14", "2/4/14", "2/8/14"), class = "factor"), opponent = structure(c(5L,
-13L, 9L, 21L, 6L, 22L, 1L, 2L, 15L, 11L, 20L, 7L, 8L, 17L, 12L,
-4L, 23L, 16L, 14L, 10L, 18L, 19L, 24L, 3L), .Label = c("alabama",
-"arizona", "boston college", "clemson", "davidson", "east carolina",
-"eastern michigan", "elon", "florida atlantic", "florida state",
-"gardner-webb", "georgia tech", "kansas", "miami", "michigan",
-"nc state", "notre dame", "pitt", "syracuse", "ucla", "unc asheville",
-"vermont", "virginia", "wake forest"), class = "factor"), made = c(0L,
-0L, 5L, 3L, 0L, 3L, 0L, 1L, 2L, 4L, 1L, 6L, 5L, 1L, 1L, 0L, 1L,
-3L, 2L, 3L, 6L, 4L, 4L, 0L), attempts = c(0L, 0L, 8L, 6L, 1L,
-9L, 2L, 1L, 2L, 8L, 5L, 10L, 7L, 4L, 5L, 4L, 1L, 7L, 6L, 6L,
-7L, 9L, 7L, 1L)), .Names = c("date", "opponent", "made", "attempts"
-), class = "data.frame", row.names = c(NA, -24L))
+d = structure(list(date = structure(c(16017, 16021, 16024, 16027, 
+16028, 16033, 16036, 16038, 16042, 16055, 16058, 16067, 16070, 
+16074, 16077, 16081, 16083, 16088, 16092, 16095, 16097, 16102, 
+16105, 16109), class = "Date"), opponent = c("davidson", "kansas", 
+"florida atlantic", "unc asheville", "east carolina", "vermont", 
+"alabama", "arizona", "michigan", "gardner-webb", "ucla", "eastern michigan", 
+"elon", "notre dame", "georgia tech", "clemson", "virginia", 
+"nc state", "miami", "florida state", "pitt", "syracuse", "wake forest", 
+"boston college"), made = c(0L, 0L, 5L, 3L, 0L, 3L, 0L, 1L, 2L, 
+4L, 1L, 6L, 5L, 1L, 1L, 0L, 1L, 3L, 2L, 3L, 6L, 4L, 4L, 0L), 
+    attempts = c(0L, 0L, 8L, 6L, 1L, 9L, 2L, 1L, 2L, 8L, 5L, 
+    10L, 7L, 4L, 5L, 4L, 1L, 7L, 6L, 6L, 7L, 9L, 7L, 1L), 
+game = 1:24), 
+row.names = c(NA, -24L), class = "data.frame")
+@
 
-d2 = rbind(d,
-
-          # Add a total row
-          data.frame(date     = NA,
-                     opponent = 'Total',
-                     made     = sum(d$made),
-                     attempts = sum(d$attempts))) %>%
+<<dawkins_summary, dependson="dawkins_data">>=
+d2 = bind_rows(d,
+               
+               # Add a total row
+               tibble(date     = NA,
+                      game     = max(d$game)+1,
+                      opponent = 'Total',
+                      made     = sum(d$made),
+                      attempts = sum(d$attempts))) %>%
 
   # Add posterior parameters
   mutate(a        = 0.5 + made,
@@ -152,7 +150,7 @@ d2 = rbind(d,
 
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
-<<dawkins_plot, out.width='0.7\\textwidth', dependson="dawkins_data">>=
+<<dawkins_plot, out.width='0.7\\textwidth', dependson="dawkins_summary">>=
 ggplot(d2,
        aes(x     = lcl,
            xend  = ucl,
@@ -309,8 +307,8 @@ a three-point percentage between 10\% and 50\% \pause and
 \end{itemize}
 
 <<informative_prior>>=
-a = 20
-b = 30
+a = 6
+b = 14
 e = 1/20
 @
 
@@ -337,7 +335,7 @@ e = 1/20
 n = 1e4
 
 prior_draws = data.frame(mu  = rbeta(n, a, b),
-                         eta = rexp(n, d)) %>%
+                         eta = rexp(n, e)) %>%
   mutate(alpha = eta*   mu,
          beta  = eta*(1-mu))
 
@@ -437,7 +435,10 @@ plot(r, pars=c('mu','theta'))
 \begin{frame}[fragile]
 \frametitle{Comparing independent and hierarchical models}
 <<quantiles, dependson="stan_run", out.width='0.7\\textwidth'>>=
-d$model = "independent"
+d <- d %>%
+  mutate(model = "independent",
+         lcl      = qbeta(0.025, 0.5 + made,0.5 + attempts - made),
+         ucl      = qbeta(0.975, 0.5 + made,0.5 + attempts - made))
 
 tmp = data.frame(summary(r)$summary[,c(4,8)])
 new_d = mutate(d,
@@ -446,7 +447,7 @@ new_d = mutate(d,
                ucl = tmp[5:28,2])
 
 e = 0.2
-ggplot(rbind(d, new_d), aes(x=lcl,
+ggplot(bind_rows(d, new_d), aes(x=lcl,
                      xend=ucl,
                      y=game+e*(model=="hierarchical"),
                      yend=game+e*(model=="hierarchical"),
@@ -605,9 +606,9 @@ ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)),
 d$prior     = "independent"
 new_d$prior = "informative"
 
-d = d %>%
-  mutate(lcl = qbeta(0.025,a,b),
-         ucl = qbeta(0.975,a,b))
+# d = d %>%
+#   mutate(lcl = qbeta(0.025,a,b),
+#          ucl = qbeta(0.975,a,b))
   
 tmp = data.frame(summary(r3)$summary[,c(4,8)])
 new_d2 = mutate(new_d,
@@ -615,7 +616,7 @@ new_d2 = mutate(new_d,
                 lcl = tmp[3:26,1],
                 ucl = tmp[3:26,2])
 
-bind_d = rbind(d,new_d,new_d2)
+bind_d = bind_rows(d,new_d,new_d2)
 bind_d$prior = factor(bind_d$prior, c('informative','default','independent'))
 
 e = 0.2
@@ -707,7 +708,7 @@ generated quantities {
 }
 "
 
-dat  = list(N = nrow(d), y = d$y, n = d$n, a = 20, b = 30, e = 1/20)
+dat  = list(N = nrow(d), y = d$y, n = d$n, a = a, b = b, e = e)
 m4 = stan_model(model_code = model_seasons)
 r_seasons = sampling(m4, dat,
                      c("alpha","beta","mu","eta","theta"))
