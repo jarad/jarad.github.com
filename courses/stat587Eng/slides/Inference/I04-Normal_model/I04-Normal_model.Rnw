@@ -57,7 +57,7 @@ set.seed(2)
 
 For the following examples, we will consider measuring corn yield 
 on fields. 
-We will base our analyses on the following values:
+We will base our analyses on the following true \alert{parameter values}:
 \begin{itemize}
 \item Mean yield per field is 200 bushels per acre
 \item Standard deviation of yield per field is 20 bushels per acre
@@ -67,9 +67,9 @@ We will base our analyses on the following values:
 
 In the following analyses, we will be assuming
 \begin{itemize}
-\item {\bf Population mean is unknown} while population SD is known to be 20
-\item Population mean is known to be 200 while {\bf population SD is unknown}
-\item {\bf Both are population mean and population SD are unknown}
+\item \alert{Population mean is unknown} while population SD is known to be 20
+\item Population mean is known to be 200 while \alert{population SD is unknown}
+\item \alert{Population mean and population SD are both unknown}.
 \end{itemize}
 
 \end{frame}
@@ -111,14 +111,14 @@ E[\mu|y] = \pause \overline{y}.
 
 
 \begin{frame}[fragile]
-<<population_parameters, echo=TRUE>>=
+<<population_parameters, echo=FALSE>>=
 m <- 200
-v <- 20
 @
 
 <<data, echo=TRUE, dependson="population_parameters">>=
+v <- 20 # Population standard deviation is known
 n <- 9
-y <- rnorm(n, mean = m, sd = v); mean(y); sd(y)
+y <- rnorm(n, mean = m, sd = v); mean(y)
 @
 
 <<data_plot, fig.height=4, dependson=c("population_parameters","data")>>=
@@ -141,16 +141,16 @@ abline(v=mean(y), col='red')
 We can obtain credible intevals directly.
 <<echo=TRUE>>=
 a <- .05
-qnorm(c(a/2,1-a/2), mean(y), sd = s/sqrt(n))
+qnorm(c(a/2,1-a/2), mean(y), sd = v/sqrt(n))
 @
 
 Or we can use the fact that
 \[
-\frac{\mu-\overline{y}}{s/\sqrt{n}} \pause = Z \sim N(0,1)
+\frac{\mu-\overline{y}}{v/\sqrt{n}} \pause = Z \sim N(0,1)
 \]
 to construct the interval using
 \[
-\overline{y} \pm z_{a/2} s/\sqrt{n}
+\overline{y} \pm z_{a/2} v/\sqrt{n}
 \]
 where $a/2 = \int_{z_{a/2}}^{\infty} \frac{1}{\sqrt{2\pi}}e^{-x^2/2} dx$,
 i.e. the area to the right of $z_{a/2}$ under the pdf of a standard normal is
@@ -206,13 +206,14 @@ E[\sigma^2|y] = \frac{\frac{\sum_{i=1}^n(y_i-m)^2}{2}}{\frac{n}{2}-1} =
 
 \begin{frame}[fragile]
 \frametitle{}
-<<variance_posterior, echo=TRUE, fig.height=4, dependson="data">>=
-SS <- sum((y-m)^2)
+<<variance_posterior, echo=TRUE, fig.height=3.5, dependson="data">>=
+m <- 200 # Population mean is known
+SS <- sum((y-m)^2); SS/(n-2)
 curve(MCMCpack::dinvgamma(x, shape = n/2, scale = SS/2), 0, 3*SS/n,
       xlab = expression(sigma^2),
       ylab = expression(paste("p(",sigma^2,"|y)")),
       main = "Posterior")
-abline(v = (SS/2)/((n/2)-1), col='red')
+abline(v = SS/(n-2), col='red')
 @
 \end{frame}
 
@@ -234,11 +235,12 @@ qinvgamma <- function(p, shape, scale = 1) {
 This function is slightly confusing because the `scale` parameter for the
 inverse gamma is the `rate` parameter for the gamma.
 
-\pause
+\vspace{0.2in} \pause
 
 Now we can use this to calculate our credible intervals
 
 <<ci_for_variance, dependson=c("variance_posterior","qinvgamma","data"), echo=TRUE>>=
+SS <- sum((y-m)^2)
 (q <- qinvgamma(c(.025,.975), shape = n/2, scale = SS/2))
 @
 
@@ -247,7 +249,7 @@ Now we can use this to calculate our credible intervals
 
 
 \begin{frame}[fragile]
-\frametitle{Credible intervals for variance - simulation}
+\frametitle{Credible intervals for variance - estimates via simulation}
 
 We can also obtain estimates of the interval endpoints by taking a bunch of
 simulated draws from the inverse gamma distribution and finding their sample
@@ -291,7 +293,7 @@ abline(v=sqrt(q), col="red")
 \pause
 
 There is actually a more sophisticated way to do this via
-\alert{transformations}. You can learn this technique in STAT 447.
+\alert{transformations}. You can learn this technique in STAT 588.
 
 \end{frame}
 
