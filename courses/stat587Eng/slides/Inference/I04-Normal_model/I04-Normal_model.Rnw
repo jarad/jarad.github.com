@@ -52,7 +52,7 @@ bushels per acre on those farms.
 We are interested in making statements about the mean yield and the variability
 in yield.
 \pause 
-<<echo=TRUE>>=
+<<data, echo=TRUE>>=
 d <- read.csv("yield.csv")
 names(d)
 (n <- length(d$yield))
@@ -176,24 +176,19 @@ ggplot(d, aes(x=t,y=density, group=v, linetype=v, color=v)) +
 \end{frame}
 
 
-\subsection{Posterior expectation for the mean}
-\begin{frame}
-\frametitle{$E[\mu|y]$}
-
-Since the marginal posterior for $\mu$ is 
-\[
-\mu|y \sim t_{n-1}(\overline{y}, s^2/n),
-\]
-\pause
-then
-\[
-E[\mu|y] = \pause \overline{y}.
-\]
-
-Since the $t$ distribution is symmetric around its location parameter, 
-this is also the posterior median and mode.
-
+\subsection{Posterior density for the mean}
+\begin{frame}[fragile]
+\frametitle{$p(\mu|y)$}
+<<fig.height=4, echo=TRUE>>=
+curve(dt((x-ybar)/(s/sqrt(n)), df = n-1)/(s/sqrt(n)), 
+      from = ybar - 5*s/sqrt(n), to = ybar + 5*s/sqrt(n),
+      xlab = "Mean yield (bushels/acre)" , ylab = "density",
+      main = "Posterior for mean corn yield in Iowa")
+@
 \end{frame}
+
+
+
 
 
 \subsection{Credible intervals for the mean}
@@ -206,7 +201,7 @@ But we can use the fact that
 \[
 \frac{\mu-\overline{y}}{s/\sqrt{n}} \pause \sim t_{n-1}(0,1)
 \]
-to construct the interval using
+to construct a 100(1-a)\% equal-tail credible interval using
 \[
 \overline{y} \pm t_{n-1,a/2} s/\sqrt{n}
 \]
@@ -215,8 +210,10 @@ standard $t$ is $a/2$.
 
 \pause
 
-<<mu_ci, dependson="data", echo=TRUE>>=
-ybar + c(-1,1)*qt(.975, df=n-1)*s/sqrt(n)
+A 90\% equal-tail credible interval is 
+<<mu_ci, echo=TRUE>>=
+a <- 0.1
+ybar + c(-1,1)*qt(1-a/2, df=n-1)*s/sqrt(n)
 @
 
 \end{frame}
@@ -231,7 +228,8 @@ ybar + c(-1,1)*qt(.975, df=n-1)*s/sqrt(n)
 In order to make probability (belief) statements about the mean, 
 we need to standardize, \pause e.g.
 \[ 
-P(\mu < c|y) = P\left(\left.\frac{\mu-\overline{y}}{s/\sqrt{n}} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right) \pause 
+P(\mu < c|y) = \pause 
+P\left(\left.\frac{\mu-\overline{y}}{s/\sqrt{n}} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right) \pause 
 = P\left(\left.T_{n-1} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right)
  \]
 were $T_{n-1}$ is a standard $t$ with $n-1$ degrees of freedom.
@@ -253,6 +251,11 @@ diff(pt((c(180,200)-ybar)/(s/sqrt(n)), df = n-1))
 \end{frame}
 
 
+
+
+
+
+
 \subsection{Posterior for the variance}
 \begin{frame}
 \frametitle{Posterior for $\sigma^2$}
@@ -260,7 +263,7 @@ diff(pt((c(180,200)-ybar)/(s/sqrt(n)), df = n-1))
 We already have the posterior distribution for $\sigma^2$\pause, namely
 \[
 \sigma^2|y \sim IG\left(\frac{n-1}{2}, 
-\frac{(n-1)s^2}{2}\right),
+\frac{(n-1)s^2}{2}\right).
 \]
 
 \end{frame}
@@ -284,7 +287,7 @@ It has
 E[Y] &= \frac{b}{a-1} & a > 1 \\
 Var[Y] &= \frac{b^2}{(a-1)^2(a-2)} & a > 2.
 \end{array} \]
-In addition, $1/Y$ is a gamma random variable.
+In addition, $1/Y$ is a gamma random variable with shape $a$ and rate $b$.
 \end{definition}
 \end{frame}
 
@@ -305,6 +308,41 @@ ggplot(d, aes(x = y, y = density)) +
   theme_bw()
 @
 \end{frame}
+
+
+
+\subsection{Posterior density for the variance}
+\begin{frame}[fragile]
+\frametitle{$p(\mu|y)$}
+<<fig.height=4, echo=TRUE>>=
+curve(MCMCpack::dinvgamma(x, shape = (n-1)/2, scale = (n-1)*s^2/2), 
+      from = 0, to = 2000,
+      xlab = "Variance of yield (bushels/acre)^2" , ylab = "density",
+      main = "Posterior for variance in corn yield in Iowa")
+@
+\end{frame}
+
+
+\subsection{Posterior expectation for the variance}
+\begin{frame}
+\frametitle{$E[\sigma^2|y]$}
+
+Since the marginal posterior for $\sigma^2$ is 
+\[
+\sigma^2|y \sim IG\left(\frac{n-1}{2}, 
+\frac{(n-1)s^2}{2}\right),
+\]
+\pause
+the
+\[
+E[\sigma^2|y] \pause 
+= \frac{(n-1)s^2/2}{(n-1)/2-1} \pause 
+= \frac{(n-1)s^2}{n-3}.
+\]
+
+\end{frame}
+
+
 
 
 \subsection{Credible intervals for the variance}
@@ -338,12 +376,13 @@ qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*s^2/2)
 In addition to no quantile function, there is no cdf function, but here is one
 based on the fact that 
 \[
-P(Y<c) = P\left(\frac{1}{Y} > \frac{1}{c}\right)
+P(\sigma^2<c|y) \pause
+= P\left(\left.\frac{1}{\sigma^2} > \frac{1}{c}\right|y\right)
 \]
 \pause
 <<pinvgamma, echo=TRUE>>=
-pinvgamma <- function(q, shape, scale = 1) {
-  1-pgamma(1/q, shape = shape, rate = scale)
+pinvgamma <- function(c, shape, scale = 1) {
+  1-pgamma(1/c, shape = shape, rate = scale)
 }
 @
 
@@ -351,14 +390,14 @@ pinvgamma <- function(q, shape, scale = 1) {
 
 Some example probability (belief) statements are:
 
-$P(\sigma^2<190|y)$:
+$P(\sigma^2<500|y)$:
 <<echo=TRUE>>=
-pinvgamma(190, shape = (n-1)/2, scale = (n-1)*s^2/2)
+pinvgamma(500, shape = (n-1)/2, scale = (n-1)*s^2/2)
 @
 \pause
-$P(170<\sigma^2<190|y)$:
+$P(100<\sigma^2<500|y)$:
 <<echo=TRUE>>=
-diff(pinvgamma(c(170,190), shape = (n-1)/2, scale = (n-1)*s^2/2))
+diff(pinvgamma(c(100,500), shape = (n-1)/2, scale = (n-1)*s^2/2))
 @
 
 \end{frame}
