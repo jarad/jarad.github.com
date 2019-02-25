@@ -55,6 +55,14 @@ then we call it a $100(1-a)\%$ \alert{confidence interval}
 and $1-a$ is the \alert{confidence level}.
 \end{definition}
 
+\vspace{0.2in} \pause
+
+The idea here is how often the interval will cover the truth when used 
+on different data sets.
+\pause
+In this interpretation, the interval itself is random because the endpoints are
+calculated based on random data.
+
 \end{frame}
 
 
@@ -73,14 +81,14 @@ is given by
 \pause
 When the data are considered random
 \[ 
-T = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \sim t_{n-1}(0,1)
+T_{\visible<5->{n-1}} = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \sim \pause t_{n-1}(0,1)
 \]
 \pause
 thus the probability $\mu$ is within our credible interval is
 \[ \begin{array}{rl}
 \multicolumn{2}{l}{P\left( \overline{Y}-t_{n-1,a/2}S/\sqrt{n} < \mu < \overline{Y}+t_{n-1,a/2}S/\sqrt{n}\right)} \pause \\
 &= P\left( -t_{n-1,a/2} < \frac{\overline{Y}-\mu}{S/\sqrt{n}} < t_{n-1,a/2}\right) \pause \\
-&= P\left( -t_{n-1,a/2} < T < t_{n-1,a/2}\right) \pause \\
+&= P\left( -t_{n-1,a/2} < T_{n-1} < t_{n-1,a/2}\right) \pause \\
 &= 1-a.
 \end{array} \]
 \pause
@@ -91,7 +99,7 @@ Thus, this $100(1-a)\%$ credible interval is also a $100(1-a)\%$ confidence inte
 \begin{frame}
 \frametitle{Data example}
 <<data, echo = FALSE>>=
-y <- rnorm(9, mean = 200, sd = 20) # Get some data
+y <- read.csv("../I04-Normal_model/yield.csv")$yield
 @
 
 <<data_example, dependson="data", echo = FALSE>>=
@@ -154,7 +162,7 @@ statistic \emph{when the data are considered random}.
 \begin{example}
 If $Y_i \ind N(\mu,\sigma^2)$, then 
 \[ 
-T = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \sim t_{n-1}(0,1)
+T_{\visible<3->{n-1}} = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \sim \pause t_{n-1}(0,1)
 \]
 where $\overline{Y}$ and $S$ are the sample average and sample standard 
 deviation over $n$ observations.
@@ -185,14 +193,15 @@ distribution is, \pause i.e.
 \begin{example}
 If $Y_i \ind N(\mu,\sigma^2)$, then 
 \[ 
-\hat{\mu} = \overline{Y} \pause 
-\stackrel{\cdot}{\sim} N(E[\overline{Y}], Var[\overline{Y}])
+\hat{\mu} = \overline{Y}
+\stackrel{\cdot}{\sim} \pause 
+N\left(E[\overline{Y}], Var[\overline{Y}]\right)
 \]
 \pause
 where 
 \[ \begin{array}{rl}
-E[\overline{Y}] &= \mu \\
-Var[\overline{Y}] \pause &= \sigma^2/n.
+E[\overline{Y}] &= \pause \mu \\
+Var[\overline{Y}] &= \pause \sigma^2/n.
 \end{array} \]
 \end{example}
 \end{frame}
@@ -234,8 +243,9 @@ S/\sqrt{n} \stackrel{P}{\to} \sigma/\sqrt{n}
 \pause
 and thus 
 \[
-SE[\hat\mu] = \widehat{\sqrt{Var[\hat\mu]}} = S/\sqrt{n}.
+SE[\hat\mu] = \widehat{\sqrt{Var[\hat\mu]}} \pause= S/\sqrt{n}
 \]
+\pause
 where $S$ is the sample standard deviation.
 \end{example}
 \end{frame}
@@ -246,6 +256,7 @@ where $S$ is the sample standard deviation.
 \frametitle{Approximate confidence intervals}
 
 If an estimator has an asymptotic normal distribution, 
+\pause
 then we can construct an \alert{approximate} $100(1-a)$\% confidence interval
 for $E[\hat\theta]$ using 
 \[ 
@@ -315,7 +326,7 @@ ggplot(d, aes(z_crit, t_crit, group=n, linetype=n, color=n)) +
   geom_line() +
   geom_abline(intercept = 0, slope = 1, color='gray') +
   coord_fixed() +
-  labs(x = "z critical values", "t critical values") + 
+  labs(x = "z critical values", y = "t critical values") + 
   theme_bw() 
 @
 
@@ -328,22 +339,23 @@ ggplot(d, aes(z_crit, t_crit, group=n, linetype=n, color=n)) +
 \begin{frame}
 \frametitle{Binomial example}
 
-Suppose $Y\sim Bin(n,\theta)$ and we are interested in a confidence interval 
-for $\theta$. \pause
+Suppose $Y\sim Bin(n,\theta)$ and we are interested in an 
+confidence interval for $\theta$. 
+\pause
 An unbiased estimator for $\theta$ is 
 \[ 
 \hat\theta = \frac{Y}{n}
 \]
-since $E[\hat\theta] = \theta$. 
+since $E\left[\hat\theta\right] = \theta$. 
 \pause
 The variance of this estimator \emph{when the data are considered random} is 
 \[
-Var[\hat\theta] = \frac{\theta(1-\theta)}{n}.
+Var\left[\hat\theta\right] = \frac{\theta(1-\theta)}{n}.
 \]
 \pause
 A standard error for this estimator is 
 \[ 
-SE[\hat\theta] = \sqrt{\frac{\hat\theta (1-\hat\theta)}{n}}
+SE\left[\hat\theta\right] = \sqrt{\frac{\hat\theta (1-\hat\theta)}{n}}
 \]
 since $\hat\theta = Y/n$ is a consistent estimator for $\theta$
 
@@ -355,8 +367,8 @@ since $\hat\theta = Y/n$ is a consistent estimator for $\theta$
 
 \scriptsize
 
-If $Y\sim Bin(n,\theta)$, then an approximate $100(1-a)$\% confidence interval
-for $\theta$ is 
+If $Y\sim Bin(n,\theta)$, then an \alert{approximate} $100(1-a)$\% confidence 
+interval for $\theta$ is 
 \[ 
 \hat\theta \pm z_{a/2} \sqrt{\frac{\hat\theta (1-\hat\theta)}{n}}.
 \]
@@ -375,11 +387,12 @@ were engaged at work.
 Thus an approximate 95\% confidence interval for the proportion of all U.S. 
 adults is 
 \[ 
-0.321 \pm 1.96 \times \sqrt{\frac{.321(1-.321)}{1500}} = (0.30, 0.34).
+0.321 \pm 1.96 \times \sqrt{\frac{.321(1-.321)}{1500}} \pause = (0.30, 0.34).
 \]
 \pause
-But the confidence interval actually says nothing about where the true 
-proportion is, nor where we should believe it is. \pause
+But this confidence interval actually says nothing about where the true 
+proportion is, nor where we should believe it is. 
+\pause
 Instead it says something about how many of our intervals would cover the truth
 if we were to repeat this procedure over and over.
 \end{example}
@@ -394,7 +407,7 @@ if we were to repeat this procedure over and over.
 \mbox{Model} & \mbox{Estimator} & \mbox{Confidence Interval} & \mbox{Type} \\
 \hline
 Y_i \ind N(\mu,\sigma^2) & \hat\mu=\overline{y} & \hat\mu \pm t_{n-1,a/2}s/\sqrt{n} & \mbox{exact} \\
-Y_i \ind N(\mu,\sigma^2) &  \hat\mu=\overline{y} & \hat\mu \pm z_{a/2}s/\sqrt{n} & \mbox{approximate} \\
+Y_i \ind N(\mu,\sigma^2) &  \hat\mu=\overline{y} & \hat\mu \pm \quad\,\,\,\, z_{a/2}s/\sqrt{n} & \mbox{approximate} \\
 Y_i \ind Ber(\theta) &  \hat\theta=\overline{y} & \hat{\theta} \pm z_{a/2} \sqrt{\hat\theta(1-\hat\theta)/n} & \mbox{approximate} \\
 Y \sim Bin(n,\theta) &  \hat\theta=y/n & \hat{\theta} \pm z_{a/2} \sqrt{\hat\theta(1-\hat\theta)/n} & \mbox{approximate} \\
 \hline
@@ -409,7 +422,7 @@ generally approximate confidence intervals.
 
 \alert{Approximate} here means that the coverage of the interval procedure will get 
 closer and closer to the desired probability, 
-i.e. 100(1-a)\%, as the sample size gets larger.
+i.e. $100(1-a)$\%, as the sample size gets larger.
 
 
 \end{frame}
