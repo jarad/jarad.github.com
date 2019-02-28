@@ -86,17 +86,18 @@ An experiment is run and the posterior under these different priors are compared
 prior = data.frame(a=c(1,1,100), b=c(100,1,1), 
                    type=factor(c("skeptic","agnostic","believer"),
                                c("skeptic","agnostic","believer")),
-                   n=10^rep(1:6, each=3))
+                   n=10^rep(1:6, each=3)) 
 
 p = 0.9
 d = ddply(prior, .(type, n), function(x) {
   data.frame(xx=seq(0,1,by=0.01)) %>%
     mutate(yy=dbeta(xx, x$a+p*x$n, x$b+(1-p)*x$n))
-})
+}) %>% 
+  mutate(nf = paste0("n=",n))
 
 ggplot(d, aes(x=xx,y=yy,col=type, linetype=type)) + 
   geom_line() +
-  facet_wrap(~n, scales='free') + 
+  facet_wrap(~nf, scales='free') + 
   labs(x=expression(theta), y=expression(paste("p(",theta,"|y)"))) +
   theme_bw() +
   theme(legend.position="bottom")
