@@ -117,22 +117,22 @@ Let $Y_i \stackrel{ind}{\sim} Ber(\theta)$ and
 \begin{frame}
 \frametitle{Bayesian hypothesis testing with all simple hypotheses}
 
-Let $Y\sim p(y|\theta)$ and $H_j: \theta = \theta_j$ for $j=1,\ldots,J$. \pause Treat this as a discrete prior on the $\theta_j$, \pause i.e. 
-\[ P(\theta=\theta_j) = p_j. \]
+Let $Y\sim p(y|\theta)$ and $H_j: \theta = d_j$ for $j=1,\ldots,J$. \pause Treat this as a discrete prior on the $d_j$, \pause i.e. 
+\[ P(\theta=d_j) = p_j. \]
 The posterior is then 
-\[ P(\theta=\theta_j|y) = \frac{p_j p(y|\theta_j)}{\sum_{k=1}^J p_k p(y|\theta_k)} \propto p_j p(y|\theta_j). \]
+\[ P(\theta=d_j|y) = \frac{p_j p(y|d_j)}{\sum_{k=1}^J p_k p(y|\theta_k)} \propto p_j p(y|d_j). \]
 
 \vspace{0.2in} \pause
 
-For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $P(\theta=\theta_j) = 1/11$
-where $\theta_j=j/10$ 
+For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $P(\theta=d_j) = 1/11$
+where $d_j=j/10$ 
 \pause 
 for $j=0,\ldots,10$. 
 \pause 
 The posterior is 
-\[ P(\theta=\theta_j|y) 
-\propto \frac{1}{11} \prod_{i=1}^n (\theta_j)^{y_i}(1-\theta_j)^{1-y_i} \pause 
-= \frac{1}{11} (\theta_j)^{n\overline{y}}(1-\theta_j)^{n(1-\overline{y})} 
+\[ P(\theta=d_j|y) 
+\propto \frac{1}{11} \prod_{i=1}^n (d_j)^{y_i}(1-d_j)^{1-y_i} \pause 
+= \frac{1}{11} (d_j)^{n\overline{y}}(1-d_j)^{n(1-\overline{y})} 
 \]
 \pause
 If $j=0$ ($j=10$), any $y_i=1$ ($y_i=0$) will make the posterior probability 
@@ -169,19 +169,43 @@ ggplot(melt(d, id.var="theta"), aes(x=theta, y=value, color=variable)) +
 \begin{frame}
 \frametitle{Bayesian hypothesis testing with all composite hypotheses}
 
-Let $Y\sim p(y|\theta)$ and $H_j: \theta \in (E_{j-1},E_j]$ for $j=1,\ldots,J$. \pause Just calculate the area under the curve, i.e. 
-\[ P(H_j|y) = \int_{E_{j-1}}^{E_j} p(\theta|y) d\theta \]
+Let $Y\sim p(y|\theta)$ and $H_j: \theta \in (E_{j-1},E_j]$ for $j=1,\ldots,J$. \pause Just calculate the area under the curve, i.e.
+prior probabilities are  
+\[
+P(H_j) = 
+\pause 
+P(E_{j-1} < \theta < E_j) = 
+\pause
+\int_{E_{j-1}}^{E_j} p(\theta) d\theta.
+\]
+\pause
+and posterior probabilities are 
+\[ 
+P(H_j|y) = 
+\pause 
+P(E_{j-1} < \theta < E_j|y) = 
+\pause
+\int_{E_{j-1}}^{E_j} p(\theta|y) d\theta 
+\]
 
 \vspace{0.2in} \pause
 
-For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $E_j = j/10$ \pause for $j=0,\ldots,10$. \pause Now, assume 
-\[ \theta \sim Be(1,1) \pause \quad \mbox{and thus} \quad \theta|y \sim Be(1+n\overline{y},1+n[1-\overline{y}]). \]
+For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $E_j = j/10$ \pause for $j=0,\ldots,10$. 
+\pause 
+Now, assume 
+\[ 
+\theta \sim Be(1,1) \pause
+\pause \quad \mbox{and thus} \quad 
+\theta|y \pause \sim Be(1+n\overline{y},1+n[1-\overline{y}]). \]
+\pause
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Beta example}
+The posterior probabilities are 
 <<discrete_data_continuous_prior, dependson='discrete_data', fig.width=10>>=
 Ej = seq(0,1,by=0.1)
 vlines = data.frame(x=Ej, xend=Ej, y=0, yend = dbeta(Ej,1+sum(y), 1+n-sum(y)))
@@ -251,7 +275,7 @@ On the following slides, the use of this theorem will be indicated by TT.
 	\[ \begin{array}{ll} 
 	\int_{\mathcal{Y}} p(z) dz \pause =  \int_{\mathcal{Y}} \int_{\Theta} p(z|\theta) p(\theta) d\theta dz \pause\stackrel{TT}{=}  \int_{\Theta} \int_{\mathcal{Y}} p(z|\theta) dz \, p(\theta) d\theta \pause= \int_{\Theta} p(\theta) d\theta \pause = 1 
 	\end{array} \]
-	\pause thus $p(y)$ is finite except on a set of measure zero, \pause i.e. $p(y)$ is almost always proper. 
+	\pause thus $p(y)$ is finite except on a set of measure zero, \pause i.e. $p(\theta|y)$ is almost always proper. 
 	\end{proof}
 }
 
@@ -261,13 +285,17 @@ On the following slides, the use of this theorem will be indicated by TT.
 \begin{frame}
 \frametitle{Proper prior predictive distributions}
 
-In the previous derivations, we showed that 
-\[ \sum_{z\in \mathcal{Y}} p(z) = 1 \qquad \mbox{and} \qquad \int_\mathcal{Y} p(z) dz = 1 \]
+In the previous derivations when the prior is proper, we showed that 
+\[ \sum_{z\in \mathcal{Y}} p(z) = 1 
+\qquad \mbox{and} \qquad 
+\int_\mathcal{Y} p(z) dz = 1 \]
 for discrete and continuous data, respectively. 
 
 \vspace{0.2in} \pause
 
-Thus, when the prior is proper, the prior predictive distribution is also proper. 
+\begin{corollary}
+When the prior is proper, the prior predictive distribution is also proper. 
+\end{corollary}
 
 \end{frame}
 
@@ -386,7 +414,7 @@ Thus, in some sense $a,b \to 0$ puts minimal prior data into the analysis.
 
 \pause 
 
-\[ BF(H_0:H_1) = \frac{0.5^n Be(e,e)}{Be(e+n\overline{y},b+n-n\overline{y})} \stackrel{e\to 0}{\longrightarrow} \infty \quad \mbox{for any } \overline{y}\in (0,1)\]
+\[ BF(H_0:H_1) = \frac{0.5^n Be(e,e)}{Be(e+n\overline{y},e+n-n\overline{y})} \stackrel{e\to 0}{\longrightarrow} \infty \quad \mbox{for any } \overline{y}\in (0,1)\]
 since $Be(e,e) \stackrel{e\to 0}{\longrightarrow} \infty$.
 
 \end{frame}
