@@ -41,6 +41,7 @@ set.seed(1)
 \item Review of formal Bayesian hypothesis testing
 \item Likelihood ratio tests
 \item Jeffrey-Lindley paradox
+\item $p$-value interpretation
 \end{itemize}
 
 \end{frame}
@@ -60,10 +61,10 @@ set.seed(1)
   \pause 
   where $p(\theta|H_1)$ is the prior distribution for $\theta$ under the alternative hypothesis. \pause Thus the Bayes Factor measures the \alert{predictive ability} of the two Bayesian models. \pause Both models say $p(y|\theta)$ are the data model if we know $\theta$, but 
   \begin{enumerate}
-  \item Model 0 says $\theta=\theta_0$ \pause and thus $p(y|\theta_0)$ is our predictive distribution for $y$ \pause while
+  \item Model 0 says $\theta=\theta_0$ \pause and thus $p(y|\theta_0)$ is our predictive distribution for $y$ under model $H_0$ \pause while
   \item Model 1 says $p(\theta|H_1)$ is our uncertainty about $\theta$ \pause and thus 
   \[ p(y|H_1) = \int p(y|\theta)p(\theta|H_1) d\theta \]
-  is our predictive distribution for $y$. 
+  is our predictive distribution for $y$ under model $H_1$. 
   \end{enumerate}
 \end{frame}
 
@@ -118,8 +119,8 @@ legend("topright", c('H0','H1'), lwd=2, lty=1:2, col=1:2)
    \]
    \pause and 
    $-2\log \lambda(y) \to \chi^2_1$ as $n\to\infty$ so 
-   \[ pvalue \approx P(\chi^2_1>-2\log \lambda(y)). \]
-   \pause If $pvalue < \alpha$, then we reject $H_0$ at level $\alpha$. \pause Typically $\alpha=0.05$. 
+   \[ \mbox{$p$-value} \approx P(\chi^2_1>-2\log \lambda(y)). \]
+   \pause If $p$-value$ < a$, then we reject $H_0$ at significance level $a$. \pause Typically $a=0.05$. 
 }
 
 \begin{frame}[fragile]
@@ -159,9 +160,9 @@ ggplot(rbind(d2[,-3],d3[,-3]), aes(x=ybar, y=statistic, col=factor(n))) +
 
 \section{Jeffrey-Lindley paradox}
 \begin{frame}
-\frametitle{Do pvalues and posterior probabilities agree?}
-Suppose $n=10,000$ and $y=4,900$, \pause then the pvalue is 
-\[ pvalue \approx P(\chi^2_1>-2 \log(0.135)) = 0.045 \]
+\frametitle{Do $p$-values and posterior probabilities agree?}
+Suppose $n=10,000$ and $y=4,900$, \pause then the $p$-value is 
+\[ \mbox{$p$-value} \approx P(\chi^2_1>-2 \log(0.135)) = 0.045 \]
 \pause so we would reject $H_0$ at the 0.05 level. 
 
 \vspace{0.2in} \pause
@@ -172,7 +173,7 @@ The posterior probability of $H_0$ is
 
 \vspace{0.2in} \pause 
 
-It appears the Bayesian and LRT pvalue completely disagree!
+It appears the Bayesian and LRT $p$-value completely disagree!
 \end{frame}
 
 \begin{frame}[fragile]
@@ -194,7 +195,7 @@ print(p)
   The \alert{Jeffrey-Lindley Paradox} concerns a situation when comparing two hypotheses $H_0$ and $H_1$ given data $y$ \pause and find
   \begin{itemize}[<+->]\small
   \item a frequentist test result is significant leading to rejection of $H_0$, but
-  \item the posterior probability of $H_0$ is high. 
+  \item our posterior belief in $H_0$ being true is high. 
   \end{itemize}
   \end{definition}
   
@@ -205,7 +206,7 @@ print(p)
   \item the effect size is small, 
   \item $n$ is large, 
   \item $H_0$ is relatively precise, 
-  \item $H_1$ is relative diffuse, and
+  \item $H_1$ is relatively diffuse, and
   \item the prior model odds is $\approx 1$. 
   \end{itemize}
 }
@@ -223,7 +224,7 @@ print(p)
   \item The LRT chooses the best possible alternative value. 
   \item The Bayesian test penalizes for vagueness in the prior.
   \item The LRT can be interpreted as a Bayesian point mass prior exactly at the MLE. 
-  \item Generally, pvalues provide a measure of lack-of-fit of the null model. 
+  \item Generally, $p$-values provide a measure of lack-of-fit of the data to the null model. 
   \item Bayesian tests compare predictive performance of two Bayesian models (model+prior). 
   \end{itemize}
 }
@@ -235,36 +236,36 @@ print(p)
 Let $y\sim N(\theta,1)$ and we are testing
 \[ H_0:\theta=0 \qquad \mbox{vs} \qquad H_1:\theta\ne 0 \]
 \pause
-We can compute a two-sided pvalue via
-\[ \mbox{pvalue} = 2\mathrm{\Phi}(-|y|) \]
+We can compute a two-sided $p$-value via
+\[ \mbox{$p$-value} = 2\mathrm{\Phi}(-|y|) \]
 where $\mathrm{\Phi}(\cdot)$ is the cumulative distribution function for a standard normal. 
 
 \vspace{0.2in} \pause
 
-Typically, we set our Type I error rate at level $\alpha$, i.e. 
-\[ P(\mbox{reject } H_0|H_0 \mbox{ true}) = \alpha. \]
+Typically, we set our Type I error rate at level $a$, i.e. 
+\[ P(\mbox{reject } H_0|H_0 \mbox{ true}) = a. \]
 \pause
-But, if the pvalue is less than $\alpha$, we should be interested in 
+But, if the $p$-value is less than $a$, we should be interested in 
 \[ P(H_0 \mbox{ true}|\mbox{reject } H_0). \]
 \end{frame}
 
-
+\section{$p$-value interpretation}
 \begin{frame}[fragile]
-\frametitle{Pvalue interpretation}
+\frametitle{$p$-value interpretation}
 
 Let $y\sim N(\theta,1)$ and we are testing
 \[ H_0:\theta=0 \qquad \mbox{vs} \qquad H_1:\theta\ne 0 \]
 
 For the following activity, you need to tell me 
 \begin{enumerate}
-\item the observed pvalue, 
+\item the observed $p$-value, 
 \item the relative frequencies of null and alternative hypotheses, and
 \item the distribution for $\theta$ under the alternative.
 \end{enumerate}
 
 \vspace{0.2in} \pause
 
-Then this pvalue app below will calculate (via simulation) the probability the null hypothesis is true.  
+Then this $p$-value app below will calculate (via simulation) the probability the null hypothesis is true.  
 
 <<echo=TRUE, eval=FALSE>>=
 shiny::runGitHub('jarad/pvalue')
@@ -274,19 +275,19 @@ shiny::runGitHub('jarad/pvalue')
 
 
 \begin{frame}
-\frametitle{Pvalue app approach}
+\frametitle{$p$-value app approach}
 
 The idea is that a scientist performs a series of experiments. \pause For each experiment, 
 \begin{itemize}[<+->]
 \item whether $H_0$ or $H_1$ is true is randomly determined,
 \item $\theta$ is sampled according to which hypothesis is true, and
-\item the pvalue is calculated. 
+\item the $p$-value is calculated. 
 \end{itemize}
 
 \vspace{0.2in} \pause
 
-This process is repeated until a pvalue of the desired value is achieved, e.g. pvalue=0.05, \pause and the true hypothesis is recorded. \pause Thus, 
-\[ P(H_0 \mbox{ true }|\mbox{ pvalue }=0.05) \approx \frac{1}{K} \sum_{k=1}^K \mathrm{I}(H_0 \mbox{ true }|\mbox{ pvalue }\approx 0.05).  \]
+This process is repeated until a $p$-value of the desired value is achieved, e.g. $p$-value=0.05, \pause and the true hypothesis is recorded. \pause Thus, 
+\[ P(H_0 \mbox{ true }|\mbox{ $p$-value }=0.05) \approx \frac{1}{K} \sum_{k=1}^K \mathrm{I}(H_0 \mbox{ true }|\mbox{ $p$-value }\approx 0.05).  \]
 
 \vspace{0.2in} \pause
 
@@ -299,7 +300,7 @@ Thus, there is nothing Bayesian happening here except that the probability being
 \frametitle{Prosecutor's Fallacy}
 
 It is common for those using statistics to equate the following 
-\[ \mbox{pvalue} \stackrel{?}{=} P(\mbox{data}|H_0\mbox{ true}) \pause \ne P(H_0\mbox{ true}|\mbox{data}). \]
+\[ \mbox{$p$-value} \stackrel{?}{\approx} P(\mbox{data}|H_0\mbox{ true}) \pause \ne P(H_0\mbox{ true}|\mbox{data}). \]
 \pause 
 but we can use Bayes rule to show us that these probabilities cannot be equated
 \[ p(H_0|y) = \frac{p(y|H_0)p(H_0)}{p(y)} \pause = \frac{p(y|H_0)p(H_0)}{p(y|H_1)p(H_1)+p(y|H_1)p(H_1)} \]
@@ -308,5 +309,27 @@ This situation is common enough that it is called \href{http://en.wikipedia.org/
 
 \end{frame}
 
+
+
+\begin{frame}
+\frametitle{ASA Statement on $p$-values}
+
+\url{https://amstat.tandfonline.com/doi/abs/10.1080/00031305.2016.1154108}
+
+Principles:
+\begin{enumerate}[<+->]
+\item $P$-values can indicate how incompatible the data are with a specified
+statistical model[, the model associated with the null hypothesis.]
+\item $P$-values do not measure the probability the studied hypothesis is true,
+or the probability that the data were produced by random chance alone.
+\item Scientific conclusions and business or policy decisions should not be 
+based solely on whether a $p$-value passes a specific threshold.
+\item Proper inference requires full reporting and transparency.
+\item A $p$-value, or statistical significance, does not measure the size of an
+effect or the importance of the result.
+\item By itself, a $p$-value does not provide a good measure of evidence 
+regarding a model or hypothesis.
+\end{enumerate}
+\end{frame}
 
 \end{document}
