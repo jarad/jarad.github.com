@@ -23,9 +23,7 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE, cache=FALSE>>=
-library("dplyr")
-library("tidyr")
-library("ggplot2")
+library("tidyverse")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -80,7 +78,7 @@ and you are interested in the relationship between $\mu_1$ and $\mu_2$.
 We can perform the following statistical procedures:
 \begin{itemize}
 \item Frequentist: based on distribution of
-\[\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}}\]
+\[\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}}\]
 where $S_g^2$ is the (random) sample variance of group $g$.
 \pause
   \begin{itemize}
@@ -116,9 +114,9 @@ set.seed(20170301)
 
 # Using the unknown population means and standard deviations
 d <- bind_rows(
-  data_frame(process = "P1", sensitivity = rnorm(22,  7.8, 2.3)),
-  data_frame(process = "P2", sensitivity = rnorm(34,  9.3, 2.3)),
-  data_frame(process = "P3", sensitivity = rnorm( 7, 10.0, 2.3)))
+  tibble(process = "P1", sensitivity = rnorm(22,  7.8, 2.3)),
+  tibble(process = "P2", sensitivity = rnorm(34,  9.3, 2.3)),
+  tibble(process = "P3", sensitivity = rnorm( 7, 10.0, 2.3)))
 
 # readr::write_csv(d, path="sensitivity.csv")
 @
@@ -162,7 +160,7 @@ sm
 
 Analyses are based on the distribution of
 \[
-\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}}
+\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}}
 \uncover<3->{\sim t_{df}(0,1).}
 \]
 \pause
@@ -231,11 +229,11 @@ Simulations:
 <<mu_draws, dependson="sm", echo=TRUE>>=
 nr = 1e5
 sims <- bind_rows(
-  data_frame(
+  tibble(
     rep = 1:nr,
     process = "P1",
     mu = sm$mean[1] + rt(nr, df = sm$n[1]-1) * sm$sd[1] / sqrt(sm$n[1])),
-  data_frame(
+  tibble(
     rep = 1:nr,
     process = "P2",
     mu = sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2]))
@@ -421,7 +419,7 @@ and that a draw for $\mu_g$ can be obtained by taking
 <<mu3_draws, dependson="summary2", echo=TRUE>>=
 sims <- bind_rows(
   sims, # groups 1 and 2
-  data_frame(
+  tibble(
     rep = 1:nr,
     process = "P3",
     mu = sm$mean[3] + rt(nr, df = sm$n[3]-1) * sm$sd[3] / sqrt(sm$n[3]))
