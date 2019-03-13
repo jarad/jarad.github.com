@@ -183,6 +183,30 @@ ggplot(Telomeres, aes(x=years, y=telomere.length)) +
 	\end{array} \]
 }
 
+
+\begin{frame}[fragile]
+\frametitle{}
+<<residual_plot, dependson="telomere_data", echo=FALSE>>=
+m <- lm(telomere.length ~ years, data = Telomeres)
+Telomeres <- Telomeres %>%
+  mutate(predict = predict(m),
+         residuals = residuals(m),
+         jittered_years = jitter(years))
+
+ggplot(Telomeres, 
+       aes(x = jittered_years, 
+           y = telomere.length)) +
+  geom_jitter(height = 0) + 
+  geom_segment(aes(xend = jittered_years, yend = predict), color = "red") + 
+  stat_smooth(method = "lm", se = FALSE) + 
+  labs(main = "Telomere length vs years post diagnosis",
+    x    = "Years post diagnosis (jittered)",
+    y    = "Telomere length") + 
+  theme_bw()
+@
+\end{frame}
+
+
 \subsection{Standard errors}
 \frame{\frametitle{}
 \small
@@ -209,158 +233,199 @@ The coefficient of determination ($R^2$) is the proportion of the total response
 }
 
 
-\begin{frame}[fragile]
-\frametitle{}
-<<residual_plot, dependson="telomere_data", echo=FALSE>>=
-m <- lm(telomere.length ~ years, data = Telomeres)
-Telomeres <- Telomeres %>%
-  mutate(predict = predict(m),
-         residuals = residuals(m),
-         jittered_years = jitter(years))
 
-ggplot(Telomeres, 
-       aes(x = jittered_years, 
-           y = telomere.length)) +
-  geom_jitter(height = 0) + 
-  geom_segment(aes(xend = jittered_years, yend = predict), color = "red") + 
-  stat_smooth(method = "lm", se = FALSE) + 
-  labs(main = "Telomere length vs years post diagnosis",
-    x    = "Years post diagnosis (jittered)",
-    y    = "Telomere length") + 
-  theme_bw()
-@
+
+\subsection{Pvalues and confidence intervals}
+\begin{frame}
+\frametitle{Pvalues and confidence interval}
+We can construct $100(1-a)\%$ two-sided confidence intervals via
+\[ 
+\hat{\beta}_0 \pm t_{n-2,1-a/2} SE(\hat\beta_0) 
+\pause
+\qquad \mbox{and} \qquad 
+\hat{\beta}_1 \pm t_{n-2,1-a/2} SE(\hat\beta_1).  
+\]
+
+\pause
+
+We can compute one-sided pvalues, 
+e.g. $H_0:\beta_0\ge b_0$ has
+\[ 
+\mbox{\pvalue{}} = 
+P\left(T_{n-2}<\frac{\hat{\beta_0}-b_0}{SE(\hat\beta_0)}\right) 
+\]
+\pause
+and $H_0:\beta_1\ge b_1$ has
+\[
+\mbox{\pvalue{}} = 
+P\left(T_{n-2}<\frac{\hat{\beta_1}-b_1}{SE(\hat\beta_1)}\right). 
+\]
 \end{frame}
 
 
-\subsection{Pvalues and confidence/credible intervals}
-\frame{\frametitle{Pvalues and confidence interval}
-	We can compute two-sided pvalues, e.g. $H_0:\beta_0=0$ and $H_0:\beta_1=0$, via
-	\[ 2P\left(T_{n-2}<-\left|\frac{\hat{\beta_0}}{SE(\beta_0)}\right|\right) \qquad \mbox{and} \qquad 2P\left(T_{n-2}<-\left|\frac{\hat{\beta_1}}{SE(\beta_1)}\right|\right) \]
-	\pause These test the null hypothesis that the corresponding parameter is zero.
-	
-	\vspace{0.4in} \pause 
-	
-	We can construct $100(1-a)\%$ two-sided confidence/credible intervals via
-	\[ \hat{\beta}_0 \pm t_{n-2,1-a/2} SE(\beta_0) \qquad \mbox{and} \qquad 
-	\hat{\beta}_1 \pm t_{n-2,1-a/2} SE(\beta_1)  \]
-}
+\begin{frame}
+\frametitle{Posterior distributions, credible intervals, and posterior probabilities}
+
+\small
+
+If we assume the default prior $p(\beta_0,\beta_1,\sigma^2)\propto 1/\sigma^2$,
+then the marginal posteriors for the mean parameters are 
+\[ 
+\beta_0|y \sim t_{n-2}(\hat\beta_0, SE(\hat\beta_0)^2) 
+\qquad\mbox{and}\qquad
+\beta_1|y \sim t_{n-2}(\hat\beta_1, SE(\hat\beta_1)^2).
+\]
+\pause
+We can construct $100(1-a)\%$ two-sided confidence/credible intervals via
+\[ 
+\hat{\beta}_0 \pm t_{n-2,1-a/2} SE(\hat\beta_0) 
+\qquad \mbox{and} \qquad 
+\hat{\beta}_1 \pm t_{n-2,1-a/2} SE(\hat\beta_1).  
+\]
+\pause
+We can compute posterior probabilities via 
+\[ \begin{array}{rl}
+P(\beta_0<b_0|y) &= P\left(T_{n-2}<\frac{\hat{\beta_0}-b_0}{SE(\hat\beta_0)}\right) \\
+P(\beta_1<b_1|y) &= P\left(T_{n-2}<\frac{\hat{\beta_1}-b_1}{SE(\hat\beta_1)}\right)
+\end{array} \]
+\pause
+which are exactly the one-sided \pvalue{}s.
+\end{frame}
 
 
 \subsection{by hand}
 \begin{frame}[fragile]
 \frametitle{Calculations ``by hand'' in R}
 <<hand_calculations, dependson="telomere_data", echo=TRUE>>=
-sm <- Telomeres %>% 
-  summarize(n    = n(), 
-            Xbar = mean(years), 
-            Ybar = mean(telomere.length),
-            s_X  = sd(years), 
-            s_Y  = sd(telomere.length), 
-            r_XY = cor(telomere.length,years)) 
-sm
-@
+Telomeres = abd::Telomeres
 
-<<hand_calculations2, dependson="hand_calculations", echo=FALSE>>=
-SXX <- (sm$n-1)*sm$s_X^2
-SYY <- (sm$n-1)*sm$s_Y^2
-SXY <- (sm$n-1)*sm$s_X*sm$s_Y*sm$r_XY
+n <- nrow(Telomeres)
+Xbar <- mean(Telomeres$years)
+Ybar <- mean(Telomeres$telomere.length)
+s_X <- sd(Telomeres$years)
+s_Y <- sd(Telomeres$telomere.length)
+r_XY <- cor(Telomeres$telomere.length, Telomeres$years)
+
+SXX <- (n-1)*s_X^2
+SYY <- (n-1)*s_Y^2
+SXY <- (n-1)*s_X*s_Y*r_XY
 beta1 <- SXY/SXX
-beta0 <- sm$Ybar - beta1 * sm$Xbar
-R2 <- sm$r_XY^2
+beta0 <- Ybar - beta1 * Xbar
+R2 <- r_XY^2
 SSE <- SYY*(1-R2)
-sigma2 <- SSE/(sm$n-2)
+sigma2 <- SSE/(n-2)
 sigma <- sqrt(sigma2)
-SE_beta0 <- sigma*sqrt(1/sm$n + sm$Xbar^2/((sm$n-1)*sm$s_X^2))
-SE_beta1 <- sigma*sqrt(                 1/((sm$n-1)*sm$s_X^2))
-T0 <- -abs(beta0/SE_beta0)
-T1 <- -abs(beta1/SE_beta1)
+SE_beta0 <- sigma*sqrt(1/n + Xbar^2/((n-1)*s_X^2))
+SE_beta1 <- sigma*sqrt(                 1/((n-1)*s_X^2))
 @
-
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Calculations ``by hand'' in R (continued)}
-\tiny 
+<<pvalues_and_CIs, dependson="hand_calculations", echo=TRUE>>=
+# 95% CI for beta0
+beta0 + c(-1,1)*qt(.975, df = n-1) * SE_beta0
+
+# 95% CI for beta1
+beta1 + c(-1,1)*qt(.975, df = n-1) * SE_beta1
+
+# pvalue for H0: beta0 >= 0 and P(beta0<0|y)
+pt(beta0/SE_beta0, df = n-1)
+
+# pvalue for H1: beta1 >= 0 and P(beta1<0|y)
+pt(beta1/SE_beta1, df = n-1)
+@
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Calculations by hand}
+\tiny
 
 \[ \begin{array}{rl}
 SXX &
-= (n-1) s_x^2 
-= (\Sexpr{sm$n}-1)\times \Sexpr{sm$s_X}^2 
-= \Sexpr{(sm$n-1)*sm$s_X^2} \\
+= (n-1) s_x^2
+= (\Sexpr{n}-1)\times \Sexpr{s_X}^2
+= \Sexpr{(n-1)*s_X^2} \\
 
 SYY &
-= (n-1) s_Y^2 
-= (\Sexpr{sm$n}-1)\times \Sexpr{sm$s_Y}^2 
-= \Sexpr{(sm$n-1)*sm$s_Y^2} \\
+= (n-1) s_Y^2
+= (\Sexpr{n}-1)\times \Sexpr{s_Y}^2
+= \Sexpr{(n-1)*s_Y^2} \\
 
 SXY &
-= (n-1) s_X s_Y r_{XY} 
-= (\Sexpr{sm$n}-1) \times \Sexpr{sm$s_X} \times \Sexpr{sm$s_Y} \times \Sexpr{sm$r_XY} 
-= \Sexpr{(sm$n-1)*sm$s_X*sm$s_Y*sm$r_XY} \\
+= (n-1) s_X s_Y r_{XY}
+= (\Sexpr{n}-1) \times \Sexpr{s_X} \times \Sexpr{s_Y} \times \Sexpr{r_XY}
+= \Sexpr{(n-1)*s_X*s_Y*r_XY} \\
 
 \hat{\beta}_1 &
-= SXY/SXX 
-= \Sexpr{SXY}/\Sexpr{SXX} 
+= SXY/SXX
+= \Sexpr{SXY}/\Sexpr{SXX}
 = \Sexpr{beta1} \\
 
 \hat{\beta}_0 &
-= \overline{Y}-\hat{\beta}_1\overline{X} 
-= \Sexpr{sm$Ybar} - (\Sexpr{beta1})\times \Sexpr{sm$Xbar} 
+= \overline{Y}-\hat{\beta}_1\overline{X}
+= \Sexpr{Ybar} - (\Sexpr{beta1})\times \Sexpr{Xbar}
 = \Sexpr{beta0} \\
 
 R^2 &
-= r_{XY}^2 
-= (\Sexpr{sm$r_XY})^2 
+= r_{XY}^2
+= (\Sexpr{r_XY})^2
 = \Sexpr{R2} \\
 
 SSE &
-= SYY(1-R^2) 
-= \Sexpr{SYY}(1-\Sexpr{R2}) 
+= SYY(1-R^2)
+= \Sexpr{SYY}(1-\Sexpr{R2})
 = \Sexpr{SSE} \\
 
 \hat{\sigma}^2 &
-= SSE/(n-2) 
-= \Sexpr{SSE}/(\Sexpr{sm$n}-2)
+= SSE/(n-2)
+= \Sexpr{SSE}/(\Sexpr{n}-2)
 = \Sexpr{sigma2} \\
 
 \hat{\sigma} &
-= \sqrt{\hat{\sigma}^2} 
-= \sqrt{\Sexpr{sigma2}} 
+= \sqrt{\hat{\sigma}^2}
+= \sqrt{\Sexpr{sigma2}}
 = \Sexpr{sigma} \\
 
 SE(\hat{\beta}_0) &
-= \hat{\sigma}\sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_x^2}} 
-=  \Sexpr{sigma} \sqrt{\frac{1}{\Sexpr{sm$n}} 
-  + \frac{\Sexpr{sm$Xbar}^2}{(\Sexpr{sm$n}-1)*\Sexpr{sm$s_X}^2}} 
+= \hat{\sigma}\sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_x^2}}
+=  \Sexpr{sigma} \sqrt{\frac{1}{\Sexpr{n}}
+  + \frac{\Sexpr{Xbar}^2}{(\Sexpr{n}-1)*\Sexpr{s_X}^2}}
 = \Sexpr{SE_beta0} \\
 
 SE(\hat{\beta}_1) &
-= \hat{\sigma}\sqrt{\frac{1}{(n-1)s_x^2}} 
-=  \Sexpr{sigma} \sqrt{\frac{1}{(\Sexpr{sm$n}-1)*\Sexpr{sm$s_X}^2}} 
+= \hat{\sigma}\sqrt{\frac{1}{(n-1)s_x^2}}
+=  \Sexpr{sigma} \sqrt{\frac{1}{(\Sexpr{n}-1)*\Sexpr{s_X}^2}}
 = \Sexpr{SE_beta1} \\
 
 p_{H_0:\beta_0=0} &
-= 2P\left(T_{n-2} < -\left| \frac{\hat\beta_0}{SE(\hat\beta_0)} \right|\right) 
-= 2P(t_{\Sexpr{sm$n-2}} < \Sexpr{T0}) 
-= \Sexpr{2*pt(T0,sm$n-2)} \\
+= 2P\left(T_{n-2} < -\left| \frac{\hat\beta_0}{SE(\hat\beta_0)} \right|\right)
+= 2P(t_{\Sexpr{n-2}} < \Sexpr{-abs(beta0/SE_beta0)})
+= \Sexpr{2*pt(-abs(beta0/SE_beta0),n-2)} \\
 
 p_{H_0:\beta_1=0} &
-= 2P\left(T_{n-2} < -\left| \frac{\hat\beta_1}{SE(\hat\beta_1)} \right|\right) 
-= 2P(t_{\Sexpr{sm$n-2}} < \Sexpr{T1}) 
-= \Sexpr{2*pt(T1,sm$n-2)} \\
+= 2P\left(T_{n-2} < -\left| \frac{\hat\beta_1}{SE(\hat\beta_1)} \right|\right)
+= 2P(t_{\Sexpr{n-2}} < \Sexpr{-abs(beta1/SE_beta1)})
+= \Sexpr{2*pt(-abs(beta1/SE_beta1),n-2)} \\
 
 CI_{95\%\, \beta_0} &
 = \hat{\beta}_0 \pm t_{n-2,1-a/2} SE(\hat{\beta}_0) \\
-&= \Sexpr{beta0} \pm \Sexpr{qt(.975,sm$n-2)}\times  \Sexpr{SE_beta0} 
-= (\Sexpr{beta0 - qt(.975,sm$n-2) * SE_beta0}, 
-   \Sexpr{beta0 + qt(.975,sm$n-2) * SE_beta0}) \\
+&= \Sexpr{beta0} \pm \Sexpr{qt(.975,n-2)}\times  \Sexpr{SE_beta0}
+= (\Sexpr{beta0 - qt(.975,n-2) * SE_beta0},
+   \Sexpr{beta0 + qt(.975,n-2) * SE_beta0}) \\
 
 CI_{95\%\, \beta_1} &
 = \hat{\beta}_1 \pm t_{n-2,1-a/2} SE(\hat{\beta}_1) \\
-&= \Sexpr{beta1} \pm \Sexpr{qt(.975,sm$n-2)}\times  \Sexpr{SE_beta1} 
-= (\Sexpr{beta1 - qt(.975,sm$n-2) * SE_beta1}, 
-   \Sexpr{beta1 + qt(.975,sm$n-2) * SE_beta1}) \\
+&= \Sexpr{beta1} \pm \Sexpr{qt(.975,n-2)}\times  \Sexpr{SE_beta1}
+= (\Sexpr{beta1 - qt(.975,n-2) * SE_beta1},
+   \Sexpr{beta1 + qt(.975,n-2) * SE_beta1}) \\
 \end{array} \]
 \end{frame}
 
@@ -376,11 +441,45 @@ confint(m)
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Convert between \pvalue{}s and posterior probabilities}
+
+\small
+
+For a generic mean parameter $\beta$, you can convert between one-sided and 
+two-sided \pvalue{}s as well as posterior probabilities using the following
+formulas.
+
+\vspace{0.1in} \pause
+
+If $\hat\beta>0$ and $p$ is the \pvalue{} for the test $H_0:\beta = 0$, 
+\pause
+then 
+\begin{itemize}[<+->]
+\item $\phantom{1-{}}p/2$ is the \pvalue{} for the test $H_0:\beta\le 0$,
+\item $1-p/2$  is the \pvalue{} for the test $H_0:\beta\ge 0$,
+\item $\phantom{1-{}}p/2 = P(\beta<0|y)$, and
+\item $1-p/2 = P(\beta>0|y)$
+\end{itemize}
+
+\pause
+If $\hat\beta<0$ and $p$ is the \pvalue{} for the test $H_0:\beta= 0$, 
+\pause
+Then 
+\begin{itemize}[<+->]
+\item $1-p/2$ is the \pvalue{} for the test $H_0:\beta\le 0$,
+\item $\phantom{1-{}}p/2$  is the \pvalue{} for the test $H_0:\beta\ge 0$,
+\item $1-p/2 = P(\beta<0|y)$, and
+\item $\phantom{1-{}}p/2 = P(\beta>0|y)$.
+\end{itemize}
+\end{frame}
+
+
 \subsection{Conclusion}
 \begin{frame}
 \frametitle{Conclusion}
 
-Telomere length at the time of diagnosis of a child's chronic illness is estimated to be 1.37 with a 95\% confidence interval of (1.25, 1.48). \pause For each year since diagnosis, the telomere length decreases by 0.026 with a 95\% confidence interval of (0.008, 0.045) \alert{on average}. \pause The proportional of variability in telomere length described by years since diagnosis is 18.5\%. 
+Telomere length at the time of diagnosis of a child's chronic illness is estimated to be 1.37 with a 95\% confidence interval of (1.25, 1.48). \pause For each year since diagnosis, the telomere length decreases by 0.026 with a 95\% confidence interval of (0.008, 0.045) \alert{on average}. \pause The proportion of variability in telomere length described by years since diagnosis is 18.5\%. 
 
 \vspace{0.2in} \pause
 
