@@ -1,0 +1,397 @@
+\documentclass[12pt,fleqn]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 587C}
+\newcommand{\semester}{Spring 2019}
+\newcommand{\exam}{Exam II}
+
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+
+\textbf{Instructions:}\\
+\begin{itemize}
+\item {\large Full credit will be given only if you show your work.}
+\item {\large The questions are not necessarily ordered from easiest to hardest.}
+\item {\large You are allowed to use any resource except aid from another individual.}
+\item {\large Aid from another individual, will automatically earn you a 0.}
+\end{itemize}
+
+
+\newpage
+\begin{enumerate}
+
+\item SpaceX has recovered the first stage booster of its Falcon 9 rocket in 
+35 of 42 attempts. Assume the number of successes have a binomial distribution 
+with an unknown true probability of success.  
+For the following questions, assume the default prior for 
+the true probability of success. 
+(4 points each)
+
+\begin{enumerate}
+\item What is the posterior distribution for the true probability of success? 
+
+\begin{answer}
+<<>>=
+a = b = 1
+y = 35
+n = 42
+@
+The posterior is $\theta|y \sim Be(\Sexpr{a+y},\Sexpr{b+n-y})$.
+\end{answer}
+\vfill
+
+\item What is the posterior expectation for the true probability of success? 
+
+\begin{answer}
+The posterior expectation is 
+\[ E[\theta|y] = \frac{a+y}{a+b+n} = 
+\frac{\Sexpr{a+y}}{\Sexpr{a+b+n}} = 
+\Sexpr{(a+y)/(a+b+n)}.  \]
+\end{answer}
+\vfill
+
+\item Provide an equal-tail 90\% credible interval for the true probability of 
+success.
+
+\begin{answer}
+<<>>=
+qbeta(c(.05,.95), a+y, b+n-y)
+@
+\end{answer}
+\vfill
+
+\item Calculate the probability the true probability of success is greater than 0.9. 
+
+\begin{answer}
+<<>>=
+1-pbeta(0.9, a+y, b+n-y)
+@
+\end{answer}
+\vfill
+
+\item Are these data a random sample from a population? Explain why or why not.
+
+\begin{answer}
+No, these data are not a random sample from a population. From one perspective,
+they are the entire population. 
+\end{answer}
+\vfill
+\vfill
+
+
+\end{enumerate}
+
+
+\newpage
+\item During the spring, the city of Ames flushes all of its fire hydrants in
+order to remove sediment from the water line leading to the fire hydrant.
+To understand how often the fire hydrants should be flushed, the city selects a
+random sample of the fire hydrants in Ames and measures the amount of dry
+sediment removed when performing the flush.
+In 16 hydrants, the city found a sample average of 2 kilograms (kg) of dry sediment
+and a sample standard deviation of 1.5 kg.
+For the following questions, assume the dry sediment measurements are
+independent and normally distributed with mean $\mu$ and variance $\sigma^2$ and
+assume the default prior for the mean and variance.
+(4 points each)
+
+\begin{answer}
+<<>>=
+n = 16
+ybar = 2
+s = 1.5
+@
+\end{answer}
+
+\begin{enumerate}
+\item State the marginal posterior for the population variance. 
+
+\begin{answer}
+$\sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{s^2}{2} \right) \stackrel{d}{=}
+IG\left(\Sexpr{(n-1)/2}, \Sexpr{s^2/2} \right)$
+\end{answer}
+\vfill
+
+\item State the marginal posterior for the population mean. 
+
+\begin{answer}
+$\mu|y \sim t_{n-1}(\overline{y},s^2/n) \stackrel{d}{=}
+t_{\Sexpr{n-1}}(\Sexpr{ybar}, \Sexpr{s^2/n})$
+\end{answer}
+\vfill
+
+\item Provide an 80\% credible interval for the population mean. 
+
+\begin{answer}
+<<>>=
+a <- 0.2
+ybar + c(-1,1)*qt(1-a/2, df = n-1)*s/sqrt(n)
+@
+\end{answer}
+\vfill
+
+\item Let $\tilde{Y}$ be the amount of dry sediment in an unmeasured fire
+hydrant water line. The predictive distribution for $\tilde{Y}$ is
+$t_{n-1}(\overline{y}, s^2[1+1/n])$. Determine the probability this amount will
+be less than 3 kg.
+
+\begin{answer}
+\[
+P\left(\tilde{Y} < 3|y\right) = 
+P\left(\left.\frac{\tilde{Y}-\overline{y}}{s\sqrt{1+1/n}} < \frac{3-\overline{y}}{s\sqrt{1+1/n}} \right| y\right) =
+P\left(T_{n-1} < \frac{3-\overline{y}}{s\sqrt{1+1/n}} \right)
+\]
+<<>>=
+pt((3-ybar)/(s*sqrt(1+1/n)), df = n-1)
+@
+\end{answer}
+\vfill
+\vfill
+
+\item Explain why the normal distribution may not be a very good model for these
+data. 
+
+\begin{answer}
+With the observed mean and standard deviation there is a relatively high
+probability of having negative amounts of dry sediment, e.g.
+\[
+P\left(\tilde{Y} < 0\right) = \Sexpr{pt((0-ybar)/(s*sqrt(1+1/n)), df = n-1)}.
+\]
+\end{answer}
+\vfill
+\vfill
+
+
+\end{enumerate}
+
+
+\newpage
+\item Iowa State University researchers have developed a method of testing 
+soil health using tea bags buried in an agricultural field. 
+After 30 days, the tea bag is recovered, dried, and weighed. 
+Lower weight indicates healthier soil due to tea leaves decomposing.
+The file {\tt tea.csv} contains measurements of tea bag weights in grams (g) 
+from agricultural fields that have prairie strips, a treatment that is designed 
+to increase soil health.
+For the following questions, assume the tea bag weights are independent and 
+normally distributed with mean $\mu$ and variance $\sigma^2$.
+(4 points each)
+
+<<echo=FALSE, message=FALSE>>=
+library("tidyverse")
+set.seed(20190311)
+data.frame(weight = rnorm(24, mean = 1.1, sd = 0.2) %>% round(2)) %>%
+  write_csv(path = "tea.csv")
+@
+
+\begin{answer}
+<<>>=
+tea <- read.csv("tea.csv")
+@
+\end{answer}
+
+\begin{enumerate}
+\item Calculate the maximum likelihood estimator for the population mean of tea bag weights.
+
+\begin{answer}
+<<>>=
+mean(tea$weight)
+@
+\end{answer}
+\vfill
+
+\item Calculate the maximum likelihood estimator for the population variance in tea bag weights.
+
+\begin{answer}
+<<>>=
+var(tea$weight)*(n-1)/n
+@
+\end{answer}
+\vfill
+
+\item Construct a 99\% confidence interval for the mean tea bag weight. 
+
+\begin{answer}
+<<>>=
+t.test(tea$weight, conf.level = 0.99)$conf.int
+@
+\end{answer}
+\vfill
+
+\item From previous experience, the researchers know the mean weight of tea bags
+in standard agricultural fields is 1.2 g. 
+Calculate a $p$-value for the null hypothesis $H_0: \mu \ge 1.2$.
+
+\begin{answer}
+<<>>=
+t.test(tea$weight, mu = 1.2, alternative = "less")$p.value
+@
+\end{answer}
+\vfill
+
+\item If researchers believe fields with prairie strips will have healthier 
+soil than standard fields, is the null hypothesis in the previous question the
+appropriate null hypothesis? Explain why or why not.
+
+\begin{answer}
+Yes, it is appropriate since standard fields have mean tea bag weight of 1.2 g
+and healthy soil has lower weight. Thus, we would expect the fields with 
+prairie strips should have mean weight less than 1.2 g which would be the 
+alternative hypothesis.
+\end{answer}
+\vfill \vfill
+
+
+\end{enumerate}
+
+\newpage
+\item Let $Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i)$ for $i=1,2$. 
+For the following questions, assume the data are random. (5 points each)
+
+\begin{enumerate}
+\item Calculate 
+\[
+E\left[ \frac{Y_1}{n_1} - \frac{Y_2}{n_2} \right].
+\]
+
+\begin{answer}
+\[ \begin{array}{rl}
+E\left[ \frac{Y_1}{n_1} - \frac{Y_2}{n_2} \right] &= 
+\frac{E[Y_1]}{n_1} - \frac{E[Y_2]}{n_2} \\
+&= \frac{n_1\theta_1}{n_1} - \frac{n_2\theta_2}{n_2} \\
+&= \theta_1-\theta_2
+\end{array} \]
+\end{answer}
+\vfill
+
+\item Calculate 
+\[
+Var\left[ \frac{Y_1}{n_1} - \frac{Y_2}{n_2} \right].
+\]
+
+\begin{answer}
+\[ \begin{array}{rl}
+Var\left[ \frac{Y_1}{n_1} - \frac{Y_2}{n_2} \right] &= 
+\frac{Var[Y_1]}{n_1^2} + \frac{Var[Y_2]}{n_2^2} \\
+&= \frac{n_1\theta_1(1-\theta_1)}{n_1^2} + \frac{n_2\theta_2(1-\theta_2)}{n_2^2} \\
+&= \frac{\theta_1(1-\theta_1)}{n_1} + \frac{\theta_2(1-\theta_2)}{n_2}
+\end{array} \]
+\end{answer}
+\vfill
+
+\item Calculate a standard error for 
+\[ 
+\frac{Y_1}{n_1} - \frac{Y_2}{n_2}.
+\]
+
+\begin{answer}
+Let $\hat\theta_1 = y_1/n_1$ and $\hat\theta_2 = y_2/n_2$, then 
+\[ \begin{array}{rl}
+SE\left[ \frac{Y_1}{n_1} - \frac{Y_2}{n_2} \right] &= 
+\sqrt{Var\left[ \frac{Y_1}{n_1} - \frac{Y_2}{n_2} \right]} \\
+&= \sqrt{\frac{\theta_1(1-\theta_1)}{n_1} + \frac{\theta_2(1-\theta_2)}{n_2}} \\
+&= \sqrt{\frac{\hat\theta_1(1-\hat\theta_1)}{n_1} + \frac{\hat\theta_2(1-\hat\theta_2)}{n_2}} \\
+\end{array} \]
+\end{answer}
+\vfill
+
+\item Provide a formula for computing an approximate 100(1-a)\% 
+confidence interval for $\theta_1-\theta_2$?
+
+\begin{answer}
+Using the CLT, an approximate 100(1-a)\% confidence interval is 
+\[
+\hat\theta_1-\hat\theta_2 \pm z_{a/2}SE\left[ \frac{Y_1}{n_1} - \frac{Y_2}{n_2} \right]
+\]
+where these quantities are defined in the previous answer.
+\end{answer}
+\vfill
+
+\end{enumerate}
+ 
+
+\newpage
+\item The US FDA is currrently overseeing a clinical trial for the drug 
+\emph{selonsertib} which is aimed at patients who have late-stage fatty liver disease.
+Patients at Marshall University Hospital in Huntington, West Virginia who have
+late-stage fatty liver disease
+can enroll in the clinical trial and will be randomly assigned either selonsertib 
+or placebo (a sugar pill). 
+Patients who enroll will have their \emph{aspartate transaminase} levels measured 
+before starting the pill regiment and again one year later.
+Doctors will compare how much these levels change for the selonsertib group
+compared with the placebo group. 
+
+\begin{enumerate}
+\item Describe the population being studied. (3 points)
+
+\begin{answer}
+There are multiple possible answers here, but likely the population of interest
+is all US patients with late-stage fatty liver disease.
+\end{answer}
+\vfill
+
+\item Describe the sample. (3 points)
+
+\begin{answer}
+Individuals at Marshall University Hospital in Huntington, West Virginia who have
+late-stage fatty liver disease and enroll in the clinical trial.
+\end{answer}
+\vfill
+
+\item Is this a random sample? Explain why or why not. (2 points)
+
+\begin{answer}
+No, clearly not random as individuals need to opt in to the trial and the 
+individuals are from one hospital.
+\end{answer}
+\vfill
+ 
+\item Describe a reasonable model for these data to address the scientific 
+question of interest. (12 points) 
+
+\begin{answer}
+Let $D_{ig}$ be the difference in aspartate transaminase (end of the year minus
+the beginning of the year) for individual $i$ in treatment group $g$ where
+$g=1,2$ for control/placebo and treatment group respectively and
+$i=1,\ldots,n_g$.
+Then $D_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma_g^2)$ although you could assume
+$\sigma_1=\sigma_2$.
+\end{answer}
+\vfill\vfill\vfill
+
+\end{enumerate}
+
+
+\end{enumerate}
+
+\end{document}
