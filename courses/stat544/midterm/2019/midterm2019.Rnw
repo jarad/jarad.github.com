@@ -1,0 +1,509 @@
+\documentclass[10pt]{article}
+
+\usepackage{verbatim,multicol,color,amsmath,ifdraft, graphicx, wrapfig,setspace,comment}
+\usepackage{amsfonts}
+
+\title{STAT 544 Mid-term Exam \\ Thursday 14 March 2019, 8:00-9:20}
+\author{Instructor: Jarad Niemi}
+\date{}
+
+\newenvironment{longitem}{
+\begin{itemize}
+  \setlength{\itemsep}{15pt}
+  \setlength{\parskip}{20pt}
+  \setlength{\parsep}{20pt}
+}{\end{itemize}}
+
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{-0.125in}
+\setlength{\oddsidemargin}{-.2in}
+\setlength{\evensidemargin}{-.2in}
+\setlength{\headsep}{0in}
+
+\newcommand{\bigbrk}{\vspace*{2in}}
+\newcommand{\smallbrk}{\vspace*{.3in}}
+
+\newcommand{\iid}{\stackrel{iid}{\sim}}
+\newcommand{\Yiid}{Y_1,\ldots,Y_n\stackrel{iid}{\sim}}
+
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\excludecomment{answer}
+
+
+\begin{document}
+
+Student Name: \underline{\phantom{XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}}
+
+{\let\newpage\relax\maketitle}
+
+
+
+\bigskip
+
+
+\textbf{INSTRUCTIONS}
+
+\bigskip
+
+Please check to make sure you have 4 pages with writing on the front and back 
+(some pages are marked `intentionally left blank'). 
+Feel free to remove the last page, i.e. the one with R code and distributions.
+
+\bigskip
+
+On the following pages you will find short answer questions related to the 
+topics we covered in class for a total of 50 points. Please read the directions 
+carefully.
+
+\bigskip
+
+You are allowed to use a calculator and one $8\frac{1}{2}\times 11$ sheet of 
+paper with writing on both front and back. A non-exhaustive list of items you 
+are not allowed to use are {\bf cell phones, laptops, PDAs, and textbooks}. 
+Cheating will not be tolerated. 
+Anyone caught cheating will receive an automatic F on the exam. 
+In addition the incident will be reported, and dealt with according to 
+University's Academic Dishonesty regulations. Please refrain from talking to 
+your peers, exchanging papers, writing utensils or other objects, or walking 
+around the room. All of these activities can be considered cheating. 
+{\bf If you have any questions, please raise your hand.}
+
+\bigskip
+
+You will be given only the time allotted for the course; 
+no extra time will be given.
+
+\bigskip
+
+
+Good Luck!
+
+\begin{enumerate}
+
+
+\newpage
+\item A machine learning algorithm has been set up to distinguish between 
+benign and malignant tumors, but due to difficulties obtaining training data a 
+third category called \emph{unknown} is included. 
+
+\begin{table}[h!]
+\centering
+\caption{Prevalence and sensitivity/specificity for the algorithm.}
+\label{t:prev}
+\begin{tabular}{lc|ccc}
+\hline
+& & \multicolumn{3}{c}{Probability} \\
+Truth & Prevalence & benign & malignant & unknown \\
+\hline
+benign    & 0.7    & 0.9 & 0.1 & 0.0 \\
+malignant & 0.1    & 0.1 & 0.8 & 0.1 \\
+unknown   & 0.2    & 0.2 & 0.2 & 0.6 \\
+\hline
+\end{tabular}
+\end{table}
+
+Table \ref{t:prev} provides the prevalence for the three cancer types as well
+as the effectiveness of the algorithm to identify the correct tumor type.
+For example, if the tumor is truly benign, the algorithm will indicate benign
+90\% of the time, malignant 10\% of the time, and will never indicate 
+unknown.
+
+What is the probability a tumor is actually malignant if the algorithm 
+indicates the tumor is malignant? (20 points)
+
+\begin{answer}
+Let 
+\begin{itemize}
+\item $T_m$, $T_b$, and $T_u$ indicate the tumor is malignant, benign, and 
+unknown respectively
+\item $A_m$, $A_b$, and $A_u$ indicate the algorithm indicates malignant, benign,
+and unknown respectively
+\end{itemize}
+
+\[ \begin{array}{rl}
+P(T_m|A_m) &= \frac{P(A_m|T_m)p(T_m)}{P(A_m|T_m)p(T_m)+P(A_m|T_b)p(T_b)+P(A_m|T_u)p(T_u)} \\
+&= \frac{0.8\times 0.1}{0.8\times 0.1 + 0.1\times 0.7 + 0.2\times 0.2} \\
+&= \Sexpr{0.8*0.1/(0.8*0.1 + 0.1*0.7 + 0.2*0.2)}
+\end{array} \]
+\end{answer}
+\vfill
+
+
+
+\newpage
+\item In point counts for birds, you know how many birds you detected, 
+but not the number of birds present. 
+Let $Y$ be the number of birds detected and assume $Y\sim Bin(\eta, p)$ where 
+the number of birds present $\eta$ is unknown and the probability of success $p$ 
+is known. Assume $\eta\sim Po(m)$. 
+
+\begin{enumerate}
+\item Derive the posterior for $\eta$. 
+% Specifically show that $\eta=\mu+y$ where $\mu|y\sim Po(m[1-p])$. 
+(10 points)
+
+\begin{answer}
+\[ \begin{array}{rll}
+p(\eta|y) &\propto p(y|\eta)p(\eta) \\
+&\propto \frac{\eta!}{(\eta-y)!}(1-p)^{\eta-y}\frac{m^{\eta}}{\eta!} \\
+&\propto \frac{[m(1-p)]^{\eta-y}}{(\eta-y)!} & \mbox{since $(1p)^{-y}$ doesn't depend on $\eta$} \\
+\end{array} \]
+Since the binomial requires $y \le \eta$, 
+$\eta$ has support on integers greater or equal to $y$. 
+Thus, we will perform the transformation $\mu = \eta-y$ which has a Jacobian of
+1 and then $\mu$ will have support on the non-negative integers.
+\[ \begin{array}{rl}
+p(\mu|y) &\propto \frac{[m(1-p)]^{\mu}}{\mu!} \\
+\end{array} \]
+This is the kernel of a Poisson random variable with mean $m(1-p)$.
+Thus, $\eta=\mu+y$ where $\mu\sim Po(m[1-p])$.
+\end{answer}
+\vfill \vfill \vfill \vfill
+
+\item Describe how to sample from the posterior for $\eta$. (2 points)
+
+\begin{answer}
+Sample $\mu \sim Po(m[1-p])$ and calculate $\eta=y+\mu$.
+\end{answer}
+\vfill
+
+\item Suppose $p=1$, state the posterior for $\eta$. (2 points)
+
+\begin{answer}
+When $p=1$, $P(\eta=y|y) = 1$.
+\end{answer}
+\vfill
+
+\item Determine the posterior probability that the number of birds present is 
+less than 5 when $y=3$, $p=0.7$, and $m=10$. 
+(6 points)
+
+\begin{answer}
+Calculate $m(1-p) = 10*(1-0.7) = 3$.
+\[ \begin{array}{rl}
+P(\eta<5|y) &= P(\mu<2|y) = P(\mu\le 1|y) \\
+&= e^{-m(1-p)}\left(1 + m[1-p] \right) \\
+&= e^{-3}\left(1+3\right) \\
+&= \Sexpr{exp(-3)*(1+3)}
+\end{array} \]
+\end{answer} 
+\vfill \vfill \vfill
+
+\end{enumerate}
+
+
+\newpage
+\item The internet movie database (IMDb) provides users the following {\tt star
+rating}:
+\begin{verbatim}
+star rating (SR) = (v / (v+m)) * R + (m / (v+m)) * C
+
+where:
+
+R = average for the movie (mean) = (Rating)
+v = number of votes for the movie = (votes)
+m = minimum votes required to be listed in the Top 250 (currently 25000)
+C = the mean vote across the whole report (currently 7.1)
+\end{verbatim}
+
+Let $y_i$ be an individual users rating and assume 
+$y_i \stackrel{ind}{\sim} N(\mu,v^2)$ with the prior $\mu\sim N(a,b^2)$.
+
+\begin{enumerate}
+\item Relate the following quantities in the {\tt star rating} formula to the
+associated quantities in this normal model. (2 points each)
+\begin{itemize}
+\item {\tt v}=
+
+\begin{answer}
+$n/v^2$
+\end{answer}
+\vfill
+
+\item {\tt m}=
+
+\begin{answer}
+$1/b^2$
+\end{answer}
+\vfill
+
+\item {\tt R}=
+
+\begin{answer}
+$\overline{y}$
+\end{answer}
+\vfill
+
+\item {\tt C}=
+
+\begin{answer}
+$a$
+\end{answer}
+\vfill
+
+\item {\tt SR}=
+
+\begin{answer}
+$E[\mu|y]$
+\end{answer}
+\vfill
+
+\end{itemize}
+
+\item Let $y_{im}\in\{1,2,3,4,5\}$ be the rating for individual $i$ for movie 
+$m$ for $i=1,2,\ldots,n_m$ and $m=1,\ldots,M$. 
+Assume each individual only rates one movie.
+Construct a hierarchical model for 
+these data that has the proper support for $y_{im}$. (10 points)
+
+\begin{answer}
+A variety of answers could work here. 
+One possibility is to let $z_{im} = y_{im}-1$ and make the following assumptions
+\[ \begin{array}{rl}
+z_{im} &\stackrel{ind}{\sim} Bin(4,\theta_{im}) \\
+\theta_{im} &\stackrel{ind}{\sim} Be(\alpha,\beta) \\
+p(\alpha,\beta) &\propto (\alpha+\beta)^{-5/2}
+\end{array} \]
+\end{answer}
+\vfill\vfill\vfill\vfill\vfill\vfill\vfill
+
+
+
+\end{enumerate}
+
+\newpage
+\item Determine the Bayes estimator, $\hat\theta$, 
+for \emph{scaled} squared error loss,
+$L(\theta,\hat\theta) = c(\theta-\hat\theta)^2$ for some $c>0$ and 
+$\theta\in\mathbb{R}$. (10 points)
+
+\begin{answer}
+Intuitively, multiplying the squared error loss by a constant will have no 
+affect on the estimator that minimizes the loss, so $\hat\theta=E[\theta|y]$
+will minimize scaled squared error loss.
+To show this
+\[ \begin{array}{rl}
+E[L(\theta,\hat\theta)|y] &= E[c\theta^2-2c\hat\theta\theta+c\hat\theta^2|y] \\
+&= cE[\theta^2|y]-2c\hat\theta E[\theta|y] + c\hat\theta^2 \\
+\frac{d}{d\hat\theta} E[L(\theta,\hat\theta)|y] &= -2c E[\theta|y] + 2c\hat\theta \\
+\frac{d^2}{d\hat\theta^2} E[L(\theta,\hat\theta)|y] &= 2c \\
+\end{array} \]
+Setting the first derivative to 0 results in $\hat\theta = E[\theta|y]$ and 
+the second derivative being positive means this estimate minimizes the scaled 
+squared error loss.
+\end{answer}
+\vfill
+
+\item Let $Y_i\stackrel{ind}{\sim} Ber(\theta)$ for $1,\ldots,n$ with 
+$\theta\sim Be(a,b)$. Let $\tilde{Y} \sim Ber(\theta)$ independent of 
+$Y_1,\ldots,Y_n$. Determine the Bayes estimator in (0,1) for squared error 
+loss of $\tilde{Y}$. (10 points)
+
+\begin{answer}
+We know the posterior expectation minimizes squared error loss (see above). 
+Thus, using iterated expectations, we have
+\[
+E[\tilde{Y}|y] = E[E[\tilde{Y}|\theta]|y] = E[\theta|y] = 
+\frac{a+n\overline{y}}{a+b+n}.
+\]
+\end{answer}
+\vfill
+
+
+\newpage
+\item The Boeing 737 MAX aircraft has 9 generations. The Federal Aviation 
+Administration (FAA) has grounded generations 8 and 9 due to two recent crashes 
+of the Boeing 737 MAX 8. It appears that in both of these crashes, the plane
+stalled and the software to automatically reverse the stall failed. To assess
+the rate of stalls, Boeing builds a hierarchical model for the first stall 
+(in months) for each aircraft in the 737 MAX fleet. 
+Use the {\tt R/Stan Code} on the following page
+to answer the following questions.
+
+\begin{enumerate}
+\item Write down the model that is being fit including priors. (12 points)
+
+\begin{answer}
+Let $Y_i$ be the time to first stall for observation $i$ and 
+$g_i\in\{1,2,\ldots,9\}$ be the generation number for observation $i$.
+The model is 
+\[ \begin{array}{rl}
+Y_i &\stackrel{ind}{\sim} Exp(\lambda_{g_i}) \\
+\lambda_g &\stackrel{ind}{\sim} Ga(\mu\beta,\beta) \\
+p(\mu,\beta) &= p(\mu)p(\beta) \\
+\mu &\sim Exp(0.1) \\
+\beta &\sim Exp(1)
+\end{array} \]
+\end{answer}
+\vfill\vfill\vfill\vfill\vfill
+
+\item For {\bf generation 8}, provide estimates for the following quantities to 2 decimal places:
+  \begin{enumerate}
+  \item posterior expectation for the first stall rate (1 point)
+  
+\begin{answer}
+0.16
+\end{answer}
+  \vfill
+  
+  \item equal-tail 95\% credible interval for first stall rate (2 points)
+  
+\begin{answer}
+(0.09,0.24)
+\end{answer}
+  \vfill
+  
+  \item equal-tail 95\% credible interval for first stall {\bf mean} (2 points)
+  
+\begin{answer}
+We just need to invert the endpoints of the previous interval, so 
+(1/0.24,1/0.09) = (\Sexpr{round(1/0.24,2)},\Sexpr{round(1/0.09,2)})
+\end{answer}
+  \vfill
+  
+  \end{enumerate}
+  
+\item Suppose you have samples $\lambda_1^{(m)},\ldots,\lambda_9^{(m)}$ for 
+$m=1,\ldots,M$ from the joint posterior for the generation first stall rates. 
+Describe how you would estimate the posterior probability the {\bf mean} time to 
+first stall for generation 8 is smaller than for generation 7. (3 points)
+
+\begin{answer}
+Let $\mu_{g} = 1/\lambda_g$ be the mean time to first stall for generation $g$.
+Then 
+\[ \begin{array}{rl}
+P(\mu_8 < \mu_7|y) &= P(1/\lambda_8 < 1/\lambda_7|y) \\
+&= P(\lambda_8 > \lambda_7|y) \\
+&\approx \frac{1}{M} \mathrm{I}\left(\lambda_8^{(m)} > \lambda_7^{(m)}\right)
+\end{array} \]
+\end{answer}
+\vfill\vfill
+
+\end{enumerate}
+
+
+\end{enumerate} % end of overall numbers
+
+
+\newpage
+\noindent
+{\Large {\tt R/Stan Code}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=5, 
+               # size='tiny', 
+               out.width='0.8\\textwidth', 
+               fig.align = 'center', 
+               message = FALSE,
+               echo = FALSE,
+               cache = TRUE,
+               background = "white",
+               highlight = FALSE)
+options(width=120)
+@
+
+<<data>>=
+library("tidyverse")
+library("rstan")
+
+generate_first_stall <- function(d) {
+  data.frame(first_stall = rexp(d$n, rate = 1/d$mean))
+}
+
+set.seed(20190314)
+d <- data.frame(generation = 1:9) %>%
+  mutate(n    = rpois(n(), 10),
+         mean = rgamma(n(), 10, 1)) %>%
+  group_by(generation) %>%
+  do(generate_first_stall(.))
+@
+
+<<model, echo=TRUE>>=
+m = "
+data {
+  int N;
+  int n_generations;
+  int<lower=1, upper=n_generations> generation[N];
+  real<lower=0> first_stall[N];
+}
+parameters {
+  real<lower=0> mu;
+  real<lower=0> beta;
+  real<lower=0> lambda[n_generations];
+}
+transformed parameters {
+  real<lower=0> alpha;
+  alpha = mu*beta;
+}
+model {
+  mu ~ exponential(0.1);
+  beta ~ exponential(1);
+  lambda ~ gamma(alpha, beta);
+  first_stall ~ exponential(lambda[generation]);
+}
+"
+@
+
+<<compile, dependson = "model", results='hide'>>=
+sm <- stan_model(model_code = m, auto_write = TRUE)
+@
+
+<<sample, dependson = c("compile","data"), results='hide'>>=
+dat <- list(N = nrow(d), n_generations = max(d$generation), 
+            generation = d$generation, first_stall = d$first_stall)
+s <- sampling(sm, dat, seed=20190314)
+@
+
+<<results, dependson = "sample">>=
+s
+@
+
+
+
+\newpage
+\section*{Distributions}
+
+The table below provides the details of some common distributions. In all cases, the random variable is $\theta$. 
+
+\[ \begin{array}{l|l|l}
+\mbox{Distribution} & \mbox{Density or mass function} & \mbox{Moments} \\
+\hline
+\theta \sim Exp(\lambda) & \lambda e^{-\lambda \theta} & E[\theta] = 1/\lambda \\
+&& V[\theta] = 1/\lambda^2 \\
+\theta \sim N(\mu,\sigma^2) & \frac{1}{\sqrt{2\pi\sigma^2}}\exp\left( -\frac{1}{2\sigma^2}(\theta-\mu)^2 \right) & E[\theta] = \mu\\
+&& V[\theta]=\sigma^2 \\
+\theta \sim Ga(\alpha,\beta) & \frac{\beta^\alpha}{\mathrm{\Gamma}(\alpha)} \theta^{\alpha-1} e^{-\beta\theta}, \theta>0 & E[\theta] = \alpha/\beta \\
+&&V[\theta] = \alpha/\beta^2 \\
+\theta \sim IG(\alpha,\beta) & \frac{\beta^\alpha}{\mathrm{\Gamma}(\alpha)} \theta^{-(\alpha+1)} e^{-\beta/\theta}, \theta>0 & E[\theta] = \beta/(\alpha-1), \alpha>1 \\
+&& V[\theta] = \beta^2/[(\alpha-1)^2(\alpha-2)], \alpha>2 \\
+\theta \sim Be(\alpha,\beta) & \frac{\mathrm{\Gamma}(\alpha+\beta)}{\mathrm{\Gamma}(\alpha)\mathrm{\Gamma}(\beta)} \theta^{\alpha-1}(1-\theta)^{\beta-1}, 0<\theta<1 & E[\theta] = \alpha/(\alpha+\beta) \\
+&& V[\theta] = \alpha\beta/[(\alpha+\beta)^2(\alpha+\beta+1)]   \\
+\theta \sim t_\nu(\mu,\sigma^2) & \frac{\mathrm{\Gamma}([\nu+1]/2)}{\mathrm{\Gamma}(\nu/2)} \left( 1+ \frac{1}{\nu}\left[ \frac{\theta-\mu}{\sigma} \right]^2\right)^{-(\nu+1)/2} & E[\theta]=\mu, \nu>1 \\
+&& V[\theta] = \frac{\nu}{\nu-2}\sigma^2, \nu>2 \\
+\hline
+\theta \sim Geo(\pi) & (1-\pi)^{\theta-1}\pi,\theta\in\{1,2,3,\ldots\} & E[\theta] = 1/\pi\\
+&&V[\theta] = (1-\pi)/\pi^2 \\
+\theta \sim Bin(n,\pi) & \frac{n!}{(n-\theta)!\theta!} \pi^{\theta}(1-\pi)^{n-\theta}, \theta\in\{0,1,\ldots,n\} & E[\theta] = n\pi \\
+&& V[\theta] = n\pi(1-\pi) \\
+\theta \sim Po(\lambda) & \frac{e^{-\lambda}\lambda^\theta}{\theta!},\theta\in\{0,1,2,\ldots\} & E[\theta] = \lambda \\
+&& V[\theta] = \lambda \\
+\hline
+\end{array} \]
+
+% \newpage
+% 
+% {\Large R Code}
+% 
+% <<>>=
+% 
+% @
+
+
+\end{document}
+
