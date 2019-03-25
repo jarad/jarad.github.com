@@ -35,7 +35,7 @@ Instructions for compiling the Rnw files can be found below.
 | |Midterm review|[MidtermReview.Rnw](MidtermReview/MidtermReview.Rnw)|[MidtermReview.pdf](MidtermReview/MidtermReview.pdf)|
 | |Bayesian model averaging|[BMA.Rnw](BMA/BMA.Rnw)|[BMA.pdf](BMA/BMA.pdf)|
 |10|Bayesian computation|[Ch10a.Rnw](Ch10/Ch10a.Rnw)|[Ch10a.pdf](Ch10/Ch10a.pdf)|
-||ARS and Importance sampling|[Ch10b.Rnw](Ch10/Ch10b.Rnw)|[Ch10a.pdf](Ch10/Ch10b.pdf)|
+||ARS and Importance sampling|[Ch10b.Rnw](Ch10/Ch10b.Rnw)|[Ch10b.pdf](Ch10/Ch10b.pdf)|
 |11|Metropolis-Hastings|[Ch11a.Rnw](Ch11/Ch11a.Rnw)|[Ch11a.pdf](Ch11/Ch11a.pdf)|
 ||Gibbs sampling|[Ch11b.Rnw](Ch11/Ch11b.Rnw)|[Ch11b.pdf](Ch11/Ch11b.pdf)|
 ||Markov chains|[Ch11c.Rnw](Ch11/Ch11c.Rnw)|[Ch11c.pdf](Ch11/Ch11c.pdf)|
