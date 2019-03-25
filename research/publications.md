@@ -18,7 +18,7 @@ Naren Ramakrishnan, Evan L. Ray, Nicholas G. Reich, Pete Riley, Jeffrey Shaman,
 Ryan Tibshirani, Alessandro Vespignani, Qian Zhang, Carrie Reed & The Influenza 
 Forecasting Working Group (2019) ``Collaborative efforts to forecast seasonal 
 influenza in the United States, 2015–2016.'' 
-Scientific Reports, {\bf 9}, 683, [url](https://www.nature.com/articles/s41598-018-36361-9)
+Scientific Reports, 9, 683, [url](https://www.nature.com/articles/s41598-018-36361-9)
 1. Will Landau\*, Jarad Niemi, and Dan Nettleton. ``Fully Bayesian analysis of RNA-seq counts for the detection of gene expression heterosis.'' Journal of the American Statistical Association (in press)
 1. Lisa A. Schulte, Jarad Niemi, Matthew J. Helmers, Matt Liebman, J. Gordon
 Arbuckle, David E. James, Randall K. Kolka, Matthew E. O'Neal, Mark D. Tomer, 
