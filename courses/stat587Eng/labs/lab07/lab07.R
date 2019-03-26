@@ -1,10 +1,8 @@
-## ----install_packages, eval=FALSE----------------------------------------
-## install.packages(c("dplyr","ggplot2","tidyr"))
-
-## ----load_packages-------------------------------------------------------
-library("dplyr")
-library("ggplot2")
-library("tidyr")
+## ----load_tidyverse------------------------------------------------------
+if (!require("tidyverse")) {
+  install.packages("tidyverse")
+  library("tidyverse")
+}
 
 ## ----set_seed------------------------------------------------------------
 set.seed(20170320)
@@ -228,4 +226,10 @@ ggplot(d, aes(x, residuals)) +
 opar <- par(mfrow=c(2,3))
 plot(m, 1:6, ask=FALSE)
 par(opar)
+
+## ----ggResidPanel, eval=FALSE--------------------------------------------
+## library("ggResidpanel") # use devtools::install_github("goodekat/ggResidpanel")
+## 
+## resid_panel(m, plots="R")
+## resid_panel(m, plots="SAS")
 
