@@ -75,7 +75,7 @@ Approaches:
   \item Monte Carlo (simulation) methods where \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right) \]
   and
     \begin{itemize}
-    \item $\theta^{(s)} \stackrel{iid}{\sim} g(\theta)$ (for some proposal distribution $g$),
+    \item $\theta^{(s)} \stackrel{ind}{\sim} g(\theta)$ (for some proposal distribution $g$),
     \item $w_s = p(\theta^{(s)}|y)/g(\theta^{(s)})$, 
     \item and we have SLLN and CLT.
     \end{itemize}
@@ -224,19 +224,21 @@ $X$ the true (constant) value of that integral \pause or
 
 \begin{frame}
 \frametitle{Monte Carlo integration}
-\small
+\footnotesize
 Consider evaluating the integral
 \[ E[h(\theta)] = \int_{\Theta} h(\theta) p(\theta) d\theta \]
 \pause using the Monte Carlo estimate
-\[ \hat{h}_J = \frac{1}{J} \sum_{j=1}^J h\left(\theta^{(j)}\right) \]
-\pause where $\theta^{(j)} \stackrel{ind}{\sim} g(\theta)$.  \pause We know
+\[ \hat{h}_S = \frac{1}{S} \sum_{s=1}^S h\left(\theta^{(s)}\right) \]
+\pause where $\theta^{(s)} \stackrel{ind}{\sim} p(\theta)$.  \pause We know
 \begin{itemize}
-\item SLLN: $\hat{h}_J$ converges almost surely to $E[h(\theta)]$. \pause
+\item SLLN: $\hat{h}_S \stackrel{a.s.}{\longrightarrow} E[h(\theta)]$. \pause
 \item CLT: if $h^2$ has finite expectation, \pause then
-\[ \frac{\hat{h}_J-E[h(\theta)]}{\sqrt{v_J/J}} \stackrel{d}{\to} N(0,1) 
-\pause \quad \mbox{where} \quad
-v_J = Var[h(\theta)] \pause \approx 
-\frac{1}{J} \sum_{j=1}^J \left[ h\left(\theta^{(j)}\right) - \hat{h}_J \right]^2 \]
+\[ \frac{\hat{h}_S-E[h(\theta)]}{\sqrt{v_S/S}} \stackrel{d}{\to} N(0,1) 
+\]
+where
+\[
+v_S = Var[h(\theta)] \pause \approx 
+\frac{1}{S} \sum_{s=1}^S \left[ h\left(\theta^{(s)}\right) - \hat{h}_S \right]^2 \]
 \pause
 or any other consistent estimator.
 \end{itemize}
@@ -258,13 +260,13 @@ or any other consistent estimator.
   \pause
   and approximate by a Monte Carlo estimate via
   \begin{enumerate}[<+->]
-  \item For $j=1,\ldots,J$,
+  \item For $s=1,\ldots,S$,
     \begin{enumerate}
-    \item sample $\theta^{(j)} \sim Unif(0,1)$ and
-    \item calculate $h\left(\theta^{(j)}\right)$.
+    \item sample $\theta^{(s)} \stackrel{ind}{\sim} Unif(0,1)$ and
+    \item calculate $h\left(\theta^{(s)}\right)$.
     \end{enumerate}
   \item Calculate
-  \[ \mathrm{I} \approx \frac{1}{J} \sum_{j=1}^J h(\theta^{(j)}). \]
+  \[ \mathrm{I} \approx \frac{1}{S} \sum_{s=1}^S h(\theta^{(s)}). \]
   \end{enumerate}
 }
 
@@ -307,9 +309,9 @@ abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
 \frametitle{Central limit theorem}
 <<uniform3, dependson='uniform2'>>=
 cumvar = function(theta) {
-  J = length(theta)
-  cumvar = numeric(J)
-  for (j in 1:J) { cumvar[j] = var(f(theta[1:j]))/j }
+  S = length(theta)
+  cumvar = numeric(S)
+  for (j in 1:S) { cumvar[j] = var(f(theta[1:j]))/j }
   return(cumvar)
 }
 
@@ -342,13 +344,13 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 	\end{itemize}
   and approximate by a Monte Carlo estimate via
   \begin{enumerate}[<+->]
-  \item For $j=1,\ldots,J$,
+  \item For $s=1,\ldots,S$,
     \begin{enumerate}
-    \item sample $\theta^{(j)} \sim N(0,1)$ and
-    \item calculate $h\left(\theta^{(j)}\right)$.
+    \item sample $\theta^{(s)} \stackrel{ind}{\sim} N(0,1)$ and
+    \item calculate $h\left(\theta^{(s)}\right)$.
     \end{enumerate}
   \item Calculate
-  \[ E[\theta] \approx \frac{1}{J} \sum_{j=1}^J h(\theta^{(j)}). \]
+  \[ E[\theta] \approx \frac{1}{S} \sum_{s=1}^S h(\theta^{(s)}). \]
   \end{enumerate}
 }
 
@@ -387,7 +389,7 @@ cvptheta = cumvar(theta)
 uci  = cmptheta+qnorm(.975)*sqrt(cvptheta)
 lci  = cmptheta-qnorm(.975)*sqrt(cvptheta)
 plot(cmptheta, main="Monte Carlo estimate", type="n",
-     ylim=range(uci,lci,na.rm=T), xlab="J", ylab="Estimate")
+     ylim=range(uci,lci,na.rm=T), xlab="S", ylab="Estimate")
 abline(h=0, col="red",lwd=2)
 lines(cmptheta,lwd=2)
 lines(uci, lty=2)
@@ -404,12 +406,12 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 Rather than determining $c(y)$ and then $E[\theta|y]$ via deterministic gridding (all $w_i$ are equal), 
 we can use the grid as a discrete approximation to the posterior, 
 i.e. 
-  \[ p(\theta|y) \approx \sum_{i=1}^N p_i \delta_{\theta_i}(\theta) \qquad p_i = \frac{q(\theta_i|y)}{\sum_{j=1}^N q(\theta_j|y)}  \]
+  \[ p(\theta|y) \approx \sum_{i=1}^N p_i \delta_{\theta_i}(\theta) \qquad p_i = \frac{q(\theta_i|y)}{\sum_{s=1}^N q(\theta_j|y)}  \]
   \pause where $\delta_{\theta_i}(\theta)$ is the Dirac delta function, i.e. 
   \[ \delta_{\theta_i}(\theta) = 0 \,\forall\, \theta\ne \theta_i \qquad \int \delta_{\theta_i}(\theta) d\theta=1. \]
 \pause  This discrete approximation to $p(\theta|y)$ can be used to approximate the expectation $E[h(\theta)|y]$ deterministically or via simulation, \pause i.e. 
   \[ E[h(\theta)|y]\approx \sum_{i=1}^N p_i h(\theta_i) \pause \qquad E[h(\theta)|y]\approx \frac{1}{S} \sum_{s=1}^S h\left(\theta^{(s)}\right) \] 
-\pause  where $\theta^{(s)} \sim \sum_{i=1}^N p_i \delta_{\theta_i}(\theta)$ (with replacement).
+\pause  where $\theta^{(s)} \stackrel{ind}{\sim} \sum_{i=1}^N p_i \delta_{\theta_i}(\theta)$ (with replacement).
 }
 
 \begin{frame}[fragile]
@@ -519,7 +521,7 @@ i.e. $1/(F^{-1}(b)-F^{-1}(a))$.
 
 \begin{frame}[fragile]
 \frametitle{Truncated normal}
-$X\sim N(5,9)\mathrm{I}(1\le X \le 6)$
+$X\sim N(5,9^2)\mathrm{I}(1\le X \le 6)$
 <<>>=
 mean = 5; sd = 9
 curve(pnorm(x,mean,sd), mean-2*sd, mean+2*sd, lwd=2, main="N(5,9^2) cdf")
@@ -540,7 +542,7 @@ plot_arrows(.5, mean=mean, sd=sd)
 
 \begin{frame}[fragile]
 \frametitle{Truncated normal}
-$X\sim N(5,9)\mathrm{I}(1\le X \le 6)$
+$X\sim N(5,9^2)\mathrm{I}(1\le X \le 6)$
 <<truncated_normal, message=FALSE, fig.width=8>>=
 d = data.frame(x= 5+3*qnorm(runif(n.reps, pnorm((1-5)/3), pnorm((6-5)/3))))
 dtnorm = function(x,mu=5,sigma=3,a=1,b=6) {
@@ -601,20 +603,20 @@ rejection sampling performs the following
 \begin{enumerate}[\,1.]
 \item Sample a proposal $\theta^*\sim g(\theta)$ \pause and $U\sim Unif(0,1)$.  
 \item Accept $\theta=\theta^*$ as a draw from $p(\theta|y)$ if 
-$U\le q(\theta^*|y)/M^*g(\theta^*)$, otherwise return to step 1. 
+$U\le q(\theta^*|y)/M^\dagger g(\theta^*)$, otherwise return to step 1. 
 \end{enumerate}
 \pause
-where $M^*$ satisfies $M^*\, g(\theta)\ge q(\theta|y)$ for all $\theta$. 
+where $M^\dagger$ satisfies $M^\dagger\, g(\theta)\ge q(\theta|y)$ for all $\theta$. 
 	
 \vspace{0.2in} \pause
 	
 \begin{itemize}[<+->]
 \item For a given proposal distribution $g(\theta)$, 
-the optimal $M^*$ is $M^*=\sup_\theta q(\theta|y)/g(\theta)$. 
-\item The acceptance probability is $1/M = c(y)/M^*$.
+the optimal $M^\dagger$ is $M^\dagger=\sup_\theta q(\theta|y)/g(\theta)$. 
+\item The acceptance probability is $1/M = c(y)/M^\dagger$.
 \end{itemize}
 \pause 
-The accept-reject idea is to create an envelope, $M\, g(\theta)$, above $q(\theta|y)$.
+The accept-reject idea is to create an envelope, $M^\dagger\, g(\theta)$, above $q(\theta|y)$.
 }
 
 \begin{frame}
@@ -628,13 +630,13 @@ The accept-reject idea is to create an envelope, $M\, g(\theta)$, above $q(\thet
   Choose a $N(y,1)$ as a proposal distribution, i.e. 
   \[ g(\theta)=\frac{1}{\sqrt{2\pi}} e^{-(\theta-y)^2/2} \]
   with 
-  \[ M^* = \sup_\theta \frac{q(\theta|y)}{g(\theta)} \pause 
+  \[ M^\dagger = \sup_\theta \frac{q(\theta|y)}{g(\theta)} \pause 
   = \sup_\theta \frac{e^{-(y-\theta)^2/2} \frac{1}{(1+\theta^2)}}{\frac{1}{\sqrt{2\pi}}  e^{-(\theta-y)^2/2} } \pause 
   = \frac{\sqrt{2\pi}}{(1+\theta^2)} \pause 
   \le \sqrt{2\pi} \]
   \pause
   The acceptance rate is 
-  $1/M = c(y)/M^* = \Sexpr{cy} / \sqrt{2\pi} = \Sexpr{cy/sqrt(2*pi)}$.
+  $1/M = c(y)/M^\dagger = \Sexpr{cy} / \sqrt{2\pi} = \Sexpr{cy/sqrt(2*pi)}$.
 \end{frame}
 
 
@@ -685,7 +687,7 @@ cat("Observed acceptance rate was",mean(d$accept))
   
   \vspace{0.2in} \pause
   
-  Bottom line: the condition $M\, g(\theta)\ge p(\theta|y)$ requires the proposal to have tails at least as thick (heavy) as the target.
+  TL;DR the condition $M\, g(\theta)\ge p(\theta|y)$ requires the proposal to have tails at least as thick (heavy) as the target.
 }
 
 
