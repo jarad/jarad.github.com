@@ -59,6 +59,7 @@ If
 \[ E[Y|X] = \beta_0 + \beta_1 X, \]
 \pause
 then
+\pause
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected response when $X$ is zero and
 \item $\beta_1$ is the expected increase in the response for a one unit increase in the explanatory variable.
@@ -77,7 +78,11 @@ For the following discussion,
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[fragile]
+<<eval=FALSE>>=
+Sleuth3::case0802
+@
+
 <<data, echo=FALSE>>=
 # Sleuth3::case0802
 insulating <- structure(list(Time = c(5.79, 1579.52, 2323.7, 68.85, 108.29, 
@@ -104,10 +109,20 @@ insulating <- structure(list(Time = c(5.79, 1579.52, 2323.7, 68.85, 108.29,
 "Voltage", "Group"), class = "data.frame", row.names = c(NA, 
 -76L))
 
-ggplot(insulating, aes(Voltage, Time)) + 
+g = ggplot(insulating, aes(Voltage, Time)) + 
   geom_point() +
-  stat_smooth(method="lm") + 
   theme_bw()
+g
+@
+\end{frame}
+
+\begin{frame}
+<<eval=FALSE>>=
+Sleuth3::case0802
+@
+
+<<dependson="data", echo=FALSE>>=
+g + stat_smooth(method="lm")
 @
 \end{frame}
 
@@ -119,7 +134,7 @@ ggplot(insulating, aes(Voltage, Time)) +
 m <- lm(Time ~ Voltage, insulating)
 @
 
-<<diagnostics, dependson="model", fig.height=4>>=
+<<diagnostics, dependson="model", fig.height=4, echo=FALSE>>=
 opar = par(mfrow=c(2,3)); plot(m, 1:6, ask=FALSE); par(opar)
 @
 \end{frame}
@@ -164,6 +179,7 @@ Suppose
 Then, if 
 \[ E[Y|X] = \beta_0 + \beta_1 X \]
 
+\pause
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected corn yield (bushels/acre) when fertilizer level is zero and 
 \item $\beta_1$ is the expected change in corn yield (bushels/acre) when fertilizer is increased by 1 lb/acre or
@@ -184,6 +200,7 @@ fertilizer is increased by $d$ lbs/acre.
 If 
 \[ E[\log(Y)|X] = \beta_0 + \beta_1 X \]
 then
+\pause
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected $\log(Y)$ when $X$ is zero, 
 \item $\beta_1$ is the expected change in $\log(Y)$ for a one unit increase in the explanatory variable, and
@@ -201,6 +218,7 @@ we have
 \[ \mbox{Median}[Y|X] = e^{\beta_0+\beta_1 X} = e^{\beta_0} e^{\beta_1 X} \]
 \pause
 then
+\pause
 \begin{itemize}[<+->]
 \item $e^{\beta_0}$ is the median of $Y$ when $X$ is zero, 
 \item $e^{\beta_1}$ is the multiplicative effect on the median of $Y$ for a one 
@@ -235,6 +253,7 @@ If we assume
 then
 \[ \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 X} \]
 
+\pause
 \begin{itemize}[<+->]
 \item $e^{\beta_0}$ is the median corn yield (bushels/acre) when fertilizer level is 0, 
 \item $e^{\beta_1}$ is the multiplicative effect in median corn yield (bushels/acre)
@@ -249,7 +268,16 @@ when fertilizer is increased by $d$ lbs/acre.
 \begin{frame}
 \frametitle{Response is logged}
 <<echo=FALSE>>=
-beta0 = 1; beta1 = 2; curve(exp(beta0 + beta1*x), 0, 2, ylab="Median Y")
+d <- data.frame(x = seq(0, 2, length=101)) %>%
+  mutate(negative = exp(1-2*x),
+         positive = exp(-2+1.5*x)) %>%
+  gather(slope, `Response Median`, negative, positive) %>%
+  mutate(slope = paste(slope, "slope"))
+
+ggplot(d, aes(x, `Response Median`)) + 
+  geom_line() + 
+  facet_wrap(~slope) + 
+  theme_bw()
 @
 \end{frame}
 
@@ -262,6 +290,7 @@ If
 \[ E[Y|X] = \beta_0 + \beta_1 \log(X),  \]
 \pause
 then
+\pause
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected response when $\log(X)$ is zero and 
 \item $\beta_1$ is the expected change in the response for a one unit increase
@@ -302,6 +331,7 @@ Suppose
 Then, if
 \[ E[Y|X] = \beta_0 + \beta_1 \log(X)  \]
 
+\pause
 \begin{itemize}[<+->]
 \item $\beta_0$ is the expected corn yield (bushels/acre) when fertilizer level is 1 lb/acre and
 \item $\beta_1 \log(2)$ is the expected change in corn yield when fertilizer level is doubled.
@@ -373,6 +403,7 @@ Suppose
 Then, if
 \[ E[\log(Y)|X] = \beta_0 + \beta_1 \log(X) \quad \mbox{or} \quad \mbox{Median}[Y|X] = e^{\beta_0} e^{\beta_1 \log(X)} = e^{\beta_0} X^{\beta_1} \]
 
+\pause
 \begin{itemize}[<+->]
 \item $e^{\beta_0}$ is the median corn yield (bushels/acre) when fertilizer level is 1 lb/acre and
 \item $2^{\beta_1}$ is the multiplicative effect on median corn yield (bushels/acre) when fertilizer level doubles.
@@ -444,7 +475,8 @@ summary(insulating)
 
 
 \begin{frame}[fragile]
-<<plot, dependson="data">>=
+\frametitle{Natural scale}
+<<plot, dependson="data", fig.height=4>>=
 g <- ggplot(insulating, aes(Voltage, Time)) + geom_point() + theme_bw(); g
 @
 \end{frame}
@@ -454,7 +486,7 @@ g <- ggplot(insulating, aes(Voltage, Time)) + geom_point() + theme_bw(); g
 
 \begin{frame}[fragile]
 \frametitle{Take log of time}
-<<plot_logy, dependson="plot">>=
+<<plot_logy, dependson="plot", fig.height=4>>=
 g + stat_smooth(method="lm") + scale_y_log10()
 @
 \end{frame}
