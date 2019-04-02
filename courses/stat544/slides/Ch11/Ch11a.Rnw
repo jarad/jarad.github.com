@@ -278,7 +278,7 @@ ggplot(d, aes(x=theta, y=0)) +
 \[ 
 \begin{array}{rl}
 r &= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)})}{g(\theta^*)} \pause \\
-&= \frac{\exp(-(y-\theta^*)^2/2)/1+(\theta^*)^2}{\exp(-(y-\theta^{(t)})^2/2)/1+(\theta^{(t)})^2} \frac{\exp(-(\theta^{(t)}-y)^2/2)}{\exp(-(\theta^*-y)^2/2)} \\
+&= \frac{\exp(-(y-\theta^*)^2/2)/1+(\theta^*)^2}{\exp(-(y-\theta^{(t)})^2/2)/1+(\theta^{(t)})^2} \frac{\exp(-(\theta^{(t)}-y)^2/2)}{\exp(-(\theta^*-y)^2/2)} \pause \\
 &= \frac{1+(\theta^{(t)})^2}{1+(\theta^*)^2} 
 \end{array} 
 \] 
@@ -287,7 +287,7 @@ r &= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)})}{g(\theta^*)} 
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
-<<sampling, fig.width=8>>=
+<<sampling, fig.height = 3>>=
 q = function(theta,y,log=FALSE) {
   out = -(y-theta)^2/2-log(1+theta^2)
   if (log) return(out)
@@ -295,12 +295,12 @@ q = function(theta,y,log=FALSE) {
 }
 g = function(theta,y,log=FALSE) dnorm(theta,y,log=log)
 
-d = mutate(data.frame(x = seq(-3,3,by=0.1)),
-           target = q(x,1)/integrate(function(x) q(x,1), -Inf, Inf)$value,
-           proposal = g(x,1))
+d = data.frame(theta = seq(-3,3,by=0.1)) %>%
+  mutate(target = q(theta,1)/integrate(function(x) q(x,1), -Inf, Inf)$value,
+         proposal = g(theta,1))
 
-ggplot(melt(d, id.vars='x', variable.name='density'), 
-       aes(x=x, y=value, color=density)) + geom_line()+
+ggplot(d %>% gather(distribution, density, target, proposal), 
+       aes(x=theta, y=density, color=distribution)) + geom_line()+
   theme_bw()
 @
 \end{frame}
@@ -310,7 +310,7 @@ ggplot(melt(d, id.vars='x', variable.name='density'),
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
-<<normal_cauchy_independence, fig.width=15>>=
+<<normal_cauchy_independence, fig.height=2.5>>=
 set.seed(1)
 y = 0 
 n = 100
@@ -322,7 +322,7 @@ for (i in 2:n) {
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 qplot(1:n, theta) +
-  labs(x="Iteration", y=expression(theta), title="Independence Metropolis-Hastings") +
+  labs(x="Iteration (t)", y=expression(theta), title="Independence Metropolis-Hastings") +
   theme_bw()
 
 theta[1] = 10 # This line changed
@@ -332,7 +332,7 @@ for (i in 2:n) {
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 qplot(1:n, theta) +
-  labs(x="t", y=expression(theta), title="Independence Metropolis-Hastings (poor starting value)") +
+  labs(x="Iteration (t)", y=expression(theta), title="Independence Metropolis-Hastings (poor starting value)") +
   theme_bw()
 @
 \end{frame}
@@ -355,8 +355,10 @@ efficiency
 \pause 
 since if $\theta^{(t)}$ is 
 \begin{itemize}
-\item in a region where $p(\theta^{(t)}|y)>>g(\theta^{(t)})$ \pause then
-\item any proposal $\theta^*$ such that $p(\theta^*|y)\approx g(\theta^*)$ \pause 
+\item in a region where $p(\theta^{(t)}|y)>>g(\theta^{(t)})$\pause, 
+i.e. target has heavier tails than the proposal, \pause then
+\item any proposal $\theta^*$ such that $p(\theta^*|y)\approx g(\theta^*)$\pause,
+i.e. in the center of the target and proposal, \pause 
 \end{itemize}
 will result in 
 \[ r = \frac{g(\theta^{(t)})}{p(\theta^{(t)}|y)}\frac{p(\theta^*|y)}{g(\theta^*)} \pause \approx 0 \]
@@ -369,7 +371,7 @@ will result in
 
 Suppose $\theta|y \sim Ca(0,1)$ and we use a standard normal as a proposal. \pause Then 
 
-<<fig.width=15>>=
+<<fig.height=2>>=
 d = mutate(data.frame(x = seq(-4,4,by=.1)), 
            target = dcauchy(x),
            proposal = dnorm(x),
@@ -380,8 +382,11 @@ ggplot(melt(d[,c('x','target','proposal')],
   geom_line() + 
   theme(legend.position="none")+
   theme_bw()
-ggplot(d, aes(x=x,y=log_ratio)) + geom_line()+
-  theme_bw()
+ggplot(d, aes(x=x,y=exp(log_ratio))) + 
+  geom_line() +
+  theme_bw() +
+  labs(x = "theta", y = "target / proposal") +
+  scale_y_log10()
 @
 
 \end{frame}
@@ -389,7 +394,7 @@ ggplot(d, aes(x=x,y=log_ratio)) + geom_line()+
 
 \begin{frame}[fragile]
 \frametitle{Need heavy tails}
-<<heavy_tails, fig.width=10, cache=TRUE>>=
+<<heavy_tails, fig.height=3.5, cache=TRUE>>=
 n=1000
 theta = rep(0,n)
 for (i in 2:n) {
@@ -398,7 +403,7 @@ for (i in 2:n) {
          dnorm(theta[i-1],log=TRUE)-dnorm(proposed,log=TRUE)
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
-qplot(1:n, theta)+labs(x="t",y=expression(theta)) +theme_bw()
+qplot(1:n, theta)+labs(x="Iteration (t)",y=expression(theta)) +theme_bw()
 @
 
 \end{frame}
@@ -469,7 +474,7 @@ For this example, let $v^2 = 1$.
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model }
-<<normal_cauchy_random_walk, fig.width=15>>=
+<<normal_cauchy_random_walk, fig.height=2>>=
 n = 100
 log_q = function(theta,y) dnorm(y,theta,log=TRUE)+dcauchy(theta,log=TRUE)
 current = rnorm(1,y)
@@ -509,7 +514,8 @@ qplot(1:n, samps) +
 \begin{itemize}
 \item If $v^2\approx 0$\pause, then $\theta^*\approx \theta^{(t)}$ \pause and
 \[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \approx 1 \]
-\pause and all proposals are accepted. \pause 
+\pause and all proposals are accepted\pause, 
+but $\theta^* \approx \theta^{(t)}$. \pause 
 \item As $v^2\to\infty$\pause, then $q(\theta^*|y)\approx 0$ \pause since $\theta^*$ will be far from the mass of the target distribution \pause and 
 \[ r = \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)} \pause \approx 0 \]
 \pause so all proposed values are rejected.
@@ -528,7 +534,7 @@ in an acceptance rate of 40\% for $d=1$ down to 20\% as $d\to\infty$.
 
 Let $y|\theta \sim N(\theta,1)$, $\theta\sim Ca(0,1)$, and $y=1$. 
 
-<<tuning_parameter, fig.width=10>>=
+<<tuning_parameter, fig.height=3>>=
 random_walk = function(n, v, theta0, log_target) {
   theta = rep(theta0,n)
   for (i in 2:n) {
@@ -561,8 +567,10 @@ Let $Y \sim Bin(n,\theta)$ and $\theta \sim Be(1/2,1/2)$\pause, thus the posteri
 
 To construct a random-walk Metropolis algorithm, we choose the proposal 
 \[ \theta^* \sim N(\theta^{(t)},0.4^2) \]
-\pause and accept with probability $\min\{1,r\}$ \pause where 
+\pause and accept, i.e. $\theta^{(t+1)} = \theta^*$ with probability $\min\{1,r\}$ \pause where 
 \[ r = \frac{p(\theta^*|y)}{p(\theta^{(t)}|y)} \pause = \frac{(\theta^*)^{y-0.5}(1-\theta^*)^{n-y-0.5}\mathrm{I}(0<\theta^*<1)}{(\theta^{(t)})^{y-0.5}(1-\theta^{(t)})^{n-y-0.5}\mathrm{I}(0<\theta^{(t)}<1)} \]
+\pause
+otherwise, set $\theta^{(t+1)}=\theta^{(t)}$.
 \end{frame}
 
 
