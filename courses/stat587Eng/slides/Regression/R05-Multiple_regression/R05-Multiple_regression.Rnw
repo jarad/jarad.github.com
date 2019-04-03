@@ -9,12 +9,18 @@
 
 <<options, echo=FALSE, warning=FALSE, message=FALSE>>=
 options(width=120)
-opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+opts_chunk$set(comment=NA, 
+               fig.width=6, 
+               fig.height=5, 
+               size='tiny', 
+               out.width='0.6\\textwidth', 
+               fig.align='center', 
+               echo=FALSE,
+               message=FALSE)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
 library("Sleuth3")
 @
 
@@ -50,7 +56,7 @@ set.seed(2)
   
   We may also write
   \[ Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2) \quad\mbox{ or }\quad 
-     Y_i = \mu_i + e_i, e_i \stackrel{iid}{\sim} N(0,\sigma^2) \]
+     Y_i = \mu_i + e_i, \, e_i \stackrel{iid}{\sim} N(0,\sigma^2) \]
   where 
   \[ \mu_i=\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}. \]
 }
@@ -132,6 +138,34 @@ $\hat\sigma^2(X^\top X)^{-1}$.
 
 \subsection{Higher order terms ($X^2$)}
 \begin{frame}
+\frametitle{Galileo experiment}
+<<>>=
+curve(ifelse(x>0,-x^2+1,NA), -1, 1, axes=FALSE, frame.plot=TRUE, 
+      xlab="", ylab="", ylim=c(0,1.1),
+      lty=2)
+axis(1, c(0,1), c("0","Distance"))
+axis(2, c(0,1), c("0","Height"))
+rect(-1,0,0,1, density = 1)
+points(0,1.03,pch=19, cex=2)
+arrows(-0.3,1.03,-0.1,1.03, length=0.1)
+text(-0.45,1.03,"force")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Galileo data ({\tt Sleuth3::case1001})}
+<<>>=
+ggplot(Sleuth3::case1001, aes(Height, Distance)) +
+  geom_point() +
+  theme_bw()
+@
+\end{frame}
+
+
+
+
+\begin{frame}
 \frametitle{Higher order terms ($X^2$)}
 
 Let 
@@ -206,7 +240,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 
 \begin{frame}
-\frametitle{Case1001}
+\frametitle{case1001}
 
 <<echo=FALSE>>=
 g = ggplot(case1001, aes(x=Height, y=Distance)) + geom_point(size=3)
@@ -226,7 +260,7 @@ multiplot(
 \begin{frame}[fragile]
 \frametitle{R code and output}
 
-<<tidy=FALSE>>=
+<<tidy=FALSE, echo=TRUE>>=
 # Construct the variables by hand
 case1001$Height2 = case1001$Height^2
 case1001$Height3 = case1001$Height^3
@@ -246,7 +280,7 @@ coefficients(m3)
 \begin{frame}[fragile]
 \frametitle{R code and output}
 
-<<tidy=FALSE>>=
+<<tidy=FALSE, echo=TRUE>>=
 # Let R construct the variables for you
 m = lm(Distance~poly(Height, 3, raw=TRUE), case1001)
 summary(m)
@@ -497,7 +531,7 @@ of them has on the mean response depends on the value of the other.
 For example, 
 \begin{itemize}[<+->]
 \item Longnose dace: The effect of nitrate (no3) on longnose dace count depends on the maxdepth. (Continuous-continuous)
-\item Case1002: The effect of mass on energy depends on the species type. (Continuous-categorical)
+\item case1002: The effect of mass on energy depends on the species type. (Continuous-categorical)
 \item Yield: the effect of tillage method depends on the fertilizer brand (Categorical-categorical)
 \end{itemize}
 \end{frame}
