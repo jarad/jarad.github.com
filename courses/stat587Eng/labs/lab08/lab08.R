@@ -1,9 +1,8 @@
 ## ----install_packages, eval=FALSE----------------------------------------
-## install.packages(c("Sleuth3","readr"))
+## install.packages("Sleuth3")
 
 ## ----load_packages-------------------------------------------------------
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
 library("Sleuth3")
 
 ## ------------------------------------------------------------------------
