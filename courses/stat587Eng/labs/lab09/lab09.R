@@ -1,10 +1,8 @@
 ## ----install_packages, eval=FALSE----------------------------------------
-## install.packages(c("GGally","tidyr"))
+## install.packages("GGally")
 
 ## ----load_packages-------------------------------------------------------
-library("dplyr")
-library("tidyr")
-library("ggplot2")
+library("tidyverse")
 library("GGally")
 library("Sleuth3")
 
@@ -135,6 +133,16 @@ summary(m2)
 ## ------------------------------------------------------------------------
 m3 <- lm(sqrt(count) ~ (no3 + maxdepth)^2, data = longnosedace)
 summary(m3)
+
+## ------------------------------------------------------------------------
+m4 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^2, data = longnosedace) # main effects and two-way interactions
+summary(m4)
+
+m5 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^3, data = longnosedace) # main effects, two-way interactions, and three-way interaction
+summary(m5)
+
+m5 <- lm(sqrt(count) ~ no3 * maxdepth * acreage, data = longnosedace) # main effects, two-way interactions, and three-way interaction
+summary(m5)
 
 ## ---- eval=FALSE---------------------------------------------------------
 ## ?formula
