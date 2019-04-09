@@ -15,7 +15,7 @@ This page is design to provide guidance for the report.
 ## Rubric
 
 To aid in providing uniform grading, 
-I have developed a [rubric](report-rubric.pdf) for grading the report.
+I have developed a [rubric](report-rubric.html) for grading the report.
 This rubric provides 10 points for each of the following 10 categories:
 on-time, length, grammar, design, clarity, figure(s), table(s), math, 
 accuracy, and Bayesian. The rubric provides information for each of these 
