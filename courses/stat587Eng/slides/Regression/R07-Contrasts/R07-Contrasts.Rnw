@@ -32,28 +32,64 @@ set.seed(2)
 
 
 \section{Contrasts}
-\frame{\frametitle{Simple hypothesis}	
-	Consider the one-way ANOVA model: $Y_{ij} \ind N(\mu_j,\sigma^2)$ where $j=1,\ldots,J$.
-	
-	\vspace{0.2in} \pause
-	
-	Here are a few simple alternative hypotheses:
+\begin{frame}
+\frametitle{Scientific questions}	
+	Here are a few example scientific questions:
   
 	\begin{enumerate}
-	\item Mean lifetimes for N/R50 and R/R50 diet are different. \pause
-	\item Mean lifetimes for N/R40 is different than for N/R50 and R/R50 combined. \pause
-	\item Mean lifetimes for high calorie (NP and N/N85) diets is different than for low calorie diets combined.
+	\item What is the effect of pre-wean calorie restriction on mean 
+	lifetimes? 
+	\pause 
+	With these data, we can ask what is the difference in mean lifetimes for N/R50 and R/R50 diet? 
+	\pause
+	\item What is the difference in mean lifetimes between mice on a
+	40 kcal diet compared to those on a 50 kcal diet? 
+	\pause
+	With these data, we can ask what is the difference in mean lifetimes on N/R40 diet compared to N/R50 and R/R50 combined? \pause
+	\item What is the effect of high calorie vs low calorie diets on
+	mean lifetimes?
+	\pause
+	With these data, we can ask what is the difference in mean lifetimes for high calorie (NP and N/N85) diets compared to 
+	low calorie diets (N/R40, N/R50, R/R50, lopro)?
 	\end{enumerate}
 
 	\vspace{0.2in} \pause 
 	
-	$H_0: \gamma=0 \qquad H_1: \gamma \ne 0:$ \pause
+	We can compute \alert{contrasts}:
 	\[ \begin{array}{rl}
 	\gamma_1 &=  \mu_{R/R50}-\mu_{N/R50} \pause\\
 	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
 	\gamma_3 &= \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro})-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
 	\end{array} \]
-}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Converting scientific questions into mathematical quantities}	
+	Consider the one-way ANOVA model: $Y_{ij} \ind N(\mu_j,\sigma^2)$ where $j=1,\ldots,J$.
+	
+	\vspace{0.1in} \pause
+	
+	Here are a few simple alternative hypotheses:
+  
+	\begin{enumerate}
+	\item What is the difference in mean lifetimes for N/R50 and R/R50 diet? 
+	\item What is the difference in mean lifetimes on N/R40 diet compared to N/R50 and R/R50 combined? 
+	\item What is the difference in mean lifetimes for high calorie (NP and N/N85) diets compared to 
+	low calorie diets (N/R40, N/R50, R/R50, lopro)?
+	\end{enumerate}
+
+\pause 
+	
+	We can compute \alert{contrasts}:
+	\[ \begin{array}{rl}
+	\gamma_1 &=\mu_{R/R50}-\mu_{N/R50} \pause\\
+	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
+	\gamma_3 &= \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro})-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
+	\end{array} \]
+\end{frame}
+
+
 
 
 \begin{frame}
@@ -96,12 +132,16 @@ i.e. the positive coefficients sum to 1 and the negative coefficients sum to -1.
 	\pause
 	
 	with standard error
-	\[ SE(g) = \hat\sigma \sqrt{\frac{C_1^2}{n_1}+\frac{C_2^2}{n_2}+\cdots+\frac{C_J^2}{n_J}} \]
+	\[ SE(g) = \hat\sigma \sqrt{\frac{C_1^2}{n_1}+\frac{C_2^2}{n_2}+\cdots+\frac{C_J^2}{n_J}}. \]
 	
 	\pause
 	
-	t-statistic (compare to $t_{n-J}$) and CI:
-	\[ t = \frac{g}{SE(g)}  \pause \qquad g \pm t_{n-J,1-\alpha/2} SE(g) \]
+	Two-sided p-values for $H_0: g=g_0$ (typically $g_0=0$) and posterior tail 
+	probabilities (i.e. $2P(\gamma>0|y)$ or $2P(\gamma<0|y)$):
+	\[ t = \frac{g-g_0}{SE(g)}, \quad p = 2P(T_{n-J} < -|t|). \]
+	\pause
+	Two-sided equal-tail $100(1-\alpha)$\% confidence/credible intervals:
+	\[ g \pm t_{n-J,1-\alpha/2} SE(g). \]
 \end{frame}
 
 
@@ -127,11 +167,13 @@ For these contrasts:
 \pause
 
 {\tiny
-<<echo=FALSE, results='asis'>>=
+<<K,echo=FALSE>>=
 K = rbind("early rest - none @ 50kcal"=c( 0, 0,-1, 0, 1, 0),
-          "40kcal/week - 50kcal/week" =c( 0, 2,-1, 0,-1, 0) / 2,
-          "lo cal - hi cal"           =c(-2, 1, 1,-2, 1, 1) / 4)
+          "40kcal/week - 50kcal/week" =c( 0, 2,-1, 0,-1, 0) / 2, # note the denominator here
+          "lo cal - hi cal"           =c(-2, 1, 1,-2, 1, 1) / 4) # and here
 colnames(K) = levels(case0501$Diet)
+@
+<<echo=FALSE,results='asis'>>=
 print(xtable(K))
 @
 }
@@ -182,29 +224,45 @@ print(xtable(tests))
 
 \subsection{R}
 \begin{frame}[fragile]
-
-<<warning=FALSE>>=
+\frametitle{Fit the multiple regression model}
+<<>>=
 m = lm(Lifetime ~ Diet, data = Sleuth3::case0501) 
 summary(m)
-K
 @
+\end{frame}
 
+
+\begin{frame}[fragile]
+\frametitle{Construct contrasts}
+<<>>=
+<<K>>
+K
+
+# (Complicated) code to construct list from data.frame by row
+# https://stackoverflow.com/questions/3492379/data-frame-rows-to-a-list
+# you could just construct lists from the beginning, but the K data.frame is 
+# used previously in the code to construct the contrasts by hand
+K_list <- split(K, seq(nrow(K)))
+K_list <- setNames(split(K, seq(nrow(K))), rownames(K))
+
+K_list
+@
 \end{frame}
 
 
 
-
 \begin{frame}[fragile]
-<<warning = FALSE>>=
+<<>>=
 library("emmeans")
-ls = emmeans(m, ~ Diet)
-ls
+em = emmeans(m, ~ Diet)
+em
 
-co = contrast(ls, 
-              #                                   N/N85 N/R40 N/R50  NP R/R50 lopro
-              list("early rest - none @ 50kcal"=c(    0,    0,   -1,  0,    1,    0),
-                   "40kcal/week - 50kcal/week" =c(    0,    2,   -1,  0,   -1,    0) / 2,
-                   "lo cal - hi cal"           =c(   -2,    1,    1, -2,    1,    1) / 4))
+co = contrast(em, K_list)
+
+# p-values (and posterior tail probabilities)
+co
+
+# confidence/credible intervals
 confint(co)
 @
 \end{frame}
