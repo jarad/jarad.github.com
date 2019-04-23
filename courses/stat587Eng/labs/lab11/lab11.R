@@ -2,9 +2,7 @@
 ## install.packages("emmeans")
 
 ## ----load_packages-------------------------------------------------------
-library("dplyr")
-library("ggplot2")
-# library("Sleuth3")
+library("tidyverse")
 library("emmeans")
 
 ## ------------------------------------------------------------------------
@@ -54,8 +52,10 @@ confint(co)
 ## ------------------------------------------------------------------------
 wood_glue <- data.frame(weight = c(185,170,210,240,245,190,210,250,
                                   290,280,260,270,200,280,350,350),
-                        wood = rep(c("spruce","maple"),each = 8),
-                        glue = rep(c("carpenter's", "weldbond","gorilla","titebond"), each=2, times=2))
+                        wood = rep(c("spruce","maple"), each = 8),
+                        glue = rep(c("carpenter's","weldbond",
+                                     "gorilla","titebond"), 
+                                   each=2, times=2))
 
 ## ------------------------------------------------------------------------
 ggplot(wood_glue, aes(wood, weight, color=glue, shape=glue)) +

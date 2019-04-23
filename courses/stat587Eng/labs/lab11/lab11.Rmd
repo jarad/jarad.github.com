@@ -22,9 +22,7 @@ install.packages("emmeans")
 Now load the packages
 
 ```{r load_packages}
-library("dplyr")
-library("ggplot2")
-# library("Sleuth3")
+library("tidyverse")
 library("emmeans")
 ```
 
@@ -114,8 +112,7 @@ To get the CIs, use `confint`:
 confint(co)
 ```
 
-By default, these functions use a Tukey multiple comparison adjustment which is the 
-most appropriate adjustment for performing all pairwise comparisons. 
+By default, these functions use a Tukey multiple comparison adjustment which is the most appropriate adjustment for performing all pairwise comparisons. 
 
 You can turn off the adjustment by setting the `adjust` argument to "none", e.g.
 
@@ -135,11 +132,11 @@ We can specify just these comparisons by changing the `method` argument to
 (co <- contrast(ls, method = "trt.vs.ctrl"))
 confint(co)
 ```
+
 Notice that the adjustment method used here is the `dunnettx` method which is
 an approximation to the exact Dunnett method.
 The exact Dunnett method is an appropriate choice when comparing treatments to a 
-control and can be obtained using `adjust = "mvt"`, 
-but this requires more computing time.
+control and can be obtained using `adjust = "mvt"`, but this requires more computing time.
 
 #### Contrast activity
 
@@ -168,8 +165,10 @@ For simplicity, the data here are taken to be balanced.
 ```{r}
 wood_glue <- data.frame(weight = c(185,170,210,240,245,190,210,250,
                                   290,280,260,270,200,280,350,350),
-                        wood = rep(c("spruce","maple"),each = 8),
-                        glue = rep(c("carpenter's", "weldbond","gorilla","titebond"), each=2, times=2))
+                        wood = rep(c("spruce","maple"), each = 8),
+                        glue = rep(c("carpenter's","weldbond",
+                                     "gorilla","titebond"), 
+                                   each=2, times=2))
 ```
 
 ```{r}
