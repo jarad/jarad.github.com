@@ -13,8 +13,7 @@ opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
 library("gridExtra")
 # library("xtable")
 # library("Sleuth3")
@@ -44,8 +43,11 @@ various experimental designs:
 \item Balanced, complete design
 \item Unbalanced, complete
 \item Incomplete
-\item Optimization
 \end{itemize}
+
+\vspace{0.1in} \pause
+
+We will also consider the problem of finding the density that maximizes yield.
 
 \end{frame}
 
@@ -112,6 +114,7 @@ tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L,
 "Density", "Yield"), class = "data.frame", row.names = c(NA, 
 -36L))
 tomato$Variety = relevel(tomato$Variety, ref="C")
+
 ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
 @
 \end{frame}
@@ -146,7 +149,7 @@ sm
 	
 	Consider the models:
 		\begin{itemize}
-		\item Additive: $\mu_{ij} = \mu+\nu_i + \delta_j$
+		\item Additive/Main effects: $\mu_{ij} = \mu+\nu_i + \delta_j$
 		\item Cell-means: $\mu_{ij} = \mu+\nu_i + \delta_j + \gamma_{ij}$
 		\end{itemize}
 	\end{itemize}
@@ -170,7 +173,7 @@ sm
 	\item Assign a reference level for both variety (C) and density (40).
 	\item Let $V_i$ and $D_i$ be the variety and density for observation $i$. 
 	\item Build indicator variables, e.g. $\I(V_i=A)$ and $\I(D_i=10)$. 
-	\item The additive model: {\scriptsize
+	\item The additive/main effects model: {\scriptsize
 	\[ \begin{array}{rl} \mu_{i} =& \beta_0 \\
 	&+ \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
 	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30).
@@ -196,7 +199,7 @@ sm
 \begin{frame}
 \frametitle{ANOVA Table}
 
-ANOVA Table - Additive model
+ANOVA Table - Additive/Main Effects model
 \begin{center}
 \begin{tabular}{ccccc}
 Source & SS & df & MS & F \\
@@ -226,6 +229,19 @@ Total & SST & n-$1$
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{Two-way ANOVA in R}
+<<echo=TRUE>>=
+tomato$Density = factor(tomato$Density)
+m = lm(Yield~Variety+Density, tomato)
+drop1(m, test="F")
+m = lm(Yield~Variety*Density, tomato)
+drop1(m, test="F")
+drop1(m, scope = ~Variety+Density+Variety:Density, test="F") # Force
+@
+\end{frame}
+
+
 
 \subsection{Additive vs cell-means}
 \begin{frame}
@@ -239,7 +255,7 @@ Opinions differ on whether to use an additive vs a cell-means model when the int
 \begin{tabular}{lcc}
 & Additive & Cell-means \\
 \hline
-Interpretation & Direct & Complicated \\
+Interpretation & Direct & More complicated \\
 Estimate of $\sigma^2$ & Biased & Unbiased
 \end{tabular}
 \end{center}
