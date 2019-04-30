@@ -19,7 +19,7 @@ opts_chunk$set(comment=NA,
 options(width=120)
 @
 
-<<libraries, message=FALSE, warning=FALSE>>=
+<<libraries, warning=FALSE>>=
 library(reshape2)
 library(plyr)
 library("dplyr")
@@ -27,6 +27,7 @@ library(ggplot2)
 library(xtable)
 library(lme4)
 library(rstan)
+library("rstanarm")
 @
 
 <<set_seed>>=
@@ -79,7 +80,7 @@ set.seed(2)
 	These assumptions imply
 	\begin{itemize}
 	\item $E[y|\beta,\Omega,\Lambda] = X\beta$ \pause 
-	\item $V[y|\beta,\Omega,\Lambda] = Z\Omega Z'+\Lambda = \mySigma_y$ \pause
+	\item $V[y|\beta,\Omega,\Lambda] = Z\Omega Z'+\Lambda = \Sigma_y$ \pause
 	\end{itemize}
 	
 	Common addition assumptions
@@ -279,7 +280,7 @@ with(d, table(Genotype, Tray))
 \subsection{lmer}
 \begin{frame}[fragile]
 \frametitle{Non-Bayesian analysis}
-<<non-Bayesian, message=FALSE, cache=TRUE, echo=TRUE>>=
+<<non-Bayesian, echo=TRUE>>=
 m1 = lmer(SeedlingWeight ~ Genotype + (1|Tray), d); summary(m1)
 @
 
@@ -321,7 +322,7 @@ Dr. Douglas Bates
 
 
 \begin{frame}[fragile]
-<<confidence_intervals, dependson="non-Bayesian", cache=TRUE, echo=TRUE>>=
+<<confidence_intervals, dependson="non-Bayesian", echo=TRUE>>=
 confint(m1, method="profile")
 confint(m1, method="Wald")
 confint(m1, method="boot")
@@ -356,7 +357,7 @@ Ca^+(\sigma_e;0,1)Ca^+(\sigma_\tau;0,1).\]
 
 \subsection{Stan}
 \begin{frame}[fragile]
-<<stan_model, tidy=FALSE, cache=TRUE, echo=TRUE>>=
+<<stan_model, tidy=FALSE, echo=TRUE>>=
 stan_model = "
 data {
   int<lower=1> n;
@@ -370,8 +371,8 @@ data {
 parameters {
   real gamma[n_genotypes]; // Implicit improper prior over whole real line
   real tau[n_trays];
-  real<lower=0> sigma_e;   // Implicit prior over positive reals
-  real<lower=0> sigma_tau; // Implicit prior over positive reals
+  real<lower=0> sigma_e;   
+  real<lower=0> sigma_tau; 
 }
 
 model {
@@ -395,7 +396,7 @@ generated quantities {
 
 \subsection{Results}
 \begin{frame}[fragile]
-<<analysis, dependson="stan_model", cache=TRUE, message=FALSE, echo=TRUE>>=
+<<analysis, dependson="stan_model", echo=TRUE>>=
 m = stan_model(model_code=stan_model)
 
 r = sampling(m, 
@@ -512,7 +513,7 @@ and (if the regularity conditions hold)
 
 \subsection{Comparing genotypes}
 \begin{frame}[fragile]
-<<probability, dependson='analysis', echo=TRUE, message=FALSE>>=
+<<probability, dependson='analysis', echo=TRUE>>=
 library(mcmcse)
 # Obtain samples for delta_tilde
 samps = extract(r, "delta", permuted=FALSE) %>%
@@ -610,6 +611,40 @@ samps %>%
 % @
 % 
 % \end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{rstanarm}
+<<rstanarm_fit, echo=TRUE>>=
+m2 = stan_lmer(SeedlingWeight ~ Genotype + (1|Tray), 
+               data    = d,
+               
+               prior_intercept = NULL,     # improper uniform on intercept
+               prior = NULL,               # improper uniform for regression coefficients
+               
+               prior_aux = cauchy(0,1),    # residual standard deviation
+               prior_covariance = decov(), # ???
+               
+               algorithm = "sampling",     # use MCMC (HMC)
+               
+               refresh = 0)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{}
+<<rstarnarm_convergence, dependson="rstanarm">>=
+summary(m2, probs = c(0.05,.5,.975))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{}
+<<rstanarm_results, dependson="rstanarm_fit", echo=TRUE>>=
+m2
+@
+\end{frame}
+
 
 
 
