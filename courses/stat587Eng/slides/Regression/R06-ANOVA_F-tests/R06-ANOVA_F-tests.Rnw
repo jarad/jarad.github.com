@@ -13,8 +13,7 @@ opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
 library("Sleuth3")
 @
 
@@ -55,12 +54,15 @@ Assumptions:
 \begin{frame}[fragile]
 \frametitle{ANOVA assumptions graphically}
 <<echo=FALSE>>=
-set.seed(1)
-mu = rnorm(6)
-opar = par(mar=rep(0,4) + 0.1)
-curve(dnorm(x,mu[1]),-4,6, axes=F, frame=T, xlab="", ylab="", lwd=2)
-for (i in 2:length(mu)) curve(dnorm(x, mu[i]), add=TRUE, lwd=2, col=i, lty=i)
-par(opar)
+set.seed(20190410)
+d <- expand.grid(x = seq(-5, 5, length=101),
+                 mean = round(sort(rnorm(6)),2)) %>%
+  mutate(density = dnorm(x, mean),
+         mean = paste0("mean = ", mean))
+
+ggplot(d, aes(x, density, color=mean, linetype=mean)) + 
+  geom_line() + 
+  theme_bw()
 @
 \end{frame}
 
@@ -353,6 +355,12 @@ ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) +
 \begin{frame}[fragile]
 \frametitle{F-distribution}
 
+$F$-distribution has two parameters: 
+\begin{itemize}
+\item numerator degrees of freedom (ndf)
+\item denominator degrees of freedom (ddf)
+\end{itemize}
+
 <<F-distribution, echo=FALSE>>=
 df = c(5,300)
 curve(df(x,df[1], df[2]), 0, 4, main=expression(F[list(5,300)]),
@@ -403,8 +411,8 @@ F =& MSA/MSE = 2547/44.5 = 57.2 \\
 p =& P(F_{5,343}>57.2) < 0.0001
 \end{array} \]
 \pause
-F statistic is off by 0.1 relative to the table later, because of rounding
-of 8.97. 
+F statistic is off by 0.1 relative to the table later, 
+because of rounding of 8.97. 
 The real SST is 28031 which would be the F statistic of 57.1. 
 }
 \end{frame}
@@ -416,11 +424,11 @@ The real SST is 28031 which would be the F statistic of 57.1.
 \frametitle{Graphical comparison}
 
 <<echo=FALSE>>=
-ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) + 
-  geom_jitter(size=3) + 
+ggplot(Sleuth3::case0501, aes(x = Diet)) + 
+  geom_jitter(aes(y=Lifetime), size=3) + 
   geom_hline(data=sm2, aes(yintercept=mean[7]), 
              col='red', size=2) + 
-  geom_errorbar(data=sm, aes(y=mean, ymin=mean, ymax=mean), 
+  geom_errorbar(data=sm, aes(x=Diet, ymin=mean, ymax=mean), 
                 col='blue', size=2) +
   theme_bw()
 @
@@ -433,7 +441,7 @@ ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) +
 
 \begin{frame}[fragile]
 \frametitle{R code and output for one-way ANOVA}
-<<>>=
+<<echo=TRUE>>=
 m <- lm(Lifetime~Diet, case0501)
 anova(m)
 @
@@ -517,7 +525,7 @@ Two models are \alert{nested} if the \alert{reduced} model is a special case of 
 For example, consider the full model 
 \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2). \]
 \pause One special case of this model occurs when $\mu_j=\mu$ \pause and thus 
-\[ Y_{ij} \stackrel{ind}{\sim} N(\mu,\sigma^2). \]
+\[ Y_{ij} \stackrel{ind}{\sim} N(\mu,  \sigma^2). \]
 is a reduced model and these two models are nested. 
 
 \end{frame}
@@ -541,7 +549,7 @@ is a reduced model and these two models are nested.
 	\uncover<4->{r_{ij} = Y_{ij}-\hat{\mu}_j = Y_{ij}-\overline{Y}_j} & 
 	\uncover<8->{r_{ij} = Y_{ij}-\hat{\mu} = Y_{ij}-\overline{Y}} \\ &&\\ \hline && \\
 	\mbox{SSE} & 
-	\uncover<5->{\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  & 
+	\uncover<5->{\hat{\sigma}^2 = \sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  & 
 	\uncover<9->{\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  \\ &&\\\hline
 	\end{array} \]
 }
@@ -562,8 +570,9 @@ is a reduced model and these two models are nested.
 	\multicolumn{1}{l}{\mbox{Extra degrees of freedom =}} \\ 
 	\mbox{ \# of mean parameters (full) - \# of mean parameters (reduced)} \end{array} \] \pause
 	\item Calculate F-statistics
-	\[ \mbox{F} = \frac{\mbox{Extra sum of squares / Extra degrees of freedom}}{\hat{\sigma}^2} \] \pause 
-	\item A pvalue is $P(F_{ndf,ddf} > \mbox{F})$
+	\[ \mbox{F} = 
+	\frac{\mbox{Extra sum of squares / Extra degrees of freedom}}{\mbox{Estimated residual variance in full model }(\hat\sigma^2)} \] \pause 
+	\item A pvalue is $P(F_{\mbox{ndf},\mbox{ddf}} > \mbox{F})$
 		\begin{itemize}
 		\item numerator degrees of freedom (ndf) = Extra degrees of freedom
 		\item denominator degrees of freedom (ddf): df associated with $\hat{\sigma}^2$
@@ -601,11 +610,11 @@ Consider the hypothesis that all diets have a common mean lifetime except NP.
 <<echo=FALSE>>=
 sm3 = sm 
 sm3$mean[-which(sm3$Diet=="NP")] = mean(case0501$Lifetime[case0501$Diet!="NP"])
-ggplot(case0501, aes(x=Diet, y=Lifetime)) + 
-  geom_jitter(size=3) + 
-  geom_errorbar(data=sm, aes(y=mean, ymin=mean, ymax=mean), 
+ggplot(case0501, aes(x=Diet)) + 
+  geom_jitter(aes(y=Lifetime), size=3) + 
+  geom_errorbar(data=sm, aes(ymin=mean, ymax=mean), 
                 col='blue', size=2) + 
-  geom_errorbar(data=sm3, aes(y=mean, ymin=mean, ymax=mean), 
+  geom_errorbar(data=sm3, aes(ymin=mean, ymax=mean), 
                 col='red', size=2) +
   theme_bw()
 @
@@ -671,9 +680,9 @@ anova(modR,modF)
 
 
 
-\subsection{Lack-of-fit F-test}
+\subsection{Lack-of-fit F-test for linearity}
 
-\frame{\frametitle{Lack-of-fit F-test}
+\frame{\frametitle{Lack-of-fit F-test for linearity}
   Let $Y_{ij}$ be the $i^{th}$ observation from the $j^{th}$ group where the group is defined by those observations having the same explanatory variable value ($X_j$). 
   
   \vspace{0.1in} \pause
