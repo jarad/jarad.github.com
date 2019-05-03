@@ -25,5 +25,5 @@ could use only a one-page formula sheet.
 ## Final
 
 - 2016: [exam](final/STAT401Eng_final_Spring2016.pdf) [key](final/STAT401Eng_final_Spring2016_key.pdf)
-- 2017: [exam](final/STAT401Eng_final_Spring2017.pdf) [key](final/STAT401Eng_final_Spring2017_key.pdf) [diagnostics.csv](final/diagnostics.csv)
+- 2017: [exam](final/STAT401Eng_final_Spring2017.pdf) [key](final/STAT401Eng_final_Spring2017_key.pdf) [diagnostics.csv](final/diagnostics.csv) [donation.csv](final/donation.csv)
 - 2018: [exam](final/STAT401Eng_final_Spring2018.pdf) [key](final/STAT401Eng_final_Spring2018_key.pdf) [hardness.csv](final/hardness.csv)
