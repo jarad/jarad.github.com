@@ -1,0 +1,638 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+\usepackage[hidelinks]{hyperref}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 587C}
+\newcommand{\semester}{Spring 2019}
+\newcommand{\exam}{Final exam}
+
+<<echo=FALSE, message=FALSE>>=
+options(scipen=999)
+
+library("tidyverse")
+
+opts_chunk$set(highlight=FALSE, background="white")
+@
+
+
+% \excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(100 points)}
+\end{center}
+
+\vspace*{1in}
+
+{\large
+\textbf{Instructions:}\\
+\begin{enumerate}
+\item Full credit will be given only if you show your work.
+\item The questions are not necessarily ordered from easiest to hardest.
+\item You are allowed to use any resource except aid from another individual.
+\item Aid from another individual will automatically earn you a 0.
+\item Feel free to tear off the last page. There is no need to turn it in.
+\end{enumerate}
+}
+
+
+\newpage
+\noindent
+{\Large Regression calculation} 
+\begin{enumerate}
+
+<<echo=FALSE>>=
+set.seed(20190501)
+n <- 100
+x <- rnorm(n, 55, 10)
+y <- rnorm(n, -4*x, 33)
+mx <- mean(x) %>% round()
+my <- mean(y) %>% round()
+sx <- sd(x)   %>% round()
+sy <- sd(y)   %>% round()
+@
+
+
+\item Suppose we have the following summary statistics for \Sexpr{n} pairs of 
+response-explanatory variables with a sample correlation of 
+\Sexpr{cor(x,y) %>% round(2)}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l|rr}
+& Explanatory ($x$) & Response ($y$) \\
+\hline
+mean & \Sexpr{mx} & \Sexpr{my} \\
+standard deviation & \Sexpr{sx} & \Sexpr{sy} \\
+\hline
+\end{tabular}
+\end{table}
+
+Provide estimates of the following quantities. (2 points each)
+
+\begin{answer}
+<<>>=
+n = 100
+Xbar = 55
+Ybar = -221
+s_X  = 9
+s_Y = 49
+r_XY = -0.7
+
+SXX <- (n-1)*s_X^2
+SYY <- (n-1)*s_Y^2
+SXY <- (n-1)*s_X*s_Y*r_XY
+@
+\end{answer}
+
+\begin{enumerate}
+\item Intercept, $\hat\beta_0$
+
+\begin{answer}
+<<>>=
+beta1 <- SXY/SXX
+beta0 <- Ybar - beta1 * Xbar
+beta0
+@
+\end{answer}
+\vfill
+
+\item Slope, $\hat\beta_1$
+
+\begin{answer}
+<<>>=
+beta1
+@
+\end{answer}
+\vfill
+
+\item Coefficient of determination, $R^2$
+
+\begin{answer}
+<<>>=
+R2 <- r_XY^2; R2
+@
+\end{answer}
+\vfill
+
+\item Residual sum of squares, $SSE$
+
+\begin{answer}
+<<>>=
+SSE <- SYY*(1-R2); SSE
+@
+\end{answer}
+\vfill
+
+\item Error variance, $\hat\sigma^2$
+
+\begin{answer}
+<<>>=
+sigma2 <- SSE/(n-2); sigma2
+@
+\end{answer}
+\vfill
+
+\item Standard error for the intercept, $SE(\hat\beta_0)$
+
+\begin{answer}
+<<>>=
+sigma = sqrt(sigma2)
+SE_beta0 <- sigma*sqrt(1/n + Xbar^2/SXX); SE_beta0
+@
+\end{answer}
+\vfill
+
+\item Standard error for the slope, $SE(\hat\beta_1)$
+
+\begin{answer}
+<<>>=
+SE_beta1 <- sigma*sqrt( 1/SXX ); SE_beta1
+@
+\end{answer}
+\vfill
+
+\item Mean response when the explanatory variable is 70, $E[Y|X=70]$
+
+\begin{answer}
+<<>>=
+x = 70
+beta0 + beta1 * x
+@
+\end{answer}
+\vfill
+
+\item Standard error of the mean response when $X$ is 70, $SE(E[Y|X=70])$
+
+\begin{answer}
+<<>>=
+sigma*sqrt( 1/n + (Xbar-x)^2/SXX )
+@
+\end{answer}
+\vfill
+
+\item Standard error of prediction when $X$ is 70,
+$SE(Pred\{Y|X=70\})$
+
+\begin{answer}
+<<>>=
+sigma*sqrt( 1 + 1/n + (Xbar-x)^2/SXX )
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\newpage
+\noindent
+{\Large Model comparisons}
+
+\item An unreplicated completely randomized block design (CRBD) experiment is 
+being designed to study the effect of laser etching on hardness of Boron 
+Nitride.
+The experiment has 2 blocks, 3 levels of laser intensity, and 4 levels of laser
+speed. 
+
+\begin{enumerate}
+\item Complete the degrees of freedom portion of the following ANOVA table.
+(12 points)
+
+\begin{table}[h]
+\centering
+{\Large
+\begin{tabular}{l|r}
+\hline
+Factor & df \\
+\hline
+Block & \\
+Intensity & \\
+Speed & \\
+Intensity:Speed & \\
+Error & \\
+\hline
+Total & \\
+\hline
+\end{tabular}
+}
+\end{table}
+\begin{answer}
+\begin{table}[h]
+\centering
+{\Large
+\begin{tabular}{l|r}
+\hline
+Factor & df \\
+\hline
+Block & 1\\
+Intensity & 2\\
+Speed & 3\\
+Intensity:Speed & 6\\
+Error & 11\\
+\hline
+Total & 23\\
+\hline
+\end{tabular}
+}
+\end{table}
+\end{answer}
+
+\item The following table provides residual sums-of-squares for a sequence of 
+nested models.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccc|r}
+\hline
+\multicolumn{4}{c|}{Term included} & \\
+Block & Intensity & Speed & Intensity:Speed & SSE \\
+\hline
+% X &   &   &   &   & 55 \\
+X &   &   &   & 55 \\
+X & X &   &   & 43 \\
+X & X & X &   & 30 \\
+X & X & X & X & 8 \\
+\hline
+\end{tabular}
+\end{table}
+
+Conduct an $F$-test to compare the model with Block to the model that 
+includes Block, Intensity, Speed, and the interaction between Intensity and 
+Speed. Report the numerator
+and denominator degrees of freedom, estimate for $\hat\sigma^2$, $F$-statistic, 
+$p$-value, and an interpretation for the test. (8 points)
+
+\begin{answer}
+<<>>=
+n_df = 11 # 2+3+6
+d_df = 11 # error degrees of freedom
+SSE_full = 8
+SSE_reduced = 55
+sigma2 = 8/11 # SSE for full model/error degrees of freedom
+Fstat = (SSE_reduced-SSE_full)/n_df/sigma2; Fstat
+p = 1-pf(Fstat,n_df,d_df); p
+@
+\[F_{11,11} = \frac{(55-8)/11}{8/11} = \Sexpr{Fstat}\]
+\[p=P(F_{11,11} > \Sexpr{Fstat}) = 1-P(F_{11,11} < \Sexpr{Fstat}) = \Sexpr{p}\]
+
+The data are incompatible with the null model which is the regression model 
+whose mean only includes block.
+If we believe the other regression model assumptions, i.e. independent errors,
+normal errors, and errors with constant variance, then we should improve the 
+mean structure by including intensity, speed, their interaction, or some 
+combination of these.
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+
+
+
+
+
+
+\newpage
+\noindent
+{\Large Escaping hydrocarbons}
+
+<<echo=FALSE>>=
+d <- read.table("http://people.sc.fsu.edu/~jburkardt/datasets/regression/x14.txt",
+                header = FALSE,
+                skip = 43)
+names(d) = c("id","Tank temperature (F)","Petrol temperature (F)",
+             "Initial tank pressure (pounds/square inch)",
+             "Petrol pressure (pounds/square inch)",
+             "Hydrocarbons escaping (grams)")
+write_csv(d %>% select(-id), path="hydrocarbons.csv")
+@
+
+\item The file \texttt{hydrocarbons.csv} is a \texttt{csv} version of the data set 
+found at \url{http://people.sc.fsu.edu/~jburkardt/datasets/regression/x14.txt}.
+Use the following code to fit a main effects model:
+<<message=FALSE>>=
+d = read.csv("hydrocarbons.csv")
+m = lm(Hydrocarbons.escaping..grams. ~ ., data = d)
+@
+Answer the following questions based on this model fit.
+
+\begin{enumerate}
+\item For each of the following regression assumptions, state whether the 
+assumption is reasonably met and state what your evidence for this conclusion. 
+As an example, for the linearity (mean structure) assumption, you 
+might say 
+\begin{quote}
+The linearity assumption is reasonably met based on no curvature observed in 
+scatterplots of residuals vs each individual explanatory variable.
+\end{quote}
+(5 points each)
+
+\begin{enumerate}
+\item Normality
+
+\begin{answer}
+The linearity assumption appears reasonably met according to the normal qq-plot.
+There is some slight evidence of heavy-tailed errors, but nothing too concerning.
+\end{answer}
+\vfill
+
+\item Constant variance
+
+\begin{answer}
+The constant variance assumption appears reasonably met according to the plot 
+of residuals vs fitted values (no shotgun pattern) and the absolute residuals
+vs fitted values or scale-location plot (smoothing line is reasonably straight).
+\end{answer}
+\vfill
+
+\item Independence
+
+\begin{answer}
+Independence is hard to evaluate. Plotting the residuals vs index which may give
+an indication of a temporal pattern in the errors may show reduced variability
+for residuals with a low index compared to residuals with a higher index. 
+This would actually be a violation of the constant variance assumption.
+No clear pattern is observed in the residuals and therefore there is no clear
+evidence that the independence assumption is violated.
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\item Explain why the observation in line 18 has high leverage. (5 points)
+
+\begin{answer}
+An observation has high leverage when the explanatory variables are far from
+the explanatory variables for the other observations.
+Observation 18 has tank temperature of 90F which is almost the maximum in the 
+data set, initial tank pressure of 7.32psi which is close to the maximum, 
+petrol pressure of 7.2psi which is also close to the maximum, and petrol 
+temperature of 60F which is close to the 3rd quartile. 
+These values are all on the high end compared to the other observations and 
+thus give observation 18 high leverage.
+\end{answer}
+\vfill
+
+\newpage
+\noindent
+{\Large Escaping hydrocarbons (continued)}
+
+\item Provide estimates of the following quantities based on the model fit. 
+(2 points each)
+
+\begin{enumerate}
+\item Intercept
+
+\begin{answer}
+<<>>=
+coef(m)[1]
+@
+\end{answer}
+\vfill
+
+\item Coefficient for `Tank temperature (F)`
+
+\begin{answer}
+<<>>=
+coef(m)[2]
+@
+\end{answer}
+\vfill
+
+\item Coefficient for `Petrol temperature (F)`
+
+\begin{answer}
+<<>>=
+coef(m)[3]
+@
+\end{answer}
+\vfill
+
+\item Coefficient for `Initial tank pressure (pounds/square inch)`
+
+\begin{answer}
+<<>>=
+coef(m)[4]
+@
+\end{answer}
+\vfill
+
+\item Coefficient for `Petrol pressure (pounds/square inch)`
+
+\begin{answer}
+<<>>=
+coef(m)[5]
+@
+\end{answer}
+\vfill
+
+\item Error variance
+
+\begin{answer}
+<<>>=
+summary(m)$sigma^2
+@
+\end{answer}
+\vfill
+
+\item Coefficient of determination
+
+\begin{answer}
+<<>>=
+summary(m)$r.squared
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\item Conduct a $t$-test to determine whether an interaction between 
+`Tank temperature (F)` and `Initial tank pressure (pounds/square inch)` is 
+supported by the data. Report the following quantities for this test. 
+(1 point each)
+
+\begin{answer}
+<<>>=
+mI = lm(Hydrocarbons.escaping..grams. ~ . + 
+          Tank.temperature..F.:Initial.tank.pressure..pounds.square.inch., 
+        data = d)
+@
+\end{answer}
+
+\begin{enumerate}
+\item Estimated coefficient
+
+\begin{answer}
+<<>>=
+coef(mI)[6]
+@
+\end{answer}
+\vfill
+
+\item $t$-statistic
+
+\begin{answer}
+<<>>=
+summary(mI)$coefficients[6,3]
+@
+\end{answer}
+\vfill
+
+\item degrees of freedom
+
+\begin{answer}
+<<>>=
+mI$df.residual
+@
+\end{answer}
+\vfill
+
+\item $p$-value
+
+\begin{answer}
+<<>>=
+summary(mI)$coefficients[6,4]
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\item Provide an interpretation for the result of this test. (2 points)
+
+\begin{answer}
+Since the $p$-value is not small, there is no evidence the data are 
+incomppatible with the regression model that does not include the interaction 
+term.
+\end{answer}
+\vfill\vfill\vfill
+
+
+
+
+
+
+\end{enumerate}
+
+
+\newpage
+\noindent
+{\Large Story County Commercial Property Sales}
+
+<<story_county_data, echo=FALSE, warning=FALSE, message=FALSE>>=
+
+# Get data
+# https://www.cityofames.org/government/departments-divisions-a-h/city-assessor/sales#CommercialSales
+d = readxl::read_xls("Commercial Sales.xls") %>%
+  rename(price = `Sale Price\n($)`,
+         area  = `Building Area in \nSquare Feet`,
+         year  = `Year Built`,
+         land  = `Land Area in \nSquare Feet`) %>%
+  mutate(price = as.numeric(price),
+         year  = as.numeric(year),
+         area  = as.numeric(area),
+         land  = as.numeric(land)) %>%
+  select(price, year, area, land) %>%
+  filter(price > 0) %>%
+  na.omit()
+
+# write_csv(d, path = "sales.csv")
+@
+
+<<story_county_analysis, echo=FALSE>>=
+m = lm(log(price) ~ I(year-1960) + log(area/1e4) + log(land/1e5) +
+         I(year-1960):log(area/1e4), data = d)
+cf = coef(m) %>% round(6)
+@
+
+
+
+\item The page entitled \texttt{R Code - Story County Commercial Property Sales}
+provides an analysis of properties sold from 2005 through February 2013 based on
+\texttt{price} (\$), \texttt{year} built, building \texttt{area} (ft$^2$), and \texttt{land} area 
+(ft$^2$). (5 points each)
+
+\begin{enumerate}
+\item Provide an interpretation (including units) for the following quantities:
+
+\begin{enumerate}
+\item $e^{\Sexpr{cf[1]}}=\Sexpr{round(exp(cf[1]))}$
+
+\begin{answer}
+The estimated median price for a property built in 1960, with 10,000 ft$^2$ of 
+building area, and 100,000 ft$^2$ of land area, is \$584,249.
+\end{answer}
+\vfill
+
+\item $e^{\Sexpr{cf[2]}}=\Sexpr{round(exp(cf[2]),3)}$
+
+\begin{answer}
+The multiplicative effect on the median price for each additional year is 1.008 
+when building area is 10,000 ft $^2$ and land area is held constant. 
+\end{answer}
+\vfill
+
+\item $10^{\Sexpr{cf[3]}}=\Sexpr{round(10^cf[3],2)}$
+
+\begin{answer}
+The multiplicative effect on the median price for each 10-fold increase in 
+building area is 3.33 when year is 1960 and land area is held constant.
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\item Construct a two-sided equal-tail 90\% confidence interval for the 
+interaction coefficient. (5 points)
+
+\begin{answer}
+<<>>=
+0.00468 + c(-1,1)*qt(.95, df=224)*0.001612
+@
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\end{enumerate}
+
+
+\newpage
+\noindent
+{\Large R Code - Story County Commercial Property Sales}
+
+Feel free to remove this page
+
+<<echo=FALSE>>=
+options(scipen=0)
+@
+
+<<>>=
+summary(m)
+@
+
+\newpage
+(intentionally left blank)
+
+
+\end{document}
+
