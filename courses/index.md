@@ -44,4 +44,5 @@ group: navigation
 ## Short courses
 
 - [Introduction to R for Biosurveillance](ISDSWorkshop/workshop.html)
+- [Midwest Big Data Summer School R Workshop](MWBDSSworkshop/outline.html)
 
