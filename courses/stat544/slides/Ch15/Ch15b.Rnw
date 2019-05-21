@@ -118,9 +118,9 @@ ggplot(slopes,
   \pause Then a \alert{random intercept, random slope model} is 
   \[ \begin{array}{rl}
   y_{st} &\stackrel{ind}{\sim} N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma^2) \pause \\
-  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\mySigma_\beta) 
+  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\Sigma_\beta) 
   \end{array} \]
-  where $\beta_s=(\beta_{s,0},\beta_{s,1})'$ \pause and $\sigma^2$, $\mu_\beta$, and $\mySigma_\beta$ are parameters to be estimated. 
+  where $\beta_s=(\beta_{s,0},\beta_{s,1})'$ \pause and $\sigma^2$, $\mu_\beta$, and $\Sigma_\beta$ are parameters to be estimated. 
   
 \vspace{0.2in} \pause
 
@@ -128,7 +128,7 @@ Notice that there is now a common variance for all species.
 
 % Equivalently,
 % 
-% \[ y_j \stackrel{ind}{\sim} N(X_j\beta_j, \sigma_y^2\I_{n_j}), \quad \beta_j \stackrel{ind}{\sim} N(\mu_\beta,\mySigma_\beta) \]
+% \[ y_j \stackrel{ind}{\sim} N(X_j\beta_j, \sigma_y^2\I_{n_j}), \quad \beta_j \stackrel{ind}{\sim} N(\mu_\beta,\Sigma_\beta) \]
 % where $y_j = (y_{1j},\ldots,y_{n_jj})'$ and the $i^{(th)}$ row of $X_j$ is $(1,x_{st})$.
 \end{frame}
 
@@ -201,18 +201,18 @@ ggplot(tmp, aes(joint,abbrev)) +
 The model
   \[ \begin{array}{rl}
   y_{st} &\stackrel{ind}{\sim} N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma^2) \pause \\
-  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\mySigma_\beta) 
+  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\Sigma_\beta) 
   \end{array} \]
 \pause 
 and a prior
 
-\[ p(\sigma, \mu_\beta, \mySigma_\beta) \propto p(\sigma)p(\mu_\beta)p(\mySigma_\beta) \]
+\[ p(\sigma, \mu_\beta, \Sigma_\beta) \propto p(\sigma)p(\mu_\beta)p(\Sigma_\beta) \]
 \pause 
 and 
 \begin{itemize}
 \item $\sigma \sim Ca^+(0,1)$,
 \item $p(\mu_\beta) \propto 1$\pause, and
-\item $\mySigma_\beta\sim$ ?
+\item $\Sigma_\beta\sim$ ?
 \end{itemize}
 \end{frame}
 
@@ -221,18 +221,18 @@ and
 \frametitle{Conjugate prior for a covariance matrix}
 
 The natural conjugate prior for a covariance matrix is the \alert{inverse-Wishart} distribution\pause, which has density
-\[ p(\mySigma) \propto |\mySigma|^{-(\nu+d+1)/2}\exp\left(-\frac{1}{2} \mbox{tr}\left(S\mySigma^{-1}\right) \right) \]
+\[ p(\Sigma) \propto |\Sigma|^{-(\nu+d+1)/2}\exp\left(-\frac{1}{2} \mbox{tr}\left(S\Sigma^{-1}\right) \right) \]
 \pause with $\nu>d-1$ and $S$ is a positive definite matrix. The expected value is  
-\[ E[\mySigma] = \frac{S}{\nu-d-1} \]
-for $\nu>d+1$. \pause We write $\mySigma \sim IW(\nu, S^{-1})$. 
+\[ E[\Sigma] = \frac{S}{\nu-d-1} \]
+for $\nu>d+1$. \pause We write $\Sigma \sim IW(\nu, S^{-1})$. 
 
 \vspace{0.2in} \pause 
 
 Special cases:
 \begin{itemize}
-\item If $\nu=d+1$ and $S$ is diagonal, then each of the correlations in $\mySigma$ has a marginal uniform prior.  \pause
+\item If $\nu=d+1$ and $S$ is diagonal, then each of the correlations in $\Sigma$ has a marginal uniform prior.  \pause
 \item Jeffreys prior 
-\[ p(\mySigma) = |\mySigma|^{-(d+1)/2} \]
+\[ p(\Sigma) = |\Sigma|^{-(d+1)/2} \]
 \end{itemize}
 
 \end{frame}
@@ -242,13 +242,13 @@ Special cases:
 \begin{frame}
 \frametitle{Issues with the inverse-Wishart distribution}
 
-If $\mySigma \sim IW(\nu,S)$, then $\mySigma_{ii} \sim IG([\nu-(d-1)]/2, S_{ii}/2)$. \pause In particular, if $\nu=d+1$ and $S=\I$ (to ensure marginally uniform priors on the correlations), then $\mySigma_{ii} \sim IG(1,1/2)$. 
+If $\Sigma \sim IW(\nu,S)$, then $\Sigma_{ii} \sim IG([\nu-(d-1)]/2, S_{ii}/2)$. \pause In particular, if $\nu=d+1$ and $S=\I$ (to ensure marginally uniform priors on the correlations), then $\Sigma_{ii} \sim IG(1,1/2)$. 
 
 \vspace{0.2in} \pause
 
 The problems
 \begin{itemize}[<+->]
-\item although the correlations are marginally uniform, they are not independent \emph{a priori} of the variances (diagonal elements of $\mySigma$),
+\item although the correlations are marginally uniform, they are not independent \emph{a priori} of the variances (diagonal elements of $\Sigma$),
 \item the inverse gamma distribution has a region near zero of extremely low density that can cause extreme bias toward larger values for truly small variances,
 \item this in turn causes the correlation to be shrunk toward zero.
 \end{itemize}
@@ -260,18 +260,18 @@ The problems
 \frametitle{Deconstructing the covariance matrix}
 
 Let 
-\[ \mySigma = \mbox{diag}(\sigma)\mO \mbox{diag}(\sigma) \]
+\[ \Sigma = \mbox{diag}(\sigma)\Omega \mbox{diag}(\sigma) \]
 where 
 \begin{itemize}
 \item $\sigma$ is a vector of standard deviations
-\item $\mO$ is a correlation matrix
+\item $\Omega$ is a correlation matrix
 \end{itemize}
 \pause
 which results in the standard deviations and correlations being independent \emph{a priori}. 
 
 \vspace{0.2in} \pause
 
-Now we can put whatever prior we want on $\sigma$ and $\mO$, e.g. $\sigma_i \stackrel{ind}{\sim} Ca^+(0,?)$. 
+Now we can put whatever prior we want on $\sigma$ and $\Omega$, e.g. $\sigma_i \stackrel{ind}{\sim} Ca^+(0,?)$. 
 \end{frame}
 
 
@@ -279,8 +279,8 @@ Now we can put whatever prior we want on $\sigma$ and $\mO$, e.g. $\sigma_i \sta
 \frametitle{LKJ correlation matrix prior}
 
 The LKJ (Lewandowski, Kurowicka, and Joe 2009) distribution is 
-\[ p(\mO) = |\mO|^{\eta-1} \]
-where $\mO$ is a correlation matrix with implicit dimension $d$ and $\eta>0$ is the shape parameter.
+\[ p(\Omega) = |\Omega|^{\eta-1} \]
+where $\Omega$ is a correlation matrix with implicit dimension $d$ and $\eta>0$ is the shape parameter.
 
 \vspace{0.2in} \pause
 
@@ -367,20 +367,20 @@ ggplot(subset(beta, parameter=='slope'),
 The model
   \[ \begin{array}{rl}
   y_{st} &\stackrel{ind}{\sim} N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_s^2) \pause \\
-  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\mySigma_\beta) \pause \\
+  \beta_s &\stackrel{ind}{\sim} N(\mu_\beta,\Sigma_\beta) \pause \\
   \sigma_s &\stackrel{ind}{\sim} LN(\mu_\sigma,\tau_\sigma)
   \end{array} \]
 \pause 
 and a prior
 
-\[ p(\mu_\sigma, \tau_\sigma, \mu_\beta, \mySigma_\beta) \propto p(\mu_\sigma)p(\tau_\sigma)p(\mu_\beta)p(\mySigma_\beta) \]
+\[ p(\mu_\sigma, \tau_\sigma, \mu_\beta, \Sigma_\beta) \propto p(\mu_\sigma)p(\tau_\sigma)p(\mu_\beta)p(\Sigma_\beta) \]
 \pause 
 and 
 \begin{itemize}
 \item $p(\mu_\sigma) \propto 1$, \pause
 \item $\tau_\sigma \sim Ca^+(0,1)$,\pause
 \item $p(\mu_\beta) \propto 1$\pause, and
-\item $\mySigma_\beta$ as before 
+\item $\Sigma_\beta$ as before 
 \end{itemize}
 \end{frame}
 
@@ -421,7 +421,7 @@ model {
 \begin{frame}[fragile]
 <<stan2, cache=TRUE, dependson=c('bird_data','stan_model2'), echo=TRUE>>=
 m2 = stan_model(model_code=model2)
-r2 = sampling(m2, dat)
+r2 = sampling(m2, dat, refresh=0)
 @
 \end{frame}
 
@@ -519,17 +519,17 @@ ggplot(subset(beta2, parameter=='slope'),
 %   Let $y_{st}$ be the observation for individual $i$ of group $j$ with explanatory variable $x_{st}$ where $i=1,\ldots,n_j$ and $j=1,\ldots,J$ . Then a \alert{random intercept, random slope model} is 
 %   \[ \begin{array}{rl}
 %   y_{st} &\sim N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_y^2) \\
-%   \beta_j &\sim N(\mu_\beta,\mySigma_\beta) 
+%   \beta_j &\sim N(\mu_\beta,\Sigma_\beta) 
 %   \end{array} \]
 %   
 %   \vspace{0.2in} \pause
 %   
-%   For a Bayesian analysis, we need to specify a prior on $(\sigma_y^2,\mu_\beta,\mySigma_\beta)$. \pause Typically, independently assume
+%   For a Bayesian analysis, we need to specify a prior on $(\sigma_y^2,\mu_\beta,\Sigma_\beta)$. \pause Typically, independently assume
 %   \begin{itemize}
 %   \item $p(\sigma_y^2) \propto 1/\sigma_y^2$ \pause
 %   \item $p(\mu_\beta) \propto 1$ \pause
 %   \end{itemize}
-%   but what should we do for $\mySigma$?
+%   but what should we do for $\Sigma$?
 %   
 % \end{frame}
 % 
@@ -540,18 +540,18 @@ ggplot(subset(beta2, parameter=='slope'),
 % \frametitle{Conjugate prior for a covariance matrix}
 % 
 % The natural conjugate prior for a covariance matrix is the \alert{inverse-Wishart} distribution\pause, which has density
-% \[ p(\mySigma) \propto |\mySigma|^{-(\nu+d+1)/2}\exp\left(-\frac{1}{2} \mbox{tr}\left(S\mySigma^{-1}\right) \right) \]
+% \[ p(\Sigma) \propto |\Sigma|^{-(\nu+d+1)/2}\exp\left(-\frac{1}{2} \mbox{tr}\left(S\Sigma^{-1}\right) \right) \]
 % \pause with $\nu>d-1$ and $S$ is a positive definite matrix. The expected value is  
-% \[ E[\mySigma] = \frac{S}{\nu-d-1} \]
-% for $\nu>d+1$. \pause We write $\mySigma \sim IW(\nu, S^{-1})$. 
+% \[ E[\Sigma] = \frac{S}{\nu-d-1} \]
+% for $\nu>d+1$. \pause We write $\Sigma \sim IW(\nu, S^{-1})$. 
 % 
 % \vspace{0.2in} \pause 
 % 
 % Special cases:
 % \begin{itemize}
-% \item If $\nu=d+1$, then each of the correlations in $\mySigma$ has a marginal uniform prior.  \pause
+% \item If $\nu=d+1$, then each of the correlations in $\Sigma$ has a marginal uniform prior.  \pause
 % \item As $\nu\to-1$ and $|S|\to 0$, we have Jeffreys prior 
-% \[ p(\mySigma) = |\mySigma|^{-(d+1)/2} \]
+% \[ p(\Sigma) = |\Sigma|^{-(d+1)/2} \]
 % \end{itemize}
 % 
 % \end{frame}
@@ -563,13 +563,13 @@ ggplot(subset(beta2, parameter=='slope'),
 % Consider the random intercept, random slope model
 % \[ \begin{array}{rl}
 %   y_{st} &\sim N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_y^2) \\
-% \beta_j &\sim N(\mu_\beta,\mySigma_\beta) 
+% \beta_j &\sim N(\mu_\beta,\Sigma_\beta) 
 % \end{array} \]
 % with independent priors 
 % \[ \begin{array}{rl}
 % p(\sigma_y^2) &\propto 1/\sigma_y^2 \\
 % p(\mu_\beta) &\propto 1 \\
-% \mySigma_\beta &\sim \mbox{IW}(d+1,\mathrm{I})
+% \Sigma_\beta &\sim \mbox{IW}(d+1,\mathrm{I})
 % \end{array} \]
 % \end{frame}
 % 
@@ -589,7 +589,7 @@ ggplot(subset(beta2, parameter=='slope'),
 % \item $p(\beta|\ldots)$
 % \item $p(\sigma_y^2|\ldots)$
 % \item $p(\mu_\beta|\ldots)$
-% \item $p(\mySigma_\beta|\ldots)$
+% \item $p(\Sigma_\beta|\ldots)$
 % \end{enumerate}
 % by Markov chain theory, these samples will converge to the target distribution, i.e. the posterior.
 % 
@@ -601,20 +601,20 @@ ggplot(subset(beta2, parameter=='slope'),
 % \frametitle{Full conditional for $\beta$}
 % 
 % \[ \begin{array}{rl}
-% p(\beta|\ldots) \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
-% \propto& \prod_{j=1}^J N(y_{j}|X_j\beta_j,\sigma_y^2\mathrm{I}) N(\beta_j|\mu_\beta,\mySigma_\beta) \pause 
+% p(\beta|\ldots) \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\Sigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
+% \propto& \prod_{j=1}^J N(y_{j}|X_j\beta_j,\sigma_y^2\mathrm{I}) N(\beta_j|\mu_\beta,\Sigma_\beta) \pause 
 % \end{array} \]
 % So 
 % \begin{itemize}
 % \item the $\beta_j$ are conditionally independent \pause and
-% \item each $\beta_j$ is a regression with \emph{informative} prior $N(\mu_\beta,\mySigma_\beta)$. \pause
+% \item each $\beta_j$ is a regression with \emph{informative} prior $N(\mu_\beta,\Sigma_\beta)$. \pause
 % \end{itemize}
 % Thus 
-% \[ \beta_j \stackrel{ind}{\sim} N(\hat{\beta}_j, \hat{\mySigma}_{\beta_j}) \]
+% \[ \beta_j \stackrel{ind}{\sim} N(\hat{\beta}_j, \hat{\Sigma}_{\beta_j}) \]
 % where 
 % \[ \begin{array}{rl}
-% \hat{\mySigma}_{\beta_j} &= \left[ \mySigma_{\beta}^{-1} + \sigma_y^{-2} X_j'X_j \right]^{-1} \pause \\
-% \hat{\beta}_{j} &= \hat{\mySigma}_{\beta_j}\left[ \mySigma_{\beta}^{-1}\mu_\beta + \sigma_y^{-2} X_j'y_j \right]
+% \hat{\Sigma}_{\beta_j} &= \left[ \Sigma_{\beta}^{-1} + \sigma_y^{-2} X_j'X_j \right]^{-1} \pause \\
+% \hat{\beta}_{j} &= \hat{\Sigma}_{\beta_j}\left[ \Sigma_{\beta}^{-1}\mu_\beta + \sigma_y^{-2} X_j'y_j \right]
 % \end{array} \]
 % 
 % \end{frame}
@@ -626,7 +626,7 @@ ggplot(subset(beta2, parameter=='slope'),
 % \frametitle{Full conditional for $\sigma_y^2$} 
 % 
 % \[ \begin{array}{rl}
-% p(\sigma_y^2|\ldots) \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
+% p(\sigma_y^2|\ldots) \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\Sigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
 % \propto& p(y|\beta,\sigma_y^2)p(\sigma_y^2) \pause \\
 % \propto & (\sigma^2)^{-n/2} e^{-nv/2\sigma_y^2} \frac{1}{\sigma^2} \pause \\
 % \propto & (\sigma^2)^{-(n/2+1)} e^{-nv/2\sigma_y^2} \pause
@@ -643,25 +643,25 @@ ggplot(subset(beta2, parameter=='slope'),
 % 
 % 
 % \begin{frame}
-% \frametitle{Full conditional for $\mySigma_\beta$}
+% \frametitle{Full conditional for $\Sigma_\beta$}
 % {\small
-% Assume $\mySigma_\beta \sim IW(d+1,\mathrm{I})$\pause , then 
+% Assume $\Sigma_\beta \sim IW(d+1,\mathrm{I})$\pause , then 
 % \[ \begin{array}{rl}
-% p(\mySigma_\beta|\ldots) 
-% \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
-% \propto& p(\beta|\mu_\beta,\mySigma_\beta)p(\mySigma_\beta) \pause \\
-% \propto& \left[ \prod_{j=1}^J |\mySigma|^{-1/2} e^{-\frac{1}{2}(\beta_j-\mu_\beta)\mySigma_\beta^{-1}(\beta_j-\mu_\beta)} \right] \pause \\
-% &\times |\mySigma|^{-\frac{d+1+d+1}{2}}e^{-\frac{1}{2} \mbox{tr}\left(\mySigma_\beta^{-1}\right)} \pause \\
-% \propto& |\mySigma|^{-\frac{d+1+J+d+1}{2}} e^{-\frac{1}{2} \mbox{tr}\left(S_n\mySigma_\beta^{-1}\right)} \pause 
+% p(\Sigma_\beta|\ldots) 
+% \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\Sigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
+% \propto& p(\beta|\mu_\beta,\Sigma_\beta)p(\Sigma_\beta) \pause \\
+% \propto& \left[ \prod_{j=1}^J |\Sigma|^{-1/2} e^{-\frac{1}{2}(\beta_j-\mu_\beta)\Sigma_\beta^{-1}(\beta_j-\mu_\beta)} \right] \pause \\
+% &\times |\Sigma|^{-\frac{d+1+d+1}{2}}e^{-\frac{1}{2} \mbox{tr}\left(\Sigma_\beta^{-1}\right)} \pause \\
+% \propto& |\Sigma|^{-\frac{d+1+J+d+1}{2}} e^{-\frac{1}{2} \mbox{tr}\left(S_n\Sigma_\beta^{-1}\right)} \pause 
 % \end{array} \]
 % where 
 % \[ S_n = \left( \mathrm{I} + \sum_{j=1}^J (\beta_j-\mu_\beta)(\beta_j-\mu_\beta)^\top \right) \]
 % }
 % \pause 
 % So 
-% \[ \mySigma_\beta\phantom{^{-1}}|\ldots \sim IW(d+1+J, S_n^{-1}) \]
+% \[ \Sigma_\beta\phantom{^{-1}}|\ldots \sim IW(d+1+J, S_n^{-1}) \]
 % \pause or, equivalently, 
-% \[ \mySigma_\beta^{-1}|\ldots \sim W(d+1+J, S_n^{-1}).\]
+% \[ \Sigma_\beta^{-1}|\ldots \sim W(d+1+J, S_n^{-1}).\]
 % \end{frame}
 % 
 % 
@@ -670,16 +670,16 @@ ggplot(subset(beta2, parameter=='slope'),
 % {\small
 % \[ \begin{array}{rl}
 % p(\mu_\beta|y,\sigma_y^2,\beta,\mu_\beta) 
-% \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\mySigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
-% \propto& p(\beta|\mu_\beta,\mySigma_\beta) p(\mu_\beta) \pause \\
-% \propto& \prod_{j=1}^J e^{-(\beta_j-\mu_\beta)^\top \mySigma_\beta^{-1}(\beta_j-\mu_\beta)/2} \pause \\
-% \propto& e^{-[\mu_\beta' (J \mySigma_{\beta}^{-1})\mu_\beta-2\mu_\beta \mySigma_\beta^{-1} \sum_{j=1}^J \beta_j  ]/2} \pause
+% \propto& p(y|\beta,\sigma_y^2)p(\beta|\mu_\beta,\Sigma_\beta)p(\sigma_y^2) p(\mu_\beta) p(\Sigma_\beta) \pause \\
+% \propto& p(\beta|\mu_\beta,\Sigma_\beta) p(\mu_\beta) \pause \\
+% \propto& \prod_{j=1}^J e^{-(\beta_j-\mu_\beta)^\top \Sigma_\beta^{-1}(\beta_j-\mu_\beta)/2} \pause \\
+% \propto& e^{-[\mu_\beta' (J \Sigma_{\beta}^{-1})\mu_\beta-2\mu_\beta \Sigma_\beta^{-1} \sum_{j=1}^J \beta_j  ]/2} \pause
 % \end{array} \]
 % Thus
-% \[ \mu_\beta|\ldots ~ N(\hat{\mu}_\beta, \hat{\mySigma}_\mu) \]
+% \[ \mu_\beta|\ldots ~ N(\hat{\mu}_\beta, \hat{\Sigma}_\mu) \]
 % \pause with 
 % \[ \begin{array}{rl}
-% \hat{\mySigma}_\mu &= \mySigma_\beta/J \pause \\
+% \hat{\Sigma}_\mu &= \Sigma_\beta/J \pause \\
 % \hat{\mu}_\beta &= \frac{1}{J} \sum_{j=1}^J \beta_j
 % \end{array} \]
 % }
@@ -693,8 +693,8 @@ ggplot(subset(beta2, parameter=='slope'),
 % Reconsider the model 
 % \[ \begin{array}{rl}
 %   y_{st} &\sim N(\beta_{s,0}+x_{st}\beta_{s,1} ,\sigma_y^2) \\
-% \beta_j &\sim N(\mu_\beta,\mySigma_\beta) \\
-% p(\sigma_y^2,\mu_\beta,\mySigma_\beta) &\propto \frac{1}{\sigma_y^2} IW(\mySigma_\beta|d+1,\mathrm{I}).
+% \beta_j &\sim N(\mu_\beta,\Sigma_\beta) \\
+% p(\sigma_y^2,\mu_\beta,\Sigma_\beta) &\propto \frac{1}{\sigma_y^2} IW(\Sigma_\beta|d+1,\mathrm{I}).
 % \end{array} \]
 % 
 % \vspace{0.2in}
@@ -704,7 +704,7 @@ ggplot(subset(beta2, parameter=='slope'),
 % \item $p(\beta|\ldots)$: regression with informative prior and known variance (Sec 14.8)
 % \item $p(\sigma_y^2|\ldots)$: normal with known mean (Sec 2.6)
 % \item $p(\mu_\beta|\ldots)$: multivariate normal with known covariance matrix (Sec 3.5)
-% \item $p(\mySigma_\beta|\ldots)$: multivariate normal with known mean (Sec Sec 3.5-3.6)
+% \item $p(\Sigma_\beta|\ldots)$: multivariate normal with known mean (Sec Sec 3.5-3.6)
 % \end{enumerate}
 % \end{frame}
 % 
