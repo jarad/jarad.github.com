@@ -21,4 +21,5 @@ A [minor in Statistics for an individual in a PhD Program](http://www.stat.iasta
 - STAT 407 - Methods of Multivariate Analysis (matrix algebra)
 - STAT 421 - Survey Sampling Techniques
 - STAT 415 - Advanced Statistical Methods for Research Workers (1 credit)
+- STAT 479 - Computer Processing of Statistical Data
 - STAT 585 - Data Technologies for Statistical Analysis
