@@ -1,0 +1,633 @@
+---
+title: "Intermediate R"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Intermediate R}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+If you shut down R, you will need to change your working directory and run the 
+following commands to load libraries,
+
+```{r, message=FALSE}
+library("tidyverse")
+library("MWBDSSworkshop")
+```
+
+Read in the data files and create additional variables 
+
+```{r}
+# Read csv files and create additional variables
+icd9df = read.csv("icd9.csv")
+GI     = read.csv("GI.csv") %>%
+  mutate(
+    date      = as.Date(date),
+    weekC     = cut(date, breaks="weeks"),
+    week      = as.numeric(weekC),
+    weekD     = as.Date(weekC),
+    facility  = as.factor(facility),
+    icd9class = factor(cut(icd9, 
+                           breaks = icd9df$code_cutpoint, 
+                           labels = icd9df$classification[-nrow(icd9df)], 
+                           right  = TRUE)),
+    ageC      = cut(age, 
+                    breaks = c(-Inf, 5, 18, 45 ,60, Inf)),
+    zip3      = trunc(zipcode/100))
+```
+
+
+## <a name="exporting_tables"></a> Exporting tables
+
+There are many ways to export tables (for use in Word). 
+Here I will cover two basic approachess that are simple and work well. 
+
+- cut-and-paste
+- create HTML table and cut-and-paste to Word
+
+There are more sophisticated approaches that I will not cover:
+
+- [using the rtf package](http://thomasleeper.com/Rcourse/Tutorials/wordoutput.html)
+- [writing a whole doc fie in R](http://www.r-statistics.com/2013/03/write-ms-word-document-using-r-with-as-little-overhead-as-possible/)
+
+### Cut-and-paste 
+
+You can cut-and-paste directly from R. 
+
+```{r}
+ga_l <- GI %>%
+  group_by(gender, ageC) %>%
+  summarize(count = n())
+
+ga_w <- ga_l %>%
+  spread(ageC, count) %>%
+  print(row.names = FALSE)
+```
+
+Cut-and-pasting this table is done in ASCII format. 
+This looks good in a **plain text** document, e.g. Notepad, TextEdit, and some 
+email, but will not look good in other formats, e.g. docx.
+
+
+### Create HTML table
+
+```{r}
+library('xtable')
+tab = xtable(ga_w,
+             caption = "Total GI cases by Sex and Age Category",
+             label   = "myHTMLanchor",
+             align   = "ll|rrrrr") # rownames gets a column
+```
+
+Save the table to a file
+
+```{r}
+print(tab, file="table.html", type="html", include.rownames=FALSE)
+```
+
+
+### Output for this HTML table
+
+The HTML code looks like 
+
+```{r}
+print(tab, type="html", include.rownames=FALSE)
+```
+
+and the resulting table looks like 
+
+```{r, results='asis'}
+print(tab, type="html", include.rownames=FALSE)
+```
+
+
+### Copy-and-paste table to Word
+
+Now you can 
+
+1. Open the file (`table.html`)
+1. Copy-and-paste this table to Word. 
+
+
+### Activity - exporting tables
+
+Create a Word table for the number of cases by facility and age category.
+
+```{r, eval=FALSE}
+# Summarize data by facility and age category
+
+# Reshape data from long to wide format
+
+# Create HTML table
+
+# Save HTML to file
+
+# Copy-and-paste table into Word
+```
+
+When you have completed the activity, compare your results to the 
+[solutions](04_advanced_R-solution.html#exporting_tables).
+
+
+## <a name="maps"></a> Maps
+
+The packages `ggplot2` and `maps` can be used together to make maps.
+
+Map of the continental US
+```{r}
+library('maps')
+states = map_data("state")
+ggplot(states, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color="white")
+```
+
+Map of the counties in the continental US
+```{r}
+counties = map_data("county")
+ggplot(counties, aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "white")
+```
+
+Map of the counties in Iowa
+```{r}
+ggplot(counties %>% filter(region=="iowa"), 
+       aes(x = long, y = lat, group = group)) + 
+  geom_polygon(fill = "gray", color = "black")
+```
+
+### Construct an appropriate data set
+
+To make an informative map, we need to add data. 
+
+```{r}
+fluTrends = read.csv("fluTrends.csv", check.names=FALSE)
+```
+
+For simplicity, only keep the most recent 12 weeks on states. 
+
+```{r}
+flu_w = fluTrends %>%
+  tail(n = 12) 
+dim(flu_w)
+```
+
+Reshape to long format
+
+```{r}
+flu_l <- flu_w %>%
+  gather(region, index, -Date)
+```
+
+### Merge fluTrends data with map_data
+
+The region names in `map_data` are lower case, 
+so use `tolower()` to convert all the region names in `flu_l` to lowercase. 
+Then the `map_data` and fluTrends data are merged using `merge()`. 
+
+```{r}
+head(unique(states$region))
+flu_l$region = tolower(flu_l$region)
+states_merged = states %>%
+  merge(flu_l, sort = FALSE, by = 'region')
+```
+
+### Make the plots
+
+Some Google Flu Trend data.
+
+```{r}
+states_merged$Date = as.Date(states_merged$Date)
+mx_date = max(states_merged$Date)
+g = ggplot(states_merged %>% filter(Date == mx_date), 
+       aes(x = long, y = lat, group = region, fill = index)) + 
+  geom_polygon() + 
+  labs(title=paste('Google Flu Trends on', mx_date), x='', y='') +
+  theme_minimal() + 
+  theme(legend.title = element_blank()) +
+  coord_map("cylindrical")
+
+if (require('RColorBrewer'))
+  g = g + scale_fill_gradientn(colours=RColorBrewer::brewer.pal(9,"Reds")) # Thanks Annie Chen
+
+g
+```
+
+Last 12 weeks.
+
+```{r}
+ggplot(states_merged, 
+       aes(x=long, y=lat, group=group, fill=index)) + 
+  geom_polygon() + 
+  labs(title='Google Flu Trends', x='', y='') +
+  theme_minimal() + 
+  theme(legend.title = element_blank()) +
+  facet_wrap(~Date) + 
+  coord_map("cylindrical") + 
+  scale_fill_gradientn(colours=brewer.pal(9,"Reds")) 
+```
+
+
+### Activity 
+
+Modify the code to determine what elements of the map are affected.
+
+Advanced: Download the data directly from 
+<http://www.google.org/flutrends/about/data/flu/historic/us-historic-v2.txt> 
+using `read.csv' and then construct a map of the most recent Google Flu Trends 
+data. 
+
+```{r, eval=FALSE}
+# Construct Google Flu Trends map
+```
+
+When you have completed the activity, compare your results to the 
+[solutions](04_advanced_R-solution.html#maps).
+
+
+
+## <a name="Packages"></a> Packages
+
+A package provides additional functionality besides what base installation of R 
+provides. You have already used a number of additional packages:
+
+- ggplot2
+- MWBDSSworkshop
+- maps
+- dplyr
+- tidyr
+- xtable
+
+The Comprehensive R Archive Network (CRAN) has over 9,594 packages. 
+These packages can be installed using the `install.packages()` function, e.g. 
+
+```{r, eval=FALSE}
+install.packages("ggplot2")
+```
+
+For many reasons, packages may not be on CRAN but may be available from other sources:
+
+- [Github](http://github.com/)
+- [Bioconductor](http://www.bioconductor.org/)
+- Source file (tar.gz)
+
+
+### Github
+
+To install a package from github, 
+you can use the `install_github()` function from the `devtools` package. 
+For example,
+
+```{r, eval=FALSE}
+# install.packages("devtools")
+library('devtools')
+install_github('nandadorea/vetsyn')
+```
+
+
+### Bioconductor 
+
+Bioconductor provides tools for high-throughput genomic data. 
+There are over 1,296 packages available from bioconductor. 
+To install bioconductor, use 
+```{r, eval=FALSE}
+source("http://bioconductor.org/biocLite.R")
+biocLite()
+```
+
+Then to install a package from bioconductor use 
+
+```{r, eval=FALSE}
+biocLite("edgeR")
+```
+
+The bioconductor repository may be useful in the future for public health 
+biosurveillance.
+
+
+### Source
+
+All packages can be installed from their source. 
+If a package is not available in a repository, 
+then this is one way to install the package. 
+To install from source download the source file (.tar.gz) and then use the 
+`install.packages()` function with arguments `repos=NULL` and `type="source"`. 
+For example, from a source version of this workshop, 
+you would use the following command:
+
+```{r, eval=FALSE}
+install.packages("MWBDSSworkshop_0.4.tar.gz", 
+                 repos = NULL, 
+                 type  = "source")
+```
+
+
+
+
+
+
+
+## <a name="functions"></a> Functions
+
+Packages are typically a collection of functions. 
+But you can write your own. 
+For example,
+
+```{r}
+add = function(a,b) {
+  return(a+b)
+}
+add(1,2)
+```
+
+or 
+
+```{r}
+add_vector = function(v) {
+  sum = 0
+  for (i in 1:length(v)) sum = sum + v[i]
+  return(sum)
+}
+```
+
+### A simple outbreak detection function
+
+Here is a simple outbreak detection function
+
+```{r}
+alert = function(y,threshold=100) {
+  # y is the time series 
+  # an alert is issue for any y above the threshold (default is 100)
+  factor(ifelse(y>threshold, "Yes", "No"))
+}
+```
+
+Run this on our weekly GI data.
+
+```{r}
+GI_w <- GI %>%
+  group_by(weekD) %>%
+  summarize(count = n())
+
+GI_w$alert = alert(y = GI_w$count, threshold = 150)
+
+ggplot(GI_w, aes(x = weekD, y = count, color = alert)) + 
+  geom_point() + 
+  scale_color_manual(values = c("black","red"))
+```
+
+
+## <a name="batch"></a> R in batch
+
+For routine analysis, 
+it can be helpful to run R in batch mode rather than interactively. 
+To do this, create a script and save the script with a .R extension, 
+e.g. `script.R`:
+
+```{r, eval=FALSE}
+# Read in the data perhaps as a csv file
+
+# Create some table and save them to html files
+
+# Create some figures and save them to jpegs
+
+# Run some outbreak detection algorithms and produce figures
+```
+
+Now, from the command line run
+
+    Rscript script.R
+    
+Or, from within R run
+
+```{r, eval=FALSE}
+source("script.R")
+```
+    
+Now each week you can update the csv file and then just run the script which 
+will create all new tables and figures. 
+
+
+## <a name="shiny"></a> Shiny apps
+
+R can be used to create HTML applications through the `shiny` package. 
+The code is written entirely in R, 
+although you can use cascading style sheets (CSS) if you want to update how it 
+looks. 
+[Here is an example](https://michaud.shinyapps.io/CDCPlot/) that allows 
+visualization of CDC data.
+
+These apps can also be run locally, e.g.
+
+```{r, eval=FALSE}
+install.packages('shiny')
+library('shiny')
+runGitHub('NLMichaud/WeeklyCDCPlot')
+```
+
+
+## <a name="regression"></a> Regression
+
+Regression is a set of techniques for relating the mean/quantile of a response
+variable to a set of explanatory variables. 
+
+### <a name="slr"></a> Simple linear regression
+
+Simple linear regression looks at the relationship between a single explanatory
+variable and a continuous response. 
+The mean of the response is a straight line function of the explanatory 
+variable. 
+
+Let's look at the relationship between age and number of GI visits. 
+First, we need to construct the appropriate `data.frame`.
+
+```{r}
+visits_by_age = GI %>%
+  filter(age > 18, age < 80) %>%
+  group_by(age) %>%
+  summarize(count = n()) 
+```
+
+Plot the data.
+
+```{r}
+ggplot(visits_by_age, aes(x = age, y = count)) + 
+  geom_point() + 
+  scale_y_log10()
+```
+
+Let's use this to run a regression of log(count) on age. 
+
+```{r}
+m = lm(log(count) ~ age, data = visits_by_age)
+summary(m)
+```
+
+To visualize this use 
+
+```{r}
+ggplot(visits_by_age, aes(x = age, y = count)) + 
+  geom_point() + 
+  scale_y_log10() +
+  stat_smooth(method = "lm") # use `se=FALSE` if you do not want to see the uncertainty 
+```
+
+Default diagnostics. 
+
+```{r}
+opar = par(mfrow=c(2,3)) # Create a 2x3 grid of plots
+plot(m, 1:6, ask=FALSE)  # 6 residual plots
+par(opar)                # Revert to original graphics settings
+```
+
+
+### <a name="multiple_regression"></a> Multiple regression
+
+When you have more than one explanatory variable and a continuous response,
+you can use multiple regression.
+
+```{r}
+m = lm(log(count) ~ age + I(age^2), data = visits_by_age)
+summary(m)
+```
+
+To visualize this use 
+
+```{r}
+ggplot(visits_by_age, aes(x = age, y = count)) + 
+  geom_point() + 
+  scale_y_log10() +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2)) 
+```
+
+### <a name="smoothing"></a> Regression smoothers
+
+This fit is still not very good. 
+You could use a `loess` smoother. 
+
+```{r}
+m = loess(log(count) ~ age, data = visits_by_age)
+summary(m)
+```
+
+```{r}
+ggplot(visits_by_age, aes(x = age, y = count)) + 
+  geom_point() + 
+  scale_y_log10() +
+  stat_smooth()  # default is loess
+```
+
+
+
+### <a name="poisson_regression"></a> Poisson regression
+
+A better model for these data is the Poisson regression model.
+
+```{r}
+m = glm(count ~ age + I(age^2), data = visits_by_age, family = "poisson")
+summary(m)
+```
+
+To visualize
+
+```{r}
+ggplot(visits_by_age, aes(x = age, y = count)) + 
+  geom_point() + 
+  stat_smooth(method = "glm", formula = y ~ x + I(x^2), 
+              method.args = list(family = "poisson"))
+```
+
+### <a name="mixed_effect"></a> Mixed effect models
+
+Random effects allow you to model correlation in your data. 
+For example, we might expect counts within a facility to be more similar
+than counts at different facilities. 
+Thus, we might improve our model by introducing a random effect for facility.
+
+First, construct the appropriate data set. 
+
+```{r}
+visits_by_age_and_facility = GI %>% 
+  filter(age > 18, age < 80) %>%
+  filter(facility != 259) %>%       # only 1 observation in this facility
+  group_by(facility, age) %>%
+  summarize(count = n())
+```
+
+Plot the data
+
+```{r}
+ggplot(visits_by_age_and_facility, aes(x = age, y = count)) + 
+  facet_wrap(~facility) +
+  scale_y_log10() +
+  geom_point()
+```
+
+Now, use the [lme4](https://cran.r-project.org/web/packages/lme4/index.html) or
+the [nlme](https://cran.r-project.org/web/packages/nlme/index.html) package to
+fit the model.
+
+First, we'll try a 
+
+```{r}
+library("lme4")
+m = lmer(log(count) ~ age + I(age^2) + (age+I(age^2)|facility), 
+         data = visits_by_age_and_facility)
+```
+
+Let's go with the suggetion and rescale age. 
+
+```{r}
+visits_by_age_and_facility = visits_by_age_and_facility %>%
+  mutate(age = scale(age))
+
+m = lmer(log(count) ~ age + I(age^2) + (age+I(age^2)|facility), 
+         data = visits_by_age_and_facility)
+summary(m)
+```
+
+
+
+### <a name="random_forests"></a> Random forests
+
+Let's suppose we are interested in predicting the number of GI visits by age, 
+facility, and gender. 
+We could use a (mixed effects) regression model and it might do quite well. 
+But there are a variety of techniques that have been introduced that typically
+do a better job at prediction.
+These techniques typically have a reduced ability to interpret the results.
+
+First, construct the appropriate data set
+
+```{r}
+visits = GI %>%
+  filter(age > 18, age < 80) %>%
+  filter(facility != 259) %>%       # only 1 observation in this facility
+  group_by(facility, age, gender) %>%
+  summarize(count = n())
+```
+
+Let's take a look at the data
+
+```{r}
+ggplot(visits, aes(x = age, y = count, color = gender, shape = gender)) + 
+  facet_wrap(~facility) +
+  scale_y_log10() +
+  geom_point()
+```
+
+Now let's construct a random forest.
+
+```{r}
+library("randomForest")
+m = randomForest(log(count) ~ age + gender + facility, data = visits)
+m
+importance(m)
+```
+
+This is a pretty small data set to be used for a random forest. 
+
+```{r}
+dim(visits)
+```

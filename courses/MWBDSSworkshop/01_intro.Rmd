@@ -1,0 +1,799 @@
+---
+title: "Introduction to R"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Introduction to R}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+## Detailed introduction
+
+For an extremely detailed introduction, please see
+
+```{r, eval=FALSE, purl=FALSE}
+help.start()
+```
+
+In this documentation, the above command will be executed at the command prompt, see below. 
+
+## Brief introduction to R
+
+From `help.start()`:
+
+> R is an integrated suite of software facilities for data manipulation, calculation and graphical display.
+
+and from <https://www.rstudio.com/products/RStudio/>:
+
+> RStudio is an integrated development environment (IDE) for R. 
+
+### R interface
+
+In contrast to many other statistical software packages that use a point-and-click interface, e.g. SPSS, JMP, Stata, etc, R has a command-line interface. The command line has a command prompt, e.g. `>`, see below.
+
+```{r, eval=FALSE, purl=FALSE}
+>
+```
+
+This means, that you will be entering commands on this command line and hitting enter to execute them, e.g. 
+
+```{r, eval=FALSE, purl=FALSE}
+help()
+```
+
+Use the **up arrow** to recover past commands.
+
+```{r, eval=FALSE, purl=FALSE}
+hepl()
+help() # Use up arrow and fix
+```
+
+
+### R GUI (or [RStudio](http://www.rstudio.com/))
+
+Most likely, you are using a graphical user interface (GUI) and therefore, in addition, to the command line, you also have a windowed version of R with some point-and-click options, e.g. File, Edit, and Help.
+
+In particular, there is an editor to create a new R script. So rather than entering commands on the command line, you will write commands in a script and then send those commands to the command line using `Ctrl-R` (PC) or `Command-Enter` (Mac).
+
+```{r, purl=FALSE}
+a = 1 
+b = 2
+a+b
+```
+
+Multiple lines can be run in sequence by selecting them and then using `Ctrl-R` (PC) or `Command-Enter` (Mac).
+
+
+
+
+### Intro Activity
+
+One of the most effective ways to use this documentation is to cut-and-paste the commands into a script and then execute them. 
+
+Cut-and-paste the following commands into a **new script** and then run those commands directly from the script using `Ctrl-R` (PC) or `Command-Enter` (Mac).
+
+```{r, purl=FALSE}
+x = 1:10
+y = rep(c(1,2), each=5)
+m = lm(y~x)
+s = summary(m)
+```
+
+Now, look at the result of each line
+
+```{r, eval=FALSE, purl=FALSE}
+x
+y
+m
+s
+s$r.squared
+```
+
+
+When you have completed the activity, compare your results to the [solutions](01_intro-solution.html#introduction).
+
+
+
+
+
+## <a name="calculator"></a> Using R as a calculator
+
+### Basic calculator operations
+
+All basic calculator operations can be performed in R. 
+
+```{r, purl=FALSE}
+1+2
+1-2
+1/2
+1*2
+```
+
+For now, you can ignore the [1] at the beginning of the line, 
+we'll learn about that when we get to vectors. 
+
+
+### Advanced calculator operations
+
+Many advanced calculator operations are also available.
+
+```{r, purl=FALSE}
+(1+3)*2 + 100^2  # standard order of operations
+sin(2*pi)        # the result is in scientific notation, i.e. -2.449294 x 10^-16 
+sqrt(4)
+10^2
+log(10)          # the default is base e
+log(10, base=10)
+```
+
+
+
+### Using variables
+
+A real advantage to using R rather than a calculator (or calculator app) is the ability to store quantities using variables.
+
+```{r, purl=FALSE}
+a = 1
+b = 2
+a+b
+a-b
+a/b
+a*b
+```
+
+### Assignment operators =, <-, and ->
+
+When assigning variables values, you can also use arrows <- and -> and you will 
+often see this in code, e.g. 
+
+```{r, purl=FALSE}
+a <- 1
+2 -> b
+c = 3  # is the same as <-
+```
+
+Now print them.
+
+```{r, purl=FALSE}
+a
+b
+c
+```
+
+### Using informative variable names
+
+While using variables alone is useful, it is much more useful to use informative
+variables names.
+
+```{r, purl=FALSE}
+population = 1000
+number_infected = 200
+deaths = 3
+
+death_rate = deaths / number_infected
+attack_rate = number_infected / population
+
+death_rate
+attack_rate
+```
+
+
+
+### Calculator Activity
+
+#### [Bayes' Rule](http://en.wikipedia.org/wiki/Bayes%27_theorem)
+
+Suppose an individual tests positive for a disease, what is the probability the 
+individual has the disease? Let 
+
+- $D$ indicates the individual has the disease
+- $N$ means the individual does not have the disease
+- $+$ indicates a positive test result
+- $-$ indicates a negative test 
+
+The above probability can be calculated using [Bayes' Rule](http://en.wikipedia.org/wiki/Bayes%27_rule):
+
+\[ P(D|+) = \frac{P(+|D)P(D)}{P(+|D)P(D)+P(+|N)P(N)} = 
+\frac{P(+|D)P(D)}{P(+|D)P(D)+(1-P(-|N))\times(1-P(D))} \]
+
+where
+
+- $P(+|D)$ is the [sensitivity](http://en.wikipedia.org/wiki/Sensitivity_and_specificity) of the test
+- $P(-|N)$ is the [specificity](http://en.wikipedia.org/wiki/Sensitivity_and_specificity) of the test
+- $P(D)$ is the [prevalence](http://en.wikipedia.org/wiki/Prevalence) of the disease
+
+Calculate the probability the individual has the disease if the test is positive when
+
+- the specificity of the test is 0.95, 
+- the sensitivity of the test is 0.99, and
+- the prevalence of the disease is 0.001.
+
+```{r, echo=FALSE, purl=FALSE}
+# Find the probability the individual has the disease if 
+# specificity is 0.95, sensitivity is 0.99, and prevalence is 0.001
+```
+
+When you have completed the activity, compare your results to the [solutions](01_intro-solution.html#calculator).
+
+
+## <a name="reading"></a> Reading data into R
+
+In this section, we will learn how to read in csv or Excel files into R. We focus on csv files because they are simplest to import, they can be easily exported from Excel (or other software), and they are portable, i.e. they can be used in other software.
+
+### <a name="working_directory"></a> Changing your working directory
+
+One of the first tasks after starting R is to change the working directory. 
+This directory will contain the files and scripts you will use for your current
+project.
+Today, that project is this workshop, so you might put a folder on your desktop
+named `MWBDSSworkshop` and use this as your working directory.
+To set the working directory,
+
+- in RStudio: Session > Set Working Directory > Choose Directory... (Ctrl + Shift + H)
+- in R GUI (Windows): File > Change Dir... 
+- in R GUI (Mac): Misc > Change Working Directory...
+
+Make sure you have write access to this directory. 
+
+### Installing and loading a package
+
+Much of the functionality of R is contained in packages. The first time these packages are used, they need to be installed, e.g. to install a package from [CRAN](http://cran.r-project.org/web/packages/) use 
+
+```{r, eval=FALSE, purl=FALSE}
+install.packages('dplyr')
+```
+
+Once installed, a package needs to be loaded into each R session where the package is used.
+
+```{r, eval=FALSE, purl=FALSE}
+library('dplyr')
+```
+
+
+
+### Load and start this workshop
+
+First load the package 
+
+```{r, warning=FALSE}
+library("MWBDSSworkshop")
+```
+
+This package contains a function to help you get started, so run that function.
+
+```{r, warning=FALSE}
+workshop(write_data = TRUE, write_scripts = TRUE)
+```
+
+This function did three things:
+
+1. It created a set of .csv data files in your working directory.
+1. It created a set of .R scripts in your working directory.
+1. It opened the workshop outline in a web browser. 
+
+
+### Open an R script
+
+As we progress through the workshop, the code for a particular module will be
+available in the R script for that module. 
+
+In R/RStudio, open the module called `01_intro.R`. From here on out, as I run commands you should run the 
+commands as well by using Ctrl-R (Windows) or Command-Enter (Mac) with the 
+appropriate line(s) highlighted. 
+
+You will notice that nothing after a `#` will be evaluated by R. That is because
+the `#` character indicates a comment in the code. For example,
+
+```{r}
+# This is just a comment. 
+1+1 # So is this
+# 1+2
+```
+
+
+
+
+### Reading data into R
+
+Data are stored in many different formats. 
+I will focus on data stored in a csv file, but mention approaches to reading in
+data stored in Excel, SAS, Stata, SPSS, and database formats.
+
+#### Reading a csv file into R
+
+The most common way I read data into R is through a csv,
+comma-separated value, file. 
+The utils package (which is installed and loaded with base R) has a 
+function called `read.csv` for reading csv files into R. 
+For example, 
+
+```{r}
+GI = read.csv("GI.csv")
+```
+
+This created a `data.frame` object in R called GI. 
+
+The utils package has the `read.table()` function which is a more general 
+function for reading data into R and it has many options. 
+We could have gotten the same results if we had used the following code:
+
+```{r, tidy=FALSE}
+GI2 = read.table("GI.csv", 
+                 header=TRUE, # There is a header.
+                 sep=",")     # The column delimiter is a comma.
+```
+
+To check if the two data sets are equal, use the following
+
+```{r}
+all.equal(GI, GI2)
+```
+
+The `read.csv` function is available in base R, but these days I will often
+use the `read_csv` function in the 
+[readr](https://cran.r-project.org/web/packages/readr/index.html) 
+package.
+
+```{r, eval=FALSE}
+library("readr")
+GI = read_csv("GI.csv")
+```
+
+This function has two main differences compared to the `read.csv` function:
+
+- does NOT use [`make.names`](https://stat.ethz.ch/R-manual/R-devel/RHOME/library/base/html/make.names.html) on the column names 
+- does NOT convert character columns to factors
+
+
+
+#### <a name="excel"></a> Read Excel files
+
+My main suggestion for reading Excel files into R is to 
+
+1. Save the Excel file as a csv
+1. Read the csv file into R using `read.csv`
+
+This approach will work regardless of any changes Excel makes in its document 
+structure.
+
+Reading an Excel xlsx file into R can be done using the `read_excel` function 
+from the [readxl](https://cran.r-project.org/web/packages/readxl/index.html) R 
+package. 
+Unfortunately many scenarios can cause this process to not work. 
+Thus, we do not focus on this method in an introductory R course. 
+When it works, it looks like this
+
+```{r, eval=FALSE}
+install.packages("readxl")
+library("readxl")
+d = read_excel("filename.xlsx", sheetIndex=1) # or
+d = read_excel("filename.xlsx", sheetName="sheetName")
+```
+
+More information can be found [here](https://readxl.tidyverse.org/).
+
+Again, if these approaches don't work, you can `Save as...` a csv file in Excel.
+
+
+#### Read SAS, Stata, or SPSS data files
+
+The `haven` package provides functionality to read in SAS, Stata, and SPSS 
+files. 
+An example of reading a SAS file is
+
+```{r, eval=FALSE}
+install.packages('haven')
+library('haven')
+d = read_sas('filename.sas7bdat')
+```
+
+#### Read a database file
+
+There are many different types of databases, so the code you will need will be
+specific to the type of database you are trying to access. 
+
+The [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html) package,  
+which we will discussing today, has a [number of functions to read from some 
+databases](https://cran.r-project.org/web/packages/dplyr/vignettes/databases.html).
+The code will look something like
+```{r, eval=FALSE}
+library("dplyr")
+my_db <- src_sqlite("my_db.sqlite3", create = T)
+```
+
+The [RODBC](https://cran.r-project.org/web/packages/RODBC/index.html) package 
+has a 
+[number of functions to read from some databases](http://www.statmethods.net/input/dbinterface.html).
+The code might look something like
+
+```{r, eval=FALSE}
+install.packages("RODBC")
+library("RODBC")
+
+# RODBC Example
+# import 2 tables (Crime and Punishment) from a DBMS
+# into R data frames (and call them crimedat and pundat)
+
+library("RODBC")
+myconn <-odbcConnect("mydsn", uid="Rob", pwd="aardvark")
+crimedat <- sqlFetch(myconn, "Crime")
+pundat <- sqlQuery(myconn, "select * from Punishment")
+close(myconn)
+```
+
+
+### Exploring the data set
+
+There are a number of functions that will provide information about a 
+`data.frame`. 
+Here are a few:
+
+```{r}
+dim(GI)
+nrow(GI)
+ncol(GI)
+names(GI)       # column names
+head(GI, n = 5) # first 5 rows of the data.frame
+tail(GI, n = 5) # last5 rows of the data.frame
+str(GI)
+```
+
+
+
+### Activity 
+
+If you brought your own Excel file, open it and save a sheet as a csv file in 
+your working directory. 
+If you brought your own csv file, save it in your working directory. 
+If you did not bring your own file, use the `fluTrends.csv` file in your working 
+directory. 
+
+Try to use the `read.csv` or `read.table` function to read the file into R. 
+There are a number of different options in the `read.table()` function that may 
+be useful:
+
+```{r, eval=FALSE, tidy=FALSE}
+d = read.table("filename.csv", # Make sure to change filename>to your filename and 
+                               # make sure you use the extension, e.g. .csv. 
+               header = TRUE,  # If there is no header column, change TRUE to FALSE.
+               sep =",",       # The column delimiter is a comma.
+               skip = 0        # Skip this many lines before starting to read the file
+               )
+```
+
+You may also need to look at the help file for `read.table()` to find additional
+options that you need.
+
+```{r, eval=FALSE}
+?read.table
+```
+
+
+
+```{r, echo=FALSE}
+# Read in the csv file
+```
+
+
+When you have completed the activity, compare your results to the 
+[solutions](01_intro-solution.html#read).
+
+
+## <a name="descriptive"></a> Descriptive statistics
+
+When reading your data set into R, you will likely want to perform some 
+descriptive statistics. 
+The single most useful command to assess the whole data set is the `summary()` 
+command:
+
+```{r}
+summary(GI)
+```
+
+
+
+### Descriptive statistics for continuous (numeric) variables
+
+To access a single column in the `data.frame` use a dollar sign ($). 
+
+```{r, eval=FALSE}
+GI$age     # or
+GI[,'age'] # or
+GI[,5]     # since age is the 5th column
+```
+
+Here are a number of descriptive statistics for *age*:
+
+```{r}
+min(GI$age)
+max(GI$age)
+mean(GI$age)
+median(GI$age)
+quantile(GI$age, c(.025,.25,.5,.75,.975))
+summary(GI$age)
+```
+
+Anything look odd here?
+
+### Descriptive statistics for categorical (non-numeric) variables
+
+The `table()` function provides the number of observations at each level of a 
+categorical variable.
+
+```{r}
+table(GI$gender)
+```
+
+which is the same as `summary()` if the variable is not coded as numeric
+
+```{r}
+summary(GI$gender)
+```
+
+If the variable is coded as numeric, but is really a categorical variable, then 
+you can still use table, but summary won't give you the correct result.
+
+```{r}
+table(GI$facility)
+summary(GI$facility)
+```
+
+Apparently there is only 1 observation from facility 259, was that a typo?
+
+
+
+### <a name="subsetting">Filtering the data</a>
+
+Rather than having descriptive statistics for the dataset as a whole, we may be
+interested in descriptive statistics for a subset of the data, i.e. you want to
+`filter()` the data. 
+
+The following code creates a new `data.frame()` that only contains observations 
+from facility 37:
+
+```{r}
+library('dplyr')
+
+GI_37 <- GI %>% 
+  filter(facility == 37) # Notice the double equal sign!
+
+nrow(GI_37)              # Number of rows (observations) in the new data set
+```
+
+The following code creates a new `data.frame` that only contains observations 
+with chief_complaint "Abd Pain":
+
+```{r}
+GI_AbdPain <- GI %>% 
+  filter(chief_complaint == "Abd Pain") # Need to quote non-numeric variable level
+
+nrow(GI_AbdPain)
+```
+
+#### Alternative ways to filter
+
+There are many other ways to subset/filter the data, but these days I almost 
+exclusively use `dplyr::filter()` as I find the code is much easier to read.
+
+```{r}
+GI_37a = GI[GI$facility==37,]
+rownames(GI_37a) = 1:nrow(GI_37a)
+all.equal(GI_37, GI_37a)
+
+GI_37b = subset(GI, facility==37)
+rownames(GI_37b) = 1:nrow(GI_37b)
+all.equal(GI_37, GI_37b)
+
+
+GI_AbdPain1 = GI[GI$chief_complaint == "Abd Pain",]
+rownames(GI_AbdPain1) = 1:nrow(GI_AbdPain1)
+all.equal(GI_AbdPain, GI_AbdPain1)
+
+GI_AbdPain2 = subset(GI, chief_complaint == "Abd Pain")
+rownames(GI_AbdPain2) = 1:nrow(GI_AbdPain2)
+all.equal(GI_AbdPain, GI_AbdPain2)
+```
+
+#### Advanced filtering
+
+We can subset variables using other logical statements.
+
+```{r, eval=FALSE}
+GI %>% filter(age <   5)
+GI %>% filter(age >= 60)
+GI %>% filter(chief_complaint %in% c("Abd Pain","ABD PAIN")) # Abd Pain or ABD PAIN
+GI %>% filter(tolower(chief_complaint) == "abd pain")        # any capitalization pattern
+GI %>% filter(!(facility %in% c(37,66)))                     # facility is NOT 37 or 66
+```
+
+
+
+### Descriptive statistics on the subset
+
+Now we can calculate descriptive statistics on this subset, e.g.
+
+```{r}
+summary(GI_37$age)
+summary(GI_AbdPain$age)
+```
+
+
+
+### Activity
+
+Find the min, max, mean, and median age for zipcode 20032.
+
+```{r, echo=FALSE}
+# Find the min, max, mean, and median age for zipcode 20032.
+```
+
+
+When you have completed the activity, compare your results to the 
+[solutions](01_intro-solution.html#descriptive).
+
+
+
+
+
+## <a name="graphical"></a> Graphical statistics
+
+Here we focus on the graphical options available in the base package `graphics`. 
+
+- Histograms (`hist()`)
+- Boxplots (`boxplot()`)
+- Scatter plots (`plot()`)
+- Bar charts (`barplot()`)
+
+Although I sometimes use these base graphics, I end up switching to `ggplot2`
+graphics very quickly. 
+
+### Histograms
+
+For continuous variables, histograms are useful for visualizing the 
+distribution of the variable.
+
+```{r}
+hist(GI$age)
+```
+
+When there is a lot of data, you will typically want more bins
+
+```{r}
+hist(GI$age, 50)
+```
+
+You can also specify your own bins
+
+```{r}
+hist(GI$age, 0:158)
+```
+
+
+### Boxplots
+
+Boxplots are another way to visualize the distribution for continuous variables.
+
+```{r}
+boxplot(GI$age)
+```
+
+Now we can see the outliers. 
+
+
+#### Multiple boxplots
+
+Here we create separate boxplots for each facility and label the x and y axes. 
+
+```{r}
+boxplot(age ~ facility, data  = GI, xlab = "Facility", ylab = "Age")
+```
+
+
+### Scatterplots
+
+Scatterplots are useful for looking at the relationship of two continuous 
+variables. 
+
+```{r}
+GI$date = as.Date(GI$date)
+plot(age ~ date, data = GI)
+```
+
+We will talk more later about dealing with dates later.
+
+
+### Bar charts
+
+For looking at the counts of categorical variables, we use bar charts.
+
+```{r}
+counts = table(GI$facility)
+barplot(counts, 
+        xlab = "Facility", 
+        ylab = "Count", 
+        main = "Number of observations at each facility")
+```
+
+### Activity 
+
+Construct a histogram and boxplot for age at facility 37.
+
+```{r, echo=FALSE}
+# Construct a histogram for age at facility 37.
+
+# Construct a boxplot for age at facility 37. 
+```
+
+Construct a bar chart for the zipcode at facility 37.
+
+```{r, echo=FALSE}
+# Construct a bar chart for the zipcode at facility 37.
+```
+
+
+When you have completed the activity, compare your results to the 
+[solutions](01_intro-solution.html#graphical).
+
+
+
+
+## <a name="help"></a> Getting help
+
+As you work with R, there will be many times when you need to get help. 
+
+My basic approach is 
+ 
+1. Use the help contained within R
+1. Perform an internet search for an answer
+1. Find somebody else who knows
+
+In all cases, knowing the R keywords, e.g. a function name, will be extremely 
+helpful.
+
+
+### Help within R I
+
+If you know the function name, then you can use `?<function>`, e.g.
+
+```{r, eval=FALSE}
+?mean
+```
+
+The structure of help is 
+- Description: quick description of what the function does
+- Usage: the arguments, their order, and default values (if any)
+- Arguments: more thorough description about the arguments
+- Value: what the funtion returns
+- See Also: similar functions
+- Examples: examples of how to use the function
+
+
+### Help within R II
+
+If you cannot remember the function name, then you can use 
+`help.search("<something>")`, e.g.
+
+```{r, eval=FALSE}
+help.search("mean")
+```
+
+Depending on how many packages you have installed, you will find a lot or a 
+little here. 
+
+
+
+### Internet search for R help
+
+I google for `<something> R`, e.g. 
+
+    calculate mean R
+
+Some useful sites are 
+
+- <http://www.cookbook-r.com/>
+- <http://www.r-tutor.com/r-introduction>
+- <http://www.statmethods.net/>
+- <http://stackoverflow.com/questions/tagged/r>
+- <http://www.ats.ucla.edu/stat/r/>

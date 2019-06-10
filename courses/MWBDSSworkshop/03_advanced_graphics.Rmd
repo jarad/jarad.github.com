@@ -1,0 +1,635 @@
+---
+title: "Data Visualization II (ggplot2)"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Data Visualization II (ggplot2)}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+Close down R, say 'No' to saving the workspace.
+In fact, I recommend you change your settings so that 
+
+- the workspace is *never* stored and
+- .RData is *not* restored upon startup.
+
+## <a name="workflow"></a> Workflow
+
+The typical workflow in R is 
+
+1. Start R
+1. Choose your working directory (choose project in RStudio)
+1. Open a script
+1. Read in data
+1. Check data (interactively)
+1. Do analysis
+
+If you are using RStudio, I highly recommend you look into setting up [projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects). 
+
+
+### Choose your working directory 
+
+Start R and then [choose your working directory](01_intro.html#working_directory).
+
+
+### Start the workshop
+
+Now start the workshop to get your data files and scripts set up. 
+Typically you would choose your working directory to be where you actually have
+your data and scripts.
+
+```{r, purl=FALSE, message=FALSE, purl=FALSE}
+library('MWBDSSworkshop')
+workshop(write_data = TRUE, write_scripts = TRUE, launch_index  = FALSE) 
+```
+
+
+### Open the script
+
+Open the `03_advanced_graphics.R` script.
+
+A convention is to put `library()` calls for all packages that you will use in
+the script at the top of the script.
+
+```{r, message=FALSE}
+library('tidyverse') # loads dplyr/ggplot2/readr
+```
+
+
+### Read in the data
+
+Typically, you will have a script that reads in the data, converts variables, 
+and then performs statistical analyses.
+
+This time we will use the `mutate()` function from the 
+[dplyr](http://cran.r-project.org/web/packages/dplyr/index.html) package. 
+This function allows you to create new columns in a `data.frame`.
+
+```{r}
+# Read in csv files
+GI     = read.csv("GI.csv")
+icd9df = read.csv("icd9.csv")
+
+# Add columns to the data.frame
+GI <- GI %>%
+  mutate(
+    date      = as.Date(date),
+    weekC     = cut(date, breaks="weeks"), 
+    week      = as.numeric(weekC),
+    facility  = as.factor(facility),
+    icd9class = factor(cut(icd9, 
+                           breaks = icd9df$code_cutpoint, 
+                           labels = icd9df$classification[-nrow(icd9df)], 
+                           right  = TRUE)),
+    ageC      = cut(age, 
+                    breaks = c(-Inf, 5, 18, 45 ,60, Inf)),
+    zip3      = trunc(zipcode/100))
+```
+
+
+
+
+### Reading other scripts
+
+If the script to read in the data is extensive, it may be better to separate
+your scripts into two different files: one for reading in the data and
+converting variables and another (or more) to perform statistical analyses.
+Then, in the second file, i.e. the one that does an analysis, you can `source()`
+the one that just reads in the data, e.g.
+
+```{r, eval=FALSE, purl=FALSE}
+source("read_data.R") 
+```
+
+
+### Check the data
+
+At this point, I typically check the data to make sure the `data.frame` is what
+I think it is. 
+I usually do this in interactive mode, i.e. not in a script.
+
+```{r}
+dim(GI)
+str(GI)
+summary(GI)
+```
+
+
+### Activity
+
+Create a new variable in the GI data set called `weekD` that is a `Date` object
+with each observation having the Monday of the week for that observation. 
+Check that it is actually a date using the `str()` function.
+
+```{r, eval=FALSE}
+# Create weekD variable in GI data set
+```
+
+When you have completed the activity, compare your results to the 
+[solutions](03_advanced_graphics-solution.html#Date).
+
+
+
+## <a name="graph_workflow"></a> Graph workflow
+
+Now to construct a graph, the workflow is
+
+1. construct an appropriate data set and
+1. construct the graph.
+
+
+### Construct the data set
+
+Suppose we want to plot the number of weekly GI cases by facility. 
+We need to summarize the data by week and facility. 
+
+```{r}
+GI_wf <- GI %>%
+  group_by(week, facility) %>%
+  summarize(count = n())
+```
+
+In interactive mode, you should verify that this data set is correct, e.g. 
+
+```{r, eval=FALSE}
+nrow(GI_wf) # Should have number of weeks times number of facilities rows
+ncol(GI_wf) # Should have 3 columns: week, facility, count
+dim(GI_wf)
+head(GI_wf)
+tail(GI_wf)
+summary(GI_wf)
+summary(GI_wf$facility)
+```
+
+### Construct the graph
+
+Now, we would like week on the x-axis and count on the y-axis. 
+
+```{r}
+ggplot(GI_wf, aes(x = week, y = count)) + 
+  geom_point()
+```
+
+But, clearly we need to distinguish the facilities. 
+
+
+### Try colors and shapes to distinguish facilities
+
+Colors:
+
+```{r}
+ggplot(GI_wf, aes(x = week, y = count, color = facility)) + 
+  geom_point()
+```
+
+Shapes:
+
+```{r}
+ggplot(GI_wf, aes(x = week, y = count, shape = facility)) + 
+  geom_point()
+```
+
+`ggplot2` only plots 6 different shapes and provides a warning.
+
+
+### Activity - weekly GI counts by age category
+
+Construct a data set and then a plot to look at weekly GI cases by age category.
+
+```{r, eval=FALSE}
+# Construct a data set aggregated by week and age category
+
+# Construct a plot to look at weekly GI cases by age category.
+```
+
+When you have completed the activity, compare your results to the 
+[solutions](03_advanced_graphics-solution.html#graph).
+
+
+
+## <a name="faceting"></a> Faceting
+
+Faceting is a technique to view many small graphs on a single page.
+
+In ggplot, there are two different ways to construct facets: 
+`facet_wrap()` and `facet_grid()`. 
+The former performs the faceting for a single variable and constructs the 
+matrix of plots automatically. 
+The latter performs faceting for two variables putting one vertically and the 
+other horizontally.
+
+
+### Faceting on a single variable
+
+When there are many levels of a single variable, 
+`facet_wrap()` can often allow comparisons across that variable.
+
+```{r}
+ggplot(GI_wf, aes(x = week, y = count)) + 
+  geom_point() + 
+  facet_wrap(~ facility)
+```
+
+By default, faceting forces all axes to be exactly the same. 
+If you want the axis to automatically scale for each facet use `scales="free"`.
+
+```{r}
+ggplot(GI_wf, aes(x = week, y = count)) + 
+  geom_point() + 
+  facet_wrap(~ facility, scales = "free")
+```
+
+### Faceting on two variables
+
+When there are two variables (with few levels in each), 
+`facet_grid()` can allow relevant comparisons.
+
+Suppose we are interested in weekly GI counts by gender and age category. 
+First, construct the data set
+
+```{r}
+GI_sa <- GI %>%
+  group_by(week, gender, ageC) %>%
+  summarize(count = n())
+```
+
+Next, construct the plot using `facet_grid(row ~ column)` syntax.
+
+```{r}
+ggplot(GI_sa, aes(x = week, y = count)) + 
+  geom_point() + 
+  facet_grid(gender ~ ageC)
+```
+
+### Using faceting and colors/shapes
+
+In addition, we could use faceting together with colors/shapes
+
+```{r}
+ggplot(GI_sa, aes(x = week, y = count, shape = gender, color = gender)) + 
+  geom_point() + 
+  facet_wrap(~ ageC)
+```
+
+
+### Activity - weekly GI counts by zip3 and ageC
+
+Construct a plot of weekly GI counts by zip3 and ageC. 
+
+```{r, eval=FALSE}
+# Construct a plot of weekly GI counts by zip3 and ageC. 
+```
+
+When you have completed the activity, compare your results to the 
+[solutions](03_advanced_graphics-solution.html#facet).
+
+
+
+
+## <a name="subsetting"></a> Filtering
+
+Often our data set is large and we would like to 
+[filter the data](intro.html#subsetting) to focus on a particular group or 
+time frame. 
+You may want to filter by a
+
+- categorical, 
+- continuous (numeric), or 
+- `Date` variable.
+
+### Filtering by a categorical variable
+
+For a categorical variable, you want to filter by 
+
+- a single category
+- a set of categories
+- not in a single category
+- not in a set of categories
+
+#### Filtering by a single category
+
+Suppose we are only interested in counts for infectious and 
+parasitic diseases (IPD).
+
+```{r}
+IPD_w <- GI %>%
+  filter(icd9class == "infectious and parasitic disease") %>%
+  group_by(week) %>%
+  summarize(count = n())
+
+ggplot(IPD_w, aes(x = week, y = count)) + 
+  geom_point()
+```
+
+
+#### Filtering by a set of categories
+
+Suppose we are interested in looking at both IPD and ill-defined conditions
+
+```{r}
+conditions = levels(GI$icd9class)
+conditions
+```
+
+So we want levels 1 and 3. 
+
+```{r}
+IPDp <- GI %>%
+  filter(icd9class %in% levels(icd9class)[c(1,3)])
+
+summary(IPDp$icd9class)
+```
+
+Now construct the graph
+
+```{r}
+IPDp_w <- IPDp %>%
+  group_by(week, icd9class) %>%
+  summarize(count = n())
+
+ggplot(IPDp_w, aes(x = week, y = count)) + 
+  geom_point() + 
+  facet_wrap(~ icd9class, scales = "free")
+```
+
+#### Filtering by not in a single category
+
+Suppose we are interested in all icd9 codes except IPD. 
+
+```{r}
+# Combine filtering and summarizing
+nIPD_w <- GI %>%
+  filter(icd9class != "infectious and parasitic disease") %>%
+  group_by(week, icd9class) %>%
+  summarize(count = n())
+
+ggplot(nIPD_w, aes(x = week, y = count)) + 
+  geom_point() + 
+  facet_wrap(~ icd9class, scales = "free")
+```
+
+#### Filtering by not in a set of categories
+
+Suppose we are interested in all icd9 codes except IPD and ill-defined 
+conditions.
+
+```{r}
+nIPDp_w <- GI %>%
+  filter(!(icd9class %in% levels(icd9class)[c(1,3)])) %>%
+  group_by(week, icd9class) %>%
+  summarize(count = n())
+
+ggplot(nIPDp_w, aes(x = week, y = count)) + 
+  geom_point() + 
+  facet_wrap(~ icd9class, scales = "free")
+```
+
+
+### Filtering by a continuous (numeric) variable
+
+We may want to subset a continuous (numeric) variable by
+
+- Larger than (or equal to) a number
+- Smaller than (or equal to) a number
+- In a range of numbers (with our without endpoints)
+
+#### Filtering larger than a number
+
+```{r}
+Age60p_w <- GI %>%
+  filter(age > 60) %>%
+  group_by(week) %>%
+  summarize(count = n())
+
+ggplot(Age60p_w, aes(x = week, y = count)) + 
+  geom_point()
+```
+
+#### Filtering less than or equal to a number 
+
+```{r}
+Age_lte30_w <- GI %>%
+  filter(age <= 30) %>%
+  group_by(week) %>%
+  summarize(count = n())
+
+ggplot(Age_lte30_w, aes(x = week, y = count)) + 
+  geom_point()
+```
+
+#### Filtering within a range
+
+```{r}
+Age30to60_w <- GI %>%
+  filter(age > 30, age <= 60) %>% # This includes those who are 60, but not those who are 30
+  group_by(week) %>%
+  summarize(count = n())
+
+ggplot(Age30to60_w, aes(x = week, y = count)) + 
+  geom_point()
+```
+
+### Filtering a date
+
+Filtering a date works similar to filtering a continuous (numeric) variable 
+once you convert a comparison value to a `Date` using the `as.Date()` function.
+
+Let's create a `Date` vector containing the two values we will use for 
+filtering.
+
+```{r}
+two_dates = as.Date(c("2007-01-01", "2007-12-31"))
+```
+
+#### Filtering dates
+
+```{r}
+early <- GI %>% filter(date <  two_dates[1])
+late  <- GI %>% filter(date >= two_dates[2])
+mid   <- GI %>% filter(date >= two_dates[1], date < two_dates[2])
+```
+
+Now make plots
+
+```{r}
+early_w <- early %>% group_by(week) %>% summarize(count = n())
+late_w  <- late  %>% group_by(week) %>% summarize(count = n())
+mid_w   <- mid   %>% group_by(week) %>% summarize(count = n())
+
+g1 = ggplot(early_w, aes(x = week, y = count)) + geom_point()
+g2 = ggplot(late_w,  aes(x = week, y = count)) + geom_point()
+g3 = ggplot(mid_w,   aes(x = week, y = count)) + geom_point()
+```
+
+To arrange multiple plots, use the `grid.arrange` function in the `gridExtra` package.
+
+```{r}
+# you may need to run install.packages("gridExtra")
+if (require('gridExtra'))
+  gridExtra::grid.arrange(g1,g3,g2)
+```
+
+This set of figures would have been a lot easier to construct if we had simply
+created a new variable that had values early, mid, and late and then used 
+faceting to create the plot, e.g.
+
+```{r}
+cut_dates <- c(as.Date("1900-01-01"),
+               two_dates,
+               Sys.Date())
+
+GI_time <- GI %>% 
+  mutate(time = cut(date, 
+                    breaks = cut_dates, 
+                    labels = c("early","mid","late"))) %>%
+  group_by(week, time) %>%
+  summarize(count = n())
+
+ggplot(GI_time,
+       aes(x = week, y = count)) +
+  geom_point() +
+  facet_wrap(~ time, ncol = 1, scales = "free")
+```
+
+### Activity - subsetted graphs
+
+Construct a plot for those in zipcode 206xx between Jan 1, 2008 and Dec 31, 2008. 
+
+```{r, eval=FALSE}
+# Filter the data to zipcode 206xx between Jan 1, 2008 and Dec 31, 2008
+
+# Aggregate the date for each week in this time frame
+
+# Construct the plot of weekly GI counts in zipcode 206xx.
+```
+
+When you have completed the activity, compare your results to the 
+[solutions](03_advanced_graphics-solution.html#subsetting).
+
+
+
+## <a name="professional"></a> Making professional looking graphics
+
+To make the graphics we are producing look professional, we will need to 
+[customize](graphics.html#customizing) the graph according to the final 
+production platform, e.g. website, word document, pdf document, etc. 
+This will be highly specific to your use. 
+Nonetheless, likely you will use the following `ggplot2` functions:
+
+- `scale_color_manual()`
+- `labs()`
+- `theme()`
+
+But there are many others. 
+One thing you will notice is that we can keep updating the graph by updating 
+the R object that holds the graph. 
+
+### Base graphic 
+
+Let's start with the following graph
+
+```{r}
+GI$weekD = as.Date(GI$weekC) 
+
+GI_sum <- GI %>%
+  group_by(weekD, gender, ageC) %>%
+  summarize(count = n())
+
+ggplot(GI_sum, aes(x = weekD, y = count, color = gender)) + 
+  geom_point(size = 3) + 
+  facet_grid(ageC ~ ., scales = "free_y")
+```
+
+### Change age category labels
+
+The easiest way to change some of the labels on the graph is to change the 
+underlying data. Here we change the levels associated with the `ageC` variable. 
+
+```{r}
+levels(GI_sum$ageC)
+levels(GI_sum$ageC) = paste("Age:", c("<5","5-18","18-45","45-60",">60"))
+table(GI_sum$ageC)
+```
+
+```{r}
+g = ggplot(GI_sum, aes(x = weekD, y = count, color = gender)) + 
+  geom_point(size = 3) + 
+  facet_grid(ageC ~ ., scales = "free_y")
+g
+```
+
+`g` is the R object that contains the graph
+
+
+### Change colors 
+
+Intuitive colors can make a graph easier to read. 
+
+
+```{r}
+g = g + scale_color_manual(values=c("hotpink","blue"), name='Gender')
+g
+```
+
+
+### Change title/axis labels and put legend on the bottom
+
+Use proper names and capitalization in title and axis labels.
+
+```{r}
+g = g + 
+  labs(title = "Weekly GI cases", x = "Year", y = "Weekly count") + 
+  theme(legend.position = "bottom")
+g
+```
+
+### Try alternate themes
+
+Try alternate themes:
+
+```{r}
+g = g + theme_bw()
+g
+```
+
+To see a list of possibilities:
+
+```{r, eval=FALSE}
+?theme_bw
+?theme
+```
+
+
+### Adjust font sizes
+
+Depending on the final platform, font sizes may need to be adjusted.
+
+```{r}
+g = g + theme(title = element_text(size=rel(2)),
+              text = element_text(size=16),
+              legend.background = element_rect(fill  = "white", 
+                                               size  = .5, 
+                                               color = "black"))
+g
+```
+
+
+### <a name="exporting"></a> Exporting graphs
+
+To export the graphs, use the `ggsave()` function which saves the last plot that 
+you displayed. 
+As a default, it uses the size of the current graphics device, 
+but you will likely want to modify this. 
+
+```{r}
+g
+ggsave("plot.pdf")
+```
+
+If you look in your current working directory, you will see the plot.pdf file. 
+
+```{r}
+ggsave("plot.pdf", width=14, height=8)
+```

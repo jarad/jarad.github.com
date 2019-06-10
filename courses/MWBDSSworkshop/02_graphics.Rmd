@@ -1,0 +1,814 @@
+---
+title: "Data Visualization I (ggplot2)"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Data Visualization I (ggplot2)}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+Before we get back into graphics, it is important to understand some of the 
+fundamentals behind what R is doing. 
+
+Please open the `02_graphics.R` script in your working directory. 
+If you cannot find this file, you may need to do the following:
+
+1. [change your working directory](02_intro.html#working_directory)
+1. write the workshop data and scripts
+
+```{r, eval=FALSE}
+MWBDSSworkshop::workshop(write_data = TRUE, write_scripts = TRUE) 
+```
+
+## <a name="types"></a> Data types
+
+Objects in R can be broadly classified according to their dimensions:
+
+- scalar
+- vector
+- matrix
+- array (higher dimensional matrix)
+
+and according to the type of variable they contain:
+
+- integer
+- numeric
+- character (string)
+- logical
+- factor
+
+
+### Scalars
+
+Scalars have a single value assigned to the object in R. 
+
+```{r}
+a = 3.14159265 
+b = "ISDS Workshop" 
+c = TRUE
+```
+
+Print the objects
+
+```{r}
+a
+b
+c
+```
+
+
+### Vectors
+
+The `c()` function creates a vector in R
+
+```{r}
+a = c(1,2,-5,3.6)
+b = c("ISDS","Workshop")
+c = c(TRUE, FALSE, TRUE)
+```
+
+To determine the length of a vector in R use `length()`
+
+```{r}
+length(a)
+length(b)
+length(c)
+```
+
+To determine the type of a vector in R use `class()`
+
+```{r}
+class(a)
+class(b)
+class(c)
+```
+
+
+#### Vector construction
+
+Create a numeric vector that is a sequence using : or `seq()`.
+
+```{r}
+1:10
+5:-2
+seq(from = 2, to = 5, by = .05)
+```
+
+Another useful function to create vectors is `rep()`
+
+```{r}
+rep(1:4, times = 2)
+rep(1:4, each  = 2)
+rep(1:4, each  = 2, times = 2)
+```
+
+Arguments to functions in R can be referenced either by position or by name or
+both. 
+The safest and easiest to read approach is to name all your arguments.
+I will often name all but the first argument. 
+
+#### Accessing vector elements 
+
+Elements of a vector can be accessed using brackets, e.g. [index].
+
+```{r}
+a = c("one","two","three","four","five")
+a[1]
+a[2:4]
+a[c(3,5)]
+a[rep(3,4)]
+```
+
+Alternatively we can access elements using a logical vector where only TRUE 
+elements are accessed.
+
+```{r}
+a[c(TRUE, TRUE, FALSE, FALSE, FALSE)]
+```
+
+You can also remove elements using a negative sign `-`.
+
+```{r}
+a[-1]
+a[-(2:3)]
+```
+
+#### Modifying elements of a vector
+
+You can assign new values to elements in a vector using = or <-.
+
+```{r}
+a[2] = "twenty-two"
+a
+a[3:4] = "three-four" # assigns "three-four" to both the 3rd and 4th elements
+a
+a[c(3,5)] = c("thirty-three","fifty-five")
+a
+```
+
+
+
+### Matrices
+
+Matrices can be constructed using `cbind()`, `rbind()`, and `matrix()`:
+
+```{r}
+m1 = cbind(c(1,2), c(3,4))       # Column bind
+m2 = rbind(c(1,3), c(2,4))       # Row bind
+
+m1
+all.equal(m1, m2)
+
+m3 = matrix(1:4, nrow = 2, ncol = 2)
+all.equal(m1, m3)
+
+m4 = matrix(1:4, nrow = 2, ncol = 2, byrow = TRUE)
+all.equal(m3, m4)
+
+m3
+m4
+```
+
+
+#### Accessing matrix elements
+
+Elements of a matrix can be accessed using brackets separated by a comma, 
+e.g. [row index, column index].
+
+```{r}
+m = matrix(1:12, nrow=3, ncol=4)
+m
+m[2,3]
+```
+
+Multiple elements can be accessed at once
+
+```{r}
+m[1:2,3:4]
+```
+
+If no row (column) index is provided, then the whole row (column) is accessed.
+
+```{r}
+m[1:2,]
+```
+
+Like vectors, you can eliminate rows (or columns)
+
+```{r}
+m[-c(3,4),]
+```
+
+Be careful not to forget the comma, e.g. 
+
+```{r}
+m[1:4]
+```
+
+You can also construct an object with more than 2 dimensions using the 
+`array()` function.
+
+### Cannot mix types 
+
+You cannot mix types within a vector, matrix, or array
+
+```{r}
+c(1,"a")
+```
+
+The number 1 is in quotes indicating that R is treating it as a character rather 
+than a numeric.
+
+```{r}
+c(TRUE, 1, FALSE)
+```
+
+The logicals are converted to numeric (0 for FALSE and 1 for TRUE).
+
+```{r}
+c(TRUE, 1, "a")
+```
+
+Everything is converted to a character. 
+
+### Activity
+
+Reconstruct the following matrix using the `matrix()` function, then 
+
+1. Print the element in the 3rd-row and 4th column
+1. Print the 2nd column
+1. Print all but the 3rd row
+
+```{r}
+m = rbind(c(1, 12, 8, 6),
+          c(4, 10, 2, 9),
+          c(11, 3, 5, 7))
+m
+```
+
+```{r, echo=FALSE}
+# Reconstruct the matrix 
+
+# Print the element in the 3rd-row and 4th column
+
+# Print the 2nd column
+
+# Print all but the 3rd row
+```
+
+
+When you have completed the activity, compare your results to the 
+[solutions](02_graphics-solution.html#matrix).
+
+
+
+
+## <a name="frames"></a> Data frames
+
+A `data.frame` is a special type of matrix that allows different data types in 
+different columns.
+
+We have already seen a `data.frame` with our GI data set. 
+Let's read this data in again and take a look.
+
+
+```{r}
+GI = read.csv("GI.csv")
+dim(GI)
+```
+
+
+### Access `data.frame` elements
+
+A `data.frame` can be accessed just like a matrix, 
+e.g. [row index, column index].
+
+```{r}
+GI[1:2, 3:4]
+```
+
+`data.frame`s can also be accessed by column names
+
+```{r}
+GI[1:2, c("facility","icd9","gender")]
+```
+
+or 
+
+```{r, message=FALSE}
+library('dplyr') 
+GI %>% 
+  select(facility, icd9, gender) %>%
+  head(n = 2)
+```
+
+The `%>%` (pipe) operator allows chaining of commands by passing the result of
+the previous command as the first argument of the next command. 
+This makes code much easier to read. 
+Two equivalent approaches that are harder to read are 
+
+```{r, eval=FALSE}
+# Approach 1
+head(select(GI, facility, icd9, gender), n = 2)
+
+# Approach 2
+GI_select <- select(GI, facility, icd9, gender)
+head(GI_select, n = 2)
+```
+
+When there are long strings of commands, using the `%>%` (pipe) operator makes
+code much easier to read. 
+See [here](https://www.r-statistics.com/2014/08/simpler-r-coding-with-pipes-the-present-and-future-of-the-magrittr-package/) 
+for more background and information. 
+
+
+
+### Different data types in different columns
+
+The function `str()` allows you to see the structure of any object in R. 
+Using `str()` on a `data.frame` object tells you 
+
+1. that the object is a `data.frame`,
+1. the number of rows and columns,
+1. the names of each column,
+1. each column's data type, and
+1. the first few elements in that column.
+
+```{r}
+str(GI)
+```
+
+
+
+### <a name="factor"></a> Factor
+
+A factor is a data type that represents a categorical variable. 
+
+The default is for any character vector to be converted to a factor when read 
+using `read.csv()` or `read.table()`. 
+You can change this behavior by setting `stringsAsFactors = FALSE`, 
+which is the default in `readr::read_csv()`.
+
+Internally, R codes a factor as an integer and then keeps a table that contains 
+the conversion from that integer into the actual value of the factor.
+
+```{r}
+nlevels(GI$gender)
+levels(GI$gender)          # internal table
+GI$gender[1:3]
+as.numeric(GI$gender[1:3]) # internal coding
+```
+
+
+
+#### Converting a numeric variable into a factor
+
+When a categorical variable is encoded as a numeric variable in the original 
+data set, R reads them in as numeric. 
+To convert them to a factor use `as.factor()` or `factor()`.
+
+```{r}
+GI$facility = as.factor(GI$facility)
+summary(GI$facility)
+```
+
+
+#### Converting back to the original numeric variable
+
+To obtain the original numeric variable use `as.character()` and `as.numeric()`
+
+```{r}
+head(as.character(GI$facility))             # This returns the levels as a character vector
+head(as.numeric(as.character(GI$facility))) # This returns the original numeric factor levels
+```
+
+
+#### Creating your own factor
+
+Use the `cut()` function to create a factor from a continuous variable.
+
+```{r}
+GI$ageC = cut(GI$age, c(-Inf, 5, 18, 45 ,60, Inf)) # Inf is infinity
+table(GI$ageC)
+```
+
+This created a new variable in the GI `data.frame` called *ageC*. 
+
+
+
+
+
+
+### <a name="dates"></a> Dates
+
+In order to use dates properly, they need to be converted into type `Date`. 
+
+```{r}
+GI$date = as.Date(GI$date)
+str(GI$date)
+```
+
+`as.Date()` will attempt to read dates as "%Y-%m-%d" then "%Y/%m/%d". 
+If neither works, it will give an error. 
+
+```{r, eval=FALSE}
+?as.Date
+```
+
+You can specify other date patterns, e.g. 
+
+```{r, eval=FALSE}
+as.Date("12/09/14", format="%m/%d/%y")
+```
+
+For those who work with dates often, check out the 
+[lubridate](https://cran.r-project.org/web/packages/lubridate/index.html)
+package. 
+
+
+### Activity 
+
+Create a new variable in the GI data set called `icd9code` that cuts icd9 at 
+0, 140, 240, 280, 290, 320, 360, 390, 460, 520, 580, 630, 680, 710, 740, 760, 
+780, 800, 1000, and Inf. 
+Find the `icd9code` that is the most numerous in the GI data set.
+
+```{r, eval=FALSE}
+# Create icd9code
+
+# Find the icd9code that is most numerous
+```
+
+When you have completed the activity, compare your results to the 
+[solutions](02_graphics-solution.html#factor).
+
+
+
+
+## <a name="reshaping"></a> Reshaping data frames in R
+
+There are two general representations of tabular data.
+
+Wide:
+```{r, echo=FALSE}
+d = data.frame(week = 1:3, 
+               GI = c(246,195,212), 
+               ILI = c(948, 1020, 1024))
+d
+```
+
+which is a succinct representation of the data
+
+Long:
+```{r, echo=FALSE}
+d %>% 
+  tidyr::gather(key = syndrome, value = count, -week)
+```
+
+which is the form most statistical software wants, 
+i.e. there is only one column for the response (count).
+
+
+### Wide to long
+
+The `tidyr` package provides functions to convert between the two 
+representations. First, we need to load the package
+
+```{r}
+library('tidyr')
+```
+
+Create the wide `data.frame`:
+```{r}
+d = data.frame(week = 1:3, 
+               GI   = c(246,195,212), 
+               ILI  = c(948, 1020, 1024))
+d
+```
+
+To turn the `data.frame` into long format, use `gather()`.
+
+```{r}
+m <- d %>%
+  gather(key = syndrome, # Creates a column called syndrome
+         value = count,  # Creates a column called count
+         -week)          # Keeps the column `week` as a column
+                         # All other columns (GI and ILI) are gathered
+```
+
+This approach is useful if there are a lot of columns that need to be gathered
+but only a few that need to remain as columns.
+If the opposite is true, i.e. there are only a few columns to be gathered and 
+a lot that need to remain as columns, use
+
+```{r}
+m2 <- d %>%
+  gather(key = syndrome, # Creates a column called syndrome
+         value = count,  # Creates a column called count
+         GI, ILI)        # Gathers these columns
+
+all.equal(m,m2)
+```
+
+
+### Long to wide
+
+If we want to convert back, use `spread()`
+
+```{r}
+m %>%
+  spread(key = syndrome, value = count)
+```
+
+I find that I use the `gather` function much more often than I use the `spread`
+function because data are usually stored in a succinct format but then I need
+the data in long format for summaries or figures or statistical analyses.
+
+
+## <a name="aggregating"></a> Aggregating data frames in R
+
+The GI data set that we have is already in long format and each row is an 
+individual. 
+We may want to aggregate this information. 
+To do so, we will use the `group_by()` and `summarize()` functions in the
+`dplyr` package.
+
+```{r}
+library('dplyr')
+```
+
+For example, perhaps we wanted to know the total number of GI or ILI cases 
+across the 3 weeks:
+
+```{r}
+m %>%                           # We need to use the melted (long) version of the data set
+  group_by(syndrome) %>%        # Do the following for each syndrome
+  summarize(total = sum(count)) # Calculate `total` which is the sum of count for each syndrome
+```
+
+
+### Aggregating the GI data set
+
+Let's aggregate the GI data set by week, gender, and age category.
+
+First, we need to create weeks
+
+```{r}
+GI$date = as.Date(GI$date) # Make sure the dates are actually dates
+GI$week = cut(GI$date, 
+              breaks = "weeks", 
+              start.on.monday = TRUE) 
+```
+
+Now we can summarize
+
+```{r}
+GI_count <- GI %>%                 # each row is a single observation
+  group_by(week, gender, ageC) %>% # split the data by these variables
+  summarize(total = n())           # this counts the number of rows, see ?n
+
+nrow(GI_count)
+head(GI_count, 20)
+```
+
+
+### Activity
+
+Aggregate the GI data set by gender, ageC, and icd9code 
+(the ones created in the last activity).
+
+
+```{r, echo=FALSE}
+# Aggregate our GI data set by gender, ageC, and icd9code (the ones created in the last activity).
+```
+
+
+When you have completed the activity, compare your results to the 
+[solutions](02_graphics-solution.html#aggregate).
+
+
+
+
+
+## <a name="ggplot2"></a> Basics of `ggplot2`
+
+Previously we produced graphics using the base `graphics` system. 
+Although I still use this for producing quick plots, 
+I invariably end up using the `ggplot2` package.
+This package requires a `data.frame` in long format. 
+
+
+Load the `ggplot2` package
+```{r}
+library('ggplot2')
+```
+
+
+
+### Histogram
+
+A basic histogram in ggplot
+
+```{r}
+ggplot(data = GI, aes(x = age)) + geom_histogram(binwidth = 1)
+```
+
+For code that looks more similar to the histogram code we saw before, 
+you can use 
+
+```{r, eval=FALSE}
+qplot(data = GI, x = age, geom = "histogram", binwidth = 1)
+```
+
+Many websites and even the `ggplot2` manual have examples using `qplot`. 
+I believe this is mainly to ease the transition for individuals who are familiar 
+with base `graphics`.
+If you are just starting out with R, 
+I recommend using the `ggplot` function in `ggplot2` from the beginning.
+
+### Boxplots
+
+A basic boxplot
+
+```{r}
+ggplot(data = GI, aes(x = 1, y = age)) + geom_boxplot()
+```
+
+
+### Multiple boxplots
+
+```{r}
+ggplot(GI, aes(x = facility, y = age)) + geom_boxplot()
+```
+
+
+
+### Scatterplots
+
+```{r}
+ggplot(GI, aes(x=date, y=age)) + geom_point()
+```
+
+### Bar charts
+
+With ggplot, there is no need to count first.
+
+```{r}
+ggplot(GI, aes(x=facility)) + geom_bar()
+```
+
+An appealing aspect of ``ggplot` is that once the data is in the correct format
+it is easy to construct lots of different plots. 
+
+
+### Activity
+
+
+Construct a histogram and boxplot for age at facility 37 using ggplot2.
+
+```{r, eval=FALSE}
+# Construct a histogram for age at facility 37.
+
+# Construct a boxplot for age at facility 37. 
+```
+
+Construct a bar chart for the 3-digit zipcode at facility 37 using ggplot2
+
+```{r, eval=FALSE}
+# Construct a bar chart for the 3-digit zipcode at facility 37 
+```
+
+
+When you have completed the activity, compare your results to the 
+[solutions](02_graphics-solution.html#ggplot2).
+
+
+
+
+## <a name="customizing"></a> Customizing ggplot2 plots
+
+There are many ways to customize the appearance of ggplot2 plots:
+
+- Colors
+- Labels
+- Titles
+- Characters
+- Line types
+- Themes
+
+
+
+### Colors
+
+```{r}
+ggplot(GI, aes(x = age)) + 
+  geom_histogram(binwidth = 1, color = 'blue',   fill = 'yellow')
+```
+
+```{r}
+ggplot(GI, aes(x=date, y=age)) + 
+  geom_point(color = 'purple')
+```
+
+To find all the colors that R knows, use 
+```{r, eval=FALSE}
+colors()
+```
+
+### Labels
+
+```{r}
+ggplot(GI, aes(x = facility, y = age)) + 
+  geom_boxplot() + 
+  labs(x     = 'Facility ID', 
+       y     = 'Age (in years)', 
+       title = 'Age by Facility ID')
+```
+
+
+### Characters
+
+```{r}
+ggplot(GI, aes(x=date, y=age)) + geom_point(shape = 2, color = 'red')
+```
+
+ggplot2 uses the same shape codes as base graphics, see
+
+```{r, eval=FALSE}
+?points
+```
+
+
+### Line types
+
+Here I am also using a trick of setting up part of the plot and assigning it to
+the object `g`. 
+Then you can add elements to the plot and if you don't assign it, 
+the plot will be shown. 
+
+```{r}
+g = ggplot(GI %>% 
+             group_by(week) %>%
+             summarize(count = n()), 
+           aes(x = as.numeric(week), 
+               y = count)) +
+  labs(x = 'Week #', 
+       y = 'Weekly count')
+
+g + geom_line()
+g + geom_line(size=2, color='firebrick', linetype=2)
+```
+
+Linetype options can be found in `?par` under `lty`. 
+But it is probably more informative to just google it, 
+e.g. <http://www.cookbook-r.com/Graphs/Shapes_and_line_types/>.
+
+### Themes
+
+```{r}
+g = g + geom_line(size = 1, color = 'firebrick')
+g + theme_bw()
+```
+
+For other themes, see
+
+```{r, eval=FALSE}
+?theme
+?theme_bw
+```
+
+
+
+
+## <a name="help"></a> Getting help on ggplot2
+
+Although the general R help can still be used, e.g. 
+
+```{r, eval=FALSE}
+?ggplot
+?geom_point
+```
+
+It is much more helpful to google for an answer
+
+    geom_point 
+    ggplot2 line colors
+
+The top hits will all have the code along with what the code produces.
+
+### Helpful sites
+
+These sites all provide code. The first two also provide the plots that are produced.
+
+- <http://docs.ggplot2.org/current/>
+- <http://www.cookbook-r.com/Graphs/>
+- <http://stackoverflow.com/questions/tagged/ggplot2>
+
+
+
+### Activity
+
+Play around with ggplot2 to see what kind of plots you can make.
+
