@@ -10,6 +10,8 @@ I've started archiving my talks and posters here for ease of access to those
 who might be interested in looking at the material after the conference. 
 If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
+- 2019
+  - [JSM speed](https://github.com/jarad/JSM2019/raw/master/JSM2019-speed.pdf)
 - 2018
   - [JSM](https://github.com/jarad/JSM2018/raw/master/JSM2018.pdf)
   - [ISBA](https://github.com/jarad/ISBA2018/raw/master/JaradNiemi_ISBA2018.pdf)
