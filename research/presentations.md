@@ -12,6 +12,7 @@ If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
 - 2019
   - [JSM speed](https://github.com/jarad/JSM2019/raw/master/JSM2019-speed.pdf)
+  - [JSM eposter](https://github.com/jarad/JSM2019/raw/master/JSM2019-eposter.pdf)
 - 2018
   - [JSM](https://github.com/jarad/JSM2018/raw/master/JSM2018.pdf)
   - [ISBA](https://github.com/jarad/ISBA2018/raw/master/JaradNiemi_ISBA2018.pdf)
