@@ -11,6 +11,7 @@ who might be interested in looking at the material after the conference.
 If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
 - 2019
+  - [ISU pvalue discussion](https://github.com/jarad/pvalue2019/raw/master/pvalue2019.pdf)
   - [JSM speed](https://github.com/jarad/JSM2019/raw/master/JSM2019-speed.pdf)
   - [JSM eposter](https://github.com/jarad/JSM2019/raw/master/JSM2019-eposter.pdf)
 - 2018
