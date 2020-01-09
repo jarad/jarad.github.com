@@ -21,10 +21,9 @@ Originally, I am from [Duluth, Minnesota](http://www.duluthmn.gov/ "Duluth, Minn
   {% endfor %}
 </ul>
 
-## Spring 2019 Courses ([all courses](courses))
+## Fall 2020 Courses ([all courses](courses))
 
-  - [STAT 587C](courses/stat587Eng)
-  - [STAT 544](courses/stat544)
+  - TBD
 
 ## Contact
 
