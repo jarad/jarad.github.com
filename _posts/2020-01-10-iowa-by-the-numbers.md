@@ -8,14 +8,14 @@ tags: [data,agronomy]
 
 {% include JB/setup %}
 
-From <https://www.iadg.com/iowa-advantages/value-added-agriculture-food_ingredients/>:
+From <https://www.iadg.com/iowa-advantages/target-industries/>:
 
-    Iowa produces one-eleventh of the nations’ food supply and is the largest producer of corn, pork and eggs, and second in soybeans in the United States.
+    Iowa is the largest producer of corn, soybeans, pork and eggs in the United States and second in red meat production.
     
 despite being [23rd in size](https://statesymbolsusa.org/symbol-official-item/national-us/uncategorized/states-size)
-which 55,875 square miles and 
+which 56 thousand square miles and 
 [31st in population](https://simple.wikipedia.org/wiki/List_of_U.S._states_by_population) 
-with 
+with 3 million people.
 
 Actually, in Iowa there are 
 
