@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Iowa by the numbers""
+title: "Iowa by the numbers"
 description: "Iowa's agronomic powerhouse"
 category: [Agronomy]
 tags: [data,agronomy]
