@@ -10,6 +10,8 @@ I've started archiving my talks and posters here for ease of access to those
 who might be interested in looking at the material after the conference. 
 If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
+- 2020
+  - [SFU](https://github.com/jarad/SFU2020/raw/master/JaradNiemi_SFU2020.pdf)
 - 2019
   - [ISU pvalue discussion](https://github.com/jarad/pvalue2019/raw/master/pvalue2019.pdf)
   - [JSM speed](https://github.com/jarad/JSM2019/raw/master/JSM2019-speed.pdf)
