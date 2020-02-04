@@ -10,6 +10,12 @@ group:
 
 ## Refereed Journal Articles
 
+1. E. A. Hines, M. R. Romoser, Z. E. Kiefer, A. F. Keating, L. H. Baumgard, {\bf J. Niemi}, N. K. Gabler, J. F. Patience, G. Haberl, N. H. Williams, B. J. Kerr, K. J. Touchette, and J. W. Ross. (2019) ``The impact of dietary supplementation of arginine during gestation in a commercial swine herd: II. Offspring performance'' Journal of Animal Science, 97(9), 3626-3635. [url](https://academic.oup.com/jas/jas/article-abstract/97/9/3626/5554144)
+1. E. A. Hines, M. R. Romoser, Z. E. Kiefer, A. F. Keating, L. H. Baumgard, J. Niemi, N. K. Gabler, J. F. Patience, G. Haberl, N. H. Williams, B. J. Kerr, K. J. Touchette, and J. W. Ross. (2019) ``The impact of dietary supplementation of arginine during gestation in a commerical herd: I. Gilt.'' (2019) Journal of Animal Science. 97(9), 3617-3625. [url](https://academic.oup.com/jas/advance-article-abstract/doi/10.1093/jas/skz233/5531590)
+1. Craig J. McGowan, Matthew Biggerstaff, Michael Johansson, Karyn M. Apfeldorf, Michal Ben-Nun, Logan Brooks, Matteo Convertino, Madhav Erraguntla, David C. Farrow, John Freeze, Saurav Ghosh, Sangwon Hyun, Sasikiran Kandula, Joceline Lega, Yang Liu, Nicholas Michaud*, Haruka Morita, Jarad Niemi, Naren Ramakrishnan, Evan L. Ray, Nicholas G. Reich, Pete Riley, Jeffrey Shaman, Ryan Tibshirani, Alessandro Vespignani, Qian Zhang, Carrie Reed & The Influenza Forecasting Working Group. (2019) ``Collaborative efforts to forecast seasonal influenza in the United States, 2015--2016.'' Scientific Reports. 9. [url](https://www.nature.com/articles/s41598-018-36361-9)
+1. Ignacio Alvarez and Jarad Niemi. (2019) ``Fully Bayesian analysis of allele-specific RNA-seq data.'' (2019) Mathematical Biosciences and Engineering. 16(6), 7751-7770. [url](https://www.aimspress.com/article/10.3934/mbe.2019389)
+1. Nathaniel Garton and Jarad Niemi. (2019) ``Multivariate temporal modeling of crime with dynamic linear models.'' PLOS ONE. 14(7), e0218375. [url](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0218375)
+1. Will Landau, Jarad Niemi, and Dan Nettleton. (2019) ``Fully Bayesian analysis of RNA-seq counts for the detection of gene expression heterosis.'' Journal of the American Statistical Association, 114(526), 610-621. [url](https://www.tandfonline.com/doi/full/10.1080/01621459.2018.1497496)
 1. Craig J. McGowan, Matthew Biggerstaff, Michael Johansson, Karyn M. Apfeldorf, 
 Michal Ben-Nun, Logan Brooks, Matteo Convertino, Madhav Erraguntla, 
 David C. Farrow, John Freeze, Saurav Ghosh, Sangwon Hyun, Sasikiran Kandula, 
@@ -19,7 +25,6 @@ Ryan Tibshirani, Alessandro Vespignani, Qian Zhang, Carrie Reed & The Influenza
 Forecasting Working Group (2019) ``Collaborative efforts to forecast seasonal 
 influenza in the United States, 2015–2016.'' 
 Scientific Reports, 9, 683, [url](https://www.nature.com/articles/s41598-018-36361-9)
-1. Will Landau\*, Jarad Niemi, and Dan Nettleton. ``Fully Bayesian analysis of RNA-seq counts for the detection of gene expression heterosis.'' Journal of the American Statistical Association (in press)
 1. Lisa A. Schulte, Jarad Niemi, Matthew J. Helmers, Matt Liebman, J. Gordon
 Arbuckle, David E. James, Randall K. Kolka, Matthew E. O'Neal, Mark D. Tomer, 
 John C. Tyndall, Heidi Asbjornsen, Pauline Drobney, Jeri Neal, Gary Van Ryswyk,
