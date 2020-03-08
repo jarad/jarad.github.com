@@ -31,9 +31,11 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
 - Office: [Snedecor 2208](http://www.fpm.iastate.edu/maps/default.asp?zoom=2&xcenter=1471&ycenter=1869&background=map&layer=buildingnames&xshow=1470&yshow=1868 "Map to Snedecor Hall")
 - Email: <niemi@iastate.edu>
 - Social: 
+
+<a href="https://twitter.com/jaradniemi?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jaradniemi</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
   - [YouTube](https://www.youtube.com/channel/UCvJW6o0x1dzKZJ5b5exYuxw)
   - [Skype](skype:jaradniemi?add "Jarad Niemi's Skype account")
-  - [Twitter](https://twitter.com/jaradniemi "Jarad Niemi's twitter account")
   - [LinkedIn](http://www.linkedin.com/in/jaradniemi "Jarad Niemi's LinkedIn account")
   - [GitHub](https://github.com/jarad/ "Jarad Niemi's GitHub account")
   - [OrcID](http://orcid.org/0000-0002-5079-158X)
