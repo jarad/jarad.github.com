@@ -21,8 +21,8 @@ So I thought I would share my perspective in case you are also thinking
 
 The big deal is that this is a **novel** coronavirus which means that we have 
 little to no immunity to it. 
-In addition, current best estimates are that the disease is more deadly than the 
-flu with a fatality rate of 
+In addition, current best estimates are that the disease is **more deadly than the 
+flu** with a fatality rate of 
 [0.5%-4%](https://www.statnews.com/2020/02/25/new-data-from-china-buttress-fears-about-high-coronavirus-fatality-rate-who-expert-says/) compared to 0.1% for flu 
 (that's 5-40 times more deadly). 
 So it is not "just like the flu" because we have no immunity (or vaccine) and 
@@ -36,16 +36,25 @@ In Italy, about [10% of cases need ICU care for 3-6 weeks](https://twitter.com/m
 (Reports out of 
 [Italy](https://www.facebook.com/story.php?story_fbid=3395152210500625&id=100000176383731) and 
 [Korea](https://www.npr.org/sections/goatsandsoda/2020/03/10/812865169/how-a-south-korean-city-is-changing-tactics-to-tamp-down-its-covid-19-surge) make the effects of this outbreak sound like a war zone.) 
-No medical establishment has the capacity to handle this many cases simultaneously. 
+**No medical establishment has the capacity to handle this many cases simultaneously.**
 THIS IS THE ISSUE!!
+
+### Mary Greely Medical Center in Ames
 
 In Ames, which has a population of 65,000, our hospital, 
 [Mary Greeley Medical Center](https://www.mgmc.org/), has ~220 beds.
+If these numbers are similar for Ames and everybody was sick at the same time,
+we would need 6,500 beds for ICU patients or about **30 times as many beds as
+we have total**. 
+Even if these estimates are off by an order of magnitude or two, 
+we don't currently have the capacity to care for this many people. 
+
+### Impact on healthcare workers
 
 Just like us, healthcare workers have no immunity. 
 [Personal protective equipment is all on backorder](https://www.cnn.com/2020/02/29/health/fda-medical-device-mask-hospital-shortage/index.html). 
-So, it will be likely that doctors, nurses, and other hospital staff will become 
-infected and therefore unable to treat those who are sick for a couple of weeks. 
+So, it will be likely that doctors, nurses, and other hospital staff 
+[will become infected](https://twitter.com/AynRandPaulRyan/status/1237413944697876480) and therefore unable to treat those who are sick for a couple of weeks. 
 
 This overburdening of the healthcare system will be bad for those who have COVID19, 
 but it will also be bad for anybody who needs to use the healthcare system for other reasons during that time, e.g. heart attacks, broken bones, giving birth, etc. 
@@ -65,6 +74,12 @@ I'm betting that Iowa State University will move to online instruction for the r
 ### Limit travel
 
 Reconsider spring break travel plans. My parents and sister and her family have cancelled their trip to visit us in a week and a half and my daughter was extremely disappointed that her grandparents and cousins were no longer coming to visit, but that is the situation we are in. 
+
+### Wash hands, no hand shaking, etc.
+
+There are a whole bunch of other 
+[common sense disease prevention strategies](https://www.flattenthecurve.com/#Do)
+as well.
 
 ## US compared to the rest of the world
 
