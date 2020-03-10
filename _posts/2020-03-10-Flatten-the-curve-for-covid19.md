@@ -47,7 +47,8 @@ If these numbers are similar for Ames and everybody was sick at the same time,
 we would need 6,500 beds for ICU patients or about **30 times as many beds as
 we have total**. 
 Even if these estimates are off by an order of magnitude or two, 
-we don't currently have the capacity to care for this many people. 
+we don't currently have the capacity to care for these individuals let alone
+the other individuals who need hospitalization. 
 
 ### Impact on healthcare workers
 
