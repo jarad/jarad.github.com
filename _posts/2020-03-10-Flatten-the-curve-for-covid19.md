@@ -54,6 +54,9 @@ but it will also be bad for anybody who needs to use the healthcare system for o
 
 So, what we need to do is 
 [#flattenthecurve](https://www.flattenthecurve.com/). 
+
+![Flatten the curve](https://www.flattenthecurve.com/wp-content/uploads/2020/03/flatten-the-curve-1536x589.jpg)
+
 This means we need to stretch the outbreak into a much longer time frame so that 
 healthcare can keep up. 
 We need to reduce transmissions through a number of means including social distancing. 
