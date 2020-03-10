@@ -3,7 +3,7 @@ layout: post
 title: "Flatten the curve for COVID19"
 description: "We need to implement counter measures including social distancing"
 category: [News]
-tags: [covid19,coronavirus,SARS-CoV-2]
+tags: [covid19,coronavirus,SARS-CoV-2,flattenthecurve]
 ---
 
 {% include JB/setup %}
@@ -117,9 +117,11 @@ institute containment measures like those instituted in
 ## Summary
 
 COVID19 is worse than the flu because we have no immunity, it is 5-40 times 
-more deadly, and will quickly overburden our healthcare system treating patients 
-with symptoms severe enough to be hospitalized. 
+more deadly, and will quickly overburden our healthcare system due to the need 
+to treat patients with symptoms severe enough to be hospitalized. 
 
 If you want to read more, 
 the best single source for information that I've found is 
 <https://www.flattenthecurve.com/>.
+
+I hope you will [do your part](https://www.flattenthecurve.com/#Do) to #flattenthecurve.
