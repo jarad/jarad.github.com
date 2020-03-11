@@ -31,7 +31,33 @@ are that
   
 
   
-<img src="/../figs/2020-03-11-exponential-growth-of-covid19-in-ames/exponential-growth-Ames-1.png" title="center" alt="center" width="4" height="4" />
+
+{% highlight r %}
+library("tidyverse")
+date = Sys.Date()
+total = 1
+hospitalized = 0
+for (i in 2:13) {
+  date[i] <- date[i-1]+6
+  total[i] = total[i-1] * 2
+  hospitalized[i] = round(total[i]*0.1)
+}
+d <- data.frame(date = date,
+                total = total,
+                hospitalized = hospitalized)
+ggplot(d %>% 
+         pivot_longer(-date, 
+                      names_to = "category", values_to = "count"), 
+       aes(date, count, color=category)) + 
+  geom_line() + 
+  geom_hline(yintercept = 220) +
+  geom_hline(yintercept = 220*0.3, linetype = 2) + 
+  labs(title = "Expected COVID19 cases in Ames, IA if 1 is sick on 11 Mar 2020") + 
+  coord_cartesian(ylim=c(0, 500)) +
+  theme_bw()
+{% endhighlight %}
+
+![center](/../figs/2020-03-11-exponential-growth-of-covid19-in-ames/exponential-growth-Ames-1.png)
 
 As Liz Specht suggested, 
 if only 30% of beds are available in Ames then we run out of beds around 
