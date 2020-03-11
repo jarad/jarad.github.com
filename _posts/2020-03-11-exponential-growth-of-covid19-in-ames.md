@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Exponential growth of COVID19 in Ames, IA"
-description: ""
+description: "All hospital beds gone by mid May."
 category: [News]
 tags: [covid19,coronavirus,flattenthecurve]
 ---
