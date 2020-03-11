@@ -31,7 +31,7 @@ are that
   
 
   
-![center](/../figs/2020-03-11-exponential-growth-of-covid19-in-ames/exponential-growth-Ames-1.png)
+<img src="/../figs/2020-03-11-exponential-growth-of-covid19-in-ames/exponential-growth-Ames-1.png" title="center" alt="center" width="4" height="4" />
 
 As Liz Specht suggested, 
 if only 30% of beds are available in Ames then we run out of beds around 
