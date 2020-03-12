@@ -34,6 +34,16 @@ and Iowa does have
 [13 presumptive positive cases](https://idph.iowa.gov/Emerging-Health-Issues/Novel-Coronavirus), 
 most stemming from a single cruise.
 
+But, the CDC's testing requirements are that either
+
+  - you need to have traveled to either China, Korea, Italy, Japan, or Iran or 
+  - have come into contact with a confirmed COVID19 case.
+  
+So even if you have the symptoms and have been traveling, 
+i.e. on airplanes and in airports with potentially infected individuals,
+you cannot be tested.
+This means that many people have COVID19 and are not confirmed, 
+i.e. we basically have no idea who in Ames or Iowa or the US have COVID19.
 
   
 ![Exponential growth of COVID19 in cases and hospitalization in Ames, IA.](/../figs/2020-03-11-exponential-growth-of-covid19-in-ames/exponential-growth-Ames-1.png)
