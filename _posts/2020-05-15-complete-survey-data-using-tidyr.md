@@ -116,7 +116,8 @@ by [merging two data.frames](https://stackoverflow.com/questions/11693599/altern
 {% highlight r %}
 surveys_with_species = merge(surveys, 
                              tibble::tibble(species = unique(d$species)), 
-                             by = NULL)
+                             by = NULL) %>%
+  arrange(year, month, species)
 
 surveys_with_species
 {% endhighlight %}
@@ -126,16 +127,16 @@ surveys_with_species
 {% highlight text %}
 ##    year month species
 ## 1  2018     5       A
-## 2  2018     6       A
-## 3  2019     5       A
-## 4  2019     6       A
-## 5  2020     5       A
-## 6  2020     6       A
-## 7  2018     5       B
-## 8  2018     6       B
-## 9  2019     5       B
-## 10 2019     6       B
-## 11 2020     5       B
+## 2  2018     5       B
+## 3  2018     6       A
+## 4  2018     6       B
+## 5  2019     5       A
+## 6  2019     5       B
+## 7  2019     6       A
+## 8  2019     6       B
+## 9  2020     5       A
+## 10 2020     5       B
+## 11 2020     6       A
 ## 12 2020     6       B
 {% endhighlight %}
 
@@ -150,8 +151,7 @@ This will create NAs that we will with 0.
 this = dplyr::right_join(d_incomplete, 
                          surveys_with_species, 
                          by = c("year","month","species")) %>%
-  tidyr::replace_na(list(count = 0)) %>%
-  arrange(year, month, species)
+  tidyr::replace_na(list(count = 0))
 
 this
 {% endhighlight %}
