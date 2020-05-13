@@ -114,10 +114,29 @@ by [merging two data.frames](https://stackoverflow.com/questions/11693599/altern
 
 
 {% highlight r %}
-# Modified from https://stackoverflow.com/questions/11693599/alternative-to-expand-grid-for-data-frames
 surveys_with_species = merge(surveys, 
                              tibble::tibble(species = unique(d$species)), 
                              by = NULL)
+
+surveys_with_species
+{% endhighlight %}
+
+
+
+{% highlight text %}
+##    year month species
+## 1  2018     5       A
+## 2  2018     6       A
+## 3  2019     5       A
+## 4  2019     6       A
+## 5  2020     5       A
+## 6  2020     6       A
+## 7  2018     5       B
+## 8  2018     6       B
+## 9  2019     5       B
+## 10 2019     6       B
+## 11 2020     5       B
+## 12 2020     6       B
 {% endhighlight %}
 
 Finally we can 
@@ -131,7 +150,9 @@ This will create NAs that we will with 0.
 this = dplyr::right_join(d_incomplete, 
                          surveys_with_species, 
                          by = c("year","month","species")) %>%
-  tidyr::replace_na(list(count = 0))
+  tidyr::replace_na(list(count = 0)) %>%
+  arrange(year, month, species)
+
 this
 {% endhighlight %}
 
@@ -142,16 +163,16 @@ this
 ##     year month species count
 ##    <dbl> <dbl> <chr>   <dbl>
 ##  1  2018     5 A           0
-##  2  2018     6 A           0
-##  3  2019     5 A           1
-##  4  2019     6 A           1
-##  5  2020     5 A           1
-##  6  2020     6 A           0
-##  7  2018     5 B           0
-##  8  2018     6 B           0
-##  9  2019     5 B           0
-## 10  2019     6 B           1
-## 11  2020     5 B           1
+##  2  2018     5 B           0
+##  3  2018     6 A           0
+##  4  2018     6 B           0
+##  5  2019     5 A           1
+##  6  2019     5 B           0
+##  7  2019     6 A           1
+##  8  2019     6 B           1
+##  9  2020     5 A           1
+## 10  2020     5 B           1
+## 11  2020     6 A           0
 ## 12  2020     6 B           1
 {% endhighlight %}
 

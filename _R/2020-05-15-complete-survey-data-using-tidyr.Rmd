@@ -62,10 +62,11 @@ Now, we can augment this surveys data frame with the species information
 by [merging two data.frames](https://stackoverflow.com/questions/11693599/alternative-to-expand-grid-for-data-frames)
 
 ```{r}
-# Modified from https://stackoverflow.com/questions/11693599/alternative-to-expand-grid-for-data-frames
 surveys_with_species = merge(surveys, 
                              tibble::tibble(species = unique(d$species)), 
                              by = NULL)
+
+surveys_with_species
 ```
 
 Finally we can 
@@ -78,7 +79,9 @@ This will create NAs that we will with 0.
 this = dplyr::right_join(d_incomplete, 
                          surveys_with_species, 
                          by = c("year","month","species")) %>%
-  tidyr::replace_na(list(count = 0))
+  tidyr::replace_na(list(count = 0)) %>%
+  arrange(year, month, species)
+
 this
 ```
 
