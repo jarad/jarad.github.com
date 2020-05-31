@@ -1,15 +1,15 @@
 ---
 layout: page
 title: "Next Statistics Courses"
-description: "for STAT 401 students""
+description: "for STAT 587 students""
 ---
 {% include JB/setup %}
 
 ### [Next courses](http://catalog.iastate.edu/azcourses/stat/)
 
-A [minor in Statistics for an individual in a Masters Program](http://www.stat.iastate.edu/graduate-program/mscminor/) requires 401/587, 
-447/588, and at least one other 3-credit 400-level statistics course. 
-A [minor in Statistics for an individual in a PhD Program](http://www.stat.iastate.edu/graduate-program/grad-phd-requirements/minor-in-phd/) requires 401/587, 447/588, and at least 2 other 3-credit 400-level statistics courses.
+A [minor in Statistics for an individual in a Masters Program](http://www.stat.iastate.edu/graduate-program/mscminor/) requires 587, 
+588, and at least one other 3-credit 400-level statistics course. 
+A [minor in Statistics for an individual in a PhD Program](http://www.stat.iastate.edu/graduate-program/grad-phd-requirements/minor-in-phd/) requires 587, 588, and at least 2 other 3-credit 500-level statistics courses.
 
 - STAT 447/588 - Statistical Theory for Research Workers
   - STAT 444 - Bayesian Data Analysis
