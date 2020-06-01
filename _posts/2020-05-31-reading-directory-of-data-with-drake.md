@@ -8,15 +8,15 @@ tags: [R, drake]
 
 {% include JB/setup %}
 
-[drake]() 
+[drake](https://github.com/ropensci/drake) 
 is an R package that provides 
-[make]() functionality.
+[make](https://www.gnu.org/software/make/) functionality entirely within R.
 That is, it will run a set of commands in a hierarchical (or tree) structure. 
 Then, when when pieces of that structure changes, 
 drake will only re-run the pieces that need to be re-run. 
 
 I have been using 
-[these two functions]() 
+[these two functions](https://gist.github.com/jarad/8f3b79b33489828ab8244e82a4a0c5b3) 
 to read in a directory worth of data. 
 Everytime I run these functions, 
 I need to re-read the entire directory. 
@@ -82,6 +82,7 @@ plan # Take a look at the targets and commands that will be run
 ## 6 out                 saveRDS(all, file = file_out("all.RDS"))            …
 {% endhighlight %}
 
+Now to actually run the plan use 
 
 
 {% highlight r %}
