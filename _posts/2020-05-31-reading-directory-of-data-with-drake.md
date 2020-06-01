@@ -64,7 +64,11 @@ plan = drake_plan( # This is where you define the set of commands to run
   ),
   out = saveRDS(all, file = file_out("all.RDS"))
 )
+{% endhighlight %}
 
+Let's take a look at the plan
+
+{% highlight r %}
 plan # Take a look at the targets and commands that will be run
 {% endhighlight %}
 
@@ -98,19 +102,7 @@ make(plan)
 
 
 {% highlight text %}
-## ▶ target data_data.g2.csv
-{% endhighlight %}
-
-
-
-{% highlight text %}
 ## ▶ target add2_data_data.g1.csv
-{% endhighlight %}
-
-
-
-{% highlight text %}
-## ▶ target add2_data_data.g2.csv
 {% endhighlight %}
 
 
@@ -123,6 +115,19 @@ make(plan)
 
 {% highlight text %}
 ## ▶ target out
+{% endhighlight %}
+
+If you try to run the plan again, drake tells you 
+
+
+{% highlight r %}
+make(plan)
+{% endhighlight %}
+
+
+
+{% highlight text %}
+## ✓ All targets are already up to date.
 {% endhighlight %}
 
 Now if a file changes, you can just rerun the plan. 
