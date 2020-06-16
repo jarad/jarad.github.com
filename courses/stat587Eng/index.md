@@ -1,12 +1,12 @@
 ---
 layout: page
-title: STAT 587C (Engineering)
+title: STAT 587-2 (Engineering)
 tagline: Statistical Methods for Research Workers
 ---
 {% include JB/setup %}
 
-This website is designed to host course material for STAT 587C (Engineering) - 
-Statistical Methods for Research Workers at 
+This website is designed to host course material for STAT 587 Section 2 
+(Engineering) - Statistical Methods for Research Workers at 
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
@@ -14,20 +14,20 @@ Statistical Methods for Research Workers at
 
 This course meets
 
-- MWF 1:10-2 @ [Gilman 1810](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1206&ycenter=1748&background=map&xshow=1206&yshow=1748)
-- T 10-11:50 @ [Snedecor 1105](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1456&ycenter=1854&background=map&xshow=1456&yshow=1854)
+- MWF 1:10-2 @ TBD
+- T 10-11:50 @ TBD
 
 Office hours are
 
-- Instructor: R 12:10-2 @ 2208 Snedecor
-- TA: W 3:30-5:30 @ 1418 Snedecor
+- Instructor: TBD
+- TA: TBD
 
 ## Relevant course pages
 
 - [Labs](labs)
 - [Slides](slides)
 - [Previous exams](exams)
-- [587A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
+- [587 Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 - [Next courses](../next_courses.html)
 
 
