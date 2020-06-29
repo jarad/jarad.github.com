@@ -15,7 +15,7 @@ This website is designed to host course material for STAT 587 Section 2
 This course meets
 
 - MWF 1:10-2 @ TBD
-- T 10-11:50 @ TBD
+- R 2:10-4 @ TBD
 
 Office hours are
 
