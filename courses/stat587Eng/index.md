@@ -10,7 +10,7 @@ This website is designed to host course material for STAT 587 Section 2
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Qihao Zhang (<qihaoz@iastate.edu>)
+- TA: TBD (TBD)
 
 This course meets
 
