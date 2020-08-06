@@ -23,9 +23,6 @@ Proceedings of the National Academy of Sciences, 114(42), 11247-11252.
 ## Current advisees ([All advisees](students.html))
 
 - [Luis Damiano](https://luisdamiano.github.io/)
-- Nate Garton (co-advised with Alicia Carriquiry)
-
-<img src="student_figs/nmgarton.jpg" style="height:118px;" />
 
 ## Recent presentations ([All Presentations](presentations.html))
 
