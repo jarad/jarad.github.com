@@ -29,6 +29,7 @@ Proceedings of the National Academy of Sciences, 114(42), 11247-11252.
 
 ## Recent presentations ([All Presentations](presentations.html))
 
+- [JSM 2020](https://github.com/jarad/JSM2020/raw/master/JaradNiemi_JSM2020.pdf)
 - [SFU 2020](https://github.com/jarad/SFU2020/raw/master/JaradNiemi_SFU2020.pdf)
 - [JSM 2019](https://github.com/jarad/JSM2019/raw/master/JSM2019-speed.pdf) ([e-poster](https://github.com/jarad/JSM2019/raw/master/JSM2019-eposter.pdf))
 
