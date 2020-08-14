@@ -1,6 +1,6 @@
 ---
 layout: page
-title: STAT 401 (Engineering) Lab
+title: STAT 587 (Engineering) Lab
 tagline: R/RStudio Installation
 ---
 
@@ -14,8 +14,8 @@ Below are installation instructions for R and RStudio.
 Please go to <http://www.r-project.org/> and click on 
 [download R](http://cran.r-project.org/mirrors.html). You will be asked to 
 select a [CRAN mirror](http://cran.r-project.org/mirrors.html). I select 
-<https://rweb.crmda.ku.edu/cran/> as it is geographically close and uses the 
-secure http protocol (HTTPS). In the download and install R section, Click on 
+<https://mirror.las.iastate.edu/CRAN/> for obvious reasons. 
+In the download and install R section, click on 
 the correct link depending on your operating system: Linux, (Mac) OS X, or 
 Windows. 
 
@@ -36,16 +36,18 @@ defaults.
 If you are using Linux, then I trust you know what you are doing. You can 
 install R from source or you can use a package manager. 
 
+
 ## Install RStudio (may require administrator privileges)
 
 The installation of RStudio is optional, but highly recommended. 
-It provides an improved interface to R, but has 
+It provides an improved interface to R and has 
 [projects](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) 
 which help to quickly switch between (oddly enough) projects. 
 Go to <http://www.rstudio.com/products/rstudio/download/> and choose the correct 
 platform under **Installers for ALL Platforms**. 
 Install like any other program. 
 
+Now, whenever you want to run R, just run RStudio. 
 
 
 

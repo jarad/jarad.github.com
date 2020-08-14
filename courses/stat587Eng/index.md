@@ -36,7 +36,7 @@ Office hours are
 There is no required textbook for this course. 
 Here are some free resources that can be used:
 
-- [OpenIntro Statistics](https://www.openintro.org/book/os/)
+- [OpenIntro Statistics](https://leanpub.com/openintro-statistics)
 - [Online Statistics Education](http://onlinestatbook.com/2/)
 - [R for Data Science](http://r4ds.had.co.nz/)
 - [Data Camp](https://www.datacamp.com/)
