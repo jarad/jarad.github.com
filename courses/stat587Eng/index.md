@@ -10,12 +10,12 @@ This website is designed to host course material for STAT 587 Section 2
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: TBD (TBD)
+- TA: Aditya Ranade (<aranade@iastate.edu>)
 
 This course meets
 
-- MWF 1:10-2 @ TBD
-- R 2:10-4 @ TBD
+- MWF 1:10-2 @ [Ross Hall 0124](https://www.fpm.iastate.edu/roomscheduling/room.asp?room_id=208)
+- R 2:10-4 @ Zoom
 
 Office hours are
 
@@ -27,7 +27,7 @@ Office hours are
 - [Labs](labs)
 - [Slides](slides)
 - [Previous exams](exams)
-- [587 Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
+- [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 - [Next courses](../next_courses.html)
 
 
@@ -36,6 +36,7 @@ Office hours are
 There is no required textbook for this course. 
 Here are some free resources that can be used:
 
+- [OpenIntro Statistics](https://www.openintro.org/book/os/)
 - [Online Statistics Education](http://onlinestatbook.com/2/)
 - [R for Data Science](http://r4ds.had.co.nz/)
 - [Data Camp](https://www.datacamp.com/)
@@ -118,7 +119,8 @@ Please use the [Canvas](http://canvas.iastate.edu/) discussion forum.
 |  15|Poisson and logistic regression| |
 |    |final exam| |
 
-## Faculty Senate Recommendations
 
-This course abides by the Faculty Senate Recommendations provided at <http://www.celt.iastate.edu/teaching/preparing-to-teach/recommended-iowa-state-university-syllabus-statements>.
+## Center for Excellence in Learning and Teaching Recommendations
+
+This course abides by the [Center for Excellence in Learning and Teaching Recommendations](http://www.celt.iastate.edu/teaching/preparing-to-teach/recommended-iowa-state-university-syllabus-statements).
 

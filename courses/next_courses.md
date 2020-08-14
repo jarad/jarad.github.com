@@ -7,9 +7,9 @@ description: "for STAT 587 students""
 
 ### [Next courses](http://catalog.iastate.edu/azcourses/stat/)
 
-A [minor in Statistics for an individual in a Masters Program](http://www.stat.iastate.edu/graduate-program/mscminor/) requires 587, 
-588, and at least one other 3-credit 400-level statistics course. 
-A [minor in Statistics for an individual in a PhD Program](http://www.stat.iastate.edu/graduate-program/grad-phd-requirements/minor-in-phd/) requires 587, 588, and at least 2 other 3-credit 500-level statistics courses.
+A [minor in Statistics for an individual in a Masters Program](https://www.stat.iastate.edu/statistics-minor-master%E2%80%99s-students) requires 587, 
+588, and at least one other 3-credit 400-level or above STAT course. 
+A [minor in Statistics for an individual in a PhD Program](https://www.stat.iastate.edu/statistics-minor-phd-students) requires 587, 588, and at least 2 other 3-credit 400-level or above STAT courses.
 
 - STAT 447/588 - Statistical Theory for Research Workers
   - STAT 444 - Bayesian Data Analysis
@@ -18,7 +18,7 @@ A [minor in Statistics for an individual in a PhD Program](http://www.stat.iasta
 - STAT 402 - Statistical Design and Analysis Of Experiments  
 - STAT 457 - Applied Categorical Data Analysis
 - STAT 416 - Statistical Design and Analysis of Gene Expression Experiments
-- STAT 407 - Methods of Multivariate Analysis (matrix algebra)
+- STAT 407/575 - Methods of Multivariate Analysis (matrix algebra)
 - STAT 421 - Survey Sampling Techniques
 - STAT 415 - Advanced Statistical Methods for Research Workers (1 credit)
 - STAT 479 - Computer Processing of Statistical Data
