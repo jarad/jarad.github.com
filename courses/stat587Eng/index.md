@@ -1,33 +1,33 @@
 ---
 layout: page
-title: STAT 587C (Engineering)
+title: STAT 587-2 (Engineering)
 tagline: Statistical Methods for Research Workers
 ---
 {% include JB/setup %}
 
-This website is designed to host course material for STAT 587C (Engineering) - 
-Statistical Methods for Research Workers at 
+This website is designed to host course material for STAT 587 Section 2 
+(Engineering) - Statistical Methods for Research Workers at 
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Qihao Zhang (<qihaoz@iastate.edu>)
+- TA: Aditya Ranade (<aranade@iastate.edu>)
 
 This course meets
 
-- MWF 1:10-2 @ [Gilman 1810](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1206&ycenter=1748&background=map&xshow=1206&yshow=1748)
-- T 10-11:50 @ [Snedecor 1105](http://www.fpm.iastate.edu/maps/default.asp?zoom=3&xcenter=1456&ycenter=1854&background=map&xshow=1456&yshow=1854)
+- MWF 1:10-2 @ [Ross Hall 0124](https://www.fpm.iastate.edu/roomscheduling/room.asp?room_id=208)
+- R 2:10-4 @ Zoom
 
 Office hours are
 
-- Instructor: R 12:10-2 @ 2208 Snedecor
-- TA: W 3:30-5:30 @ 1418 Snedecor
+- Instructor: TBD
+- TA: TBD
 
 ## Relevant course pages
 
 - [Labs](labs)
 - [Slides](slides)
 - [Previous exams](exams)
-- [587A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
+- [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 - [Next courses](../next_courses.html)
 
 
@@ -36,6 +36,7 @@ Office hours are
 There is no required textbook for this course. 
 Here are some free resources that can be used:
 
+- [OpenIntro Statistics](https://leanpub.com/openintro-statistics)
 - [Online Statistics Education](http://onlinestatbook.com/2/)
 - [R for Data Science](http://r4ds.had.co.nz/)
 - [Data Camp](https://www.datacamp.com/)
@@ -118,7 +119,8 @@ Please use the [Canvas](http://canvas.iastate.edu/) discussion forum.
 |  15|Poisson and logistic regression| |
 |    |final exam| |
 
-## Faculty Senate Recommendations
 
-This course abides by the Faculty Senate Recommendations provided at <http://www.celt.iastate.edu/teaching/preparing-to-teach/recommended-iowa-state-university-syllabus-statements>.
+## Center for Excellence in Learning and Teaching Recommendations
+
+This course abides by the [Center for Excellence in Learning and Teaching Recommendations](http://www.celt.iastate.edu/teaching/preparing-to-teach/recommended-iowa-state-university-syllabus-statements).
 

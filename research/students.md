@@ -12,7 +12,7 @@ Here are some [resources](resources.html) for current graduate students.
 ## All advisees
 
 - Luis Damiano (MS)
-- Nate Garton([MS](https://lib.dr.iastate.edu/stat_las_pubs/222/) & PhD, ISU) (CCRI)
+- Nate Garton ([MS](https://lib.dr.iastate.edu/stat_las_pubs/222/) & [PhD](https://lib.dr.iastate.edu/etd/17938/), ISU) (CCRI)
 - [Gulzina Kuttubekova](https://kgulzina.github.io/about/) ([MS](https://lib.dr.iastate.edu/creativecomponents/325/), ISU) ([University of California, Santa Cruz](https://www.soe.ucsc.edu/people/kgulzina))
 - Colin Lewis-Beck ([PhD](https://lib.dr.iastate.edu/etd/17239/) co-advised with Petrutza Caragea, ISU) ([University of Iowa](https://stat.uiowa.edu/people/colin-lewis-beck))
 - Xiyuan "Kelly" Sun ([MS](https://lib.dr.iastate.edu/creativecomponents/349/), ISU) 

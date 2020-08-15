@@ -23,7 +23,7 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
 
 ## Fall 2020 Courses ([all courses](courses/))
 
-  - TBD
+  - [STAT 587-2 (Engineering)](courses/stat587Eng)
 
 ## Contact
 
