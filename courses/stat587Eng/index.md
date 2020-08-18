@@ -25,7 +25,7 @@ Office hours are
 ## Relevant course pages
 
 - [Labs](labs)
-- [Slides](slides)
+- [Slides/Videos](slides)
 - [Previous exams](exams)
 - [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 - [Next courses](../next_courses.html)
