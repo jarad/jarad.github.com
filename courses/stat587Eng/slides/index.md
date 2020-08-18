@@ -15,8 +15,8 @@ you can find them
 
 ### Probability
 
-|Topic|slides|code|
-|---|---|---|
+|Topic|slides|code|video|
+|---|---|---|---|
 |Probability|[pdf](Probability/P1-Probability/P1-Probability.pdf)|[R](Probability/P1-Probability/P1-Probability.R)|[Video](https://youtu.be/zBP7KBtM9vI)
 |Discrete distributions|[pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|[R](Probability/P2-Discrete_distributions/P2-Discrete_distributions.R)|
 |Continuous distributions|[pdf](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|[R](Probability/P3-Continuous_distributions/P3-Continuous_distributions.R)|
