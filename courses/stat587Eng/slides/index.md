@@ -1,11 +1,12 @@
 ---
 layout: page
 title: STAT 587 (Engineering)
-tagline: slides
+tagline: slides/videos
 ---
 {% include JB/setup %}
 
-Below are slides (.pdf) and R code (.R).
+Below are slides (.pdf), R code (.R) extracted from the code that generated the
+slides, and YouTube links to recorded videos.
 
 ## Chapter slide set files
 
