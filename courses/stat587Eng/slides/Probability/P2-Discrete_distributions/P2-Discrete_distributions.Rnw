@@ -23,8 +23,7 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library(dplyr)
-library(ggplot2)
+library(tidyverse)
 library(gridExtra)
 @
 
@@ -640,7 +639,9 @@ Note: The range is always finite or countable.
 
 \subsection{Bernoulli}
 \begin{frame}[t]
-\frametitle{Bernoulli distribution}
+\frametitle{Bernoulli random variables}
+
+\pause
 
 A Bernoulli experiment has only two outcomes: success/failure. 
 
@@ -689,9 +690,9 @@ $\Omega = \{\text{yes}, \text{no}\}$
 
 
 \begin{frame}[t]
-\frametitle{Bernoulli distribution (cont.)}
+\frametitle{Bernoulli random variable (cont.)}
 
-The cdf of the Bernoulli distribution is
+The cdf of the Bernoulli random variable is
 \[
 F_X(x) =P(X\leq x)= \left \{
 \begin{array}{cl}
@@ -738,6 +739,8 @@ Examples:
 \end{itemize}
 
 \end{frame}
+
+
 
 \begin{frame}[t]
 \frametitle{Independent and identically distributed}
@@ -805,8 +808,8 @@ experiment.
 
 \subsection{Binomial}
 \begin{frame}[t]
-\frametitle{Binomial distribution}
-
+\frametitle{Binomial random variable}
+\pause
 Suppose we perform a sequence of $n$ $iid$ Bernoulli experiments and only record the number of successes, i.e. 
 \[ 
 Y = \sum_{i=1}^n X_i.
@@ -814,7 +817,7 @@ Y = \sum_{i=1}^n X_i.
 
 \vspace{0.1in} \pause
 
-Then we use the notation $Y\sim Bin(n,p)$ to indicate a binomial distribution with 
+Then we use the notation $Y\sim Bin(n,p)$ to indicate a binomial random variable with 
 \begin{itemize}
 \item $n$ attempts and 
 \item probability of success $p$. 
@@ -851,13 +854,14 @@ p_Y(y) = P(Y=y) = {n\choose y} p^y(1-p)^{n-y}. \hspace{2in}
 
 
 \begin{frame}[t]
-\frametitle{Properties of the binomial distribution}
+\frametitle{Properties of binomial random variables}
 
 \vspace{0.1in}
 
 The expected value is 
 \[ 
 E[Y] 
+\pause 
 = E\left[ \sum_{i=1}^n X_i \right] 
 \pause 
 = \sum_{i=1}^n E[X_i] \pause= \sum_{i=1}^n p = np.  \hspace{2in}
@@ -867,7 +871,12 @@ E[Y]
 
 The variance is 
 \[ 
-Var[Y] = \sum_{i=1}^n Var[X_i] = np(1-p) \hspace{2in}
+Var[Y] 
+\pause 
+% = Var\left[ \sum_{i=1}^n X_i \right]
+= \sum_{i=1}^n Var[X_i] 
+% = \sum_{i=1}^n p(1-p)
+= np(1-p) \hspace{2in}
 \]
 since the $X_i$ are independent. 
 
@@ -901,10 +910,40 @@ What is the probability that
 \end{frame}
 
 
+\begin{frame}[t,fragile]
+\frametitle{Binomial pmf}
+
+Let $Y$ be the number of defective components 
+\pause 
+and assume $Y\sim Bin(15,0.05)$. 
+
+\vspace{0.4in} \pause
+
+\begin{columns}
+\begin{column}{0.6\textwidth}
+<<binomial_pmf>>=
+n = 15
+p = 0.05
+d <- data.frame(x = 0:n) %>%
+  dplyr::mutate(pmf = dbinom(x, n, p))
+
+ggplot(d, aes(x, pmf, yend = 0, xend = x)) +
+  geom_point() +
+  geom_segment() +
+  labs(title = paste("Binomial pmf with", n, "attempts and probability ", p),
+        x = "Value", y="Probability mass function") +
+  theme_bw()
+@
+\end{column}
+\begin{column}{0.4\textwidth}
+\end{column}
+\end{columns}
+\end{frame}
+
+
 \begin{frame}[t]
 \frametitle{Component failure rate - solutions}
 Let $Y$ be the number of defective components 
-\pause 
 and assume $Y\sim Bin(15,0.05)$. 
 \pause
 
@@ -922,6 +961,8 @@ and assume $Y\sim Bin(15,0.05)$.
 \begin{frame}[t,fragile]
 \frametitle{Component failure rate - solutions in R}
 
+\begin{columns}
+\begin{column}{0.6\textwidth}
 <<component_failure_rate,echo=TRUE>>=
 n <- 15
 p <- 0.05
@@ -931,7 +972,10 @@ pbinom(2,n,p)           # P(Y<=2)
 1-pbinom(3,n,p)         # P(Y>3) 
 sum(dbinom(c(2,3),n,p)) # P(1<Y<4) = P(Y=2)+P(Y=3)
 @
-
+\end{column}
+\begin{column}{0.4\textwidth}
+\end{column}
+\end{columns}
 \end{frame}
 
 
@@ -939,33 +983,36 @@ sum(dbinom(c(2,3),n,p)) # P(1<Y<4) = P(Y=2)+P(Y=3)
 
 \subsection{Poisson}
 \begin{frame}[t]
-\frametitle{Poisson distribution}
-
-\small
+\frametitle{Poisson experiments}
 
 Many experiments can be thought of as 
 ``how many \emph{rare} events will occur in a certain amount of time or space?'' 
 \pause 
 For example,
-{\small
+
 \begin{itemize}
 \item \# of alpha particles emitted from a polonium bar in an 8 minute period \pause
 \item \# of flaws on a standard size piece of manufactured product, e.g., 100m coaxial cable, 100 sq.meter plastic sheeting \pause 
 \item \# of hits on a web page in a 24h period 
 \end{itemize}
-}
 
-\pause
+\end{frame}
 
-These situations can be effectly modeled using a Poisson\\
-distribution. \pause
-The Poisson distribution has pmf 
+
+
+
+\begin{frame}[t]
+\frametitle{Poisson random variable}
+A Poisson random variable has pmf 
 \[
 p(x) = \frac{e^{-\lambda}\lambda^{x}}{x!} \quad \text{ for } x = 0,1,2,3,\ldots
 \hspace{2in}
 \]
-where $\lambda$ is called the \alert{rate parameter}. \pause
-We write $X\sim Po(\lambda)$\\to represent this random variable. \pause
+where $\lambda$ is called the \alert{rate parameter}. 
+
+\vspace{0.1in} \pause
+
+We write $X\sim Po(\lambda)$ to represent this random variable. \pause
 We can show that 
 \[ E[X] = Var[X] = \lambda. \hspace{2in} 
 \]
@@ -976,23 +1023,53 @@ We can show that
 
 
 
+\begin{frame}[t,fragile]
+\frametitle{Poisson probability mass function}
 
+Customers of an internet service provider initiate new accounts at the average
+rate of 10 accounts per day. \pause
+What is the probability that more than 8 new accounts will be initiated today? \pause
+
+\begin{columns}
+\begin{column}{0.6\textwidth}
+<<poisson_pmf>>=
+lambda <- 10
+n = 30
+d <- data.frame(x = 0:n) %>%
+  dplyr::mutate(pmf = dpois(x, lambda))
+
+ggplot(d, aes(x, pmf, yend = 0, xend = x)) +
+  geom_point() +
+  geom_segment() +
+  labs(title = paste("Poisson pmf with mean of", lambda),
+        x = "Value", y="Probability mass function") +
+  theme_bw()
+@
+\end{column}
+\begin{column}{0.4\textwidth}
+\end{column}
+\end{columns}
+\end{frame}
 
 
 
 \begin{frame}[t,fragile]
-\frametitle{Poisson distribution - example}
+\frametitle{Poisson probability}
 
-Customers of an internet service provider initiate new accounts at the average 
+\small
+
+Customers of an internet service provider initiate new accounts at the average
 rate of 10 accounts per day. \pause
-What is the probability that more than 8 new accounts will be initiated today? \pause
+What is the probability that more than 8 new accounts will be initiated today?
 
 \vspace{0.1in} 
 
-Let $X$ be the number of initiated accounts today. \pause 
+Let $X$ be the number of accounts initiated today. \pause 
 Assume $X\sim Po(10)$. \pause
 \[ P(X>8) = 1-P(X\le 8) = 1- \sum_{x=0}^8 \frac{\lambda^x e^{-\lambda}}{x!} \approx 1-0.333 = 0.667 \]
 \pause 
+\begin{columns}
+\begin{column}{0.6\textwidth}
 In R, 
 <<echo=TRUE>>=
 # Using pmf
@@ -1000,6 +1077,10 @@ In R,
 # Using cdf
 1-ppois(8, lambda=10)
 @
+\end{column}
+\begin{column}{0.4\textwidth}
+\end{column}
+\end{columns}
 \end{frame}
 
 
@@ -1023,7 +1104,9 @@ Y = \sum_{i=1}^n X_i \sim Po\left( n\lambda \right). \hspace{2in}
 
 
 \begin{frame}[t,fragile]
-\frametitle{Poisson distribution - example}
+\frametitle{Poisson random variable - example}
+
+\small
 
 Customers of an internet service provider initiate new accounts at the average 
 rate of 10 accounts per day. \pause
@@ -1044,6 +1127,8 @@ P(Y>16) &= 1-P(Y\le 16) \\
 \end{array}
 \hspace{2in}
 \]
+\begin{columns}
+\begin{column}{0.6\textwidth}
 In R,
 <<echo=TRUE>>=
 # Using pmf
@@ -1051,7 +1136,10 @@ In R,
 # Using cdf
 1-ppois(16, lambda=20)
 @
-
+\end{column}
+\begin{column}{0.4\textwidth}
+\end{column}
+\end{columns}
 \end{frame}
 
 
@@ -1081,26 +1169,43 @@ P(Y=0) = \frac{1^0 e^{-1}}{0!} \approx 0.368. \hspace{2in}
 
 
 
-\begin{frame}[t]
+\begin{frame}[t,fragile]
 \frametitle{Poisson approximation to the binomial}
 
-Let $\{X_n\}$ be a sequence of random variables such that $X_n\sim Bin(N_n, p_n)$ with $N_n\to \infty$ and $N_np_n\to \lambda \in (0,\infty)$, then 
-\[ X_n \to X \sim Po(\lambda)
-\]
-in distribution.
-
-\vspace{0.1in} \pause
-
-
-For large $n$, the binomial dsitribution, $Bin(n,p)$, can be approximated by a Poisson distribution, $Po(np)$, since 
+Suppose we have $X \sim Bin(n,p)$ with $n$ large (say $\ge 20$) and $p$ small
+(say $\le 0.05$). \pause
+We can approximate $X$ by $Y\sim Po(np)$ \pause
+because for large $n$ and small $p$
 \[ 
-{n \choose k} p^{k}(1-p)^{n-k} \approx e^{-np}\frac{(np)^{k}}{k!}. \hspace{2in}
+{n \choose k} p^{k}(1-p)^{n-k} \approx e^{-np}\frac{(np)^{k}}{k!}. 
+% \hspace{2in}
 \]
 
-\vspace{0.1in} \pause
+\begin{columns}
+\begin{column}{0.6\textwidth}
+<<poisson_vs_binomial, fig.width=8>>=
+n = 5
+p = 0.01
+e = 0.01
+d = data.frame(x = 0:n) %>%
+  dplyr::mutate(binomial = dbinom(x, n, p),
+                Poisson = dpois(x, n*p)) %>%
+  tidyr::gather("Distribution","pmf", binomial, Poisson) %>%
+  dplyr::mutate(x = x-e + 2*e*(Distribution == "Poisson"))
 
-Rule of thumb: use Poisson approximation if\\
-$n \ge 20$ and $p \le 0.05$.
+ggplot(d, aes(x=x, y = pmf, yend = 0, xend = x,
+              color = Distribution, linetype = Distribution)) +
+  geom_point() +
+  geom_segment() +
+  labs(title = "Poisson vs binomial", x = "Value", 
+       y = "Probability mass function") +
+  theme_bw()
+@
+\end{column}
+\begin{column}{0.4\textwidth}
+\end{column}
+\end{columns}
+
 
 \end{frame}
 
@@ -1126,7 +1231,7 @@ dbinom(0, size=n, prob=p)
 Alternatively, let $Y$ represent the number of defectives and assume $Y\sim Po(1000\times 0.002)$. \pause
 $P(Y=0)$ using R is
 <<typo_poisson, echo=TRUE, dependson='typo_binomial'>>=
-dpois(0, lambda=n*p)
+dpois(0, lambda = n*p)
 @
 \end{column}
 \begin{column}{0.4\textwidth}
