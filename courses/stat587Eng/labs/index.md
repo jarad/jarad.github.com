@@ -24,3 +24,9 @@ tagline: Statistical Methods for Research Workers
    === updated through here ===
   
  - [LabData](labData/lab02.html) - Data Management in R
+
+
+## Resources
+
+ - [swirl: R package for learning R](https://swirlstats.com/)
+ - [Colorado State University Introduction to R](https://csu-r.github.io/Module1/associated-csu-course.html)
