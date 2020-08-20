@@ -19,7 +19,7 @@ you can find them
 |Topic|slides|code|video|
 |---|---|---|---|
 |Probability|[pdf](Probability/P1-Probability/P1-Probability.pdf)|[R](Probability/P1-Probability/P1-Probability.R)|[Video](https://youtu.be/zBP7KBtM9vI)|
-|Discrete distributions|[pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|[R](Probability/P2-Discrete_distributions/P2-Discrete_distributions.R)|[Part1](https://youtu.be/ajLFqrPTAcY)|
+|Discrete distributions|[pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|[R](Probability/P2-Discrete_distributions/P2-Discrete_distributions.R)|[Part 1](https://youtu.be/ajLFqrPTAcY) [Part 2](https://youtu.be/FrL4Dcoy9MI)|
 |Continuous distributions|[pdf](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|[R](Probability/P3-Continuous_distributions/P3-Continuous_distributions.R)|
 |Central limit theorem|[pdf](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.pdf)|[R](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.R)|
 |Multiple random variables|[pdf](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.pdf)|[R](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.R)|
