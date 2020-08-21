@@ -29,4 +29,5 @@ tagline: Statistical Methods for Research Workers
 ## Resources
 
  - [swirl: R package for learning R](https://swirlstats.com/)
+ - [RStudio cheatsheets](https://rstudio.com/resources/cheatsheets/)
  - [Colorado State University Introduction to R](https://csu-r.github.io/Module1/associated-csu-course.html)
