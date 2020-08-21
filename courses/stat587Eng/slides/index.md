@@ -23,7 +23,7 @@ you can find them
 ||||[Discrete random variables](https://youtu.be/FrL4Dcoy9MI)|
 ||||[Bernoulli random variables](https://youtu.be/NXUkzZhrrcA)|
 ||||[Binomial random variables](https://youtu.be/cnJjKX5AHi4)|
-||||[Poisson random variables](https://youtu.be/cnJjKX5AHi4)|
+||||[Poisson random variables](https://youtu.be/NTWD-EyTkR0)|
 |Continuous distributions|[pdf](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|[R](Probability/P3-Continuous_distributions/P3-Continuous_distributions.R)|
 |Central limit theorem|[pdf](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.pdf)|[R](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.R)|
 |Multiple random variables|[pdf](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.pdf)|[R](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.R)|
