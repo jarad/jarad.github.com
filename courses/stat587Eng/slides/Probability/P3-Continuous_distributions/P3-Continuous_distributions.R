@@ -20,6 +20,19 @@ ggplot(d, aes(x, ymin = 0, ymax = y)) +
   theme_bw()
 
 
+## ----out.width = "\\textwidth", fig.height = 3.5----------------------------------------------------------------------
+d = data.frame(x = seq(-0.5, 1.5, by=0.01)) %>%
+  dplyr::mutate(pdf = 1 * (x>0) * (x < 1),
+                cdf = x,
+                cdf = ifelse(x<0, 0, x),
+                cdf = ifelse(x>1, 1, x))
+
+ggplot(d, aes(x, pdf)) +
+  geom_line() +
+  labs(title ="Standard uniform pdf", x = "x", y = "Probability density function") + 
+  theme_bw()
+
+
 ## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 inverse_cdf = function(u) u^(1/3)
 x = inverse_cdf(runif(1e6))
@@ -29,13 +42,14 @@ var(x); 3/80
 
 ## ----out.width="\\textwidth"------------------------------------------------------------------------------------------
 hist(x, 100, prob = TRUE)
-curve(3*x^2, col='red', add = TRUE)
+curve(3*x^2, col='red', add = TRUE, lwd=2)
 
 
 ## ----out.width="\\textwidth"------------------------------------------------------------------------------------------
 d = data.frame(mu = c(0,0,1,1), sigma = c(1,2,1,2))
 d$legend_name = paste("mu=", d$mu, ", sigma=", d$sigma)
-plot(0,0, type = "n", xlim = c(-4,4), ylim = c(0,0.5))
+plot(0,0, type = "n", xlim = c(-4,4), ylim = c(0,0.5), xlab = "x", 
+     ylab = "Probability density function")
 for (i in 1:nrow(d)) {
 	mu = d$mu[i]; sigma = d$sigma[i]
 	curve(dnorm(x, mu, sigma), add = TRUE, lty = mu+1, col = sigma)
