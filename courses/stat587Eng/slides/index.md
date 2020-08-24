@@ -21,12 +21,12 @@ you can find them
 |Probability|[pdf](Probability/P1-Probability/P1-Probability.pdf)|[R](Probability/P1-Probability/P1-Probability.R)|[Full](https://youtu.be/zBP7KBtM9vI)|
 |Discrete distributions|[pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|[R](Probability/P2-Discrete_distributions/P2-Discrete_distributions.R)|[Discrete vs continuous random variables](https://youtu.be/ajLFqrPTAcY)|
 ||||[Discrete random variables](https://youtu.be/FrL4Dcoy9MI)|
-||||[Bernoulli random variables](https://youtu.be/NXUkzZhrrcA)|
-||||[Binomial random variables](https://youtu.be/cnJjKX5AHi4)|
-||||[Poisson random variables](https://youtu.be/NTWD-EyTkR0)|
+||||[Bernoulli](https://youtu.be/NXUkzZhrrcA)|
+||||[Binomial](https://youtu.be/cnJjKX5AHi4)|
+||||[Poisson](https://youtu.be/NTWD-EyTkR0)|
 |Continuous distributions|[pdf](Probability/P3-Continuous_distributions/P3-Continuous_distributions.pdf)|[R](Probability/P3-Continuous_distributions/P3-Continuous_distributions.R)|[Continuous random variables](https://youtu.be/KbfUnaiarps)|
-||||[Uniform random variables](https://youtu.be/S_tw8UZqJ6U)|
-||||[Normal random variables](https://youtu.be/c22x0xpvkyY)|
+||||[Uniform](https://youtu.be/S_tw8UZqJ6U)|
+||||[Normal](https://youtu.be/c22x0xpvkyY)|
 |Central limit theorem|[pdf](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.pdf)|[R](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.R)|
 |Multiple random variables|[pdf](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.pdf)|[R](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.R)|
 
