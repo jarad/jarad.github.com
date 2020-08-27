@@ -9,7 +9,7 @@ output: html_document
 To follow along, use the [lab07 code](lab07.R).
 Also, make sure to load the tidyverse package.
 
-```{r load_tidyverse}
+```{r}
 if (!require("tidyverse")) {
   install.packages("tidyverse")
   library("tidyverse")
@@ -41,11 +41,11 @@ Throughout this lab, we will be
 
 For fully reproducible results, we will set the seed. 
 
-```{r set_seed}
+```{r}
 set.seed(20170320)
 ```
 
-```{r simulating_data}
+```{r}
 n <- 100 
 x <- rnorm(n)
 b0 <- 1
@@ -59,13 +59,13 @@ d <- data.frame(x=x,y=y)
 
 We can visualize the data 
 
-```{r visualize_data}
+```{r}
 plot(y ~ x, data = d)
 ```
 
 or using `ggplot`
 
-```{r visualize_using_ggplot}
+```{r}
 library("ggplot2")
 ggplot(d, aes(x=x, y=y)) +
   geom_point() +
@@ -74,7 +74,7 @@ ggplot(d, aes(x=x, y=y)) +
 
 #### Run the regression
 
-```{r running_regression}
+```{r}
 m <- lm(y ~ x, data = d)
 ```
 
@@ -118,7 +118,7 @@ Simulate the following data
 
 Then run the regression diagnostic plots.
 
-<div id="simulation_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary> 
 ```{r, purl=FALSE}
 n <- 234
 x <- runif(n)
@@ -129,15 +129,14 @@ plot(m, 1:6, ask=FALSE)   # Plot all 6 diagnostics plots
 par(opar)                 # Return to original graphics settings
 ```
 Again, these plots satisfy all model assumptions.
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('simulation_activity_solution') .style.display=='none') {document.getElementById('simulation_activity_solution') .style.display=''}else{document.getElementById('simulation_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 ## Normality
 
 There are many ways for the errors to not have a normal distribution.
 We will consider errors that are heavy-tailed, right-skewed, and left-skewed.
 
-```{r errors}
+```{r}
 n <- 100
 errors <- data.frame(rep = 1:n,
                      normal       = rnorm(n),
@@ -158,14 +157,14 @@ errors_long <- errors %>%
 
 Before considering the regression, let's take a look at these errors
 
-```{r histograms}
+```{r}
 ggplot(errors_long, aes(x=value)) + 
   geom_histogram() + 
   facet_grid(. ~ distribution) + 
   theme_bw()
 ```
 
-```{r qqplot}
+```{r}
 ggplot(errors_long, aes(sample=value)) + 
   stat_qq() + 
   facet_grid(. ~ distribution) + 
@@ -179,7 +178,7 @@ but this line can be added using
 In base R, we can use the `qqnorm()` and `qqline()` functions to manually
 create the qqplot.
 
-```{r baser_qqplot}
+```{r}
 opar = par(mfrow=c(1,4))
 qqnorm(errors$normal, main="Normal")
 qqline(errors$normal)
@@ -263,7 +262,7 @@ Using the same errors,
 simulate data with an intercept of 10 and a slope of -5. 
 Run the regression analysis and view the QQ-plots.
 
-<div id="normal_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
 b0 <-  10
 b1 <- -5
@@ -287,8 +286,7 @@ par(opar)
 
 If you have extra time, try changing the values in the distributions for the 
 errors, e.g. have a t distribution with a larger or smaller variance.
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('normal_activity_solution') .style.display=='none') {document.getElementById('normal_activity_solution') .style.display=''}else{document.getElementById('normal_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 
@@ -343,7 +341,7 @@ plot(m,3)
 Simulate data that has a negative slope and an error variance that increases
 with the fitted value.
 
-<div id="constant_variance_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
 b1 <- -1
 d  <- d %>%
@@ -355,8 +353,7 @@ opar <- par(mfrow=c(1,2))
 plot(m, c(1,3), ask=FALSE)
 par(opar)
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('constant_variance_activity_solution') .style.display=='none') {document.getElementById('constant_variance_activity_solution') .style.display=''}else{document.getElementById('constant_variance_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 ## Independence
@@ -448,7 +445,7 @@ Simulate errors that have a positive trend,
 fit the regression, 
 and plot the residuals vs index.
 
-<div id="independence_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
 d <- d %>% 
   mutate(error = (1:n)+rnorm(n), # This is a bit extreme
@@ -457,8 +454,7 @@ d <- d %>%
 m <- lm(y ~ x, data = d)
 plot(m$residuals)
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('independence_activity_solution') .style.display=='none') {document.getElementById('independence_activity_solution') .style.display=''}else{document.getElementById('independence_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 ## Linearity
@@ -529,7 +525,7 @@ deviation of 1.
 Plot residuals vs the explanatory variable. 
 What pattern do you see?
 
-<div id="linearity_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary> 
 ```{r, purl=FALSE}
 n <- 100
 b0 <- 1
@@ -543,8 +539,7 @@ d$residuals <- m$residuals
 plot(residuals ~ x, data = d)
 ```
 Even non-linear relationships can be *approximately* linear.
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('linearity_activity_solution') .style.display=='none') {document.getElementById('linearity_activity_solution') .style.display=''}else{document.getElementById('linearity_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 
@@ -563,11 +558,13 @@ violated so badly that the model is ineffective for its intended purpose.
 
 ## An alternative version of these plots
 
-```{r ggResidPanel, eval=FALSE}
+```{r, eval=FALSE}
 library("ggResidpanel") # use devtools::install_github("goodekat/ggResidpanel")
 
 resid_panel(m, plots="R")
 resid_panel(m, plots="SAS")
 ```
 
-
+```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
+knitr::knit("lab07.Rmd", tangle = TRUE)
+```

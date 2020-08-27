@@ -15,13 +15,13 @@ packag is installed:
 
 You can use the following code to perform the installation:
 
-```{r install_packages, eval=FALSE}
+```{r, eval=FALSE}
 install.packages("emmeans")
 ```
 
 Now load the packages
 
-```{r load_packages}
+```{r}
 library("tidyverse")
 library("emmeans")
 ```
@@ -75,13 +75,12 @@ Fit a regession model of protein on treatment and
 compute a point estimate as well as a 95% CI for the mean protein level in 
 each of the treatment (diet) levels.
 
-<div id="means_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary> 
 ```{r, purl=FALSE}
 m <- lm(Protein ~ Treatment, data = ex0518)
 emmeans(m, ~Treatment)
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('means_activity_solution') .style.display=='none') {document.getElementById('means_activity_solution') .style.display=''}else{document.getElementById('means_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 ### Comparison of means
 
@@ -143,15 +142,14 @@ control and can be obtained using `adjust = "mvt"`, but this requires more compu
 Reconsider the `ex0518` data set and provide an estimate and 95% CI for the 
 difference in mean protein level for all treatments compared to control.
 
-<div id="contrasts_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
 m <- lm(Protein ~ Treatment, data = ex0518)
 ls <- emmeans(m, ~ Treatment)
 (co <- contrast(ls, method = "trt.vs.ctrl"))
 confint(co)
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('contrasts_activity_solution') .style.display=='none') {document.getElementById('contrasts_activity_solution') .style.display=''}else{document.getElementById('contrasts_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 
@@ -229,7 +227,7 @@ Consider the `ex1321` data set in the Sleuth3 package.
 Estimate the average treatment effect on the intelligence test across all the 
 classes.
 
-<div id="twoC_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary> 
 
 We should always look at the data first.
 
@@ -247,8 +245,7 @@ m <- lm(Gain ~ Treatment*Class, data = Sleuth3::ex1321)
 (co <- contrast(em, "pairwise"))
 confint(co)
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('twoC_activity_solution') .style.display=='none') {document.getElementById('twoC_activity_solution') .style.display=''}else{document.getElementById('twoC_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 
@@ -335,7 +332,7 @@ Does comparing at the mean mass make sense?
 Also compare the effects of mass on mean energy expenditure between those same 
 groups.
 
-<div id="ancova_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary> 
 
 As always, plot the data. 
 
@@ -366,8 +363,7 @@ To compare the slopes, use
 confint(co)
 ```
 
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('ancova_activity_solution') .style.display=='none') {document.getElementById('ancova_activity_solution') .style.display=''}else{document.getElementById('ancova_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 
@@ -390,4 +386,9 @@ ls <- emmeans(m, "Diet")
 co <- contrast(ls, list(`High - Low`    = c(    4,   -1,   -1,  0,   -1,   -1) /4,
                         `Pre-wean: R-N` = c(    0,    0,   -1,  0,    1,    0) ))
 confint(co)
+```
+
+
+```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
+knitr::knit("lab11.Rmd", tangle = TRUE)
 ```

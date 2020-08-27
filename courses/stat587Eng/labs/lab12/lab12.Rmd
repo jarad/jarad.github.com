@@ -15,13 +15,13 @@ packag is installed:
 
 You can use the following code to perform the installation:
 
-```{r install_packages, eval=FALSE}
+```{r, eval=FALSE}
 install.packages("lme4")
 ```
 
 Now load the packages
 
-```{r load_packages}
+```{r}
 library("dplyr")
 library("ggplot2")
 # library("Sleuth3")
@@ -120,15 +120,14 @@ summary(m)
 Fit a logistic regression model to determine the relationship between survival
 in the Donner Party (`case2001`) and the age and sex of the individual. 
 
-<div id="logistic_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
 m <- glm(Status == "Survived" ~ Age + Sex,
          data = Sleuth3::case2001,
          family = binomial)
 summary(m)
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('logistic_activity_solution') .style.display=='none') {document.getElementById('logistic_activity_solution') .style.display=''}else{document.getElementById('logistic_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 
@@ -169,7 +168,7 @@ Group the Donner party data (`Sleuth3::case2001`) by age and sex.
 Then re-run the logistic regression analysis from the previous activity on 
 these grouped data.
 
-<div id="donner_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
 donner_grouped <- Sleuth3::case2001 %>%
   group_by(Age,Sex) %>%
@@ -182,8 +181,7 @@ m <- glm(cbind(y,n-y) ~ Age + Sex,
 
 summary(m)
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('donner_activity_solution') .style.display=='none') {document.getElementById('donner_activity_solution') .style.display=''}else{document.getElementById('donner_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 
@@ -205,7 +203,7 @@ Investigate the relationship between number of salamanders as a function of
 forest age using a Poisson regression analysis. 
 Data are available in `Sleuth3::case2202'. 
 
-<div id="poisson_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary> 
 ```{r, purl=FALSE}
 m <- glm(Salamanders ~ ForestAge, 
          data = Sleuth3::case2202,
@@ -213,8 +211,7 @@ m <- glm(Salamanders ~ ForestAge,
 
 summary(m)
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('poisson_activity_solution') .style.display=='none') {document.getElementById('poisson_activity_solution') .style.display=''}else{document.getElementById('poisson_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
   
   
 ## Comparing generalized linear models
@@ -246,14 +243,13 @@ Use a likelihood ratio test to determine whether an interaction between Age and
 Sex should be included in the logistic regression model of survival probability
 in the Donner party.
 
-<div id="test_activity_solution" style="display:none"> 
+<details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
 mA <- glm(Status ~ Age + Sex, data = Sleuth3::case2001, family = binomial)
 mI <- glm(Status ~ Age * Sex, data = Sleuth3::case2001, family = binomial)
 anova(mA,mI, test="Chi")
 ```
-</div> 
-<button title="Show a solution" type="button" onclick="if(document.getElementById('test_activity_solution') .style.display=='none') {document.getElementById('test_activity_solution') .style.display=''}else{document.getElementById('test_activity_solution') .style.display='none'}">Show/Hide Solution</button>
+</details>
 
 
 
@@ -297,3 +293,6 @@ m <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
 summary(m)
 ```
 
+```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
+knitr::knit("lab12.Rmd", tangle = TRUE)
+```
