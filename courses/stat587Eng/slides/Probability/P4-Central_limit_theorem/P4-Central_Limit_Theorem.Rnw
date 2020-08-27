@@ -1,17 +1,20 @@
-\documentclass[handout]{beamer}
+\documentclass[aspectratio=169,handout]{beamer}
 
 \input{../../frontmatter}
 \input{../../commands}
 
 \title{P4 - Central Limit Theorem}
 
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
 \begin{document}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=7, fig.height=5, 
+               fig.width=7, fig.height=4.5, 
                size='tiny', 
-               out.width='0.8\\textwidth', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=FALSE,
@@ -20,9 +23,7 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library("dplyr")
-library("tidyr")
-library("ggplot2")
+library("tidyverse")
 @
 
 <<set_seed>>=
@@ -32,16 +33,98 @@ set.seed(2)
 \frame{\maketitle}
 
 
-\section{Central Limit Theorem}
+\section{Bell-shaped curve}
+\begin{frame}[t]
+\frametitle{Bell-shaped curve}
+
+The term \alert{bell-shaped curve} typically refers to the probability density
+function for a normal random variable:
+
+\bc
+<<out.width = "\\textwidth">>=
+d <- data.frame(x = seq(-3, 3, by = 0.01)) %>% 
+  dplyr::mutate(pdf = dnorm(x))
+
+ggplot(d, aes(x = x, y = pdf)) + 
+  geom_line(size = 2) + 
+  theme_bw() + 
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()) +
+  labs(title = "Bell-shaped curve", x = "Value", 
+       y = "Probability density function")
+@
+\nc\ec
+
+\end{frame}
+
+
 \begin{frame}
-\frametitle{Central Limit Theorem (CLT)}
+\frametitle{Histograms of samples from bell-shaped curves}
+\bc
+<<>>=
+d <- data.frame(rep = 1:4, samples = rnorm(4*1e3))
 
-\alert{Main Idea}: Sums and averages of random variables from any distribution 
-have approximate normal distributions for sufficiently large sample sizes.
+ggplot(d, aes(x = samples)) + 
+  geom_histogram(bins = 50) +
+  facet_wrap(~rep) + 
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()) +
+  labs(title = "Histograms of 1,000 standard normal random variables", 
+       x = "Value", y = "Number")
+  
+@
+\nc\ec
+\end{frame}
 
+
+
+\subsection{Examples}
+\begin{frame}[t]
+\frametitle{SAT scores}
+
+{\tiny \url{https://blogs.sas.com/content/iml/2019/03/04/visualize-sat-scores-nc.html}}
+
+\bc
+\includegraphics[width=\textwidth]{include/NCSAT2}
+\nc\ec
+
+\end{frame}
+
+
+\begin{frame}[t]
+\frametitle{Toughness}
+
+{\tiny \url{https://www.researchgate.net/figure/Histograms-representing-the-distributions-of-the-statistically-generated-estimates-of_fig7_261106716}}
+
+\bc
+\includegraphics[width=0.9\textwidth]{include/toughness}
+\nc\ec
+
+\end{frame}
+
+
+\begin{frame}[t]
+\frametitle{Yield}
+
+{\tiny \url{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0184198}}
+\bc
+\includegraphics[width=0.9\textwidth]{include/yield}
+\nc\ec
+\end{frame}
+
+
+
+\section{Central Limit Theorem}
+\begin{frame}[t]
+\frametitle{Sums and averages of iid random variables}
+\small
 \pause
 
-\begin{theorem}[Central Limit Theorem]
 Suppose $X_1,X_2,\ldots$ are iid random variables with 
 \[ E[X_i]=\mu \quad Var[X_i]=\sigma^2. \]
 \pause 
@@ -53,7 +136,36 @@ Define
 
 \pause
 
-Then 
+\bc
+For $S_n$, we know
+\[ E[S_n] = n\mu, \pause \quad  Var[S_n] = n\sigma^2, 
+\pause \quad\mbox{and}\quad SD[S_n] = \sqrt{n} \sigma. \]
+\pause
+For $\overline{X}_n$, we know
+\[ E[\overline{X}_n] = \mu, \pause \quad Var[\overline{X}_n] = \sigma^2/n, 
+\pause \quad\mbox{and}\quad SD[\overline{X}_n] = \sigma/\sqrt{n}. \]
+\nc\ec
+\end{frame}
+
+
+\begin{frame}[t]
+\frametitle{Central Limit Theorem (CLT)}
+\small
+\pause
+
+Suppose $X_1,X_2,\ldots$ are iid random variables with 
+\[ E[X_i]=\mu \quad Var[X_i]=\sigma^2. \]
+\pause 
+Define 
+\[ \begin{array}{rl}
+\text{Sample Sum: } S_n &=X_1+X_2+\dots+X_n \\
+\text{Sample Average: } \overline{X}_n&=S_n/n.
+\end{array} \] 
+
+\pause
+
+\bc
+Then the \alert{Central Limit Theorem} says
 \[ 
 \lim_{n\to\infty} \frac{\overline{X}_n-\mu}{\sigma/\sqrt{n}} 
 \stackrel{d}{\to} N(0,1) 
@@ -61,18 +173,36 @@ Then
 \quad \mbox{and} \quad
 \lim_{n\to\infty} \frac{S_n-n\mu}{\sqrt{n}\sigma} \stackrel{d}{\to} N(0,1).
 \]
-\end{theorem}
 
+\vspace{0.1in} \pause
+
+\alert{Main Idea}: Sums and averages of random variables from any distribution 
+have approximate normal distributions for sufficiently large sample sizes.
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
+\frametitle{Toughess}
+{\tiny \url{https://www.researchgate.net/figure/Histograms-representing-the-distributions-of-the-statistically-generated-estimates-of_fig7_261106716}}
+\bc
+\includegraphics[width=0.9\textwidth]{include/toughness}
+\nc
+\ec
+\end{frame}
+
+
+
+\begin{frame}[t]
 \frametitle{Approximating distributions}
+
+\small
 
 Rather than considering the limit, 
 I typically think of the following approximations as $n$ gets large. 
 
 \vspace{0.1in} \pause
+
 
 For the sample average,
 \[ 
@@ -86,9 +216,9 @@ E\left[\,\overline{X}_n\right] = \mu \qquad \text{and} \qquad
 Var\left[\,\overline{X}_n\right] = \sigma^2/n.
 \]
 
+\pause
 
-\vspace{0.1in} \pause
-
+\bc
 For the sample sum,
 \[ 
 S_n \stackrel{\cdot}{\sim} N(n\mu,n\sigma^2).
@@ -96,19 +226,22 @@ S_n \stackrel{\cdot}{\sim} N(n\mu,n\sigma^2).
 \pause
 Note that 
 \[ \begin{array}{rl}
-E[S_n] &= E\left[\,n\overline{X}_n\right] \pause
-= n E\left[\,\overline{X}_n\right] \pause
+E[S_n] &
+% = E\left[\,n\overline{X}_n\right] \pause
+% = n E\left[\,\overline{X}_n\right] \pause
 = n \mu \pause \\
-Var[S_n] &= Var \left[\,n\overline{X}_n\right] \pause 
-= n^2 Var\left[\,\overline{X}_n\right] \pause
-= n^2 \frac{\sigma^2}{n} 
+Var[S_n] &
+% = Var \left[\,n\overline{X}_n\right] \pause 
+% = n^2 Var\left[\,\overline{X}_n\right] \pause
+% = n^2 \frac{\sigma^2}{n} 
 \pause = n\sigma^2.
 \end{array} \]
+\nc\ec
 \end{frame}
 
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Averages and sums of uniforms}
 
 Let $X_i \ind Unif(0,1)$.  
@@ -117,6 +250,8 @@ Then
 \[ \mu = E[X_i] = \pause \frac{1}{2} \quad \mbox{and} \quad
 \sigma^2 = Var[X_i] \pause = \frac{1}{12}. \]
 \pause
+
+\bc
 Thus 
 \[ 
 \overline{X}_n \stackrel{\cdot}{\sim} N\left( \frac{1}{2}, \frac{1}{12n}\right)
@@ -126,38 +261,52 @@ and
 \[
 S_n \stackrel{\cdot}{\sim} N\left( \frac{n}{2}, \frac{n}{12} \right).
 \]
-
+\nc\ec
 \end{frame}
 
 
-\begin{frame}[fragile]
-\frametitle{}
+\begin{frame}[t,fragile]
+\frametitle{Averages of uniforms}
 
-<<echo = TRUE, fig.height=4>>=
-n_sims <- 10000
-n_obs  <- 1000
+\vspace{-0.2in}
+
+<<averages_of_uniforms, echo = FALSE, eval = FALSE, fig.height=4, out.width="\\textwidth">>=
+n_sims <- 10000; n_obs  <- 1000
 d <- data.frame(rep = rep(1:n_sims, each = n_obs),
                 x   = runif(n_sims * n_obs)) %>%
   group_by(rep) %>%
   summarize(mean = mean(x),
             sum  = sum(x))
 
-opar = par(mfrow=c(1,2))
 hist(d$mean, 50, probability = TRUE)
 curve(dnorm(x, mean = 1/2, sqrt(1/12/n_obs)), add = TRUE, col = "red")
-hist(d$sum,  50, probability = TRUE)
-curve(dnorm(x, mean = n_obs/2, sqrt(n_obs/12)), add = TRUE, col = "red")
-par(opar)
 @
 
+\bc
+<<>>=
+<<averages_of_uniforms>>
+@
+\nc\ec
 \end{frame}
 
+
+\begin{frame}[t,fragile]
+\frametitle{Sums of uniforms}
+\bc
+<<echo = FALSE, fig.height=4>>=
+hist(d$sum,  50, probability = TRUE)
+curve(dnorm(x, mean = n_obs/2, sqrt(n_obs/12)), add = TRUE, col = "red")
+@
+\nc\ec
+\end{frame}
 
 
 
 \subsection{Normal approximation to a binomial}
 \begin{frame}[fragile]
 \frametitle{Normal approximation to a binomial}
+
+\small
 
 Recall that a binomial distribution can be considered as a sum of iid Bernouli 
 random variables, i.e. if $Y_n=\sum_{i=1}^n X_i$ where $X_i\ind Ber(p)$, 
@@ -172,6 +321,7 @@ For a binomial random variable, we have
 E[Y_n] = \pause np \qquad \mbox{and} \qquad Var[Y_n] = \pause np(1-p).
 \]
 \pause
+\bc
 By the CLT,
 \[ 
 \lim_{n\to\infty} \frac{Y_n-np}{\sqrt{np(1-p)}} \to \pause N(0, 1),
@@ -181,19 +331,20 @@ if $n$ is large,
 \[ 
 Y_n \stackrel{\cdot}{\sim} \pause N(np, np[1-p]).
 \]
+\nc\ec
 \end{frame}
 
 
 
 
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
 \frametitle{Roulette example}
 
 \small
 
 A European roulette wheel has 39 slots: one green, 19 black, and 19 red. \pause
-If I play black everytime, 
+If I play black every time, 
 what is the probability that I will have won more than I lost after 99 spins of 
 the wheel? 
 
@@ -208,15 +359,34 @@ The desired probability is $P(Y\ge 50)$.
 Then 
 \[ 
 P(Y\ge 50) = 1-P(Y<50) = 1-P(Y\le 49)
- \]
+\]
+\bc
 <<echo=TRUE>>=
 n = 99
 p = 19/39
 1-pbinom(49, n, p)
 @
+\nc\ec
+\end{frame}
 
-\pause
 
+
+
+\begin{frame}[t,fragile]
+\frametitle{Roulette example}
+
+\small
+
+A European roulette wheel has 39 slots: one green, 19 black, and 19 red. 
+If I play black every time, 
+what is the probability that I will have won more than I lost after 99 spins of 
+the wheel? 
+
+\vspace{0.1in} 
+
+\bc
+Let $Y$ indicate the total number of wins.
+\pause 
 We can approximate $Y$ using $X\sim N(np, np(1-p))$. 
 
 \[ 
@@ -227,6 +397,10 @@ P(Y\ge 50) \approx 1-P(X< 50)
 1-pnorm(50, n*p, sqrt(n*p*(1-p)))
 @
 
+\pause
+
+A better approximation can be found using a continuity correction.
+\nc\ec
 \end{frame}
 
 
@@ -234,46 +408,60 @@ P(Y\ge 50) \approx 1-P(X< 50)
 
 
 
-
-
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Astronomy example}
-\small
 
-\vspace{-0.05in}
-
-An astronomer wants to measure the distance, $d$, from the observatory to a star. \pause
-The astronomer takes 30 measurements that she believes are unbiased and finds the average of these measurements to be 29.4 parsecs and you know 
-the variance of each measurement to be 4 parsecs$^2$.
+An astronomer wants to measure the distance, $d$, from Earth to a star. \pause
+Suppose the procedure has a known standard deviation of 2 parsecs. \pause
+The astronomer takes 30 iid measurements and finds the average of these 
+measurements to be 29.4 parsecs. \pause
 What is the probability the average is within 0.5 parsecs?
 
-\vspace{0.1in} \pause
+{\tiny \url{http://planetary-science.org/astronomy/distance-and-magnitudes/}}
+\bc
+\includegraphics[width=0.95\textwidth]{include/parallax}
+\nc\ec
+
+\end{frame}
+
+
+\begin{frame}[t,fragile]
+\frametitle{Astronomy example}
 
 Let $X_i$ be the $i^{th}$ measurement. 
 \pause
 The astronomer assumes that $X_1,X_2,\ldots X_n$ are iid with 
-$E[X_i]=d$ (unbiased) and $Var[X_i]=\sigma^2=4$. 
+$E[X_i]=d$ and $Var[X_i]=\sigma^2=4$. 
 \pause
 The estimate of $d$ is
 \[ \overline{X}_n=\frac{(X_1+X_2+\dots+X_n)}{n} = 29.4. \]
-and, by the Central Limit Theorem, we believe $\overline{X}_n \sim N(d, \sigma^2/n)$ where $n=30$. \pause
+\bc
+and, by the Central Limit Theorem, 
+we believe $\overline{X}_n \stackrel{\cdot}{\sim} N(d, \sigma^2/n)$ where $n=30$. \pause
 We want to find
 {\footnotesize
 \[ \begin{array}{rl}
 P\left(|\overline{X}_n-d|<0.5\right)
-&= P\left(-0.5 < \overline{X}_n-d < 0.5\right) \\
-&= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{\sigma/\sqrt{n}} \right) \\
-&= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < Z < \frac{0.5}{\sigma/\sqrt{n}} \right) \\
-&\approx P(-1.37 < Z < 1.37) \\
-&= P(Z<1.37) - P(Z<-1.37) \\
-& \approx 0.915 - 0.085 = 0.830
-\end{array} \]
+&= P\left(-0.5 < \overline{X}_n-d < 0.5\right) \pause \\
+&= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{\sigma/\sqrt{n}} \right) \pause \\
+% &= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < Z < \frac{0.5}{\sigma/\sqrt{n}} \right) \pause \\
+&\approx P(-1.37 < Z < 1.37) 
+% &= P(Z<1.37) - P(Z<-1.37) \\
+% & \approx 0.915 - 0.085 = 0.830
+\end{array} \hspace{2in} \]
 }
-
+\pause
+<<echo = TRUE>>=
+diff(pnorm(c(-1.37,1.37))) 
+@
+\nc\ec
 \end{frame}
 
 
-\begin{frame}[fragile]
+
+
+
+\begin{frame}[t,fragile]
 \frametitle{Astronomy example (cont.)}
 \small
 
@@ -289,10 +477,11 @@ We solve
 &= P\left(-0.5 < \overline{X}_n-d < 0.5 \right) \pause \\
 &= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{\sigma/\sqrt{n}} \right) \pause \\
 &= P(-z < Z < z) \pause \\
-&= 1 - [P(Z<-z) + P(Z>z) \pause \\
+&= 1 - [P(Z<-z) + P(Z>z)] \pause \\
 &= 1-2P(Z<-z)
-\end{array} \]
+\end{array} \hspace{2in} \]
 \pause
+\bc
 where $z = 0.5/(\sigma/\sqrt{n}) = 1.96$ since
 <<echo = TRUE>>=
 -qnorm(.025)
@@ -300,9 +489,30 @@ where $z = 0.5/(\sigma/\sqrt{n}) = 1.96$ since
 
 \pause 
 and thus $n = 61.47$ which we round up to $n=62$ to ensure the probability is 
-\emph{at least} 0.95. 
-
-
+\emph{at least} 0.95.
+\nc\ec
 \end{frame}
+
+\begin{frame}[t]
+\frametitle{Summary}
+\begin{itemize}
+\item Central Limit Theorem \pause
+  \begin{itemize}
+  \item Sums
+  \item Averages
+  \end{itemize}
+\item Examples
+  \begin{itemize}
+  \item Uniforms
+  \item Binomial
+  \item Roulette
+  \end{itemize}
+\item Sample size
+  \begin{itemize}
+  \item Astronomy
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
 
 \end{document}   
