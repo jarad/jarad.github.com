@@ -19,8 +19,8 @@ This course meets
 
 Office hours are
 
-- Instructor: TBD
-- TA: TBD
+- Instructor: W 3-4, R 4-5 on Zoom
+- TA: F 11-12 on TBD
 
 ## Relevant course pages
 
