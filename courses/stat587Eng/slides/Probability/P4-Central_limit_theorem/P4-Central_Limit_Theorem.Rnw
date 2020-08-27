@@ -13,7 +13,7 @@
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
                fig.width=7, fig.height=4.5, 
-               size='tiny', 
+               size='small', 
                out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
@@ -82,6 +82,31 @@ ggplot(d, aes(x = samples)) +
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Histograms of samples from bell-shaped curves}
+\bc
+<<>>=
+d <- data.frame(rep = 1:4, samples = rnorm(4*50))
+
+ggplot(d, aes(x = samples)) + 
+  geom_histogram(bins = 50) +
+  facet_wrap(~rep) + 
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()) +
+  labs(title = "Histograms of 50 standard normal random variables", 
+       x = "Value", y = "Number")
+  
+@
+\nc\ec
+\end{frame}
+
+
+
+
+
 
 \subsection{Examples}
 \begin{frame}[t]
@@ -97,14 +122,12 @@ ggplot(d, aes(x = samples)) +
 
 
 \begin{frame}[t]
-\frametitle{Toughness}
-
-{\tiny \url{https://www.researchgate.net/figure/Histograms-representing-the-distributions-of-the-statistically-generated-estimates-of_fig7_261106716}}
-
+\frametitle{Tensile strength}
+{\tiny \url{https://www.researchgate.net/figure/Comparison-of-histograms-for-BTS-and-tensile-strength-estimated-from-point-load_fig5_260617256}}
 \bc
-\includegraphics[width=0.9\textwidth]{include/toughness}
-\nc\ec
-
+\includegraphics[width=0.9\textwidth]{include/strength}
+\nc
+\ec
 \end{frame}
 
 
@@ -123,9 +146,8 @@ ggplot(d, aes(x = samples)) +
 \begin{frame}[t]
 \frametitle{Sums and averages of iid random variables}
 \small
-\pause
 
-Suppose $X_1,X_2,\ldots$ are iid random variables with 
+Suppose $X_1,X_2,\ldots$ are iid random variables \pause with 
 \[ E[X_i]=\mu \quad Var[X_i]=\sigma^2. \]
 \pause 
 Define 
@@ -151,7 +173,6 @@ For $\overline{X}_n$, we know
 \begin{frame}[t]
 \frametitle{Central Limit Theorem (CLT)}
 \small
-\pause
 
 Suppose $X_1,X_2,\ldots$ are iid random variables with 
 \[ E[X_i]=\mu \quad Var[X_i]=\sigma^2. \]
@@ -176,19 +197,20 @@ Then the \alert{Central Limit Theorem} says
 
 \vspace{0.1in} \pause
 
-\alert{Main Idea}: Sums and averages of random variables from any distribution 
+\alert{Main Idea}: Sums and averages of iid random variables from 
+\alert{any distribution}
 have approximate normal distributions for sufficiently large sample sizes.
 \nc\ec
 \end{frame}
 
 
 \begin{frame}[t]
-\frametitle{Toughess}
-{\tiny \url{https://www.researchgate.net/figure/Histograms-representing-the-distributions-of-the-statistically-generated-estimates-of_fig7_261106716}}
+\frametitle{Yield}
+
+{\tiny \url{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0184198}}
 \bc
-\includegraphics[width=0.9\textwidth]{include/toughness}
-\nc
-\ec
+\includegraphics[width=0.9\textwidth]{include/yield}
+\nc\ec
 \end{frame}
 
 
@@ -208,9 +230,9 @@ For the sample average,
 \[ 
 \overline{X}_n \stackrel{\cdot}{\sim} N(\mu,\sigma^2/n).
 \]
-where $\stackrel{\cdot}{\sim}$ indicates \emph{approximately distributed}.
+where $\stackrel{\cdot}{\sim}$ indicates \emph{approximately distributed}
 \pause
-Note that 
+because
 \[ 
 E\left[\,\overline{X}_n\right] = \mu \qquad \text{and} \qquad
 Var\left[\,\overline{X}_n\right] = \sigma^2/n.
@@ -221,10 +243,10 @@ Var\left[\,\overline{X}_n\right] = \sigma^2/n.
 \bc
 For the sample sum,
 \[ 
-S_n \stackrel{\cdot}{\sim} N(n\mu,n\sigma^2).
+S_n \stackrel{\cdot}{\sim} N(n\mu,n\sigma^2)
 \]
 \pause
-Note that 
+because
 \[ \begin{array}{rl}
 E[S_n] &
 % = E\left[\,n\overline{X}_n\right] \pause
@@ -308,8 +330,7 @@ curve(dnorm(x, mean = n_obs/2, sqrt(n_obs/12)), add = TRUE, col = "red")
 
 \small
 
-Recall that a binomial distribution can be considered as a sum of iid Bernouli 
-random variables, i.e. if $Y_n=\sum_{i=1}^n X_i$ where $X_i\ind Ber(p)$, 
+Recall if $Y_n=\sum_{i=1}^n X_i$ where $X_i\ind Ber(p)$, 
 then 
 \pause
 \[ 
