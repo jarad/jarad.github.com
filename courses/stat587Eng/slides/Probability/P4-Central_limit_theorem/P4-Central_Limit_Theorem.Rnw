@@ -30,7 +30,15 @@ library("tidyverse")
 set.seed(2)
 @
 
-\frame{\maketitle}
+\begin{frame}
+\maketitle
+\pause
+\bc
+\alert{Main Idea}: Sums and averages of iid random variables from 
+\alert{any distribution}
+have approximate normal distributions for sufficiently large sample sizes.
+\nc\ec
+\end{frame}
 
 
 \section{Bell-shaped curve}
@@ -82,29 +90,18 @@ ggplot(d, aes(x = samples)) +
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Histograms of samples from bell-shaped curves}
-\bc
-<<>>=
-d <- data.frame(rep = 1:4, samples = rnorm(4*50))
 
-ggplot(d, aes(x = samples)) + 
-  geom_histogram(bins = 50) +
-  facet_wrap(~rep) + 
-  theme_bw() +
-  theme(
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks = element_blank()) +
-  labs(title = "Histograms of 50 standard normal random variables", 
-       x = "Value", y = "Number")
-  
-@
+
+
+
+\begin{frame}[t]
+\frametitle{Yield}
+
+{\tiny \url{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0184198}}
+\bc
+\includegraphics[width=0.9\textwidth]{include/yield}
 \nc\ec
 \end{frame}
-
-
-
 
 
 
@@ -120,6 +117,27 @@ ggplot(d, aes(x = samples)) +
 
 \end{frame}
 
+\begin{frame}
+\frametitle{Histograms of samples from bell-shaped curves}
+\bc
+<<>>=
+d <- data.frame(rep = 1:4, samples = rnorm(4*20))
+
+ggplot(d, aes(x = samples)) + 
+  geom_histogram(bins = 20) +
+  facet_wrap(~rep) + 
+  theme_bw() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()) +
+  labs(title = "Histograms of 20 standard normal random variables", 
+       x = "Value", y = "Number")
+  
+@
+\nc\ec
+\end{frame}
+
 
 \begin{frame}[t]
 \frametitle{Tensile strength}
@@ -131,14 +149,7 @@ ggplot(d, aes(x = samples)) +
 \end{frame}
 
 
-\begin{frame}[t]
-\frametitle{Yield}
 
-{\tiny \url{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0184198}}
-\bc
-\includegraphics[width=0.9\textwidth]{include/yield}
-\nc\ec
-\end{frame}
 
 
 
@@ -214,7 +225,7 @@ have approximate normal distributions for sufficiently large sample sizes.
 \end{frame}
 
 
-
+\subsection{Approximating distributions}
 \begin{frame}[t]
 \frametitle{Approximating distributions}
 
@@ -256,13 +267,13 @@ Var[S_n] &
 % = Var \left[\,n\overline{X}_n\right] \pause 
 % = n^2 Var\left[\,\overline{X}_n\right] \pause
 % = n^2 \frac{\sigma^2}{n} 
-\pause = n\sigma^2.
+= n\sigma^2.
 \end{array} \]
 \nc\ec
 \end{frame}
 
 
-
+\subsection{Normal approximations to uniform}
 \begin{frame}[t]
 \frametitle{Averages and sums of uniforms}
 
@@ -356,7 +367,22 @@ Y_n \stackrel{\cdot}{\sim} \pause N(np, np[1-p]).
 \end{frame}
 
 
+\subsection{Roulette example}
+\begin{frame}[t,fragile]
+\frametitle{Roulette example}
 
+\small
+
+A European roulette wheel has 39 slots: one green, 19 black, and 19 red. 
+\uncover<2->{If I play black every time, 
+what is the probability that I will have won more than I lost after 99 spins of 
+the wheel?}
+
+\bc
+{\tiny \url{https://isorepublic.com/photo/roulette-wheel/}}
+\includegraphics[width=0.95\textwidth]{include/roulette-wheel}
+\nc\ec
+\end{frame}
 
 
 \begin{frame}[t,fragile]
@@ -409,11 +435,12 @@ the wheel?
 Let $Y$ indicate the total number of wins.
 \pause 
 We can approximate $Y$ using $X\sim N(np, np(1-p))$. 
+\pause
 
 \[ 
 P(Y\ge 50) \approx 1-P(X< 50) 
 \]
-
+\pause
 <<echo=TRUE>>=
 1-pnorm(50, n*p, sqrt(n*p*(1-p)))
 @
@@ -429,14 +456,15 @@ A better approximation can be found using a continuity correction.
 
 
 
+\subsection{Astronomy example}
 \begin{frame}[t]
 \frametitle{Astronomy example}
 
-An astronomer wants to measure the distance, $d$, from Earth to a star. \pause
-Suppose the procedure has a known standard deviation of 2 parsecs. \pause
-The astronomer takes 30 iid measurements and finds the average of these 
-measurements to be 29.4 parsecs. \pause
-What is the probability the average is within 0.5 parsecs?
+An astronomer wants to measure the distance, $d$, from Earth to a star. 
+\uncover<2->{Suppose the procedure has a known standard deviation of 2 parsecs.} 
+\uncover<3->{The astronomer takes 30 iid measurements and finds the average of these 
+measurements to be 29.4 parsecs. }
+\uncover<4->{What is the probability the average is within 0.5 parsecs?}
 
 {\tiny \url{http://planetary-science.org/astronomy/distance-and-magnitudes/}}
 \bc
@@ -452,19 +480,20 @@ What is the probability the average is within 0.5 parsecs?
 Let $X_i$ be the $i^{th}$ measurement. 
 \pause
 The astronomer assumes that $X_1,X_2,\ldots X_n$ are iid with 
-$E[X_i]=d$ and $Var[X_i]=\sigma^2=4$. 
+$E[X_i]=d$ and $Var[X_i]=\sigma^2=2^2$. 
 \pause
 The estimate of $d$ is
 \[ \overline{X}_n=\frac{(X_1+X_2+\dots+X_n)}{n} = 29.4. \]
+\pause
 \bc
 and, by the Central Limit Theorem, 
-we believe $\overline{X}_n \stackrel{\cdot}{\sim} N(d, \sigma^2/n)$ where $n=30$. \pause
+$\overline{X}_n \stackrel{\cdot}{\sim} N(d, \sigma^2/n)$ where $n=30$. \pause
 We want to find
 {\footnotesize
 \[ \begin{array}{rl}
 P\left(|\overline{X}_n-d|<0.5\right)
 &= P\left(-0.5 < \overline{X}_n-d < 0.5\right) \pause \\
-&= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{\sigma/\sqrt{n}} \right) \pause \\
+&= P\left(\frac{-0.5}{2/\sqrt{30}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{2/\sqrt{30}} \right) \pause \\
 % &= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < Z < \frac{0.5}{\sigma/\sqrt{n}} \right) \pause \\
 &\approx P(-1.37 < Z < 1.37) 
 % &= P(Z<1.37) - P(Z<-1.37) \\
@@ -483,7 +512,7 @@ diff(pnorm(c(-1.37,1.37)))
 
 
 \begin{frame}[t,fragile]
-\frametitle{Astronomy example (cont.)}
+\frametitle{Astronomy example - sample size}
 \small
 
 Suppose the astronomer wants to be within 0.5 parsecs with at least 95\% 
@@ -496,18 +525,17 @@ We solve
 \[ \begin{array}{rll}
 0.95 \le P\left(\left|\overline{X}_n-d\right|<.5\right) 
 &= P\left(-0.5 < \overline{X}_n-d < 0.5 \right) \pause \\
-&= P\left(\frac{-0.5}{\sigma/\sqrt{n}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{\sigma/\sqrt{n}} \right) \pause \\
-&= P(-z < Z < z) \pause \\
+&= P\left(\frac{-0.5}{2/\sqrt{n}} < \frac{\overline{X}_n-d}{\sigma/\sqrt{n}} < \frac{0.5}{2/\sqrt{n}} \right) \pause \\
+&= P(-z < Z < z) \pause & z = 0.5/(2/\sqrt{n}) \\
 &= 1 - [P(Z<-z) + P(Z>z)] \pause \\
 &= 1-2P(Z<-z)
 \end{array} \hspace{2in} \]
 \pause
 \bc
-where $z = 0.5/(\sigma/\sqrt{n}) = 1.96$ since
+where $z = 1.96$ since
 <<echo = TRUE>>=
--qnorm(.025)
+1-2*pnorm(-1.96)
 @
-
 \pause 
 and thus $n = 61.47$ which we round up to $n=62$ to ensure the probability is 
 \emph{at least} 0.95.
@@ -517,16 +545,18 @@ and thus $n = 61.47$ which we round up to $n=62$ to ensure the probability is
 \begin{frame}[t]
 \frametitle{Summary}
 \begin{itemize}
-\item Central Limit Theorem \pause
+\item Central Limit Theorem
   \begin{itemize}
   \item Sums
-  \item Averages
+  \item Averages \pause
   \end{itemize}
 \item Examples
   \begin{itemize}
   \item Uniforms
   \item Binomial
-  \item Roulette
+    \begin{itemize}
+    \item Roulette \pause
+    \end{itemize}
   \end{itemize}
 \item Sample size
   \begin{itemize}
