@@ -9,7 +9,7 @@ group:
 The list below is manually updated and therefore may not be as up to date as 
 other lists:
 
-- [arXiv.org](https://arxiv.org/search/stat?searchtype=author&query=Niemi%2C+J)
+- [arXiv.org](https://arxiv.org/a/0000-0002-5079-158X.html)
 - [Google Scholar](https://scholar.google.com/citations?user=sRLc6F8AAAAJ&hl=en)
 - [ISU Digital Repository](https://lib.dr.iastate.edu/do/search/?q=author_lname%3A%22Niemi%22%20AND%20author_fname%3A%22Jarad%22&start=0&context=1759512&sort=date_desc&facet=)
 - [ORCID](https://orcid.org/0000-0002-5079-158X)
