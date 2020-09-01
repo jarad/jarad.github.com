@@ -6,8 +6,8 @@ group:
 ---
 {% include JB/setup %}
 
-This list is manually updated and therefore may not be as up to date as other
-lists:
+The list below is manually updated and therefore may not be as up to date as 
+other lists:
 
 - [arXiv.org](https://arxiv.org/search/stat?searchtype=author&query=Niemi%2C+J)
 - [Google Scholar](https://scholar.google.com/citations?user=sRLc6F8AAAAJ&hl=en)
