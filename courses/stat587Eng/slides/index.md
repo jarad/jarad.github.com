@@ -30,7 +30,7 @@ you can find them
 |Central limit theorem|[pdf](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.pdf)|[R](Probability/P4-Central_limit_theorem/P4-Central_Limit_Theorem.R)|[Central Limit Theorem](https://youtu.be/xSNg9Vp1wko)|
 ||||[Approximating normal distributions](https://youtu.be/Q11BS_wnq3w)|
 ||||[Astronomy example](https://youtu.be/uX1UOP09JuA)|
-|Multiple random variables|[pdf](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.pdf)|[R](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.R)|
+|Multiple random variables|[pdf](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.pdf)|[R](Probability/P5-Multiple_random_variables/P5-Multiple_random_variables.R)|[Multiple random variables](https://youtu.be/1U537aiXJzM)|
 
 
 ### Inference
