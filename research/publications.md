@@ -6,10 +6,23 @@ group:
 ---
 {% include JB/setup %}
 
+The list below is manually updated and therefore may not be as up to date as 
+other lists:
+
+- [arXiv.org](https://arxiv.org/a/0000-0002-5079-158X.html)
+- [Google Scholar](https://scholar.google.com/citations?user=sRLc6F8AAAAJ&hl=en)
+- [ISU Digital Repository](https://lib.dr.iastate.edu/do/search/?q=author_lname%3A%22Niemi%22%20AND%20author_fname%3A%22Jarad%22&start=0&context=1759512&sort=date_desc&facet=)
+- [ORCID](https://orcid.org/0000-0002-5079-158X)
+- [Research Gate](https://www.researchgate.net/profile/Jarad_Niemi)
+
  \* Indicates my advisee
 
 ## Refereed Journal Articles
 
+
+1. Nate Garton, Jarad Niemi, and Alicia Carriquiry. (2020) ``Knot selection in sparse Gaussian processes with a variational objective.'' Statistical Analysis and Data Mining. 13(4): 324-336. [url](https://onlinelibrary.wiley.com/doi/full/10.1002/sam.11459)
+1. Colin Lewis-Beck, Victoria A. Walker, Jarad Niemi, Petrutza Caragea, and Brian K. Hornbuckle. (2020) ``Extracting Agronomic Information from SMOS Vegetation Optical Depth in the US Corn Belt Using a Nonlinear Hierarchical Model.'' Remote Sensing. 12(5): 827. [url](https://www.mdpi.com/2072-4292/12/5/827) [pdf](papers/Lewi_Walk_Niem_Cara_Horn_extr_2020.pdf)
+1. M.D. Tomer, J.D. Van Horn, S.A. Porter, D.E. James, and J. Niemi. (2020) ``Comparing agricultural conservation planning framework (ACPF) practice placements for runoff mitigation and controlled drainage among 32 watersheds representing Iowa landscapes.'' Journal of Soil and Water Conservation. 75(4): 460-271. [url](https://www.jswconline.org/content/75/4/460.abstract)
 1. E. A. Hines, M. R. Romoser, Z. E. Kiefer, A. F. Keating, L. H. Baumgard, {\bf J. Niemi}, N. K. Gabler, J. F. Patience, G. Haberl, N. H. Williams, B. J. Kerr, K. J. Touchette, and J. W. Ross. (2019) ``The impact of dietary supplementation of arginine during gestation in a commercial swine herd: II. Offspring performance'' Journal of Animal Science, 97(9), 3626-3635. [url](https://academic.oup.com/jas/jas/article-abstract/97/9/3626/5554144)
 1. E. A. Hines, M. R. Romoser, Z. E. Kiefer, A. F. Keating, L. H. Baumgard, J. Niemi, N. K. Gabler, J. F. Patience, G. Haberl, N. H. Williams, B. J. Kerr, K. J. Touchette, and J. W. Ross. (2019) ``The impact of dietary supplementation of arginine during gestation in a commerical herd: I. Gilt.'' (2019) Journal of Animal Science. 97(9), 3617-3625. [url](https://academic.oup.com/jas/advance-article-abstract/doi/10.1093/jas/skz233/5531590)
 1. Craig J. McGowan, Matthew Biggerstaff, Michael Johansson, Karyn M. Apfeldorf, Michal Ben-Nun, Logan Brooks, Matteo Convertino, Madhav Erraguntla, David C. Farrow, John Freeze, Saurav Ghosh, Sangwon Hyun, Sasikiran Kandula, Joceline Lega, Yang Liu, Nicholas Michaud*, Haruka Morita, Jarad Niemi, Naren Ramakrishnan, Evan L. Ray, Nicholas G. Reich, Pete Riley, Jeffrey Shaman, Ryan Tibshirani, Alessandro Vespignani, Qian Zhang, Carrie Reed & The Influenza Forecasting Working Group. (2019) ``Collaborative efforts to forecast seasonal influenza in the United States, 2015--2016.'' Scientific Reports. 9. [url](https://www.nature.com/articles/s41598-018-36361-9)
