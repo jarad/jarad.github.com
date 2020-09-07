@@ -1,9 +1,12 @@
-\documentclass[handout]{beamer}
+\documentclass[aspectratio=169,handout]{beamer}
 
 \input{../../frontmatter}
 \input{../../commands}
 
 \title{I01 - Statistics}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 \begin{document}
 
@@ -12,7 +15,7 @@
 opts_chunk$set(comment=NA, 
                fig.width=6, fig.height=5, 
                size='tiny', 
-               out.width='0.8\\textwidth', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=FALSE,
@@ -23,7 +26,7 @@ options(width=120)
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
 library("dplyr")
 library("ggplot2")
-library("gridExtra")
+# library("gridExtra")
 @
 
 <<set_seed>>=
@@ -31,20 +34,19 @@ set.seed(2)
 @
 
 
-\begin{frame}
+\begin{frame}[t]
 \maketitle
 \end{frame}
 
 
 \section{Descriptive statistics}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Statistics}
-\begin{definition}
 The \alert{field of statistics} is the study of the collection, analysis, interpretation, 
 presentation, and organization of data.
 
 {\tiny \url{https://en.wikipedia.org/wiki/Statistics}}
-\end{definition}
+
 
 \vspace{0.1in} \pause
 
@@ -53,9 +55,12 @@ There are two different phases of statistics: \pause
 \item descriptive statistics \pause 
 	\begin{itemize}
 	\item statistics
-	\item graphical statistics
+	\item graphical statistics \pause
 	\end{itemize}
-\item inferential statistics.
+\item inferential statistics \pause
+  \begin{itemize}
+  \item uses a sample to make statements about a population.
+  \end{itemize}
 \end{itemize}
 
 \end{frame}
@@ -63,116 +68,120 @@ There are two different phases of statistics: \pause
 
 
 
-\subsection{Sample}
-\begin{frame}
-\frametitle{Population and sample}
-\begin{definition}
+\subsection{Population and sample}
+\begin{frame}[t]
+\frametitle{Convenience sample}
 The \alert{population} consists of all units of interest. \pause 
 Any numerical characteristic of a population is a \alert{parameter}. \pause
 The \alert{sample} consists of observed units collected from the population. 
 \pause
 Any function of a sample is called a \alert{statistic}.
-\end{definition}
+
+\vspace{0.3in} \pause
+
+\bc
+\alert{Population}: in-use routers by graduate students at Iowa State University. 
 
 \vspace{0.1in} \pause
 
-\begin{example}
+\alert{Parameter}: proportion of those routers that have Gigabit speed. 
 
-Consider the population of all in-use routers by graduate students 
-at Iowa State University. \pause
-We are interested in what proportion have Gigabit speed. \pause
-We collect data from students in STAT 401 (our sample) and record the 
-proportion (a statistic) that have Gigabit routers. 
-\end{example}
+\vspace{0.1in} \pause
+
+\alert{Sample}: students in STAT 587-2
+
+\vspace{0.1in} \pause
+
+\alert{Statistics}: proportion of those students that have Gigabit routers. 
+\nc\ec
 \end{frame}
 
 
 
 \subsection{Random sample}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Simple random sampling}
-\begin{definition}
 A \alert{simple random sample} is a sample from the population where all subsets
 of the same size are equally likely to be sampled. \pause
 Random samples ensure that statistical conclusions will be valid.
-\end{definition}
 
-\vspace{0.1in} \pause 
+\vspace{0.3in} \pause 
 
-\begin{example}
-Consider the population of all in-use routers by graduate students 
-at Iowa State University. \pause
-We are interested in what proportion have Gigabit speed. \pause
-A pseudo-random number generator gives each student a Unif(0,1) number and the
-lowest 100 are contacted (our sample) and the proportion (a statistic) of these 
-students who have Gigabit routers is recorded.
-\end{example}
+\bc
+\alert{Population}: in-use routers by graduate students at Iowa State University. 
+
+\vspace{0.1in}
+
+\alert{Parameter}: proportion of those routers that have Gigabit speed. 
+
+\vspace{0.1in} \pause
+
+\alert{Sample}: a pseudo-random number generator gives each graduate student a 
+Unif(0,1) number and the lowest 100 are contacted
+
+\vspace{0.1in} \pause
+
+\alert{Statistics}: proportion that have Gigabit routers. 
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Sampling and non-sampling errors}
 
-\begin{definition}
 \alert{Sampling errors} are caused by the mere fact that only a sample, a 
 portion of a population, is observed.
 \pause 
-For most reasonable statistical procedures, sampling errors decrease (and 
-converge to zero) as the sample size increases.
+Fortunately,
+\[\mbox{error} \downarrow \quad \mbox{as sample size ($n$)} \uparrow \]
 
 \vspace{0.1in} \pause
 
 \alert{Non-sampling errors} are caused by inappropriate sampling schemes and
 wrong statistical techniques. \pause 
 Often, no statistical technique can rescue a poorly collected sample of data. 
-\end{definition}
 
-\pause
-\begin{example}
-In our example, no statistical technique can help us estimate
-the proportion of graduate students at ISU who have Gigabit routers based on our 
-convenience sample of STAT 401 students who have a Gigabit router.
-\end{example}
+\vspace{0.2in} \pause
+
+\bc
+\alert{Sample}: students in STAT 587-2
+\nc\ec
 
 \end{frame}
 
 
 \subsection{Statistics}
-\begin{frame}
-\frametitle{Descriptive statistics}
+\begin{frame}[t]
+\frametitle{Statistics and estimators}
 \small
 
-\begin{definition}
 A \alert{statistic} is any function of the data. 
-\end{definition}
 
-\pause
+\vspace{0.2in} \pause
 
-\begin{example}
-Statistics:
+Descriptive statistics:
 \begin{itemize}
 \item Sample mean, median, mode
 \item Sample quantiles
 \item Sample variance, standard deviation
 \end{itemize}
-\end{example}
 
-\pause
+\vspace{0.2in} \pause
 
-\begin{definition}
-When a statistics is meant to estimate a corresponding population parameter, we
-call that statistic an \alert{estimator}. 
-\end{definition}
-
+\bc
+When a statistic is meant to estimate a corresponding population parameter, 
+\pause 
+we call that statistic an \alert{estimator}. 
+\nc\ec
 \end{frame}
 
 
 
-\subsection{Mean and variance}
-\begin{frame}
+\subsection{Sample mean}
+\begin{frame}[t]
 \frametitle{Sample mean}
 
-Let $X_1,\ldots,X_n$ be a sample from a distribution with 
+Let $X_1,\ldots,X_n$ be a random sample from a distribution with 
 \[ E[X_i] = \mu \qquad \mbox{ and } \qquad Var[X_i] = \sigma^2 \] 
 where we assume independence between the $X_i$. 
 
@@ -180,86 +189,46 @@ where we assume independence between the $X_i$.
 
 The sample mean is 
 \[ 
-\overline{X} = \frac{1}{n} \sum_{i=1}^n X_i
+\uncover<4->{\hat\mu = } \overline{X} = \frac{1}{n} \sum_{i=1}^n X_i
 \]
 \pause
-and estimates the population mean $\mu$. 
+and estimates the population mean $\mu$. \pause
+
+\end{frame}
+
+
+
+
+\subsection{Sample variance}
+\begin{frame}[t]
+\frametitle{Sample variance}
+
+Let $X_1,\ldots,X_n$ be a random sample from a distribution with 
+\[ E[X_i] = \mu \qquad \mbox{ and } \qquad Var[X_i] = \sigma^2 \] 
+where we assume independence between the $X_i$. 
 
 \vspace{0.1in} \pause
 
+\bc
 The sample variance is 
 \[ 
-S^2 = \frac{1}{n-1} \sum_{i=1}^n (X_i-\overline{X})^2 
-= \frac{\sum_{i=1}^n X_i^2 - n\overline{X}^2}{n-1}
+\uncover<5->{\hat\sigma^2 = } S^2 = \frac{1}{n-1} \sum_{i=1}^n (X_i-\overline{X})^2 \pause
+= \frac{\sum_{i=1}^n X_i^2 - n\overline{X}^2}{n-1} \pause
 \]
-and estimates the population variance $\sigma^2$. \pause 
-The sample standard deviation  is $S = \sqrt{S^2}$.
+and estimates the population variance $\sigma^2$.
 
+\vspace{0.2in} \pause \pause
+
+The sample standard deviation is $\hat\sigma = \sqrt{\hat\sigma^2}$ and estimates the 
+population standard deviation.
+\nc\ec
 \end{frame}
-
-
-
-\subsection{Unbiased}
-\begin{frame}
-\frametitle{Unbiased}
-
-\begin{definition}
-An estimator is \alert{unbiased} for a parameter if its expectation 
-(when the data are considered random) equals the parameter. 
-\end{definition}
-
-\pause
-
-\begin{example}
-The sample mean is unbiased for the population mean $\mu$ since
-\[ 
-E\left[\,\overline{X}\,\right] 
-= \pause E\left[\frac{1}{n} \sum_{i=1}^n X_i \right]
-= \pause \frac{1}{n} \sum_{i=1}^n E[X_i] = 
-\pause \mu.
-\]
-\pause
-and the sample variance is unbiased for the population variance $\sigma^2$.
-\end{example}
-\end{frame}
-
-
-
-\subsection{Consistent}
-\begin{frame}
-\frametitle{Consistent}
-
-\begin{definition}
-An estimator $\hat{\theta}$, or $\hat{\theta}_n(x)$, \pause
-is \alert{consistent} for a parameter $\theta$ if 
-the probability of its sampling error of any magnitude converges to 0 
-as the sample size $n$ increases to infinity, \pause i.e.
-\[ 
-P\left( \left|\hat{\theta}_n(x)-\theta\right|>\epsilon \right) \to 0 \mbox{ as } n\to\infty
-\]
-for any $\epsilon>0$.
-\end{definition}
-
-\pause 
-
-\begin{example}
-The sample mean is consistent for $\mu$ since $Var\left[\,\overline{X}\,\right] = \sigma^2/n$
-and 
-\[ 
-P\left(\left|\overline{X} - \mu\right| > \epsilon \right) \le 
-\frac{Var\left[\,\overline{X}\,\right]}{\epsilon^2} = \frac{\sigma^2/n}{\epsilon^2} \to 0
-\]
-where the inequality is from \href{https://en.wikipedia.org/wiki/Chebyshev's_inequality}{Chebyshev's inequality.}
-\end{example}
-\end{frame}
-
 
 
 \subsection{Quantiles}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Quantiles}
 \small
-\begin{definition}
 A \alert{$p$-quantile} of a population is a number $x$ that solves
 \[ 
 P(X<x) \le p \quad \mbox{and} \quad P(X>x) \le 1-p.
@@ -274,7 +243,10 @@ percentiles.
 They split a population or a sample into four equal parts.
 \pause
 A \alert{median} is a 0.5-quantile, 50th percentile, and 2nd quartile.
-\pause
+
+\vspace{0.1in} \pause
+
+\bc
 The \alert{interquartile range} is the third quartile minus the first quartile,
 i.e.
 \[ 
@@ -283,74 +255,171 @@ IQR = Q_3 - Q_1
 and the \alert{sample interquartile range} is the third sample quartile minus
 the first sample quartile, i.e.
 \[ 
-\hat{IQR} = \hat{Q}_3 - \hat{Q}_1
+\widehat{IQR} = \hat{Q}_3 - \hat{Q}_1
 \]
-\end{definition}
+\nc\ec
 \end{frame}
 
 
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
 \frametitle{Standard normal quartiles}
-<<quantiles, fig.height=4, echo=TRUE>>=
+\bc
+<<quantiles, fig.height=4>>=
+d <- data.frame(x = seq(-3, 3, by = 0.01)) %>%
+  dplyr::mutate(y = dnorm(x))
+
+quartiles = (1:3)/4
+ggplot(d, aes(x=x,y=y)) + 
+  geom_line() + 
+  geom_vline(xintercept = qnorm(p = quartiles), 
+             color = "slategray", linetype = "dashed") + 
+  labs(y = "Probability density function, p(x)",
+       title = "Standard normal") +
+  theme_bw()
+
 curve(expr = dnorm, from = -3, to = 3, ylab = "f(x)")
-quantiles = c(.025,.16,.84,.975)
-abline(v = qnorm(p = quantiles)) # default is standard normal
 @
+\nc\ec
 \end{frame}
 
 
 
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
 \frametitle{Sample quartiles from a standard normal}
-<<sample_quantiles, dependson='quantiles', fig.height=4, echo=TRUE>>=
+\bc
+<<sample_quantiles, dependson='quantiles', fig.height=4>>=
 n = 1000
-sample = rnorm(n)
-hist(x = sample, breaks = 101, probability = TRUE, border = "gray", col = "gray")
-curve(expr = dnorm, from = -3, to = 3, ylab = "f(x)", col = "black", add = TRUE)
-abline(v = qnorm(p = quantiles), col = "black")
-abline(v = quantile(sample, prob = quantiles), col = "gray")
-legend("topright", c("sample","population"), lty=1, col=c("gray","black"))
+sample = data.frame(x=rnorm(n))
+ggplot(sample, aes(x=x)) + 
+  geom_histogram(aes(y=..density..), fill = "gray") + 
+  geom_vline(xintercept = quantile(sample$x, prob = quartiles),
+             color = "red") + 
+  geom_vline(xintercept = qnorm(p = quartiles), 
+             color = "slategray", linetype = "dashed") + 
+  labs(title = "Standard normal samples") +
+  theme_bw()
 @
+\nc\ec
 \end{frame}
 
+
+\subsection{Properties of statistics and estimators}
+\begin{frame}[t]
+\frametitle{Properties of statistics and estimators}
+Statistics can have properties, e.g.
+\begin{itemize}
+\item standard error
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Estimators can have properties, e.g.
+\begin{itemize}
+\item unbiased
+\item consistent
+\end{itemize}
+\end{frame}
 
 
 \subsection{Standard error}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Standard error}
-\begin{definition}
 The \alert{standard error} of a statistic $\hat{\theta}$ is the standard
 deviation of that statistic (when the data are considered random).
-\end{definition}
-\pause
-\begin{example}
+
+\vspace{0.1in} \pause
+
 If $X_i$ are independent and have $Var[X_i]=\sigma^2$,
 \pause
-the standard error of the sample mean is $\sigma/\sqrt{n}$
-\pause
-since
-\[
-Var\left[\,\overline{X}\,\right] = \pause
-Var\left[ \frac{1}{n} \sum_{i=1}^n X_i \right] = \pause
-\frac{1}{n^2} \sum_{i=1}^n Var[X_i] = \pause 
+then
+\bc
+\[ \begin{array}{rl}
+Var\left[\,\overline{X}\,\right] &= \pause
+Var\left[ \frac{1}{n} \sum_{i=1}^n X_i \right] \pause \\ \\
+&= \frac{1}{n^2} \sum_{i=1}^n Var[X_i] = \pause
 \frac{1}{n^2} \sum_{i=1}^n \sigma^2 = \pause
-\sigma^2/n
-\]
+\frac{\sigma^2}{n}
+\end{array} \]
 \pause
 and thus
 \[
 SD\left[\,\overline{X}\,\right] = \sqrt{Var\left[\,\overline{X}\,\right]} = \sigma/\sqrt{n}.
 \]
-\end{example}
+\pause 
+Thus the standard error of the sample mean is $\sigma/\sqrt{n}$.
+\nc\ec
 \end{frame}
 
 
 
 
+\subsection{Unbiased}
+\begin{frame}[t]
+\frametitle{Unbiased}
+
+An estimator $\hat\theta$ is \alert{unbiased} for a parameter $\theta$ if its expectation 
+(when the data are considered random) equals the parameter,
+\pause
+i.e. 
+\[ E[\hat\theta] = \theta. \]
+
+\vspace{0.2in} \pause
+
+The sample mean is unbiased for the population mean $\mu$ since
+\bc
+\[ 
+E\left[\,\overline{X}\,\right] 
+= \pause E\left[\frac{1}{n} \sum_{i=1}^n X_i \right]
+= \pause \frac{1}{n} \sum_{i=1}^n E[X_i] = 
+\pause \mu.
+\]
+\pause
+and the sample variance is unbiased for the population variance $\sigma^2$.
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Consistent}
+\begin{frame}[t]
+\frametitle{Consistent}
+
+An estimator $\hat{\theta}$, or $\hat{\theta}_n(x)$, \pause
+is \alert{consistent} for a parameter $\theta$ if 
+the probability of its sampling error of any magnitude converges to 0 
+as the sample size $n$ increases to infinity, \pause i.e.
+\[ 
+P\left( \left|\hat{\theta}_n(X)-\theta\right|>\epsilon \right) \to 0 \mbox{ as } n\to\infty
+\]
+for any $\epsilon>0$.
+
+\vspace{0.1in} \pause 
+
+\bc
+The sample mean is consistent for $\mu$ since $Var\left[\,\overline{X}\,\right] = \sigma^2/n$
+\pause
+and 
+\[ 
+P\left(\left|\overline{X} - \mu\right| > \epsilon \right) \le 
+\frac{Var\left[\,\overline{X}\,\right]}{\epsilon^2} = \frac{\sigma^2/n}{\epsilon^2} \to 0
+\]
+where the inequality is from \href{https://en.wikipedia.org/wiki/Chebyshev's_inequality}{Chebyshev's inequality.}
+\nc\ec
+\end{frame}
+
+
+
+
+
+
+
+
+
+
 \subsection{Binomial example}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Binomial example}
 
 Suppose $Y\sim Bin(n,\theta)$ where $\theta$ is the probability of success.
@@ -368,7 +437,15 @@ E\left[\frac{Y}{n}\right] = \pause
 \theta
 \]
 \pause
-the estimator is unbiased.
+the estimator is \alert{unbiased}.
+\end{frame}
+
+
+\begin{frame}[t]
+\frametitle{Binomial example}
+
+Suppose $Y\sim Bin(n,\theta)$ where $\theta$ is the probability of success.
+The statistic $\hat{\theta} = Y/n$ is an estimator of $\theta$. 
 
 \vspace{0.1in} \pause
 
@@ -378,20 +455,26 @@ Var\left[\hat{\theta}\right] = \pause
 Var\left[ \frac{Y}{n} \right] = \pause
 \frac{1}{n^2} Var[Y] = \pause
 \frac{1}{n^2} n\theta(1-\theta) = \pause
+% \ldots = 
 \frac{\theta(1-\theta)}{n}.
 \]
 \pause
-Thus the standard error is 
+
+\bc
+Thus the \alert{standard error} is 
 \[ 
 SE(\hat{\theta}) = \sqrt{Var[\hat{\theta}]} = \sqrt{\frac{\theta(1-\theta)}{n}}.
 \]
 \pause
-By Chebychev's inequality, this estimator is consistent for $\theta$.
+By Chebychev's inequality, this estimator is \alert{consistent} for $\theta$.
+\nc\ec
 \end{frame}
 
 
+
+
 \subsection{Summary}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Summary}
 \begin{itemize}
 \item Statistics are functions of data.
@@ -399,14 +482,12 @@ By Chebychev's inequality, this estimator is consistent for $\theta$.
 	\begin{itemize}
 	\item Standard error
 	\end{itemize}
-\item Statistics often try to estimate population parameters and are then called
-estimators.
-\item Estimators may have these properties relative to the population parameter
-they are trying to estimate:
-\begin{itemize}
-\item Unbiased
-\item Consistent 
-\end{itemize}
+\item Estimators are statistics that estimate population parameters.
+\item Estimators may have properties:
+  \begin{itemize}
+  \item Unbiased
+  \item Consistent 
+  \end{itemize}
 \end{itemize}
 
 \end{frame}
@@ -416,7 +497,7 @@ they are trying to estimate:
 
 
 \section{Graphical statistics}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Look at it!}
 {\Huge
 \alert{Before you do anything with a data set, \pause LOOK AT IT!}
@@ -425,7 +506,7 @@ they are trying to estimate:
 
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Why should you look at your data?}
 
 \pause
@@ -461,22 +542,24 @@ they are trying to estimate:
 
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Principles of professional statistical graphics}
+
+{\tiny \url{https://moz.com/blog/data-visualization-principles-lessons-from-tufte}}
 
 \begin{itemize}
 \item Show the data
 	\begin{itemize}
-	\item Avoid distorting the data, e.g. pie charts, 3d pie charts, exploding wedge 3d pie charts, bar charts that do not start at zero
+	\item Avoid distorting the data, e.g. pie charts, 3d pie charts, exploding wedge 3d pie charts, bar charts that do not start at zero \pause 
 	\end{itemize}
 \item Plots should be self-explanatory
 	\begin{itemize}
 	\item Use informative caption, legend
-	\item Use normative colors, shapes, etc
+	\item Use normative colors, shapes, etc \pause
 	\end{itemize}
 \item Have a high information to ink ratio
 	\begin{itemize}
-	\item Avoid bar charts
+	\item Avoid bar charts \pause
 	\end{itemize}
 \item Encourage eyes to compare
 	\begin{itemize}
@@ -484,21 +567,25 @@ they are trying to estimate:
 	\end{itemize}
 \end{itemize}
 
-{\tiny \url{https://moz.com/blog/data-visualization-principles-lessons-from-tufte}}
-
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Stock market return}
+
+\vspace{-0.2in}
+
+\setkeys{Gin}{width=\textwidth}
+{\tiny \url{http://www.nytimes.com/interactive/2011/01/02/business/20110102-metrics-graphic.html?_r=0}}
+
+\vspace{-0.2in}
+
+\bc
 \begin{center}
 \includegraphics{market_return}
 \end{center}
-{\tiny \url{http://www.nytimes.com/interactive/2011/01/02/business/20110102-metrics-graphic.html?_r=0}}
+\nc\ec
 \end{frame}
- 
-
-
 
 \end{document}
 
