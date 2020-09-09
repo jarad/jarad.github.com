@@ -35,9 +35,12 @@ you can find them
 
 ### Inference
 
-|Topic|slides|code|data|
-|---|---|---|---|
-|Statistics|[pdf](Inference/I01-Statistics/I01-Statistics.pdf)|[R](Inference/I01-Statistics/I01-Statistics.R)|---|
+|Topic|slides|code|videos|data|
+|---|---|---|---|---|
+|Statistics|[pdf](Inference/I01-Statistics/I01-Statistics.pdf)|[R](Inference/I01-Statistics/I01-Statistics.R)|[Field of statistics](https://youtu.be/yF92RxPS_G4)||
+|---|---|---|[Estimators](https://youtu.be/RFtHCdxxo8Q)|---|
+|---|---|---|[Properties of estimators](https://youtu.be/F4tSwJT_khI)|---|
+|---|---|---|[Graphical statistics](https://youtu.be/N-7rt9QP-W0)|---|
 |Likelihood|[pdf](Inference/I02-Likelihood/I02-Likelihood.pdf)|[R](Inference/I02-Likelihood/I02-Likelihood.R)|---|
 |Bayesian statistics|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_statistics.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_statistics.R)|---|
 |Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|[yield.csv](Inference/I04-Normal_model/yield.csv)|
