@@ -1,9 +1,9 @@
-\documentclass[aspectratio=169]{beamer}
+\documentclass[aspectratio=169,handout]{beamer}
 
 \input{../../frontmatter}
 \input{../../commands}
 
-\title{I02 - Maximum likelihood estimators}
+\title{$\mathrm{I}$02 - Likelihood}
 
 % \setbeamertemplate{background}
 % {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
@@ -52,7 +52,11 @@ $\mathcal{P}$ is a set of probability distributions on $\mathcal{S}$.
 Typically, assume a \alert{parametric model}
 \[ p(y|\theta) \]
 \pause
-where the parameter (vector) $\theta$ is unknown. 
+where 
+\begin{itemize}
+\item $y$ is our data \pause and 
+\item $\theta$ is unknown parameter vector.
+\end{itemize}
 \pause
 The 
 \begin{itemize}
@@ -67,7 +71,7 @@ The
 \frametitle{Binomial model}
 \small
 
-Suppose our data are 
+Suppose we will collect data were we have 
 \begin{itemize} \small
 \item the number of success $y$ \pause
 \item out of some number of attempts $n$ \pause
@@ -87,11 +91,12 @@ Y \sim Bin(n,\theta).
 Formally, 
 
 \begin{itemize}
-\item $\mathcal{S} = \{0,1,2,\ldots,n\}$  \pause
+\item $\mathcal{S} = \{0,1,2,\ldots,n\}$  \pause and
 \item $\mathcal{P} = \{ Bin(n,\theta): 0<\theta<1 \}$.
 \end{itemize}
 \nc\ec
 \end{frame}
+
 
 
 \subsection{Normal}
@@ -99,12 +104,42 @@ Formally,
 \frametitle{Normal model}
 \small
 
+Suppose we have one datum
+\begin{itemize}\small
+\item \alert{real} number,  \pause
+\item has a \alert{mean $\mu$} and \alert{variance $\sigma^2$}, \pause and
+\item uncertainty is represented by a \alert{bell-shaped curve}.
+\end{itemize}
+\pause
+\bc
+Then a reasonable statistical model is 
+\[
+Y \sim N(\mu,\sigma^2).
+\]
+
+\vspace{0.1in} \pause
+
+Marginally, 
+
+\begin{itemize}
+\item $\mathcal{S} = \{y:y \in\mathbb{R}\}$ 
+\item $\mathcal{P} = \{ N(\mu,\sigma^2): -\infty<\mu<\infty, 0<\sigma^2<\infty \}$ 
+where $\theta = (\mu,\sigma^2)$.
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+\begin{frame}[t]
+\frametitle{Normal model}
+\small
+
 Suppose our data are
 \begin{itemize}\small
-\item a set of real numbers, i.e. between $-\infty$ and $\infty$, \pause
-\item the population mean is $\mu$ and population variance is $\sigma^2$, \pause
-\item a histogram is reasonably approximated by a bell-shaped curve, \pause
-\item and each observation is independent of the others.
+\item \alert{$n$} real numbers,  \pause
+\item \alert{each} has a mean $\mu$ and variance is $\sigma^2$, \pause
+\item a \alert{histogram} is reasonably approximated by a bell-shaped curve, \pause and
+\item each observation is \alert{independent} of the others.
 \end{itemize}
 \pause
 \bc
@@ -115,15 +150,17 @@ Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2).
 
 \vspace{0.1in} \pause
 
-Formally, 
+Marginally, 
 
 \begin{itemize}
-\item $\mathcal{S} = \{y_i:y_i\in\mathbb{R}, i\in\{1,2,\ldots,n\}\}$ 
-\item $\mathcal{P} = \{ N(\mu,\sigma^2): -\infty<\mu<\infty, 0<\sigma^2<\infty \}$ 
+\item $\mathcal{S} = \{(y_1,\ldots,y_n): y_i\in\mathbb{R}, i\in\{1,2,\ldots,n\}\}$ 
+\item $\mathcal{P} = \{ N_n(\mu,\sigma^2\mathrm{I}): -\infty<\mu<\infty, 0<\sigma^2<\infty \}$ 
 where $\theta = (\mu,\sigma^2)$.
 \end{itemize}
 \nc\ec
 \end{frame}
+
+
 
 
 \section{Likelihood}
@@ -134,11 +171,10 @@ where $\theta = (\mu,\sigma^2)$.
 
 The \alert{likelihood function}, or simply \alert{likelihood}, is the joint 
 probability mass/density function
-for fixed data when viewed as a function of the parameter vector $\theta$.
+for fixed data when viewed as a function of the parameter (vector) $\theta$.
 \pause
-Generally, we will write the joint probability mass or density function of 
-the data as 
-$p(y|\theta)$ and thus the likelihood is 
+Generically, let $p(y|\theta)$ be the joint probability mass/density function of 
+the data \pause and thus the likelihood is 
 \[ 
 L(\theta) = p(y|\theta)
 \]
@@ -251,14 +287,16 @@ Suppose $Y_i\ind N(\mu,\sigma^2)$, \pause then
 \[
 p(y_i|\mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{1}{2\sigma^2}(y_i-\mu)^2}
 \]
+\pause 
 and 
 \bc
 \[ \begin{array}{rl}
 p(y|\mu,\sigma^2) 
-&= \prod_{i=1}^n p(y_i|\mu,\sigma^2) \\ 
-&= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{1}{2\sigma^2}(y_i-\mu)^2} \\
+&= \prod_{i=1}^n p(y_i|\mu,\sigma^2) \pause \\ 
+&= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{1}{2\sigma^2}(y_i-\mu)^2} \pause \\
 &= \frac{1}{(2\pi\sigma^2)^{n/2}} e^{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\mu)^2} 
 \end{array} \]
+\pause 
 where $\mu$ and $\sigma^2$ are fixed (but often unknown) and the argument to 
 this function is $y=(y_1,\ldots,y_n)$.
 \nc\ec
@@ -279,6 +317,7 @@ The likelihood is
 L(\mu,\sigma) = p(y|\mu,\sigma^2)
 = \frac{1}{(2\pi\sigma^2)^{n/2}} e^{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\mu)^2}
 \]
+\pause
 where $y$ is fixed and known and $\mu$ and $\sigma^2$ are the arguments to this
 function.
 \nc\ec
@@ -295,10 +334,14 @@ x <- rnorm(3)
 
 d <- expand.grid(mu = seq(-2,2,length=100),
                  sigma = seq(0,2,length=100)) %>%
-  mutate(density = dnorm(x[1], mu, sigma)*dnorm(x[2], mu, sigma)*dnorm(x[3], mu, sigma))
+  dplyr::mutate(density = dnorm(x[1], mu, sigma)*dnorm(x[2], mu, sigma)*dnorm(x[3], mu, sigma))
 
-ggplot(d, aes(mu,sigma,z=density)) +
-  geom_contour() +
+ggplot(d, aes(x = mu, y = sigma, z = density)) +
+  geom_contour_filled(show.legend = FALSE) +
+  labs(x = expression(mu), 
+       y = expression(sigma),
+       title = "Example normal likelihood") +
+  # theme(legend.title = element_blank()) +
   theme_bw()
 @
 \nc\ec
@@ -411,18 +454,18 @@ If $Y_i\ind N(\mu,\sigma^2)$, then
 
 \[ \begin{array}{rl}
 L(\mu,\sigma^2) 
-&= \frac{1}{(2\pi\sigma^2)^{n/2}} e^{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\mu)^2} \pause \\
-&= \frac{1}{(2\pi\sigma^2)^{n/2}} e^{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\overline{y}+\overline{y}-\mu)^2} \pause \\
-&= (2\pi \sigma^2)^{-n/2} \exp\left( -\frac{1}{2\sigma^2} \sum_{i=1}^n  \left[(y_i-\overline{y})^2 + 2(y_i-\overline{y})(\overline{y}-\mu) + (\overline{y}-\mu)^2 \right]\right) \pause \\
-&= (2\pi \sigma^2)^{-n/2} \exp\left( -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-\overline{y})^2 + -\frac{n}{2\sigma^2}(\overline{y}-\mu)^2 \right) \quad\mbox{since } \sum_{i=1}^n (y_i-\overline{y}) = 0\pause \\ \\
+&= \frac{1}{(2\pi\sigma^2)^{n/2}} e^{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\mu)^2}  \\
+&= \frac{1}{(2\pi\sigma^2)^{n/2}} e^{-\frac{1}{2\sigma^2}\sum_{i=1}^n(y_i-\overline{y}+\overline{y}-\mu)^2}  \\
+&= (2\pi \sigma^2)^{-n/2} \exp\left( -\frac{1}{2\sigma^2} \sum_{i=1}^n  \left[(y_i-\overline{y})^2 + 2(y_i-\overline{y})(\overline{y}-\mu) + (\overline{y}-\mu)^2 \right]\right)  \\
+&= (2\pi \sigma^2)^{-n/2} \exp\left( -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-\overline{y})^2 + -\frac{n}{2\sigma^2}(\overline{y}-\mu)^2 \right) \quad\mbox{since } \sum_{i=1}^n (y_i-\overline{y}) = 0 \\ \\
 
-\ell(\mu,\sigma^2) &= -\frac{n}{2} \log(2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-\overline{y})^2 -\frac{1}{2\sigma^2} n (\overline{y}-\mu)^2 \pause \\
+\ell(\mu,\sigma^2) &= -\frac{n}{2} \log(2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-\overline{y})^2 -\frac{1}{2\sigma^2} n (\overline{y}-\mu)^2  \\
 \\
-\frac{\partial}{\partial \mu} \ell(\mu,\sigma^2) &= \frac{n}{\sigma^2}(\overline{y}-\mu) \pause \stackrel{set}{=} 0 \implies \hat{\mu}_{MLE} = \overline{y} \pause \\ \\
+\frac{\partial}{\partial \mu} \ell(\mu,\sigma^2) &= \frac{n}{\sigma^2}(\overline{y}-\mu)  \stackrel{set}{=} 0 \implies \hat{\mu}_{MLE} = \overline{y}  \\ \\
 \frac{\partial}{\partial \sigma^2} \ell(\mu,\sigma^2) &= 
--\frac{n}{2\sigma^2}+\frac{1}{2(\sigma^2)^2} \sum_{i=1}^n (y_i-\overline{y})^2 \pause \stackrel{set}{=} 0 \pause \\
+-\frac{n}{2\sigma^2}+\frac{1}{2(\sigma^2)^2} \sum_{i=1}^n (y_i-\overline{y})^2 \stackrel{set}{=} 0  \\
 & \implies 
-\hat{\sigma}_{MLE}^2 = \frac{1}{n}\sum_{i=1}^n (y_i-\overline{y})^2 \pause 
+\hat{\sigma}_{MLE}^2 = \frac{1}{n}\sum_{i=1}^n (y_i-\overline{y})^2  
 = \frac{n-1}{n}S^2
 \end{array} \]
 }
@@ -461,10 +504,10 @@ n <- length(x); c(mean(x), (n-1)/n*var(x)) # true MLE
 \frametitle{Normal likelihood - graph}
 \bc
 <<normal_mle, fig.height=4.5, dependson=c("normal_likelihood","normal_numerical_maximization")>>=
-ggplot(d, aes(mu,sigma^2,z=density)) +
-  geom_contour() +
+ggplot(d, aes(mu,sigma,z=density)) +
+  geom_contour_filled(show.legend = FALSE) +
   geom_point(aes(x = mean(x), y = sqrt((n-1)/n*var(x))), shape=4, color='red') + 
-  labs(x = expression(mu), y = expression(sigma^2)) +
+  labs(x = expression(mu), y = expression(sigma)) +
   theme_bw()
 @
 \nc\ec
