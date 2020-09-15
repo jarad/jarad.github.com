@@ -44,7 +44,7 @@ you can find them
 |Likelihood|[pdf](Inference/I02-Likelihood/I02-Likelihood.pdf)|[R](Inference/I02-Likelihood/I02-Likelihood.R)|[Statistical models](https://youtu.be/5KnJ-uVaoLE)|---|
 |---|---|---|[Likelihood](https://youtu.be/m7I7baoDuuo)|---|
 |---|---|---|[Maximum likelihood estimators](https://youtu.be/vz34FpuLhsA)|---|
-|Bayesian statistics|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_statistics.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_statistics.R)|---|
+|Bayesian parameter estimation|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.R)|---|
 |Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|[yield.csv](Inference/I04-Normal_model/yield.csv)|
 |Confidence intervals|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|---|
 |P values|[pdf](Inference/I06-Pvalues/I06-Pvalues.pdf)|[R](Inference/I06-Pvalues/I06-Pvalues.R)|---|
