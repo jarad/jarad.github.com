@@ -1,20 +1,21 @@
-\documentclass[handout]{beamer}
+\documentclass[aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
 \input{../../frontmatter}
 \input{../../commands}
 
-\title{I03 - Bayesian statistics}
+\title{$\mathrm{I}$03 - Bayesian parameter estimation}
 
-% \newenvironment{remark}[1][Remark]{\begin{trivlist}
-% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
-               size='tiny', 
-               out.width='0.8\\textwidth', 
+               fig.width=6, fig.height=4, 
+               size='scriptsize', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=FALSE,
@@ -34,19 +35,28 @@ set.seed(2)
 
 \begin{document}
 
-\begin{frame}
+\begin{frame}[t]
 \maketitle
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Outline}
 \begin{itemize}
 \item Bayesian parameter estimation
   \begin{itemize}
   \item Condition on what is known
   \item Describe {\bf belief} using probability
+  \item Terminology
+    \begin{itemize}
+    \item Prior $\to$ posterior
+    \item Posterior expectation
+    \item Credible intervals
+    \end{itemize}
   \item Binomial example
+    \begin{itemize}
+    \item Beta distribution
+    \end{itemize}
   \end{itemize}
 \end{itemize}
 \end{frame}
@@ -54,26 +64,28 @@ set.seed(2)
 
 
 \section{Bayesian statistics}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{A Bayesian statistician}
 
 Let 
-\begin{itemize}[<+->]
-\item $y$ be the data we will collect from an experiment, 
-\item $K$ be everything we know for certain about the world (aside from $y$), and
+\begin{itemize}
+\item $y$ be the data we will collect from an experiment, \pause
+\item $K$ be everything we know for certain about the world (aside from $y$), \pause and
 \item $\theta$ be anything we don't know for certain.
 \end{itemize}
 
 \vspace{0.2in} \pause
 
+\bc
 My definition of a Bayesian statistician is an individual who makes decisions based on the probability distribution of those things we don't know conditional on what we know, \pause i.e. 
 \[ p(\theta|y, K). \]
 \pause
 Typically, the $K$ is dropped from the notation.
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Bayes' Rule}
 
 Bayes' Rule applied to a partition $P=\{A_1,A_2,\ldots\}$, 
@@ -81,50 +93,54 @@ Bayes' Rule applied to a partition $P=\{A_1,A_2,\ldots\}$,
 
 \vspace{0.2in} \pause
 
+\bc
 Bayes' Rule also applies to probability density (or mass) functions, e.g. 
-\[ p(\theta|y) =\frac{p(y|\theta)p(\theta)}{p(y)} = \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta}  \]
+\[ p(\theta|y) =\frac{p(y|\theta)p(\theta)}{p(y)} \pause
+= \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta}  \]
+\pause
 where the integral plays the role of the sum in the previous statement.
+\nc\ec
 \end{frame}
 
 
 
 \subsection{Parameter estimation}
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Parameter estimation}
-Let $y$ be data from some model with unknown parameter $\theta$. \pause Then
+Let $y$ be data from some model with unknown parameter (vector) $\theta$. \pause Then
 \[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)}= \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta} \]
 \pause and we use the following terminology 
-\begin{center}
+\bc
 \begin{tabular}{ll}
 Terminology & Notation \\
 \hline 
-Posterior & $p(\theta|y)$ \\
-Prior & $p(\theta)$ \\
-Model (likelihood) & $p(y|\theta)$ \\
-Prior predictive distribution & $p(y)$ \\
-(marginal likelihood) & \\
+Posterior & $p(\theta|y)$ \pause \\
+Prior & $p(\theta)$ \pause \\
+Model (likelihood) & $p(y|\theta)$ \pause \\
+Prior predictive & $p(y)$ \\
+(marginal likelihood) & \pause \\
 \hline
 \end{tabular}
-\end{center}
 
 \vspace{0.1in} \pause
 
 Bayesian parameter estimation involves updating your prior \alert{belief} about
 $\theta$, $p(\theta)$, into a posterior \alert{belief} about 
 $\theta$, $p(\theta|y)$, based on the data observed.
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Bayesian notation}
 
 We now have two distributions for our parameter $\theta$: prior and posterior.
 To distinguish these two, we will have no conditioning in the prior 
 and we will condition on $y$ in the posterior.
 \pause
+\bc
 For example,
 
-\begin{center}
 \begin{tabular}{lll}
 & Prior & Posterior \\
 \hline
@@ -134,12 +150,12 @@ Variance & $Var[\theta]$ & $Var[\theta|y]$ \\
 Probabilities & $P(\theta<c)$ & $P(\theta<c|y)$ \\
 \hline
 \end{tabular}
-\end{center}
+\nc\ec
 
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Binomial model}
 
 Suppose $Y\sim Bin(n,\theta)$, then 
@@ -152,17 +168,20 @@ A reasonable default prior is the uniform distribution on the interval $(0,1)$
 p(\theta) = \I(0<\theta<1).
 \]
 \pause
+\bc
 Using Bayes Rule, you can find 
 \[
 \theta|y \sim Be(1+y, 1+n-y).
 \]
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Beta distribution}
 
-\begin{definition}
+\small
+
 The \alert{beta distribution} defines a distribution for a probability, 
 i.e. a number on the interval (0,1). 
 The probability density function is 
@@ -171,6 +190,7 @@ p(\theta) = \frac{\theta^{a-1}(1-\theta)^{b-1}}{Beta(a,b)}\I(0<\theta<1)
 \]
 where $a,b>0$ and $Beta$ is the beta function, \pause 
 i.e. 
+\bc
 \[ 
 Beta(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)} 
 \quad\mbox{and} \quad
@@ -178,17 +198,18 @@ Beta(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}
 \]
 \pause
 The beta distribution has the following properties:
-\begin{itemize}
-\item $E[\theta] = \frac{a}{a+b}$
-\item $Var[\theta] = \frac{ab}{(a+b)^2(a+b+1)}$.
+\begin{itemize} \small
+\item $E[\theta] = \frac{a}{a+b}$, \pause
+\item $Var[\theta] = \frac{ab}{(a+b)^2(a+b+1)}$, \pause and
+\item $Be(1,1) \stackrel{d}{=} Unif(0,1)$.
 \end{itemize}
-\end{definition}
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
-\frametitle{}
-
+\begin{frame}[t]
+\frametitle{Beta densities}
+\bc
 <<>>=
 my_dbeta <- function(x) {
   data.frame(theta = seq(0, 1, length=101)) %>%
@@ -209,11 +230,11 @@ ggplot(d, aes(x=theta, y=density)) +
   theme_bw() +
   ylim(0,5)
 @
-
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Beta posterior}
 
 Suppose we have made 100 sensors according to a particular protocol and 2 have 
@@ -221,7 +242,7 @@ a sensitivity below a pre-determined threshold.
 \pause
 Let $Y$ be the number below the threshold.
 Assume $Y\sim Bin(n,\theta)$ with $n=100$ \pause and 
-$\theta \sim Unif(0,1)\stackrel{d}{=} Be(1,1)$, 
+$\theta \sim Be(1,1)$, 
 \pause 
 then 
 \[ 
@@ -230,21 +251,26 @@ then
 \end{frame}
 
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
 \frametitle{Posterior density}
-<<echo=TRUE, fig.height=3.5>>=
+\bc
+<<>>=
 n <- 100
 y <- 2
-curve(dbeta(x, 1+y, 1+n-y), 0, 0.1,
-      main = "Posterior density",
-      xlab = expression(theta),
-      ylab = expression(paste("p(",theta,"|y)")))
+
+ggplot(data.frame(x=c(0,.1)), aes(x)) +
+  stat_function(fun = dbeta, args = list(shape1 = 1+y, shape2 = 1+n-y)) +
+  labs(x = expression(theta),
+       y = expression(paste("p(",theta,"|y)")),
+       title = "Posterior density") +
+  theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
 \frametitle{Posterior expectation}
 
 Often times it is inconvenient to provide a full posterior and so we often 
@@ -257,7 +283,7 @@ For a point estimate, we can use the posterior expectation:
 = \frac{1+y}{(1+y)+(1+n-y)} \pause
 = \frac{1+y}{2+n}
 \]
-
+\bc
 <<echo=TRUE>>=
 (1+y)/(2+n)
 @
@@ -266,57 +292,59 @@ Note that this is close, but not exactly equal to $\hat{\theta}_{MLE} = y/n$.
 \pause
 Since the MLE is unbiased, this posterior expectation will generally be biased
 but it is still consistent since $\hat{\theta}_{Bayes} \to \hat{\theta}_{MLE}$. 
+\nc\ec
 \end{frame}
 
 
 
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
 \frametitle{Credible intervals}
 
-\begin{definition}
 A \alert{$100(1-a)$\% credible interval} is any interval $(L,U)$ such that
 
 \[ 
-1-a = \int_L^U p(\theta|y) d\theta.
+1-a = \int_L^U p(\theta|y) d\theta. \hspace{2in}
 \]
 \pause
+\bc
 An \alert{equal-tail $100(1-a)$\% credible interval} is the interval 
 $L,U)$ such that 
 \[ 
 a/2 = \int_{-\infty}^L p(\theta|y) d\theta = \int_U^\infty p(\theta|y) d\theta.
 \]
-\end{definition}
 \pause
-
 <<echo=TRUE>>=
 # 95% credible interval is 
 ci = qbeta(c(.025,.975), 1+y, 1+n-y) 
 round(ci, 3)
 @
+\nc\ec
 \end{frame}
 
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
 \frametitle{Equal-tail 95\% credible interval}
+\bc
 <<echo=FALSE>>=
-curve(dbeta(x, 1+y, 1+n-y), 0, 0.1,
-      main = "Posterior density",
-      xlab = expression(theta),
-      ylab = expression(paste("p(",theta,"|y)")))
-
-ci_area <- data.frame(x = seq(ci[1],ci[2],length=101)) %>%
-  mutate(y = dbeta(x, 1+y, 1+n-y)) %>%
-  bind_rows(data.frame(x = ci[2:1], y = 0))
-
-polygon(ci_area$x, ci_area$y, col='red', border=NA)
+ggplot(data.frame(x=c(0,.1)), aes(x)) +
+  stat_function(fun = dbeta, args = list(shape1 = 1+y, shape2 = 1+n-y)) +
+  stat_function(fun = dbeta, args = list(shape1 = 1+y, shape2 = 1+n-y), 
+                xlim = ci,
+                geom = "area", fill = "red") +
+  labs(x = expression(theta),
+       y = expression(paste("p(",theta,"|y)")),
+       title = "Posterior density with 95% area shaded") +
+  theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
+\begin{frame}[t]
 \frametitle{Summary}
 
+\bc
 Bayesian parameter estimation involves
 \begin{enumerate}[<+->]
 \item Specifying a model $p(y|\theta)$ for your data.
@@ -334,11 +362,11 @@ about $\theta$.
   \item Credible interval
   \end{itemize}
 \end{enumerate}
-
+\nc\ec
 \end{frame}
 
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
 \frametitle{Bayesian analysis for binomial model summary}
 
 Let $Y\sim Bin(n,\theta)$ and assume $\theta\sim Be(a,b)$. 
@@ -351,9 +379,9 @@ Then
 A default prior is $\theta\sim Be(1,1) \stackrel{d}{=} Unif(0,1)$.
 
 \vspace{0.2in} \pause
-
-R code for binomial analysis
-<<eval = FALSE, echo = TRUE>>=
+\bc
+R code for binomial analysis:
+<<eval = FALSE, echo = TRUE, size = 'tiny'>>=
 a <- 1; b <- 1                  # default uniform prior
 y <- 3; n <- 10                 # data
 
@@ -369,7 +397,7 @@ pbeta(0.5, a+y, b+n-y)          # P(theta<0.5|y)
 qbeta(c(0,.95), a+y, b+n-y)     # if y=0, use a lower one-sided CI
 qbeta(c(.05,1), a+y, b+n-y)     # if y=n, use a upper one-sided CI
 @
-
+\nc\ec
 \end{frame}
 
 
