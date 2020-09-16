@@ -1,0 +1,322 @@
+\documentclass[aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Student's $t$-distribution}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20200915)
+@
+
+\begin{document}
+
+\begin{frame}[t]
+\maketitle
+\end{frame}
+
+\section{Student's $t$ distribution}
+\subsection{Probability density function}
+\begin{frame}[t]
+\frametitle{Student's $t$ distribution}
+
+The random variable $X$ has a \alert{Student's $t$ distribution} with 
+\alert{degrees of freedom $\nu > 0$} 
+\pause
+if its probability density function is 
+\[ 
+f(x) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\sqrt{\nu \pi} 
+\Gamma(\frac{\nu}{2})} \left( 1 + \frac{x^2}{\nu} \right)^{-\frac{\nu+1}{2}}
+\]
+\pause
+\bc
+where $\Gamma(\alpha)$ is the gamma function,
+\[ 
+\Gamma(\alpha) = \int_0^\infty x^{\alpha-1} e^{-x} dx.
+\]
+\pause
+We write $X\sim t_\nu$. 
+\nc\ec
+\end{frame}
+
+
+\subsection{Probability density function - graphically}
+\begin{frame}[t]
+\frametitle{Student $t$ probability density function}
+\bc
+<<>>=
+d <- expand.grid(nu = c(1,10,100),
+                 x = seq(-4, 4, length = 1001)) %>%
+  dplyr::mutate(pdf = dt(x, df = nu),
+                cdf = pt(x, df = nu),
+                `Degrees of freedom` = as.character(nu))
+
+ggplot(d, aes(x=x, y = pdf, 
+              color = `Degrees of freedom`, linetype = `Degrees of freedom`)) +
+  geom_line() + 
+  labs(y = "Probablity density function, f(x)",
+       title = "Student $t$ random variables") + 
+  theme_bw()
+@
+\nc\ec
+\end{frame}
+
+\subsection{Mean and variance}
+\begin{frame}[t]
+\frametitle{Student $t$ mean and variance}
+
+If $T\sim t_v$, then
+\[ 
+E[X] = 
+\int_{-\infty}^\infty x \, \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\sqrt{\nu \pi} 
+\Gamma(\frac{\nu}{2})} \left( 1 + \frac{x^2}{\nu} \right)^{-\frac{\nu+1}{2}} dx 
+= \cdots 
+= 0, \quad \nu > 1
+\]
+\pause 
+and 
+\[
+Var[X] 
+= \int_0^\infty \left(x-0\right)^2 \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\sqrt{\nu \pi} 
+\Gamma(\frac{\nu}{2})} \left( 1 + \frac{x^2}{\nu} \right)^{-\frac{\nu+1}{2}} dx 
+= \cdots = \frac{\nu}{\nu-2}, \quad \nu > 2.
+\]
+\end{frame}
+
+
+% \subsection{Cumulative distribution function}
+% \begin{frame}[t]
+% \frametitle{Gamma cumulative distribution function}
+% If $X\sim Ga(\alpha,\lambda)$, then its cumulative distribution function is 
+% \[
+% F(x) = \int_0^x \frac{\lambda^\alpha}{\Gamma(\alpha)} t^{\alpha-1} e^{-\lambda t} dt 
+% = \cdots = \frac{\gamma(\alpha,\beta x)}{\Gamma(\alpha)}
+% \]
+% \pause
+% \bc
+% where $\gamma(\alpha,\beta x)$ is the incomplete gamma function, i.e.
+% \[ 
+% \gamma(\alpha,\beta x) = \int_0^{\beta x} t^{\alpha-1} e^{-t} dt.
+% \]
+% \nc\ec
+% \end{frame}
+
+
+\subsection{Cumulative distribution function - graphically}
+\begin{frame}[t]
+\frametitle{Gamma cumulative distribution function - graphically}
+\bc
+<<>>=
+ggplot(d, aes(x=x, y = cdf, 
+              color = `Degrees of freedom`, linetype = `Degrees of freedom`)) +
+  geom_line() + 
+  labs(y = "Cumulative distribution function, F(x)",
+       title = "Student $t$ random variables") +
+  theme_bw()
+@
+\nc\ec
+\end{frame}
+
+
+\section{Generalized Student's $t$ distribution}
+\subsection{Location-scale $t$ distribution}
+\begin{frame}
+\frametitle{Location-scale $t$ distribution}
+
+If $X \sim t_\nu$, then 
+\[ 
+Y = \mu + \sigma X \sim t_\nu(\mu,\sigma^2)
+\]
+\pause 
+for parameters:
+\begin{itemize}
+\item location $\mu$ \pause and 
+\item scale $\sigma > 0$.
+\end{itemize}
+
+\pause
+
+\bc
+By properties of expectations and variances, 
+\pause 
+we can find that 
+\[
+E[Y] = \mu
+\]
+\pause 
+and 
+\[ Var[Y] = \frac{\nu}{\nu-2}\sigma^2, \qquad \nu > 2. \]
+\nc\ec
+\end{frame}
+
+
+\subsection{Probability density function}
+\begin{frame}[t]
+\frametitle{Generalized student's $t$ probability density function}
+
+The random variable $Y$ has a \alert{generalized Student's $t$ distribution} with 
+\begin{itemize}
+\item degrees of freedom $\nu > 0$, \pause 
+\item location $\mu$, \pause and 
+\item scale $\sigma > 0$
+\end{itemize}
+\pause
+\bc
+if its probability density function is 
+\[ 
+f(y) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\Gamma(\frac{\nu}{2}) \sqrt{\nu \pi} 
+\sigma} \left( 1 + \frac{1}{\nu}\left[ \frac{y-\mu}{\sigma}\right] \right)^{-\frac{\nu+1}{2}}
+\]
+\pause
+We write $Y\sim t_\nu(\mu,\sigma^2)$. 
+\nc\ec
+\end{frame}
+
+
+\subsection{Probability density function - graphically}
+\begin{frame}[t]
+\frametitle{$T$ probability density function}
+\bc
+<<>>=
+d <- expand.grid(nu = 10,
+                 mu = c(0, 2),
+                 sigma = c(1, 2),
+                 x = seq(-4, 4, length = 1001)) %>%
+  dplyr::mutate(pdf = dt((x-mu)/sigma, df = nu)/sigma,
+                musigma = paste0(mu,sigma),
+                mu = as.character(mu),
+                sigma = as.character(sigma))
+
+ggplot(d, aes(x=x, y = pdf, group = musigma, color = mu, linetype = sigma)) +
+  geom_line() + 
+  labs(y = "Probablity density function, f(x)",
+       title = expression(paste("Student ",t[10]," random variables")),
+       linetype = expression(paste("Scale, ", sigma)),
+       color = expression(paste("Location, ", mu))) +
+  theme_bw()
+@
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Relationships to Cauchy}
+\begin{frame}[t]
+\frametitle{Relationships to Cauchy}
+If $T \sim t_1(\mu,\sigma^2)$, then $T$ has a \alert{Cauchy} distribution 
+\pause and we write 
+\[ 
+T \sim Ca(\mu,\sigma^2).
+\]
+\pause 
+If $T\sim t_1(0,1)$, then $T$ has a \alert{standard Cauchy} distribution.
+\pause
+A Cauchy random variable has no mean or variance.
+\end{frame}
+
+
+\subsection{As degrees of freedom increases}
+\begin{frame}[t]
+\frametitle{As degrees of freedom increases}
+If $T_\nu \sim t_\nu(\mu,\sigma^2)$, 
+\pause 
+then as $\nu \to \infty$
+\[ 
+\lim_{\nu\to\infty} T_\nu \stackrel{d}{=} X
+\]
+\pause 
+where $X \sim N(\mu,\sigma^2)$.
+\end{frame}
+
+
+
+\subsection{$t$ distribution arise from a normal sample}
+\begin{frame}[t]
+\frametitle{$t$ distribution arising from a normal sample}
+Let $X_i \iid N(\mu,\sigma^2)$. 
+\pause
+We calculate the sample mean
+\bc
+\[
+\overline{X} = \frac{1}{n} \sum_{i=1}^n X_i
+\]
+\pause
+and the sample variance
+\[
+S^2 = \frac{1}{n} \sum_{i=1}^n (X_i-\overline{X})^2.
+\]
+\pause
+Then 
+\[ 
+T = \frac{\overline{X}-\mu}{S/\sqrt{n}} \pause \sim t_{n-1}.
+\]
+\nc\ec
+\end{frame}
+
+
+\subsection{Inverse-gamma scale mixture of a normal}
+\begin{frame}[t]
+\frametitle{Inverse-gamma scale mixture of a normal}
+If 
+\[ X|\sigma^2 \sim N(\mu,\sigma^2/n) \qquad \mbox{and} \qquad 
+\sigma^2 \sim IG\left(\frac{\nu}{2}, \frac{\nu}{2}s^2\right) \]
+\pause
+then
+\[ 
+X \sim t_\nu(\mu,s^2/n)
+\]
+\pause
+\bc 
+which is obtained by 
+\[ 
+f_x(x) = \int f_{x|\sigma^2}(x|\sigma^2) f_{\sigma^2}(\sigma^2) d\sigma^2
+\]
+\pause
+where
+\begin{itemize}
+\item $f_x$ is the marginal density for $x$
+\item $f_{x|\sigma^2}$ is the conditional density for $x$ given $\sigma^2$, and
+\item $f_{\sigma^2}$ is the marginal density for $\sigma^2$.
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Summary}
+\begin{frame}[t]
+\frametitle{Summary}
+Student $t$ random variable:
+\begin{itemize}[<+->]
+\item $T \sim t_\nu(\mu,\sigma^2), \, \sigma > 0 $
+\item $f(x) = \frac{\lambda^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\lambda x},\, x > 0$
+\item $E[X] = \mu, \, \nu > 1$
+\item $Var[X] = \frac{\nu}{\nu-2}\sigma^2, \, \nu > 2$
+\end{itemize}
+\end{frame}
+
+\end{document}
