@@ -1,0 +1,159 @@
+\documentclass[aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Exponential distribution}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20200915)
+@
+
+\begin{document}
+
+\begin{frame}[t]
+\maketitle
+\end{frame}
+
+\section{Exponential distribution}
+\subsection{Probability density function}
+\begin{frame}[t]
+\frametitle{Exponential distribution}
+
+The random variable $X$ has an \alert{exponential distribution} with 
+\alert{rate parameter $\lambda > 0$} 
+\pause
+if its probability density function is 
+\[ 
+f(x) = \lambda e^{-\lambda x} \mathrm{I}(x>0).
+\]
+\pause
+We write $X\sim Exp(\lambda)$. 
+\end{frame}
+
+
+\subsection{Probability density function - graphically}
+\begin{frame}[t]
+\frametitle{Exponential probability density function}
+\bc
+<<>>=
+d <- expand.grid(rate = c(0.5,1,2), 
+                 x = seq(0, 4, length = 101)) %>%
+  dplyr::mutate(pdf = dexp(x, rate = rate),
+                cdf = pexp(x, rate = rate),
+                rate = as.character(rate))
+
+ggplot(d, aes(x=x, y = pdf, group = rate, color = rate, linetype = rate)) +
+  geom_line() + 
+  labs(y = "Probablity density function, f(x)",
+       title = "Exponential random variables") +
+  theme_bw()
+@
+\nc\ec
+\end{frame}
+
+\subsection{Mean and variance}
+\begin{frame}[t]
+\frametitle{Exponential mean and variance}
+
+If $X\sim Exp(\lambda)$, then
+\[ 
+E[X] = 
+\int_0^\infty x \, \lambda e^{-\lambda x} dx 
+= \cdots 
+= \frac{1}{\lambda} 
+\]
+\pause 
+and 
+\[
+Var[X] 
+= \int_0^\infty \left(x-\frac{1}{\lambda}\right)^2 \lambda e^{-\lambda x} dx 
+= \cdots = \frac{1}{\lambda^2}.
+\]
+\end{frame}
+
+
+\subsection{Cumulative distribution function}
+\begin{frame}[t]
+\frametitle{Exponential cumulative distribution function}
+If $X\sim Exp(\lambda)$, then its cumulative distribution function is 
+\[
+F(x) = \int_0^x \lambda e^{-\lambda t} dt = \cdots = 1-e^{-\lambda x}.
+\]
+\pause
+The inverse cumulative distribution function is 
+\[
+F^{-1}(p) = \frac{-\log(1-p)}{\lambda}.
+\]
+
+\end{frame}
+
+
+\subsection{Cumulative distribution function - graphically}
+\begin{frame}[t]
+\frametitle{Exponential cumulative distribution function - graphically}
+\bc
+<<>>=
+ggplot(d, aes(x=x, y = cdf, group = rate, color = rate, linetype = rate)) +
+  geom_line() + 
+  labs(y = "Cumulative distribution function, F(x)",
+       title = "Exponential random variables") +
+  theme_bw()
+@
+\nc\ec
+\end{frame}
+
+\subsection{Parameterization by the scale}
+\begin{frame}[t]
+\frametitle{Parameterization by the scale}
+
+A common alternative parameterization of the exponential distribution uses the 
+\alert{scale $\beta = \frac{1}{\lambda}$}. 
+\pause
+In this parameterization, we have 
+\[ 
+f(x) = \frac{1}{\beta} e^{-x/\beta} \, \I(x>0)
+\]
+and 
+\[
+E[X] = \beta \qquad \mbox{and} \qquad Var[X] = \beta^2.
+\]
+\end{frame}
+
+\subsection{Summary}
+\begin{frame}[t]
+\frametitle{Summary}
+Exponential random variable
+\begin{itemize}[<+->]
+\item $X \sim Exp(\lambda), \, \lambda > 0$ 
+\item $f(x) = \lambda e^{-\lambda x}, \, x > 0 $
+\item $F(x) = 1 - e^{-\lambda x}$
+\item $F^{-1}(p) = \frac{-\log(1-p)}{\lambda}$
+\item $E[X] = \frac{1}{\lambda}$
+\item $Var[X] = \frac{1}{\lambda^2}$
+\end{itemize}
+\end{frame}
+
+\end{document}
