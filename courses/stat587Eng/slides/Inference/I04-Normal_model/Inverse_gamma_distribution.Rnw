@@ -1,0 +1,167 @@
+\documentclass[aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Inverse gamma distribution}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+library("MCMCpack")
+pinvgamma <- function(x, shape, scale = 1) {
+  exp(lgamma(shape, scale/x)-lgamma(shape))
+}
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20200915)
+@
+
+\begin{document}
+
+\begin{frame}[t]
+\maketitle
+\end{frame}
+
+\section{Inverse gamma distribution}
+\subsection{Probability density function}
+\begin{frame}[t]
+\frametitle{Inverse gamma distribution}
+
+The random variable $X$ has an \alert{inverse gamma distribution} with 
+\alert{shape parameter $\alpha > 0$} and 
+\alert{scale parameter $\beta > 0$} 
+\pause
+if its probability density function is 
+\[ 
+f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha-1} e^{-\beta/x} \, \mathrm{I}(x>0).
+\]
+\pause
+\bc
+where $\Gamma(\alpha)$ is the gamma function,
+\[ 
+\Gamma(\alpha) = \int_0^\infty x^{\alpha-1} e^{-x} dx.
+\]
+\pause
+We write $X\sim IG(\alpha,\beta)$. 
+\nc\ec
+\end{frame}
+
+
+\subsection{Probability density function - graphically}
+\begin{frame}[t]
+\frametitle{Inverse gamma probability density function}
+\bc
+<<>>=
+d <- expand.grid(shape = c(0.5,1,2),
+                 scale = c(0.5,1,2), 
+                 x = seq(0.01, 4, length = 101)) %>%
+  dplyr::mutate(pdf = dgamma(1/x, shape = shape, rate = scale)/x,
+                # cdf = pinvgamma(x, shape = shape, scale = scale),
+                shapescale = paste0(shape, scale),
+                shape = paste("shape =", shape),
+                scale  = paste("scale = ", scale))
+
+ggplot(d, aes(x=x, y = pdf)) +
+  geom_line() + 
+  labs(y = "Probablity density function, f(x)",
+       title = "Inverse gamma random variables") +
+  facet_grid(shape~scale, scales = "free_y") + 
+  theme_bw()
+@
+\nc\ec
+\end{frame}
+
+\subsection{Mean and variance}
+\begin{frame}[t]
+\frametitle{Inverse gamma mean and variance}
+
+If $X\sim IG(\alpha, \beta)$, then
+\[ 
+E[X] = 
+\int_0^\infty x \, \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha-1} e^{-\beta/x} dx 
+= \cdots 
+= \frac{\beta}{\alpha-1}, \quad \alpha > 1 
+\]
+\pause 
+\bc
+and 
+\[ \begin{array}{rl}
+Var[X] 
+&= \int_0^\infty \left(x-\frac{\beta}{\alpha-1}\right)^2 \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha-1} e^{-\beta/x} dx \\ \\
+&= \cdots = \frac{\beta^2}{(\alpha-1)^2(\alpha-2)}, \quad \alpha > 2.
+\end{array} \]
+\nc\ec
+\end{frame}
+
+
+% \subsection{Cumulative distribution function}
+% \begin{frame}[t]
+% \frametitle{Inverse gamma cumulative distribution function}
+% If $X\sim IG(\alpha,\beta)$, then its cumulative distribution function is 
+% \[
+% F(x) = \int_0^x \frac{\beta^\alpha}{\Gamma(\alpha)} t^{\alpha-1} e^{-\beta t} dt 
+% = \cdots = \frac{\Gamma(\alpha,\beta/x)}{\Gamma(\alpha)}.
+% \]
+% \end{frame}
+% 
+% 
+% \subsection{Cumulative distribution function - graphically}
+% \begin{frame}[t]
+% \frametitle{Inverse gamma cumulative distribution function - graphically}
+% \bc
+% <<>>=
+% ggplot(d, aes(x=x, y = cdf)) +
+%   geom_line() + 
+%   labs(y = "Cumulative distribution function, F(x)",
+%        title = "Inverse gamma random variables") +
+%   facet_grid(shape~scale, scales = "free_y") + 
+%   theme_bw()
+% @
+% \nc\ec
+% \end{frame}
+
+
+\subsection{Relationship to gamma distribution}
+\begin{frame}[t]
+\frametitle{Relationship to gamma distribution}
+If $X\iid Ga(\alpha, \lambda)$ where $\lambda$ is the rate parameter, then 
+\[
+Y = \frac{1}{X} \sim Ga(\alpha, \lambda).
+\]
+\end{frame}
+
+
+
+
+\subsection{Summary}
+\begin{frame}[t]
+\frametitle{Summary}
+Inverse gamma random variable
+\begin{itemize}[<+->]
+\item $X \sim IG(\alpha,\beta), \, \alpha, \beta > 0$ 
+\item $f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{-\alpha-1} e^{-\beta/x}, x > 0$
+\item $E[X] = \frac{\beta}{\alpha-1}, \, \alpha > 1 $
+\item $Var[X] = \frac{\beta^2}{(\alpha-1)^2(\alpha-2)}, \, \alpha > 2$
+\end{itemize}
+\end{frame}
+
+\end{document}
