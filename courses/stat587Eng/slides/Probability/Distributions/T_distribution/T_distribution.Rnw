@@ -7,8 +7,8 @@
 
 \title{Student's $t$-distribution}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
@@ -47,7 +47,7 @@ The random variable $X$ has a \alert{Student's $t$ distribution} with
 \pause
 if its probability density function is 
 \[ 
-f(x) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\sqrt{\nu \pi} 
+p(x|\nu) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\sqrt{\nu \pi} 
 \Gamma(\frac{\nu}{2})} \left( 1 + \frac{x^2}{\nu} \right)^{-\frac{\nu+1}{2}}
 \]
 \pause
@@ -64,7 +64,7 @@ We write $X\sim t_\nu$.
 
 \subsection{Probability density function - graphically}
 \begin{frame}[t]
-\frametitle{Student $t$ probability density function}
+\frametitle{Student's $t$ probability density function}
 \bc
 <<>>=
 d <- expand.grid(nu = c(1,10,100),
@@ -76,8 +76,8 @@ d <- expand.grid(nu = c(1,10,100),
 ggplot(d, aes(x=x, y = pdf, 
               color = `Degrees of freedom`, linetype = `Degrees of freedom`)) +
   geom_line() + 
-  labs(y = "Probablity density function, f(x)",
-       title = "Student $t$ random variables") + 
+  labs(y = "Probablity density function, p(x)",
+       title = "Student's t random variables") + 
   theme_bw()
 @
 \nc\ec
@@ -85,7 +85,7 @@ ggplot(d, aes(x=x, y = pdf,
 
 \subsection{Mean and variance}
 \begin{frame}[t]
-\frametitle{Student $t$ mean and variance}
+\frametitle{Student's $t$ mean and variance}
 
 If $T\sim t_v$, then
 \[ 
@@ -133,7 +133,7 @@ ggplot(d, aes(x=x, y = cdf,
               color = `Degrees of freedom`, linetype = `Degrees of freedom`)) +
   geom_line() + 
   labs(y = "Cumulative distribution function, F(x)",
-       title = "Student $t$ random variables") +
+       title = "Student's t random variables") +
   theme_bw()
 @
 \nc\ec
@@ -147,11 +147,12 @@ ggplot(d, aes(x=x, y = cdf,
 
 If $X \sim t_\nu$, then 
 \[ 
-Y = \mu + \sigma X \sim t_\nu(\mu,\sigma^2)
+Y = \mu + \sigma X \pause \sim t_\nu(\mu,\sigma^2)
 \]
 \pause 
 for parameters:
 \begin{itemize}
+\item degrees of freedom $\nu > 0$, \pause
 \item location $\mu$ \pause and 
 \item scale $\sigma > 0$.
 \end{itemize}
@@ -163,7 +164,7 @@ By properties of expectations and variances,
 \pause 
 we can find that 
 \[
-E[Y] = \mu
+E[Y] = \mu, \qquad \nu > 1
 \]
 \pause 
 and 
@@ -174,20 +175,20 @@ and
 
 \subsection{Probability density function}
 \begin{frame}[t]
-\frametitle{Generalized student's $t$ probability density function}
+\frametitle{Generalized Student's $t$ probability density function}
 
 The random variable $Y$ has a \alert{generalized Student's $t$ distribution} with 
 \begin{itemize}
-\item degrees of freedom $\nu > 0$, \pause 
-\item location $\mu$, \pause and 
+\item degrees of freedom $\nu > 0$, 
+\item location $\mu$, and 
 \item scale $\sigma > 0$
 \end{itemize}
 \pause
 \bc
 if its probability density function is 
 \[ 
-f(y) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\Gamma(\frac{\nu}{2}) \sqrt{\nu \pi} 
-\sigma} \left( 1 + \frac{1}{\nu}\left[ \frac{y-\mu}{\sigma}\right] \right)^{-\frac{\nu+1}{2}}
+p(y) = \frac{\Gamma\left(\frac{\nu+1}{2}\right)}{\Gamma(\frac{\nu}{2}) \sqrt{\nu \pi} 
+\sigma} \left( 1 + \frac{1}{\nu}\left[ \frac{y-\mu}{\sigma}\right]^2 \right)^{-\frac{\nu+1}{2}}
 \]
 \pause
 We write $Y\sim t_\nu(\mu,\sigma^2)$. 
@@ -197,7 +198,7 @@ We write $Y\sim t_\nu(\mu,\sigma^2)$.
 
 \subsection{Probability density function - graphically}
 \begin{frame}[t]
-\frametitle{$T$ probability density function}
+\frametitle{Generalized Student's $t$ probability density function}
 \bc
 <<>>=
 d <- expand.grid(nu = 10,
@@ -211,8 +212,8 @@ d <- expand.grid(nu = 10,
 
 ggplot(d, aes(x=x, y = pdf, group = musigma, color = mu, linetype = sigma)) +
   geom_line() + 
-  labs(y = "Probablity density function, f(x)",
-       title = expression(paste("Student ",t[10]," random variables")),
+  labs(y = "Probablity density function, p(x)",
+       title = expression(paste("Student's ",t[10]," random variables")),
        linetype = expression(paste("Scale, ", sigma)),
        color = expression(paste("Location, ", mu))) +
   theme_bw()
@@ -223,9 +224,9 @@ ggplot(d, aes(x=x, y = pdf, group = musigma, color = mu, linetype = sigma)) +
 
 
 
-\subsection{Relationships to Cauchy}
+\subsection{$t$ with 1 degree of freedom}
 \begin{frame}[t]
-\frametitle{Relationships to Cauchy}
+\frametitle{$t$ with 1 degree of freedom}
 If $T \sim t_1(\mu,\sigma^2)$, then $T$ has a \alert{Cauchy} distribution 
 \pause and we write 
 \[ 
@@ -243,12 +244,10 @@ A Cauchy random variable has no mean or variance.
 \frametitle{As degrees of freedom increases}
 If $T_\nu \sim t_\nu(\mu,\sigma^2)$, 
 \pause 
-then as $\nu \to \infty$
+then 
 \[ 
-\lim_{\nu\to\infty} T_\nu \stackrel{d}{=} X
+\lim_{\nu\to\infty} T_\nu \pause \stackrel{d}{=} X \sim N(\mu,\sigma^2)
 \]
-\pause 
-where $X \sim N(\mu,\sigma^2)$.
 \end{frame}
 
 
@@ -266,7 +265,7 @@ We calculate the sample mean
 \pause
 and the sample variance
 \[
-S^2 = \frac{1}{n} \sum_{i=1}^n (X_i-\overline{X})^2.
+S^2 = \frac{1}{n-1} \sum_{i=1}^n (X_i-\overline{X})^2.
 \]
 \pause
 Then 
@@ -292,14 +291,14 @@ X \sim t_\nu(\mu,s^2/n)
 \bc 
 which is obtained by 
 \[ 
-f_x(x) = \int f_{x|\sigma^2}(x|\sigma^2) f_{\sigma^2}(\sigma^2) d\sigma^2
+p_x(x) = \int p_{x|\sigma^2}(x|\sigma^2) p_{\sigma^2}(\sigma^2) d\sigma^2
 \]
 \pause
 where
 \begin{itemize}
-\item $f_x$ is the marginal density for $x$
-\item $f_{x|\sigma^2}$ is the conditional density for $x$ given $\sigma^2$, and
-\item $f_{\sigma^2}$ is the marginal density for $\sigma^2$.
+\item $p_x$ is the marginal density for $x$
+\item $p_{x|\sigma^2}$ is the conditional density for $x$ given $\sigma^2$, and
+\item $p_{\sigma^2}$ is the marginal density for $\sigma^2$.
 \end{itemize}
 \nc\ec
 \end{frame}
@@ -310,13 +309,21 @@ where
 \subsection{Summary}
 \begin{frame}[t]
 \frametitle{Summary}
-Student $t$ random variable:
+\bc
+Student's $t$ random variable:
 \begin{itemize}[<+->]
-\item $T \sim t_\nu(\mu,\sigma^2), \, \sigma > 0 $
-\item $f(x) = \frac{\lambda^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\lambda x},\, x > 0$
+\item $T \sim t_\nu(\mu,\sigma^2), \, \nu, \sigma > 0 $
 \item $E[X] = \mu, \, \nu > 1$
 \item $Var[X] = \frac{\nu}{\nu-2}\sigma^2, \, \nu > 2$
+\item Relationships to other distributions
+  % \begin{itemize}
+  % \item $t_1(\mu,\sigma^2) \stackrel{d}{=} Ca(\mu,\sigma^2)$
+  % \item $\lim_{\nu\to\infty} t_\nu(\mu,\sigma^2) \stackrel{d}{=} X \sim N(\mu,\sigma^2)$
+  % \item $X_i \iid N(\mu,\sigma^2), \qquad (\overline{X}-\mu)/(S/\sqrt{n}) \sim t_\nu$
+  % \item $X|\sigma^2 \sim N(\mu,\sigma^2/n), \sigma^2 \sim IG\left(\frac{\nu}{2}, \frac{\nu}{2}s^2\right)$ \\ $\implies X \sim t_\nu(\mu,s^2/n)$
+  % \end{itemize}
 \end{itemize}
+\nc\ec
 \end{frame}
 
 \end{document}
