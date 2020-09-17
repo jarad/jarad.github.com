@@ -44,7 +44,7 @@ you can find them
 |Likelihood|[pdf](Inference/I02-Likelihood/I02-Likelihood.pdf)|[R](Inference/I02-Likelihood/I02-Likelihood.R)|[Statistical models](https://youtu.be/5KnJ-uVaoLE)|---|
 |---|---|---|[Likelihood](https://youtu.be/m7I7baoDuuo)|---|
 |---|---|---|[Maximum likelihood estimators](https://youtu.be/vz34FpuLhsA)|---|
-|Bayesian parameter estimation|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.R)|[Bayesian parameter estimation](https://youtu.be/N89l8tlqx2w)|
+|Bayesian parameter estimation|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.R)|[Bayesian parameter estimation](https://youtu.be/xRbrg0P2xv8)|
 |Exponential distribution|[pdf](Probability/Distributions/Exponential/Exponential.pdf)|[R](Probability/Distributions/Exponential/Exponential.R)|[Exponential](https://youtu.be/e5vCX4uCGvY)|---|
 |Gamma distribution|[pdf](Probability/Distributions/Gamma/Gamma.pdf)|[R](Probability/Distributions/Gamma/Gamma.R)|[Gamma](https://youtu.be/YkF3D8OHZwc)|---|
 |Inverse gamma distribution|[pdf](Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf)|[R](Probability/Distributions/Inverse_gamma/Inverse_gamma.R)|[Inverse_gamma](https://youtu.be/pe7kgPNCWOs)|---|
