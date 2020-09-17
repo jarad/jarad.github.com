@@ -13,19 +13,18 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=6, fig.height=4.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=FALSE,
-               cache=TRUE)
+               cache=FALSE)
 options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
 library("tidyverse")
-library("MCMCpack") # for dinvgamma function
 @
 
 <<set_seed, echo=FALSE>>=
@@ -39,7 +38,33 @@ set.seed(20190222)
 \end{frame}
 
 
-\section{Bayesian parameter estimation in a normal model}
+\section{Bayesian parameter estimation}
+\begin{frame}[t]
+\frametitle{Bayesian parameter estimation}
+Recall that Bayesian parameter estimation involves
+\[ 
+p(\theta|y) = \frac{\alert<6->{p(y|\theta)}p(\theta)}{p(y)}
+\uncover<4->{= \frac{\alert<6->{p(y|\theta)}p(\theta)}{\int \alert<6->{p(y|\theta)}p(\theta) d\theta)}}
+\]
+\pause
+\bc
+with 
+\begin{itemize}
+\item posterior $p(\theta|y)$ 
+\item prior $p(\theta)$
+\item model $p(y|\theta)$ \pause
+\item prior predictive $p(y)$
+\end{itemize}
+
+\vspace{0.2in} \pause \pause
+
+For this video,
+$\theta = (\mu,\sigma^2)$ and 
+\[ y|\mu,\sigma^2 \sim N(\mu,\sigma^2).\]
+\nc\ec
+\end{frame}
+
+\subsection{Normal model}
 \begin{frame}[t]
 \frametitle{Bayesian parameter estimation in a normal model}
 
@@ -239,360 +264,277 @@ sample_mean     = mean(yield_data$yield)
 sample_variance = var(yield_data$yield)
 @
 \pause
-Use these sufficient statistics to calculate posterior means and variances:
+\bc
+Use these sufficient statistics to calculate:
+\begin{itemize}
+\item posterior densities
+\item posterior means 
+\item credible intervals
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+\subsection{Posterior densities}
+\begin{frame}[t,fragile]
+\frametitle{Posterior density for $\mu$}
+\bc
+<<>>=
+my_dt <- function(x, df, mu, sd) {
+  dt((x-mu)/sd, df = df)/sd
+}
+sd = sqrt((n-1)*sample_variance / (n-3) / n)
+
+mean_posterior_density =
+  ggplot(data.frame(x = c(sample_mean - 4*sd,
+                          sample_mean + 4*sd)),
+         aes(x=x)) +
+  stat_function(fun = my_dt, 
+                args = list(df = n-1, 
+                            mu = sample_mean, 
+                            sd = sd)) +
+  labs(title = "Posterior density for population mean",
+       x = "Mean yield (bushels per acre)",
+       y = "Posterior probability density function") +
+  theme_bw()
+
+mean_posterior_density
+@
+\nc\ec
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Posterior density for $\sigma^2$}
+\bc
+<<>>=
+dinvgamma <- function(x, shape, scale = 1) {
+  dgamma(1/x, shape = shape, rate = scale)/x
+}
+
+variance_posterior_density = 
+ggplot(data.frame(x = c(0.1,5*sample_variance)),
+       aes(x=x)) +
+  stat_function(fun = dinvgamma, 
+                args = list(shape = (n-1)/2, scale = (n-1)*sample_variance/2)) +
+  labs(title = "Posterior density for population variance",
+       x = "Variance of yield (bushels per acre)^2",
+       y = "Posterior probability density function") +
+  theme_bw()
+
+variance_posterior_density 
+@
+\nc\ec
+\end{frame}
+
+
+\subsection{Posterior means }
+\begin{frame}[t,fragile]
+\frametitle{Posterior means }
+
+\small
+
 \bc
 <<echo=TRUE>>=
-# Posterior mean for population yield mean, E[mu|y]
+# Posterior mean of population yield mean, E[mu|y]
 sample_mean
-
-# Posterior mean for population yield variance
+@
+Posterior mean for $\mu$ is $E[\mu|y] = \Sexpr{round(sample_mean)}$.
+\pause
+<<echo=TRUE>>=
+# Posterior mean of population yield variance
 post_mean_var = (n-1)*sample_variance / (n-3)
 post_mean_var
+@
+Posterior mean for $\sigma^2$ is 
+$E[\sigma^2|y] = \Sexpr{round(post_mean_var)}$.
+% \pause
+% <<echo=TRUE>>=
+% # Posterior variance of population yield mean, Var[mu|y]
+% post_mean_var / n
+% @
+% Posterior variance for $\mu$ is $Var[\mu|y] = \Sexpr{round(post_mean_var / n)}$.
+\nc\ec
+\end{frame}
 
-# Posterior variance for population yield mean, Var[mu|y]
-post_mean_var / n
+\subsection{Credible intervals}
+\begin{frame}[t,fragile]
+\frametitle{Credible intervals}
+\vspace{-0.2in}
+\bc
+<<echo = TRUE>>=
+# 95% credible interval for the population mean
+a = 0.05
+mean_ci = sample_mean + c(-1,1) *  qt(1-a/2, df = n-1) * sqrt(sample_variance/n)
+mean_ci
+@
+
+So a 95\% credible interval for $\mu$ is 
+(\Sexpr{round(mean_ci[1])},\Sexpr{round(mean_ci[2])}).
+
+\vspace{0.1in} \pause
+
+<<echo = TRUE>>=
+# 95% credible interval for the population variance
+var_ci = qinvgamma(c(a/2, 1-a/2), 
+                   shape = (n-1)/2, 
+                   scale = (n-1)*sample_variance/2)
+var_ci
+@
+
+\vspace{0.1in} \pause
+
+So a 95\% credible interval for $\sigma^2$ is 
+(\Sexpr{round(var_ci[1])},\Sexpr{round(var_ci[2])}).
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[t,fragile]
+\frametitle{Posterior density for $\mu$}
+\bc
+<<>>=
+mean_posterior_density +
+  geom_vline(xintercept = sample_mean, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = mean_ci, color = "red")
+@
+\nc\ec
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Posterior density for $\sigma^2$}
+\bc
+<<>>=
+variance_posterior_density +
+  geom_vline(xintercept = (n-1)*sample_variance/(n-3), color = "red", linetype = "dashed") +
+  geom_vline(xintercept = var_ci, color = "red") 
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Posterior for the standard deviation}
+\begin{frame}[t,fragile]
+\frametitle{Posterior for the standard deviation, $\sigma$}
+\small
+We found
+\begin{itemize} \small
+\item $E[\sigma^2|y] = \Sexpr{round(post_mean_var)}$
+\item 95\% CI for $\sigma^2$ is $(\Sexpr{paste(round(var_ci), sep=", ")})$
+\end{itemize}
+but these values have units of (bushels/acre)$^2$.
+
+\vspace{0.05in} \pause
+
+The standard deviation $\sigma = \sqrt{\sigma^2}$ would have units
+(bushels/acre).
+
+\vspace{0.05in} \pause
+\bc
+For credible intervals (or any quantile),
+we can compute the square root of the endpoints since
+\[
+P(\sigma^2 < c^2) = P(\sigma < c).
+\]
+
+\vspace{0.1in} \pause
+
+Find the density through transformations of random variables.
+\pause
+In R code,
+<<echo=TRUE>>=
+dsqrtinvgamma = function(x, shape, scale) {
+  dinvgamma(x^2, shape, scale)*2*x
+}
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[t,fragile]
+\frametitle{Posterior for the standard deviation, $\sigma$}
+<<echo=TRUE>>=
+# Posterior median and 95% CI for population yield standard deviation
+sd_median = sqrt(qinvgamma(.5, shape = (n-1)/2, scale = (n-1)*sample_variance/2))
+sd_median
+@
+
+\pause
+
+So the posterior median for $\sigma$ is \Sexpr{round(sd_median)}.
+
+\pause
+
+\bc
+<<echo=TRUE>>=
+# Posterior 95% CI for the population yield standard deviation
+sd_ci = sqrt(var_ci)
+sd_ci
+@
+
+\pause
+
+So a posterior 95\% credible interval for $\sigma$ is 
+\Sexpr{paste(round(sd_ci), sep=", ")}.
+\nc\ec
+\end{frame}
+
+\begin{frame}[t,fragile]
+\frametitle{Posterior for the standard deviation, $\sigma$}
+\bc
+<<>>=
+ggplot(data.frame(x=c(0.1, 1.5*max(sqrt(var_ci)))), aes(x=x)) +
+  stat_function(fun = dsqrtinvgamma,
+                args = list(shape = (n-1)/2,
+                            scale = (n-1)*sample_variance/2)) +
+  # geom_vline(xintercept = sd_median,
+  #            color = "red", linetype = "dashed") +
+  geom_vline(xintercept = sd_ci, color = "red") +
+  labs(title = "Posterior density for population standard deviation",
+       x = "Standard deviation of yield (bushels per acre)",
+       y = "Posterior probability density function") +
+  theme_bw()
 @
 \nc\ec
 \end{frame}
 
 
 % 
-% 
-% 
-% 
-% 
-% % \subsection{Marginal posterior for the mean}
-% % \begin{frame}[t]
-% % \frametitle{Focusing on $\mu$}
-% % 
-% % Typically, the main quantity of interest in the normal model is the mean, $\mu$.
-% % \pause
-% % Thus, we are typically interested in the marginal posterior for $\mu$:
-% % \pause
-% % \[
-% % p(\mu|y) = \pause \int p(\mu|\sigma^2,y)p(\sigma^2|y) d\sigma^2.
-% % \]
-% % \pause
-% % If
-% % \[
-% % \mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) \quad \mbox{and} \quad
-% % \sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right),
-% % \]
-% % then
-% % \[
-% % \mu|y \sim t_{n-1}(\overline{y}, s^2/n)
-% % \]
-% % \pause
-% % that is, $\mu|y$ has a $t$ distribution with $n-1$ degrees of freedom, location
-% % parameter $\overline{y}$ and scale parameter $s^2/n$.
-% % 
-% % \end{frame}
-% 
-% 
-% 
-% \subsection{Posterior density for the mean}
+% \section{Summary}
 % \begin{frame}[t,fragile]
-% \frametitle{$p(\mu|y)$}
-% <<fig.height=4, echo=TRUE>>=
-% curve(dt((x-ybar)/(s/sqrt(n)), df = n-1)/(s/sqrt(n)), 
-%       from = ybar - 5*s/sqrt(n), to = ybar + 5*s/sqrt(n),
-%       xlab = "Mean yield (bushels/acre)" , ylab = "density",
-%       main = "Posterior for mean corn yield in Iowa")
-% @
-% \end{frame}
-% 
-% 
-% 
-% 
-% 
-
-% 
-% 
-% \subsection{Probability statements about the mean}
-% \begin{frame}[t,fragile]
-% \frametitle{Probability (belief) statements about $\mu$}
-% 
-% \small
-% 
-% In order to make probability (belief) statements about the mean, 
-% we need to standardize, \pause e.g.
-% \[ 
-% P(\mu < c|y) = \pause 
-% P\left(\left.\frac{\mu-\overline{y}}{s/\sqrt{n}} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right) \pause 
-% = P\left(\left.T_{n-1} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right)
-%  \]
-% were $T_{n-1}$ is a standard $t$ with $n-1$ degrees of freedom.
-% \pause
-% Here are some probability statements and the calculations in R:
-% 
-% \pause
-% 
-% $P(\mu<200|y)$:
-% <<echo=TRUE>>=
-% pt((200-ybar)/(s/sqrt(n)), df = n-1)
-% @
-% 
-% $P(180<\mu<200|y)$:
-% <<echo=TRUE>>=
-% pt((200-ybar)/(s/sqrt(n)), df = n-1) - pt((180-ybar)/(s/sqrt(n)), df = n-1)
-% diff(pt((c(180,200)-ybar)/(s/sqrt(n)), df = n-1))
-% @
-% \end{frame}
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% \subsection{Posterior for the variance}
-% \begin{frame}[t]
-% \frametitle{Posterior for $\sigma^2$}
-% 
-% We already have the posterior distribution for $\sigma^2$\pause, namely
-% \[
-% \sigma^2|y \sim IG\left(\frac{n-1}{2}, 
-% \frac{(n-1)s^2}{2}\right).
-% \]
-% 
-% \end{frame}
-% 
-% 
-% \subsection{Posterior density for the variance}
-% \begin{frame}[t,fragile]
-% \frametitle{$p(\mu|y)$}
-% <<fig.height=4, echo=TRUE>>=
-% curve(MCMCpack::dinvgamma(x, shape = (n-1)/2, scale = (n-1)*s^2/2), 
-%       from = 0, to = 2000,
-%       xlab = "Variance of yield (bushels/acre)^2" , ylab = "density",
-%       main = "Posterior for variance in corn yield in Iowa")
-% @
-% \end{frame}
-% 
-% 
-% \subsection{Posterior expectation for the variance}
-% \begin{frame}[t]
-% \frametitle{$E[\sigma^2|y]$}
-% 
-% Since the marginal posterior for $\sigma^2$ is 
-% \[
-% \sigma^2|y \sim IG\left(\frac{n-1}{2}, 
-% \frac{(n-1)s^2}{2}\right),
-% \]
-% \pause
-% the
-% \[
-% E[\sigma^2|y] \pause 
-% = \frac{(n-1)s^2/2}{(n-1)/2-1} \pause 
-% = \frac{(n-1)s^2}{n-3}.
-% \]
-% 
-% \end{frame}
-% 
-% 
-% 
-% 
-% \subsection{Credible intervals for the variance}
-% \begin{frame}[t,fragile]
-% \frametitle{CIs for $\sigma^2$}
-% 
-% For some reason, nobody has created a function to calculate the quantiles of
-% an inverse gamma. \pause So here is one
-% 
-% <<qinvgamma, echo=TRUE>>=
-% qinvgamma <- function(p, shape, scale = 1) {
-%   1/qgamma(1-p, shape = shape, rate = scale)
-% }
-% @
-% 
-% Using this function, we can calculate credible intervals. 
-% \pause
-% For example, an 80\% equal-tail credible interval for $\sigma^2$ is 
-% 
-% <<echo=TRUE>>=
-% a <- 0.2
-% qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*s^2/2)
-% @
-% \end{frame}
-% 
-% 
-% \subsection{Probability statements for the variance}
-% \begin{frame}[t,fragile]
-% \frametitle{Probability (belief) statements for $\sigma^2$}
-% 
-% In addition to no quantile function, there is no cdf function, but here is one
-% based on the fact that 
-% \[
-% P(\sigma^2<c|y) \pause
-% = P\left(\left.\frac{1}{\sigma^2} > \frac{1}{c}\right|y\right)
-% \]
-% \pause
-% <<pinvgamma, echo=TRUE>>=
-% pinvgamma <- function(c, shape, scale = 1) {
-%   1-pgamma(1/c, shape = shape, rate = scale)
-% }
-% @
-% 
-% \pause
-% 
-% Some example probability (belief) statements are:
-% 
-% $P(\sigma^2<500|y)$:
-% <<echo=TRUE>>=
-% pinvgamma(500, shape = (n-1)/2, scale = (n-1)*s^2/2)
-% @
-% \pause
-% $P(100<\sigma^2<500|y)$:
-% <<echo=TRUE>>=
-% diff(pinvgamma(c(100,500), shape = (n-1)/2, scale = (n-1)*s^2/2))
-% @
-% 
-% \end{frame}
-% 
-% 
-% \subsection{Credible intervals for the standard deviation}
-% \begin{frame}[t,fragile]
-% \frametitle{CIs for $\sigma$}
-% 
-% Since the standard deviation has the same units of the data, 
-% it is often easier to interpret.
-% \pause
-% Thus, we would prefer to create credible intervals for the standard deviation.
-% \pause
-% To do so, just calculate credible intervals for the for the variance and take
-% the square root.
-% \pause
-% For example, an 80\% equal-tail credible interval for the standard deviation is 
-% <<echo=TRUE>>=
-% a <- 0.2
-% ci_variance = qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*s^2/2)
-% sqrt(ci_variance)
-% @
-% 
-% \pause
-% 
-% This trick works for any monotonic function and any quantile. 
-% 
-% \end{frame}
-% 
-% 
-% \subsection{Probability statements for the standard deviation}
-% \begin{frame}[t,fragile]
-% \frametitle{$P(\sigma<c|y)$}
-% 
-% Since $\sigma>0$, we have 
-% \[
-% P(\sigma<c|y) = P(\sigma^2<c^2|y)
-% \]
-% \pause
-% and we can use this to calculate probability statements for the standard deviation. 
-% 
-% \vspace{0.1in} \pause
-% 
-% Some example probability (belief) statements are:
-% 
-% $P(\sigma<20|y) = P(\sigma^2<20^2|y)$:
-% <<echo=TRUE>>=
-% pinvgamma(20^2, shape = (n-1)/2, scale = (n-1)*s^2/2)
-% @
-% \pause
-% $P(20<\sigma<25|y)=P(20^2<\sigma^2<25^2|y)$:
-% <<echo=TRUE>>=
-% diff(pinvgamma(c(20,25)^2, shape = (n-1)/2, scale = (n-1)*s^2/2))
-% @
-% 
-% \end{frame}
-% 
-% 
-% \subsection{Posterior expectation of the standard deviation}
-% \begin{frame}[t,fragile]
-% \frametitle{$E[\sigma|y]$}
-% 
-% \small
-% 
-% To calculate $E[\sigma|y]$ exactly you will need to learn how to take 
-% \alert{transformations} of random variables which you would learn in STAT 588.
-% \pause
-% Instead, we will use a Monte Carlo (simulation) approach which will provide 
-% us an estimate. 
-% \pause
-% Specifically for $m=1,\ldots,M$ with $M$ large, simulate 
-% \[
-% \sigma^{2(m)} \sim IG\left( \frac{n-1}{2}, \frac{(n-1)s^2}{2} \right).
-% \]
-% Then 
-% \[ \begin{array}{rl}
-% E[\sigma^2|y] &\approx \frac{1}{M} \sum_{m=1}^M \sigma^{2(m)} \\
-% E[\sigma\phantom{^2}|y] &\approx \frac{1}{M} \sum_{m=1}^M \sqrt{\sigma^{2(m)}} \\
-% \end{array} \]
-% 
-% \pause
-% 
-% <<echo=TRUE>>=
-% sigma2 <- MCMCpack::rinvgamma(1e5, shape = (n-1)/2, scale = (n-1)*s^2/2)
-% c(mean(sigma2), (n-1)*s^2/(n-3)) # estimate first, truth second
-% mean(sqrt(sigma2))               # only have an estimate
-% @
-% 
-% You can use the CLT to determine how good this estimate is.
-% 
-% \end{frame}
-% 
-% 
-% 
-% 
-% 
-% 
-% \subsection{Summary}
-% \begin{frame}[t]
-% \frametitle{Default analysis for normal model}
-% 
-% Let $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$ 
-% \pause 
-% with default prior $p(\mu,\sigma^2) \propto \frac{1}{\sigma^2}\I(0<\sigma^2)$.
-% \pause
-% Then the posterior is 
-% \[ 
-% \mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) 
-% \quad \mbox{and} \quad
-% \sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
-% \]
-% \pause
-% with a marginal posterior for $\mu$ of 
+% \frametitle{Bayesian inference in a normal model}
+% \begin{itemize}
+% \item Prior: $p(\mu,\sigma^2) = 1/\sigma^2$
+% \item Posterior:
 % \[
 % \mu|y \sim t_{n-1}(\overline{y}, s^2/n)
+% \qquad \mbox{and} \qquad
+% \sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
 % \]
-% \pause
-% The Bayes estimators are
-% \[ \begin{array}{rll}
-% E[\mu|y] &= \overline{y} \\
-% E[\sigma^2|y] &= \frac{(n-1)s^2}{n-3} & n>3
-% \end{array} \]
 % 
+% <<eval=FALSE>>=
+% # Sufficient statistics
+% n               = length(y)
+% sample_mean     = mean(y)
+% sample_variance = var(y)
 % 
+% # Posterior expectations
+% sample_mean                   # mu
+% (n-1)*sample_variance / (n-3) # sigma^2
+% 
+% # Posterior medians
+% var_median = qinvgamma(.5, shape = (n-1)/2, scale = (n-1)*sample_variance/2)
+% sd_median  = sqrt(median_var)
+% 
+% # Posterior credible intervals
+% var_ci = qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*sample_variance/2)
+% sd_ci  = sqrt(var_ci)
+% @
+% 
+% \end{itemize}
 % \end{frame}
-% 
-% 
-% 
-% % \begin{frame}
-% % \frametitle{Informative Bayesian analysis}
-% %   The joint conjugate prior for $\mu$ and $\sigma^2$ is
-% %   \[ \mu|\sigma^2\phantom{,y} \sim N(m,\sigma^2/k) \qquad \sigma^2\phantom{,y} \sim IG(d/2,dv^2/2) \]
-% %   \pause where $v^2$ serves as a prior guess about $\sigma^2$ and $d$ controls how certain we are about that guess.
-% % 
-% %   \vspace{0.2in} \pause
-% % 
-% %   The posterior under this prior is
-% %   \[ \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim IG(d'/2,d'(v')^2/2) \]
-% %   \pause where
-% %   \[ \begin{array}{rl}
-% %   k' &= k+n \\
-% %   m' &= [km + n\overline{y}]/k' \\
-% %   d' &= d+n \\
-% %   d'(v')^2 &= dv^2 + (n-1)s^2 + \frac{kn}{k'}(\overline{y}-m)^2
-% %   \end{array} \]
-% % \end{frame}
-
 
 
 
