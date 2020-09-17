@@ -5,10 +5,10 @@
 \input{../../frontmatter}
 \input{../../commands}
 
-\title{$\mathrm{I}$4 - Normal model}
+\title{$\mathrm{I}$4 - Bayesian parameter estimation in a normal model}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
@@ -46,17 +46,19 @@ Recall that Bayesian parameter estimation involves
 p(\theta|y) = \frac{\alert<6->{p(y|\theta)}p(\theta)}{p(y)}
 \uncover<4->{= \frac{\alert<6->{p(y|\theta)}p(\theta)}{\int \alert<6->{p(y|\theta)}p(\theta) d\theta)}}
 \]
-\pause
+
+\vspace{-0.2in} \pause
+
 \bc
 with 
 \begin{itemize}
-\item posterior $p(\theta|y)$ 
-\item prior $p(\theta)$
-\item model $p(y|\theta)$ \pause
-\item prior predictive $p(y)$
+\item posterior $p(\theta|y)$,
+\item prior $p(\theta)$,
+\item model $\alert<6->{p(y|\theta)}$, \pause and
+\item prior predictive $p(y)$.
 \end{itemize}
 
-\vspace{0.2in} \pause \pause
+\vspace{0.1in} \pause \pause
 
 For this video,
 $\theta = (\mu,\sigma^2)$ and 
@@ -259,9 +261,9 @@ ggplot(yield_data, aes(x = yield)) +
 \begin{frame}[t,fragile]
 \frametitle{Calculate sufficient statistics}
 <<echo=TRUE>>=
-n               = length(yield_data$yield)
-sample_mean     = mean(yield_data$yield)
-sample_variance = var(yield_data$yield)
+n               = length(yield_data$yield); n
+sample_mean     = mean(yield_data$yield);   sample_mean
+sample_variance = var(yield_data$yield);    sample_variance
 @
 \pause
 \bc
@@ -489,8 +491,8 @@ ggplot(data.frame(x=c(0.1, 1.5*max(sqrt(var_ci)))), aes(x=x)) +
   stat_function(fun = dsqrtinvgamma,
                 args = list(shape = (n-1)/2,
                             scale = (n-1)*sample_variance/2)) +
-  # geom_vline(xintercept = sd_median,
-  #            color = "red", linetype = "dashed") +
+  geom_vline(xintercept = sd_median,
+             color = "red", linetype = "dashed") +
   geom_vline(xintercept = sd_ci, color = "red") +
   labs(title = "Posterior density for population standard deviation",
        x = "Standard deviation of yield (bushels per acre)",
@@ -501,40 +503,44 @@ ggplot(data.frame(x=c(0.1, 1.5*max(sqrt(var_ci)))), aes(x=x)) +
 \end{frame}
 
 
-% 
-% \section{Summary}
-% \begin{frame}[t,fragile]
-% \frametitle{Bayesian inference in a normal model}
-% \begin{itemize}
-% \item Prior: $p(\mu,\sigma^2) = 1/\sigma^2$
-% \item Posterior:
-% \[
-% \mu|y \sim t_{n-1}(\overline{y}, s^2/n)
-% \qquad \mbox{and} \qquad
-% \sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
-% \]
-% 
-% <<eval=FALSE>>=
-% # Sufficient statistics
-% n               = length(y)
-% sample_mean     = mean(y)
-% sample_variance = var(y)
-% 
-% # Posterior expectations
-% sample_mean                   # mu
-% (n-1)*sample_variance / (n-3) # sigma^2
-% 
-% # Posterior medians
-% var_median = qinvgamma(.5, shape = (n-1)/2, scale = (n-1)*sample_variance/2)
-% sd_median  = sqrt(median_var)
-% 
-% # Posterior credible intervals
-% var_ci = qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*sample_variance/2)
-% sd_ci  = sqrt(var_ci)
-% @
-% 
-% \end{itemize}
-% \end{frame}
+
+\section{Summary}
+\begin{frame}[t,fragile]
+\frametitle{Bayesian inference in a normal model}
+\begin{itemize}
+\item Prior: $p(\mu,\sigma^2) = 1/\sigma^2$
+\item Posterior:
+\[
+\mu|y \sim t_{n-1}(\overline{y}, s^2/n)
+\qquad \mbox{and} \qquad
+\sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
+\]
+
+\vspace{-0.2in} \pause
+
+\bc
+<<eval=FALSE, echo=TRUE>>=
+# Sufficient statistics
+n               = length(y)
+sample_mean     = mean(y)
+sample_variance = var(y)
+
+# Posterior expectations
+sample_mean                   # mu
+(n-1)*sample_variance / (n-3) # sigma^2
+
+# Posterior medians
+var_median = qinvgamma(.5, shape = (n-1)/2, scale = (n-1)*sample_variance/2)
+sd_median  = sqrt(median_var)
+
+# Posterior credible intervals
+sample_mean + c(-1,1) *  qt(1-a/2, df = n-1) * sqrt(sample_variance/n)
+var_ci = qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*sample_variance/2)
+sd_ci  = sqrt(var_ci)
+@
+\nc\ec
+\end{itemize}
+\end{frame}
 
 
 
