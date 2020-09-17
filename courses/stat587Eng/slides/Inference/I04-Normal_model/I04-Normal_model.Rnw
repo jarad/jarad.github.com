@@ -5,17 +5,17 @@
 \input{../../frontmatter}
 \input{../../commands}
 
-\title{$\mathrm{I}$04 - Normal model}
+\title{$\mathrm{I}$4 - Normal model}
 
-% \setbeamertemplate{background}
-% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
                fig.width=6, fig.height=5, 
                size='tiny', 
-               out.width='0.8\\textwidth', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=FALSE,
@@ -39,10 +39,160 @@ set.seed(20190222)
 \end{frame}
 
 
-\section{Normal model}
-\subsection{Example data}
+\section{Bayesian parameter estimation in a normal model}
+\begin{frame}[t]
+\frametitle{Bayesian parameter estimation in a normal model}
+
+\small
+
+\pause
+Let $Y_i \ind N(\mu,\sigma^2)$ 
+\pause 
+and the default prior
+\[ p(\mu,\sigma^2)\propto \frac{1}{\sigma^2}. \]
+
+\pause
+
+\emph{Note:} This ``prior'' is not a distribution
+since its integral is not finite.
+\pause
+Nonetheless, we can still derive the following posterior
+
+\vspace{-0.1in}
+
+\[ 
+\mu|y \sim t_{n-1}(\overline{y}, s^2/n)
+\qquad \mbox{and} \qquad
+\sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
+\]
+\pause
+where 
+\begin{itemize} \small
+\item $n$ is the sample size,
+\item $\overline{y} = \frac{1}{n} \sum_{i=1}^n y_i$ is the sample mean, and
+\item $s^2 = \frac{1}{n-1} \sum_{i=1}^n (y_i-\overline{y})^2$ is the sample variance.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Moments for the mean}
+\begin{frame}[t]
+\frametitle{Posterior for the mean}
+The posterior for the mean is 
+\[ \mu|y \sim t_{n-1}(\overline{y}, s^2/n) \]
+\pause
+and from properties of the generalized Student's $t$ distribution, 
+\pause 
+\bc
+we know
+
+\begin{itemize}
+\item $E[\mu|y] = \overline{y}$ for $n > 2$, \pause
+\item $Var[\mu|y] = \left.\frac{(n-1)s^2}{(n-3)}\right/n$ for $n > 3$,
+\end{itemize}
+
+\pause
+
+and 
+\[ 
+\frac{\overline{y} - \mu}{s/\sqrt{n}} \sim t_{n-1}.
+\]
+\nc\ec
+\end{frame}
+
+
+\subsection{Credible intervals for the mean}
 \begin{frame}[t,fragile]
-\frametitle{Example data set}
+\frametitle{Credible intervals for $\mu$}
+
+Since
+\[
+\frac{\mu-\overline{y}}{s/\sqrt{n}} \pause \sim t_{n-1}
+\]
+a $100(1-a)$\% equal-tail credible interval is
+\[
+\overline{y} \pm t_{n-1,a/2} \, s/\sqrt{n}
+\]
+\bc
+where $t_{n-1,a/2}$ is a \alert{$t$ critical value} \pause 
+such that $P(T_{n-1} < t_{n-1,a/2}) = 1-a/2$ when $T_{n-1} \sim t_{n-1}$.
+
+\vspace{0.1in} \pause
+
+For example, $t_{10-1, 0.05/2}$ is 
+<<echo = TRUE>>=
+n = 10
+a = 0.05 # 95\% CI
+qt(1-a/2, df = n-1) 
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Moments for the variance}
+\begin{frame}[t]
+\frametitle{Posterior for the variance}
+The posterior for the mean is 
+\[ \sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right) \]
+\pause
+and from properties of the inverse Gamma distribution, 
+\pause 
+\bc
+we know
+
+\begin{itemize}
+\item $E[\sigma^2|y] = \frac{(n-1)s^2}{n-3}$ for $n > 3$, 
+\end{itemize}
+
+\pause
+
+and 
+\[ 
+\left.\frac{1}{\sigma^2}\right| y \sim Ga\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
+\]
+where $(n-1)s^2/2$ is the rate parameter.
+\nc\ec
+\end{frame}
+
+
+\subsection{Credible intervals for the variance}
+\begin{frame}[t,fragile]
+\frametitle{Credible intervals for $\sigma^2$}
+
+For a $100(1-a)$\% credible interval, we need
+\[
+a/2 
+= P(\sigma^2 < L | y) 
+= P(\sigma^2 > U | y).
+\]
+\pause
+To do this, we will find 
+\[
+a/2 
+= P\left(\left.\frac{1}{\sigma^2} > \frac{1}{L} \right| y\right) 
+= P\left(\left.\frac{1}{\sigma^2} < \frac{1}{U} \right| y\right).
+\]
+\pause
+\bc
+Here is a function that performs this computation
+<<qinvgamma, echo=TRUE>>=
+qinvgamma <- function(p, shape, scale = 1) {
+  1/qgamma(1-p, shape = shape, rate = scale)
+}
+@
+\nc\ec
+\end{frame}
+
+
+
+
+
+
+\section{Yield data analysis}
+\begin{frame}[t,fragile]
+\frametitle{Yield data}
 
 <<>>=
 n <- 9
@@ -50,505 +200,398 @@ d <- data.frame(farm = paste0("farm",1:n), yield = rnorm(n, 200, 25))
 write_csv(d, path="yield.csv")
 @
 
-Suppose we have a random sample of Iowa farms and we calculate corn yield in 
-bushels per acre on those farms.
+Suppose we have a random sample of \Sexpr{n} Iowa farms \pause
+and we obtain corn yield in bushels per acre on those farms.
 \pause
 We are interested in making statements about the mean yield and the variability
-in yield.
-\pause 
+in yield for Iowa farms.
+\pause
+\bc
 <<data, echo=TRUE>>=
-d <- read.csv("yield.csv")
-names(d)
-(n <- length(d$yield))
-(ybar <- mean(d$yield))
-(s <- sd(d$yield))
+yield_data <- read.csv("yield.csv")
+nrow(yield_data)
+yield_data
 @
-
+\nc\ec
 \end{frame}
 
 
-
-\subsection{Posterior}
-\begin{frame}[t,fragile]
-\frametitle{Normal model (unknown population mean and variance)}
-
-\small
-
-Let $Y_i$ be the yield on farm $i$.
-\pause
-Assume $Y_i \ind N(\mu,\sigma^2)$ and the default prior
-$p(\mu,\sigma^2)\propto \frac{1}{\sigma^2} \I(\sigma^2>0)$.
-
-\vspace{0.1in} \pause
-
-This ``prior'' is actually not a distribution at all,
-since its integral is not finite.
-\pause
-Nonetheless, we can still derive a posterior.
-
-\vspace{0.1in} \pause
-
-If you work through the math (lots of algebra and a little calculus),
-\pause
-you will find
-\[ \begin{array}{rl}
-\mu|\sigma^2,y &\sim N(\overline{y}, \sigma^2/n) \\
-\sigma^2|y &\sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
-\end{array} \]
-\pause
-where 
-\begin{itemize}
-\item $n$ is the number of observations,
-\item $\overline{y}$ is the sample mean, and
-\item $s^2$ is the sample variance.
-\end{itemize}
-\end{frame}
-
-
-\subsection{Marginal posterior for the mean}
+\subsection{Histogram of yield}
 \begin{frame}[t]
-\frametitle{Focusing on $\mu$}
-
-Typically, the main quantity of interest in the normal model is the mean, $\mu$.
-\pause
-Thus, we are typically interested in the marginal posterior for $\mu$:
-\pause
-\[
-p(\mu|y) = \pause \int p(\mu|\sigma^2,y)p(\sigma^2|y) d\sigma^2.
-\]
-\pause
-If
-\[
-\mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) \quad \mbox{and} \quad
-\sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right),
-\]
-then
-\[
-\mu|y \sim t_{n-1}(\overline{y}, s^2/n)
-\]
-\pause
-that is, $\mu|y$ has a $t$ distribution with $n-1$ degrees of freedom, location
-parameter $\overline{y}$ and scale parameter $s^2/n$.
-
-\end{frame}
-
-
-\subsection{T distribution}
-\begin{frame}[t]
-\frametitle{$t$ distribution}
-
-\begin{definition}
-A $t$ distributed random variable, $T\sim t_v(m,s^2)$ has probability density function
-\[ f_T(t) = \frac{\mathrm{\Gamma}([v+1]/2)}{\mathrm{\Gamma}(v/2)\sqrt{v\pi}s}\left(1+\frac{1}{v}\left[\frac{x-m}{s}\right]^2\right)^{-(v+1)/2} \]
-\pause
-with degrees of freedom $v$, location $m$, and scale $s^2$.
-\pause
-It has
-\[ \begin{array}{rll}
-E[T] &= m & v>1 \\
-Var[T] &= s^2 \frac{v}{v-2} & v>2.
-\end{array} \]
-\pause
-In addition,
-\[
-t_v(m,s^2) \stackrel{d}{\to} N(m,s^2) \quad \mbox{as} \quad
-v\to\infty
-\]
-\pause
-and a \alert{standard $t$} has $m=0$ and $s=1$.
-
-\end{definition}
-
-\end{frame}
-
-
-
-\begin{frame}[t,fragile]
-\frametitle{$t$ distribution as $v$ changes}
-<<t_distribution, fig.height=4.5, warning=FALSE>>=
-dtms = function(x,v,m=0,s=1) dt((x-m)/s,v)/s
-
-d = expand.grid(v=10^(0:2), t = seq(-3,6,by=.1)) %>%
-  mutate(density = dtms(t,v),
-         v = factor(v))
-
-ggplot(d, aes(x=t,y=density, group=v, linetype=v, color=v)) +
-  geom_line() +
-  theme(legend.position='bottom') +
+\frametitle{Histogram of yield}
+\bc
+<<>>=
+ggplot(yield_data, aes(x = yield)) + 
+  geom_histogram() + 
   theme_bw()
 @
-\end{frame}
-
-
-\subsection{Posterior density for the mean}
-\begin{frame}[t,fragile]
-\frametitle{$p(\mu|y)$}
-<<fig.height=4, echo=TRUE>>=
-curve(dt((x-ybar)/(s/sqrt(n)), df = n-1)/(s/sqrt(n)), 
-      from = ybar - 5*s/sqrt(n), to = ybar + 5*s/sqrt(n),
-      xlab = "Mean yield (bushels/acre)" , ylab = "density",
-      main = "Posterior for mean corn yield in Iowa")
-@
+\nc\ec
 \end{frame}
 
 
 
-
-
-\subsection{Credible intervals for the mean}
+\subsection{Calculate sufficient statistics}
 \begin{frame}[t,fragile]
-\frametitle{CIs for $\mu$}
-
-In R, there is no way to obtain $t$ credible intervals directly.
-\pause
-But we can use the fact that
-\[
-\frac{\mu-\overline{y}}{s/\sqrt{n}} \pause \sim t_{n-1}(0,1)
-\]
-to construct a 100(1-a)\% equal-tail credible interval using
-\[
-\overline{y} \pm t_{n-1,a/2} s/\sqrt{n}
-\]
-where the area to the right of $t_{n-1,a/2}$ under the pdf of a
-standard $t$ is $a/2$.
-
-\pause
-
-A 90\% equal-tail credible interval is 
-<<mu_ci, echo=TRUE>>=
-a <- 0.1
-ybar + c(-1,1)*qt(1-a/2, df=n-1)*s/sqrt(n)
-@
-
-\end{frame}
-
-
-\subsection{Probability statements about the mean}
-\begin{frame}[t,fragile]
-\frametitle{Probability (belief) statements about $\mu$}
-
-\small
-
-In order to make probability (belief) statements about the mean, 
-we need to standardize, \pause e.g.
-\[ 
-P(\mu < c|y) = \pause 
-P\left(\left.\frac{\mu-\overline{y}}{s/\sqrt{n}} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right) \pause 
-= P\left(\left.T_{n-1} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right)
- \]
-were $T_{n-1}$ is a standard $t$ with $n-1$ degrees of freedom.
-\pause
-Here are some probability statements and the calculations in R:
-
-\pause
-
-$P(\mu<200|y)$:
+\frametitle{Calculate sufficient statistics}
 <<echo=TRUE>>=
-pt((200-ybar)/(s/sqrt(n)), df = n-1)
+n               = length(yield_data$yield)
+sample_mean     = mean(yield_data$yield)
+sample_variance = var(yield_data$yield)
 @
-
-$P(180<\mu<200|y)$:
+\pause
+Use these sufficient statistics to calculate posterior means and variances:
+\bc
 <<echo=TRUE>>=
-pt((200-ybar)/(s/sqrt(n)), df = n-1) - pt((180-ybar)/(s/sqrt(n)), df = n-1)
-diff(pt((c(180,200)-ybar)/(s/sqrt(n)), df = n-1))
+# Posterior mean for population yield mean, E[mu|y]
+sample_mean
+
+# Posterior mean for population yield variance
+post_mean_var = (n-1)*sample_variance / (n-3)
+post_mean_var
+
+# Posterior variance for population yield mean, Var[mu|y]
+post_mean_var / n
 @
+\nc\ec
 \end{frame}
 
 
-
-
-
-
-
-\subsection{Posterior for the variance}
-\begin{frame}[t]
-\frametitle{Posterior for $\sigma^2$}
-
-We already have the posterior distribution for $\sigma^2$\pause, namely
-\[
-\sigma^2|y \sim IG\left(\frac{n-1}{2}, 
-\frac{(n-1)s^2}{2}\right).
-\]
-
-\end{frame}
-
-
-\subsection{Inverse-gamma distribution}
-\begin{frame}[t]
-\frametitle{Inverse-gamma distribution}
-
-\begin{definition}
-An inverse-gamma random variable, $Y \sim IG(a,b)$,
-\pause 
-has probability density function 
-\[
-\frac{b^a}{\Gamma(a)}y^{-a-1}e^{-b/y}
-\]
-with shape $a$ and scale $b$. 
-\pause
-It has 
-\[ \begin{array}{rll}
-E[Y] &= \frac{b}{a-1} & a > 1 \\
-Var[Y] &= \frac{b^2}{(a-1)^2(a-2)} & a > 2.
-\end{array} \]
-In addition, $1/Y$ is a gamma random variable with shape $a$ and rate $b$.
-\end{definition}
-\end{frame}
-
-
-\begin{frame}[t,fragile]
-\frametitle{Inverse-gamma distribution as the parameters vary}
-<<ig_distribution, fig.height=4.5, warning=FALSE>>=
-d = expand.grid(y = seq(0,10,by=0.1),
-                a = 1:4,
-                b = 1:4) %>%
-  mutate(density = MCMCpack::dinvgamma(y, shape = a, scale = b),
-         af = paste("a=",a), 
-         bf = paste("b=",b))
-
-ggplot(d, aes(x = y, y = density)) +
-  geom_line() +
-  facet_grid(af~bf) +
-  theme_bw()
-@
-\end{frame}
-
-
-
-\subsection{Posterior density for the variance}
-\begin{frame}[t,fragile]
-\frametitle{$p(\mu|y)$}
-<<fig.height=4, echo=TRUE>>=
-curve(MCMCpack::dinvgamma(x, shape = (n-1)/2, scale = (n-1)*s^2/2), 
-      from = 0, to = 2000,
-      xlab = "Variance of yield (bushels/acre)^2" , ylab = "density",
-      main = "Posterior for variance in corn yield in Iowa")
-@
-\end{frame}
-
-
-\subsection{Posterior expectation for the variance}
-\begin{frame}[t]
-\frametitle{$E[\sigma^2|y]$}
-
-Since the marginal posterior for $\sigma^2$ is 
-\[
-\sigma^2|y \sim IG\left(\frac{n-1}{2}, 
-\frac{(n-1)s^2}{2}\right),
-\]
-\pause
-the
-\[
-E[\sigma^2|y] \pause 
-= \frac{(n-1)s^2/2}{(n-1)/2-1} \pause 
-= \frac{(n-1)s^2}{n-3}.
-\]
-
-\end{frame}
-
-
-
-
-\subsection{Credible intervals for the variance}
-\begin{frame}[t,fragile]
-\frametitle{CIs for $\sigma^2$}
-
-For some reason, nobody has created a function to calculate the quantiles of
-an inverse gamma. \pause So here is one
-
-<<qinvgamma, echo=TRUE>>=
-qinvgamma <- function(p, shape, scale = 1) {
-  1/qgamma(1-p, shape = shape, rate = scale)
-}
-@
-
-Using this function, we can calculate credible intervals. 
-\pause
-For example, an 80\% equal-tail credible interval for $\sigma^2$ is 
-
-<<echo=TRUE>>=
-a <- 0.2
-qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*s^2/2)
-@
-\end{frame}
-
-
-\subsection{Probability statements for the variance}
-\begin{frame}[t,fragile]
-\frametitle{Probability (belief) statements for $\sigma^2$}
-
-In addition to no quantile function, there is no cdf function, but here is one
-based on the fact that 
-\[
-P(\sigma^2<c|y) \pause
-= P\left(\left.\frac{1}{\sigma^2} > \frac{1}{c}\right|y\right)
-\]
-\pause
-<<pinvgamma, echo=TRUE>>=
-pinvgamma <- function(c, shape, scale = 1) {
-  1-pgamma(1/c, shape = shape, rate = scale)
-}
-@
-
-\pause
-
-Some example probability (belief) statements are:
-
-$P(\sigma^2<500|y)$:
-<<echo=TRUE>>=
-pinvgamma(500, shape = (n-1)/2, scale = (n-1)*s^2/2)
-@
-\pause
-$P(100<\sigma^2<500|y)$:
-<<echo=TRUE>>=
-diff(pinvgamma(c(100,500), shape = (n-1)/2, scale = (n-1)*s^2/2))
-@
-
-\end{frame}
-
-
-\subsection{Credible intervals for the standard deviation}
-\begin{frame}[t,fragile]
-\frametitle{CIs for $\sigma$}
-
-Since the standard deviation has the same units of the data, 
-it is often easier to interpret.
-\pause
-Thus, we would prefer to create credible intervals for the standard deviation.
-\pause
-To do so, just calculate credible intervals for the for the variance and take
-the square root.
-\pause
-For example, an 80\% equal-tail credible interval for the standard deviation is 
-<<echo=TRUE>>=
-a <- 0.2
-ci_variance = qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*s^2/2)
-sqrt(ci_variance)
-@
-
-\pause
-
-This trick works for any monotonic function and any quantile. 
-
-\end{frame}
-
-
-\subsection{Probability statements for the standard deviation}
-\begin{frame}[t,fragile]
-\frametitle{$P(\sigma<c|y)$}
-
-Since $\sigma>0$, we have 
-\[
-P(\sigma<c|y) = P(\sigma^2<c^2|y)
-\]
-\pause
-and we can use this to calculate probability statements for the standard deviation. 
-
-\vspace{0.1in} \pause
-
-Some example probability (belief) statements are:
-
-$P(\sigma<20|y) = P(\sigma^2<20^2|y)$:
-<<echo=TRUE>>=
-pinvgamma(20^2, shape = (n-1)/2, scale = (n-1)*s^2/2)
-@
-\pause
-$P(20<\sigma<25|y)=P(20^2<\sigma^2<25^2|y)$:
-<<echo=TRUE>>=
-diff(pinvgamma(c(20,25)^2, shape = (n-1)/2, scale = (n-1)*s^2/2))
-@
-
-\end{frame}
-
-
-\subsection{Posterior expectation of the standard deviation}
-\begin{frame}[t,fragile]
-\frametitle{$E[\sigma|y]$}
-
-\small
-
-To calculate $E[\sigma|y]$ exactly you will need to learn how to take 
-\alert{transformations} of random variables which you would learn in STAT 588.
-\pause
-Instead, we will use a Monte Carlo (simulation) approach which will provide 
-us an estimate. 
-\pause
-Specifically for $m=1,\ldots,M$ with $M$ large, simulate 
-\[
-\sigma^{2(m)} \sim IG\left( \frac{n-1}{2}, \frac{(n-1)s^2}{2} \right).
-\]
-Then 
-\[ \begin{array}{rl}
-E[\sigma^2|y] &\approx \frac{1}{M} \sum_{m=1}^M \sigma^{2(m)} \\
-E[\sigma\phantom{^2}|y] &\approx \frac{1}{M} \sum_{m=1}^M \sqrt{\sigma^{2(m)}} \\
-\end{array} \]
-
-\pause
-
-<<echo=TRUE>>=
-sigma2 <- MCMCpack::rinvgamma(1e5, shape = (n-1)/2, scale = (n-1)*s^2/2)
-c(mean(sigma2), (n-1)*s^2/(n-3)) # estimate first, truth second
-mean(sqrt(sigma2))               # only have an estimate
-@
-
-You can use the CLT to determine how good this estimate is.
-
-\end{frame}
-
-
-
-
-
-
-\subsection{Summary}
-\begin{frame}[t]
-\frametitle{Default analysis for normal model}
-
-Let $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$ 
-\pause 
-with default prior $p(\mu,\sigma^2) \propto \frac{1}{\sigma^2}\I(0<\sigma^2)$.
-\pause
-Then the posterior is 
-\[ 
-\mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) 
-\quad \mbox{and} \quad
-\sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
-\]
-\pause
-with a marginal posterior for $\mu$ of 
-\[
-\mu|y \sim t_{n-1}(\overline{y}, s^2/n)
-\]
-\pause
-The Bayes estimators are
-\[ \begin{array}{rll}
-E[\mu|y] &= \overline{y} \\
-E[\sigma^2|y] &= \frac{(n-1)s^2}{n-3} & n>3
-\end{array} \]
-
-
-\end{frame}
-
-
-
-% \begin{frame}
-% \frametitle{Informative Bayesian analysis}
-%   The joint conjugate prior for $\mu$ and $\sigma^2$ is
-%   \[ \mu|\sigma^2\phantom{,y} \sim N(m,\sigma^2/k) \qquad \sigma^2\phantom{,y} \sim IG(d/2,dv^2/2) \]
-%   \pause where $v^2$ serves as a prior guess about $\sigma^2$ and $d$ controls how certain we are about that guess.
 % 
-%   \vspace{0.2in} \pause
 % 
-%   The posterior under this prior is
-%   \[ \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim IG(d'/2,d'(v')^2/2) \]
-%   \pause where
-%   \[ \begin{array}{rl}
-%   k' &= k+n \\
-%   m' &= [km + n\overline{y}]/k' \\
-%   d' &= d+n \\
-%   d'(v')^2 &= dv^2 + (n-1)s^2 + \frac{kn}{k'}(\overline{y}-m)^2
-%   \end{array} \]
+% 
+% 
+% 
+% % \subsection{Marginal posterior for the mean}
+% % \begin{frame}[t]
+% % \frametitle{Focusing on $\mu$}
+% % 
+% % Typically, the main quantity of interest in the normal model is the mean, $\mu$.
+% % \pause
+% % Thus, we are typically interested in the marginal posterior for $\mu$:
+% % \pause
+% % \[
+% % p(\mu|y) = \pause \int p(\mu|\sigma^2,y)p(\sigma^2|y) d\sigma^2.
+% % \]
+% % \pause
+% % If
+% % \[
+% % \mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) \quad \mbox{and} \quad
+% % \sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right),
+% % \]
+% % then
+% % \[
+% % \mu|y \sim t_{n-1}(\overline{y}, s^2/n)
+% % \]
+% % \pause
+% % that is, $\mu|y$ has a $t$ distribution with $n-1$ degrees of freedom, location
+% % parameter $\overline{y}$ and scale parameter $s^2/n$.
+% % 
+% % \end{frame}
+% 
+% 
+% 
+% \subsection{Posterior density for the mean}
+% \begin{frame}[t,fragile]
+% \frametitle{$p(\mu|y)$}
+% <<fig.height=4, echo=TRUE>>=
+% curve(dt((x-ybar)/(s/sqrt(n)), df = n-1)/(s/sqrt(n)), 
+%       from = ybar - 5*s/sqrt(n), to = ybar + 5*s/sqrt(n),
+%       xlab = "Mean yield (bushels/acre)" , ylab = "density",
+%       main = "Posterior for mean corn yield in Iowa")
+% @
 % \end{frame}
+% 
+% 
+% 
+% 
+% 
+
+% 
+% 
+% \subsection{Probability statements about the mean}
+% \begin{frame}[t,fragile]
+% \frametitle{Probability (belief) statements about $\mu$}
+% 
+% \small
+% 
+% In order to make probability (belief) statements about the mean, 
+% we need to standardize, \pause e.g.
+% \[ 
+% P(\mu < c|y) = \pause 
+% P\left(\left.\frac{\mu-\overline{y}}{s/\sqrt{n}} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right) \pause 
+% = P\left(\left.T_{n-1} < \frac{c-\overline{y}}{s/\sqrt{n}} \right|y\right)
+%  \]
+% were $T_{n-1}$ is a standard $t$ with $n-1$ degrees of freedom.
+% \pause
+% Here are some probability statements and the calculations in R:
+% 
+% \pause
+% 
+% $P(\mu<200|y)$:
+% <<echo=TRUE>>=
+% pt((200-ybar)/(s/sqrt(n)), df = n-1)
+% @
+% 
+% $P(180<\mu<200|y)$:
+% <<echo=TRUE>>=
+% pt((200-ybar)/(s/sqrt(n)), df = n-1) - pt((180-ybar)/(s/sqrt(n)), df = n-1)
+% diff(pt((c(180,200)-ybar)/(s/sqrt(n)), df = n-1))
+% @
+% \end{frame}
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% \subsection{Posterior for the variance}
+% \begin{frame}[t]
+% \frametitle{Posterior for $\sigma^2$}
+% 
+% We already have the posterior distribution for $\sigma^2$\pause, namely
+% \[
+% \sigma^2|y \sim IG\left(\frac{n-1}{2}, 
+% \frac{(n-1)s^2}{2}\right).
+% \]
+% 
+% \end{frame}
+% 
+% 
+% \subsection{Posterior density for the variance}
+% \begin{frame}[t,fragile]
+% \frametitle{$p(\mu|y)$}
+% <<fig.height=4, echo=TRUE>>=
+% curve(MCMCpack::dinvgamma(x, shape = (n-1)/2, scale = (n-1)*s^2/2), 
+%       from = 0, to = 2000,
+%       xlab = "Variance of yield (bushels/acre)^2" , ylab = "density",
+%       main = "Posterior for variance in corn yield in Iowa")
+% @
+% \end{frame}
+% 
+% 
+% \subsection{Posterior expectation for the variance}
+% \begin{frame}[t]
+% \frametitle{$E[\sigma^2|y]$}
+% 
+% Since the marginal posterior for $\sigma^2$ is 
+% \[
+% \sigma^2|y \sim IG\left(\frac{n-1}{2}, 
+% \frac{(n-1)s^2}{2}\right),
+% \]
+% \pause
+% the
+% \[
+% E[\sigma^2|y] \pause 
+% = \frac{(n-1)s^2/2}{(n-1)/2-1} \pause 
+% = \frac{(n-1)s^2}{n-3}.
+% \]
+% 
+% \end{frame}
+% 
+% 
+% 
+% 
+% \subsection{Credible intervals for the variance}
+% \begin{frame}[t,fragile]
+% \frametitle{CIs for $\sigma^2$}
+% 
+% For some reason, nobody has created a function to calculate the quantiles of
+% an inverse gamma. \pause So here is one
+% 
+% <<qinvgamma, echo=TRUE>>=
+% qinvgamma <- function(p, shape, scale = 1) {
+%   1/qgamma(1-p, shape = shape, rate = scale)
+% }
+% @
+% 
+% Using this function, we can calculate credible intervals. 
+% \pause
+% For example, an 80\% equal-tail credible interval for $\sigma^2$ is 
+% 
+% <<echo=TRUE>>=
+% a <- 0.2
+% qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*s^2/2)
+% @
+% \end{frame}
+% 
+% 
+% \subsection{Probability statements for the variance}
+% \begin{frame}[t,fragile]
+% \frametitle{Probability (belief) statements for $\sigma^2$}
+% 
+% In addition to no quantile function, there is no cdf function, but here is one
+% based on the fact that 
+% \[
+% P(\sigma^2<c|y) \pause
+% = P\left(\left.\frac{1}{\sigma^2} > \frac{1}{c}\right|y\right)
+% \]
+% \pause
+% <<pinvgamma, echo=TRUE>>=
+% pinvgamma <- function(c, shape, scale = 1) {
+%   1-pgamma(1/c, shape = shape, rate = scale)
+% }
+% @
+% 
+% \pause
+% 
+% Some example probability (belief) statements are:
+% 
+% $P(\sigma^2<500|y)$:
+% <<echo=TRUE>>=
+% pinvgamma(500, shape = (n-1)/2, scale = (n-1)*s^2/2)
+% @
+% \pause
+% $P(100<\sigma^2<500|y)$:
+% <<echo=TRUE>>=
+% diff(pinvgamma(c(100,500), shape = (n-1)/2, scale = (n-1)*s^2/2))
+% @
+% 
+% \end{frame}
+% 
+% 
+% \subsection{Credible intervals for the standard deviation}
+% \begin{frame}[t,fragile]
+% \frametitle{CIs for $\sigma$}
+% 
+% Since the standard deviation has the same units of the data, 
+% it is often easier to interpret.
+% \pause
+% Thus, we would prefer to create credible intervals for the standard deviation.
+% \pause
+% To do so, just calculate credible intervals for the for the variance and take
+% the square root.
+% \pause
+% For example, an 80\% equal-tail credible interval for the standard deviation is 
+% <<echo=TRUE>>=
+% a <- 0.2
+% ci_variance = qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*s^2/2)
+% sqrt(ci_variance)
+% @
+% 
+% \pause
+% 
+% This trick works for any monotonic function and any quantile. 
+% 
+% \end{frame}
+% 
+% 
+% \subsection{Probability statements for the standard deviation}
+% \begin{frame}[t,fragile]
+% \frametitle{$P(\sigma<c|y)$}
+% 
+% Since $\sigma>0$, we have 
+% \[
+% P(\sigma<c|y) = P(\sigma^2<c^2|y)
+% \]
+% \pause
+% and we can use this to calculate probability statements for the standard deviation. 
+% 
+% \vspace{0.1in} \pause
+% 
+% Some example probability (belief) statements are:
+% 
+% $P(\sigma<20|y) = P(\sigma^2<20^2|y)$:
+% <<echo=TRUE>>=
+% pinvgamma(20^2, shape = (n-1)/2, scale = (n-1)*s^2/2)
+% @
+% \pause
+% $P(20<\sigma<25|y)=P(20^2<\sigma^2<25^2|y)$:
+% <<echo=TRUE>>=
+% diff(pinvgamma(c(20,25)^2, shape = (n-1)/2, scale = (n-1)*s^2/2))
+% @
+% 
+% \end{frame}
+% 
+% 
+% \subsection{Posterior expectation of the standard deviation}
+% \begin{frame}[t,fragile]
+% \frametitle{$E[\sigma|y]$}
+% 
+% \small
+% 
+% To calculate $E[\sigma|y]$ exactly you will need to learn how to take 
+% \alert{transformations} of random variables which you would learn in STAT 588.
+% \pause
+% Instead, we will use a Monte Carlo (simulation) approach which will provide 
+% us an estimate. 
+% \pause
+% Specifically for $m=1,\ldots,M$ with $M$ large, simulate 
+% \[
+% \sigma^{2(m)} \sim IG\left( \frac{n-1}{2}, \frac{(n-1)s^2}{2} \right).
+% \]
+% Then 
+% \[ \begin{array}{rl}
+% E[\sigma^2|y] &\approx \frac{1}{M} \sum_{m=1}^M \sigma^{2(m)} \\
+% E[\sigma\phantom{^2}|y] &\approx \frac{1}{M} \sum_{m=1}^M \sqrt{\sigma^{2(m)}} \\
+% \end{array} \]
+% 
+% \pause
+% 
+% <<echo=TRUE>>=
+% sigma2 <- MCMCpack::rinvgamma(1e5, shape = (n-1)/2, scale = (n-1)*s^2/2)
+% c(mean(sigma2), (n-1)*s^2/(n-3)) # estimate first, truth second
+% mean(sqrt(sigma2))               # only have an estimate
+% @
+% 
+% You can use the CLT to determine how good this estimate is.
+% 
+% \end{frame}
+% 
+% 
+% 
+% 
+% 
+% 
+% \subsection{Summary}
+% \begin{frame}[t]
+% \frametitle{Default analysis for normal model}
+% 
+% Let $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$ 
+% \pause 
+% with default prior $p(\mu,\sigma^2) \propto \frac{1}{\sigma^2}\I(0<\sigma^2)$.
+% \pause
+% Then the posterior is 
+% \[ 
+% \mu|\sigma^2,y \sim N(\overline{y}, \sigma^2/n) 
+% \quad \mbox{and} \quad
+% \sigma^2|y \sim IG\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
+% \]
+% \pause
+% with a marginal posterior for $\mu$ of 
+% \[
+% \mu|y \sim t_{n-1}(\overline{y}, s^2/n)
+% \]
+% \pause
+% The Bayes estimators are
+% \[ \begin{array}{rll}
+% E[\mu|y] &= \overline{y} \\
+% E[\sigma^2|y] &= \frac{(n-1)s^2}{n-3} & n>3
+% \end{array} \]
+% 
+% 
+% \end{frame}
+% 
+% 
+% 
+% % \begin{frame}
+% % \frametitle{Informative Bayesian analysis}
+% %   The joint conjugate prior for $\mu$ and $\sigma^2$ is
+% %   \[ \mu|\sigma^2\phantom{,y} \sim N(m,\sigma^2/k) \qquad \sigma^2\phantom{,y} \sim IG(d/2,dv^2/2) \]
+% %   \pause where $v^2$ serves as a prior guess about $\sigma^2$ and $d$ controls how certain we are about that guess.
+% % 
+% %   \vspace{0.2in} \pause
+% % 
+% %   The posterior under this prior is
+% %   \[ \mu|\sigma^2,y \sim N(m',\sigma^2/k') \qquad \sigma^2|y \sim IG(d'/2,d'(v')^2/2) \]
+% %   \pause where
+% %   \[ \begin{array}{rl}
+% %   k' &= k+n \\
+% %   m' &= [km + n\overline{y}]/k' \\
+% %   d' &= d+n \\
+% %   d'(v')^2 &= dv^2 + (n-1)s^2 + \frac{kn}{k'}(\overline{y}-m)^2
+% %   \end{array} \]
+% % \end{frame}
 
 
 
