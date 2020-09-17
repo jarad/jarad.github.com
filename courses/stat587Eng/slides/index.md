@@ -46,9 +46,9 @@ you can find them
 |---|---|---|[Maximum likelihood estimators](https://youtu.be/vz34FpuLhsA)|---|
 |Bayesian parameter estimation|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.R)|[Bayesian parameter estimation](https://youtu.be/N89l8tlqx2w)|
 |Exponential distribution|[pdf](Probability/Distributions/Exponential/Exponential.pdf)|[R](Probability/Distributions/Exponential/Exponential.R)|[Exponential](https://youtu.be/e5vCX4uCGvY)|---|
-|Gamma distribution|[pdf](Probability/Distributions/Gamma/Gamma.pdf)|[R](Probability/Distributions/Gamma/Gamma.R)|[Gamma](https://youtu.be/e5vCX4uCGvY)|---|
-|Inverse gamma distribution|[pdf](Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf)|[R](Probability/Distributions/Inverse_gamma/Inverse_gamma.R)|[Inverse_gamma](https://youtu.be/e5vCX4uCGvY)|---|
-|T distribution|[pdf](Probability/Distributions/Students_t/Students_t.pdf)|[R](Probability/Distributions/Students_t/Students_t.R)|[T distribution](https://youtu.be/e5vCX4uCGvY)|---|
+|Gamma distribution|[pdf](Probability/Distributions/Gamma/Gamma.pdf)|[R](Probability/Distributions/Gamma/Gamma.R)|[Gamma](https://youtu.be/YkF3D8OHZwc)|---|
+|Inverse gamma distribution|[pdf](Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf)|[R](Probability/Distributions/Inverse_gamma/Inverse_gamma.R)|[Inverse_gamma](https://youtu.be/pe7kgPNCWOs)|---|
+|T distribution|[pdf](Probability/Distributions/Students_t/Students_t.pdf)|[R](Probability/Distributions/Students_t/Students_t.R)|[T distribution](https://youtu.be/0wjK7Ya7lOA)|---|
 |Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|[yield.csv](Inference/I04-Normal_model/yield.csv)|
 |Confidence intervals|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|---|
 |P values|[pdf](Inference/I06-Pvalues/I06-Pvalues.pdf)|[R](Inference/I06-Pvalues/I06-Pvalues.R)|---|
