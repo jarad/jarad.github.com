@@ -72,7 +72,6 @@ $\theta = (\mu,\sigma^2)$ and
 
 \small
 
-\pause
 Let $Y_i \ind N(\mu,\sigma^2)$ 
 \pause 
 and the default prior
@@ -123,7 +122,7 @@ we know
 
 and 
 \[ 
-\frac{\overline{y} - \mu}{s/\sqrt{n}} \sim t_{n-1}.
+\frac{\mu - \overline{y}}{s/\sqrt{n}} \sim t_{n-1}.
 \]
 \nc\ec
 \end{frame}
@@ -141,13 +140,14 @@ a $100(1-a)$\% equal-tail credible interval is
 \[
 \overline{y} \pm t_{n-1,a/2} \, s/\sqrt{n}
 \]
+\pause
 \bc
 where $t_{n-1,a/2}$ is a \alert{$t$ critical value} \pause 
 such that $P(T_{n-1} < t_{n-1,a/2}) = 1-a/2$ when $T_{n-1} \sim t_{n-1}$.
 
 \vspace{0.1in} \pause
 
-For example, $t_{10-1, 0.05/2}$ is 
+For example, $t_{10-1, 0.05/2}$ \pause is 
 <<echo = TRUE>>=
 n = 10
 a = 0.05 # 95\% CI
@@ -205,14 +205,45 @@ a/2
 \bc
 Here is a function that performs this computation
 <<qinvgamma, echo=TRUE>>=
-qinvgamma <- function(p, shape, scale = 1) {
+qinvgamma <- function(p, shape, scale = 1) 
   1/qgamma(1-p, shape = shape, rate = scale)
-}
 @
 \nc\ec
 \end{frame}
 
 
+
+\subsection{Posterior for the standard deviation}
+\begin{frame}[t,fragile]
+\frametitle{Posterior for the standard deviation, $\sigma$}
+
+The variance is hard to interpret because its units are squared relative to $Y_i$.
+\pause
+In contrast, 
+the standard deviation $\sigma = \sqrt{\sigma^2}$ units are the same as $Y_i$.
+
+\vspace{0.05in} \pause
+\bc
+For credible intervals (or any quantile),
+we can compute the square root of the endpoints since
+\[
+P(\sigma^2 < c^2) = P(\sigma < c).
+\]
+
+\vspace{0.1in} \pause
+
+Find the pdf through transformations of random variables.
+\pause
+In R code,
+<<dsqrtinvgamma, echo=TRUE>>=
+dinvgamma <- function(x, shape, scale = 1) 
+  dgamma(1/x, shape = shape, rate = scale)/x^2
+
+dsqrtinvgamma = function(x, shape, scale) 
+  dinvgamma(x^2, shape, scale)*2*x
+@
+\nc\ec
+\end{frame}
 
 
 
@@ -230,9 +261,16 @@ write_csv(d, path="yield.csv")
 Suppose we have a random sample of \Sexpr{n} Iowa farms \pause
 and we obtain corn yield in bushels per acre on those farms.
 \pause
-We are interested in making statements about the mean yield and the variability
-in yield for Iowa farms.
-\pause
+Let $Y_i$ be the yield for farm $i$ in bushels/acre and assume
+\[ 
+Y_i \ind N(\mu,\sigma^2).
+\]
+\vspace{-0.2in} \pause
+
+We are interested in making statements about $\mu$ and $\sigma^2$.
+
+\vspace{-0.2in} \pause
+
 \bc
 <<data, echo=TRUE>>=
 yield_data <- read.csv("yield.csv")
@@ -309,10 +347,6 @@ mean_posterior_density
 \frametitle{Posterior density for $\sigma^2$}
 \bc
 <<>>=
-dinvgamma <- function(x, shape, scale = 1) {
-  dgamma(1/x, shape = shape, rate = scale)/x
-}
-
 variance_posterior_density = 
 ggplot(data.frame(x = c(0.1,5*sample_variance)),
        aes(x=x)) +
@@ -340,7 +374,8 @@ variance_posterior_density
 # Posterior mean of population yield mean, E[mu|y]
 sample_mean
 @
-Posterior mean for $\mu$ is $E[\mu|y] = \Sexpr{round(sample_mean)}$.
+Posterior mean for $\mu$ is $E[\mu|y] = \Sexpr{round(sample_mean)}$
+bushels/acre.
 \pause
 <<echo=TRUE>>=
 # Posterior mean of population yield variance
@@ -348,7 +383,7 @@ post_mean_var = (n-1)*sample_variance / (n-3)
 post_mean_var
 @
 Posterior mean for $\sigma^2$ is 
-$E[\sigma^2|y] = \Sexpr{round(post_mean_var)}$.
+$E[\sigma^2|y] = \Sexpr{round(post_mean_var)}$ (bushels/acre)$^2$.
 % \pause
 % <<echo=TRUE>>=
 % # Posterior variance of population yield mean, Var[mu|y]
@@ -371,7 +406,7 @@ mean_ci
 @
 
 So a 95\% credible interval for $\mu$ is 
-(\Sexpr{round(mean_ci[1])},\Sexpr{round(mean_ci[2])}).
+(\Sexpr{round(mean_ci[1])},\Sexpr{round(mean_ci[2])}) bushels/acre.
 
 \vspace{0.1in} \pause
 
@@ -386,7 +421,7 @@ var_ci
 \vspace{0.1in} \pause
 
 So a 95\% credible interval for $\sigma^2$ is 
-(\Sexpr{round(var_ci[1])},\Sexpr{round(var_ci[2])}).
+(\Sexpr{round(var_ci[1])},\Sexpr{round(var_ci[2])}) (bushels/acre)$^2$.
 \nc\ec
 \end{frame}
 
@@ -416,42 +451,7 @@ variance_posterior_density +
 
 
 
-\subsection{Posterior for the standard deviation}
-\begin{frame}[t,fragile]
-\frametitle{Posterior for the standard deviation, $\sigma$}
-\small
-We found
-\begin{itemize} \small
-\item $E[\sigma^2|y] = \Sexpr{round(post_mean_var)}$
-\item 95\% CI for $\sigma^2$ is $(\Sexpr{paste(round(var_ci), sep=", ")})$
-\end{itemize}
-but these values have units of (bushels/acre)$^2$.
 
-\vspace{0.05in} \pause
-
-The standard deviation $\sigma = \sqrt{\sigma^2}$ would have units
-(bushels/acre).
-
-\vspace{0.05in} \pause
-\bc
-For credible intervals (or any quantile),
-we can compute the square root of the endpoints since
-\[
-P(\sigma^2 < c^2) = P(\sigma < c).
-\]
-
-\vspace{0.1in} \pause
-
-Find the density through transformations of random variables.
-\pause
-In R code,
-<<echo=TRUE>>=
-dsqrtinvgamma = function(x, shape, scale) {
-  dinvgamma(x^2, shape, scale)*2*x
-}
-@
-\nc\ec
-\end{frame}
 
 
 
@@ -465,7 +465,7 @@ sd_median
 
 \pause
 
-So the posterior median for $\sigma$ is \Sexpr{round(sd_median)}.
+So the posterior median for $\sigma$ is \Sexpr{round(sd_median)} bushels/acre.
 
 \pause
 
@@ -479,7 +479,7 @@ sd_ci
 \pause
 
 So a posterior 95\% credible interval for $\sigma$ is 
-\Sexpr{paste(round(sd_ci), sep=", ")}.
+\Sexpr{paste(round(sd_ci), sep=", ")} bushels/acre.
 \nc\ec
 \end{frame}
 
