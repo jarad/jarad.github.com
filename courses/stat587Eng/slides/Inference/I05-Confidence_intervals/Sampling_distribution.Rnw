@@ -54,7 +54,7 @@ Find the following sampling distributions:
 \vspace{0.1in} 
 
 \begin{itemize}
-\item If $Y\ind N(\mu,\sigma^2)$, 
+\item If $Y_i\ind N(\mu,\sigma^2)$, 
 \[ 
 \overline{Y}
 \pause
@@ -165,11 +165,13 @@ ggplot(d, aes(x = t)) +
 \frametitle{Binomial model}
 Let $Y\sim Bin(n,p)$, then 
 \[ 
-P\left(\frac{Y}{n} = p\right) = P(Y = np), \pause \qquad 
+P\left(\frac{Y}{n} = p\right) \pause
+= P(Y = np), \pause \qquad 
 p = 0,\frac{1}{n},\frac{2}{n},\ldots,\frac{n-1}{n},1.
 \]
 
-\pause
+\vspace{-0.2in} \pause
+
 \bc
 <<binomial_samples, cache = TRUE>>=
 ns = c(10,100)
@@ -184,7 +186,7 @@ samples = expand.grid(rep = 1:1000,
                 n = paste("n =", n)) 
 @
 
-<<binomial_proportion, dependson = "binomial_samples">>=
+<<binomial_proportion, dependson = "binomial_samples", fig.height=3.7>>=
 pmf = expand.grid(n = ns, p = ps, values = (0:max(ns))/max(ns)) %>%
   dplyr::group_by(n, p) %>%
   do(data.frame(values = (0:max(.$n))/max(.$n))) %>%
@@ -196,7 +198,7 @@ pmf = expand.grid(n = ns, p = ps, values = (0:max(ns))/max(ns)) %>%
   
 
 ggplot(samples, aes(x = phat)) + 
-  geom_histogram(aes(y=..density..)) + 
+  geom_bar(aes(y = ..prop..)) + 
   geom_point(data = pmf, aes(x=values, y = pmf), color = "red") +
   facet_grid(n~p, scales = "free_y") +
   labs(title = paste0("Sampling distribution for binomial proportion"),
@@ -207,6 +209,91 @@ ggplot(samples, aes(x = phat)) +
 \nc\ec
 \end{frame}
 
+
+\subsection{Approximate sampling distributions}
+\begin{frame}[t]
+\frametitle{Approximate sampling distributions}
+Recall that from the Central Limit Theorem (CLT): 
+\[ 
+S = \sum_{i=1}^n X_i \stackrel{\cdot}{\sim} N(n\mu, n\sigma^2)
+\qquad \mbox{and} \qquad
+\overline{X} = S/n \stackrel{\cdot}{\sim} N(\mu, \sigma^2/n)
+\]
+for independent $X_i$ with $E[X_i] = \mu$ and $Var[X_i] = \sigma^2$.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Approximate sampling distribution for binomial proportion}
+
+If $Y = \sum_{i=1}^n X_i$ with $X_i \ind Ber(p)$, \pause then 
+\[ 
+\frac{Y}{n} \stackrel{\cdot}{\sim} N\left(p, \frac{p[1-p]}{n}\right).
+\]
+
+\bc
+<<dependson = "binomial_samples", fig.height=3.7>>=
+pmf = expand.grid(n = ns, p = ps, 
+                  prop = seq(0,1,length=101)) %>%
+  dplyr::mutate(
+    pmf = dnorm(prop, mean = p, sd = sqrt(p*(1-p)/n)),
+    p = paste("p =", p),
+    n = paste("n =", n)) %>%
+  dplyr::filter(n > 30)
+  
+
+ggplot(samples %>%
+         dplyr::group_by(n,p,phat) %>%
+         dplyr::summarize(count = n(), .groups = "keep") %>%
+         dplyr::group_by(n,p) %>%
+         dplyr::arrange(phat) %>%
+         dplyr::mutate(height = count / sum(count) / min(diff(phat))),
+      aes(x = phat, y = height)) + 
+  geom_bar(stat = "identity") + 
+  geom_line(data = pmf, aes(x=prop, y = pmf), color = "red") +
+  facet_grid(n~p, scales = "free_y") +
+  labs(title = paste0("Approximate sampling distributions for binomial proportion"),
+       x = "Sample proportion (y/n)", 
+       y = "") +
+  theme_bw()
+@
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Summary}
+\begin{frame}[t]
+\frametitle{Summary}
+
+Sampling distributions:
+\bc
+\begin{itemize} \small
+\item If $Y_i\ind N(\mu,\sigma^2)$, \pause
+  \begin{itemize} \small
+  \item $\overline{Y} \sim N(\mu, \sigma^2/n)$ and
+  \item $\frac{\overline{Y}-\mu}{S/\sqrt{n}} \sim t_{n-1}$. \pause
+  \end{itemize} 
+\item If $Y\sim Bin(n,p)$, \pause
+  \begin{itemize} \small
+  \item $P\left(\frac{Y}{n} = p\right) = P(Y = np)$ and 
+  \item $\frac{Y}{n} \stackrel{ind}{\sim} N(np, np[1-p])$. \pause
+  \end{itemize}
+\item If $X_i$ independent with $E[X_i] = \mu$ and $Var[X_i] = \sigma^2$, \pause
+then
+\[ 
+S = \sum_{i=1}^n X_i \stackrel{\cdot}{\sim} N(n\mu, n\sigma^2)
+\]
+and
+\[
+\overline{X} = S/n \stackrel{\cdot}{\sim} N(\mu, \sigma^2/n)
+\]
+for $n$ sufficiently large.
+\end{itemize}
+\nc\ec
+\end{frame}
 \end{document}
 
 
