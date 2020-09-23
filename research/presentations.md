@@ -11,6 +11,7 @@ who might be interested in looking at the material after the conference.
 If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
 - 2020
+  - [LANL](https://github.com/jarad/LANL2020/raw/master/LANL2020.pdf)
   - [JSM](https://github.com/jarad/JSM2020/raw/master/JaradNiemi_JSM2020.pdf)
   - [SFU](https://github.com/jarad/SFU2020/raw/master/JaradNiemi_SFU2020.pdf)
 - 2019
