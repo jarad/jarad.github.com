@@ -26,8 +26,9 @@ Office hours are
 
 - [Labs](labs)
 - [Slides/Videos](slides)
+  - [Probability playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp1FxJs9BG5Sbsy6NvCO3Qb1)
+  - [Inference playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp1PZC6SgtuS-ESq4ti1GEFj)
 - [Previous exams](exams)
-- [401A Youtube Videos](https://www.youtube.com/watch?v=lcfyx73cfCc&list=PLFHD4aOUZFp10lCLRcEA0rjiitZxzQoCB)
 - [Next courses](../next_courses.html)
 
 
