@@ -1,4 +1,4 @@
----
+--- 
 layout: page
 title: STAT 587 (Engineering)
 tagline: slides/videos
@@ -17,7 +17,7 @@ you can find them
 ### Probability
 
 |Topic|slides|code|videos|
-|---|---|---|---|
+|||||
 |Probability|[pdf](Probability/P1-Probability/P1-Probability.pdf)|[R](Probability/P1-Probability/P1-Probability.R)|[Full](https://youtu.be/zBP7KBtM9vI)|
 |Discrete distributions|[pdf](Probability/P2-Discrete_distributions/P2-Discrete_distributions.pdf)|[R](Probability/P2-Discrete_distributions/P2-Discrete_distributions.R)|[Discrete vs continuous random variables](https://youtu.be/ajLFqrPTAcY)|
 ||||[Discrete random variables](https://youtu.be/FrL4Dcoy9MI)|
@@ -36,34 +36,34 @@ you can find them
 ### Inference
 
 |Topic|slides|code|videos|data|
-|---|---|---|---|---|
+||||||
 |Statistics|[pdf](Inference/I01-Statistics/I01-Statistics.pdf)|[R](Inference/I01-Statistics/I01-Statistics.R)|[Field of statistics](https://youtu.be/yF92RxPS_G4)||
-|---|---|---|[Estimators](https://youtu.be/RFtHCdxxo8Q)|---|
-|---|---|---|[Properties of estimators](https://youtu.be/F4tSwJT_khI)|---|
-|---|---|---|[Graphical statistics](https://youtu.be/N-7rt9QP-W0)|---|
-|Likelihood|[pdf](Inference/I02-Likelihood/I02-Likelihood.pdf)|[R](Inference/I02-Likelihood/I02-Likelihood.R)|[Statistical models](https://youtu.be/5KnJ-uVaoLE)|---|
-|---|---|---|[Likelihood](https://youtu.be/m7I7baoDuuo)|---|
-|---|---|---|[Maximum likelihood estimators](https://youtu.be/vz34FpuLhsA)|---|
+||||[Estimators](https://youtu.be/RFtHCdxxo8Q)||
+||||[Properties of estimators](https://youtu.be/F4tSwJT_khI)||
+||||[Graphical statistics](https://youtu.be/N-7rt9QP-W0)||
+|Likelihood|[pdf](Inference/I02-Likelihood/I02-Likelihood.pdf)|[R](Inference/I02-Likelihood/I02-Likelihood.R)|[Statistical models](https://youtu.be/5KnJ-uVaoLE)||
+||||[Likelihood](https://youtu.be/m7I7baoDuuo)||
+||||[Maximum likelihood estimators](https://youtu.be/vz34FpuLhsA)||
 |Bayesian parameter estimation|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.R)|[Bayesian parameter estimation](https://youtu.be/xRbrg0P2xv8)|
-|Exponential distribution|[pdf](Probability/Distributions/Exponential/Exponential.pdf)|[R](Probability/Distributions/Exponential/Exponential.R)|[Exponential](https://youtu.be/e5vCX4uCGvY)|---|
-|Gamma distribution|[pdf](Probability/Distributions/Gamma/Gamma.pdf)|[R](Probability/Distributions/Gamma/Gamma.R)|[Gamma](https://youtu.be/YkF3D8OHZwc)|---|
-|Inverse gamma distribution|[pdf](Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf)|[R](Probability/Distributions/Inverse_gamma/Inverse_gamma.R)|[Inverse_gamma](https://youtu.be/pe7kgPNCWOs)|---|
-|T distribution|[pdf](Probability/Distributions/Students_t/Students_t.pdf)|[R](Probability/Distributions/Students_t/Students_t.R)|[T distribution](https://youtu.be/0wjK7Ya7lOA)|---|
+|Exponential distribution|[pdf](Probability/Distributions/Exponential/Exponential.pdf)|[R](Probability/Distributions/Exponential/Exponential.R)|[Exponential](https://youtu.be/e5vCX4uCGvY)||
+|Gamma distribution|[pdf](Probability/Distributions/Gamma/Gamma.pdf)|[R](Probability/Distributions/Gamma/Gamma.R)|[Gamma](https://youtu.be/YkF3D8OHZwc)||
+|Inverse gamma distribution|[pdf](Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf)|[R](Probability/Distributions/Inverse_gamma/Inverse_gamma.R)|[Inverse_gamma](https://youtu.be/pe7kgPNCWOs)||
+|T distribution|[pdf](Probability/Distributions/Students_t/Students_t.pdf)|[R](Probability/Distributions/Students_t/Students_t.R)|[T distribution](https://youtu.be/0wjK7Ya7lOA)||
 |Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|[Normal model](https://youtu.be/L5pg_cx2nNU)|[yield.csv](Inference/I04-Normal_model/yield.csv)|
-|---|---|---|[Normal model example](https://youtu.be/zAW9MrxuWd4)|---|
-|Sampling distribution|[pdf](Inference/I05-Confidence_intervals/Sampling_distribution.pdf)|[R](Inference/I05-Confidence_intervals/Sampling_distribution.R)|[Sampling distribution](https://youtu.be/1nJ6j9RrIu4)|---|
-|Confidence intervals|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|---|
-|P values|[pdf](Inference/I06-Pvalues/I06-Pvalues.pdf)|[R](Inference/I06-Pvalues/I06-Pvalues.R)|---|
-|Posterior model probability|[pdf](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf)|[R](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.R)|---|
-|Comparing probabilities|[pdf](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.pdf)|[R](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.R)|---|
-|Comparing means|[pdf](Inference/I09-Comparing_means/I09-Comparing_means.pdf)|[R](Inference/I09-Comparing_means/I09-Comparing_means.R)|---|
-|Multiple comparisons|[pdf](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.pdf)|[R](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.R)|---|
+||||[Normal model example](https://youtu.be/zAW9MrxuWd4)||
+|Sampling distribution|[pdf](Inference/I05-Confidence_intervals/Sampling_distribution.pdf)|[R](Inference/I05-Confidence_intervals/Sampling_distribution.R)|[Sampling distribution](https://youtu.be/1nJ6j9RrIu4)||
+|Confidence intervals|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)||
+|P values|[pdf](Inference/I06-Pvalues/I06-Pvalues.pdf)|[R](Inference/I06-Pvalues/I06-Pvalues.R)||
+|Posterior model probability|[pdf](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf)|[R](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.R)||
+|Comparing probabilities|[pdf](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.pdf)|[R](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.R)||
+|Comparing means|[pdf](Inference/I09-Comparing_means/I09-Comparing_means.pdf)|[R](Inference/I09-Comparing_means/I09-Comparing_means.R)||
+|Multiple comparisons|[pdf](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.pdf)|[R](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.R)||
 
 
 ### Regression
 
 |Topic|slides|code|
-|---|---|---|
+||||
 |Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|
 |Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|
 |Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|
@@ -78,7 +78,7 @@ you can find them
 ### Supplementary materials
 
 |Topic|slides|code|
-|---|---|---|
+||||
 |Logistic regression|[pdf](Supplementary/S01-Logistic_regression/S01-Logistic_regression.pdf)|[R](Supplementary/S01-Logistic_regression/S01-Logistic_regression.R)|
 |Poisson regression|[pdf](Supplementary/S02-Poisson_regression/S02-Poisson_regression.pdf)|[R](Supplementary/S02-Poisson_regression/S02-Poisson_regression.R)|
 |Random effects|[pdf](Supplementary/S03-Random_effects/S03-Random_effects.pdf)|[R](Supplementary/S03-Random_effects/S03-Random_effects.R)|
@@ -90,7 +90,7 @@ you can find them
 ### Supplementary topics
 
 |Topic|Source|Handouts|
-|---|---|---|
+||||
 |Data Management|[Set01.Rnw](Set01/Set01_data_management.Rnw)|[Set01.pdf](Set01/Set01_data_management.pdf)|
 |Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
 |Model comparison|[SetS04.Rnw](SetS04/SetS04_Model_comparison.Rnw)|[SetS04.pdf](SetS04/SetS04_Model_comparison.pdf)|
