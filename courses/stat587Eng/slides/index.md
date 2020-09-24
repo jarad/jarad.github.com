@@ -49,8 +49,9 @@ you can find them
 |Gamma distribution|[pdf](Probability/Distributions/Gamma/Gamma.pdf)|[R](Probability/Distributions/Gamma/Gamma.R)|[Gamma](https://youtu.be/YkF3D8OHZwc)|---|
 |Inverse gamma distribution|[pdf](Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf)|[R](Probability/Distributions/Inverse_gamma/Inverse_gamma.R)|[Inverse_gamma](https://youtu.be/pe7kgPNCWOs)|---|
 |T distribution|[pdf](Probability/Distributions/Students_t/Students_t.pdf)|[R](Probability/Distributions/Students_t/Students_t.R)|[T distribution](https://youtu.be/0wjK7Ya7lOA)|---|
-|Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|[Normal model math](https://youtu.be/L5pg_cx2nNU)|[yield.csv](Inference/I04-Normal_model/yield.csv)|
+|Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|[Normal model](https://youtu.be/L5pg_cx2nNU)|[yield.csv](Inference/I04-Normal_model/yield.csv)|
 |---|---|---|[Normal model example](https://youtu.be/zAW9MrxuWd4)|---|
+|Sampling distribution|[pdf](Inference/I05-Confidence_intervals/Sampling_distribution.pdf)|[R](Inference/I05-Confidence_intervals/Sampling_distribution.R)|[Sampling distribution](https://youtu.be/1nJ6j9RrIu4)|---|
 |Confidence intervals|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|---|
 |P values|[pdf](Inference/I06-Pvalues/I06-Pvalues.pdf)|[R](Inference/I06-Pvalues/I06-Pvalues.R)|---|
 |Posterior model probability|[pdf](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf)|[R](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.R)|---|
