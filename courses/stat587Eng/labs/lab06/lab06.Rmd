@@ -7,6 +7,11 @@ output: html_document
 
 
 To follow along, use the [lab06 code](lab06.R).
+
+```{r}
+library("tidyverse")
+```
+
 Set your working directory using 
 Session > Set Working Directory > Choose Directory in RStudio or using the 
 `setwd()` function.
@@ -176,7 +181,14 @@ y <- 9
 The posterior is 
 
 ```{r}
-curve(dbeta(x, a+y, b+n-y))
+ggplot(data.frame(x=c(0,1)), aes(x=x)) + 
+  stat_function(fun = dbeta, 
+                args = list(shape1 = a+y,
+                            shape2 = b+n-y)) + 
+  labs(x = expression(theta),
+       y = paste(expression("p(",theta,"|y)")),
+       title = "Posterior distribution for probability of success") +
+  theme_bw()
 ```
 
 The posterior expectation is 
