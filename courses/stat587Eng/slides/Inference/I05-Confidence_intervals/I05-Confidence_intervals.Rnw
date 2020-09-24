@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -7,14 +7,14 @@
 
 \title{I05 - Confidence intervals}
 
-% \newenvironment{remark}[1][Remark]{\begin{trivlist}
-% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
                fig.width=6, fig.height=5, 
                size='tiny', 
-               out.width='0.8\\textwidth', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=FALSE,
@@ -35,16 +35,15 @@ set.seed(2)
 
 \begin{document}
 
-\begin{frame}
+\begin{frame}[t]
 \maketitle
 \end{frame}
 
 
-\section{Confidence intervals}
-\begin{frame}
-\frametitle{Confidence intervals}
+\section{Exact confidence intervals}
+\begin{frame}[t]
+\frametitle{Exact confidence intervals}
 
-\begin{definition}
 The \alert{coverage} of an interval estimator is the probability the interval 
 will contain the true value of the parameter 
 \emph{when the data are considered to be random}.
@@ -53,21 +52,24 @@ If an interval estimator has $100(1-a)\%$ coverage,
 then we call it a $100(1-a)\%$ \alert{confidence interval}
 \pause
 and $1-a$ is the \alert{confidence level}.
-\end{definition}
 
 \vspace{0.2in} \pause
 
-The idea here is how often the interval will cover the truth when used 
-on different data sets.
+\bc
+That is, we calculate
+\[ 1-a = P(L < \theta < U) \]
+where $L$ and $U$ are random because they depend on the data.
 \pause
-In this interpretation, the interval itself is random because the endpoints are
-calculated based on random data.
-
+Thus \alert{confidence} is a statement about the \alert{procedure}.
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
+\subsection{Normal mean}
+\begin{frame}[t]
 \frametitle{Normal model}
+
+\small
 
 If $Y_i \ind N(\mu,\sigma^2)$ and we assume the default prior 
 $p(\mu,\sigma^2) \propto 1/\sigma^2$, 
@@ -84,6 +86,7 @@ When the data are considered random
 T_{\visible<5->{n-1}} = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \sim \pause t_{n-1}(0,1)
 \]
 \pause
+\bc
 thus the probability $\mu$ is within our credible interval is
 \[ \begin{array}{rl}
 \multicolumn{2}{l}{P\left( \overline{Y}-t_{n-1,a/2}S/\sqrt{n} < \mu < \overline{Y}+t_{n-1,a/2}S/\sqrt{n}\right)} \pause \\
@@ -93,11 +96,13 @@ thus the probability $\mu$ is within our credible interval is
 \end{array} \]
 \pause
 Thus, this $100(1-a)\%$ credible interval is also a $100(1-a)\%$ confidence interval.
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Data example}
+\subsection{Yield data example}
+\begin{frame}[t]
+\frametitle{Yield data example}
 <<data, echo = FALSE>>=
 y <- read.csv("../I04-Normal_model/yield.csv")$yield
 @
@@ -123,198 +128,122 @@ Iowa farms is
 \Sexpr{round(ybar)}\pm \Sexpr{round(t_crit,2)}\times \Sexpr{round(s)}/\sqrt{\Sexpr{n}}
 = (\Sexpr{round(L)},\Sexpr{round(U)}).
 \]
-\pause
-This \alert{confidence interval} tells us nothing about the true mean yield of fields 
-in Iowa.
-\pause
-Instead, it tells us that if we use this \alert{procedure} repeatedly on 
-different data sets, then $\Sexpr{100*(1-a)}\%$ of the time, the interval
-will contain the true parameter.
-\pause
-But because this confidence interval happens to correspond to a 
-\alert{credible interval}, it does tell us what we should \alert{believe} about
-the true mean yield.
+% \pause
+% This \alert{confidence interval} tells us nothing about the true mean yield of fields 
+% in Iowa.
+% \pause
+% Instead, it tells us that if we use this \alert{procedure} repeatedly on 
+% different data sets, then $\Sexpr{100*(1-a)}\%$ of the time, the interval
+% will contain the true parameter.
+% \pause
+% But because this confidence interval happens to correspond to a 
+% \alert{credible interval}, it does tell us what we should \alert{believe} about
+% the true mean yield.
 \end{frame}
 
 
-\begin{frame}[fragile]
-\frametitle{Data example - R code}
-<<data_example_print, echo=TRUE, dependson="data_example", size="normalsize">>=
-y %>% round(1)
-<<data_example>>
-c(L,U) %>% round
-@
-\end{frame}
 
+\section{Approximate confidence intervals}
+\subsection{Standard error}
+\begin{frame}[t]
+\frametitle{Standard error}
+
+The \alert{standard error of an estimator} is an \emph{estimate} of the standard deviation
+of the estimator (when the data are considered random). 
+
+\vspace{0.1in} \pause
+\bc
+If $Y \sim Bin(n,\theta)$, then 
+\[ 
+\hat{\theta} = \frac{Y}{n} 
+\pause \qquad \mbox{has} \qquad
+SE[\hat{\theta}] = \sqrt{\frac{\hat\theta(1-\hat\theta)}{n}}.
+\]
+\pause
+If $Y_i \ind N(\mu,\sigma^2)$, then
+\[
+\hat\mu = \overline{Y} 
+\pause \qquad \mbox{has} \qquad
+SE[\hat\mu] = S/\sqrt{n}.
+\]
+\nc\ec
+\end{frame}
 
 
 \subsection{Approximate confidence intervals}
-\begin{frame}
-\frametitle{Sampling distribution}
-
-\begin{definition}
-The \alert{sampling distribution} of a statistic is the distribution of the 
-statistic \emph{when the data are considered random}.
-\end{definition}
-
-\pause
-
-\begin{example}
-If $Y_i \ind N(\mu,\sigma^2)$, then 
-\[ 
-T_{\visible<3->{n-1}} = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \sim \pause t_{n-1}(0,1)
-\]
-where $\overline{Y}$ and $S$ are the sample average and sample standard 
-deviation over $n$ observations.
-\end{example}
-
-\pause
-
-Most of the time we don't know the sampling distribution of the statistic.
-
-
-\end{frame}
-
-
-
-
-\begin{frame}
-\frametitle{Approximate sampling distributions}
-
-If the estimator $\hat\theta=\hat\theta(Y)$ is based on an average or a sum, 
-then the Central Limit Theorem tells us what its \alert{approximate} sampling
-distribution is, \pause i.e.
-\[ 
-\hat\theta \stackrel{\cdot}{\sim} N(E[\hat{\theta}], Var[\hat{\theta}]).
-\]
-
-\pause
-
-\begin{example}
-If $Y_i \ind N(\mu,\sigma^2)$, then 
-\[ 
-\hat{\mu} = \overline{Y}
-\stackrel{\cdot}{\sim} \pause 
-N\left(E[\overline{Y}], Var[\overline{Y}]\right)
-\]
-\pause
-where 
-\[ \begin{array}{rl}
-E[\overline{Y}] &= \pause \mu \\
-Var[\overline{Y}] &= \pause \sigma^2/n.
-\end{array} \]
-\end{example}
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Standard error}
+\begin{frame}[t]
+\frametitle{Approximate confidence intervals}
 
 \small
 
-\begin{definition}
-A \alert{standard error} of an estimator is an \emph{estimate} of the standard
-deviation of the sampling distribution of the estimator.
-\end{definition}
-
-\pause
-
-\begin{example}
-If $Y_i \ind N(\mu,\sigma^2)$ and $\hat\mu = \overline{Y}$, \pause
-then
-\[
-Var[\hat\mu] = Var[\overline{Y}] =
-\pause
-\sigma^2/n
-\quad
-\mbox{and}
-\quad
-\sqrt{Var[\hat\mu]} = \sigma/\sqrt{n}.
-\]
-\pause
-We have the following \emph{consistent} estimators
-\[ 
-S^2 \stackrel{P}{\to} \sigma^2, \quad \pause
-S \stackrel{P}{\to} \sigma, \quad 
-\mbox{and}
-\quad\pause
-S/\sqrt{n} \stackrel{P}{\to} \sigma/\sqrt{n}
-\]
-\pause
-and thus 
-\[
-SE[\hat\mu] = \widehat{\sqrt{Var[\hat\mu]}} \pause= S/\sqrt{n}
-\]
-\pause
-where $S$ is the sample standard deviation.
-\end{example}
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Approximate confidence intervals}
-
-If an estimator has an asymptotic normal distribution, 
+If an \alert{unbiased} estimator has an asymptotic normal distribution, 
 \pause
 then we can construct an \alert{approximate} $100(1-a)$\% confidence interval
-for $E[\hat\theta]$ using 
+for $E[\hat\theta] = \theta$ using 
 \[ 
 \hat{\theta} \pm z_{a/2} SE[\hat\theta].
 \]
-where $SE(\hat\theta)=\widehat{\sqrt{Var[\hat\theta]}}$ is the \alert{standard error} of 
-the estimator.
+where $SE[\hat\theta]$ is the \alert{standard error} of the estimator
+\pause
+and $P(Z > z_{a/2}) = a/2$.
 
 \vspace{0.1in} \pause
 
+\bc
 This comes from the fact that if 
-$\hat\theta \stackrel{\cdot}{\sim} N(E[\hat\theta],SE[\hat\theta])$, \pause then
+$\hat\theta \stackrel{\cdot}{\sim} N(\theta,SE[\hat\theta]^2)$, \pause then
 \[ \begin{array}{rl}
-\multicolumn{2}{l}{P\left( \hat{\theta} - z_{a/2} SE(\hat\theta) < E[\hat\theta] < \hat\theta + z_{a/2} SE(\hat\theta) \right)} \pause \\
-&= P\left( -z_{a/2} < \frac{\hat\theta-E[\hat\theta]}{SE(\hat\theta)} < z_{a/2} \right) \pause \\
-&= P\left( -z_{a/2} < \frac{\hat\theta-E[\hat\theta]}{\sqrt{Var[\hat\theta]}} < z_{a/2} \right) \pause \\
+\multicolumn{2}{l}{P\left( \hat{\theta} - z_{a/2} SE(\hat\theta) < \theta < \hat\theta + z_{a/2} SE(\hat\theta) \right)} \pause \\
+&= P\left( -z_{a/2} < \frac{\hat\theta-\theta}{SE(\hat\theta)} < z_{a/2} \right) \pause \\
+% &= P\left( -z_{a/2} < \frac{\hat\theta-\theta}{\sqrt{Var[\hat\theta]}} < z_{a/2} \right) \pause \\
 &\approx P\left( -z_{a/2} < Z < z_{a/2} \right) \pause \\
 &= 1-a.
 \end{array} \]
+\nc\ec
 
 
 \end{frame}
 
 
-\begin{frame}
+
+\subsection{Normal mean}
+\begin{frame}[t]
 \frametitle{Normal example}
 
-If $Y_i \ind N(\mu,\sigma^2)$ and we have the estimator 
-$\hat\mu = \overline{Y}$, then 
-\[ \begin{array}{rl} 
-E[\hat\mu] &= \mu \\
-SE[\hat\mu] &= S/\sqrt{n}
-\end{array} \]
+If $Y_i \ind N(\mu,\sigma^2)$ and we have the estimator
+$\hat\mu = \overline{Y}$, then
+\[
+E[\hat\mu] = \mu
+\qquad \mbox{and} \qquad
+SE[\hat\mu] = S/\sqrt{n}
+\]
 
 \pause
 
 Thus an \alert{approximate} $100(1-a)$\% confidence interval
-for $\mu=E[\hat\mu]$ is 
-\[ 
+for $\mu=E[\hat\mu]$ is
+\[
 \hat\mu \pm z_{a/2} SE[\hat\mu] = \overline{Y} \pm z_{a/2} S/\sqrt{n}.
 \]
 \pause
-Note that this is almost identical to the \alert{exact} $100(1-a)$\%  
-confidence interval for $\mu$, 
-\[ 
+\bc
+Note that this is almost identical to the \alert{exact} $100(1-a)$\%
+confidence interval for $\mu$,
+\[
 \phantom{\hat\mu \pm z_{a/2} SE[\hat\mu] = }\quad\overline{Y} \pm t_{n-1,a/2} S/\sqrt{n}
 \]
 \pause
 and when $n$ is large $z_{a/2} \approx t_{n-1,a/2}$.
+\nc\ec
 \end{frame}
 
 
 
-
-\begin{frame}
+\subsection{Critical values}
+\begin{frame}[t]
 \frametitle{T critical values vs Z critical values}
-
-<<critical_values_comparison, fig.height=4>>=
+\bc
+<<critical_values_comparison, fig.height=4.5>>=
 d <- expand.grid(n = 10^(1:3), a = 1-c(.9,.95,.99)) %>%
   group_by(n, a) %>%
   mutate(z_crit = qnorm(1-a/2),
@@ -325,106 +254,83 @@ d <- expand.grid(n = 10^(1:3), a = 1-c(.9,.95,.99)) %>%
 ggplot(d, aes(z_crit, t_crit, group=n, linetype=n, color=n)) +
   geom_line() +
   geom_abline(intercept = 0, slope = 1, color='gray') +
-  coord_fixed() +
-  labs(x = "z critical values", y = "t critical values") + 
-  theme_bw() 
+  # coord_fixed() +
+  labs(x = "z critical values", y = "t critical values") +
+  theme_bw()
 @
-
+\nc\ec
 \end{frame}
 
 
 
 
-\subsection{Binomial example}
-\begin{frame}
-\frametitle{Binomial example}
-
-Suppose $Y\sim Bin(n,\theta)$ and we are interested in an 
-confidence interval for $\theta$. 
-\pause
-An unbiased estimator for $\theta$ is 
-\[ 
-\hat\theta = \frac{Y}{n}
-\]
-since $E\left[\hat\theta\right] = \theta$. 
-\pause
-The variance of this estimator \emph{when the data are considered random} is 
-\[
-Var\left[\hat\theta\right] = \frac{\theta(1-\theta)}{n}.
-\]
-\pause
-A standard error for this estimator is 
-\[ 
-SE\left[\hat\theta\right] = \sqrt{\frac{\hat\theta (1-\hat\theta)}{n}}
-\]
-since $\hat\theta = Y/n$ is a consistent estimator for $\theta$
-
-\end{frame}
-
-
-\begin{frame}
+\subsection{Binomial proportion}
+\begin{frame}[t]
 \frametitle{Approximate confidence interval for binomial proportion}
 
 \scriptsize
 
-If $Y\sim Bin(n,\theta)$, then an \alert{approximate} $100(1-a)$\% confidence 
-interval for $\theta$ is 
-\[ 
+If $Y\sim Bin(n,\theta)$, then an \alert{approximate} $100(1-a)$\% confidence
+interval for $\theta$ is
+\[
 \hat\theta \pm z_{a/2} \sqrt{\frac{\hat\theta (1-\hat\theta)}{n}}.
 \]
-\pause 
-where $\hat\theta = Y/n$.
-
 \pause
-
-\begin{example}
-The Gallup poll is a poll of approximately 1,500 (randomly selected?) U.S. 
-adults. 
+where $\hat\theta = Y/n$ \pause
+since
+\bc
+\[ E[\hat\theta] = E\left[ \frac{Y}{n} \right] = \theta \]
 \pause
-In a poll dated 2017/02/19, 32.1\% of respondents indicated that they
-were engaged at work. 
-\pause
-Thus an approximate 95\% confidence interval for the proportion of all U.S. 
-adults is 
+and 
 \[ 
-0.321 \pm 1.96 \times \sqrt{\frac{.321(1-.321)}{1500}} \pause = (0.30, 0.34).
+SE[\hat\theta] = \sqrt{\frac{\hat\theta(1-\hat\theta)}{n}}.
 \]
-\pause
-But this confidence interval actually says nothing about where the true 
-proportion is, nor where we should believe it is. 
-\pause
-Instead it says something about how many of our intervals would cover the truth
-if we were to repeat this procedure over and over.
-\end{example}
+\nc\ec
 \end{frame}
 
-\begin{frame}
+
+\subsection{Gallup poll example}
+\begin{frame}[t]
+\frametitle{Gallup poll example}
+
+In a Gallup poll dated 2017/02/19, 32.1\% of respondents of the 1,500 randomly 
+selected U.S. adults indicated that they were ``engaged at work''.
+\pause
+Thus an approximate 95\% confidence interval for the proportion of all U.S.
+adults is
+\[
+0.321 \pm 1.96 \times \sqrt{\frac{.321(1-.321)}{1500}} \pause = (0.30, 0.34).
+\]
+\end{frame}
+
+
+
+\section{Summary}
+\begin{frame}[t]
 \frametitle{Confidence interval summary}
 
 \small
 
 \[ \begin{array}{lclll}
-\mbox{Model} & \mbox{Parameter} & \mbox{Estimator} & \mbox{Confidence Interval} & \mbox{Type} \\
+\mbox{Model} & \mbox{Parameter} & \mbox{Estimator} & \mbox{Confidence Interval} & \mbox{Type} \pause \\
 \hline
-Y_i \ind N(\mu,\sigma^2) & \mu & \hat\mu=\overline{y} & \hat\mu \pm t_{n-1,a/2}s/\sqrt{n} & \mbox{exact} \\
-Y_i \ind N(\mu,\sigma^2) &\mu & \hat\mu=\overline{y} & \hat\mu \pm \quad\,\,\,\, z_{a/2}s/\sqrt{n} & \mbox{approximate} \\
+Y_i \ind N(\mu,\sigma^2) & \mu & \hat\mu=\overline{y} & \hat\mu \pm t_{n-1,a/2}s/\sqrt{n} & \mbox{exact} \pause \\
+Y_i \ind N(\mu,\sigma^2) &\mu & \hat\mu=\overline{y} & \hat\mu \pm \quad\,\,\,\, z_{a/2}s/\sqrt{n} & \mbox{approximate} \pause \\
+Y \sim Bin(n,\theta) & \theta & \hat\theta=y/n & \hat{\theta} \pm z_{a/2} \sqrt{\hat\theta(1-\hat\theta)/n} & \mbox{approximate} \pause \\
 Y_i \ind Ber(\theta) & \theta & \hat\theta=\overline{y} & \hat{\theta} \pm z_{a/2} \sqrt{\hat\theta(1-\hat\theta)/n} & \mbox{approximate} \\
-Y \sim Bin(n,\theta) & \theta & \hat\theta=y/n & \hat{\theta} \pm z_{a/2} \sqrt{\hat\theta(1-\hat\theta)/n} & \mbox{approximate} \\
 \hline
 \end{array} \]
 
 \vspace{0.1in} \pause
-
-Bayesian credible intervals based on the priors we have discussed are 
-generally approximate confidence intervals.
+\bc
+Bayesian credible intervals generally provide approximate confidence intervals.
 
 \vspace{0.1in} \pause
 
-\alert{Approximate} here means that the coverage of the interval procedure will get 
-closer and closer to the desired probability, 
+\alert{Approximate} means that the coverage will get
+closer to the desired probability,
 i.e. $100(1-a)$\%, as the sample size gets larger.
-
-
+\nc\ec
 \end{frame}
 
 \end{document}
