@@ -53,6 +53,7 @@ you can find them
 ||||[Normal model example](https://youtu.be/zAW9MrxuWd4)||
 |Sampling distribution|[pdf](Inference/I05-Confidence_intervals/Sampling_distribution.pdf)|[R](Inference/I05-Confidence_intervals/Sampling_distribution.R)|[Sampling distribution](https://youtu.be/1nJ6j9RrIu4)||
 |Confidence intervals|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|[Confidence intervals](https://youtu.be/pNItyrvDGP8)|
+|Statistical hypotheses|[pdf](Inference/I06-Pvalues/Statistical_hypotheses.pdf)|||
 |P values|[pdf](Inference/I06-Pvalues/I06-Pvalues.pdf)|[R](Inference/I06-Pvalues/I06-Pvalues.R)||
 |Posterior model probability|[pdf](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf)|[R](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.R)||
 |Comparing probabilities|[pdf](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.pdf)|[R](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.R)||
