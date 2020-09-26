@@ -1,0 +1,284 @@
+\documentclass[t,aspectratio=169]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Statistical hypotheses}
+\subtitle{Bayesian and non-Bayesian}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Statistical hypotheses}
+\begin{frame}
+\frametitle{Statistical hypothesis}
+
+A \alert{statistical hypothesis} is a model for data.
+
+\vspace{0.1in} \pause
+
+\bc
+For example, 
+\[ 
+Y \sim Ber(\theta)
+\]
+\pause
+or 
+\[
+Y \sim Bin(10, 0.25)
+\]
+\pause
+or
+\[
+Y_i \ind N(0, \sigma^2)
+\]
+\pause
+or
+\[
+Y_i \ind N(\mu,\sigma^2).
+\]
+\nc\ec
+\end{frame}
+
+
+\subsection{Translating a scientific hypothesis into a statistical hypothesis} 
+\begin{frame}
+\frametitle{Translating a scientific hypothesis into a statistical hypothesis}
+
+\bc
+Scientific hypothesis: the coin is fair
+
+\vspace{0.1in} \pause
+
+Statistical hypothesis:
+
+Let $Y$ be an indicator that the coin is flipped heads. \pause
+\[ 
+Y \sim Ber(0.5)
+\]
+
+\vspace{0.5in} \pause
+
+Scientific hypothesis: the coin is biased, but we don't know the probability
+
+\vspace{0.1in} \pause
+
+Statistical hypothesis:
+\[ 
+Y \sim Ber(\theta).
+\]
+\nc\ec
+\end{frame}
+
+
+\subsection{Null hypothesis}
+\begin{frame}
+\frametitle{Null hypothesis}
+
+Wikipedia definition:
+\begin{quote}
+the \alert{null hypothesis, $H_0$,} is the [model] that 
+there is no relationship between two measured phenomena or no association among groups
+\end{quote}
+
+\vspace{0.2in} \pause
+
+My definition:
+\begin{quote}
+the \alert{null hypothesis} is the \emph{straw man} model that nobody believes
+is true
+\end{quote}
+
+\vspace{0.2in} \pause
+
+\bc
+For example, the coin is fair
+\[
+H_0: Y \sim Bin(0.5).
+\]
+\nc\ec
+\end{frame}
+
+
+\subsection{Alternative hypothesis}
+\begin{frame}
+\frametitle{Alternative hypothesis}
+
+Wikipedia definition:
+\begin{quote}
+the \alert{alternative hypothesis, $H_A$,} is [the model] that states something is happening, 
+a new theory is preferred instead of an old one (null hypothesis).
+\end{quote}
+
+\vspace{0.2in} \pause
+
+My definition:
+\begin{quote}
+the \alert{alternative hypothesis}
+is the model that the researcher believes
+\end{quote}
+
+\vspace{0.2in} \pause
+
+\bc
+For example, the coin is biased, but we don't know the probability
+\[ 
+H_A: Y\sim Ber(\theta)
+\]
+\nc\ec
+\end{frame}
+
+
+\subsection{Null vs alternative hypothesis}
+\begin{frame}
+\frametitle{Null vs alternative hypothesis}
+
+We typically simplify notation \pause 
+and write null and alternative hypotheses like this:
+
+\vspace{0.1in} \pause
+
+Model:
+\[ Y \sim Ber(\theta) \]
+
+Hypotheses:
+\[ 
+H_0: \theta = 0.5 \qquad \mbox{versus} \qquad H_A: \theta \ne 0.5
+\]
+
+\vspace{0.1in} \pause
+
+\bc
+I prefer
+
+\[ 
+H_0: Y \sim Ber(0.5) \qquad \mbox{versus} \qquad H_A: Y \sim Ber(\theta)
+\]
+so that we remind ourselves that these hypotheses are models.
+\nc\ec
+\end{frame}
+
+
+
+\section{Bayesian hypotheses}
+\begin{frame}
+\frametitle{Bayesian hypotheses}
+
+Bayesian hypotheses are \alert{full probability models} for the data. 
+
+\vspace{0.1in} \pause
+
+For example,
+\[ 
+Y \sim Ber(0.5) \phantom{ \qquad\mbox{and}\qquad \theta \sim Be(a,b)}
+\]
+\pause
+or 
+\[
+Y|\theta\sim Ber(\theta) \pause \qquad\mbox{and}\qquad \theta \sim Be(a,b)
+\]
+for known values of $a$ and $b$.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Prior predictive distribution}
+
+\small
+
+The \alert{prior predictive distribution} is the distribution for the data
+with all the parameters integrated out\pause, i.e. 
+\[ 
+p(y) = \int p(y|\theta) p(\theta) d\theta.
+\]
+
+\pause
+
+\bc
+For example, if 
+\[
+Y|\theta\sim Ber(\theta) \qquad\mbox{and}\qquad \theta \sim Be(a,b)
+\]
+\pause
+then 
+\[ \begin{array}{rl}
+p(y) 
+&= \int p(y|\theta) p(\theta) d\theta \\
+&= \int_0^1 y^\theta (1-y)^{1-\theta} \frac{1}{Beta(a,b)} \theta^{a-1}(1-\theta)^{b-1} d\theta \\
+&= \frac{1}{Beta(a,b)} \int_0^1 \theta^{a+y-1} (1-\theta)^{b+n-y-1} d\theta \\
+&= \frac{Beta(a+y, b+n-y)}{Beta(a,b)} 
+\end{array} \]
+\pause
+which is the probability mass function for the \alert{beta-binomial} distribution.
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Comments}
+\begin{frame}
+\frametitle{Comments}
+
+Three points about Bayesian hypotheses: \pause
+\begin{itemize}
+\item Must use \alert{proper} priors. \pause
+\item No special hypotheses. \pause
+\item Not restricted to 2 hypotheses.
+\end{itemize}
+
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+\bc
+\begin{itemize}
+\item Model: 
+\[ Y\sim Ber(\theta) \]
+\item Null hypothesis:
+\[ H_0: \theta = 0.5 \]
+\item Alternative hypothesis:
+\[ H_A: \theta \ne 0.5 \]
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+
+
+\end{document}
+
+
+
+
