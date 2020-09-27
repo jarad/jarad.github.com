@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[t,aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -7,26 +7,23 @@
 
 \title{I06 - Pvalues}
 
-% \newenvironment{remark}[1][Remark]{\begin{trivlist}
-% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=6, fig.height=4.5, 
                size='tiny', 
-               out.width='0.8\\textwidth', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=FALSE,
-               cache=TRUE)
+               cache=FALSE)
 options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library("plyr")
-library("dplyr")
-library("tidyr")
-library("ggplot2")
+library("tidyverse")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -41,427 +38,262 @@ set.seed(2)
 
 
 
-\section{Statistical hypothesis testing}
+\section{\pvalue{}s}
 \begin{frame}
-\frametitle{Statistical hypothesis testing}
+\frametitle{\pvalue{}}
+A \alert{\pvalue{}} is the probability of observing a statistic as or 
+more extreme than observed if the model is true.
 
-\begin{definition}
-A (classical) \alert{hypothesis test} consists of two hypotheses:
-\begin{itemize}
-\item null hypothesis ($H_0$) and
-\item an alternative hypothesis ($H_A$)
-\end{itemize}
-which make a claim about parameters in a model \pause 
-and a decision to either
-\begin{itemize}
-\item reject the null hypothesis or 
-\item fail to reject the null hypothesis.
-\end{itemize}
-\pause 
-We reject the null hypothesis if our \pvalue{} is less than a pre-determined 
-\alert{significance level} $a$ 
-\pause 
-where the \alert{\pvalue{}} is the probability
-\emph{when the data are considered random} of observing a test statistic as or 
-more extreme than that observed if the null hypothesis is true.
-\end{definition}
+\vspace{0.1in} \pause
+
+A \alert{\pvalue{}} is the probability of observing a statistic as or 
+more extreme than \emph{the one you} observed if the model is true \pause
+\emph{when the data are considered random}.
+
 \end{frame}
 
 
+
+
+\subsection{Binomial model}
 \begin{frame}
 \frametitle{Binomial model}
-If $Y\sim Bin(n,\theta)$, then the standard hypotheses are 
-\begin{itemize}
-\item $H_0: \theta=\theta_0=0.5$ and 
-\item $H_A: \theta\ne \theta_0$.
-\end{itemize}
 
-\pause
-
-In this case, the 
-\begin{itemize}
-\item test statistic is $Y$, \pause
-\item its sampling distribution \emph{when the null hypothesis is true is $Y\sim Bin(n,\theta_0)$}, \pause and
-\item the \emph{as or more extreme} region is values farther from $n\theta_0$ than $y$.
-\end{itemize}
-\pause
-So the \pvalue{} is 
-\[
-\mbox{\pvalue{}} = P(|Y-n\theta_0|\ge |y-n\theta_0|)
-\]
-where $y$ is the observed successes.
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{}
-
-<<echo=TRUE, fig.height=3.5>>=
-library(dplyr); library(ggplot2)
-n <- 13; y <- 2; theta0 <- 0.5
-d <- data.frame(Y = 0:n) %>%
-  mutate(pmf = dbinom(Y, n, theta0),
-         as_or_more_extreme = abs(Y-n*theta0) >= abs(y-n*theta0))
-
-ggplot(d, aes(Y, pmf, fill=as_or_more_extreme)) + geom_bar(stat = "identity") + 
-  theme_bw() + theme(legend.position="bottom")
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Binomial example}
-
-If $Y\sim Bin(n,\theta)$ with $n=13$ and $y=2$ and we are testing 
-\begin{itemize}
-\item $H_0: \theta=0.5$ versus
-\item $H_A: \theta\ne 0.5$,
-\end{itemize}
-\pause
-then the \pvalue{} is 
-\[ 
-\mbox{\pvalue{}} = \sum_{y=0}^2 P(Y=y|\theta=0.5) + \sum_{11}^{13} P(Y=y|\theta=0.5)
-\]
-\pause
-which is 
-<<echo=TRUE>>=
-(p <- sum(dbinom(c(0:2,11:13), size = 13, prob = 0.5)))
-@
-\pause
-Thus, we would \emph{reject the null hypothesis} for any significance level 
-greater than \Sexpr{p}.
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{{\tt binom.test}}
-
-The R function `binom.test` can perform this test for us:
-<<echo=TRUE>>=
-binom.test(2,13)
+<<>>=
+n = 13
+y = 3
+p = 0.5
 @
 
+Let $H_0: Y \sim Bin(\Sexpr{n},\Sexpr{p})$ and observe $y=\Sexpr{y}$.
+
+\vspace{0.2in} \pause
+
+\bc
+Choos
+\begin{itemize}
+\item statistic is $\Sexpr{y}$, \pause
+\item its sampling distribution \emph{when the model is true is $Y\sim Bin(\Sexpr{n},\Sexpr{p})$}, \pause and
+\item there are three \emph{as or more extreme regions}:
+  \begin{itemize}
+  \item $Y \le \Sexpr{y}$ \pause
+  \item $Y \ge \Sexpr{y}$ \pause
+  \item $|Y-\Sexpr{n}\cdot \Sexpr{p}| \ge |\Sexpr{y} - \Sexpr{n}\cdot \Sexpr{p}|$
+  \end{itemize}
+\end{itemize}
+\nc\ec
 \end{frame}
 
 
 
-\subsection{One-sided \pvalue{}s}
+\subsection{Binomial model as or more extreme regions}
 \begin{frame}
-\frametitle{One-sided \pvalue{}s}
-If $Y\sim Bin(n,\theta)$, a one-sided hypothesis test is
-\begin{itemize}
-\item $H_0: \theta\ge\theta_0=0.5$ and 
-\item $H_A: \theta< \theta_0$.
-\end{itemize}
+\frametitle{as or more extreme regions}
+\bc
+<<>>=
+d = data.frame(Y = 0:n) %>%
+  dplyr::mutate(pmf = dbinom(Y, n, 0.5),
+         outside = ifelse(abs(Y-n*0.5) >= abs(y-n*0.5),
+                                     "Yes","No"),
+         less_than = ifelse(abs(Y <= y), "Yes", "No"),
+         greater_than = ifelse(abs(Y >= y), "Yes", "No")) %>%
+  tidyr::gather("region", "fill", -Y, -pmf) %>%
+  dplyr::mutate(region = factor(region, levels = c("less_than","outside","greater_than")))
 
-\pause
+ggplot(d, aes(Y, pmf, fill = fill)) + 
+  geom_bar(stat = "identity", color = "black") + 
+  facet_grid(.~region) +
+  theme_bw() + 
+  theme(legend.position="bottom") +
+  scale_fill_manual(values = c("Yes" = "magenta", "No" = "white")) +
+  labs(title = "As or more extreme regions for Y ~ Bin(13,0.5) with y = 3",
+       y = "Probability mass function")
+@
+\nc\ec
+\end{frame}
 
-In this case, the 
+
+
+
+\subsection{Binomial model \pvalue{} calculation}
+\begin{frame}[fragile]
+\frametitle{R Calculation}
+
+One-sided \pvalue{}s:
 \begin{itemize}
-\item test statistic is $Y$,
-\item its sampling distribution \emph{when the null hypothesis is true is $Y\sim Bin(n,\theta_0)$}, \pause and
-\item the \emph{as or more extreme} region is values farther from $n\theta_0$ than $y$ in the direction of $H_A$. 
-\end{itemize}
+\item $P(Y \le y)$: \pause
+<<echo=TRUE>>=
+pbinom(y, size = n, prob = p)
+@
 \pause 
-So the \pvalue{} is 
-\[
-\mbox{\pvalue{}} = P(Y-n\theta_0\le y-n\theta_0) = P(Y\le y)
-\]
-\pause
-where $y$ is the observed successes.
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-\frametitle{}
-
-<<echo=TRUE, fig.height=3.5>>=
-library(dplyr); library(ggplot2)
-n <- 13; y <- 2; theta0 <- 0.5
-d <- data.frame(Y = 0:n) %>%
-  mutate(pmf = dbinom(Y, n, theta0),
-         as_or_more_extreme = Y <= y)
-
-ggplot(d, aes(Y, pmf, fill=as_or_more_extreme)) + geom_bar(stat = "identity") + 
-  theme_bw() + theme(legend.position="bottom")
-@
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Binomial example}
-
-If $Y\sim Bin(n,\theta)$ with $n=13$ and $y=2$ and we are testing 
-\begin{itemize}
-\item $H_0: \theta\ge 0.5$ versus
-\item $H_A: \theta< 0.5$,
-\end{itemize}
-\pause
-then the \pvalue{} is 
-\[ 
-\mbox{\pvalue{}} = \sum_{y=0}^2 P(Y=y|\theta=0.5)
-\]
-\pause
-which is 
+\item $P(Y \le y) \pause = 1-P(Y < y) \pause = 1-P(Y \le y-1)$: \pause
 <<echo=TRUE>>=
-(p <- sum(dbinom(0:2, size = 13, prob = 0.5)))
+1-pbinom(y-1, size = n, prob = p)
 @
-\pause
-Thus, we would \emph{reject the null hypothesis} for any significance level 
-greater than \Sexpr{p}.
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{{\tt binom.test()}}
-
-The R function `binom.test()` can perform this test for us:
-<<echo=TRUE>>=
-binom.test(2, 13, alternative="less")
-@
-
-\end{frame}
-
-
-
-\subsection{Asymptotic \pvalue{}s}
-\begin{frame}
-\frametitle{Asymptotic \pvalue{}s}
-
-If we have an asymptotically normal estimator $\hat\theta=\hat\theta(Y)$, i.e. 
-\[ 
-\hat\theta(Y) \stackrel{\cdot}{\sim} N(E[\hat\theta], Var[\hat\theta]) \pause
-\implies Z = \frac{\hat\theta(Y)-E[\hat\theta(y)]}{\sqrt{Var[\hat\theta]}} 
-\pause
-\stackrel{\cdot}{\sim} N(0,1)
-\]
-\pause
-then we can calculate \pvalue{}s using this approximate sampling distribution.
 
 \vspace{0.1in} \pause
 
-\begin{itemize}
-\item $H_0: \theta = \theta_0 \implies \mbox{\pvalue{}} \approx 2P(Z\le -|z|)$ \pause
-\item $H_0: \theta \ge \theta_0 \implies \mbox{\pvalue{}} \approx \phantom{2}P(Z \le z)$ 
-\item $H_0: \theta \le \theta_0 \implies \mbox{\pvalue{}} \approx \phantom{2}P(Z \ge z)$
+\bc
+Two-sided \pvalue{}:
+\[ P(|Y-n\theta| \le |y-n\theta|) \pause 
+= 2P(Y\le y) \]
+<<echo=TRUE>>=
+2*pbinom(y, size = n, prob = p)
+@
+\nc\ec
 \end{itemize}
-\pause
-where 
-\[
-z = \frac{\hat\theta(y) - E[\hat\theta]}{\sqrt{Var[\hat\theta]}}
-\]
-and the expectation and variance are calculated assuming $\theta=\theta_0$.
 
 \end{frame}
 
 
 
+
+
+
+
+
+\subsection{Normal model}
+\begin{frame}
+\frametitle{Normal model}
+
+<<>>=
+mu = 3
+sigma = 4
+
+n = 6
+ybar = 6.3
+s = 4.1
+
+t = (ybar - mu)/(s/sqrt(n))
+@
+
+Let $H_0: Y_i \sim N(\Sexpr{mu}, \Sexpr{sigma}^2)$ for $i=1, \ldots, \Sexpr{n}$
+\pause
+and you observe $\overline{y} = \Sexpr{ybar}$, $s = \Sexpr{s}$, \pause and
+\pause
+\[
+t = \frac{\overline{y}-3}{s/\sqrt{n}} = \Sexpr{round(t,2)}.
+\]
+
+\pause
+
+\bc
+Choose
+\begin{itemize}
+\item $t$-statistic $t = \Sexpr{round(t,2)}$, \pause
+\item its sampling distribution \emph{when the model is true is $T \sim \pause t_{\Sexpr{n-1}}$}, \pause and
+\item there are three \emph{as or more extreme regions}:
+  \begin{itemize}
+  \item $T \le t$ \pause
+  \item $T \ge t$ \pause
+  \item $|T| \ge |t|$
+  \end{itemize}
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Normal model as or more extreme regions}
+\begin{frame}
+\frametitle{as or more extreme regions}
+\bc
+<<>>=
+t_ribbon = data.frame(T = seq(-5, 5, length = 1001), ymin = 0) %>%
+  dplyr::mutate(pdf = dt(T, df = n-1))
+  
+d = bind_rows(
+  t_ribbon %>% filter(T >= t) %>% mutate(region = "less_than"),
+  t_ribbon %>% filter(T <= t) %>% mutate(region = "greater_than"),
+  t_ribbon %>% filter(abs(T) <= abs(t)) %>% mutate(region = "outside")) %>%
+  mutate(region = factor(region, levels = c("less_than","outside","greater_than")))
+
+ggplot(d, aes(x = T, ymin = ymin, ymax = pdf)) + 
+  stat_function(fun = dt, args = list(df = n-1), geom = "area", fill = "aquamarine") +
+  geom_ribbon(fill = "white") +
+  stat_function(fun = dt, args = list(df = n-1)) +
+  facet_grid(.~region) +
+  theme_bw() + 
+  # scale_fill_manual(values = c("Yes" = "red", "No" = "white")) +
+  labs(title = paste("As or more extreme regions for t=",round(t,2),"with",
+                     n-1,"degrees of freedom"),
+       y = "Probability density function")
+@
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Normal model R calculation}
 \begin{frame}[fragile]
-\frametitle{Binomial example}
-
-If $Y\sim Bin(n,\theta)$ and $n$ is large (and $y$ is not close to 0 or $n$), 
-\pause
-then 
-\[ 
-Y \stackrel{\cdot}{\sim} N(n\theta, n\theta(1-\theta)).
-\]
-\pause
-If we have 
-\[ 
-H_0: \theta = \theta_0 \quad \mbox{versus} \quad 
-H_A: \theta \ne \theta_0,
-\]
-\pause
-then we our \pvalue{} is 
-\[ \begin{array}{rl}
-\mbox{\pvalue{}} &= P\left(|Y-n\theta_0|\ge |y-n\theta_0|\right) \pause \\
-&= 2P\left(\frac{Y-n\theta_0}{Var[\theta]} < \frac{-|y-n\theta_0|}{SE[\hat\theta]}\right) \pause \\
-&\approx 2P\left(Z < \frac{-|y-n\theta_0|}{\sqrt{n\theta_0(1-\theta_0)}}\right)
-\end{array} \]
-\pause
-<<echo=TRUE>>=
-n = 10000; y = 4900; theta0 = 0.5
-2*pnorm(-abs(y-n*theta0)/sqrt(n*theta0*(1-theta0)))
-@
-
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{{\tt prop.test()}}
-
-For the binomial distribution, 
-the {\tt prop.test()} function performs these hypothesis tests. 
-\pause
-For example, if $Y\sim Bin(n,\theta)$ and you want to test $H_0: \theta = \Sexpr{theta0}$
-vs $H_A: \theta \ne \Sexpr{theta0}$ when observing $y=\Sexpr{y}$ successes out of $n=\Sexpr{n}$ attempts,
-\pause the code is
-
-<<echo=TRUE>>=
-prop.test(y, n, p = theta0, correct = FALSE)
-@
-
-\pause
-But you should always use the continuity correction:
-
-<<echo=TRUE>>=
-prop.test(y, n, p = theta0, correct = TRUE)$p.value
-@
-
-\end{frame}
-
-
-
-\subsection{Normal mean}
-\begin{frame}
-\frametitle{Normal mean}
-
-Let $Y_i \ind N(\mu,\sigma^2)$, then 
-\[ 
-T = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \sim t_{n-1}(0,1)
-\]
-is our test statistic and its sampling distribution.
-\pause
-We have the following null hypothesis tests and \pvalue{}s
+\frametitle{R Calculation}
+\vspace{-0.2in}
+\bc
 \begin{itemize}
-\item $H_0: \mu=\mu_0$ and \pvalue{} $=  P(|T|\ge |t|) = 2P(T< -|t|)$ \pause
-\item $H_0: \mu\ge\mu_0$ and \pvalue{} $=  P(T\le t) = P(T<t)$ \pause
-\item $H_0: \mu\le\mu_0$ and \pvalue{} $= P(T\ge t) = 1-P(T<t)$
-\end{itemize}
-\pause
-where 
-\[
-t = \frac{\overline{y}-\mu_0}{s/\sqrt{n}}
-\]
-is the observed value of our test statistic. 
-\pause
-This is called a \alert{one-sample t-test}.
-
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]
-\frametitle{{\tt t.test}}
-
+\item One-sided \pvalue{}s:
+\begin{itemize}
+\item $P(T \le t)$: \pause
 <<echo=TRUE>>=
-set.seed(20180221); y <- rnorm(15, mean = 1)
-t.test(y)
+pt(t, df = n-1)
 @
-
 \pause 
-
+\item $P(T \ge t) \pause = 1-P(Y < y) \pause = 1-P(Y \le y)$: \pause
 <<echo=TRUE>>=
-t.test(y, mu = 1, alternative = "greater")
+1-pt(t, df = n-1)
 @
-
-\end{frame}
-
-
-
-
-\subsection{Relationship to confidence intervals}
-\begin{frame}
-\frametitle{Relationship to confidence intervals}
-
-There is a one-to-one correspondence between \pvalue{}s and confidence intervals.
-\pause
-Consider the following null hypotheses and corresponding confidence intervals
-(CIs) 
-\begin{itemize}
-\item $H_0: \theta = \theta_0$ (two-sided CI),
-\item $H_0: \theta \ge \theta_0$ (one-sided lower CI), and
-\item $H_0: \theta \le \theta_0$ (one-sided upper CI),
 \end{itemize}
-\pause
-
-\begin{theorem}
-The appropriate (two-sided or one-sided in the correct direction) 
-$100(1-a)$\% confidence interval contains $\theta_0$ if and only if 
-the \pvalue{} is greater than $a$. 
-\end{theorem}
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Interpreting \pvalue{}s}
-
-\small
-
-We teach students to say the phrases 
-\begin{itemize}
-\item if \pvalue{} $< a$, reject the null hypothesis  or 
-\item if \pvalue{} $\ge a$ fail to reject the null hypothesis.
+\item Two-sided \pvalue{}:
+\[ P(|T| \le |t|) \pause 
+= 2P(T\ge t) \]
+<<echo=TRUE>>=
+2*(1-pt(t, df = n-1))
+@
 \end{itemize}
-\pause
-\alert{But this is incorrect or, at least, misleading!}
-
-\vspace{0.1in} \pause 
-
-According to the \href{http://www.amstat.org/asa/files/pdfs/P-ValueStatement.pdf}{American Statistical Association Statement on \pvalue{}s}:
-\begin{quote}
-\pvalue{}s can indicate how incompatible the data are with a specific statistical
-model.
-\end{quote}
-
-\pause
-
-The specific statistical model is the model associated with the null hypothesis,
-e.g. $Y_i\ind N(\mu_0,\sigma^2)$.
-
-
-\vspace{0.1in} \pause
-
-So, we are not going to compare \pvalue{}s to a significance level.
-Instead, we are going to let \pvalue{}s mean what they meant to Sir R. A. Fisher,
-i.e. they indicate how incompatible the data are with a specific statistical 
-model. (Although Fisher did suggest a cutoff of 0.05 as being 
-``statistically significant'', but he was not willing to say ``reject the null
-hypothesis'').
-
+\nc\ec
 \end{frame}
 
 
 
-\subsection{Relative frequency interpretation of \pvalue{}s}
+
+\subsection{Interpretation}
 \begin{frame}
-\frametitle{Relative frequency interpretation of \pvalue{}s}
+\frametitle{Interpretation}
 
-\small
+Small \pvalue{}s provide evidence that the \alert{data are incompatible with the model}.
 
-Suppose you have a model $p(y|\theta)$\pause,
-hypotheses $H_0: \theta=\theta_0$ and $H_A:\theta\ne \theta_0$\pause,
-and you observe a \pvalue{} equal to 0.05.
-\pause 
-Now you want to understand what that means in terms of whether the null
-hypothesis is true or not. 
-\pause 
-That is you want 
+\vspace{0.2in} \pause
+
+\bc
+Recall
 \[
-p(H_0|\mbox{\pvalue{}} = 0.05) = 
-\left[ 1+\frac{p(\mbox{\pvalue{}}=0.05|H_A)}{p(\mbox{\pvalue{}}= 0.05|H_0)}
-\frac{p(H_A)}{p(H_0)}\right]^{-1}
+Y_i \ind N(\mu,\sigma^2)
 \]
-If we are using a relative frequency interpretation of probability, 
 \pause
-then the answer depends on 
+indicates the data 
 \begin{itemize}
-\item the relative frequency of the null hypothesis being true 
-$p(H_0) = 1-p(H_A)$ 
-\pause and
-\item the ratio of the relative frequency of seeing \pvalue{}$=0.05$ under the null 
-versus the alternative \pause which depends on the distribution for 
-$\theta$ under the alternative because
+\item are independent, \pause
+\item are normally distributed, \pause
+\item have a common mean, \pause and
+\item have a common variance. 
 \end{itemize}
-\[
-p(\mbox{\pvalue{}}=0.05|H_A) = \int p(\mbox{\pvalue{}} = 0.05|\theta)p(\theta|H_A) d\theta.
-\]
-See \pvalue{} app: \url{http://www.jarad.me/courses/stat544/applets.html}
+\nc\ec
 \end{frame}
+
+
+\subsection{Summary}
+
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item \pvalue{}: the probability of observing a statistic as or 
+more extreme than observed if the model is true.
+\item small \pvalue{}s provide evidence that the \alert{data are incompatible with the model}
+\end{itemize}
+\end{frame}
+
+
 
 
 \end{document}
