@@ -5,10 +5,10 @@
 \input{../../frontmatter}
 \input{../../commands}
 
-\title{I06 - Pvalues}
+\title{$\mathrm{I}$06 - \pvalue{}s}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -89,6 +89,9 @@ Choos
 \subsection{Binomial model as or more extreme regions}
 \begin{frame}
 \frametitle{as or more extreme regions}
+
+\vspace{-0.2in}
+
 \bc
 <<>>=
 d = data.frame(Y = 0:n) %>%
@@ -126,7 +129,7 @@ One-sided \pvalue{}s:
 pbinom(y, size = n, prob = p)
 @
 \pause 
-\item $P(Y \le y) \pause = 1-P(Y < y) \pause = 1-P(Y \le y-1)$: \pause
+\item $P(Y \ge y) \pause = 1-P(Y < y) \pause = 1-P(Y \le y-1)$: \pause
 <<echo=TRUE>>=
 1-pbinom(y-1, size = n, prob = p)
 @
@@ -137,6 +140,7 @@ pbinom(y, size = n, prob = p)
 Two-sided \pvalue{}:
 \[ P(|Y-n\theta| \le |y-n\theta|) \pause 
 = 2P(Y\le y) \]
+\pause
 <<echo=TRUE>>=
 2*pbinom(y, size = n, prob = p)
 @
@@ -172,7 +176,9 @@ Let $H_0: Y_i \sim N(\Sexpr{mu}, \Sexpr{sigma}^2)$ for $i=1, \ldots, \Sexpr{n}$
 and you observe $\overline{y} = \Sexpr{ybar}$, $s = \Sexpr{s}$, \pause and
 \pause
 \[
-t = \frac{\overline{y}-3}{s/\sqrt{n}} = \Sexpr{round(t,2)}.
+t = \frac{\overline{y}-3}{s/\sqrt{n}} \pause
+= \frac{\Sexpr{ybar}-3}{\Sexpr{s}/\sqrt{\Sexpr{n}}} \pause 
+= \Sexpr{round(t,2)}.
 \]
 
 \pause
@@ -184,9 +190,9 @@ Choose
 \item its sampling distribution \emph{when the model is true is $T \sim \pause t_{\Sexpr{n-1}}$}, \pause and
 \item there are three \emph{as or more extreme regions}:
   \begin{itemize}
-  \item $T \le t$ \pause
-  \item $T \ge t$ \pause
-  \item $|T| \ge |t|$
+  \item $T \le \Sexpr{t}$ \pause
+  \item $T \ge \Sexpr{t}$ \pause
+  \item $|T| \ge |\Sexpr{t}|$
   \end{itemize}
 \end{itemize}
 \nc\ec
@@ -216,7 +222,7 @@ ggplot(d, aes(x = T, ymin = ymin, ymax = pdf)) +
   facet_grid(.~region) +
   theme_bw() + 
   # scale_fill_manual(values = c("Yes" = "red", "No" = "white")) +
-  labs(title = paste("As or more extreme regions for t=",round(t,2),"with",
+  labs(title = paste("As or more extreme regions for t =",round(t,2),"with",
                      n-1,"degrees of freedom"),
        y = "Probability density function")
 @
@@ -239,13 +245,13 @@ ggplot(d, aes(x = T, ymin = ymin, ymax = pdf)) +
 pt(t, df = n-1)
 @
 \pause 
-\item $P(T \ge t) \pause = 1-P(Y < y) \pause = 1-P(Y \le y)$: \pause
+\item $P(T \ge t) \pause = 1-P(T < t) \pause = 1-P(T \le t)$: \pause
 <<echo=TRUE>>=
 1-pt(t, df = n-1)
 @
 \end{itemize}
 \item Two-sided \pvalue{}:
-\[ P(|T| \le |t|) \pause 
+\[ P(|T| \ge |t|) \pause 
 = 2P(T\ge t) \]
 <<echo=TRUE>>=
 2*(1-pt(t, df = n-1))
@@ -288,12 +294,10 @@ indicates the data
 \frametitle{Summary}
 \begin{itemize}
 \item \pvalue{}: the probability of observing a statistic as or 
-more extreme than observed if the model is true.
+more extreme than observed if the model is true \pause
 \item small \pvalue{}s provide evidence that the \alert{data are incompatible with the model}
 \end{itemize}
 \end{frame}
-
-
 
 
 \end{document}
