@@ -1,0 +1,418 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Hypothesis tests}
+\subtitle{with binomial example}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}[t]
+\maketitle
+\end{frame}
+
+
+
+\section{Statistical hypothesis testing}
+\begin{frame}[t]
+\frametitle{Statistical hypothesis testing}
+
+A \alert{hypothesis test} consists of two hypotheses,
+\begin{itemize}
+\item null hypothesis ($H_0$) and
+\item an alternative hypothesis ($H_A$),
+\end{itemize}
+which make claims about parameter(s) in a model, \pause 
+and a decision to either
+\begin{itemize}
+\item reject the null hypothesis or 
+\item fail to reject the null hypothesis.
+\end{itemize}
+\end{frame}
+
+
+
+
+\subsection{Binomial model}
+\begin{frame}[t]
+\frametitle{Binomial model}
+If $Y\sim Bin(n,\theta)$, then some hypothesis tests are
+\bc
+\[ H_0: \theta = \theta_0 \pause \qquad \mbox{versus} \qquad H_A: \theta \ne \theta_0 \]
+\pause
+or 
+\[ H_0: \theta \alt<5>{=}{\le} \theta_0 \qquad \mbox{versus} \qquad H_A: \theta > \theta_0 \]
+\pause
+or 
+\[ H_0: \theta \alt<5>{=}{\ge} \theta_0 \qquad \mbox{versus} \qquad H_A: \theta < \theta_0 \]
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Small data}
+\begin{frame}
+\frametitle{Small data}
+
+Let $Y \sim Bin(n,\theta)$ with 
+\[
+H_0: \theta = 0.5 \qquad \mbox{versus} \qquad H_A: \theta \ne 0.5.
+\]
+
+\vspace{0.1in} \pause
+
+<<>>=
+n = 13
+y = 6
+theta0 = 0.5
+@
+You collect data and observe $y = \Sexpr{y}$ out of $n = \Sexpr{n}$ attempts.
+\pause
+Should you reject $H_0$? 
+\pause
+Probably not since $\Sexpr{y} \approx E[Y] = \Sexpr{n*theta0}$ if $H_0$ is true.
+
+\vspace{0.1in} \pause 
+
+<<>>=
+y = 2
+@
+What if you observed $y = \Sexpr{y}$?
+\pause
+Well, $P(Y = \Sexpr{y}) \approx \Sexpr{round(dbinom(y, size = n, prob = theta0),3)}$.
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Large data}
+
+Let $Y \sim Bin(n,\theta)$ with 
+\[
+H_0: \theta = \Sexpr{theta0} \qquad \mbox{versus} \qquad H_A: \theta \ne \Sexpr{theta0}.
+\]
+
+\vspace{0.1in} 
+
+<<>>=
+n = 13000
+y = 6500
+@
+You collect data and observe $y = \Sexpr{y}$ out of 
+$n = \Sexpr{format(n, scientific = FALSE)}$ attempts.
+\pause
+Should you reject $H_0$? 
+\pause
+Probably not since $\Sexpr{y} = E[Y]$ if $H_0$ is true.
+\pause
+But $P(Y = \Sexpr{y}) \approx \Sexpr{round(dbinom(y, size = n, prob = theta0),3)}$.
+
+\end{frame}
+
+
+
+
+\subsection{\pvalue{}s}
+\begin{frame}
+\frametitle{\pvalue{}s}
+
+\alert{\pvalue{}}: the probability of observing a \alert{test} statistic as or 
+more extreme than observed if the \alert{null hypothesis} is true
+
+\vspace{0.1in} \pause
+
+The \alert{as or more extreme} region is determined by the alternative hypothesis.
+
+\vspace{0.1in} \pause
+\bc
+For example, if $Y\sim Bin(n,\theta)$ and $H_0: \theta = \theta_0$ then 
+
+\[ H_A: \theta < \theta_0 \pause \implies Y \le y \hspace{1in} \]
+\pause 
+or
+\[ H_A: \theta > \theta_0 \pause \implies Y \ge y \hspace{1in}  \]
+\pause
+or
+\[ H_A: \theta \ne \theta_0 \pause \implies |Y-n\theta_0| \ge |y-n\theta_0|. \]
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Binomial model as or more extreme regions}
+\begin{frame}
+\frametitle{as or more extreme regions}
+
+\vspace{-0.2in}
+
+\bc
+<<>>=
+n = 13
+y = 2
+
+d = data.frame(Y = 0:n) %>%
+  dplyr::mutate(pmf = dbinom(Y, n, theta0),
+         `not equal`= ifelse(abs(Y-n*theta0) >= abs(y-n*theta0),
+                                     "Yes","No"),
+         `less than` = ifelse(abs(Y <= y), "Yes", "No"),
+         `greater than` = ifelse(abs(Y >= y), "Yes", "No")) %>%
+  tidyr::gather("region", "fill", -Y, -pmf) %>%
+  dplyr::mutate(region = factor(region, levels = c("less than","not equal","greater than")))
+
+ggplot(d, aes(Y, pmf, fill = fill)) + 
+  geom_bar(stat = "identity", color = "black") + 
+  facet_grid(.~region) +
+  theme_bw() + 
+  theme(legend.position="none") +
+  scale_fill_manual(values = c("Yes" = "magenta", "No" = "white")) +
+  labs(title = paste0("As or more extreme regions for Y ~ Bin(",n,",",theta0,") with y = ",y),
+       y = "Probability mass function")
+@
+\nc\ec
+\end{frame}
+
+
+\subsection{Binomial model \pvalue{} calculation}
+\begin{frame}[fragile]
+\frametitle{R ``hand'' calculation}
+\small
+
+\vspace{-0.2in}
+
+\bc
+\[ H_A: \theta < \Sexpr{theta0} \implies \mbox{\pvalue{}} = P(Y \le y) \hspace{1.2in} \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+pbinom(y, size = n, prob = theta0)
+@
+
+\vspace{-0.2in} \pause 
+
+\[ H_A: \theta > \Sexpr{theta0} \implies \mbox{\pvalue{}} = P(Y \ge y) \pause = 1-P(Y\le y-1) \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+1-pbinom(y-1, size = n, prob = theta0)
+@
+
+\vspace{-0.2in} \pause 
+
+\[ H_A: \theta \ne \Sexpr{theta0} \implies \mbox{\pvalue{}} = P(|Y-n\theta_0| \le |y-n\theta_0|) \hspace{0.5in} \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+2*pbinom(y, size = n, prob = theta0)
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R Calculation}
+\small
+
+\vspace{-0.2in}
+
+\bc
+\[ H_A: \theta < \Sexpr{theta0}  \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+binom.test(y, n, p = theta0, alternative = "less")$p.value
+@
+
+\vspace{-0.2in} \pause 
+
+\[ H_A: \theta > \Sexpr{theta0}  \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+binom.test(y, n, p = theta0, alternative = "greater")$p.value
+@
+
+\vspace{-0.2in} \pause 
+
+\[ H_A: \theta \ne \Sexpr{theta0} \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+binom.test(y, n, p = theta0, alternative = "two.sided")$p.value
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Significance level}
+\begin{frame}
+\frametitle{Significance level}
+
+Make a decision to either
+\begin{itemize}
+\item reject the null hypothesis or 
+\item fail to reject the null hypothesis.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Select a \alert{significance level} $a$ and 
+\begin{itemize}
+\item reject if \pvalue{} $< a$ \pause otherwise
+\item fail to reject. 
+\end{itemize}
+\end{frame}
+
+
+
+
+\subsection{Decisions}
+\begin{frame}
+\frametitle{Decisions}
+
+\begin{center}
+\begin{tabular}{l|c|c|}
+& \multicolumn{2}{c|}{Truth} \\
+Decision     & $H_0$ true & $H_0$ not true \\
+\hline
+reject $H_0$ & \alert{error} & correct \\
+fail to reject $H_0$ & correct & \alert{error} \\
+\hline
+\end{tabular}
+
+\vspace{0.2in} \pause
+
+\bc
+Then
+\[ 
+\mbox{significance level } a \mbox{ is } P(\mbox{reject }H_0 | H_0 \mbox{ true}) \hspace{0.5in}
+\]
+\pause
+and
+\[ 
+\hspace{0.6in} \mbox{\alert{power} is } P(\mbox{reject } H_0 | H_0 \mbox{ not true}).
+\]
+\nc\ec
+\end{center}
+
+\end{frame}
+
+
+
+\subsection{Interpretation}
+\begin{frame}
+\frametitle{Interpretation}
+
+The null hypothesis is a model.
+\pause
+For example,
+\[ H_0: Y \sim Bin(n,\theta_0) \]
+if we \alert{reject $H_0$}, 
+then we are saying the \alert{data are incompatible with this model}. 
+
+\vspace{0.1in} \pause
+
+Recall that $Y = \sum_{i=1}^n X_i$ for $X_i \ind Ber(\theta)$.
+
+\vspace{0.1in} \pause 
+
+So, possibly
+\begin{itemize}
+\item the $X_i$ are not independent \pause or
+\item they don't have a common $\theta$ \pause or 
+\item $\theta \ne \theta_0$ or
+\item you just got unlucky.
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Die tossing example}
+\begin{frame}[fragile]
+\frametitle{Die tossing example}
+\small
+You are playing a game of Dragonwood and a friend rolled a four 3 times in 6 
+attempts. 
+\pause
+Did your friend (somehow) increase the probability of rolling a 4?
+
+\vspace{0.1in} \pause
+
+Let $Y$ be the number of fours rolled and assume $Y\sim Bin(6,\theta)$. 
+\pause 
+You observed $y=3$ \pause and are testing
+\[ H_0: \theta = \frac{1}{6} \pause 
+\qquad \mbox{versus} \qquad H_A: \theta > \frac{1}{6}.  \]
+\pause
+\bc
+<<echo=TRUE>>=
+binom.test(3, 6, p = 1/6, alternative = "greater")$p.value
+@
+\pause
+With a signficance level of $a=0.05$, you fail to reject the null hypothesis.
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+\bc
+\begin{itemize}
+\item Hypothesis tests:
+\[ H_0: \theta = \theta_0 \qquad \mbox{versus} \qquad H_A: \theta \ne \theta_0 \]
+
+\vspace{-0.1in} \pause
+
+\item Use \pvalue{}s to determine whether to 
+\begin{itemize}
+\item reject the null hypothesis or 
+\item fail to reject the null hypothesis.
+\end{itemize}
+\pause 
+\item More assessment is required to determine if other model assumptions hold.
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+\end{document}
+
+
+
