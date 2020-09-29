@@ -1,0 +1,260 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Hypothesis test for a normal mean}
+\subtitle{for a normal mean}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}[t]
+\maketitle
+\end{frame}
+
+
+
+\section{Statistical hypothesis testing}
+\begin{frame}[t]
+\frametitle{Statistical hypothesis testing}
+
+A \alert{hypothesis test} consists of two hypotheses:
+\begin{itemize}
+\item null hypothesis ($H_0$) and
+\item an alternative hypothesis ($H_A$)
+\end{itemize}
+which make a claim about parameters in a model \pause 
+and a decision to either
+\begin{itemize}
+\item reject the null hypothesis or 
+\item fail to reject the null hypothesis.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Normal model}
+\begin{frame}
+\frametitle{Normal model}
+If $Y_i \ind N(\mu,\sigma^2)$, then typical hypotheses about the mean are 
+\bc
+\[ H_0: \mu = \mu_0 \pause \qquad \mbox{versus} \qquad H_A: \mu \ne \mu_0 \]
+\pause
+or 
+\[ H_0: \mu \alt<5>{=}{\le} \mu_0 \qquad \mbox{versus} \qquad H_A: \mu > \mu_0 \]
+\pause
+or 
+\[ H_0: \mu \alt<5>{=}{\ge} \mu_0 \qquad \mbox{versus} \qquad H_A: \mu < \mu_0 \]
+\nc\ec
+\end{frame}
+
+
+
+\subsection{$t$-statistic}
+\begin{frame}
+\frametitle{$t$-statistic}
+
+Then 
+\[ t = \frac{\overline{y}-\mu_0}{s/\sqrt{n}} \]
+has a $t_{n-1}$ distribution when $H_0$ is true. 
+
+The \alert{as or more extreme} region is determined by the alternative hypothesis.
+
+\pause
+
+\bc
+\[ H_A: \mu < \mu_0 \pause \implies T \le t  \]
+\pause 
+or
+\[ H_A: \mu > \mu_0 \pause \implies T \ge t   \]
+\pause
+or
+\[ H_A: \mu \ne \mu_0 \pause \implies |T| \ge |t| \]
+where $T \sim t_{n-1}$.
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Example data}
+\begin{frame}
+\frametitle{Example data}
+<<>>=
+mu = 3
+sigma = 4
+
+n = 6
+ybar = 6.3
+s = 4.1
+y = rnorm(n)*s + ybar
+
+t = (ybar - mu)/(s/sqrt(n))
+mu0 = 3
+@
+
+Suppose we assume $Y_i \ind N(\mu,\sigma^2)$ with $H_0: \mu = \Sexpr{mu0}$
+\pause 
+and we observe
+\[ n = \Sexpr{n}, \, \overline{y} = \Sexpr{ybar}, \mbox{ and } s = \Sexpr{s}.\]
+\pause
+Then we can calculate
+\[ 
+t = \Sexpr{round(t,2)}
+\]
+which has a $t_{\Sexpr{n-1}}$ distribution if the null hypothesis is true.
+
+\end{frame}
+
+
+
+\subsection{Normal model as or more extreme regions}
+\begin{frame}
+\frametitle{as or more extreme regions}
+\bc
+<<>>=
+t_ribbon = data.frame(T = seq(-5, 5, length = 1001), ymin = 0) %>%
+  dplyr::mutate(pdf = dt(T, df = n-1))
+  
+d = bind_rows(
+  t_ribbon %>% filter(T >= t) %>% mutate(region = "less than"),
+  t_ribbon %>% filter(T <= t) %>% mutate(region = "greater than"),
+  t_ribbon %>% filter(abs(T) <= abs(t)) %>% mutate(region = "not equal")) %>%
+  mutate(region = factor(region, levels = c("less than","not equal","greater than")))
+
+ggplot(d, aes(x = T, ymin = ymin, ymax = pdf)) + 
+  stat_function(fun = dt, args = list(df = n-1), geom = "area", fill = "aquamarine") +
+  geom_ribbon(fill = "white") +
+  stat_function(fun = dt, args = list(df = n-1)) +
+  facet_grid(.~region) +
+  theme_bw() + 
+  # scale_fill_manual(values = c("Yes" = "red", "No" = "white")) +
+  labs(title = paste("As or more extreme regions for t =",round(t,2),"with",
+                     n-1,"degrees of freedom"),
+       y = "Probability density function")
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R Calculation}
+\small
+
+\vspace{-0.2in}
+
+\bc
+\[ H_A: \mu < \Sexpr{mu0}  \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+t.test(y, mu = mu0, alternative = "less")$p.value
+@
+
+\vspace{-0.2in} \pause 
+
+\[ H_A: \mu > \Sexpr{mu0}  \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+t.test(y, mu = mu0, alternative = "greater")$p.value
+@
+
+\vspace{-0.2in} \pause 
+
+\[ H_A: \mu \ne \Sexpr{mu0} \] 
+
+\vspace{-0.2in} \pause
+
+<<echo=TRUE>>=
+t.test(y, mu = mu0, alternative = "two.sided")$p.value
+@
+\nc\ec
+\end{frame}
+
+
+
+
+
+
+
+\subsection{Interpretation}
+\begin{frame}
+\frametitle{Interpretation}
+
+The null hypothesis is a model.
+\pause
+For example,
+\[ H_0: Y_i \ind N(\mu_0, \sigma^2) \]
+if we \alert{reject $H_0$}, 
+then we are saying the \alert{data are incompatible with this model}. 
+
+\vspace{0.1in} \pause 
+
+So, possibly
+\begin{itemize}
+\item the $Y_i$ are not independent \pause or
+\item they don't have a common $\sigma^2$ \pause or 
+\item they aren't normally distributed \pause or 
+\item $\mu \ne \mu_0$. 
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+\bc
+\begin{itemize}
+\item Hypothesis tests for normal mean:
+\[ H_0: \mu = \mu_0 \qquad \mbox{versus} \qquad H_A: \mu \ne \mu_0 \]
+
+\vspace{-0.1in} \pause
+
+\item Use \pvalue{}s to determine whether to 
+\begin{itemize}
+\item reject the null hypothesis or 
+\item fail to reject the null hypothesis.
+\end{itemize}
+\pause 
+\item More assessment is required to determine if other model assumptions hold.
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+\end{document}
+
+
+
