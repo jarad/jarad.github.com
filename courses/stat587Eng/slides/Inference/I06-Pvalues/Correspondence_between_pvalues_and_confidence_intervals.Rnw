@@ -1,0 +1,175 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Correspondence between \pvalue{}s and confidence intervals}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{\pvalue{}s and confidence intervals}
+\begin{frame}
+\frametitle{\pvalue{}s and confidence intervals}
+
+From the ASA statement on \pvalue{}s:
+\pause
+\begin{quote}
+a \pvalue{} is the probability under a specified statistical model that a 
+statistical summary of the data would be equal to or more extreme than its 
+observed value.
+\end{quote}
+
+\vspace{0.1in} \pause
+
+A $100(1-a)$\% confidence interval contains the true value of the parameter 
+in $100(1-a)$\% of the intervals constructed using the procedure. 
+
+\vspace{0.1in} \pause
+
+Both are based on the \alert{sampling distribution}.
+
+\vspace{0.2in} \pause
+
+\bc
+Let $H_0: \theta = \theta_0$, \pause
+\begin{itemize}
+\item if \pvalue{} $< a$, then $100(1-a)$\% CI will not contain $\theta_0$ \pause but 
+\item if \pvalue{} $> a$, then $100(1-a)$\% CI will contain $\theta_0$.
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+\subsection{Examples}
+\begin{frame}[fragile]
+\frametitle{Normal model}
+
+<<>>=
+mu0 = 1.5
+@
+
+Let $Y_i \ind N(\mu,\sigma^2)$ with $H_0: \mu = \mu_0 = \Sexpr{mu0}$. 
+
+\vspace{-0.2in} \pause
+
+\bc
+<<echo=TRUE>>=
+y = rnorm(10, mean = 3, sd = 1.5)
+a = 0.05
+t = t.test(y, mu = mu0, conf.level = 1-a)
+t$p.value
+round(as.numeric(t$conf.int),2)
+@
+
+\vspace{-0.1in} \pause
+
+<<echo=TRUE>>=
+a = 0.001
+t = t.test(y, mu = mu0, conf.level = 1-a)
+t$p.value
+round(as.numeric(t$conf.int),2)
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Explanation}
+\begin{frame}[fragile]
+\frametitle{Explanation}
+
+Consider calculating \pvalue{}s for a range of $\mu_0$.
+\pause
+Values for $\mu_0$ that fail to reject $H_0$ at significance level $a$ are
+precisely the $100(1-a)$\% confidence interval.
+
+\pause
+
+<<echo=TRUE>>=
+a = 0.1
+ci = t.test(y, conf.level = 1-a)$conf.int; round(as.numeric(ci),2)
+@
+
+\vspace{-0.2in} \pause
+
+\bc
+<<fig.height = 3>>=
+tfunc = Vectorize(function(mu0) t.test(y, mu = mu0)$p.value, "mu0")
+d = data.frame(mu0 = seq(1,6, length = 1001)) %>%
+  dplyr::mutate(pvalue = tfunc(mu0),
+                significant = pvalue < a)
+
+ggplot(d, aes(x = mu0, y = pvalue, color = significant)) + 
+  geom_point(size=1) + 
+  geom_hline(yintercept = a, color = "#F8766D") + 
+  geom_vline(xintercept = ci, color = "#F8766D") + 
+  labs(title = "Hypothesis tests with various null hypothesis values",
+       x = expression(mu[0]), y = "p-value") +
+  theme_bw() +
+  theme(legend.position = "none")
+@
+\nc\ec
+\end{frame}
+
+
+\subsection{Importance}
+\begin{frame}
+\frametitle{Importance}
+
+\pause
+
+The population mean was significantly different than \Sexpr{mu0} 
+(p = \Sexpr{round(t.test(y, mu = mu0)$p.value,3)}). 
+
+\vspace{0.2in} \pause
+
+A 90\% confidence interval for the population mean was 
+(\Sexpr{round(ci,2)}).
+
+\vspace{0.2in} \pause
+
+\bc
+From the second statement, \pause you know
+\begin{itemize}
+\item the \pvalue{} is less than 0.1 for any value outside the interval\pause,
+\item a range of reasonable values for the population mean is given by the interval\pause, and
+\item a measure of uncertainty given by the interval width and confidence level.
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+\end{document}
+
+
+

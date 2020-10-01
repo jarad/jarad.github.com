@@ -1,0 +1,212 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Why \pvalue{}s don't mean what you think they mean.}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{\pvalue{}s}
+\begin{frame}
+\frametitle{\pvalue{}s}
+
+From the ASA statement on \pvalue{}s:
+\pause
+\begin{quote}
+a \pvalue{} is the probability under a specified statistical model that a 
+statistical summary of the data would be equal to or more extreme than its 
+observed value.
+\end{quote}
+
+\vspace{0.1in} \pause
+
+Do you have a random sample from your population? \pause
+If not, then you cannot make a statistically valid statement about the population.
+
+\end{frame}
+
+
+\subsection{$t$-test}
+\begin{frame}
+\frametitle{$t$-test}
+
+Let $Y_i \ind N(\mu,\sigma^2)$ \pause with hypotheses
+\[ 
+H_0: \mu = \mu_0 
+\qquad \mbox{versus} \qquad
+H_A: \mu \ne \mu_0.
+\]
+\pause 
+Calculate 
+\[ t = \frac{\overline{y}-\mu_0}{s/\sqrt{n}} \]
+which has a $t_{n-1}$ distribution if $H_0$ is true \pause
+and the associated \pvalue{}
+\bc
+\[ \mbox{\pvalue{}} = 2P(T \le -|t|) \]
+where $T\sim t_{n-1}$.
+
+\vspace{0.1in} \pause
+
+You set a significance level $a$ and \alert{reject $H_0$} if 
+\[ \mbox{\pvalue{}} < a. \]
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{ASA interpretation}
+
+From the ASA:
+\begin{quote}
+a \pvalue{} can indicate how incompatible the data are with a specified statistical model
+\end{quote}
+
+\vspace{0.1in} \pause
+
+If you \alert{reject $H_0$}, the data are incompatible with the model 
+associated with the null hypothesis. \pause
+In our example,
+\bc
+\[ H_0: Y_i \ind N(\mu,\sigma^2). \]
+\pause
+So perhaps
+\begin{itemize}
+\item the data are not independent, \pause
+\item the data are not normal, \pause
+\item the variance is not constant, \pause
+\item the mean is not $\mu_0$, \pause or 
+\item you got unlucky.
+\end{itemize}
+\pause
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Context matters}
+\begin{frame}
+\frametitle{Context matters}
+
+From the ASA statement:
+\begin{quote}
+Scientific conclusions and business or policy decisions should not be based only on
+whether a p-value passes a specific threshold.
+\end{quote}
+
+\vspace{0.1in} \pause
+
+\bc
+Imagine these scenarios all with \pvalue = 0.04: \pause
+\begin{itemize}
+\item a small-scale agricultural field trail, \pause
+\item an extrasensory perception experiment, \pause
+\item a large-scale clinical trial, \pause or
+\item a 30,000 gene screening for disease progression.
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{A simple model}
+
+Let $Y \sim N(\mu,1)$ and $H_0: \mu = 0$ vs $H_A: \mu \ne 0$. 
+
+\vspace{0.1in} \pause
+
+You observe \pvalue{}, p = 0.05. \pause What does it mean?
+
+\vspace{0.1in} \pause
+
+Bayes rule:
+\[ 
+P(H_0 | p = 0.05) \pause =
+\frac{P(p = 0.05 | H_0)P(H_0)}{P(p = 0.05 | H_0)P(H_0) + P(p = 0.05 | H_A)P(H_A)}
+\]
+\pause
+\bc
+To calculate this we need
+\begin{itemize}
+\item $P(H_0) = 1-P(H_A)$ \pause and
+\item $P(p = 0.05 | H_A)$: \pause
+  \begin{itemize}
+  \item distribution for $\mu$ when $H_A$ is true.
+  \end{itemize}
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{\pvalue{} shiny app}
+
+<<eval=FALSE,echo=TRUE>>=
+install.packages("shiny")
+shiny::runGitHub("jarad/pvalue")
+@
+
+\pause
+
+\url{https://jaradniemi.shinyapps.io/pvalue/}
+
+\vspace{0.1in} \pause
+
+\bc
+\fbox{\includegraphics[width=0.95\textwidth]{pvalue_app}}
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+\begin{itemize}
+\item Random sample $\to$ population
+\item Model assumptions
+\item Context matters
+\item Error rate is likely much larger than significance level
+\end{itemize}
+
+\end{frame}
+
+
+\end{document}
+
+
+
