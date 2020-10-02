@@ -7,8 +7,8 @@
 
 \title{Correspondence between \pvalue{}s and confidence intervals}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -104,12 +104,25 @@ round(as.numeric(t$conf.int),2)
 
 
 
+% \subsection{Mathematically}
+% \begin{frame}
+% \frametitle{Mathematically}
+% 
+% \[ \begin{array}{rll}
+% \mbox{\pvalue{}} 
+% &= 2P(|T|< - |t|) \\
+% &= P(-|t| < T < |t|) \\
+% &= P(-t < T < t) & t > 0 \\
+% &= P\left( -\frac{\overline{y}-\mu}{s/\qrt{n}} < \frac{\overline{Y}-\mu}{s/\qrt{n}} <\frac{\overline{y}-\mu}{s/\qrt{n}} \right) \\
+% 
+% \end{array} \]
+% \end{frame}
+
+
 \subsection{Explanation}
 \begin{frame}[fragile]
 \frametitle{Explanation}
 
-Consider calculating \pvalue{}s for a range of $\mu_0$.
-\pause
 Values for $\mu_0$ that fail to reject $H_0$ at significance level $a$ are
 precisely the $100(1-a)$\% confidence interval.
 
@@ -129,17 +142,62 @@ d = data.frame(mu0 = seq(1,6, length = 1001)) %>%
   dplyr::mutate(pvalue = tfunc(mu0),
                 significant = pvalue < a)
 
-ggplot(d, aes(x = mu0, y = pvalue, color = significant)) + 
+g = ggplot(d, aes(x = mu0, y = pvalue, color = significant)) + 
   geom_point(size=1) + 
-  geom_hline(yintercept = a, color = "#F8766D") + 
-  geom_vline(xintercept = ci, color = "#F8766D") + 
   labs(title = "Hypothesis tests with various null hypothesis values",
        x = expression(mu[0]), y = "p-value") +
   theme_bw() +
   theme(legend.position = "none")
+
+g
 @
 \nc\ec
 \end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Explanation}
+
+Values for $\mu_0$ that fail to reject $H_0$ at significance level $a$ are
+precisely the $100(1-a)$\% confidence interval.
+
+<<echo=TRUE>>=
+a = 0.1
+ci = t.test(y, conf.level = 1-a)$conf.int; round(as.numeric(ci),2)
+@
+
+\vspace{-0.2in}
+
+\bc
+<<fig.height = 3>>=
+g = g + geom_hline(yintercept = a, color = "#F8766D")
+g
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Explanation}
+
+Values for $\mu_0$ that fail to reject $H_0$ at significance level $a$ are
+precisely the $100(1-a)$\% confidence interval.
+
+<<echo=TRUE>>=
+a = 0.1
+ci = t.test(y, conf.level = 1-a)$conf.int; round(as.numeric(ci),2)
+@
+
+\vspace{-0.2in} 
+
+\bc
+<<fig.height = 3>>=
+g + geom_vline(xintercept = ci, color = "#F8766D") 
+@
+\nc\ec
+\end{frame}
+
 
 
 \subsection{Importance}
