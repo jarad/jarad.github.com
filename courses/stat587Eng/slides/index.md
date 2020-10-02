@@ -57,6 +57,8 @@ you can find them
 |p-values|[pdf](Inference/I06-Pvalues/I06-Pvalues.pdf)|[R](Inference/I06-Pvalues/I06-Pvalues.R)|[p-values](https://youtu.be/taF2TMQXLmE)|
 |Hypothesis tests|[pdf](Inference/I06-Pvalues/Hypothesis_tests.pdf)|[R](Inference/I06-Pvalues/Hypothesis_tests.R)|[hypothesis tests](https://youtu.be/IjuGeYIlH5Y)||
 |T-tests|[pdf](Inference/I06-Pvalues/t-tests.pdf)|[R](Inference/I06-Pvalues/t-tests.R)|[t-tests](https://youtu.be/dgykZvPGVpE)||
+|Correspondence: p-values and CIs|[pdf](Inference/I06-Pvalues/Correspondence_between_pvalues_and_confidence_intervals.pdf)|[R](Inference/I06-Pvalues/Correspondence_between_pvalues_and_confidence_intervals.R)|[Correspondence: p-values and CIs](https://youtu.be/OPJSPwJ-bxg)||
+|What p-values don't mean|[pdf](Inference/I06-Pvalues/why_pvalues_dont_mean_what_you_think_they_mean.pdf)|[R](Inference/I06-Pvalues/why_pvalues_dont_mean_what_you_think_they_mean.R)|[what p-values mean](https://youtu.be/7DU_kbDUWc8)||
 |Posterior model probability|[pdf](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf)|[R](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.R)||
 |Comparing probabilities|[pdf](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.pdf)|[R](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.R)||
 |Comparing means|[pdf](Inference/I09-Comparing_means/I09-Comparing_means.pdf)|[R](Inference/I09-Comparing_means/I09-Comparing_means.R)||
