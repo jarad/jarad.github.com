@@ -7,8 +7,8 @@
 
 \title{I07 - Posterior model probability}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -44,12 +44,8 @@ set.seed(2)
 \begin{frame}
 \frametitle{One-sided alternative hypotheses}
 
-For ``one-sided alternative hypotheses'' analyzed from a 
-Bayesian perspective,
-I think we should ignore the ``hypothesis test'' completely.
-\pause
-That is, we should obtain a posterior and calculate the posterior probabilities
-from that posterior. 
+For ``one-sided alternative hypotheses'' just calculate 
+posterior probabilities.
 
 \vspace{0.1in} \pause
 
@@ -63,11 +59,12 @@ H_A: \theta > \theta_0 \]
 
 Calculate 
 \[ 
-p(H_0|y) = P(\theta\le \theta_0)
+p(H_0|y) \pause = P(\theta\le \theta_0|y)
 \]
+\pause
 and
 \[
-p(H_A|y) = P(\theta > \theta_0).
+p(H_A|y) = P(\theta > \theta_0|y).
 \]
 \nc\ec
 \end{frame}
@@ -83,7 +80,7 @@ Let $Y \sim Bin(n,\theta)$ with hypotheses
 \[ H_0: \theta \le 0.5
 \qquad \mbox{and} \qquad
 H_A: \theta > 0.5. \]
-
+\pause
 \bc
 Assume $\theta \sim Unif(0,1)$ and obtain the posterior
 \pause
@@ -93,7 +90,7 @@ i.e.
 \]
 \pause
 Then calculate 
-\[ P(H_0|y) = P(\theta \le 0). \]
+\[ p(H_0|y) \pause = P(\theta \le 0.5|y) \pause = 1-p(H_A|y). \]
 
 \vspace{-0.2in} \pause 
 
@@ -101,8 +98,8 @@ Then calculate
 n = 10
 y = 3
 probH0 = pbeta(0.5, 1+y, 1+n-y)
-probH0   # P(H_0|y)
-1-probH0 # P(H_A|y)
+probH0   # p(H_0|y)
+1-probH0 # p(H_A|y)
 @
 \nc\ec
 \end{frame}
@@ -159,9 +156,9 @@ For example, let
 \[ y|\mu,M_j \sim N(\mu, 1) \] 
 \pause 
 and 
-\[ \mu|M_j \sim N(0,C). \]
+\[ \mu|M_j \sim N(0,C), \]
 \pause
-Then 
+then 
 \[ 
 y|M_j \sim N(0,1+C).
 \]
@@ -199,11 +196,11 @@ is the \alert{Bayes Factor} for $H_A$ over $H_0$.
 \begin{frame}[fragile]
 \frametitle{Normal model}
 
-Let $Y_i\ind N(\mu,1)$ and $H_0: \mu=0$ vs $H_A: \mu\ne 0$.
+Let $Y\sim N(\mu,1)$ and $H_0: \mu=0$ vs $H_A: \mu\ne 0$.
 
 \vspace{0.1in} \pause
 
-Assume $P(H_0) = P(H_A)$ \pause and $\mu|H_A \sim N(0,1)$,
+Assume $p(H_0) = p(H_A)$ \pause and $\mu|H_A \sim N(0,1)$,
 \pause
 \bc
 then 
@@ -215,8 +212,8 @@ y|H_A &\sim N(0,2).
 <<echo=TRUE, size="scriptsize">>=
 y = 0.3
 probH0 = 1/(1+dnorm(y, 0, sqrt(2))/dnorm(y, 0, 1))
-probH0   # P(H_0|y)
-1-probH0 # P(H_A|y)
+probH0   # p(H_0|y)
+1-probH0 # p(H_A|y)
 @
 \nc\ec
 \end{frame}
@@ -240,7 +237,8 @@ ggplot(densities, aes(x = y, y = density,
                                 Hypothesis = c("H0","HA")),
               aes(x=y, y=density, color = Hypothesis),
              size = 4) + 
-  labs(y = "Prior predictive density") +
+  labs(title = "Ratio of predictive densities",
+       y = "Prior predictive density") +
   theme_bw()
 @
 \nc\ec
@@ -259,7 +257,8 @@ d = data.frame(y = seq(-5, 5, length = 101)) %>%
 
 ggplot(d, aes(x=y, y=Probability, color = Hypothesis, linetype = Hypothesis)) + 
   geom_line(size = 2) +
-  labs(y = "Posterior model probability") +
+  labs(title = "Posterior probabilities as a function of the data",
+    y = "Posterior model probability") +
   theme_bw()
 @
 \nc\ec
@@ -308,18 +307,23 @@ ggplot(d, aes(x=y, y=Probability, color = Hypothesis, linetype = Hypothesis)) +
 \begin{frame}
 \frametitle{Prior impact}
 
-Let $Y_i\ind N(\mu,1)$ and $H_0: \mu=0$ vs $H_A: \mu\ne 0$.
+Let $Y \sim N(\mu,1)$ and $H_0: \mu=0$ vs $H_A: \mu\ne 0$.
 
 \vspace{0.1in} \pause
 
-Assume $P(H_0) = P(H_A)$ \pause and $\mu|H_A \sim N(0,C)$,
+Assume $p(H_0) = p(H_A)$ \pause and $\mu|H_A \sim N(0,C)$,
 \pause
 \bc
 then 
 \[ \begin{array}{rl}
 y|H_0 &\sim N(0,1) \pause \\
-y|H_A &\sim N(0,1+C).
+y|H_A &\sim N(0,1+C)
 \end{array} \]
+\pause
+and
+\[ 
+p(H_0|y) = \left[ 1+\frac{p(y|H_A)}{p(y|H_0)}\right]^{-1}.
+\]
 
 % \vspace{0.1in} \pause 
 % 
@@ -367,7 +371,7 @@ p(y|M_j) = \int p(y|\theta)p(\theta|M_j) d\theta
 posterior model probabilities tell you which model does a better job of 
 \alert{prediction}
 \pause
-and priors must be informative. 
+and priors, $p(\theta|M_j)$, must be informative. 
 
 \end{frame}
 
@@ -377,21 +381,24 @@ and priors must be informative.
 \frametitle{Do pvalues and posterior probabilities agree?}
 Suppose $Y\sim Bin(n,\theta)$ and we have the hypotheses 
 $H_0:\theta=0.5$ and $H_A:\theta\ne 0.5$ \pause
-We observe $n=10,000$ and $y=4,900$ and find the pvalue is 
+We observe $n=10,000$ and $y=4,900$ 
+\pause 
+and find the \pvalue is 
 \[ \mbox{\pvalue{}} \approx 2P(Y\le 4900) = 0.0466 \]
 \pause so we would reject $H_0$ at the 0.05 level. 
 
 \vspace{0.1in} \pause
 
-The posterior probability of $H_0$ if we assume $\theta|H_A \sim Unif(0,1)$ and 
-$p(H_0) = p(H_A) = 0.5$ is 
+If we assume $p(H_0) = p(H_A) = 0.5$ \pause and $\theta|H_A \sim Unif(0,1)$, 
+\pause
+then the posterior probability of $H_0$, \pause is 
 \bc
 \[ p(H_0|y) \approx \frac{1}{1+1/10.8} = 0.96, \]
 \pause so the probability of $H_0$ being true is 96\%. 
 
 \vspace{0.1in} \pause 
 
-It appears the posterior model probability and \pvalue{} completely disagree!
+It appears the posterior probability of $H_0$ and \pvalue{} completely disagree!
 \nc\ec
 \end{frame}
 
@@ -411,8 +418,8 @@ It appears the posterior model probability and \pvalue{} completely disagree!
 \subsection{Jeffrey-Lindley Paradox}
 \frame{\frametitle{Jeffrey-Lindley Paradox}
   The \alert{Jeffrey-Lindley Paradox} concerns a situation when comparing two hypotheses $H_0$ and $H_1$ given data $y$ \pause and find
-  \begin{itemize}[<+->]\small
-  \item a frequentist test result is significant leading to rejection of $H_0$, but
+  \begin{itemize}\small
+  \item a frequentist test result is significant leading to rejection of $H_0$, \pause but
   \item the posterior probability of $H_0$ is high. 
   \end{itemize}
   
@@ -438,21 +445,21 @@ It appears the posterior model probability and \pvalue{} completely disagree!
 
 \pvalue{}s:
 \begin{itemize}[<+->]
-\item \pvalue{}s measure how incompatible your data are with the null hypothesis.
+\item a \pvalue{} measure how incompatible your data are with the null hypothesis\pause, but
 % \item The smaller the \pvalue{}, the more incompatible.
-\item But they say nothing about how likely the alternative is.
+\item it says nothing about how incompatible your data are with the alternative hypothesis.
 \end{itemize}
 
 \vspace{0.1in} \pause
 
 \bc
 
-Posterior model probabilities:
-\begin{itemize}[<+->]
-\item Measure (prior) predictive ability.
+Posterior model probabilities are
+\begin{itemize}
+\item a measure of the (prior) predictive ability of a model \pause relative to the other models\pause, but
 % \item The larger the posterior probability, the more predictive that hypothesis 
 % was compared to the other hypotheses.
-\item But this requires you to have at least two (or more) well-thought out models with
+\item this requires you to have at least two (or more) well-thought out models \pause with
 informative priors.
 \end{itemize}
 
@@ -470,7 +477,7 @@ adequecy.
 \frametitle{Summary}
 
 \begin{itemize}
-\item Use posterior probabilities for one-sided alternative hypotheses.
+\item Use posterior probabilities for one-sided alternative hypotheses. \pause
 \item Posterior model probabilities evaluate relative predictive ability.
 \end{itemize}
 
