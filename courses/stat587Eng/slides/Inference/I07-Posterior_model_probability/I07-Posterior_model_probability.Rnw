@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[t,aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -7,23 +7,23 @@
 
 \title{I07 - Posterior model probability}
 
-% \newenvironment{remark}[1][Remark]{\begin{trivlist}
-% \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=6, fig.height=4.5, 
                size='tiny', 
-               out.width='0.8\\textwidth', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=FALSE,
-               cache=TRUE)
+               cache=FALSE)
 options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library("plyr")
+# library("plyr")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
@@ -53,26 +53,58 @@ from that posterior.
 
 \vspace{0.1in} \pause
 
-For example,
-let $Y_i \ind N(\mu,\sigma^2)$ with hypotheses
-\begin{itemize}
-\item $H_0: \mu \le 0$
-\item $H_A: \mu > 0$.
-\end{itemize}
+\bc
+For example, with hypotheses
+\[ H_0: \theta \le \theta_0
+\qquad \mbox{versus} \qquad
+H_A: \theta > \theta_0 \]
+
 \pause
-Assume $p(\mu,\sigma^2)\propto 1/\sigma^2$ and obtain the posterior, 
+
+Calculate 
+\[ 
+p(H_0|y) = P(\theta\le \theta_0)
+\]
+and
+\[
+p(H_A|y) = P(\theta > \theta_0).
+\]
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior probabilities}
+
+\small
+
+Let $Y \sim Bin(n,\theta)$ with hypotheses
+\[ H_0: \theta \le 0.5
+\qquad \mbox{and} \qquad
+H_A: \theta > 0.5. \]
+
+\bc
+Assume $\theta \sim Unif(0,1)$ and obtain the posterior
 \pause
 i.e. 
 \[ 
-\mu |y \pause \sim t_{n-1}(\overline{y}, s^2/n).
+\theta|y \sim Be(1+y, 1+n-y).
 \]
 \pause
 Then calculate 
-\[ 
-P(\mu\le 0|y) = 
-P\left(T_{n-1} \le \frac{-\overline{y}}{s/\sqrt{n}}\right).
-\]
+\[ P(H_0|y) = P(\theta \le 0). \]
 
+\vspace{-0.2in} \pause 
+
+<<echo=TRUE>>=
+n = 10
+y = 3
+probH0 = pbeta(0.5, 1+y, 1+n-y)
+probH0   # P(H_0|y)
+1-probH0 # P(H_A|y)
+@
+\nc\ec
 \end{frame}
 
 
@@ -81,188 +113,263 @@ P\left(T_{n-1} \le \frac{-\overline{y}}{s/\sqrt{n}}\right).
 \begin{frame}
 \frametitle{Posterior model probabilities}
 
-From a Bayesian perspective, 
-each hypothesis is a different model that describes how the world works.
-\pause
-There is no limit to two hypotheses and hypotheses are all treated the same,
-\pause
-i.e. there is no ``special'' hypothesis.
+\small
 
-\vspace{0.1in} \pause
-
-We are interested in determine our belief about each model after we see
-the data. 
-\pause
-Thus, we calculate \alert{posterior model probabilities} over some set of $J$
+Calculate the \alert{posterior model probabilities} over some set of $J$
 models
 \pause
 i.e,
+\bc
 \[ 
-p(H_j|y) \pause
-= \frac{p(y|H_j)p(H_j)}{p(y)} \pause
-= \frac{p(y|H_j)p(H_j)}{\sum_{k=1}^J p(y|H_k)p(H_k)}.
+p(M_j|y) \pause
+= \frac{p(y|M_j)p(M_j)}{p(y)} \pause
+= \frac{p(y|M_j)p(M_j)}{\sum_{k=1}^J p(y|M_k)p(M_k)}.
 \]
-\pause
+
+\vspace{0.1in} \pause
+
 In order to accomplish this, we need to determine 
 \begin{itemize}
-\item \alert{prior model probabilities}: $p(H_j) \,\forall\, j=1,\ldots,J$ 
+\item \alert{prior model probabilities}: 
+\[ \alert{p(M_j)}  \quad \mbox{for all} \quad j=1,\ldots,J \]
 \pause and
 \item \alert{priors over parameters in each model}: 
 \[ 
-p(y|H_j) = \int p(y|\theta)\alert{p(\theta|H_j)} d\theta.
+p(y|M_j) = \int p(y|\theta)\alert{p(\theta|M_j)} d\theta.
 \]
 \end{itemize}
-
+\nc\ec
 \end{frame}
 
 
 
+\subsection{Prior predictive distribution}
 \begin{frame}
-\frametitle{Two hypotheses}
+\frametitle{Prior predictive distribution}
 
-A pvalue can loosely be interpreted as ``the probability of observing these
-data if the null hypothesis is true''\pause,i.e. 
+The \alert{prior predictive distribution} for model $M_j$ is 
 \[ 
-p(y|H_0),
-\]
-\pause
-But what we really want is ``the probability the null hypothesis is true, 
-given that we observed this data''. 
-\pause
-Of course, we can never know the truth (or even the probability of the truth), 
-but we can make statements about our belief that the null hypothesis is true,
-\pause
-i.e.
-\[
-p(H_0|y) \pause = \frac{p(y|H_0)p(H_0)}{p(y)}.
-\]
-\pause
-If there are only two hypotheses (say $H_0$ and $H_A$), 
-\pause
-then we have 
-\[
-p(H_0|y) = \frac{p(y|H_0)p(H_0)}{p(y|H_0)p(H_0)+p(y|H_A)p(H_A)} 
-\pause
-= \left[1+\frac{p(y|H_A)p(H_A)}{p(y|H_0)p(H_0)}\right]^{-1}.
+p(y|M_j) = \int p(y|\theta)p(\theta|M_j) d\theta.
 \]
 
+\vspace{0.1in} \pause
+
+\bc
+For example, let 
+\[ y|\mu,M_j \sim N(\mu, 1) \] 
+\pause 
+and 
+\[ \mu|M_j \sim N(0,C). \]
+\pause
+Then 
+\[ 
+y|M_j \sim N(0,1+C).
+\]
+\nc\ec
 \end{frame}
 
 
 
+\subsection{Bayes Factor}
 \begin{frame}
-\frametitle{Point null hypotheses}
+\frametitle{Bayes Factor}
 
-If $H_0: \theta=\theta_0$ and $H_A: \theta\ne \theta_0$, 
-\pause 
-then 
+In the context of a null hypothesis ($H_0$) and an alternative hypothesis ($H_A$)
+\pause
+we have 
+\pause
+\bc
 \[ \begin{array}{rl}
-p(y|H_0) &= p(y|\theta_0) \pause \\
-p(y|H_A) 
-&= \int p(y,\theta|H_A) d\theta \pause \\
-&= \int p(y|\theta,H_A)p(\theta|H_A) d\theta \pause \\
-&= \int p(y|\theta)p(\theta|H_A) d\theta
+p(H_0|y) 
+&= \frac{p(y|H_0)p(H_0)}{p(y|H_0)p(H_0)+p(y|H_A)p(H_A)} \pause \\ \\
+% &= \frac{1}{1+\frac{p(y|H_A)p(H_A)}{p(y|H_0)p(H_0)}} \pause \\ \\
+&= \left[1+\frac{p(y|H_A)}{p(y|H_0)}\frac{p(H_A)}{p(H_0)}\right]^{-1} \pause \\ \\
+&= \left[1+BF(H_A:H_0)\frac{p(H_A)}{p(H_0)}\right]^{-1}
 \end{array} \]
-\pause 
-where $p(\theta|H_A)$ is the distribution of the parameter $\theta$ when the 
-alternative hypothesis is true.
-
 \pause
+where 
+\[ BF(H_A:H_0) = \frac{p(y|H_A)}{p(y|H_0)} \]
+is the \alert{Bayes Factor} for $H_A$ over $H_0$.
+\nc\ec
+\end{frame}
 
-\begin{example}
-If $Y_i\ind N(\mu,1)$ and we have the hypotheses $H_0: \mu=0$ vs $H_A: \mu\ne 0$
-\pause 
-with $\mu|H_A \sim N(0,1)$,
+
+
+\subsection{Normal model}
+\begin{frame}[fragile]
+\frametitle{Normal model}
+
+Let $Y_i\ind N(\mu,1)$ and $H_0: \mu=0$ vs $H_A: \mu\ne 0$.
+
+\vspace{0.1in} \pause
+
+Assume $P(H_0) = P(H_A)$ \pause and $\mu|H_A \sim N(0,1)$,
 \pause
+\bc
 then 
 \[ \begin{array}{rl}
 y|H_0 &\sim N(0,1) \pause \\
 y|H_A &\sim N(0,2).
 \end{array} \]
-\end{example}
+\pause
+<<echo=TRUE, size="scriptsize">>=
+y = 0.3
+probH0 = 1/(1+dnorm(y, 0, sqrt(2))/dnorm(y, 0, 1))
+probH0   # P(H_0|y)
+1-probH0 # P(H_A|y)
+@
+\nc\ec
 \end{frame}
 
 
-
-
-
-\subsection{Bayesian hypothesis tests}
 \begin{frame}
-\frametitle{Bayesian hypothesis tests}
+\frametitle{Ratio of predictive densities}
+\bc
+<<>>=
+densities = data.frame(y = seq(-5, 5, length = 101)) %>%
+  dplyr::mutate(H0 = dnorm(y, 0, 1),
+                HA = dnorm(y, 0, sqrt(2))) %>%
+  tidyr::gather("Hypothesis","density", H0, HA) 
 
-To conduct a Bayesian hypothesis test, 
-\pause
-you need to specify 
-\begin{itemize}
-\item $p(H_j)$ \pause and 
-\item $p(\theta|H_j)$ 
-\end{itemize}
-for every hypothesis $j=1,\ldots,J$.
-\pause
-Then, you can calculate 
-\[ 
-p(H_j|y) = \frac{p(y|H_j)p(H_j)}{\sum_{k=1}^J p(y|H_k)p(H_k)} \pause
-= \left[ 1+ \sum_{k\ne j} \frac{p(y|H_k)}{p(y|H_j)}\frac{p(H_k)}{p(H_j)} \right]^{-1}
-\]
-\pause
-where 
-\[
-BF(H_k:H_j) = \frac{p(y|H_k)}{p(y|H_j)} 
-\]
-\pause 
-are the \alert{Bayes factor} for hypothesis $H_k$ compared to hypothesis $H_j$ \pause 
-and
-\[
-p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta
-\]
-for all $j$.
-
+ggplot(densities, aes(x = y, y = density, 
+                      color = Hypothesis, linetype = Hypothesis)) +
+  geom_line(size = 2) + 
+  geom_vline(xintercept = y, color = "gray",linetype = "dotted", size = 2 ) + 
+  geom_point(data = data.frame(y = y, 
+                                density = dnorm(y, 0, c(1,sqrt(2))), 
+                                Hypothesis = c("H0","HA")),
+              aes(x=y, y=density, color = Hypothesis),
+             size = 4) + 
+  labs(y = "Prior predictive density") +
+  theme_bw()
+@
+\nc\ec
 \end{frame}
 
-\subsection{Normal example}
+
+
 \begin{frame}
-\frametitle{Normal example}
+\frametitle{Normal model}
+\bc
+<<>>=
+d = data.frame(y = seq(-5, 5, length = 101)) %>%
+  dplyr::mutate(H0 = 1/(1+dnorm(y, 0, sqrt(2))/dnorm(y, 0, 1)),
+                HA = 1-H0) %>%
+  tidyr::gather("Hypothesis", "Probability", H0, HA)
 
-Let $Y \sim N(\mu,1)$ and consider the hypotheses $H_0:\mu = 0$ and 
-$H_A:\mu \ne 0$ with $\mu|H_A\sim N(0,C)$ and, for simplicity, 
-$p(H_0) = p(H_A) = 0.5$.
-\pause 
-Then the two hypotheses are really 
-\begin{itemize}
-\item $H_0: Y \sim N(0,1)$ and
-\item $H_A: Y \sim N(0,1+C)$.
-\end{itemize}
-
-\vspace{0.1in} \pause 
-
-Thus 
-\[
-p(H_0|y) = \left[1+ \frac{p(y|H_A)}{p(y|H_0)}  \right]^{-1} \pause 
-= \left[ 1 + \frac{N(y;0,1+C)}{N(y;0,1)}  \right]^{-1}
-\]
-\pause
-where $N(y;\mu,\sigma^2)$ is evaluating the probability density function for 
-a normal distribution with mean $\mu$ and variance $\sigma^2$ at the value $y$.
+ggplot(d, aes(x=y, y=Probability, color = Hypothesis, linetype = Hypothesis)) + 
+  geom_line(size = 2) +
+  labs(y = "Posterior model probability") +
+  theme_bw()
+@
+\nc\ec
 \end{frame}
+
+
+
+
+
+% \subsection{Bayesian hypothesis tests}
+% \begin{frame}
+% \frametitle{Bayesian hypothesis tests}
+% 
+% To conduct a Bayesian hypothesis test, 
+% \pause
+% you need to specify 
+% \begin{itemize}
+% \item $p(M_j)$ \pause and 
+% \item $p(\theta|M_j)$ 
+% \end{itemize}
+% for every hypothesis $j=1,\ldots,J$.
+% \pause
+% Then, you can calculate 
+% \[ 
+% p(M_j|y) = \frac{p(y|M_j)p(M_j)}{\sum_{k=1}^J p(y|M_k)p(M_k)} \pause
+% = \left[ 1+ \sum_{k\ne j} \frac{p(y|M_k)}{p(y|M_j)}\frac{p(M_k)}{p(M_j)} \right]^{-1}
+% \]
+% \pause
+% where 
+% \[
+% BF(M_k:M_j) = \frac{p(y|M_k)}{p(y|M_j)} 
+% \]
+% \pause 
+% are the \alert{Bayes factor} for hypothesis $M_k$ compared to hypothesis $M_j$ \pause 
+% and
+% \[
+% p(y|M_j) = \int p(y|\theta)p(\theta|M_j) d\theta
+% \]
+% for all $j$.
+% 
+% \end{frame}
+
+
+
+\subsection{Prior impact}
+\begin{frame}
+\frametitle{Prior impact}
+
+Let $Y_i\ind N(\mu,1)$ and $H_0: \mu=0$ vs $H_A: \mu\ne 0$.
+
+\vspace{0.1in} \pause
+
+Assume $P(H_0) = P(H_A)$ \pause and $\mu|H_A \sim N(0,C)$,
+\pause
+\bc
+then 
+\[ \begin{array}{rl}
+y|H_0 &\sim N(0,1) \pause \\
+y|H_A &\sim N(0,1+C).
+\end{array} \]
+
+% \vspace{0.1in} \pause 
+% 
+% \bc
+% Thus 
+% \[
+% p(H_0|y) = \left[1+ \frac{p(y|H_A)}{p(y|H_0)}  \right]^{-1} \pause 
+% = \left[ 1 + \frac{N(y;0,1+C)}{N(y;0,1)}  \right]^{-1}
+% \]
+% \pause
+% where $N(y;\mu,\sigma^2)$ is evaluating the probability density function for 
+% a normal distribution with mean $\mu$ and variance $\sigma^2$ at the value $y$.
+\nc\ec
+\end{frame}
+
+
 
 \begin{frame}[fragile]
-\frametitle{Normal example}
-<<normal_bayes_factor, fig.width=8>>=
-d = ddply(expand.grid(y=seq(0,5,by=1), C=10^seq(0,4,by=0.1)), .(y,C), summarize,
-          post_prob_H0 = 1/(1+1/exp(dnorm(y,0,1,log=TRUE)-dnorm(y,0,1+C,log=TRUE))))
-
+\frametitle{Prior impact}
+\bc
+<<normal_bayes_factor>>=
+d = expand.grid(y=seq(0,5,by=1), C=10^seq(0,4,by=0.1)) %>%
+   dplyr::mutate(post_prob_H0 = 1/(1+1/exp(dnorm(y,0,1,log=TRUE)-dnorm(y,0,1+C,log=TRUE))))
+  
 ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) + 
   geom_line() + 
   labs(x = expression(sqrt(C)), y = expression(paste("p(",H[0],"|y)"))) + 
   scale_color_discrete(name="y") +
   theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
 
 
+\begin{frame}
+\frametitle{Interpretation}
 
+Since posterior model probabilities depend on the prior predictive distribution
+\[ 
+p(y|M_j) = \int p(y|\theta)p(\theta|M_j) d\theta
+\]
+\pause
+posterior model probabilities tell you which model does a better job of 
+\alert{prediction}
+\pause
+and priors must be informative. 
+
+\end{frame}
 
 
 
@@ -271,19 +378,21 @@ ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) +
 Suppose $Y\sim Bin(n,\theta)$ and we have the hypotheses 
 $H_0:\theta=0.5$ and $H_A:\theta\ne 0.5$ \pause
 We observe $n=10,000$ and $y=4,900$ and find the pvalue is 
-\[ pvalue \approx 2P(Y\le 4900) = 0.0466 \]
+\[ \mbox{\pvalue{}} \approx 2P(Y\le 4900) = 0.0466 \]
 \pause so we would reject $H_0$ at the 0.05 level. 
 
 \vspace{0.1in} \pause
 
 The posterior probability of $H_0$ if we assume $\theta|H_A \sim Unif(0,1)$ and 
 $p(H_0) = p(H_A) = 0.5$ is 
+\bc
 \[ p(H_0|y) \approx \frac{1}{1+1/10.8} = 0.96, \]
 \pause so the probability of $H_0$ being true is 96\%. 
 
 \vspace{0.1in} \pause 
 
-It appears the posterior model probability and pvalue completely disagree!
+It appears the posterior model probability and \pvalue{} completely disagree!
+\nc\ec
 \end{frame}
 
 % \begin{frame}[fragile]
@@ -301,13 +410,11 @@ It appears the posterior model probability and pvalue completely disagree!
 
 \subsection{Jeffrey-Lindley Paradox}
 \frame{\frametitle{Jeffrey-Lindley Paradox}
-  \begin{definition}
   The \alert{Jeffrey-Lindley Paradox} concerns a situation when comparing two hypotheses $H_0$ and $H_1$ given data $y$ \pause and find
   \begin{itemize}[<+->]\small
   \item a frequentist test result is significant leading to rejection of $H_0$, but
   \item the posterior probability of $H_0$ is high. 
   \end{itemize}
-  \end{definition}
   
   \vspace{0.2in} \pause
   
@@ -325,32 +432,51 @@ It appears the posterior model probability and pvalue completely disagree!
 \begin{frame}
 \frametitle{No real paradox}
 
+\small
+
 \pause
 
-Pvalues:
+\pvalue{}s:
 \begin{itemize}[<+->]
-\item Pvalues measure how incompatible your data are with the null hypothesis.
-\item The smaller the pvalue, the more incompatible.
+\item \pvalue{}s measure how incompatible your data are with the null hypothesis.
+% \item The smaller the \pvalue{}, the more incompatible.
 \item But they say nothing about how likely the alternative is.
 \end{itemize}
 
 \vspace{0.1in} \pause
 
+\bc
+
 Posterior model probabilities:
 \begin{itemize}[<+->]
-\item Posterior model probabilities measure how likely the data are under 
-the predictive distribution for each hypothesis.
-\item The larger the posterior probability, the more predictive that hypothesis 
-was compared to the other hypotheses.
-\item But this requires you to have at least two well-thought out models\pause, 
-i.e. no vague priors.
+\item Measure (prior) predictive ability.
+% \item The larger the posterior probability, the more predictive that hypothesis 
+% was compared to the other hypotheses.
+\item But this requires you to have at least two (or more) well-thought out models with
+informative priors.
 \end{itemize}
 
 \vspace{0.1in} \pause
 
 Thus, these two statistics provide completely different measures of model 
 adequecy.
+\nc\ec
 \end{frame}
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+\begin{itemize}
+\item Use posterior probabilities for one-sided alternative hypotheses.
+\item Posterior model probabilities evaluate relative predictive ability.
+\end{itemize}
+
+\end{frame}
+
+
 
 \end{document}
 
