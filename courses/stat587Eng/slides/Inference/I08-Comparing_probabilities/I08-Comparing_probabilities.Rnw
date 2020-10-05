@@ -5,10 +5,10 @@
 \input{../../frontmatter}
 \input{../../commands}
 
-\title{I08 - Comparing probabilities}
+\title{$\mathrm{I}$08 - Comparing probabilities}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -79,9 +79,8 @@ for $g=1,2$
 \pause 
 and you are interested in the relationship between $\theta_1$ and $\theta_2$. 
 \pause
-We can perform the following statistical procedures:
 \begin{itemize}
-\item Frequentist: based on asymptotic distribution of $\frac{Y_1}{n_1} - \frac{Y_2}{n_2}$:
+\item Frequentist: based on asymptotic distribution of $\frac{Y_1}{n_1} - \frac{Y_2}{n_2}$: \pause
   \begin{itemize}
   \item \pvalue{} for a hypothesis test, e.g. $H_0: \theta_1=\theta_2$, \pause
   \item confidence interval for $\theta_1-\theta_2$, \pause
@@ -153,8 +152,7 @@ and calculate a two-sided confidence interval for $\theta_1-\theta_2$.
 
 \bc
 <<frequentist_analysis, dependson="data_data_frame", echo=TRUE>>=
-(pt <- prop.test(d$successes, d$attempts))
-round(pt$p.value,2); round(pt$conf.int,3)
+prop.test(d$successes, d$attempts)
 @
 \nc\ec
 \end{frame}
@@ -312,11 +310,11 @@ d = data.frame(process   = factor(1:3),
 
 
 \begin{frame}[fragile]
-\frametitle{\pvalue{}s and confidence intervals}
+\frametitle{\pvalue{}s}
 
 The default hypothesis test is 
 \[ 
-H_0: \theta_g = \theta \,\mbox{for all}\, g
+H_0: \theta_g = \theta \quad \mbox{for all}\quad g
 \quad
 \mbox{versus}
 \quad
@@ -334,16 +332,9 @@ prop.test(d$successes, d$attempts)
 
 
 \begin{frame}[fragile]
-\frametitle{Pvalues and confidence intervals}
+\frametitle{Confidence intervals}
 
-The default hypothesis test is 
-\[ 
-H_0: \theta_g = \theta \,\mbox{for all}\, g
-\quad
-\mbox{versus}
-\quad
-H_A: \theta_g \ne \theta_{g'} \mbox{ for some }g,g'
-\]
+Confidence interval for $\theta_1-\theta_3$:
 
 \pause
 
@@ -366,6 +357,9 @@ An alternative test for equality amongst the proportions uses {\tt chisq.test()}
 <<data2_chi_square, dependson="data2_data_frame", echo=TRUE>>=
 d$failures <- d$attempts - d$successes
 chisq.test(d[c("successes","failures")])
+@
+\pause
+<<echo=TRUE>>=
 chisq.test(d[c("successes","failures")], simulate.p.value = TRUE)
 @
 \nc\ec
