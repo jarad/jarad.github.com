@@ -62,8 +62,11 @@ you can find them
 |Posterior model probability|[pdf](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf)|[R](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.R)|[One-sided alternatives](https://youtu.be/gn65VZ_F-s4)||
 ||||[Two-sided alternatives](https://youtu.be/nkugP1WgsS4)|
 ||||[p-values vs posterior probabilities](https://youtu.be/ynfHFClgwOo)|
-|Comparing probabilities|[pdf](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.pdf)|[R](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.R)||
-|Comparing means|[pdf](Inference/I09-Comparing_means/I09-Comparing_means.pdf)|[R](Inference/I09-Comparing_means/I09-Comparing_means.R)||
+|Comparing probabilities|[pdf](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.pdf)|[R](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.R)|[Comparing two probabilities](https://youtu.be/OrkqDx3xrMc)|
+||||[Comparing three or more probabilities](https://youtu.be/ufxAy7680Ss)|
+|Comparing means|[pdf](Inference/I09-Comparing_means/I09-Comparing_means.pdf)|[R](Inference/I09-Comparing_means/I09-Comparing_means.R)|[Comparing two means](https://youtu.be/toR5AFQJusA)|
+||||[Comparing three or more means](https://youtu.be/AOvXAi6AN0o)|
+||||[Comparing means with equal variances](https://youtu.be/5N5V4jrUA1U)|
 |Multiple comparisons|[pdf](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.pdf)|[R](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.R)||
 
 
