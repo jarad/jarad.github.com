@@ -7,8 +7,8 @@
 
 \title{R01 - Simple linear regression}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
@@ -23,8 +23,8 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
+library("scales")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -49,15 +49,17 @@ set.seed(2)
 
 {\tiny \url{http://www.pnas.org/content/101/49/17312}}
 
+\pause
+
 \bc
 \begin{quote}
-People who are stressed over long periods tend to look haggard, and it is commonly thought that psychological stress leads to premature aging and the earlier onset of diseases of aging. 
+People who are stressed over long periods tend to look haggard, \pause and it is commonly thought that psychological stress leads to premature aging [as measured by decreased telomere length]
 
-...
+\pause ...
 
-This design allowed us to examine the importance of ... caregiving stress (...number of years since a child's diagnosis [of a chronic disease]).
+examine the importance of ... caregiving stress (...number of years since a child's diagnosis [of a chronic disease]) [on telomere length]
 
-...
+\pause ...
 
 Telomere length values were measured from DNA by a quantitative PCR assay that determines the relative ratio of telomere repeat copy number to single-copy gene copy number (T/S ratio) in experimental samples as compared with a reference DNA sample.
 \end{quote}
@@ -146,14 +148,14 @@ g
 \vspace{-0.2in}
 
 \bc
-<<echo = FALSE>>=
-xx = 1:10
+<<slr_viz, echo = FALSE>>=
+xx = 0:9
 d = expand.grid(mean = xx,
                 x = seq(-3, 3, length = 101)) %>%
   dplyr::mutate(y = mean + dnorm(x),
                 x = mean + x)
 
-ggplot(d, aes(x=x, y=y, group = mean)) + 
+slr_viz = ggplot(d, aes(x=x, y=y, group = mean)) + 
   geom_hline(yintercept = xx, color = "gray") +
   geom_abline(intercept = 0, slope = 1, color = "blue") + 
   geom_line(color = "magenta", size = 2) + 
@@ -161,7 +163,9 @@ ggplot(d, aes(x=x, y=y, group = mean)) +
   labs(title = "Simple linear regression model",
        x = "Response variable",
        y = "Explanatory variable") +
-  theme_bw() +
+  theme_bw() 
+
+slr_viz +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
         axis.text.y=element_blank(),
@@ -196,7 +200,7 @@ $\beta_0$ is the \alert{expected} response when the explanatory variable is zero
 E[Y_i|X_i=x+1] &= \beta_0+\beta_1x+\beta_1 \pause \\
 \uncover<6->{-} E[Y_i|X_i=x\phantom{\,+\,1}] &= \beta_0+\beta_1 x  \pause \\
 \hline
-&= \beta_1 \pause
+&= \phantom{\beta_0+\beta_1x+}\beta_1 \pause
 \end{array} \]
 	
 $\beta_1$ is the \alert{expected} increase in the response for each unit 
@@ -213,6 +217,19 @@ explanatory variable.
 }
 
 
+
+\begin{frame}
+\frametitle{Simple linear regression - visualized}
+
+\vspace{-0.2in}
+
+\bc
+<<echo=FALSE, dependson = "slr_viz">>=
+slr_viz + 
+  scale_y_continuous(breaks = scales::pretty_breaks())
+@
+\nc\ec
+\end{frame}
 
 
 \subsection{Parameter estimation}
@@ -281,13 +298,12 @@ g +  geom_segment(aes(xend = jittered_years, yend = predict),
 \subsection{Standard errors}
 \frame{\frametitle{}
 \small
-	How certain are we about $\hat{\beta}_0$ and $\hat{\beta}_1$ being equal to 
-	$\beta_0$ and $\beta_1$? 
+	How certain are we about $\hat{\beta}_0$ and $\hat{\beta}_1$? 
 	
 	\vspace{0.2in} \pause
 	
 	\bc
-	We quantify this uncertainty using their posterior scale parameters:
+	We quantify this uncertainty using their standard errors (or posterior scale parameters): \pause
 	\[ \begin{array}{rlll}
 	SE(\hat\beta_0) &= \hat{\sigma} \sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_X^2}} & df=n-2 \pause\\ 
 	SE(\hat\beta_1) &= \hat{\sigma} \sqrt{\phantom{\frac{1}{n} +\,\, }\frac{1}{(n-1)s_X^2}} & df=n-2 \pause\\ 
@@ -350,7 +366,6 @@ We can construct a $100(1-a)\%$ two-sided confidence interval for $\beta_j$ via
 \[ 
 \hat{\beta}_j \pm t_{n-2,1-a/2} SE(\hat\beta_j).
 \]
-\pause
 
 \vspace{0.1in} \pause
 
