@@ -1,0 +1,286 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Regression: choosing explanatory variables}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("tidyverse")
+library("gridExtra")
+library("abd")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+
+
+\section{Choosing explanatory variables}
+\begin{frame}
+\frametitle{Simple linear regression}
+
+Let 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 \uncover<2->{f(}X_i\uncover<2->{)}, \sigma^2). \]
+
+\vspace{0.2in} \pause
+
+Possible choices for $f$:
+\begin{itemize}
+\item quadratic: $f(x) = x^2$
+\item logarithmic: $f(x) = \log(x)$
+\item centered: $f(x) = x - m$
+\item scaled: $f(x) = x/s$
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Quadratic relationship}
+\begin{frame}
+\frametitle{Quadratic relationship}
+\bc
+<<>>=
+d = data.frame(x = runif(100, -2, 2)) %>%
+  dplyr::mutate(f = x^2,
+                y = rnorm(n(), f, 0.1)) 
+
+g1 = ggplot(d, aes(x = f, y = y)) + 
+  geom_point() + 
+  theme_bw()
+
+g2 = ggplot(d, aes(x = x, y)) +
+  geom_point() + 
+  theme_bw()
+
+gridExtra::grid.arrange(g1, g2)
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Logarithmic relationship}
+\begin{frame}
+\frametitle{Logarithmic relationship}
+\bc
+<<>>=
+d = data.frame(x = runif(100, 0, 2)) %>%
+  dplyr::mutate(f = log(x),
+                y = rnorm(n(), f, 0.1)) 
+
+g1 = ggplot(d, aes(x = f, y = y)) + 
+  geom_point() + 
+  theme_bw()
+
+g2 = ggplot(d, aes(x = x, y)) +
+  geom_point() + 
+  theme_bw()
+
+gridExtra::grid.arrange(g1, g2)
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Shifting the intercept}
+\begin{frame}
+\frametitle{Shifting the intercept}
+
+The intercept is the expected response when the explanatory variable is zero. 
+\pause
+If we use 
+\[ 
+f(x) = x-m,
+\]
+\pause
+then the new intercept ($\tilde\beta_0$) is the expected response when the 
+explanatory variable is $m$.
+\pause
+\[ E[Y|X=x] = \beta_0 + \beta_1 (x-m) \pause = \tilde\beta_0 + \tilde\beta_1 x \]
+\pause
+so our new parameters for the mean are 
+\begin{itemize}
+\item intercept $\tilde{\beta}_0 = (\beta_0-m\beta_1)$\pause and
+\item slope $\tilde{\beta}_1=\beta_1$ (unchanged).
+\end{itemize}
+
+\end{frame}
+
+
+
+% \begin{frame}
+% \frametitle{Shifting the intercept}
+% \bc
+% <<>>=
+% d = data.frame(x = runif(100, 10, 12)) %>%
+%   dplyr::mutate(f = x-11,
+%                 y = rnorm(n(), f, 0.1)) 
+% 
+% g1 = ggplot(d, aes(x = f, y = y)) + 
+%   geom_point() + 
+%   theme_bw()
+% 
+% g2 = ggplot(d, aes(x = x, y)) +
+%   geom_point() + 
+%   theme_bw()
+% 
+% gridExtra::grid.arrange(g1, g2)
+% @
+% \nc\ec
+% \end{frame}
+
+
+
+\begin{frame}
+\frametitle{Telomere data}
+\bc
+<<>>=
+Telomeres = abd::Telomeres %>%
+  dplyr::mutate(f = years - 5)
+
+g1 = ggplot(Telomeres, aes(x = f, y = telomere.length)) + 
+  geom_point() + 
+  stat_smooth(method = "lm", se = FALSE) + 
+  theme_bw()
+
+g2 = ggplot(Telomeres, aes(x = years, y = telomere.length)) +
+  geom_point() + 
+  stat_smooth(method = "lm", se = FALSE) + 
+  theme_bw()
+
+gridExtra::grid.arrange(g1, g2)
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Telomere data: shifting the intercept}
+\bc
+<<shifting_the_intercept, dependson="telomere_data", echo=TRUE>>=
+m0 = lm(telomere.length ~   years   , abd::Telomeres) 
+m4 = lm(telomere.length ~ I(years-5), abd::Telomeres) 
+
+coef(m0)
+coef(m4)
+
+confint(m0)
+confint(m4)
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Rescaling the slope}
+\begin{frame}
+\frametitle{Rescaling the slope}
+
+The slope is the expected increase in the response when the explanatory variable increases by 1. 
+If we use
+\[ f(x) = x/s, \]
+then the new slope, $\tilde\beta_1$, is the expected increase in the response when
+the explanatory variable increases by $s$.
+\pause
+\[ E[Y|X=x] = \beta_0 + \beta_1 (x/s) \pause = \tilde{\beta}_0 + \tilde{\beta}_1 x \]
+\bc
+so our new parameters are 
+\begin{itemize}
+\item intercept $\tilde{\beta}_0 = \beta_0$ (unchanged)\pause and
+\item slope $\tilde{\beta}_1=\beta_1/s$.
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Telomere data: rescaling the slope}
+\bc
+<<>>=
+Telomeres = abd::Telomeres %>%
+  dplyr::mutate(f = years/2)
+
+g1 = ggplot(Telomeres, aes(x = f, y = telomere.length)) + 
+  geom_point() + 
+  stat_smooth(method = "lm", se = FALSE) + 
+  theme_bw()
+
+g2 = ggplot(Telomeres, aes(x = years, y = telomere.length)) +
+  geom_point() + 
+  stat_smooth(method = "lm", se = FALSE) + 
+  theme_bw()
+
+gridExtra::grid.arrange(g1, g2)
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Telomere data: rescaling the slope}
+\bc
+<<rescaling_the_slope, dependson="telomere_data", echo=TRUE>>=
+m0 = lm(telomere.length ~   years   , abd::Telomeres) 
+m4 = lm(telomere.length ~ I(years/2), abd::Telomeres) 
+
+coef(m0)
+coef(m4)
+
+confint(m0)
+confint(m4)
+@
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+Let 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 f(X_i), \sigma^2). \]
+\pause
+Choose $f$ \pause based on
+\begin{itemize}
+\item Scientific understanding \pause
+\item Interpretability \pause
+\item Diagnostics
+\end{itemize}
+
+\end{frame}
+
+\end{document}
+
+
+
