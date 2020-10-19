@@ -72,9 +72,9 @@ you can find them
 
 ### Regression
 
-|Topic|slides|code|
+|Topic|slides|video|code|
 ||||
-|Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|
+|Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|[Simple linear regression](https://youtu.be/qAGZfkDzNX8)|
 |Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|
 |Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|
 |Categorical explanatory variables|[pdf](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.pdf)|[R](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.R)|
