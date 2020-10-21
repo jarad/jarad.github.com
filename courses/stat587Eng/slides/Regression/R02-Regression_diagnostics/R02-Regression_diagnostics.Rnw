@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[t,aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -7,21 +7,24 @@
 
 \title{R02 - Regression diagnostics}
 
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
                fig.width=6, fig.height=4.5, 
                size='tiny', 
-               out.width='0.8\\textwidth', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
-               echo=TRUE,
-               cache=TRUE)
+               echo=FALSE,
+               cache=FALSE)
 options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
+library("ggResidpanel")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -48,7 +51,8 @@ All models are wrong, but some are useful.
 
 {\tiny \url{http://stats.stackexchange.com/questions/57407/what-is-the-meaning-of-all-models-are-wrong-but-some-are-useful}}
 
-{\small
+\bc
+{\scriptsize
 \begin{quotation}
 ``All models are wrong" that is, 
 every model is wrong because it is a simplification of reality. 
@@ -70,13 +74,12 @@ they are wrong.
 But good maps are very useful. 
 \end{quotation}
 }
-
-
+\nc\ec
 \end{frame}
 
 
 
-\frame{\frametitle{Regression}
+\frame{\frametitle{Simple Linear Regression}
   The simple linear regression model is 
   \[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
 	\pause this can be rewritten as 
@@ -84,6 +87,7 @@ But good maps are very useful.
 	
 	\vspace{0.1in} \pause
 	
+	\bc
 	Key assumptions are:
 	\begin{itemize}[<+->]
   \item The errors are 
@@ -95,11 +99,40 @@ But good maps are very useful.
   \item There is a linear relationship between the expected response and the
   explanatory variables.
 	\end{itemize}
+	\nc\ec
 }
+
+
+
+\frame{\frametitle{Multiple Regression}
+  The \alert{multiple regression} model is 
+	\[ Y_i = \beta_0 + \beta_1 X_{i,1} + \cdots + \beta_p X_{i,p} + e_i \quad e_i \stackrel{iid}{\sim} N(0,\sigma^2). \]
+	
+	\vspace{0.1in} \pause
+	
+	\bc
+	Key assumptions are:
+	\begin{itemize}
+  \item The errors are 
+    \begin{itemize}
+    \item normally distributed,
+    \item have constant variance, and
+    \item are independent of each other. \pause
+    \end{itemize}
+  \item There is a specific relationship between the expected response and the
+  explanatory variables.
+	\end{itemize}
+	\nc\ec
+}
+
 
 
 \begin{frame}[fragile]
 \frametitle{Telomere data}
+
+\vspace{-0.2in} 
+
+\bc
 <<data, echo=FALSE, warning=FALSE>>=
 # From `abd` package
 Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L, 
@@ -115,8 +148,11 @@ Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L,
 ggplot(Telomeres, aes(years, telomere.length)) + 
   geom_point() + 
   stat_smooth(method = "lm") + 
+  labs(title = "Telomere length vs years post diagnosis",
+       x = "Years since diagnosis", y = "Telomere length") + 
   theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
@@ -145,10 +181,15 @@ we will calculate a variety of \alert{case statistics}:
 
 \begin{frame}[fragile]
 \frametitle{Default diagnostic plots in R}
+
+\vspace{-0.3in}
+
+\bc
 <<default_diagnostics, dependson = "data">>=
 m <- lm(telomere.length ~ years, Telomeres)
 opar = par(mfrow=c(2,3)); plot(m, 1:6, ask = FALSE); par(opar)
 @
+\nc\ec
 \end{frame}
 
 
@@ -158,19 +199,18 @@ opar = par(mfrow=c(2,3)); plot(m, 1:6, ask = FALSE); par(opar)
 \begin{frame}
 \frametitle{Leverage}
 
-\begin{definition}
 The \alert{leverage} ($0\le h_i\le 1$) of an observation $i$ is a measure of
-how far away the observations explanatory variable value is away from the other
+how far away that observation's explanatory variable value is from the other
 observations. \pause
 Larger leverage indicates a larger \alert{potential} influence of a single 
 observation on the regression model.
-\end{definition}
 
-\vspace{0.1in} \pause
+\pause
 
+\bc
 In simple linear regression, 
 \[
-h_i = \frac{1}{n} + \frac{(x_i-\overline{x})^2}{SXX}
+h_i = \frac{1}{n} + \frac{(\overline{x}-x_i)^2}{(n-1)s_X^2}
 \]
 which is involved in the standard error for the line for a location $x_i$. 
 
@@ -180,13 +220,14 @@ The variability in the residuals is a function of the leverage, i.e.
 \[
 Var[r_i] = \sigma^2(1-h_i)
 \]
-
+\nc\ec
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Telomere data}
+\bc
 <<leverage, dependson="data">>=
 m <- lm(telomere.length~years, Telomeres)
 
@@ -195,6 +236,7 @@ cbind(Telomeres, leverage = hatvalues(m)) %>%
   unique() %>% 
   arrange(-years)
 @
+\nc\ec
 \end{frame}
 
 
@@ -203,26 +245,27 @@ cbind(Telomeres, leverage = hatvalues(m)) %>%
 \frametitle{Residuals and Fitted values}
 
 A regression model can be expressed as 
-\[ \begin{array}{rl}
-Y_i &\ind N(\mu_i,  \sigma^2) \\
-\mu_i &= \beta_0 + \beta_1 X_i
-\end{array} \]
+\[ 
+Y_i \ind N(\mu_i,  \sigma^2) \qquad \mbox{and} \qquad
+\mu_i = \beta_0 + \beta_1 X_i
+\]
 
 \pause
 
+\bc
 A fitted value $\hat{Y}_i$ for an observation $i$ is 
 \[ 
 \hat{Y}_i = \hat\mu_i = \hat{\beta}_0+\hat{\beta}_1 X_i
 \]
 \pause
-and thus the residual is 
+and the residual is 
 \[ \begin{array}{rl}
-r_i &= Y_i - \hat{Y}_i \pause \\
-&= Y_i - \hat\mu_i \pause \\
-&= Y_i - (\hat{\beta}_0+\hat{\beta}_1 X_i) \pause \\
-&= Y_i - \hat{\beta}_0-\hat{\beta}_1 X_i \\
+r_i &= Y_i - \hat{Y}_i 
+% &= Y_i - \hat\mu_i \pause \\
+% &= Y_i - (\hat{\beta}_0+\hat{\beta}_1 X_i) \pause \\
+% &= Y_i - \hat{\beta}_0-\hat{\beta}_1 X_i \\
 \end{array} \]
-
+\nc\ec
 \end{frame}
 
 
@@ -238,6 +281,7 @@ Often we will \alert{standardize} residuals, \pause i.e.
 
 \pause
 
+\bc
 If $|r_i|$ is large, 
 it will have a large impact on $\hat\sigma^2 = \sum_{i=1}^n r_i^2/(n-2)$.
 \pause
@@ -252,11 +296,16 @@ where $\hat\sigma_{(i)} = \sum_{j\ne i} r_j^2/(n-3)$.
 \vspace{0.1in} \pause
 
 Both of these residuals can be compared to a standard normal distribution.
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
-\frametitle{Telomere data}
+\frametitle{Telomere data: residuals}
+
+\vspace{-0.2in}
+
+\bc
 <<residuals, dependson="data">>=
 m <- lm(telomere.length~years, Telomeres)
 
@@ -266,6 +315,7 @@ Telomeres %>%
          standardized = rstandard(m),
          studentized  = rstudent(m)) 
 @
+\nc\ec
 \end{frame}
 
 
@@ -273,27 +323,17 @@ Telomeres %>%
 \begin{frame}
 \frametitle{Cook's distance}
 
-If a particular observation is highly influential in estimating the parameters
-of the regression model, 
-we can assess how influential it is by fitting the regression model with and
-without that observation and evaluating how the model parameters change.
-
-\pause
-
-\begin{definition}
 The \alert{Cook's distance} for an observation $i$ ($d_i>0$) is a measure of 
-how much the estimates of the regression parameters change when that observation
+how much the regression parameter estimates change when that observation
 is included versus when it is excluded.
-\end{definition}
 
-\pause
+\vspace{0.1in} \pause
 
 Operationally, we might be concerned when $d_i$ is 
 \begin{itemize}
 \item larger than 1 or
 \item larger then 4/n.
 \end{itemize}
-
 \end{frame}
 
 
@@ -301,6 +341,11 @@ Operationally, we might be concerned when $d_i$ is
 \section{Default regression diagnostics in R}
 \subsection{Residuals vs fitted values}
 \begin{frame}
+\frametitle{Residuals vs fitted values}
+
+\vspace{-0.4in}
+
+\bc
 \tiny
 <<residual_vs_fitted, dependson="residuals">>=
 plot(m, 1)
@@ -309,15 +354,22 @@ plot(m, 1)
 \begin{tabular}{ll}
 Assumption & Violation \\
 \hline
-Linearity & Quadratic curve \\
+Linearity & Curvature \\
 Constant variance & Funnel shape \\
 \hline
 \end{tabular}
+\nc\ec
 \end{frame}
 
 
 \subsection{QQ-plot}
 \begin{frame}
+\frametitle{QQ-plot}
+
+\vspace{-0.4in}
+
+
+\bc
 \tiny
 <<qqplot, dependson="residuals">>=
 plot(m, 2)
@@ -329,11 +381,17 @@ Assumption & Violation \\
 Normality & Points don't generally fall along the line \\
 \hline
 \end{tabular}
+\nc\ec
 \end{frame}
 
 
 \subsection{Absolute standardized residuals vs fitted values}
 \begin{frame}
+\frametitle{Absolute standardized residuals vs fitted values}
+
+\vspace{-0.4in}
+
+\bc
 \tiny
 <<absolute_residuals, dependson="residuals", echo=FALSE>>=
 plot(m, 3)
@@ -345,12 +403,18 @@ Assumption & Violation \\
 Constant variance & Increasing (or decreasing) trend \\
 \hline
 \end{tabular}
+\nc\ec
 \end{frame}
 
 
 
 \subsection{Cook's distance}
 \begin{frame}
+\frametitle{Cook's distance}
+
+\vspace{-0.4in}
+
+\bc
 \tiny
 <<cooks_distance, dependson="residuals">>=
 plot(m, 4)
@@ -362,12 +426,18 @@ Outlier & Violation \\
 Influential observation & Cook's distance larger than (1 or 4/n) \\
 \hline
 \end{tabular}
+\nc\ec
 \end{frame}
 
 
 
 \subsection{Residuals vs leverage}
 \begin{frame}
+\frametitle{Residuals vs leverage}
+
+\vspace{-0.4in}
+
+\bc
 \tiny
 <<residuals_vs_leverage, dependson="residuals">>=
 plot(m, 5)
@@ -379,60 +449,53 @@ Outlier & Violation \\
 Influential observation & Points outside red dashed lines \\
 \hline
 \end{tabular}
+\nc\ec
 \end{frame}
 
 
 \subsection{Cook's distance vs leverage}
 \begin{frame}
+\frametitle{Cooks' distance vs leverage}
+
+\vspace{-0.4in}
+
+\bc
 \tiny
 <<cooks_distance_vs_leverage, dependson="residuals">>=
 plot(m, 6)
 @
 \pause
 This plot is pretty confusing.
+\nc\ec
 \end{frame}
 
 
-\subsection{Summary}
+
+
+
+
+\subsection{Additional plots}
 \begin{frame}
-\frametitle{Summary}
+\frametitle{Additional plots}
+Default plots do not assess all model assumptions.
 
-\footnotesize
+\vspace{0.1in} \pause
 
-Case statistics:
-\begin{itemize}
-\item Fitted values
-\item Leverage
-\item Residuals
-  \begin{itemize}
-  \item Standardized residuals
-  \item Studentized residuals
-  \end{itemize}
-\item Cook's distance
-\end{itemize}
-
-\pause
-
-Model assumptions:
-	\begin{itemize}
-	\item Normality
-	\item Constant variance
-	\item Independence
-  \item Linearity
-	\end{itemize}
-	
-\pause
-
-Default plots in R do not assess all model assumptions.
 Two additional suggested plots:
-\begin{itemize}
+\begin{itemize} \footnotesize
 \item Residuals vs row number
 \item Residuals vs (each) explanatory variable
 \end{itemize}
 \end{frame}
 
+
+\subsection{Plot residuals vs row number (index)}
 \begin{frame}[fragile]
 \frametitle{Plot residuals vs row number (index)}
+
+\vspace{-0.2in}
+
+\bc
 \tiny
 <<residuals_vs_index, dependson="residuals", fig.height=3.5, echo=TRUE>>=
 plot(residuals(m))
@@ -443,11 +506,18 @@ Assumption & Violation \\
 Independence & A pattern suggests temporal correlation \\
 \hline
 \end{tabular}
+\nc\ec
 \end{frame}
 
 
+
+\subsection{Residual vs explanatory variable}
 \begin{frame}[fragile]
 \frametitle{Residual vs explanatory variable}
+
+\vspace{-0.2in}
+
+\bc
 \tiny
 <<residual_vs_explanatory, dependson="residuals", fig.height=3.5, echo=TRUE>>=
 plot(Telomeres$years, residuals(m))
@@ -458,37 +528,86 @@ Assumption & Violation \\
 Linearity & A pattern suggests non-linearity \\
 \hline
 \end{tabular}
+\nc\ec
 \end{frame}
 
 
 
-\section{ggResidpanel}
-
-\subsection{R}
+\subsection{ggResidpanel: R}
 \begin{frame}[fragile]
-\frametitle{ggResidpanel}
-
-The {\tt ggResidpanel} package has a variety of options for diagnostic plots.
-
-<<fig.height=3.5>>=
-library("ggResidpanel")
+\frametitle{ggResidpanel: R default}
+\bc
+<<fig.height=3.5, echo = TRUE>>=
 resid_panel(m, plots = "R")
 @
+\nc\ec
 \end{frame}
 
-\subsection{Customized}
+\subsection{ggResidpanel: R all plots}
 \begin{frame}[fragile]
-\frametitle{ggResidpanel}
-
-The {\tt ggResidpanel} package has a variety of options for diagnostic plots.
-
-<<fig.height=3.5>>=
+\frametitle{ggResidpanel: R all plots}
+\bc
+<<fig.height=3.5, echo = TRUE>>=
 resid_panel(m, plots = c("qq", "hist", "resid", "index", "yvp", "cookd"),
-            bins = 30, ind.ncol = 3, smoother = TRUE,
+            bins = 30, smoother = TRUE, qqbands = TRUE,
             type = "standardized") # what I was calling studentized
 @
+\nc\ec
 \end{frame}
 
+
+\begin{frame}[fragile]
+\frametitle{ggResidpanel: R explanatory}
+\bc
+<<fig.height=3.5, echo = TRUE>>=
+resid_xpanel(m)
+@
+\nc\ec
+\end{frame}
+
+
+\subsection{ggResidpanel: SAS}
+\begin{frame}[fragile]
+\frametitle{ggResidpanel: SAS}
+\pause
+
+\bc
+<<fig.height=3.5, echo = TRUE>>=
+resid_panel(m, plots = "SAS") 
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+\bc
+Case statistics:
+\begin{itemize} 
+\item Fitted values
+\item Leverage
+\item Residuals
+  \begin{itemize} 
+  \item Standardized residuals
+  \item Studentized residuals
+  \end{itemize}
+\item Cook's distance
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Model assumptions:
+\begin{itemize} 
+\item Normality
+\item Constant variance
+\item Independence
+\item Linearity
+\end{itemize}
+\nc\ec
+\end{frame}
 
 
 \end{document}
