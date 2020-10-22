@@ -72,7 +72,7 @@ you can find them
 
 ### Regression
 
-|Topic|slides|video|code|
+|Topic|slides|code|video|
 ||||
 |Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|[Simple linear regression](https://youtu.be/qAGZfkDzNX8)|
 ||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.R)|[Choosing explanatory variables](https://youtu.be/vzu_V-DdF7I)|
