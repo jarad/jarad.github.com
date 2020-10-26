@@ -1,63 +1,62 @@
-## ----libraries, message=FALSE, warning=FALSE, echo=FALSE-----------------
-library("dplyr")
-library("ggplot2")
+## ----libraries, message=FALSE, warning=FALSE, echo=FALSE-------------------------------------------------------
+library("tidyverse")
 library("Sleuth3")
 
-## ----set_seed, echo=FALSE------------------------------------------------
+
+## ----set_seed, echo=FALSE--------------------------------------------------------------------------------------
 set.seed(2)
 
-## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
-opar = par(mar=c(5,5,0,0)+.1)
-plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
-     case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
-     xaxt='n', pch=19, cex.lab=1.5, 
-     xlab="Diet", col='gray')
-axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
 
-# yy = with(case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
-#           by(Lifetime, Diet, mean))
-# segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
-par(opar)
+## ----eval=FALSE------------------------------------------------------------------------------------------------
+## Sleuth3::case0501
 
-## ------------------------------------------------------------------------
+
+## ----echo=FALSE, fig.height = 4--------------------------------------------------------------------------------
+g_two_diets = 
+ggplot(case0501 %>% filter(Diet %in% c("R/R50","N/R50")),
+      aes(x = Diet, y = Lifetime)) + 
+  geom_jitter() +
+  labs(y = "Lifetime (months)") +
+  theme_bw()
+
+g_two_diets
+
+
+## --------------------------------------------------------------------------------------------------------------
 case0501$X <- ifelse(case0501$Diet == "N/R50", 1, 0)
-unique(case0501$X)
 (m <- lm(Lifetime ~ X, data = case0501, subset = Diet %in% c("R/R50","N/R50")))
 confint(m)
 predict(m, data.frame(X=1), interval = "confidence") # Expected lifetime on N/R50
 
-## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
-opar = par(mar=c(5,5,0,0)+.1)
-plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
-     case0501 %>% filter(Diet %in% c("R/R50","N/R50")), 
-     xaxt='n', pch=19, cex.lab=1.5, 
-     xlab="Diet", col='gray')
-axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
 
-yy = with(case0501 %>% filter(Diet %in% c("R/R50","N/R50")),
-          by(Lifetime, Diet, mean))
-segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
-par(opar)
+## ----echo=FALSE------------------------------------------------------------------------------------------------
+case0501_means = case0501 %>%
+  group_by(Diet) %>%
+  summarize(Lifetime = mean(Lifetime), .groups = "drop")
 
-## ------------------------------------------------------------------------
+g_two_diets + 
+  geom_crossbar(data = case0501_means %>% filter(Diet %in% c("R/R50","N/R50")),
+                aes(ymin = Lifetime, ymax = Lifetime), color = "magenta")
+
+
+## --------------------------------------------------------------------------------------------------------------
 summary(m)$coefficients[2,4] # p-value
 confint(m)
 t.test(Lifetime ~ Diet, data = case0501, subset = Diet %in% c("R/R50","N/R50"), var.equal=TRUE)
 
-## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
-opar = par(mar=c(5,5,0,0)+.1)
-plot(Lifetime~jitter(I(as.numeric(Diet)-1)), 
-     case0501, 
-     xaxt='n', pch=19, cex.lab=1.5, 
-     xlab="Diet", col='gray')
-axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
 
-# yy = with(case0501, 
-#           by(Lifetime, Diet, mean))
-# segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
-par(opar)
+## ----echo=FALSE------------------------------------------------------------------------------------------------
+g_all_diets = 
+ggplot(case0501,
+      aes(x = Diet, y = Lifetime)) +
+  labs(y = "Lifetime (months)") +
+  theme_bw()
 
-## ------------------------------------------------------------------------
+g_all_diets + 
+  geom_jitter()
+
+
+## --------------------------------------------------------------------------------------------------------------
 case0501 <- case0501 %>% 
   mutate(X1 = Diet == "N/R40",
          X2 = Diet == "N/R50",
@@ -65,28 +64,33 @@ case0501 <- case0501 %>%
          X4 = Diet == "R/R50",
          X5 = Diet == "lopro")
 
-m <- lm(Lifetime ~ X1 + X2 + X3 + X4 + X5, data= case0501)
+m <- lm(Lifetime ~ X1 + X2 + X3 + X4 + X5, data = case0501)
 m
 confint(m)
 
-## ------------------------------------------------------------------------
+
+## --------------------------------------------------------------------------------------------------------------
 summary(m)
 
-## ----echo=FALSE, fig.width=8, out.width='0.9\\textwidth'-----------------
-case0501 <- Sleuth3::case0501
-opar = par(mar=c(5,5,0,4)+.1)
-plot(Lifetime~jitter(I(as.numeric(Diet)-1)), case0501, 
-     xaxt='n', pch=19, cex.lab=1.5, 
-     xlab="Diet", col='gray')
-axis(1, seq(0,nlevels(case0501$Diet)-1), levels(case0501$Diet), cex=1.5)
 
-yy = with(case0501, by(Lifetime, Diet, mean))
-axis(4, yy[1], expression(beta[0]), las=1, cex.axis=1.5)
-abline(h=yy[1], lwd=2)
-segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
-arrows(1:5,yy[1],1:5,yy[-1],col='red', lwd=4)
-text(1:5, (yy[2:6]+yy[1])/2, 
-     expression(beta[1],beta[2],beta[3],beta[4],beta[5]), 
-     pos=4, col='red', cex=1.5, offset=1)
-par(opar)
+## ----echo=FALSE------------------------------------------------------------------------------------------------
+case0501_labels = case0501_means %>%
+  dplyr::mutate(midpoints = (Lifetime + coef(m)[1])/2,
+                label = paste0("beta[",0:5,"]")) %>% 
+  filter(Diet != "N/N85")
+
+g_all_diets + 
+  geom_jitter(color = "gray") +
+  geom_crossbar(data = case0501_means,
+                aes(ymin = Lifetime, ymax = Lifetime), color = "magenta") +
+  geom_segment(data = case0501_means %>% filter(Diet != "N/N85"),
+                aes(xend = Diet, y = coef(m)[1], yend = coef(m)[1] + coef(m)[-1]),
+               color = "magenta", 
+               arrow = arrow(length = unit(0.03, "npc"))) +
+  geom_hline(yintercept = coef(m)[1], linetype = "dashed", color = "magenta") +
+  geom_label(data = case0501_labels, nudge_x = 0.2,
+             aes(y = midpoints, label = label),
+             parse = TRUE) + 
+  geom_label(aes(x = "N/N85", y = coef(m)[1], label = "beta[0]"),
+             parse = TRUE)
 
