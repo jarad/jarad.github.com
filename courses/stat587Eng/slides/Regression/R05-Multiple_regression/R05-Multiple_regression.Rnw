@@ -1,4 +1,4 @@
-\documentclass[t,aspectratio=169]{beamer}
+\documentclass[t,aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -7,8 +7,8 @@
 
 \title{R05 - Multiple Regression}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, echo=FALSE, warning=FALSE, message=FALSE>>=
 options(width=120)
@@ -122,8 +122,8 @@ y = X\beta + \epsilon
 where 
 \begin{itemize}
 \item $y = (y_1,\ldots,y_n)^\top$
-\item $X$ is $n\times p$ with $i$th row $X_i = (X_{i,1},\ldots,X_{i,p})$
-\item $\beta = (\beta_1,\ldots,\beta_p)^\top$
+\item $X$ is $n\times p$ with $i$th row $X_i = (1,X_{i,1},\ldots,X_{i,p})$
+\item $\beta = (\beta_0,\beta_1,\ldots,\beta_p)^\top$
 \item $\epsilon = (\epsilon_1,\ldots,\epsilon_n)^\top$
 \end{itemize}
 \pause
@@ -132,17 +132,17 @@ Then we have
 \hat\beta &= (X^\top X)^{-1}X^\top y \\
 Var(\hat\beta) &= \sigma^2(X^\top X)^{-1} \\
 r &= y-X\hat\beta \\
-\hat\sigma^2 &= \frac{1}{n-p}r^\top r \\
+\hat\sigma^2 &= \frac{1}{n-(p+1)}r^\top r \\
 \end{array} \]
 \pause
 \bc
 Confidence/credible intervals and (two-sided) \pvalue{}s are constructed using 
 \[
-\hat\beta_j \pm t_{n-p,1-a/2} SE(\hat\beta_j)
+\hat\beta_j \pm t_{n-(p+1),1-a/2} SE(\hat\beta_j)
 \quad\mbox{and}\quad
-\mbox{pvalue} = 2P\left(T_{n-p}>\left|\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right|\right)
+\mbox{pvalue} = 2P\left(T_{n-(p+1)}>\left|\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right|\right)
 \]
-where $T_{n-p} \sim t_{n-p}$ and $SE(\hat\beta_j)$ is the $j$th diagonal element of 
+where $T_{n-(p+1)} \sim t_{n-(p+1)}$ and $SE(\hat\beta_j)$ is the $j$th diagonal element of 
 $\hat\sigma^2(X^\top X)^{-1}$.
 \nc\ec
 \end{frame}
@@ -427,7 +427,7 @@ ggplot(m %>% filter(variable %in% c("maxdepth","no3")), aes(x=value,y=count)) +
 \frametitle{R code and output}
 \bc
 <<echo = TRUE>>=
-m <- lm(count~no3+maxdepth, longnosedace)
+m <- lm(count ~ maxdepth + no3, longnosedace)
 summary(m)
 @
 \nc\ec
