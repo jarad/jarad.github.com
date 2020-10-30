@@ -1,4 +1,4 @@
-\documentclass[t,aspectratio=169,handout]{beamer}
+\documentclass[t,aspectratio=169]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -43,10 +43,10 @@ set.seed(2)
 
 \frame{\frametitle{Multiple regression}
   Recall the simple linear regression model is 
-	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+	\[ Y_i \stackrel{ind}{\sim} N(\mu_i, \sigma^2), \pause \quad \mu_i = \beta_0+\beta_1 X_i \]
 	\pause
-	The \alert{multiple regression model} is 
-	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
+	The \alert{multiple regression model} has mean
+	\[ \mu_i = \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p} \]
 	\bc
 	\pause where for observation $i$ 
   \begin{itemize}
@@ -68,37 +68,38 @@ set.seed(2)
 
 \frame{\frametitle{Explanatory variables}
   There is a lot of flexibility in the mean
-\[ Y_i \stackrel{ind}{\sim} N(\mu_i,\sigma^2), \pause \quad \mu_i 
-% = E[Y_i|X_{i,1},\ldots,X_{i,p}] 
-= \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p} \]
+\[ \mu_i =  \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p} \]
+\pause
   as there are many possibilities for the explanatory variables $X_{i,1},\ldots,X_{i,p}$:
 
   \pause
   
   \bc
-	\begin{itemize}
-  \item Higher order terms ($X^2$)
-	\item Additional explanatory variables ($X_1,X_2$)
-	\item Dummy variables for categorical variables ($X_1=\I()$)
-	\item Interactions ($X_1X_2$)
+	\begin{itemize} \small
+	\item Functions ($f(X)$) \pause
+	\item Dummy variables for categorical variables ($X_1=\I()$) \pause
+  \item Higher order terms ($X^2$) \pause
+	\item Additional explanatory variables ($X_1,X_2$) \pause
+	\item Interactions ($X_1X_2$) \pause
     \begin{itemize}
-    \item Continuous-continuous
-    \item Continuous-categorical
-    \item Categorical-categorical
+    \item Continuous-continuous \pause
+    \item Continuous-categorical \pause
+    \item Categorical-categorical \pause
     \end{itemize}
 	\end{itemize}
 	\nc\ec
 }
 
 
-\frame{\frametitle{Interpretation}
+\subsection{Parameter interpretation}
+\frame{\frametitle{Parameter interpretation}
   Model:
 	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}, \sigma^2) \]
 	
 	\vspace{0.2in} \pause
 	
 	\bc
-	\pause The interpretation is 
+	The interpretation is 
 	\begin{itemize}
 	\item $\beta_0$ is the expected value of the response $Y_i$ when \alert{all} explanatory variables are zero. \pause
 	\item $\beta_p,\,p\ne 0$ is the expected increase in the response for a one-unit increase in the $p^{th}$ explanatory variable \alert{when all other explanatory variables are held constant}. \pause
@@ -108,8 +109,9 @@ set.seed(2)
 }
 
 
+\subsection{Parameter estimation and inference}
 \begin{frame}
-\frametitle{Parameter estimation}
+\frametitle{Parameter estimation and inferece}
 
 \tiny
 
@@ -134,13 +136,13 @@ r &= y-X\hat\beta \\
 \end{array} \]
 \pause
 \bc
-Confidence/credible intervals and (two-sided) pvalues are constructed using 
+Confidence/credible intervals and (two-sided) \pvalue{}s are constructed using 
 \[
 \hat\beta_j \pm t_{n-p,1-a/2} SE(\hat\beta_j)
 \quad\mbox{and}\quad
-\mbox{pvalue} = 2P\left(T_{n-2}>\left|\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right|\right)
+\mbox{pvalue} = 2P\left(T_{n-p}>\left|\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right|\right)
 \]
-where $SE(\hat\beta_j)$ is the $j$th diagonal element of 
+where $T_{n-p} \sim t_{n-p}$ and $SE(\hat\beta_j)$ is the $j$th diagonal element of 
 $\hat\sigma^2(X^\top X)^{-1}$.
 \nc\ec
 \end{frame}
@@ -204,6 +206,28 @@ The cubic multiple regression assumes
 
 
 
+\begin{frame}[fragile]
+\frametitle{R code and output}
+
+\vspace{-0.4in}
+
+\bc
+<<tidy=FALSE, echo=TRUE>>=
+# Construct the variables by hand
+m1 = lm(Distance ~ Height,                             case1001)
+m2 = lm(Distance ~ Height + I(Height^2),               case1001)
+m3 = lm(Distance ~ Height + I(Height^2) + I(Height^3), case1001)
+
+coefficients(m1)
+coefficients(m2)
+coefficients(m3)
+@
+\nc\ec
+\end{frame}
+
+
+
+
 <<echo=FALSE>>=
 # Multiple plot function
 #
@@ -254,7 +278,6 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 @
 
 
-
 \begin{frame}
 \frametitle{Galileo experiment (Sleuth3::case1001)}
 \bc
@@ -273,24 +296,7 @@ multiplot(
 
 
 
-\begin{frame}[fragile]
-\frametitle{R code and output}
 
-\vspace{-0.4in}
-
-\bc
-<<tidy=FALSE, echo=TRUE>>=
-# Construct the variables by hand
-m1 = lm(Distance ~ Height,                             case1001)
-m2 = lm(Distance ~ Height + I(Height^2),               case1001)
-m3 = lm(Distance ~ Height + I(Height^2) + I(Height^3), case1001)
-
-coefficients(m1)
-coefficients(m2)
-coefficients(m3)
-@
-\nc\ec
-\end{frame}
 
 
 % \begin{frame}[fragile]
@@ -311,10 +317,11 @@ coefficients(m3)
 
 \subsection{Additional explanatory variables ($X_1+X_2$)}
 \frame{\frametitle{Longnose Dace Abundance}
+\pause
 From \url{http://udel.edu/~mcdonald/statmultreg.html}: 
 {\scriptsize
 	\begin{quote}
-I extracted some data from the Maryland Biological Stream Survey. ... The dependent variable is the number of Longnose Dace (Rhinichthys cataractae) per 75-meter section of [a] stream. The independent variables are the area (in acres) drained by the stream; the dissolved oxygen (in mg/liter); the maximum depth (in cm) of the 75-meter segment of stream; nitrate concentration (mg/liter); sulfate concentration (mg/liter); and the water temperature on the sampling date (in degrees C). 	
+I extracted some data from the Maryland Biological Stream Survey. ... The [response] variable is the number of Longnose Dace ... per 75-meter section of [a] stream. The [explanatory] variables are ... the maximum depth (in cm) of the 75-meter segment of stream; nitrate concentration (mg/liter) .... 	
 	\end{quote}
 	}
 	
