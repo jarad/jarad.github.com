@@ -81,7 +81,8 @@ you can find them
 |Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|[Logarithms](https://youtu.be/f7jzXnj4ga8)|
 ||||[an example](https://youtu.be/TRMhkn2RzHw)|
 |Categorical explanatory variables|[pdf](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.pdf)|[R](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.R)|
-|Multiple regression|[pdf](Regression/R05-Multiple_regression/R05-Multiple_regression.pdf)|[R](Regression/R05-Multiple_regression/R05-Multiple_regression.R)|
+|Multiple regression|[pdf](Regression/R05-Multiple_regression/R05-Multiple_regression.pdf)|[R](Regression/R05-Multiple_regression/R05-Multiple_regression.R)|[Multiple Regression](https://youtu.be/w5FhJdXWpBk)|
+||||[Interactions](https://youtu.be/n8sk4DcUjoY)|
 |ANOVA and F-tests|[pdf](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.R)|
 |Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|
 |Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|
