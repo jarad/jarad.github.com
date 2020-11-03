@@ -84,7 +84,9 @@ you can find them
 ||||[Categorical variables](https://youtu.be/fDFyG_q2xQs)|
 |Multiple regression|[pdf](Regression/R05-Multiple_regression/R05-Multiple_regression.pdf)|[R](Regression/R05-Multiple_regression/R05-Multiple_regression.R)|[Multiple Regression](https://youtu.be/w5FhJdXWpBk)|
 ||||[Interactions](https://youtu.be/n8sk4DcUjoY)|
-|ANOVA and F-tests|[pdf](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.R)|
+|Interpreting p-values|[pdf](Regression/R06-ANOVA_F-tests/R06-pvalue_interpretation.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-pvalue_interpretation.R)|[Interpreting p-values]()|
+|ANOVA and F-tests|[pdf](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.R)|[ANOVA]()|
+||||[F-tests]()|
 |Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|
 |Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|
 |Two-way ANOVA|[pdf](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.pdf)|[R](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.R)|
