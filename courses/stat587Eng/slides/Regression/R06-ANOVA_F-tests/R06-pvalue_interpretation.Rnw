@@ -1,0 +1,236 @@
+\documentclass[t,aspectratio=169]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{Interpreting Regression \pvalue{}s as Posterior Probabilities}
+
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, echo=FALSE, warning=FALSE, message=FALSE>>=
+options(width=120)
+opts_chunk$set(comment=NA, 
+               fig.width=6, 
+               fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               echo=FALSE,
+               message=FALSE)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("tidyverse")
+library("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Interpreting \pvalue{}s as posterior probabilities}
+\subsection{Regression \pvalue{}s}
+\begin{frame}
+\frametitle{Regression \pvalue{}s}
+
+Recall the regression model
+\[ 
+Y_i \ind N(\mu_i, \sigma^2), \qquad 
+\mu_i = \beta_0 + \beta_1 X_{i,1} + \cdots + \beta_p X_{i,p}
+\]
+\pause
+\bc
+A common hypothesis test is  
+\[ H_0: \beta_j = 0 \qquad \mbox{versus} \qquad H_A: \beta_j \ne 0 \]
+\pause
+which has
+\[ \mbox{\pvalue} = 2P\left(T > \left|t\right|\right) \]
+\pause
+where $T \sim t_{n-(p+1)}$ \pause and $t = \hat\beta_j/SE(\beta_j).$
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Example Regression Output}
+\begin{frame}[fragile]
+\frametitle{Example Regression Output}
+\bc
+<<>>=
+summary(m <- lm(Speed ~ Conditions * log(NetToWinner), data = Sleuth3::ex0920))
+@
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Bayesian Posterior Probabilities}
+\begin{frame}
+\frametitle{Bayesian Posterior Probabilities}
+
+With prior $p(\beta,\sigma^2) \propto 1/\sigma^2$, we have
+\[
+\beta_j|y \sim t_{n-(p+1)}\left(\hat\beta_j, SE(\beta_j)^2\right).
+\]
+\pause
+Thus
+\[
+P\left(\left.\beta_j > 0\right|y\right)
+\pause =
+P\left(\left.\frac{\beta_j - \hat\beta_j}{SE(\beta_j)} > \frac{0-\hat\beta_j}{SE(\beta_j)}\right|y\right)
+\pause =
+P\left( T > - t \right)
+\]
+\bc
+\pause
+which is very close to
+\[
+\mbox{\pvalue} = 2P\left(T > \left|t\right|\right).
+\]
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Visualizing Posterior Distribution}
+\begin{frame}
+\frametitle{Visualizing Posterior Distribution}
+\bc
+<<>>=
+df = 20
+mn = 2
+d = data.frame(x = seq(-5,5,length = 101)) %>%
+  dplyr::mutate(negative = dt(x+mn, df),
+                positive = dt(x-mn, df)) %>%
+  tidyr::gather(estimate, value, negative, positive)
+
+g = ggplot(d, aes(x=x, y = value, color = estimate, linetype = estimate)) +
+  geom_line() +
+  labs(title = "Two Posterior Distributions Resulting in the Same p-value",
+       x = expression(beta[j]), y = "Posterior density") +
+  theme_bw() +
+  theme(legend.position = "none")
+
+g
+@
+\nc\ec
+\end{frame}
+
+\begin{frame}
+\frametitle{Visualizing Posterior Distribution}
+\bc
+<<>>=
+g + stat_function(fun = function(x, df) dt(x+mn, df = df),
+                  xlim = c(0,5),
+                  geom = "area",
+                  color = NA,
+                  args = list(df = 20))
+@
+\nc\ec
+\end{frame}
+
+\begin{frame}
+\frametitle{Visualizing Posterior Distribution}
+\bc
+<<>>=
+g + stat_function(fun = function(x, df) dt(x-mn, df = df),
+                  xlim = c(-5,0),
+                  geom = "area",
+                  color = NA,
+                  args = list(df = 20))
+@
+\nc\ec
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpreting Regression \pvalue{}s as Posterior Probabilities}
+
+Suppose we have a \pvalue{} for $H_0: \beta_j = 0$ vs $H_A: \beta_j \ne 0$.
+\pause
+Then
+
+\begin{itemize}
+\item If $\hat\beta_j < 0$, \pause then
+\[ P(\beta_j > 0| y) = \mbox{\pvalue{}}/2. \]
+
+\vspace{-0.1in} \pause 
+
+\item If $\hat\beta_j > 0$, \pause then
+\[ P(\beta_j < 0| y) = \mbox{\pvalue{}}/2. \]
+\end{itemize}
+
+\pause
+\bc
+Alternatively,
+\begin{itemize}
+\item If $\hat\beta_j < 0$,  then
+\[ P(\beta_j \alert{<} 0| y) = \alert{1-}\mbox{\pvalue{}}/2. \]
+
+\vspace{-0.1in} \pause 
+
+\item If $\hat\beta_j > 0$, then
+\[ P(\beta_j \alert{>} 0| y) = \alert{1-}\mbox{\pvalue{}}/2. \]
+\end{itemize}
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Example Interpretation}
+\begin{frame}[fragile]
+\frametitle{Example Interpretation}
+<<>>=
+summary(m)$coefficients %>% round(2)
+@
+
+\pause
+
+\bc
+\[ \begin{array}{ll} 
+\mbox{Intercept}        & P(\beta_0 > 0|y) \approx 1 \pause \\
+\mbox{ConditionsSlow}   & P(\beta_1 < 0|y) \approx 0.99 \pause\\
+\mbox{log(NetToWinner)} & P(\beta_2 > 0|y) \approx 1 \pause\\
+\mbox{ConditionsSlow:log(NetToWinner)} & P(\beta_3 > 0|y) \approx 0.90 \\
+\end{array} \]
+\nc\ec
+\end{frame}
+
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+Suppose we have a regression \pvalue{} for $H_0: \beta_j = 0$ vs $H_A: \beta_j \ne 0$.
+\pause
+Then
+\begin{itemize}
+\item If $\hat\beta_j < 0$,  then
+\[ P(\beta_j < 0| y) = 1-\mbox{\pvalue{}}/2. \]
+
+\vspace{-0.1in}  
+
+\item If $\hat\beta_j > 0$, then
+\[ P(\beta_j > 0| y) = 1-\mbox{\pvalue{}}/2. \]
+\end{itemize}
+\end{frame}
+
+
+\end{document}
+
+
+
