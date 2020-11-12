@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[t,aspectratio=169]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -7,17 +7,28 @@
 
 \title{R08 - Experimental design}
 
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
 <<options, echo=FALSE, warning=FALSE, message=FALSE>>=
 options(width=120)
-opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+opts_chunk$set(comment=NA, 
+               fig.width=6, 
+               fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               echo=FALSE,
+               message=FALSE)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
 library("xtable")
 library("Sleuth3")
 library("emmeans")
+library("ggResidpanel")
+my_plots = c("resid","qq","cookd","index","ls","lev")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -39,21 +50,20 @@ Recall that the objective of data analysis is often to make an inference
 about a population based on a sample. 
 \pause 
 For the inference to be statistically valid, 
-we need a \alert{random} sample fromt the population. 
+we need a \alert{random} sample from the population. 
 
 \vspace{0.2in} \pause
 
-Often we also want to make a \alert{causal} statement about the relationship 
-between explanatory variables (X) and a response (Y). 
-\pause
+% Often we also want to make a \alert{causal} statement about the relationship 
+% between explanatory variables (X) and a response (Y). 
+% \pause
 In order to make a \alert{causal} statment, 
 the levels of the explanatory variables need to be \alert{randomly} assigned
-to the \alert{experimental units}.
-If levels are randomly assigned, 
-we often refer to the explanatory variables as \alert{treatments} and refer
-to the data collection as a \alert{randomized experiment}. 
-If the levels are not (randomly) assigned, 
-we refer to the data collection as an \alert{observational study}.
+to the \alert{experimental units}. \pause
+\begin{itemize}
+\item random assignment $\to$ randomized experiment 
+\item non-random assignment $\to$ observational study
+\end{itemize}
 \end{frame}
 
 
@@ -67,12 +77,12 @@ we refer to the data collection as an \alert{observational study}.
 Sample & Observational study & Randomized experiment \\
 \hline
 Not random & 
-\begin{tabular}{l} No cause-and-effect \\ No inference to population \end{tabular} &
-\begin{tabular}{l} \alert{Yes} cause-and-effect \\ No inference to population \end{tabular} \\
+\begin{tabular}{l} \uncover<2->{No inference to population} \\ \uncover<3->{No cause-and-effect} \end{tabular} &
+\begin{tabular}{l} \uncover<2->{No inference to population} \\ \uncover<3->{\alert{Yes} cause-and-effect}  \end{tabular} \\
 \hline
 Random & 
-\begin{tabular}{l} No cause-and-effect \\ \alert{Yes} inference to population \end{tabular} &
-\begin{tabular}{l} \alert{Yes} cause-and-effect \\ \alert{Yes} inference to population \end{tabular} \\
+\begin{tabular}{l} \uncover<2->{\alert{Yes} inference to population} \\ \uncover<3->{No cause-and-effect} \end{tabular} &
+\begin{tabular}{l} \uncover<2->{\alert{Yes} inference to population} \\ \uncover<3->{\alert{Yes} cause-and-effect}  \end{tabular} \\
 \hline
 \end{tabular}
 
@@ -93,22 +103,21 @@ You are interested in testing two different wood glues:
 
 \pause
 
+\bc
 On a scarf joint:
-
 \begin{center}
 \includegraphics{scarf_stapled}
 \end{center}
-
 \pause 
 So you collect up some wood, glue the pieces together, and determine the weight
 required to break the joint. 
 \pause
-(There are lots of details missing here.)
+(Lots of details are missing.)
 
 \pause
 
 {\tiny Inspiration: \url{https://woodgears.ca/joint_strength/glue.html}}
-
+\nc\ec
 \end{frame}
 
 
@@ -138,12 +147,21 @@ I do the randomization in such a way that I have exactly 4  Gorilla and 4
 Titebond results,
 \pause
 e.g.
+
+\vspace{-0.2in}
+
+\bc
 <<echo=FALSE>>=
 d %>% select(-woodtype, -pounds)
 @
-
 This is called a \alert{completely randomized design (CRD)}.
-
+\pause
+Because all treatment (combinations) have the same number of replicates,
+the design is \alert{balanced}.
+\pause
+Because all treatment (combinations) are repeated,
+the design is \alert{replicated}.
+\nc\ec
 \end{frame}
 
 
@@ -152,11 +170,11 @@ This is called a \alert{completely randomized design (CRD)}.
 
 \begin{frame}[fragile]
 \frametitle{Visualize the data}
-
+\bc
 <<>>=
 ggplot(d, aes(glue, pounds)) + geom_point() + theme_bw()
 @
-
+\nc\ec
 \end{frame}
 
 
@@ -174,53 +192,76 @@ i.e.
 
 \pause
 
+\bc
 Then a regression model for these data is 
 \[
-P_w \ind N(\beta_0+\beta_1T_w, \sigma^2)
+P_w \ind N(\beta_0+\beta_1T_w, \sigma^2).
 \]
-\pause
-where 
-\begin{itemize}
-\item $\beta_1$ is the expected difference in weight when using Titebond glue
-compared to using Gorilla glue.
-\end{itemize}
-
+% \pause
+% where 
+% \begin{itemize}
+% \item $\beta_1$ is the expected difference in weight when using Titebond glue
+% compared to using Gorilla glue.
+% \end{itemize}
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Check model assumptions}
-
-<<message=TRUE>>=
-m <- lm(pounds ~ glue, data = d)
-opar = par(mfrow=c(2,3)); plot(m, 1:6, ask=FALSE); par(opar)
+\bc
+<<>>=
+m = lm(pounds ~ glue, data = d)
+ggResidpanel::resid_panel(m, plots = my_plots[-6], qqbands = TRUE)
 @
-
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Obtain statistics}
-<<>>=
+
+\vspace{-0.4in} 
+
+\bc
+<<echo=TRUE>>=
 coefficients(m)
 summary(m)$r.squared
 confint(m)
 emmeans(m, ~glue)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Interpret results}
 
+<<echo = FALSE>>=
+ci_m = confint(m)
+em = emmeans(m, ~glue)
+ci = confint(em)
+@
+
 A randomized experiment was designed to evaluate the effectiveness of Gorilla
 and Titebond in preventing failures in scarf joints cut at a 20 degree angle 
 through 1'' $\times$ 2'' spruce with 4 replicates for each glue type. 
-The mean break weight (pounds) was 270 with a 95\% CI of (241,299) for Gorilla 
-and 309 (279, 338) for Titebond. 
+\pause
+The mean break weight (lbs) was 
+\Sexpr{round(ci[1,2])} with a 95\% CI of 
+(\Sexpr{round(ci[1,5])},\Sexpr{round(ci[1,6])}) for Gorilla \pause
+and \Sexpr{round(ci[2,2])} 
+(\Sexpr{round(ci[2,5])},\Sexpr{round(ci[2,6])}) for Titebond. 
+\pause
 Titebond glue caused an increase in break weight
-of 39 (-3,80) compared to Gorilla
-Glue type accounted for 46\% of the variability in break weight.
+of 
+\Sexpr{round(coef(m)[2])}
+(\Sexpr{round(ci_m[2,1])},\Sexpr{round(ci_m[2,2])}) lbs
+compared to Gorilla
+Glue. 
+This difference accounted for 
+\Sexpr{round(100*summary(m)$r.squared)}
+\% of the variability in break weight.
 
 \end{frame}
 
@@ -229,18 +270,32 @@ Glue type accounted for 46\% of the variability in break weight.
 \section{Randomized complete block design (RCBD)}
 \begin{frame}[fragile]
 \frametitle{Randomized complete block design (RCBD)}
+
+\small
+
+\pause
+
 Suppose the wood actually came from two different types: Maple and Spruce.
 \pause
 And perhaps you have reason to believe the glue will work differently 
 depending on the type of wood. 
 \pause
 In this case, you would want to \alert{block} by wood type and perform the 
-randomization within each block, i.e. 
+randomization within each block, \pause i.e.
+
+\vspace{-0.2}
+
+\bc
 <<echo=FALSE>>=
 d %>% select(-pounds)
 @
 \pause
 This is called a \alert{randomized complete block design (RCBD)}.
+\pause
+If all treatment combinations exist, then the design is \alert{complete}.
+\pause
+If a treatment combination is missing, then the design is \alert{incomplete}.
+\nc\ec
 \end{frame}
 
 
@@ -250,18 +305,22 @@ This is called a \alert{randomized complete block design (RCBD)}.
 
 \begin{frame}[fragile]
 \frametitle{Visualize the data}
+\bc
 <<>>=
 ggplot(d, aes(glue, pounds, color=woodtype, shape=woodtype)) + geom_point() + theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Visualize the data - a more direct comparison}
+\bc
 <<>>=
 ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point() + theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
@@ -277,33 +336,34 @@ Let
 
 \pause
 
-Then a regression model for these data is 
+\bc
+Then a main effects model for these data is 
 \[
 P_w \ind N(\beta_0+\beta_1T_w + \beta_2M_w, \sigma^2)
 \]
-\pause
-where 
-\begin{itemize}
-\item $\beta_1$ is the expected difference in weight when using Titebond glue
-compared to using Gorilla glue when adjusting for type of wood, i.e. the 
-type of wood is held constant, \pause and
-\item $\beta_2$ is the expected difference in weight when using Maple compared 
-to Spruce when adjusting for type of glue, i.e. the 
-glue is held constant.
-\end{itemize}
-
+% \pause
+% where 
+% \begin{itemize}
+% \item $\beta_1$ is the expected difference in weight when using Titebond glue
+% compared to using Gorilla glue when adjusting for type of wood, i.e. the 
+% type of wood is held constant, \pause and
+% \item $\beta_2$ is the expected difference in weight when using Maple compared 
+% to Spruce when adjusting for type of glue, i.e. the 
+% glue is held constant.
+% \end{itemize}
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Perform analysis}
-
+\bc
 <<>>=
 m <- lm(pounds ~ glue + woodtype, data = d)
 summary(m)
 confint(m)
 @
-
+\nc\ec
 \end{frame}
 
 
@@ -315,23 +375,26 @@ confint(m)
 Since there are more than one observation for each woodtype-glue combination,
 the design is \alert{replicated}:
 
-<<>>=
+\bc
+<<echo = TRUE>>=
 d %>% group_by(woodtype, glue) %>% summarize(n = n())
 @
-
 When the design is replicated, we can consider assessing an interaction.
-\pause
-In this example, an interaction between glue and woodtype would indicate that
-the effect of glue depends on the woodtype, i.e. the difference in expected 
-weight between the two glues depends on woodtype. 
-\pause
-At an extreme, it could be that Gorilla works better on Spruce and Titebond
-works better on Maple.
+% \pause
+% In this example, an interaction between glue and woodtype would indicate that
+% the effect of glue depends on the woodtype, i.e. the difference in expected 
+% weight between the two glues depends on woodtype. 
+% \pause
+% At an extreme, it could be that Gorilla works better on Spruce and Titebond
+% works better on Maple.
+\nc\ec
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Interaction model}
+
+\vspace{-0.1in}
 
 Let 
 \begin{itemize}
@@ -339,41 +402,46 @@ Let
 \item $T_w$ be an indicator that Titebond glue was used on wood $w$, and
 \item $M_w$ be an indicator that wood $w$ was Maple.
 \end{itemize}
-
 \pause
-
-Then a regression model for these data is 
+Then a model with the interaction for these data is 
 \[
 P_w \ind N(\beta_0+\beta_1T_w + \beta_2M_w + \beta_3T_wM_w, \sigma^2)
 \]
-\pause
-where 
-\begin{itemize}
-\item $\beta_1$ is the expected difference in weight when moving from Gorilla to
-Titebond glue for Spruce, \pause 
-\item $\beta_2$ is the expected difference in weight when moving from Spruce  
-to Maple for Gorilla glue, \pause and
-\item $\beta_3$ is more complicated.
-\end{itemize}
+% \pause
+% where 
+% \begin{itemize}
+% \item $\beta_1$ is the expected difference in weight when moving from Gorilla to
+% Titebond glue for Spruce, \pause 
+% \item $\beta_2$ is the expected difference in weight when moving from Spruce  
+% to Maple for Gorilla glue, \pause and
+% \item $\beta_3$ is more complicated.
+% \end{itemize}
 
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Assessing an interaction using a t-test}
+\bc
 <<>>=
 m <- lm(pounds ~ glue * woodtype, data = d)
 summary(m)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Assessing an interaction using an F-test}
-<<>>=
+
+\vspace{0.4in}
+
+\bc
+<<echo = TRUE>>=
 anova(m)
 drop1(m, test='F')
 @
+\nc\ec
 \end{frame}
 
 
@@ -395,18 +463,22 @@ d <- data.frame(woodID = paste0("wood",1:8),
 
 \begin{frame}[fragile]
 \frametitle{What if this had been your data?}
+\bc
 <<>>=
 ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point() + theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Assessing an interaction using a t-test}
+\bc
 <<>>=
 m <- lm(pounds ~ glue * woodtype, data = d)
 summary(m)
 @
+\nc\ec
 \end{frame}
 
 
@@ -442,45 +514,82 @@ d <- data.frame(woodID = paste0("wood",1:20),
 
 \begin{frame}[fragile]
 \frametitle{Visualize}
+\bc
 <<>>=
 ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + 
   geom_point() + theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Fit the main effects (or additive) model}
-<<>>=
+\bc
+<<echo = TRUE>>=
 m <- lm(pounds ~ glue + woodtype, data = d)
 anova(m)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Fit the main effects (or additive) model}
+\bc
 <<>>=
 summary(m)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Fit the full (with interaction) model}
+
+\vspace{-0.2in}
+
+\bc
 <<>>=
 m <- lm(pounds ~ glue * woodtype, data = d)
 anova(m)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Fit the full (with interaction) model}
+
+\vspace{-0.2in}
+
+\bc
 <<>>=
 summary(m)
 @
+\nc\ec
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+\begin{itemize}
+\item Designs:
+  \begin{itemize}
+  \item Completely randomized design (CRD)
+  \item Randomized complete block design (RCBD) \pause
+  \end{itemize}
+\item Deviations
+  \begin{itemize}
+  \item Unbalanced
+  \item Incomplete
+  \item Unreplicated
+  \end{itemize}
+\end{itemize}
+
 \end{frame}
 
 
