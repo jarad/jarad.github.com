@@ -89,7 +89,8 @@ you can find them
 ||||[F-tests](https://youtu.be/GHNgosl97Xw)|
 |Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|[Contrasts](https://youtu.be/Gvnpv6uPDRw)|
 ||||[Potato Scab Example](https://youtu.be/TjAKveQjRSk)|
-|Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|
+|Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|[Completely Randomized Design](https://youtu.be/yO1c8h66IPo)|
+||||[Randomized Complete Block Design](https://youtu.be/_iJ2Gy-POCI)|
 |Two-way ANOVA|[pdf](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.pdf)|[R](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.R)|
 
 
