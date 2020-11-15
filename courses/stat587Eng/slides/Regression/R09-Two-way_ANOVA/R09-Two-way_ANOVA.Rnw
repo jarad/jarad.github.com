@@ -1,14 +1,15 @@
-\documentclass[t,aspectratio=169]{beamer}
+\documentclass[t,aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
 \input{../../frontmatter}
 \input{../../commands}
 
-\title{R09 - Two-way ANOVA}
+\title{R09 - Analysis for Experiments with Two Factors}
+\subtitle{Two-way ANOVA and Contrasts}
 
-\setbeamertemplate{background}
-{\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
 
 <<options, echo=FALSE, warning=FALSE, message=FALSE>>=
 options(width=120)
@@ -131,7 +132,8 @@ tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L,
 -36L))
 tomato$Variety = relevel(tomato$Variety, ref="C")
 
-ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety, shape = Variety)) + 
+  geom_jitter(height=0, width=0.1) + theme_bw()
 @
 \nc\ec
 \end{frame}
@@ -392,7 +394,8 @@ Suppose for some reason that a variety B, density 30 sample was contaminated. \p
 \bc
 <<>>=
 tomato_unbalanced = tomato[-19,]
-ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety)) +  geom_jitter(height=0, width=0.1) + theme_bw()
+ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety, shape = Variety)) +  
+  geom_jitter(height=0, width=0.1) + theme_bw()
 @
 \nc\ec
 \end{frame}
@@ -482,7 +485,8 @@ Suppose none of the samples from variety B, density 30 were obtained. \pause Now
 tomato_incomplete = tomato %>%
   filter(!(Variety == "B" & Density == 30)) %>%
   mutate(VarietyDensity = paste0(Variety,Density))
-ggplot(tomato_incomplete, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
+ggplot(tomato_incomplete, aes(x=Density, y=Yield, color=Variety, shape = Variety)) + 
+  geom_jitter(height=0, width=0.1) + theme_bw()
 @
 \nc\ec
 \end{frame}
@@ -656,7 +660,8 @@ You can use the ANOVA analysis to choose from amongst the 3 varieties and one of
 \begin{frame}[fragile]
 \bc
 <<echo=FALSE>>=
-ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety, shape = Variety)) + 
+  geom_jitter(height=0, width=0.1) + theme_bw()
 @
 \nc\ec
 \end{frame}
@@ -728,11 +733,15 @@ lines = with(tomato,expand.grid(Density=seq(min(Density),max(Density),length=41)
                                Variety=levels(Variety)))
 lines$Yield <- predict(lm(Yield~Density+I(Density^2)+Variety, tomato),lines)
 
-g2 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + 
+g2 = ggplot(tomato, aes(x=Density, y=Yield, 
+                        color=Variety, shape = Variety, linetype = Variety)) + 
+  geom_jitter(height=0, width=0.1) + 
   geom_line(data=lines) + labs(title="Parallel curves", x = "") + theme_bw() +
   theme(legend.position = "none")
 
-g3 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + 
+g3 = ggplot(tomato, aes(x=Density, y=Yield, 
+                        color=Variety, shape = Variety, linetype = Variety)) + 
+  geom_jitter(height=0, width=0.1) + 
   stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE) +
   labs(title="Independent curves") + theme_bw() +
   theme(legend.position = "none")
