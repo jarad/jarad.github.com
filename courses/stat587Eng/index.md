@@ -28,6 +28,7 @@ Office hours are
 - [Slides/Videos](slides)
   - [Probability playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp1FxJs9BG5Sbsy6NvCO3Qb1)
   - [Inference playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp1PZC6SgtuS-ESq4ti1GEFj)
+  - [Regression playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp2xijRVpW7ucwSbToEAGBzq)
 - [Previous exams](exams)
 - [Next courses](../next_courses.html)
 
