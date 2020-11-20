@@ -27,6 +27,12 @@ graduates of STAT 587.
 - STAT 475/575 - Introduction to Multivariate Data Analysis (matrix algebra)
 - STAT 477/577 - Introduction to Categorical Data Analysis
 - STAT 484/584 - Computer Processing of Scientific Data
+- STAT 486/586 - Introduction to Statistical Computing
 - STAT 581 - Analysis of Gene Expression Data for the Biological Sciences
 
-You should look for courses that say "May not be used for graduate credit in the Statistics MS and PhD degree programs" as these courses are meant for non-statistics graduate students.
+In the course description, in the course catalog, 
+you should look for courses that say 
+"May not be used for graduate credit in the Statistics MS and PhD degree programs" 
+as these courses are meant for non-statistics graduate students.
+If the description includes this phrase, 
+then you will be taking the course with statistics graduate students. 
