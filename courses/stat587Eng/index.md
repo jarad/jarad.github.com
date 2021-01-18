@@ -10,17 +10,17 @@ This website is designed to host course material for STAT 587 Section 2
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Aditya Ranade (<aranade@iastate.edu>)
+- TA: Sungchan Park (<sungchan@iastate.edu>)
 
 This course meets
 
-- MWF 1:10-2 @ [Ross Hall 0124](https://www.fpm.iastate.edu/roomscheduling/room.asp?room_id=208)
-- R 2:10-4 @ Zoom
+- MWF 1:10-2 @ [Agron 2020](https://www.fpm.iastate.edu/roomscheduling/room.asp?room_id=2)
+- T 10:00-11:50 @ Zoom
 
 Office hours are
 
-- Instructor: W 3-4, R 4-5 on Zoom
-- TA: F 11-12 on TBD
+- Instructor: TBD on Zoom
+- TA: TBD
 
 ## Relevant course pages
 

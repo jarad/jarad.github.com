@@ -7,20 +7,21 @@ tagline: Statistical Methods for Research Workers
 
 ## TA expectations
 
-- Hold 2 office hours per week, ideally days immediately preceeding homework due dates (currently Fridays)
+
+- Office hours
+  - Hold 2 office hours per week, ideally days immediately preceeding homework due dates (currently Mondays)
+- Lab
+  - Attend lab (as the semester goes on, you will not need to attend as much)
 
 - Homework 
-  - Grade homework:
-    - 20 points per problem
-    - No credit if problem is not attempted
-    - 1 off for minor mistakes, e.g. typos
-    - 5 off for major mistakes indicating lack of understanding
-  - Post grades to Canvas
-  - Post solutions to Canvas on homework due date unless instructor indicates otherwise via email
+  - Add 2 straight-forward, multi-part questions to each homework
+  - Add questions to appropriate Canvas quizzes
+  - Restructure existing Canvas quiz questions to use multiple choice/answer and numeric answer with range
   
-- Exams
+- Exams (may change depending on COVID situation)
   - "Take" exam ahead of time and give instructor feedback
-  - Grade exam with instructor
-  
+  - Construct Canvas quizzes for exams
 
-- Response in a timely manner to Canvas discussion board posts
+- Discussion board  
+  - Respond in a timely manner to Canvas discussion board posts
+  - If students send you questions via email, post to discusison board and answer there

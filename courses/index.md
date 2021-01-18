@@ -8,6 +8,9 @@ group: navigation
 
 ## Regular courses
 
+- Spring 2021
+  - [STAT 300](stat330)
+  - [STAT 587-2 (Engineering)](stat587Eng)
 - Fall 2020
   - [STAT 587-2 (Engineering)](stat587Eng)
 - Spring 2019
