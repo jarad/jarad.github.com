@@ -34,5 +34,5 @@ In the course description, in the course catalog,
 you should look for courses that say 
 "May not be used for graduate credit in the Statistics MS and PhD degree programs" 
 as these courses are meant for non-statistics graduate students.
-If the description includes this phrase, 
+If the description does not include this phrase, 
 then you will be taking the course with statistics graduate students. 
