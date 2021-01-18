@@ -21,8 +21,9 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
   {% endfor %}
 </ul>
 
-## Fall 2020 Courses ([all courses](courses/))
+## Spring 2021 Courses ([all courses](courses/))
 
+  - [STAT 300](courses/stat330)
   - [STAT 587-2 (Engineering)](courses/stat587Eng)
 
 ## Contact
@@ -34,7 +35,9 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
 
 <a href="https://twitter.com/jaradniemi?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jaradniemi</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-  - [YouTube](https://www.youtube.com/c/jaradniemi)
+<script src="https://apis.google.com/js/platform.js"></script>
+<div class="g-ytsubscribe" data-channel="jaradniemi"></div>
+
   - [Skype](skype:jaradniemi?add "Jarad Niemi's Skype account")
   - [LinkedIn](http://www.linkedin.com/in/jaradniemi "Jarad Niemi's LinkedIn account")
   - [GitHub](https://github.com/jarad/ "Jarad Niemi's GitHub account")
