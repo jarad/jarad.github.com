@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Next Statistics Courses"
-description: "for STAT 587 students""
+description: "for STAT 587 students"
 ---
 {% include JB/setup %}
 
