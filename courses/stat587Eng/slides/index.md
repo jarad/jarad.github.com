@@ -96,6 +96,9 @@ you can find them
 ||||[Analysis for Optimality](https://youtu.be/EVWtMbzID5k)|
 
 
+
+ ============ updated to here =================
+
 ### Supplementary materials
 
 |Topic|slides|code|
@@ -104,9 +107,6 @@ you can find them
 |Poisson regression|[pdf](Supplementary/S02-Poisson_regression/S02-Poisson_regression.pdf)|[R](Supplementary/S02-Poisson_regression/S02-Poisson_regression.R)|
 |Random effects|[pdf](Supplementary/S03-Random_effects/S03-Random_effects.pdf)|[R](Supplementary/S03-Random_effects/S03-Random_effects.R)|
 
-
-
- ============ updated to here =================
 
 ### Supplementary topics
 

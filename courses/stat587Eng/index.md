@@ -1,11 +1,11 @@
 ---
 layout: page
-title: STAT 587-2 (Engineering)
+title: STAT 587 (Engineering)
 tagline: Statistical Methods for Research Workers
 ---
 {% include JB/setup %}
 
-This website is designed to host course material for STAT 587 Section 2 
+This website is designed to host course material for STAT 587 
 (Engineering) - Statistical Methods for Research Workers at 
 [Iowa State University](http://www.iastate.edu).
 
@@ -101,24 +101,22 @@ Please use the [Canvas](http://canvas.iastate.edu/) discussion forum.
 
 ## Schedule
 
-|Week|Topic|Reading|
+|Week|Topic|OpenIntro|
 |----|-----|-------|
-|   1|Probability |       |
-|   2|Random variables| |
+|   1|Probability |Ch 3|
+|   2|Random variables|Ch 4|
 |   3|                | |
 |   4|Modeling| |
 |   5|Inference| |
-|   6|         | |
-|   7|Regression| |
-|   8|         | |
+|   6|         |Ch 5|
+|   7|         |Ch 6|
+|   8|         |Ch 7|
 |   9|midterm| |
-|    |spring break| |
-|  10|Simple linear regression| |
-|  11|Multiple regression| |
+|  10|Simple linear regression|Ch 8|
+|  11|Multiple regression|Ch 9|
 |  12|ANOVA    | |
 |  13|Contrasts| |
 |  14|Model selection| |
-|  15|Poisson and logistic regression| |
 |    |final exam| |
 
 
