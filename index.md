@@ -33,10 +33,9 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
 - Email: <niemi@iastate.edu>
 - Social: 
 
-<a href="https://twitter.com/jaradniemi?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jaradniemi</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
 <script src="https://apis.google.com/js/platform.js"></script>
 <div class="g-ytsubscribe" data-channel="jaradniemi"></div>
+<a href="https://twitter.com/jaradniemi?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @jaradniemi</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
   - [Skype](skype:jaradniemi?add "Jarad Niemi's Skype account")
   - [LinkedIn](http://www.linkedin.com/in/jaradniemi "Jarad Niemi's LinkedIn account")
