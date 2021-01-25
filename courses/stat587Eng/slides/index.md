@@ -16,6 +16,8 @@ you can find them
 
 ### Probability
 
+All [probability pdfs concatenated](probability.pdf).
+
 |Topic|slides|code|videos|
 |||||
 |Probability|[pdf](Probability/P1-Probability/P1-Probability.pdf)|[R](Probability/P1-Probability/P1-Probability.R)|[Full](https://youtu.be/zBP7KBtM9vI)|
