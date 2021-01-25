@@ -23,6 +23,7 @@ could use only a one-page formula sheet.
 - 2017: [exam](exam2/STAT401Eng_exam2_Spring2017.pdf) [key](exam2/STAT401Eng_exam2_Spring2017_key.pdf) [skin.csv](exam2/skin.csv)
 - 2018: [exam](exam2/STAT401Eng_exam2_Spring2018.pdf) [key](exam2/STAT401Eng_exam2_Spring2018_key.pdf) [carbon_dating.csv](exam2/carbon_dating.csv)
 - 2019: [exam](exam2/STAT587Eng_exam2_Spring2019.pdf) [key](exam2/STAT587Eng_exam2_Spring2019_key.pdf) [tea.csv](exam2/tea.csv)
+- 2020: [exam](exam2/STAT587_exam2_Fall2020.pdf) [key](exam2/STAT587_exam2_Fall2020_key.pdf) [concrete.csv](exam2/concrete.csv)
 
 ## Final
 

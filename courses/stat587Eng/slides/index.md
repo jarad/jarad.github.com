@@ -74,18 +74,32 @@ All [probability pdfs concatenated](probability.pdf).
 
 ### Regression
 
-|Topic|slides|code|
+|Topic|slides|code|video|
 ||||
-|Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|
-|Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|
-|Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|
-|Categorical explanatory variables|[pdf](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.pdf)|[R](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.R)|
-|Multiple regression|[pdf](Regression/R05-Multiple_regression/R05-Multiple_regression.pdf)|[R](Regression/R05-Multiple_regression/R05-Multiple_regression.R)|
-|ANOVA and F-tests|[pdf](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.R)|
-|Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|
-|Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|
-|Two-way ANOVA|[pdf](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.pdf)|[R](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.R)|
+|Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|[Simple linear regression](https://youtu.be/qAGZfkDzNX8)|
+||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.R)|[Choosing explanatory variables](https://youtu.be/vzu_V-DdF7I)|
+||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_prediction_intervals.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_prediction_intervals.R)|[Uncertainty and prediction intervals](https://youtu.be/EamOTCiJzwI)|
+|Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|[Regression diagnostics in R](https://youtu.be/luvliCq6QuQ)}
+|Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|[Logarithms](https://youtu.be/f7jzXnj4ga8)|
+||||[an example](https://youtu.be/TRMhkn2RzHw)|
+|Categorical explanatory variables|[pdf](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.pdf)|[R](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.R)|[Binary variables](https://youtu.be/53lhpwa3rwY)|
+||||[Categorical variables](https://youtu.be/fDFyG_q2xQs)|
+|Multiple regression|[pdf](Regression/R05-Multiple_regression/R05-Multiple_regression.pdf)|[R](Regression/R05-Multiple_regression/R05-Multiple_regression.R)|[Multiple Regression](https://youtu.be/w5FhJdXWpBk)|
+||||[Interactions](https://youtu.be/n8sk4DcUjoY)|
+|Interpreting p-values|[pdf](Regression/R06-ANOVA_F-tests/R06-pvalue_interpretation.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-pvalue_interpretation.R)|[Interpreting p-values](https://youtu.be/h92BZPeUaik)|
+|ANOVA and F-tests|[pdf](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.R)|[ANOVA](https://youtu.be/1qzlZlm-2Ak)|
+||||[F-tests](https://youtu.be/GHNgosl97Xw)|
+|Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|[Contrasts](https://youtu.be/Gvnpv6uPDRw)|
+||||[Potato Scab Example](https://youtu.be/TjAKveQjRSk)|
+|Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|[Completely Randomized Design](https://youtu.be/yO1c8h66IPo)|
+||||[Randomized Complete Block Design](https://youtu.be/_iJ2Gy-POCI)|
+|Two-way ANOVA|[pdf](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.pdf)|[R](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.R)|[Analysis of a Completely Randomized Design](https://youtu.be/Ctx8CcJdOB4)|
+||||[Analysis of Unbalanced or Incomplete Designs](https://youtu.be/pDmALCp7Mb4)|
+||||[Analysis for Optimality](https://youtu.be/EVWtMbzID5k)|
 
+
+
+ ============ updated to here =================
 
 ### Supplementary materials
 
@@ -95,9 +109,6 @@ All [probability pdfs concatenated](probability.pdf).
 |Poisson regression|[pdf](Supplementary/S02-Poisson_regression/S02-Poisson_regression.pdf)|[R](Supplementary/S02-Poisson_regression/S02-Poisson_regression.R)|
 |Random effects|[pdf](Supplementary/S03-Random_effects/S03-Random_effects.pdf)|[R](Supplementary/S03-Random_effects/S03-Random_effects.R)|
 
-
-
- ============ updated to here =================
 
 ### Supplementary topics
 

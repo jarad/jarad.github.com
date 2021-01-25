@@ -166,14 +166,11 @@ ggplot(errors_long, aes(x=value)) +
 
 ```{r}
 ggplot(errors_long, aes(sample=value)) + 
-  stat_qq() + 
+  geom_qq() + 
+  geom_qq_line() + 
   facet_grid(. ~ distribution) + 
   theme_bw()
 ```
-
-The `stat_qq()` function does not have an option to include the reference line,
-but this line can be added using 
-[this code](http://stackoverflow.com/a/4357932/3330025).
 
 In base R, we can use the `qqnorm()` and `qqline()` functions to manually
 create the qqplot.
@@ -558,9 +555,11 @@ violated so badly that the model is ineffective for its intended purpose.
 
 ## An alternative version of these plots
 
-```{r, eval=FALSE}
-library("ggResidpanel") # use devtools::install_github("goodekat/ggResidpanel")
+```{r, warning=FALSE}
+# install.packages("ggResidpanel")
+library("ggResidpanel")
 
 resid_panel(m, plots="R")
-resid_panel(m, plots="SAS")
+# resid_panel(m, plots="SAS")
+resid_xpanel(m)
 ```

@@ -1,18 +1,27 @@
-## ----options, echo=FALSE, warning=FALSE, message=FALSE-------------------
+## ----options, echo=FALSE, warning=FALSE, message=FALSE----------------------------------------------------------------
 options(width=120)
-opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+opts_chunk$set(comment=NA, 
+               fig.width=6, 
+               fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               echo=FALSE,
+               message=FALSE)
 
-## ----libraries, message=FALSE, warning=FALSE, echo=FALSE-----------------
-library("dplyr")
-library("ggplot2")
+
+## ----libraries, message=FALSE, warning=FALSE, echo=FALSE--------------------------------------------------------------
+library("tidyverse")
 library("gridExtra")
 # library("xtable")
 # library("Sleuth3")
 
-## ----set_seed, echo=FALSE------------------------------------------------
+
+## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
 set.seed(2)
 
-## ----echo=FALSE----------------------------------------------------------
+
+## ----echo=FALSE-------------------------------------------------------------------------------------------------------
 tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("A", 
@@ -26,9 +35,12 @@ tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L,
 "Density", "Yield"), class = "data.frame", row.names = c(NA, 
 -36L))
 tomato$Variety = relevel(tomato$Variety, ref="C")
-ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
 
-## ------------------------------------------------------------------------
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety, shape = Variety)) + 
+  geom_jitter(height=0, width=0.1) + theme_bw()
+
+
+## ---------------------------------------------------------------------------------------------------------------------
 sm = tomato %>% 
   group_by(Variety, Density) %>% 
   summarize(n    = n(),
@@ -36,29 +48,48 @@ sm = tomato %>%
             sd   = sd(Yield))
 sm
 
-## ------------------------------------------------------------------------
-ggplot(sm, aes(x=Density, y=mean, col=Variety)) + geom_line() + labs(y="Mean Yield") + theme_bw()
 
-## ----echo=TRUE-----------------------------------------------------------
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
+tomato$Density = factor(tomato$Density)
+m = lm(Yield~Variety+Density, tomato)
+drop1(m, test="F")
+m = lm(Yield~Variety*Density, tomato)
+drop1(m, scope = ~Variety+Density+Variety:Density, test="F")
+
+
+## ---------------------------------------------------------------------------------------------------------------------
+ggplot(sm, aes(x=Density, y=mean, col=Variety)) + 
+  geom_line() + 
+  labs(y="Mean Yield") + 
+  theme_bw()
+
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 tomato$Density = factor(tomato$Density)
 m = lm(Yield~Variety*Density, tomato)
 anova(m)
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 library(emmeans)
 emmeans(m, pairwise~Variety)
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 emmeans(m, pairwise~Density)
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 emmeans(m, pairwise~Variety*Density)
 
-## ------------------------------------------------------------------------
-tomato_unbalanced = tomato[-19,]
-ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety)) +  geom_jitter(height=0, width=0.1) + theme_bw()
 
-## ------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------
+tomato_unbalanced = tomato[-19,]
+ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety, shape = Variety)) +  
+  geom_jitter(height=0, width=0.1) + theme_bw()
+
+
+## ---------------------------------------------------------------------------------------------------------------------
 sm_unbalanced = tomato_unbalanced %>% 
   group_by(Variety, Density) %>% 
   summarize(n    = n(),
@@ -66,26 +97,33 @@ sm_unbalanced = tomato_unbalanced %>%
             sd   = sd(Yield))
 sm_unbalanced
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 m = lm(Yield~Variety*Density, tomato_unbalanced)
 anova(m)
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 emmeans(m, pairwise~Variety)
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 emmeans(m, pairwise~Density)
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 emmeans(m, pairwise~Variety*Density)
 
-## ------------------------------------------------------------------------
+
+## ---------------------------------------------------------------------------------------------------------------------
 tomato_incomplete = tomato %>%
   filter(!(Variety == "B" & Density == 30)) %>%
   mutate(VarietyDensity = paste0(Variety,Density))
-ggplot(tomato_incomplete, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
+ggplot(tomato_incomplete, aes(x=Density, y=Yield, color=Variety, shape = Variety)) + 
+  geom_jitter(height=0, width=0.1) + theme_bw()
 
-## ------------------------------------------------------------------------
+
+## ---------------------------------------------------------------------------------------------------------------------
 sm_incomplete = tomato_incomplete %>% 
   group_by(Variety, Density) %>% 
   summarize(n    = n(),
@@ -93,34 +131,39 @@ sm_incomplete = tomato_incomplete %>%
             sd   = sd(Yield))
 sm_incomplete
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 m <- lm(Yield ~ Variety*Density, data=tomato_incomplete)
 anova(m)
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 m = lm(Yield~Variety:Density, tomato_incomplete)
 anova(m)
 
-## ----echo=TRUE-----------------------------------------------------------
-# Note the -1 in order to construct the contrast
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 m = lm(Yield ~ VarietyDensity, tomato_incomplete)
 em <- emmeans(m, ~ VarietyDensity) 
 contrast(em, method = list(
-#         A10 A20 A30 A40 B10 B20 B40 C10 C20 C30 C40  
-"C-B" = c(  0,  0,  0,  0, -1, -1, -1,  1,  1,  0,  1)/3,
-"C-A" = c( -1, -1, -1, -1,  0,  0,  0,  1,  1,  1,  1)/4,
-"B-A" = c( -1, -1,  0, -1,  1,  1,  1,  0,  0,  0,  0)/3)) %>%
+#         A10 A20 A30 A40 B10 B20     B40 C10 C20 C30 C40  
+"C-B" = c(  0,  0,  0,  0, -1, -1,     -1,  1,  1,  0,  1)/3,
+"C-A" = c( -1, -1, -1, -1,  0,  0,      0,  1,  1,  1,  1)/4,
+"B-A" = c( -1, -1,  0, -1,  1,  1,      1,  0,  0,  0,  0)/3)) %>%
   confint
 
-## ----echo=TRUE-----------------------------------------------------------
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 m = lm(Yield~Variety:Density, tomato_incomplete)
-emmeans(m, pairwise~Variety:Density)
-# We could have used the VarietyDensity model, but this looks nicer
+emmeans(m, pairwise~Variety:Density) # We could have used the VarietyDensity model, but this looks nicer
 
-## ----echo=FALSE----------------------------------------------------------
-ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + theme_bw()
 
-## ----fig.width=10,out.width='0.9\\textwidth',echo=FALSE------------------
+## ----echo=FALSE-------------------------------------------------------------------------------------------------------
+ggplot(tomato, aes(x=Density, y=Yield, color=Variety, shape = Variety)) + 
+  geom_jitter(height=0, width=0.1) + theme_bw()
+
+
+## ----fig.height=5.2---------------------------------------------------------------------------------------------------
 tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("A", 
@@ -137,7 +180,7 @@ tomato$Variety = relevel(tomato$Variety, ref="C")
 
 g1 = ggplot(tomato, aes(x=Density, y=Yield)) + geom_jitter(height=0, width=0.1) + 
   stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE, color="black") +
-  labs(title="No variety") + theme_bw()
+  labs(title="No variety", x = "") + theme_bw()
 
 
 # Need to construct the parallel curves 
@@ -145,24 +188,34 @@ lines = with(tomato,expand.grid(Density=seq(min(Density),max(Density),length=41)
                                Variety=levels(Variety)))
 lines$Yield <- predict(lm(Yield~Density+I(Density^2)+Variety, tomato),lines)
 
-g2 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + 
-  geom_line(data=lines) + labs(title="Parallel curves") + theme_bw()
+g2 = ggplot(tomato, aes(x=Density, y=Yield, 
+                        color=Variety, shape = Variety, linetype = Variety)) + 
+  geom_jitter(height=0, width=0.1) + 
+  geom_line(data=lines) + labs(title="Parallel curves", x = "") + theme_bw() +
+  theme(legend.position = "none")
 
-g3 = ggplot(tomato, aes(x=Density, y=Yield, color=Variety)) + geom_jitter(height=0, width=0.1) + 
+g3 = ggplot(tomato, aes(x=Density, y=Yield, 
+                        color=Variety, shape = Variety, linetype = Variety)) + 
+  geom_jitter(height=0, width=0.1) + 
   stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE) +
-  labs(title="Independent curves") + theme_bw()
-grid.arrange(g1,g2,g3, ncol=3)
+  labs(title="Independent curves") + theme_bw() +
+  theme(legend.position = "none")
+grid.arrange(g1,g2,g3, ncol=1)
 
-## ------------------------------------------------------------------------
+
+## ---------------------------------------------------------------------------------------------------------------------
 summary(lm(Yield~Density+I(Density^2), tomato))
 
-## ------------------------------------------------------------------------
+
+## ---------------------------------------------------------------------------------------------------------------------
 summary(lm(Yield~Density+I(Density^2) + Variety, tomato))
 
-## ------------------------------------------------------------------------
+
+## ---------------------------------------------------------------------------------------------------------------------
 summary(lm(Yield~Density*Variety+I(Density^2)*Variety, tomato))
 
-## ----out.width='0.6\\textwidth', echo=FALSE------------------------------
+
+## ----out.width='0.6\\textwidth', echo=FALSE---------------------------------------------------------------------------
 set.seed(20121204)
 opar = par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 
@@ -173,7 +226,8 @@ trts = rep(paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep=""),3
 text(rep(1:6, each=6), rep(1:6, 6), sample(trts))
 par(opar)
 
-## ----out.width='0.6\\textwidth', echo=FALSE------------------------------
+
+## ----out.width='0.6\\textwidth', echo=FALSE---------------------------------------------------------------------------
 set.seed(20121204)
 opar = par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 
@@ -185,7 +239,8 @@ for (i in c(1, 4, 7)) text(rep(c(i,i+1), each=2), rep(1:6, 2), sample(trts))
 text(c(1.5,4.5,7.5), 0, paste("Block", 1:3))
 par(opar)
 
-## ----out.width='0.4\\textwidth', fig.width=4, fig.height=3, echo=FALSE----
+
+## ----out.width='0.4\\textwidth', fig.width=4, fig.height=3, echo=FALSE------------------------------------------------
 set.seed(20121204)
 opar = par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 

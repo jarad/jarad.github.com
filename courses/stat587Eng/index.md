@@ -1,26 +1,26 @@
 ---
 layout: page
-title: STAT 587-2 (Engineering)
+title: STAT 587 (Engineering)
 tagline: Statistical Methods for Research Workers
 ---
 {% include JB/setup %}
 
-This website is designed to host course material for STAT 587 Section 2 
+This website is designed to host course material for STAT 587 
 (Engineering) - Statistical Methods for Research Workers at 
 [Iowa State University](http://www.iastate.edu).
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Aditya Ranade (<aranade@iastate.edu>)
+- TA: Sungchan Park (<sungchan@iastate.edu>)
 
 This course meets
 
-- MWF 1:10-2 @ [Ross Hall 0124](https://www.fpm.iastate.edu/roomscheduling/room.asp?room_id=208)
-- R 2:10-4 @ Zoom
+- MWF 1:10-2 @ [Agron 2020](https://www.fpm.iastate.edu/roomscheduling/room.asp?room_id=2)
+- T 10:00-11:50 @ Zoom
 
 Office hours are
 
-- Instructor: W 3-4, R 4-5 on Zoom
-- TA: F 11-12 on TBD
+- Instructor: TBD on Zoom
+- TA: TBD
 
 ## Relevant course pages
 
@@ -28,6 +28,7 @@ Office hours are
 - [Slides/Videos](slides)
   - [Probability playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp1FxJs9BG5Sbsy6NvCO3Qb1)
   - [Inference playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp1PZC6SgtuS-ESq4ti1GEFj)
+  - [Regression playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp2xijRVpW7ucwSbToEAGBzq)
 - [Previous exams](exams)
 - [Next courses](../next_courses.html)
 
@@ -100,24 +101,22 @@ Please use the [Canvas](http://canvas.iastate.edu/) discussion forum.
 
 ## Schedule
 
-|Week|Topic|Reading|
+|Week|Topic|OpenIntro|
 |----|-----|-------|
-|   1|Probability |       |
-|   2|Random variables| |
+|   1|Probability |Ch 3|
+|   2|Random variables|Ch 4|
 |   3|                | |
 |   4|Modeling| |
 |   5|Inference| |
-|   6|         | |
-|   7|Regression| |
-|   8|         | |
+|   6|         |Ch 5|
+|   7|         |Ch 6|
+|   8|         |Ch 7|
 |   9|midterm| |
-|    |spring break| |
-|  10|Simple linear regression| |
-|  11|Multiple regression| |
+|  10|Simple linear regression|Ch 8|
+|  11|Multiple regression|Ch 9|
 |  12|ANOVA    | |
 |  13|Contrasts| |
 |  14|Model selection| |
-|  15|Poisson and logistic regression| |
 |    |final exam| |
 
 

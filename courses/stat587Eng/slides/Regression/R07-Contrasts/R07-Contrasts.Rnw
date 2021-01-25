@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[t,aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -7,9 +7,19 @@
 
 \title{R07 - Contrasts}
 
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
 <<options, echo=FALSE, warning=FALSE, message=FALSE>>=
 options(width=120)
-opts_chunk$set(comment=NA, fig.width=6, fig.height=5, size='tiny', out.width='0.6\\textwidth', fig.align='center', message=FALSE)
+opts_chunk$set(comment=NA, 
+               fig.width=6, 
+               fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               echo=FALSE,
+               message=FALSE)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
@@ -17,6 +27,7 @@ library("tidyverse")
 library("xtable")
 library("Sleuth3")
 library("emmeans")
+library("ggResidpanel")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -31,63 +42,116 @@ set.seed(2)
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Diet Effect on Mice Lifetimes}
+\bc
+<<>>=
+ggplot(Sleuth3::case0501, aes(x = Diet, y = Lifetime)) + 
+  geom_jitter(width = 0.1, height = 0) +
+  stat_summary(fun = mean, fun.min = mean, fun.max = mean,
+               geom = "crossbar", width = .5, color = "magenta") +
+  theme_bw()
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{ANOVA and Regression Models}
+
+ANOVA model:
+\[ 
+Y_{ij} \ind N(\mu_j, \sigma^2)
+\]
+with $Y_{ij}$ being the lifetime for the $i$th mouse on the $j$th diet for 
+$j=0,1,2,3,4,5$.
+
+\vspace{0.1in} \pause
+
+Regression model:
+\[ 
+Y_i \ind N(\beta_0 + \beta_1 X_{i,1} + \ldots + \beta_p X_{i,p}, \sigma^2)
+\]
+where $Y_i$ is the lifetime for the $i$th mouse and $X_{i,j}$ is an 
+indicator for the $i$th mouse being on the $j$th diet. 
+
+\vspace{0.2in} \pause
+
+\bc
+Reparameterized model since
+\[ 
+\mu_0 = \beta_0
+\quad \mbox{and} \quad
+\mu_j = \beta_0 + \beta_j
+\]
+for $j>0$. 
+\nc\ec
+\end{frame}
+
+
+
+
 \section{Contrasts}
 \begin{frame}
 \frametitle{Scientific questions}	
 	Here are a few example scientific questions:
   
-	\begin{enumerate}
+	\begin{enumerate} \small
 	\item What is the effect of pre-wean calorie restriction on mean 
 	lifetimes? 
 	\pause 
-	With these data, we can ask what is the difference in mean lifetimes for N/R50 and R/R50 diet? 
-	\pause
+	% With these data, we can ask what is the difference in mean lifetimes for N/R50 and R/R50 diet? 
+	% \pause
 	\item What is the difference in mean lifetimes between mice on a
 	40 kcal diet compared to those on a 50 kcal diet? 
 	\pause
-	With these data, we can ask what is the difference in mean lifetimes on N/R40 diet compared to N/R50 and R/R50 combined? \pause
+	% With these data, we can ask what is the difference in mean lifetimes on N/R40 diet compared to N/R50 and R/R50 combined? \pause
 	\item What is the effect of high calorie vs low calorie diets on
 	mean lifetimes?
-	\pause
-	With these data, we can ask what is the difference in mean lifetimes for high calorie (NP and N/N85) diets compared to 
-	low calorie diets (N/R40, N/R50, R/R50, lopro)?
+	% \pause
+	% With these data, we can ask what is the difference in mean lifetimes for high calorie (NP and N/N85) diets compared to 
+	% low calorie diets (N/R40, N/R50, R/R50, lopro)?
 	\end{enumerate}
 
-	\vspace{0.2in} \pause 
+	\pause 
 	
+	\bc
 	We can compute \alert{contrasts}:
 	\[ \begin{array}{rl}
-	\gamma_1 &=  \mu_{R/R50}-\mu_{N/R50} \pause\\
-	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
-	\gamma_3 &= \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro})-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
+	\gamma_1 =&  \mu_{R/R50}-\mu_{N/R50} \pause\\ \\
+	\gamma_2 =& \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\ \\
+	\gamma_3 =& \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro}) \\
+	&-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
 	\end{array} \]
+	\nc\ec
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Converting scientific questions into mathematical quantities}	
-	Consider the one-way ANOVA model: $Y_{ij} \ind N(\mu_j,\sigma^2)$ where $j=1,\ldots,J$.
-	
-	\vspace{0.1in} \pause
-	
-	Here are a few simple alternative hypotheses:
-  
-	\begin{enumerate}
-	\item What is the difference in mean lifetimes for N/R50 and R/R50 diet? 
-	\item What is the difference in mean lifetimes on N/R40 diet compared to N/R50 and R/R50 combined? 
-	\item What is the difference in mean lifetimes for high calorie (NP and N/N85) diets compared to 
-	low calorie diets (N/R40, N/R50, R/R50, lopro)?
-	\end{enumerate}
-
-\pause 
-	
-	We can compute \alert{contrasts}:
-	\[ \begin{array}{rl}
-	\gamma_1 &=\mu_{R/R50}-\mu_{N/R50} \pause\\
-	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
-	\gamma_3 &= \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro})-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
-	\end{array} \]
-\end{frame}
+% \begin{frame}
+% \frametitle{Converting scientific questions into mathematical quantities}	
+% 	Consider the one-way ANOVA model: $Y_{ij} \ind N(\mu_j,\sigma^2)$ where $j=1,\ldots,J$.
+% 	
+% 	\vspace{0.1in} \pause
+% 	
+% 	Here are a few simple alternative hypotheses:
+%   
+% 	\begin{enumerate}
+% 	\item What is the difference in mean lifetimes for N/R50 and R/R50 diet? 
+% 	\item What is the difference in mean lifetimes on N/R40 diet compared to N/R50 and R/R50 combined? 
+% 	\item What is the difference in mean lifetimes for high calorie (NP and N/N85) diets compared to 
+% 	low calorie diets (N/R40, N/R50, R/R50, lopro)?
+% 	\end{enumerate}
+% 
+% \pause 
+% 	
+% 	We can compute \alert{contrasts}:
+% 	\[ \begin{array}{rl}
+% 	\gamma_1 &=\mu_{R/R50}-\mu_{N/R50} \pause\\
+% 	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
+% 	\gamma_3 &= \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro})-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
+% 	\end{array} \]
+% \end{frame}
 
 
 
@@ -95,53 +159,48 @@ set.seed(2)
 \begin{frame}
 \frametitle{Contrasts}
 
-\begin{definition}
 A \alert{linear combination} of group means has the form 
 \[ \gamma = C_1\mu_1+C_2\mu_2 +\ldots + C_J\mu_J  \]
 where $C_j$ are known coefficients and $\mu_j$ are the unknown population means.
-\end{definition}
 
 \vspace{0.2in} \pause 
 
-\begin{definition}
 A linear combination with $C_1+C_2+\cdots+C_J=0$ is a \alert{contrast}. 
-\end{definition}
 
 \vspace{0.2in} \pause 
 
-\begin{remark}
+\bc
 Contrast interpretation is usually best if $|C_1|+|C_2|+\cdots+|C_J|=2$, 
 i.e. the positive coefficients sum to 1 and the negative coefficients sum to -1. 
-\end{remark}
-
+\nc\ec
 \end{frame}
 
 
 
 \begin{frame}[fragile]
-\frametitle{Inference on contrasts}
+\frametitle{Inference on Contrasts}
+\small
 
   Contrast
-	\[ \gamma = C_1 \mu_1 + C_2 \mu_2 + \cdots + C_J \mu_J \] 
-	
-	\pause 
-	
-	Estimated by 
-	\[ g = C_1 \overline{Y}_1 + C_2 \overline{Y}_2 + \cdots + C_J \overline{Y}_J \] 
+	\[ \gamma = C_1 \mu_1 + C_2 \mu_2 + \cdots + C_J \mu_J 
+	\quad \mbox{with} \quad
+	\hat{\gamma} = C_1 \overline{Y}_1 + C_2 \overline{Y}_2 + \cdots + C_J \overline{Y}_J \] 
 	
 	\pause
 	
 	with standard error
-	\[ SE(g) = \hat\sigma \sqrt{\frac{C_1^2}{n_1}+\frac{C_2^2}{n_2}+\cdots+\frac{C_J^2}{n_J}}. \]
+	\[ SE(\hat\gamma) = \hat\sigma \sqrt{\frac{C_1^2}{n_1}+\frac{C_2^2}{n_2}+\cdots+\frac{C_J^2}{n_J}}. \]
 	
 	\pause
 	
-	Two-sided p-values for $H_0: g=g_0$ (typically $g_0=0$) and posterior tail 
+	\bc
+	\pvalue{}s for $H_0: \gamma=g_0$ vs $H_A: \gamma \ne g_0$ and posterior 
 	probabilities (i.e. $2P(\gamma>0|y)$ or $2P(\gamma<0|y)$):
 	\[ t = \frac{g-g_0}{SE(g)}, \quad p = 2P(T_{n-J} < -|t|). \]
 	\pause
 	Two-sided equal-tail $100(1-\alpha)$\% confidence/credible intervals:
 	\[ g \pm t_{n-J,1-\alpha/2} SE(g). \]
+	\nc\ec
 \end{frame}
 
 
@@ -154,18 +213,15 @@ For these contrasts:
 	\item Mean lifetimes for N/R40 is different than for N/R50 and R/R50 combined.
 	\item Mean lifetimes for high calorie (NP and N/N85) diets is different than for low calorie diets combined.
 \end{enumerate}
-
 \pause 
-	
-	$H_0: \gamma=0 \qquad H_1: \gamma \ne 0:$ 
+\bc
+	$H_0: \gamma=0 \qquad H_A: \gamma \ne 0:$ 
   \[ \begin{array}{rl}
-	\gamma_1 &=  \mu_{R/R50}-\mu_{N/R50} \pause\\
-	\gamma_2 &= \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
-	\gamma_3 &= \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro})-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
+	\gamma_1 =&  \mu_{R/R50}-\mu_{N/R50} \pause\\
+	\gamma_2 =& \mu_{N/R40}-\frac{1}{2}(\mu_{N/R50}+\mu_{R/R50}) \pause\\
+	\gamma_3 =& \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro}) \\&-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
 	\end{array} \]
-
 \pause
-
 {\tiny
 <<K,echo=FALSE>>=
 K = rbind("early rest - none @ 50kcal"=c( 0, 0,-1, 0, 1, 0),
@@ -177,46 +233,45 @@ colnames(K) = levels(case0501$Diet)
 print(xtable(K))
 @
 }
+\nc\ec
 \end{frame}
 
 
 
-\begin{frame}[fragile]
-\frametitle{Mice lifetime examples}
-
-\small
-
-<<echo=FALSE,results='asis'>>=
-sm <- Sleuth3::case0501 %>%
-  group_by(Diet) %>%
-  summarize(n = n(),
-            mean = mean(Lifetime),
-            sd = sd(Lifetime))
-
-sm %>% xtable %>% print
-@
-
-\pause 
-
-Contrasts:
-<<echo=FALSE, results='asis'>>=
-m = lm(Lifetime ~ Diet, data = Sleuth3::case0501)
-sp = summary(m)$sigma
-
-g = rowSums(K%*%sm$mean)
-SEg = rowSums(sp*sqrt(K^2%*%(1/sm$n)))
-
-df = sum(sm$n-1)
-t = g/SEg
-p = 2*pt(-abs(t),df)
-L = g-qt(.975,df)*SEg
-U = g+qt(.975,df)*SEg
-
-tests = data.frame(g=g,"SE(g)"=SEg,t=t,p=p,L=L,U=U, check.names=FALSE)
-
-print(xtable(tests))
-@
-\end{frame}
+% \begin{frame}[fragile]
+% \frametitle{Mice lifetime examples}
+% 
+% \small
+% 
+% <<echo=FALSE,results='asis'>>=
+% sm <- Sleuth3::case0501 %>%
+%   group_by(Diet) %>%
+%   summarize(n = n(),
+%             mean = mean(Lifetime),
+%             sd = sd(Lifetime))
+% 
+% sm %>% xtable %>% print
+% @
+% 
+% Contrasts:
+% <<echo=FALSE, results='asis'>>=
+% m = lm(Lifetime ~ Diet, data = Sleuth3::case0501)
+% sp = summary(m)$sigma
+% 
+% g = rowSums(K%*%sm$mean)
+% SEg = rowSums(sp*sqrt(K^2%*%(1/sm$n)))
+% 
+% df = sum(sm$n-1)
+% t = g/SEg
+% p = 2*pt(-abs(t),df)
+% L = g-qt(.975,df)*SEg
+% U = g+qt(.975,df)*SEg
+% 
+% tests = data.frame(g=g,"SE(g)"=SEg,t=t,p=p,L=L,U=U, check.names=FALSE)
+% 
+% print(xtable(tests))
+% @
+% \end{frame}
 
 
 
@@ -224,39 +279,51 @@ print(xtable(tests))
 
 \subsection{R}
 \begin{frame}[fragile]
-\frametitle{Fit the multiple regression model}
-<<>>=
+\frametitle{Fit the Multiple Regression Model}
+\bc
+<<echo = TRUE>>=
 m = lm(Lifetime ~ Diet, data = Sleuth3::case0501) 
 summary(m)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
-\frametitle{Construct contrasts}
-<<>>=
-<<K>>
-K
+\frametitle{Estimate Group Means}
+\bc
+<<echo = TRUE>>=
+library("emmeans")
+em = emmeans(m, ~ Diet)
+em
+@
+\nc\ec
+\end{frame}
 
+
+
+
+<<>>=
 # (Complicated) code to construct list from data.frame by row
 # https://stackoverflow.com/questions/3492379/data-frame-rows-to-a-list
 # you could just construct lists from the beginning, but the K data.frame is 
 # used previously in the code to construct the contrasts by hand
 K_list <- split(K, seq(nrow(K)))
 K_list <- setNames(split(K, seq(nrow(K))), rownames(K))
-
-K_list
 @
-\end{frame}
 
 
 
 \begin{frame}[fragile]
-<<>>=
-library("emmeans")
-em = emmeans(m, ~ Diet)
-em
 
+\vspace{-0.3in}
+
+\bc
+<<echo = TRUE>>=
+K_list
+@
+\pause
+<<echo=TRUE>>=
 co = contrast(em, K_list)
 
 # p-values (and posterior tail probabilities)
@@ -265,6 +332,7 @@ co
 # confidence/credible intervals
 confint(co)
 @
+\nc\ec
 \end{frame}
 
 
@@ -287,6 +355,8 @@ confint(co)
 
 \section{Data analysis: sulfur effect on scab disease in potatoes}
 \frame{\frametitle{Sulfur effect on scab disease in potatoes}
+\small
+
 \begin{quote}
 The experiment was conducted to investigate the effect of sulfur on controlling scab disease in potatoes. There were seven treatments: control, plus spring and fall application of 300, 600, 1200 lbs/acre of sulfur. The response variable was percentage of the potato surface area covered with scab averaged over 100 random selected potatoes. A completely randomized design was used with 8 replications of the control and 4 replications of the other treatments. 
 \end{quote}
@@ -296,18 +366,24 @@ Cochran and Cox. (1957) Experimental Design (2nd ed). pg96 and Agron. J. 80:712-
 
 \vspace{0.2in} \pause
 
-Scientific question:
+\bc
+Scientific questions:
 \begin{itemize}[<+->]
 \item Does sulfur have any impact at all?
 \item What is the difference between spring and fall application of sulfur?
 \item What is the effect of increased sulfur application?
 \end{itemize}
+\nc\ec
 }
 
 
 \subsection{Exploratory}
 \begin{frame}[fragile]
 \frametitle{Data}
+
+\vspace{-0.4in}
+
+\bc
 <<echo=FALSE>>=
 text = 
 "inf trt row col
@@ -357,6 +433,7 @@ d <- read.table(textConnection(text), header=TRUE) %>%
          
 d
 @
+\nc\ec
 \end{frame}
 
 
@@ -364,6 +441,7 @@ d
 
 \begin{frame}[fragile]
 \frametitle{Design}
+\bc
 <<echo=FALSE>>=
 plot(0,0, xlab="col", ylab="row", 
      main="Completely randomized design\n potato scab experiment",
@@ -374,12 +452,14 @@ axis(2, 1:4, lwd=0)
 segments(1:9-.5,0.5,1:9-.5,4.5)
 segments(0.5,1:5-.5,8.5,1:5-.5)
 @
+\nc\ec
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Design}
+\bc
 <<echo=FALSE>>=
 plot(0,0, xlab="Sulfur (lbs/acre)", ylab="Application", 
      main="Treatment visualization",
@@ -392,12 +472,14 @@ yc = c(1.5,1,2,1,2,1,2)
 rect(xc-100,yc-.4,xc+100,yc+.4)
 text(xc,yc, c(8,rep(4,6)))
 @
+\nc\ec
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Data}
+\bc
 <<echo=FALSE>>=
 ggplot(d, 
        aes(treatment, inf)) + 
@@ -406,12 +488,14 @@ ggplot(d,
   labs(x = "Sulfur", y = "Average scab percent") + 
   theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Data}
+\bc
 <<echo=FALSE>>=
 ggplot(d %>% 
          mutate(application = fct_explicit_na(application)), 
@@ -420,26 +504,31 @@ ggplot(d %>%
   labs(x = "Sulfur", y = "Average scab percent") + 
   theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Data}
+\bc
 <<echo=FALSE>>=
-qplot(col, inf, data=d, color=application, geom="jitter", 
-      xlab="Column ID", ylab="Scab percent") + 
+qplot(col, inf, data=d, shape=application, color = sulfur, geom="jitter", 
+      xlab="Column ID", ylab="Average scab percent") + 
   theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Data}
+\bc
 <<echo=FALSE>>=
-qplot(row, inf, data=d, color=application, geom="jitter", 
-      xlab="Row ID", ylab="Scab percent") + 
+qplot(row, inf, data=d, shape=application, color = sulfur, geom="jitter", 
+      xlab="Row ID", ylab="Average scab percent") + 
   theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
@@ -455,19 +544,25 @@ Assume $Y_{ij} \ind N(\mu_j, \sigma^2)$.
 
 \vspace{0.2in} \pause
 
+\bc
 Hypotheses:
 \begin{itemize}[<+->]
-\item Difference amongst any means: One-way ANOVA F-test
-\item \emph{Any effect}: Control vs sulfur
-\item \emph{Fall vs spring}: Contrast comparing fall vs spring applications
-\item \emph{Sulfur level}: Linear trend contrast
+\item Difference amongst any means: \\ One-way ANOVA F-test
+\item \emph{Any effect}: \\ Contrast: control vs sulfur
+\item \emph{Fall vs spring}: \\ Contrast: fall vs spring applications
+\item \emph{Sulfur level}: \\ Contrast: linear trend
 \end{itemize}
+\nc\ec
 }
+
 
 
 \begin{frame}
 \frametitle{Contrasts}
 
+\vspace{-0.2in}
+
+\bc
 \begin{itemize}
 \item \emph{Sulfur effect}: Any sulfur vs none \pause
 \[ \begin{array}{rl} 
@@ -475,7 +570,7 @@ Hypotheses:
  &= \frac{1}{6} (\mu_{F12}+ \mu_{F6} + \mu_{F3} + \mu_{S3} + \mu_{S6} + \mu_{S12}- 6\mu_O)  
 \end{array} \] 
 
-\vspace{0.2in} \pause
+\pause
 
 \item \emph{Fall vs spring}: Contrast comparing fall vs spring applications \pause 
 
@@ -486,6 +581,7 @@ Hypotheses:
 \end{array} \] 
 
 \end{itemize}	
+\nc\ec
 \end{frame}
 
 
@@ -507,7 +603,6 @@ X_i-\overline{X} & 6 & 0 & -3 & -6 & -3 & 0 & 6
 \[ \begin{array}{rl}
 \gamma &= 6 \mu_{F12}+ 0 \mu_{F6} -3 \mu_{F3}-6 \mu_O -3\mu_{S3} + 0\mu_{S6} + 6\mu_{S12} 
 \end{array} \]
-
 \end{itemize}
 	
 \end{itemize}
@@ -527,52 +622,60 @@ Trt & F12 & F6 & F3 & O & S3 & S6 & S12 & Div \\
 \hline
 Sulfur v control & 1 & 1 & 1 & -6 & 1  & 1 & 1 & 6 \\
 Fall v Spring & 1 & 1 & 1 & 0 & -1  & -1 & -1 & 3 \\
-Linear Trend & -6 & 0 & -3 & -6 & -3 & 0 & 6 & 1 \\
+Linear Trend & 6 & 0 & -3 & -6 & -3 & 0 & 6 & 1 \\
 \hline  
 \end{tabular}
 \end{center}
 
 \pause 
 
-<<potato_in_R>>=
+\bc
+<<potato_in_R, echo = TRUE>>=
 K = 
 #                                         F12 F6 F3  0 S3 S6 S12           
                list("sulfur - control" = c( 1, 1, 1,-6, 1, 1,  1)/6,
                     "fall - spring"    = c( 1, 1, 1, 0,-1,-1, -1)/3,
                     "linear trend"     = c( 6, 0,-3,-6,-3, 0,  6)/1)
 
-m = lm(inf ~ trt, data = d)
+m = lm(inf ~ treatment, data = d)
 anova(m)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{}
+\bc
 <<>>=
-par(mfrow=c(2,3))
-plot(m,1:6)
+resid_panel(m, plots = c("resid","qq","cookd","index","ls","lev"), 
+            qqbands = TRUE, smoother = TRUE)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{}
-<<>>=
-em <- emmeans(m, ~trt); em
+\bc
+<<echo=TRUE>>=
+em <- emmeans(m, ~treatment); em
 
 co <- contrast(em, K)
 confint(co)
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{}
+\bc
 <<>>=
 d$residuals <- residuals(m)
 ggplot(d, aes(col, residuals)) + geom_point() + stat_smooth(se=FALSE) + theme_bw()
 @
+\nc\ec
 \end{frame}
 
 
@@ -582,22 +685,27 @@ ggplot(d, aes(col, residuals)) + geom_point() + stat_smooth(se=FALSE) + theme_bw
 
 \section{Summary}
 \frame{\frametitle{Summary}
+
 	For this particular data analysis
-	\begin{itemize}[<+->]
-	\item Significant differences in means between the groups (ANOVA $F_{6,25}=3.61$ p=0.01)
-  \item Having sulfur was associated with a reducted scab \% of 9 (4,15) compared to no sulfur
-	\item Fall application reduced scab \% by 6 (0.5,12) compared to spring application
-	\item Linear trend in sulfur was significant (p=0.01) 
+	\begin{itemize}
+	\item Significant differences in means between the groups (ANOVA $F_{6,25}=3.61$ p=0.01) \pause 
+  \item Having sulfur was associated with a reduction in scab \% of 9 (4,15) compared to no sulfur \pause
+	\item Fall application reduced scab \% by 6 (0.5,12) compared to spring application \pause
+	\item Linear trend in sulfur was significant (p=0.01)  
+	\end{itemize}
 	
 	\vspace{0.2in}\pause
 	
-	\item Concerned about spatial correlation among columns
-	\item Consider a transformation of the response 
+	\bc
+	\begin{itemize}
+	\item Concerned about spatial correlation among columns \pause
+	\item Consider a logarithm of the response \pause
 		\begin{itemize}
-		\item CI for F12 (-1.2, 12.7) (not shown)
+		\item CI for F12 (-1.2, 12.7) \pause
 		\item Non-constant variance (residuals vs predicted, sulfur, application)
 		\end{itemize}
 	\end{itemize}
+	\nc\ec
 }
 
 \end{document}

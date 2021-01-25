@@ -129,6 +129,9 @@ So the following will recreate the full ANOVA table.
 anova(m0, mS, mST)
 ```
 
+This method is more powerful than the comparing models one at a time and is 
+therefore preferred.
+
 #### Activity
 
 1. Recreate the following ANOVA table by fitting each model separately and using
@@ -235,14 +238,25 @@ it will only attempt to drop the interaction.
 m <- lm(Ingestion ~ Weight * Organic, data = Sleuth3::ex0921)
 drop1(m, test = 'F')
 ```
+It is not obvious from this output that you are comparing the model that
+contains the main effects with the model that additional adds the interaction.
+You can check this with the `anova` function.
 
+```{r}
+m0 <- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
+anova(m0,m)
+```
+
+Notice that the statistics are all the same as the `drop1` results.
 
 ## Model construction strategy
 
 When constructing a model, follow these prioritized rules
 
-1. Include explanatory variables that are part of the design
-1. Include explanatory variables that answer questions of scientific interest
-1. Include ``significant'' explanatory variables
+1. Include explanatory variables that are part of the design.
+1. Include explanatory variables that answer questions of scientific interest.
+1. Include lower order terms, e.g. main effects when interactions are present and 
+linear terms when quadratic terms are present.
+1. Include ``significant'' explanatory variables.
 
 In particular, do NOT remove insignificant design variables. 

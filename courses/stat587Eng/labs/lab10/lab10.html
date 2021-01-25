@@ -11,7 +11,7 @@
 
 <meta name="author" content="Jarad Niemi" />
 
-<meta name="date" content="2020-09-03" />
+<meta name="date" content="2020-11-05" />
 
 <title>Lab10 - ANOVA and F-tests</title>
 
@@ -365,15 +365,23 @@ summary {
 
 <h1 class="title toc-ignore">Lab10 - ANOVA and F-tests</h1>
 <h4 class="author">Jarad Niemi</h4>
-<h4 class="date">2020-09-03</h4>
+<h4 class="date">2020-11-05</h4>
 
 </div>
 
 
 <p>To follow along, use the <a href="lab10.R">lab10 code</a>.</p>
 <p>Now load the packages</p>
-<pre class="r"><code>library(&quot;tidyverse&quot;)
-library(&quot;Sleuth3&quot;)</code></pre>
+<pre class="r"><code>library(&quot;tidyverse&quot;)</code></pre>
+<pre><code>## -- Attaching packages ------------------------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## v ggplot2 3.3.2     v purrr   0.3.4
+## v tibble  3.0.3     v dplyr   1.0.1
+## v tidyr   1.1.0     v stringr 1.4.0
+## v readr   1.3.1     v forcats 0.5.0</code></pre>
+<pre><code>## -- Conflicts ---------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(&quot;Sleuth3&quot;)</code></pre>
 <div id="anova-table" class="section level2">
 <h2>ANOVA Table</h2>
 <p>To run an ANOVA in R, use the <code>anova()</code> function on an <code>lm</code> object.</p>
@@ -553,6 +561,7 @@ mST &lt;- lm(Speed ~ Starters + Track, data = ex0920)</code></pre>
 ## 3    108 38.909  6    38.063 17.609 3.914e-14 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>This method is more powerful than the comparing models one at a time and is therefore preferred.</p>
 <div id="activity-1" class="section level4">
 <h4>Activity</h4>
 <ol style="list-style-type: decimal">
@@ -703,15 +712,27 @@ drop1(m, test = &#39;F&#39;)</code></pre>
 ##                Df Sum of Sq      RSS    AIC F value Pr(&gt;F)
 ## &lt;none&gt;                      61739502 292.89               
 ## Weight:Organic  1   5561605 67301107 292.52  1.3512 0.2632</code></pre>
+<p>It is not obvious from this output that you are comparing the model that contains the main effects with the model that additional adds the interaction. You can check this with the <code>anova</code> function.</p>
+<pre class="r"><code>m0 &lt;- lm(Ingestion ~ Weight + Organic, data = Sleuth3::ex0921)
+anova(m0,m)</code></pre>
+<pre><code>## Analysis of Variance Table
+## 
+## Model 1: Ingestion ~ Weight + Organic
+## Model 2: Ingestion ~ Weight * Organic
+##   Res.Df      RSS Df Sum of Sq      F Pr(&gt;F)
+## 1     16 67301107                           
+## 2     15 61739502  1   5561605 1.3512 0.2632</code></pre>
+<p>Notice that the statistics are all the same as the <code>drop1</code> results.</p>
 </div>
 </div>
 <div id="model-construction-strategy" class="section level2">
 <h2>Model construction strategy</h2>
 <p>When constructing a model, follow these prioritized rules</p>
 <ol style="list-style-type: decimal">
-<li>Include explanatory variables that are part of the design</li>
-<li>Include explanatory variables that answer questions of scientific interest</li>
-<li>Include ``significant’’ explanatory variables</li>
+<li>Include explanatory variables that are part of the design.</li>
+<li>Include explanatory variables that answer questions of scientific interest.</li>
+<li>Include lower order terms, e.g. main effects when interactions are present and linear terms when quadratic terms are present.</li>
+<li>Include ``significant’’ explanatory variables.</li>
 </ol>
 <p>In particular, do NOT remove insignificant design variables.</p>
 </div>

@@ -1,0 +1,174 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../../frontmatter}
+\input{../../commands}
+
+\title{R01 - Simple linear regression}
+\subtitle{Uncertainty and prediction intervals}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA, 
+               fig.width=6, fig.height=4.5, 
+               size='tiny', 
+               out.width='\\textwidth', 
+               fig.align='center', 
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Uncertainty intervals}
+\subsection{Uncertainty when explanatory variable is zero}
+\begin{frame}
+\frametitle{Uncertainty when explanatory variable is zero}
+
+Let 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2), \]
+\pause
+then
+\[ E[Y_i|X_i = 0] = \beta_0 \]
+\pause 
+and a $100(1-a)$\% credible/confidence interval is 
+\bc
+\[ \hat\beta_0 \, \pm t_{n-2,1-a/2} \, \hat{\sigma}\sqrt{\frac{1}{n} + \frac{\overline{x}^2}{(n-1)s_x^2}}. \]
+\nc\ec
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Telomere data: uncertainty}
+\bc
+<<>>=
+m = lm(telomere.length ~ years, data = abd::Telomeres)
+ci = confint(m)
+
+g = ggplot(abd::Telomeres, aes(x=years, y=telomere.length)) + 
+  geom_point() +
+  geom_segment(aes(x = 0, xend = 0, y = ci[1,1], yend = ci[1,2]), 
+                 color = "blue", size = 2) +
+  stat_smooth(method = "lm", se = FALSE) + 
+  labs(title = "Telomere length vs years post diagnosis",
+       x = "Years since diagnosis", y = "Telomere length") + 
+  theme_bw()
+
+g
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Uncertainty when explanatory variable is $x$}
+\begin{frame}
+\frametitle{Uncertainty when explanatory variable is $x$}
+
+Let 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2), \]
+\pause
+then
+\[ E[Y_i|X_i = x] \pause = \beta_0 + \beta_1 x \]
+\pause 
+and a $100(1-a)$\% credible/confidence interval is 
+\bc
+\[ \hat\beta_0 + \hat\beta_1 x \pause \,
+\pm t_{n-2,1-a/2} \, \hat{\sigma}\sqrt{\frac{1}{n} + \frac{(\overline{x}-x)^2}{(n-1)s_x^2}}. \]
+\nc\ec
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Telomere data: uncertainty}
+\bc
+<<>>=
+g = g + stat_smooth(method = "lm")
+g
+@
+\nc\ec
+\end{frame}
+
+
+
+\subsection{Prediction intervals}
+\begin{frame}
+\frametitle{Prediction intervals}
+Let 
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2), \]
+\pause
+then
+\[ E[Y_i|X_i = x] \pause = \beta_0 + \beta_1 x \]
+\pause 
+and a $100(1-a)$\% \alert{prediction} interval is 
+\bc
+\[ \hat\beta_0 + \hat\beta_1 x \pause \,
+\pm t_{n-2,1-a/2} \, \hat{\sigma}\sqrt{\alert{1+}\frac{1}{n} + \frac{(\overline{x}-x)^2}{(n-1)s_x^2}}. \]
+\nc\ec
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Telomere data: prediction intervals}
+\bc
+<<>>=
+p = predict(m, newdata = abd::Telomeres, interval = "prediction")
+Telomeres = abd::Telomeres %>%
+  dplyr::mutate(piU = p[,2], piL = p[,3])
+
+g + 
+  geom_line(aes(x = years, y = piL), 
+              color = "red", linetype = "dashed",
+              data = Telomeres) + 
+  geom_line(aes(x = years, y = piU), 
+              color = "red", linetype = "dashed",
+              data = Telomeres)
+@
+\nc\ec
+\end{frame}
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+\bc
+Two main types of uncertainty intervals: \pause
+\begin{itemize}
+\item where is the line? \pause 
+\[ \hat\beta_0 + \hat\beta_1 x \,
+\pm t_{n-2,1-a/2} \, \hat{\sigma}\sqrt{\phantom{1+}\frac{1}{n} + \frac{(\overline{x}-x)^2}{(n-1)s_x^2}} \]
+\pause 
+\item where will a new data point fall? \pause 
+\[ \hat\beta_0 + \hat\beta_1 x \,
+\pm t_{n-2,1-a/2} \, \hat{\sigma}\sqrt{\alert{1+}\frac{1}{n} + \frac{(\overline{x}-x)^2}{(n-1)s_x^2}} \]
+\end{itemize}
+\pause
+Both intervals are confidence and credible intervals.
+\nc\ec
+\end{frame}
+
+
+\end{document}
+
+
+

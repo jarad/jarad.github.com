@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[t,aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -7,11 +7,14 @@
 
 \title{R01 - Simple linear regression}
 
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=6, fig.height=4.5, 
                size='tiny', 
-               out.width='0.8\\textwidth', 
+               out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo=TRUE,
@@ -20,8 +23,8 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("dplyr")
-library("ggplot2")
+library("tidyverse")
+library("scales")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -42,25 +45,34 @@ set.seed(2)
 \begin{frame}
 \frametitle{Telomere length}
 
+\footnotesize
+
 {\tiny \url{http://www.pnas.org/content/101/49/17312}}
 
+\pause
+
+\bc
 \begin{quote}
-People who are stressed over long periods tend to look haggard, and it is commonly thought that psychological stress leads to premature aging and the earlier onset of diseases of aging. 
+People who are stressed over long periods tend to look haggard, \pause and it is commonly thought that psychological stress leads to premature aging [as measured by decreased telomere length]
 
-...
+\pause ...
 
-This design allowed us to examine the importance of perceived stress and measures of objective stress (caregiving status and chronicity of caregiving stress based on the number of years since a child's diagnosis).
+examine the importance of ... caregiving stress (...number of years since a child's diagnosis [of a chronic disease]) [on telomere length]
 
-...
+\pause ...
 
 Telomere length values were measured from DNA by a quantitative PCR assay that determines the relative ratio of telomere repeat copy number to single-copy gene copy number (T/S ratio) in experimental samples as compared with a reference DNA sample.
 \end{quote}
+\nc\ec
 
 \end{frame}
 
 
-\begin{frame}[fragile]
-\frametitle{}
+\begin{frame}
+\frametitle{Data}
+
+\vspace{-0.2in}
+
 <<telomere_data, echo=FALSE>>=
 # From `abd` package
 Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L, 
@@ -71,18 +83,38 @@ Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L,
     1.03, 1.14, 1.17, 1.23, 1.25, 1.31, 1.34, 1.36, 1.22, 1.32, 
     1.28, 1.26, 1.18, 1.03, 1.1, 1.13, 0.98, 0.85, 1.05, 1.15, 
     1.14, 1.24)), .Names = c("years", "telomere.length"), class = "data.frame", row.names = c(NA, 
--39L))
+-39L)) %>%
+  dplyr::mutate(jittered_years = jitter(years)) # used for plotting
 @
 
+\bc
 <<telomere_plot, dependson="telomere_data", echo=FALSE>>=
-ggplot(Telomeres, aes(x=years, y=telomere.length)) + 
+g = ggplot(Telomeres, aes(x=jittered_years, y=telomere.length)) + 
   geom_point() + 
-  geom_smooth(method='lm', se=FALSE) + 
-  labs(x = "Years", y = "Telomere length (ratio)") + 
+  labs(title = "Telomere length vs years post diagnosis",
+       x = "Years since diagnosis (jittered)", y = "Telomere length") + 
   theme_bw()
+
+g
 @
+\nc\ec
 \end{frame}
 
+
+\begin{frame}
+\frametitle{Data with regression line}
+
+\vspace{-0.2in}
+
+\bc
+<<telomere_plot_with_regression_line, dependson="telomere_plot", echo=FALSE>>=
+g = g + geom_smooth(method='lm', se=FALSE)  
+g
+@
+\nc\ec
+\end{frame}
+
+  
 
 \subsection{Model}
 \frame{\frametitle{Simple Linear Regression}
@@ -94,7 +126,7 @@ ggplot(Telomeres, aes(x=years, y=telomere.length)) +
 	\vspace{0.1in} \pause
 	
 	Terminology (all of these are equivalent):
-	
+	\bc
 	\begin{center}
 	\begin{tabular}{ll}
 	\hline
@@ -105,9 +137,44 @@ ggplot(Telomeres, aes(x=years, y=telomere.length)) +
 	\hline
 	\end{tabular}
 	\end{center}
+	\nc\ec
 }
 
 
+
+\begin{frame}
+\frametitle{Simple linear regression - visualized}
+
+\vspace{-0.2in}
+
+\bc
+<<slr_viz, echo = FALSE>>=
+xx = 0:9
+d = expand.grid(mean = xx,
+                x = seq(-3, 3, length = 101)) %>%
+  dplyr::mutate(y = mean + dnorm(x),
+                x = mean + x)
+
+slr_viz = ggplot(d, aes(x=x, y=y, group = mean)) + 
+  geom_hline(yintercept = xx, color = "gray") +
+  geom_abline(intercept = 0, slope = 1, color = "blue") + 
+  geom_line(color = "magenta", size = 2) + 
+  coord_flip() +
+  labs(title = "Simple linear regression model",
+       x = "Response variable",
+       y = "Explanatory variable") +
+  theme_bw() 
+
+slr_viz +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+@
+\nc\ec
+\end{frame}
 
 
 
@@ -117,40 +184,52 @@ ggplot(Telomeres, aes(x=years, y=telomere.length)) +
 
 \small
 
-  Recall:
+Recall:
+\[ E[Y_i|X_i=x] = \beta_0 + \beta_1 x \qquad Var[Y_i|X_i=x] = \sigma^2 \]
 
-	\[ E[Y_i|X_i=x] = \beta_0 + \beta_1 x \qquad Var[Y_i|X_i=x] = \sigma^2 \]
-
+\vspace{-0.1in} \pause
+	
+\bc
+\begin{itemize}
+\item	If $X_i=0$, then $E[Y_i|X_i=0] = \beta_0$. \pause 
+	
+$\beta_0$ is the \alert{expected} response when the explanatory variable is zero. \pause 
+	
+\item If $X_i$ increases from $x$ to $x+1$, then 
+\[ \begin{array}{rl}
+E[Y_i|X_i=x+1] &= \beta_0+\beta_1x+\beta_1 \pause \\
+\uncover<6->{-} E[Y_i|X_i=x\phantom{\,+\,1}] &= \beta_0+\beta_1 x  \pause \\
+\hline
+&= \phantom{\beta_0+\beta_1x+}\beta_1 \pause
+\end{array} \]
+	
+$\beta_1$ is the \alert{expected} increase in the response for each unit 
+increase in the explanatory variable.
+	
 \pause
 	
-	\begin{itemize}
-	\item	If $X_i=0$, then $E[Y_i|X_i=0] = \beta_0$. \pause 
+\item 
 	
-	$\beta_0$ is the \alert{expected} response when the explanatory variable is zero. \pause 
-	
-	\vspace{0.2in} 
-	
-	\item If $X_i$ increases from $x$ to $x+1$, then 
-	\[ \begin{array}{rl}
-	E[Y_i|X_i=x+1] &= \beta_0+\beta_1x+\beta_1 \pause \\
-	\uncover<6->{-} E[Y_i|X_i=x\phantom{\,+\,1}] &= \beta_0+\beta_1 x  \pause \\
-	\hline
-	&= \beta_1 \pause
-	\end{array} \]
-	
-	$\beta_1$ is the \alert{expected} increase in the response for each unit 
-	increase in the explanatory variable.
-	
-	\vspace{0.2in} \pause
-	
-	\item 
-	
-	$\sigma$ is the standard deviation of the response for a fixed value of the 
-	explanatory variable.
-	\end{itemize}
+$\sigma$ is the standard deviation of the response for a fixed value of the 
+explanatory variable.
+\end{itemize}
+\nc\ec
 }
 
 
+
+\begin{frame}
+\frametitle{Simple linear regression - visualized}
+
+\vspace{-0.2in}
+
+\bc
+<<echo=FALSE, dependson = "slr_viz">>=
+slr_viz + 
+  scale_y_continuous(breaks = scales::pretty_breaks())
+@
+\nc\ec
+\end{frame}
 
 
 \subsection{Parameter estimation}
@@ -168,161 +247,186 @@ ggplot(Telomeres, aes(x=years, y=telomere.length)) +
 	\[ r_i = \hat{e}_i = Y_i - (\hat{\beta}_0+\hat{\beta}_1X_i) \]
 	\pause The least squares (minimize $\sum_{i=1}^n r_i^2$), 
 	maximum likelihood, and 
-	Bayesian estimators are \pause
+	Bayesian estimators (prior $1/\sigma^2$) \pause are 
+	
+	\vspace{-0.2in} \pause
+	
+	\bc
 	\[ \begin{array}{rl}
   \hat{\beta}_1 &= SXY/SXX \\
 	\hat{\beta}_0 &= \overline{Y}-\hat{\beta}_1\overline{X} \\ 
-	\hat{\sigma}^2 &=  SSE/(n-2) \qquad \mbox{df}=n-2 \\ \pause
+	\hat{\sigma}^2 &=  SSE/(n-2) \qquad df=n-2 \pause \\
   \\
   \overline{X} &= \frac{1}{n} \sum_{i=1}^n X_i \\
-	\overline{Y} &= \frac{1}{n} \sum_{i=1}^n Y_i \\ \pause 
+	\overline{Y} &= \frac{1}{n} \sum_{i=1}^n Y_i \pause \\ 
   \\
   SXY &= \sum_{i=1}^n (X_i-\overline{X})(Y_i-\overline{Y}) \\
 	SXX &= \sum_{i=1}^n (X_i-\overline{X})(X_i-\overline{X}) = \sum_{i=1}^n (X_i-\overline{X})^2 \\
 	SSE &= \sum_{i=1}^n r_i^2 
 	\end{array} \]
+	\nc\ec
 }
 
 
-\begin{frame}[fragile]
-\frametitle{}
-<<residual_plot, dependson="telomere_data", echo=FALSE>>=
-m <- lm(telomere.length ~ years, data = Telomeres)
-Telomeres <- Telomeres %>%
-  mutate(predict = predict(m),
-         residuals = residuals(m),
-         jittered_years = jitter(years))
-
-ggplot(Telomeres, 
-       aes(x = jittered_years, 
-           y = telomere.length)) +
-  geom_jitter(height = 0) + 
-  geom_segment(aes(xend = jittered_years, yend = predict), color = "red") + 
-  stat_smooth(method = "lm", se = FALSE) + 
-  labs(main = "Telomere length vs years post diagnosis",
-    x    = "Years post diagnosis (jittered)",
-    y    = "Telomere length") + 
-  theme_bw()
+\begin{frame}
+\frametitle{Residuals}
+\vspace{-0.2in}
+\bc
+<<dependson="telomere_plot_with_regression_line", echo=FALSE>>=
+g
 @
+\nc\ec
+\end{frame}
+
+\begin{frame}
+\frametitle{Residuals}
+\vspace{-0.2in}
+\bc
+<<residual_plot, dependson="telomere_plot_with_regression_line", echo=FALSE>>=
+m <- lm(telomere.length ~ years, data = Telomeres)
+residuals =  Telomeres %>%
+  mutate(predict = predict(m),
+         residuals = residuals(m))
+
+g +  geom_segment(aes(xend = jittered_years, yend = predict), 
+                  data = residuals, color = "red") 
+@
+\nc\ec
 \end{frame}
 
 
 \subsection{Standard errors}
 \frame{\frametitle{}
 \small
-	How certain are we about $\hat{\beta}_0$ and $\hat{\beta}_1$ being equal to 
-	$\beta_0$ and $\beta_1$? 
+	How certain are we about $\hat{\beta}_0$ and $\hat{\beta}_1$? 
 	
 	\vspace{0.2in} \pause
 	
-	We quantify this uncertainty using their standard errors and posterior 
-	standard deviations:
+	\bc
+	We quantify this uncertainty using their standard errors (or posterior scale parameters): \pause
 	\[ \begin{array}{rlll}
-	SE(\hat\beta_0) &= \hat{\sigma} \sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_X^2}} & df=n-2 \\ \pause
-	SE(\hat\beta_1) &= \hat{\sigma} \sqrt{\phantom{\frac{1}{n} +\,\, }\frac{1}{(n-1)s_X^2}} & df=n-2 \\ \pause
+	SE(\hat\beta_0) &= \hat{\sigma} \sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_X^2}} & df=n-2 \pause\\ 
+	SE(\hat\beta_1) &= \hat{\sigma} \sqrt{\phantom{\frac{1}{n} +\,\, }\frac{1}{(n-1)s_X^2}} & df=n-2 \pause\\ 
 	\\
 	s_X^2 &= SXX/(n-1) \\ 
-	s_Y^2 &= SYY/(n-1) \\ \pause
-	SYY &=  \sum_{i=1}^n (Y_i-\overline{Y})^2 \\ \pause
+	s_Y^2 &= SYY/(n-1) \pause \\
+	SYY &=  \sum_{i=1}^n (Y_i-\overline{Y})^2 \pause \\
 	\\
-	r_{XY} &= \frac{SXY/(n-1)}{s_Xs_Y} &&\pause \mbox{correlation coefficient} \\ \pause
-	R^2 &= r^2_{XY} \pause &= \frac{SST-SSE}{SST} \pause & \mbox{coefficient of determination} \\ \pause
+	r_{XY} &= \frac{SXY/(n-1)}{s_Xs_Y} &\pause \mbox{correlation coefficient} \pause \\
+	R^2 &= r^2_{XY} \pause = \frac{SST-SSE}{SST} \pause & \mbox{coefficient of determination} \pause \\
 	SST &= SYY = \sum_{i=1}^n (Y_i-\overline{Y})^2 \pause 
 	\end{array} \]
-The coefficient of determination ($R^2$) is the proportion of the total response variation explained by the explanatory variable(s).
+The coefficient of determination ($R^2$) is the proportion of the total response variation explained by the model.
+\nc\ec
 }
 
 
 
-
-\subsection{Pvalues and confidence intervals}
 \begin{frame}
-\frametitle{Pvalues and confidence interval}
-We can construct $100(1-a)\%$ two-sided confidence intervals via
-\[ 
-\hat{\beta}_0 \pm t_{n-2,1-a/2} SE(\hat\beta_0) 
-\pause
-\qquad \mbox{and} \qquad 
-\hat{\beta}_1 \pm t_{n-2,1-a/2} SE(\hat\beta_1).  
-\]
-
-\pause
-
-We can compute one-sided pvalues, 
-e.g. $H_0:\beta_0\ge b_0$ has
-\[ 
-\mbox{\pvalue{}} = 
-P\left(T_{n-2}<\frac{\hat{\beta_0}-b_0}{SE(\hat\beta_0)}\right) 
-\]
-\pause
-and $H_0:\beta_1\ge b_1$ has
-\[
-\mbox{\pvalue{}} = 
-P\left(T_{n-2}<\frac{\hat{\beta_1}-b_1}{SE(\hat\beta_1)}\right). 
-\]
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Posterior distributions, credible intervals, and posterior probabilities}
+\frametitle{Default Bayesian analysis of the simple linear regression model}
 
 \small
 
 If we assume the default prior $p(\beta_0,\beta_1,\sigma^2)\propto 1/\sigma^2$,
 then the marginal posteriors for the mean parameters are 
 \[ 
-\beta_0|y \sim t_{n-2}(\hat\beta_0, SE(\hat\beta_0)^2) 
-\qquad\mbox{and}\qquad
-\beta_1|y \sim t_{n-2}(\hat\beta_1, SE(\hat\beta_1)^2).
+\beta_j|y \sim t_{n-2}(\hat\beta_j, SE(\hat\beta_j)^2).
 \]
 \pause
-We can construct $100(1-a)\%$ two-sided confidence/credible intervals via
+We can construct a $100(1-a)\%$ two-sided credible interval for $\beta_j$ via
 \[ 
-\hat{\beta}_0 \pm t_{n-2,1-a/2} SE(\hat\beta_0) 
-\qquad \mbox{and} \qquad 
-\hat{\beta}_1 \pm t_{n-2,1-a/2} SE(\hat\beta_1).  
+\hat{\beta}_j \pm t_{n-2,1-a/2} SE(\hat\beta_j)
 \]
 \pause
+where $P(T_{n-2} < t_{n-2,1-a/2}) = 1-a/2$ for $T_{n-2} \sim t_{n-2}$.
+
+\vspace{0.2in} \pause
+
+\bc
 We can compute posterior probabilities via 
 \[ \begin{array}{rl}
-P(\beta_0<b_0|y) &= P\left(T_{n-2}<\frac{\hat{\beta_0}-b_0}{SE(\hat\beta_0)}\right) \\
-P(\beta_1<b_1|y) &= P\left(T_{n-2}<\frac{\hat{\beta_1}-b_1}{SE(\hat\beta_1)}\right)
+P(\beta_j<b_j|y) &= P\left(T_{n-2}<\frac{\hat{\beta_j}-b_j}{SE(\hat\beta_j)}\right) \\
+P(\beta_j>b_j|y) &= P\left(T_{n-2}>\frac{\hat{\beta_j}-b_j}{SE(\hat\beta_j)}\right).
 \end{array} \]
-\pause
-which are exactly the one-sided \pvalue{}s.
+\nc\ec
 \end{frame}
+
+
+
+
+\subsection{\pvalue{}s and confidence intervals}
+\begin{frame}
+\frametitle{\pvalue{}s and confidence interval}
+
+\small
+
+\vspace{-0.1in}
+
+We can construct a $100(1-a)\%$ two-sided confidence interval for $\beta_j$ via
+\[ 
+\hat{\beta}_j \pm t_{n-2,1-a/2} SE(\hat\beta_j).
+\]
+
+\vspace{0.1in} \pause
+
+\bc
+We can compute one-sided \pvalue{}s, \pause \\
+e.g. $H_0:\beta_j\ge b_j$ vs $H_A: \beta_j < b_j$ has
+\[ 
+\mbox{\pvalue{}} = 
+P\left(T_{n-2}>\frac{\hat{\beta_j}-b_j}{SE(\hat\beta_j)}\right) 
+\]
+\pause
+and $H_0:\beta_j\le b_j$ vs $H_A: \beta_j > b_j$ has
+\[
+\mbox{\pvalue{}} = 
+P\left(T_{n-2}<\frac{\hat{\beta_1}-b_j}{SE(\hat\beta_j)}\right)
+\]
+\pause
+software default is usually $b_j = 0$.
+\nc\ec
+\end{frame}
+
+
+
+
 
 
 \subsection{by hand}
 \begin{frame}[fragile]
 \frametitle{Calculations ``by hand'' in R}
+\bc
 <<hand_calculations, dependson="telomere_data", echo=TRUE>>=
-Telomeres = abd::Telomeres
+n    = nrow(Telomeres)
+Xbar = mean(Telomeres$years)
+Ybar = mean(Telomeres$telomere.length)
+s_X  = sd(Telomeres$years)
+s_Y  = sd(Telomeres$telomere.length)
+r_XY = cor(Telomeres$telomere.length, Telomeres$years)
 
-n <- nrow(Telomeres)
-Xbar <- mean(Telomeres$years)
-Ybar <- mean(Telomeres$telomere.length)
-s_X <- sd(Telomeres$years)
-s_Y <- sd(Telomeres$telomere.length)
-r_XY <- cor(Telomeres$telomere.length, Telomeres$years)
+SXX = (n-1)*s_X^2
+SYY = (n-1)*s_Y^2
+SXY = (n-1)*s_X*s_Y*r_XY
 
-SXX <- (n-1)*s_X^2
-SYY <- (n-1)*s_Y^2
-SXY <- (n-1)*s_X*s_Y*r_XY
-beta1 <- SXY/SXX
-beta0 <- Ybar - beta1 * Xbar
-R2 <- r_XY^2
-SSE <- SYY*(1-R2)
-sigma2 <- SSE/(n-2)
-sigma <- sqrt(sigma2)
-SE_beta0 <- sigma*sqrt(1/n + Xbar^2/((n-1)*s_X^2))
-SE_beta1 <- sigma*sqrt(                 1/((n-1)*s_X^2))
+beta1 = SXY/SXX
+beta0 = Ybar - beta1 * Xbar
+
+R2  = r_XY^2
+SSE = SYY*(1-R2)
+
+sigma2 = SSE/(n-2)
+sigma  = sqrt(sigma2)
+
+SE_beta0 = sigma*sqrt(1/n + Xbar^2/((n-1)*s_X^2))
+SE_beta1 = sigma*sqrt(           1/((n-1)*s_X^2))
 @
+\nc\ec
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Calculations ``by hand'' in R (continued)}
+\bc
 <<pvalues_and_CIs, dependson="hand_calculations", echo=TRUE>>=
 # 95% CI for beta0
 beta0 + c(-1,1)*qt(.975, df = n-2) * SE_beta0
@@ -336,6 +440,7 @@ pt(beta0/SE_beta0, df = n-2)
 # pvalue for H1: beta1 >= 0 and P(beta1<0|y)
 pt(beta1/SE_beta1, df = n-2)
 @
+\nc\ec
 \end{frame}
 
 
@@ -348,6 +453,7 @@ pt(beta1/SE_beta1, df = n-2)
 \frametitle{Calculations by hand}
 \tiny
 
+\bc
 \[ \begin{array}{rl}
 SXX &
 = (n-1) s_x^2
@@ -405,12 +511,12 @@ SE(\hat{\beta}_1) &
 =  \Sexpr{sigma} \sqrt{\frac{1}{(\Sexpr{n}-1)*\Sexpr{s_X}^2}}
 = \Sexpr{SE_beta1} \\
 
-p_{H_0:\beta_0=0} &
+p_{H_A:\beta_0\ne 0} &
 = 2P\left(T_{n-2} < -\left| \frac{\hat\beta_0}{SE(\hat\beta_0)} \right|\right)
 = 2P(t_{\Sexpr{n-2}} < \Sexpr{-abs(beta0/SE_beta0)})
 = \Sexpr{2*pt(-abs(beta0/SE_beta0),n-2)} \\
 
-p_{H_0:\beta_1=0} &
+p_{H_A:\beta_1\ne 0} &
 = 2P\left(T_{n-2} < -\left| \frac{\hat\beta_1}{SE(\hat\beta_1)} \right|\right)
 = 2P(t_{\Sexpr{n-2}} < \Sexpr{-abs(beta1/SE_beta1)})
 = \Sexpr{2*pt(-abs(beta1/SE_beta1),n-2)} \\
@@ -427,66 +533,41 @@ CI_{95\%\, \beta_1} &
 = (\Sexpr{beta1 - qt(.975,n-2) * SE_beta1},
    \Sexpr{beta1 + qt(.975,n-2) * SE_beta1}) \\
 \end{array} \]
+\nc\ec
 \end{frame}
 
 
 \subsection{in R}
 \begin{frame}[fragile]
 \frametitle{Regression in R}
+
+\vspace{-0.3in}
+
+\bc
 <<regression_in_r, dependson="telomere_data", echo=TRUE>>=
-m = lm(telomere.length~years, Telomeres)
+m = lm(telomere.length ~ years, Telomeres)
 summary(m)
 confint(m)
 @
+\nc\ec
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Convert between \pvalue{}s and posterior probabilities}
 
-\small
-
-For a generic mean parameter $\beta$, you can convert between one-sided and 
-two-sided \pvalue{}s as well as posterior probabilities using the following
-formulas.
-
-\vspace{0.1in} \pause
-
-If $\hat\beta>0$ and $p$ is the \pvalue{} for the test $H_0:\beta = 0$, 
-\pause
-then 
-\begin{itemize}[<+->]
-\item $\phantom{1-{}}p/2$ is the \pvalue{} for the test $H_0:\beta\le 0$,
-\item $1-p/2$  is the \pvalue{} for the test $H_0:\beta\ge 0$,
-\item $\phantom{1-{}}p/2 = P(\beta<0|y)$, and
-\item $1-p/2 = P(\beta>0|y)$
-\end{itemize}
-
-\pause
-If $\hat\beta<0$ and $p$ is the \pvalue{} for the test $H_0:\beta= 0$, 
-\pause
-Then 
-\begin{itemize}[<+->]
-\item $1-p/2$ is the \pvalue{} for the test $H_0:\beta\le 0$,
-\item $\phantom{1-{}}p/2$  is the \pvalue{} for the test $H_0:\beta\ge 0$,
-\item $1-p/2 = P(\beta<0|y)$, and
-\item $\phantom{1-{}}p/2 = P(\beta>0|y)$.
-\end{itemize}
-\end{frame}
 
 
 \subsection{Conclusion}
 \begin{frame}
 \frametitle{Conclusion}
 
-Telomere length at the time of diagnosis of a child's chronic illness is estimated to be 1.37 with a 95\% confidence interval of (1.25, 1.48). \pause For each year since diagnosis, the telomere length decreases by 0.026 with a 95\% confidence interval of (0.008, 0.045) \alert{on average}. \pause The proportion of variability in telomere length described by years since diagnosis is 18.5\%. 
+Telomere ratio at the time of diagnosis of a child's chronic illness is estimated to be 1.37 with a 95\% credible interval of (1.25, 1.48). \pause For each year since diagnosis, the telomere ratio decreases \alert{on average} by 0.026 with a 95\% credible interval of (0.008, 0.045) . \pause The proportion of variability in telomere length described by a linear regression on years since diagnosis is 18.5\%. 
 
 \vspace{0.2in} \pause
 
-
+\bc
 {\tiny \url{http://www.pnas.org/content/101/49/17312}}
 \begin{quote}
-The zero-order correlation between chronicity of caregiving [years] and mean telomere length, r,is $-0.445$ (P $<$0.01). [$R^2=0.198$ was shown in the plot.]
+The correlation between chronicity of caregiving and mean telomere length is $-0.445$ (P $<$0.01). [$R^2=0.198$ was shown in the plot.]
 \end{quote}
 
 \pause
@@ -496,148 +577,37 @@ The zero-order correlation between chronicity of caregiving [years] and mean tel
 I'm guessing our analysis and that reported in the paper don't match exactly due to a discrepancy in the data.
 \end{remark}
 }
-
+\nc\ec
 \end{frame}
 
 
 
 \subsection{Summary}
 \frame{\frametitle{Summary}
-\begin{itemize}[<+->]
+\begin{itemize} \small
 \item The \alert{simple linear regression} model is 
 	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
 	where $Y_i$ and $X_i$ are the response and explanatory variable, respectively, 
 	for individual $i$.
 
-	\vspace{0.1in} 
+	\vspace{0.1in} \pause
 	
 \item Know how to use R to obtain $\hat{\beta}_0$, $\hat{\beta}_1$, 
-$\hat{\sigma}^2$, $R^2$, pvalues, CIs, etc. 
-	
-	\vspace{0.1in}
-	
-\item Interpret R output
-	\begin{itemize}
-	\item At a value of zero for the explanatory variable ($X_i=0$), $\beta_0$ is 
-	the expected value for the response ($Y_i$).
-	\item For each unit increase in the explanatory variable value, $\beta_1$ is 
-	the expected increase in the response.
-	\item At a constant value of the explanatory variable, $\sigma^2$ is the 
-	variance of the responses. 
-	\item The coefficient of determination ($R^2$) is the percentage of the total 
-	response variation explained by the explanatory variable(s).
+$\hat{\sigma}^2$, $R^2$, \pvalue{}s, CIs, etc. \pause
+\end{itemize}
+	\bc
+\begin{itemize} \small
+\item Interpret regression output: \pause
+	\begin{itemize} \scriptsize
+	\item $\beta_0$ is the expected value for the response when the explanatory variable is 0.
+	\item $\beta_1$ is the expected increase in the response for each unit increase in the explanatory variable.
+	\item $\sigma$ is the standard deviation of responses around their mean.
+	\item $R^2$ is the proportion of the total variation of the response variable explained by the model.
 	\end{itemize}
 \end{itemize}
+\nc\ec
 }
 
-
-
-
-\subsection{Confidence and prediction intervals at a particular X}
-\begin{frame}
-\frametitle{What is $E[Y|X=x]$?}
-
-We know $\beta_0 = E[Y|X=0]$, but what about $X=x$? \pause
-
-\[ E[Y|X=x] = \beta_0+\beta_1 x \]
-\pause 
-which we can estimate via 
-\[ \widehat{E[Y|X=x]} = \hat{\beta}_0 + \hat{\beta}_1x \]
-\pause
-but there is uncertainty in both $\beta_0$ and $\beta_1$. \pause So the standard error of $E[Y|X=x]$ is 
-\[ SE(E[Y|X=x]) = \hat{\sigma} \sqrt{\frac{1}{n} + \frac{(\overline{X}-x)^2}{(n-1)s_X^2}}  \]
-and a $100(1-a)$\% confidence interval is 
-\[ \hat{\beta}_0 + \hat{\beta}_1x \pm t_{n-2,1-a/2}SE(E[Y|X=x]) \]
-
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{What do we predict about $Y$ at $X=x$?}
-
-On the last slide, we calculated $E[Y|X=x]$ and it's uncertainty\pause, but if we are trying to predict a new observation, we need to account for the sampling variablity $\sigma^2$. \pause Thus a prediction about $Y$ at a new $X=x$ is still
-
-\[ Pred\{Y|X=x\} = \hat{\beta}_0 + \hat{\beta}_1 x \]
-but the uncertainty includes the variability due to $\sigma^2$. \pause  So the standard error of $Pred\{Y|X=x\}$ is 
-\[ SE(Pred\{Y|X=x\}) = \hat{\sigma} \sqrt{1+\frac{1}{n} + \frac{(\overline{X}-x)^2}{(n-1)s_X^2}}  \]
-and a $100(1-a)$\% prediction interval is 
-\[ \hat{\beta}_0 + \hat{\beta}_1x \pm t_{n-2,1-a/2}SE(Pred\{Y|X=x\}). \]
-\end{frame}
-
-
-\begin{frame}[fragile]
-\frametitle{Confidence and prediction intervals for different values of X}
-
-<<intervals, dependson="telomere_data", echo=TRUE>>=
-m = lm(telomere.length~years, Telomeres)
-new = data.frame(years=4:6)
-new %>% bind_cols(predict(m, new, interval="confidence") %>% as.data.frame)
-new %>% bind_cols(predict(m, new, interval="prediction") %>% as.data.frame)
-@
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]
-
-<<echo=FALSE, fig.height=6, fig.width=7, out.width='0.8\\textwidth'>>=
-plot(telomere.length~years, Telomeres, pch=19)
-abline(m)
-d = data.frame(years=seq(0,13,by=.1))
-tmp = predict(m, d, interval="confidence")  
-lines(d$years, tmp[,2], lwd=2, lty=2, col=2)
-lines(d$years, tmp[,3], lwd=2, lty=2, col=2)
-tmp = predict(m, d, interval="prediction")  
-lines(d$years, tmp[,2], lwd=2, lty=3, col=3)
-lines(d$years, tmp[,3], lwd=2, lty=3, col=3)
-legend("topright", c("Regression line","Confidence bands","Prediction bands"), lty=1:3, lwd=2, col=1:3,
-       bg="white")
-@
-\end{frame}
-
-
-\subsection{Shifting the intercept}
-\begin{frame}
-\frametitle{Shifting the intercept}
-
-The intercept ($\beta_0$) is the expected response when the explanatory variable is zero. 
-
-\vspace{0.2in} \pause
-
-So, if we change our explanatory variable, we change the interpretation of our intercept\pause, e.g. if, instead of using number of years since diagnosis, we use ``number of years since diagnosis \alert{minus 4}'', then our intercept is the expected response at 4 years since diagnosis. 
-
-\vspace{0.2in} \pause
-
-Let $x$ be number of years since diagnosis, then 
-
-\[ E[Y|X=x] = \tilde{\beta}_0 + \tilde{\beta}_1 (x-4) = (\beta_0-4\beta_1) + \beta_1 x \]
-
-so our new parameters for the mean are 
-\begin{itemize}
-\item intercept $\tilde{\beta}_0 = (\beta_0-4\beta_1)$\pause and
-\item slope $\tilde{\beta}_1=\beta_1$ (unchanged).
-\end{itemize}
-
-\end{frame}
-
-
-
-\subsection{Shifting the intercept}
-\begin{frame}[fragile]
-\frametitle{Shifting the intercept (continued)}
-<<shifting_the_intercept, dependson="telomere_data", echo=TRUE>>=
-m0 = lm(telomere.length ~   years   , Telomeres) 
-m4 = lm(telomere.length ~ I(years-4), Telomeres) 
-
-coef(m0)
-coef(m4)
-
-confint(m0)
-confint(m4)
-@
-\end{frame}
 
 
 \end{document}
