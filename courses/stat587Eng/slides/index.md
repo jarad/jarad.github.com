@@ -37,6 +37,9 @@ All [probability pdfs concatenated](probability.pdf).
 
 ### Inference
 
+All [inference pdfs concatenated](inference.pdf).
+
+
 |Topic|slides|code|videos|data|
 ||||||
 |Statistics|[pdf](Inference/I01-Statistics/I01-Statistics.pdf)|[R](Inference/I01-Statistics/I01-Statistics.R)|[Field of statistics](https://youtu.be/yF92RxPS_G4)||
@@ -73,6 +76,9 @@ All [probability pdfs concatenated](probability.pdf).
 
 
 ### Regression
+
+All [regression pdfs concatenated](regression.pdf).
+
 
 |Topic|slides|code|video|
 ||||
