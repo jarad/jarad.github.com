@@ -16,6 +16,8 @@ you can find them
 
 ### Probability
 
+All [probability pdfs concatenated](probability.pdf).
+
 |Topic|slides|code|videos|
 |||||
 |Probability|[pdf](Probability/P1-Probability/P1-Probability.pdf)|[R](Probability/P1-Probability/P1-Probability.R)|[Full](https://youtu.be/zBP7KBtM9vI)|
@@ -34,6 +36,9 @@ you can find them
 
 
 ### Inference
+
+All [inference pdfs concatenated](inference.pdf).
+
 
 |Topic|slides|code|videos|data|
 ||||||
@@ -71,6 +76,9 @@ you can find them
 
 
 ### Regression
+
+All [regression pdfs concatenated](regression.pdf).
+
 
 |Topic|slides|code|video|
 ||||
