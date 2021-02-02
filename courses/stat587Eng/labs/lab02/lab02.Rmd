@@ -7,9 +7,11 @@ output:
     toc: true
 ---
 
-### Setup
+## Setup
 
 To follow along, use the [lab02 code](lab02.R) also run the following
+
+### Install package
 
 ```{r, eval=FALSE}
 install.packages("tidyverse")
@@ -20,6 +22,8 @@ If the install fails, then run
 ```{r, eval=FALSE}
 install.packages(c("dplyr","tidyr","ggplot2"))
 ```
+
+### Load packages
 
 The installation only needs to be done once. 
 But we will need to load the packages in every R session where we want to use 
@@ -74,7 +78,7 @@ Let's create a new column that creates a real `Date`.
 
 ```{r}
 airquality <- airquality %>%
-  mutate(Date = as.Date(paste("1973",Month,Day,sep="/"))) 
+  dplyr::mutate(Date = as.Date(paste("1973",Month,Day,sep="/"))) 
 ```
 
 If you deal with dates a lot, 
@@ -147,23 +151,11 @@ ggplot(airquality,
   geom_boxplot()     
 ```
 
-I dislike boxplots as it hides the data behind a 5 point summary in 
-the shape of a box and whiskers. 
-I prefer to see the data and the boxplot together.
-
-```{r}
-ggplot(airquality,     
-       aes(x=Month, y=Ozone, group=Month)) + 
-  geom_boxplot(color='grey',                 # make the boxes not so obvious
-               outlier.shape = NA) +         # remove outliers, 
-  geom_jitter() +                            # because they get plotted here
-  theme_bw()                                 # Change the theme to remove gray
-```
 
 #### Boxplot activity
 
 Create boxplots of wind speed by month.
-See if you can google to find out how to swap the axes, 
+Bonus: See if you can google to find out how to swap the axes, 
 i.e. have Month on the y-axis and Wind on the x-axis.
 
 <details><summary>Click for solution</summary>
@@ -292,7 +284,7 @@ easier to interpret.
 
 
 
-### Multiple responses
+### Converting data.frame from wide to long
 
 If we want to put all the response variables on the same plot, we can color 
 them.
@@ -300,7 +292,7 @@ In order to do this, we will need to organize our `data.frame` into long format.
 
 ```{r}
 airquality_long <- airquality %>%
-  select(-Month, -Day) %>%              # Remove these columns
+  dplyr::select(-Month, -Day) %>%              # Remove these columns
   tidyr::gather(response, value, -Date)
 ```
 
@@ -354,7 +346,7 @@ ggplot(airquality_long, aes(Date, value)) +
 
 
 
-### Customizing
+### Converting data.frame from long to wide
 
 If we only had the long version of the `data.frame`, we can reconstruct the
 wide version by using the following
@@ -363,6 +355,8 @@ wide version by using the following
 airquality2 <- airquality_long %>%
   tidyr::spread(response, value)
 ```
+
+### Customizing ggplot graphics
 
 Sometimes it is helpful to save the plot as an R object 
 so that it can be updated in the future. 
@@ -436,6 +430,8 @@ ggplot(cars,
 ```
 </details>
 
+
+## Saving ggplot graphics
 
 If you want to save the plot, use the ggsave function, e.g.
 
