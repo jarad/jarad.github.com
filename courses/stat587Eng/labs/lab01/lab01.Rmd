@@ -2,7 +2,9 @@
 title: "Lab01 - Introduction to R"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    toc: true
 ---
 
 
@@ -115,7 +117,7 @@ s$r.squared
 
 
 
-## <a name="calculator"></a> Using R as a calculator
+## Using R as a calculator
 
 ### Basic calculator operations
 
@@ -551,33 +553,7 @@ names(warpbreaks)
 warpbreaks[1:3, c("breaks","wool")]
 ```
 
-or 
 
-```{r, message=FALSE}
-library("dplyr") # install.packages("dplyr")
-warpbreaks %>% 
-  select(breaks, wool) %>%
-  head(n = 3)
-```
-
-The `%>%` (pipe) operator allows chaining of commands by passing the result of
-the previous command as the first argument of the next command. 
-This makes code much easier to read. 
-Two equivalent approaches that are harder to read are 
-
-```{r, eval=FALSE}
-# Approach 1
-head(select(warpbreaks, breaks, wool), n = 3)
-
-# Approach 2
-warpbreaks_select <- select(warpbreaks, breaks, wool)
-head(warpbreaks_select, n = 3)
-```
-
-When there are long strings of commands, using the `%>%` (pipe) operator makes
-code much easier to read. 
-See [here](https://www.r-statistics.com/2014/08/simpler-r-coding-with-pipes-the-present-and-future-of-the-magrittr-package/) 
-for more background and information. 
 
 
 
@@ -599,174 +575,107 @@ str(warpbreaks)
 
 
 
-## <a name="aggregating">Aggregating data frames in R</a>
+## Packages
 
-Each row in the `warpbreaks` `data.frame` is a simulated game and e may want to 
-aggregate this information. 
-To do so, we will use the `group_by()` and `summarize()` functions in the
-`dplyr` package.
+Much of the functionality in R is available in R packages. 
+Many of these packages are hosted on 
+[CRAN](https://cran.r-project.org/) and 
+[mirrored](https://cran.r-project.org/mirrors.html) to many locations,
+e.g. [ISU CRAN mirror](https://mirror.las.iastate.edu/CRAN/).
+[Bioconductor](https://www.bioconductor.org/) also hosts a number of 
+packages primarily for bioinformatics uses. 
+Packages can also be installed directly from GitHub. 
+We will focus on packages available on CRAN. 
 
-```{r}
-library("dplyr") # if it is already loaded, nothing will happen
+### Installing packages from CRAN
+
+One of the first packages we will need in these labs is `ggplot2`.
+Since this package is hosted on CRAN, 
+we can install it using
+```{r, eval=FALSE}
+install.packages("ggplot2")
 ```
+You may have to choose a CRAN repository. 
+I suggest choosing the repository that is geographically the closest, 
+e.g. [ISU CRAN mirror](https://mirror.las.iastate.edu/CRAN/).
 
-For example, perhaps we wanted to know the proportion of games won across
-the number of owls in play
+When you install a package, the installation process will automatically install
+any dependencies for that package. 
+For example, `ggplot2` depends on `rlang`, `tibble`, and other packages.
 
-```{r}
-warpbreaks %>%                           
-  group_by(wool) %>%        
-  summarize(n    = n(),          # counts the number lines in the grouped data.frame
-            mean = mean(breaks),
-            sd   = sd(breaks)) 
-```
-
-
-### Aggregating the warpbreaks data set
-
-Let's aggregate the warpbreaks data set by wool and tension.
-
-```{r}
-warpbreaks %>%                           
-  group_by(wool, tension) %>%        
-  summarize(n    = n(),
-            mean = mean(breaks),
-            sd   = sd(breaks))
-```
-
-
-
-### Activity
-
-Calculate the mean and standard deviation for each level of tension ignoring
-wool.
-
-```{r, echo=FALSE}
-# Calculate the mean and standard deviation for each level of tension ignoring wool.
-```
-
-
-<details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
-warpbreaks %>%                           
-  group_by(tension) %>%        
-  summarize(mean = mean(breaks),
-            sd   = sd(breaks)) 
-```
-</details>
-
-
-
-
-
-## <a name="ggplot2">Basics of `ggplot2`</a>
-
-There is a base graphics system in R, but I highly prefer the `ggplot2` system 
-for  graphics and thus, 
-I will completey ignore the base system (although you may see some plots in 
-lecture using the base system).
-
-
-Load the `ggplot2` package
-```{r}
-library("ggplot2")
-```
-
-
-
-### Histogram
-
-A basic histogram in ggplot
-
-```{r}
-ggplot(data = warpbreaks, aes(x = breaks)) + geom_histogram(binwidth = 1)
-```
-
-For code that looks more similar to base graphics in R, you can use
+The `ggplot2` package is part of the [tidyverse](https://www.tidyverse.org/)
+and we will be using many of the packages in the tidyverse throughout this
+course. 
+Thus I suggest you go ahead and install the `tidyverse` package which is 
+primarily a wrapper to install `ggplot2`, `dplyr`, `readr`, and other packages.
 
 ```{r, eval=FALSE}
-qplot(data = warpbreaks, x = breaks, geom = "histogram", binwidth = 1)
+install.packages("tidyverse")
 ```
 
-Many websites and even the `ggplot2` manual have examples using `qplot`. 
-I believe this is mainly to ease the transition for individuals who are familiar 
-with base `graphics`.
-If you are just starting out with R, 
-I recommend using the `ggplot` function in `ggplot2` from the beginning.
+### Installing packages from GitHub
 
+Packages hosted on CRAN undergo substantial testing to ensure the technicalities
+of package creation are satisfied. 
+This testing does not automatically ensure the package does what it says it 
+does. 
+Many package authors don't want to go through the hassle of this testing and 
+thus host their package on GitHub. 
+In order to install a package directly from GitHub, 
+you need to first install the `devtools` package and,
+if you are on a Windows system, [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
 
-### Boxplots
+To install the `devtools` package, use 
+```{r, eval = FALSE}
+install.packages("devtools")
+```
+and to install Rtools, follow [these instructions](https://cran.r-project.org/bin/windows/Rtools/).
 
-A basic boxplot
-
-```{r}
-ggplot(data = warpbreaks, aes(x = 1, y = breaks)) + geom_boxplot()
+Once devtools has been installed, you can use the `install_github()` function
+from the `devtools` package to install a package from CRAN.
+To install a package, you need to know the GitHub username and the repository
+name. 
+For example, to install the `swgoh` package from user `jarad` (that's me),
+you can use 
+```{r, eval = FALSE}
+devtools::install_github("jarad/swgoh")
 ```
 
+### Loading packages
 
-### Multiple boxplots
-
-```{r}
-ggplot(warpbreaks, aes(x = wool, y = breaks, group = wool)) + geom_boxplot()
+A package only needs to be installed once on your system (until you upgrade R),
+but you will need to either load the package when you want to use it or
+explicitly indicate the package name when using functions in the package. 
+To load the package in an R session, use
+```{r, eval = FALSE}
+library("ggplot2")
 ```
-
-
-
-### Scatterplots
-
-```{r}
-ggplot(warpbreaks, aes(x = wool, y = breaks)) + geom_point()
+If you want to explicitly call the function, then you use 
+<package name>::<function name>. 
+For example
+```{r, eval = FALSE}
+devtools::install_github("jarad/swgoh")
 ```
+uses the `install_github()` function from the `devtools` package.
 
-some of these points might be overplotted, so we will jitter (add a little 
-random number to move the points on the x-axis) them
-
-```{r}
-ggplot(warpbreaks, aes(x = wool, y = breaks)) + geom_jitter(width = 0.2, height = 0)
-```
-
-
-
-An appealing aspect of ``ggplot` is that once the data is in the correct format
-it is easy to construct lots of different plots. 
+Personally, I have started to do both in my scripts. 
+That is, at the top of the script I include a library call for every package
+that is required by the script. 
+Then, throughout the script, I explicitly call each function that comes from
+a manually loaded package. 
 
 
-### Activity
+## tidyverse R style guide
 
-Try these:
-
-1. Construct a scatterplot of the number of breaks by amount of tension.
-2. Jitter the points horizontally. 
-3. (Advanced) Use a different shape and color for the wool type.
-
-
-```{r, eval=FALSE, echo=FALSE}
-# Construct a scatterplot of the number of breaks by amount of tension.
-# Jitter the points horizontally.
-# (Advanced) Use a different shape and color for the wool type.
-```
-
-
-<details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
-ggplot(warpbreaks, aes(x = tension, y = breaks)) + 
-  geom_point()
-
-ggplot(warpbreaks, aes(x = tension, y = breaks)) + 
-  geom_jitter(width = 0.2, height = 0)
-
-ggplot(warpbreaks, aes(x = tension, y = breaks, shape = wool, color = wool)) + 
-  geom_jitter(width = 0.2, height = 0)
-```
-</details>
+Coding in R, like any language, is a process. 
+It is helpful if you have a structure to start from. 
+The [tidyverse R style guide](https://style.tidyverse.org/) provides 
+suggestions for best practices when coding in R.
 
 
 
 
-
-
-
-## <a name="help"></a> Getting help for R
+## Getting help for R
 
 ### Learning R
 
