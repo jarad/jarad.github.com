@@ -19,6 +19,7 @@ other lists:
 
 ## Refereed Journal Articles
 
+1. Mark Tomer, Sarah Porter, David James, Jessica Van Horn, and Jarad Niemi. "Comparing riparian buffer design classification data among watersheds representing Iowa landscapes" Agrosystems, Geosciences, and Environment (to appear)
 1. Adam Martin-Schwarze*, Jarad Niemi, and Philip Dixon. "Joint modeling of distances and times in point-count surveys." Journal of Agricultural, Biological, and Environmental Statistics. (to appear)
 1. Ashley N. Dean, Jarad B. Niemi, John C. Tyndall, Erin W. Hodgson, and Matthew E. ONeal. (2021) "Developing a decision-making framework for insect pest management: a case study using soybean aphid (Hemiptera: Aphididae)." Pest Management Science. 77(2): 886-894 [url](https://onlinelibrary.wiley.com/doi/full/10.1002/ps.6093) [doi](https://doi.org/10.1002/ps.6093) [pdf](papers/Dean_2021_developing.pdf) 
 1. Nate Garton, Jarad Niemi, and Alicia Carriquiry. (2020) "Knot selection in sparse Gaussian processes with a variational objective." Statistical Analysis and Data Mining. 13(4): 324-336. [url](https://onlinelibrary.wiley.com/doi/full/10.1002/sam.11459)
