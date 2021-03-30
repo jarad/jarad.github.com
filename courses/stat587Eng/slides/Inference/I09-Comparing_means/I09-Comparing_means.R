@@ -1,12 +1,12 @@
-## ----libraries, message=FALSE, warning=FALSE, echo=FALSE, cache=FALSE------------------------------------------
+## ----libraries, message=FALSE, warning=FALSE, echo=FALSE, cache=FALSE-------------------------------------------------
 library("tidyverse")
 
 
-## ----set_seed, echo=FALSE--------------------------------------------------------------------------------------
+## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
 set.seed(2)
 
 
-## ----data------------------------------------------------------------------------------------------------------
+## ----data-------------------------------------------------------------------------------------------------------------
 set.seed(20170301)
 
 # Using the unknown population means and standard deviations
@@ -18,12 +18,12 @@ d <- bind_rows(
 # readr::write_csv(d, path="sensitivity.csv")
 
 
-## ----d2, dependson="data"--------------------------------------------------------------------------------------
+## ----d2, dependson="data"---------------------------------------------------------------------------------------------
 # d <- readr::read_csv("sensitivity.csv")
 d2 <- d %>% filter(process %in% c("P1","P2"))
 
 
-## ----sm, dependson="d2"----------------------------------------------------------------------------------------
+## ----sm, dependson="d2"-----------------------------------------------------------------------------------------------
 sm <- d2 %>%
   group_by(process) %>%
   summarize(
@@ -34,11 +34,11 @@ sm <- d2 %>%
 sm
 
 
-## ----welch, dependson="d2",echo=TRUE---------------------------------------------------------------------------
+## ----welch, dependson="d2",echo=TRUE----------------------------------------------------------------------------------
 t.test(sensitivity ~ process, data = d2)
 
 
-## ----mu_draws, dependson="sm"----------------------------------------------------------------------------------
+## ----mu_draws, dependson="sm"-----------------------------------------------------------------------------------------
 nr = 1e5
 sims <- bind_rows(
   tibble(
@@ -52,13 +52,13 @@ sims <- bind_rows(
 )
 
 
-## ----mu_posteriors, dependson="mu_draws"-----------------------------------------------------------------------
+## ----mu_posteriors, dependson="mu_draws"------------------------------------------------------------------------------
 ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) +
   geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
   theme_bw()
 
 
-## ----mu_difference, dependson="mu_draws", echo=TRUE------------------------------------------------------------
+## ----mu_difference, dependson="mu_draws", echo=TRUE-------------------------------------------------------------------
 d3 <- sims %>%
   spread(process, mu) %>%
   mutate(diff = P1-P2)
@@ -73,7 +73,7 @@ quantile(d3$diff, c(.025,.975))
 mean(d3$diff > 0)
 
 
-## ----summary2, dependson="data"--------------------------------------------------------------------------------
+## ----summary2, dependson="data"---------------------------------------------------------------------------------------
 sm <- d %>%
   group_by(process) %>%
   summarize(
@@ -84,18 +84,18 @@ sm <- d %>%
 sm
 
 
-## ----ftest, dependson="data", echo=TRUE------------------------------------------------------------------------
+## ----ftest, dependson="data", echo=TRUE-------------------------------------------------------------------------------
 oneway.test(sensitivity ~ process, data = d)
 
 
-## ----pairwise, dependson="ftest", echo=TRUE--------------------------------------------------------------------
+## ----pairwise, dependson="ftest", echo=TRUE---------------------------------------------------------------------------
 pairwise.t.test(d$sensitivity,
                 d$process,
                 pool.sd = FALSE,
                 p.adjust.method = "none")
 
 
-## ----mu3_draws, dependson="summary2"---------------------------------------------------------------------------
+## ----mu3_draws, dependson="summary2"----------------------------------------------------------------------------------
 sims <- bind_rows(
   sims, # groups 1 and 2
   tibble(
@@ -105,13 +105,13 @@ sims <- bind_rows(
 )
 
 
-## ----mu3_posteriors, dependson="mu3_draws"---------------------------------------------------------------------
+## ----mu3_posteriors, dependson="mu3_draws"----------------------------------------------------------------------------
 ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) +
   geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
   theme_bw()
 
 
-## ----mu3_comparison, dependson="mu3_draws", echo=TRUE----------------------------------------------------------
+## ----mu3_comparison, dependson="mu3_draws", echo=TRUE-----------------------------------------------------------------
 # Estimate of the probability that one mean is larger than another
 sims %>%
   spread(process, mu) %>%
@@ -128,19 +128,19 @@ sims %>%
   select(comparison, probability, credible_interval)
 
 
-## ----bartlett, dependson="data", echo=TRUE---------------------------------------------------------------------
+## ----bartlett, dependson="data", echo=TRUE----------------------------------------------------------------------------
 bartlett.test(sensitivity ~ process, data = d)
 
 
-## ----ftest2, dependson="data", echo=TRUE-----------------------------------------------------------------------
+## ----ftest2, dependson="data", echo=TRUE------------------------------------------------------------------------------
 oneway.test(sensitivity ~ process, data = d, var.equal = TRUE)
 
 
-## ----pairwise2, dependson="ftest", echo=TRUE-------------------------------------------------------------------
+## ----pairwise2, dependson="ftest", echo=TRUE--------------------------------------------------------------------------
 pairwise.t.test(d$sensitivity, d$process, p.adjust.method = "none")
 
 
-## ----mu2_draws, dependson="summary2"---------------------------------------------------------------------------
+## ----mu2_draws, dependson="summary2"----------------------------------------------------------------------------------
 nr = 1e5
 sims <- data.frame(rep = 1:nr,
   sigma = 1/sqrt( rgamma(nr,
@@ -155,14 +155,14 @@ sims <- data.frame(rep = 1:nr,
     mu3 = rnorm(nr, mean = sm$mean[3], sd = sigma / sqrt(sm$n[3])))
 
 
-## ----mu2_posteriors, dependson="mu2_draws"---------------------------------------------------------------------
+## ----mu2_posteriors, dependson="mu2_draws"----------------------------------------------------------------------------
 d_plot <- sims %>% gather(parameter, draw, -rep, -sigma)
 ggplot(d_plot, aes(draw, fill=parameter, group=parameter)) +
   geom_histogram(position = "identity", alpha = 0.5, binwidth=0.1) +
   theme_bw()
 
 
-## ----mu2_comparison, dependson="mu2_draws", echo=TRUE----------------------------------------------------------
+## ----mu2_comparison, dependson="mu2_draws", echo=TRUE-----------------------------------------------------------------
 sims %>%
   mutate(`mu1-mu2` = mu1-mu2,
          `mu1-mu3` = mu1-mu3,

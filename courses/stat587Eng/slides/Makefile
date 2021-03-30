@@ -16,11 +16,12 @@ INFERENCE := \
   Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf \
   Probability/Distributions/Students_t/Students_t.pdf \
   Inference/I04-Normal_model/I04-Normal_model.pdf \
+  Inference/I05-Confidence_intervals/Sampling_distribution.pdf \
   Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf \
   Inference/I06-Pvalues/I06-Pvalues.pdf \
   Inference/I06-Pvalues/Hypothesis_tests.pdf \
   Inference/I06-Pvalues/Correspondence_between_pvalues_and_confidence_intervals.pdf \
-  Inference/I06-Pvalues/Hypothesis_test_for_a_normal_mean.pdf \
+  Inference/I06-Pvalues/t-tests.pdf \
   Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf \
   Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.pdf \
   Inference/I09-Comparing_means/I09-Comparing_means.pdf \
@@ -53,4 +54,7 @@ inference.pdf: $(INFERENCE)
 regression.pdf: $(REGRESSION)
 	$(CMD)regression.pdf $(REGRESSION)
 
+
+%.pdf: %.Rnw commands.tex frontmatter.tex
+	Rscript --vanilla makeslides.R $<
 

@@ -1,22 +1,38 @@
-## ----libraries, message=FALSE, warning=FALSE, cache=FALSE----------------
+## ----libraries, message=FALSE, warning=FALSE, cache=FALSE-------------------------------------------------------------
 library("dplyr")
 library("ggplot2")
-library("gridExtra")
+# library("gridExtra")
 
-## ----set_seed------------------------------------------------------------
+
+## ----set_seed---------------------------------------------------------------------------------------------------------
 set.seed(2)
 
-## ----quantiles, fig.height=4, echo=TRUE----------------------------------
-curve(expr = dnorm, from = -3, to = 3, ylab = "f(x)")
-quantiles = c(.025,.16,.84,.975)
-abline(v = qnorm(p = quantiles)) # default is standard normal
 
-## ----sample_quantiles, dependson='quantiles', fig.height=4, echo=TRUE----
+## ----quantiles, fig.height=4------------------------------------------------------------------------------------------
+d <- data.frame(x = seq(-3, 3, by = 0.01)) %>%
+  dplyr::mutate(y = dnorm(x))
+
+quartiles = (1:3)/4
+ggplot(d, aes(x=x,y=y)) + 
+  geom_line() + 
+  geom_vline(xintercept = qnorm(p = quartiles), 
+             color = "slategray", linetype = "dashed") + 
+  labs(y = "Probability density function, p(x)",
+       title = "Standard normal") +
+  theme_bw()
+
+curve(expr = dnorm, from = -3, to = 3, ylab = "f(x)")
+
+
+## ----sample_quantiles, dependson='quantiles', fig.height=4------------------------------------------------------------
 n = 1000
-sample = rnorm(n)
-hist(x = sample, breaks = 101, probability = TRUE, border = "gray", col = "gray")
-curve(expr = dnorm, from = -3, to = 3, ylab = "f(x)", col = "black", add = TRUE)
-abline(v = qnorm(p = quantiles), col = "black")
-abline(v = quantile(sample, prob = quantiles), col = "gray")
-legend("topright", c("sample","population"), lty=1, col=c("gray","black"))
+sample = data.frame(x=rnorm(n))
+ggplot(sample, aes(x=x)) + 
+  geom_histogram(aes(y=..density..), fill = "gray") + 
+  geom_vline(xintercept = quantile(sample$x, prob = quartiles),
+             color = "red") + 
+  geom_vline(xintercept = qnorm(p = quartiles), 
+             color = "slategray", linetype = "dashed") + 
+  labs(title = "Standard normal samples") +
+  theme_bw()
 

@@ -1,14 +1,14 @@
-## ----libraries, message=FALSE, warning=FALSE, echo=FALSE-------------------------------------------------------
+## ----libraries, message=FALSE, warning=FALSE, echo=FALSE--------------------------------------------------------------
 library("tidyverse")
 library("gridExtra")
 library("abd")
 
 
-## ----set_seed, echo=FALSE--------------------------------------------------------------------------------------
+## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
 set.seed(2)
 
 
-## --------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------
 d = data.frame(x = runif(100, -2, 2)) %>%
   dplyr::mutate(f = x^2,
                 y = rnorm(n(), f, 0.1)) 
@@ -25,7 +25,7 @@ g2 = ggplot(d, aes(x = x, y)) +
 gridExtra::grid.arrange(g1, g2)
 
 
-## --------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------
 d = data.frame(x = runif(100, 0, 2)) %>%
   dplyr::mutate(f = log(x),
                 y = rnorm(n(), f, 0.1)) 
@@ -42,7 +42,7 @@ g2 = ggplot(d, aes(x = x, y)) +
 gridExtra::grid.arrange(g1, g2)
 
 
-## --------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------
 Telomeres = abd::Telomeres %>%
   dplyr::mutate(f = years - 5)
 
@@ -60,7 +60,7 @@ g2 = ggplot(Telomeres, aes(x = years, y = telomere.length)) +
 gridExtra::grid.arrange(g1, g2)
 
 
-## ----shifting_the_intercept, dependson="telomere_data", echo=TRUE----------------------------------------------
+## ----shifting_the_intercept, dependson="telomere_data", echo=TRUE-----------------------------------------------------
 m0 = lm(telomere.length ~   years   , abd::Telomeres) 
 m4 = lm(telomere.length ~ I(years-5), abd::Telomeres) 
 
@@ -71,7 +71,7 @@ confint(m0)
 confint(m4)
 
 
-## --------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------
 Telomeres = abd::Telomeres %>%
   dplyr::mutate(f = years/2)
 
@@ -89,7 +89,7 @@ g2 = ggplot(Telomeres, aes(x = years, y = telomere.length)) +
 gridExtra::grid.arrange(g1, g2)
 
 
-## ----rescaling_the_slope, dependson="telomere_data", echo=TRUE-------------------------------------------------
+## ----rescaling_the_slope, dependson="telomere_data", echo=TRUE--------------------------------------------------------
 m0 = lm(telomere.length ~   years   , abd::Telomeres) 
 m4 = lm(telomere.length ~ I(years/2), abd::Telomeres) 
 

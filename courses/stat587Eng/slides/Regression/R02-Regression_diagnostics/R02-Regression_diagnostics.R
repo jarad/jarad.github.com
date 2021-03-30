@@ -1,13 +1,13 @@
-## ----libraries, message=FALSE, warning=FALSE, echo=FALSE-------------------------------------------------------
+## ----libraries, message=FALSE, warning=FALSE, echo=FALSE--------------------------------------------------------------
 library("tidyverse")
 library("ggResidpanel")
 
 
-## ----set_seed, echo=FALSE--------------------------------------------------------------------------------------
+## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
 set.seed(2)
 
 
-## ----data, echo=FALSE, warning=FALSE---------------------------------------------------------------------------
+## ----data, echo=FALSE, warning=FALSE----------------------------------------------------------------------------------
 # From `abd` package
 Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L, 
 4L, 4L, 5L, 5L, 3L, 4L, 4L, 5L, 5L, 5L, 6L, 6L, 6L, 6L, 6L, 7L, 
@@ -27,12 +27,12 @@ ggplot(Telomeres, aes(years, telomere.length)) +
   theme_bw()
 
 
-## ----default_diagnostics, dependson = "data"-------------------------------------------------------------------
+## ----default_diagnostics, dependson = "data"--------------------------------------------------------------------------
 m <- lm(telomere.length ~ years, Telomeres)
 opar = par(mfrow=c(2,3)); plot(m, 1:6, ask = FALSE); par(opar)
 
 
-## ----leverage, dependson="data"--------------------------------------------------------------------------------
+## ----leverage, dependson="data"---------------------------------------------------------------------------------------
 m <- lm(telomere.length~years, Telomeres)
 
 cbind(Telomeres, leverage = hatvalues(m)) %>%
@@ -41,7 +41,7 @@ cbind(Telomeres, leverage = hatvalues(m)) %>%
   arrange(-years)
 
 
-## ----residuals, dependson="data"-------------------------------------------------------------------------------
+## ----residuals, dependson="data"--------------------------------------------------------------------------------------
 m <- lm(telomere.length~years, Telomeres)
 
 Telomeres %>%
@@ -51,52 +51,52 @@ Telomeres %>%
          studentized  = rstudent(m)) 
 
 
-## ----residual_vs_fitted, dependson="residuals"-----------------------------------------------------------------
+## ----residual_vs_fitted, dependson="residuals"------------------------------------------------------------------------
 plot(m, 1)
 
 
-## ----qqplot, dependson="residuals"-----------------------------------------------------------------------------
+## ----qqplot, dependson="residuals"------------------------------------------------------------------------------------
 plot(m, 2)
 
 
-## ----absolute_residuals, dependson="residuals", echo=FALSE-----------------------------------------------------
+## ----absolute_residuals, dependson="residuals", echo=FALSE------------------------------------------------------------
 plot(m, 3)
 
 
-## ----cooks_distance, dependson="residuals"---------------------------------------------------------------------
+## ----cooks_distance, dependson="residuals"----------------------------------------------------------------------------
 plot(m, 4)
 
 
-## ----residuals_vs_leverage, dependson="residuals"--------------------------------------------------------------
+## ----residuals_vs_leverage, dependson="residuals"---------------------------------------------------------------------
 plot(m, 5)
 
 
-## ----cooks_distance_vs_leverage, dependson="residuals"---------------------------------------------------------
+## ----cooks_distance_vs_leverage, dependson="residuals"----------------------------------------------------------------
 plot(m, 6)
 
 
-## ----residuals_vs_index, dependson="residuals", fig.height=3.5, echo=TRUE--------------------------------------
+## ----residuals_vs_index, dependson="residuals", fig.height=3.5, echo=TRUE---------------------------------------------
 plot(residuals(m))
 
 
-## ----residual_vs_explanatory, dependson="residuals", fig.height=3.5, echo=TRUE---------------------------------
+## ----residual_vs_explanatory, dependson="residuals", fig.height=3.5, echo=TRUE----------------------------------------
 plot(Telomeres$years, residuals(m))
 
 
-## ----fig.height=3.5, echo = TRUE-------------------------------------------------------------------------------
+## ----fig.height=3.5, echo = TRUE--------------------------------------------------------------------------------------
 resid_panel(m, plots = "R")
 
 
-## ----fig.height=3.5, echo = TRUE-------------------------------------------------------------------------------
+## ----fig.height=3.5, echo = TRUE--------------------------------------------------------------------------------------
 resid_panel(m, plots = c("qq", "hist", "resid", "index", "yvp", "cookd"),
             bins = 30, smoother = TRUE, qqbands = TRUE,
             type = "standardized") # what I was calling studentized
 
 
-## ----fig.height=3.5, echo = TRUE-------------------------------------------------------------------------------
+## ----fig.height=3.5, echo = TRUE--------------------------------------------------------------------------------------
 resid_xpanel(m)
 
 
-## ----fig.height=3.5, echo = TRUE-------------------------------------------------------------------------------
+## ----fig.height=3.5, echo = TRUE--------------------------------------------------------------------------------------
 resid_panel(m, plots = "SAS") 
 

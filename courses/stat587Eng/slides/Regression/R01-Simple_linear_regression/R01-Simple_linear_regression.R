@@ -1,13 +1,13 @@
-## ----libraries, message=FALSE, warning=FALSE, echo=FALSE-------------------------------------------------------
+## ----libraries, message=FALSE, warning=FALSE, echo=FALSE--------------------------------------------------------------
 library("tidyverse")
 library("scales")
 
 
-## ----set_seed, echo=FALSE--------------------------------------------------------------------------------------
+## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
 set.seed(2)
 
 
-## ----telomere_data, echo=FALSE---------------------------------------------------------------------------------
+## ----telomere_data, echo=FALSE----------------------------------------------------------------------------------------
 # From `abd` package
 Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L, 
 4L, 4L, 5L, 5L, 3L, 4L, 4L, 5L, 5L, 5L, 6L, 6L, 6L, 6L, 6L, 7L, 
@@ -21,7 +21,7 @@ Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L,
   dplyr::mutate(jittered_years = jitter(years)) # used for plotting
 
 
-## ----telomere_plot, dependson="telomere_data", echo=FALSE------------------------------------------------------
+## ----telomere_plot, dependson="telomere_data", echo=FALSE-------------------------------------------------------------
 g = ggplot(Telomeres, aes(x=jittered_years, y=telomere.length)) + 
   geom_point() + 
   labs(title = "Telomere length vs years post diagnosis",
@@ -31,12 +31,12 @@ g = ggplot(Telomeres, aes(x=jittered_years, y=telomere.length)) +
 g
 
 
-## ----telomere_plot_with_regression_line, dependson="telomere_plot", echo=FALSE---------------------------------
+## ----telomere_plot_with_regression_line, dependson="telomere_plot", echo=FALSE----------------------------------------
 g = g + geom_smooth(method='lm', se=FALSE)  
 g
 
 
-## ----slr_viz, echo = FALSE-------------------------------------------------------------------------------------
+## ----slr_viz, echo = FALSE--------------------------------------------------------------------------------------------
 xx = 0:9
 d = expand.grid(mean = xx,
                 x = seq(-3, 3, length = 101)) %>%
@@ -62,16 +62,16 @@ slr_viz +
         panel.grid.minor = element_blank())
 
 
-## ----echo=FALSE, dependson = "slr_viz"-------------------------------------------------------------------------
+## ----echo=FALSE, dependson = "slr_viz"--------------------------------------------------------------------------------
 slr_viz + 
   scale_y_continuous(breaks = scales::pretty_breaks())
 
 
-## ----dependson="telomere_plot_with_regression_line", echo=FALSE------------------------------------------------
+## ----dependson="telomere_plot_with_regression_line", echo=FALSE-------------------------------------------------------
 g
 
 
-## ----residual_plot, dependson="telomere_plot_with_regression_line", echo=FALSE---------------------------------
+## ----residual_plot, dependson="telomere_plot_with_regression_line", echo=FALSE----------------------------------------
 m <- lm(telomere.length ~ years, data = Telomeres)
 residuals =  Telomeres %>%
   mutate(predict = predict(m),
@@ -81,7 +81,7 @@ g +  geom_segment(aes(xend = jittered_years, yend = predict),
                   data = residuals, color = "red") 
 
 
-## ----hand_calculations, dependson="telomere_data", echo=TRUE---------------------------------------------------
+## ----hand_calculations, dependson="telomere_data", echo=TRUE----------------------------------------------------------
 n    = nrow(Telomeres)
 Xbar = mean(Telomeres$years)
 Ybar = mean(Telomeres$telomere.length)
@@ -106,7 +106,7 @@ SE_beta0 = sigma*sqrt(1/n + Xbar^2/((n-1)*s_X^2))
 SE_beta1 = sigma*sqrt(           1/((n-1)*s_X^2))
 
 
-## ----pvalues_and_CIs, dependson="hand_calculations", echo=TRUE-------------------------------------------------
+## ----pvalues_and_CIs, dependson="hand_calculations", echo=TRUE--------------------------------------------------------
 # 95% CI for beta0
 beta0 + c(-1,1)*qt(.975, df = n-2) * SE_beta0
 
@@ -120,7 +120,7 @@ pt(beta0/SE_beta0, df = n-2)
 pt(beta1/SE_beta1, df = n-2)
 
 
-## ----regression_in_r, dependson="telomere_data", echo=TRUE-----------------------------------------------------
+## ----regression_in_r, dependson="telomere_data", echo=TRUE------------------------------------------------------------
 m = lm(telomere.length ~ years, Telomeres)
 summary(m)
 confint(m)

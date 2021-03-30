@@ -1,14 +1,14 @@
-## ----libraries, message=FALSE, warning=FALSE, echo=FALSE, cache=FALSE------------------------------------------
+## ----libraries, message=FALSE, warning=FALSE, echo=FALSE, cache=FALSE-------------------------------------------------
 library("tidyverse")
 library("ggResidpanel")
 library("scales")
 
 
-## ----set_seed, echo=FALSE--------------------------------------------------------------------------------------
+## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
 set.seed(2)
 
 
-## --------------------------------------------------------------------------------------------------------------
+## ---------------------------------------------------------------------------------------------------------------------
 d = expand.grid(slope = c(-1,1),
                 x = seq(0.1,2,length=101)) %>%
   dplyr::mutate(intercept = ifelse(slope > 0, -1, 1),
@@ -28,7 +28,7 @@ ggplot(d, aes(x, y, color = slope, linetype = slope)) +
   theme_bw()
 
 
-## ----echo=FALSE------------------------------------------------------------------------------------------------
+## ----echo=FALSE-------------------------------------------------------------------------------------------------------
 d <- data.frame(x = seq(0, 2, length=101)) %>%
   mutate(negative = exp(1-2*x),
          positive = exp(-2+1.5*x)) %>%
@@ -42,7 +42,7 @@ ggplot(d, aes(x, `Response Median`)) +
   theme_bw()
 
 
-## ----echo=FALSE------------------------------------------------------------------------------------------------
+## ----echo=FALSE-------------------------------------------------------------------------------------------------------
 d <- data.frame(x = seq(0.1, 2, length=101)) %>%
   mutate(negative = -1-log(x),
          positive = 1+log(x)) %>%
@@ -56,7 +56,7 @@ ggplot(d, aes(x, `Expected response`)) +
   theme_bw()
 
 
-## ----echo=FALSE------------------------------------------------------------------------------------------------
+## ----echo=FALSE-------------------------------------------------------------------------------------------------------
 d <- data.frame(x = seq(1, 2.3, length=101)) %>%
   mutate(negative = exp(1-2*log(x)),
          positive = exp(-0.5+2*log(x))) %>%
@@ -70,11 +70,11 @@ ggplot(d, aes(x, `Response Median`)) +
   theme_bw()
 
 
-## ----summary, echo = TRUE--------------------------------------------------------------------------------------
+## ----summary, echo = TRUE---------------------------------------------------------------------------------------------
 summary(Sleuth3::case0802)
 
 
-## ----data, echo=FALSE------------------------------------------------------------------------------------------
+## ----data, echo=FALSE-------------------------------------------------------------------------------------------------
 # insulating <- structure(list(Time = c(5.79, 1579.52, 2323.7, 68.85, 108.29,
 # 110.29, 426.07, 1067.6, 7.74, 17.05, 20.46, 21.02, 22.66, 43.4,
 # 47.3, 139.07, 144.12, 175.88, 194.9, 0.27, 0.4, 0.69, 0.79, 2.75,
@@ -109,21 +109,21 @@ g = ggplot(Sleuth3::case0802, aes(Voltage, Time)) +
 g
 
 
-## ----dependson="data", echo=FALSE------------------------------------------------------------------------------
+## ----dependson="data", echo=FALSE-------------------------------------------------------------------------------------
 g + stat_smooth(method="lm")
 
 
-## ----model, dependson="data"-----------------------------------------------------------------------------------
+## ----model, dependson="data"------------------------------------------------------------------------------------------
 m <- lm(Time ~ Voltage, Sleuth3::case0802)
 
 
-## ----diagnostics, dependson="model", fig.height=4, echo=FALSE--------------------------------------------------
+## ----diagnostics, dependson="model", fig.height=4, echo=FALSE---------------------------------------------------------
 # opar = par(mfrow=c(2,2)); plot(m, ask=FALSE); par(opar)
 ggResidpanel::resid_panel(m, plots = c("resid","qq","cookd","index"),
                           smoother = TRUE, qqbands = TRUE)
 
 
-## ----plot_logy, dependson="plot"-------------------------------------------------------------------------------
+## ----plot_logy, dependson="plot"--------------------------------------------------------------------------------------
 ggplot(Sleuth3::case0802, aes(Voltage, Time)) + 
   geom_point() + 
   stat_smooth(method="lm") + 
@@ -134,19 +134,19 @@ ggplot(Sleuth3::case0802, aes(Voltage, Time)) +
   theme_bw()
 
 
-## ----logy_model, dependson="data"------------------------------------------------------------------------------
+## ----logy_model, dependson="data"-------------------------------------------------------------------------------------
 m <- lm(log(Time) ~ Voltage, Sleuth3::case0802)
 ggResidpanel::resid_panel(m, plots = c("resid","qq","cookd","index"),
                           smoother = TRUE)
 
 
-## ----logy_summary, dependson="logy_model", echo = TRUE---------------------------------------------------------
+## ----logy_summary, dependson="logy_model", echo = TRUE----------------------------------------------------------------
 m <- lm(log(Time) ~ I(Voltage-30), Sleuth3::case0802)
 exp(m$coefficients)
 exp(confint(m))
 
 
-## ----logy_estimates, dependson="logy_model", echo=FALSE--------------------------------------------------------
+## ----logy_estimates, dependson="logy_model", echo=FALSE---------------------------------------------------------------
 b <- m$coefficients
 ci <- confint(m)
 
