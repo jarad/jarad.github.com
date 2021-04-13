@@ -22,6 +22,8 @@ Now load the packages
 ```{r load_packages}
 library("tidyverse")
 library("Sleuth3")
+
+set.seed(20210413) # for reproducibility
 ```
 
 ## Overview
@@ -42,62 +44,89 @@ A factor is a special character variable that
 
 ## Characters
 
-Let's create a test data set.
+Characters is how R represents any non-numeric data. 
 
 ```{r}
-n <- 12
-test <- data.frame(y = rnorm(n))
-test$char <- rep(c("a","b","A","B"), each=3)
+is.character("a")
+is.character(1)
+is.character(pi)
+is.character("a123")
 ```
 
-If you look at the type of `char`, it will be a character (vector). 
+R is case sensitive so 
 
 ```{r}
-str(test$char)
+unique(c("a","a","A","A"))
 ```
-
-If you try to run a `summary()`, 
-you won't get much.
+If you sort a character vector, you will get alphabetical ordering with the 
+lowercase version of a character appearing before the uppercase version.
 
 ```{r}
-summary(test)
-summary(test$char)
+sort(sample(c(letters,LETTERS), 64, replace = TRUE))
 ```
+In real data sets, explanatory variables will typically not be represented by
+single letters but instead will be strings (although these are still 
+"characters" in terms of R's data type). 
 
-Instead, you want to use the `table()` function.
+Let's take a look at the `case0501` data set, but suppose that it is available
+from a file, just like it would be for your research. 
 
 ```{r}
-table(test$char)
+write.csv(Sleuth3::case0501, file = "case0501.csv",
+          row.names = FALSE)
 ```
 
-When you use the `readr::read_csv()` function to read in data,
-character columns are left as characters.
-First we need to write the csv file.
+Now we will read this file
 
 ```{r}
-write.csv(test, file = "test.csv", row.names = FALSE)
+d = read.csv("case0501.csv")
+str(d)
 ```
-
-Now let's read it in. 
+Note that `Lifetime` is read in as a numeric variable while `Diet` is a character. Let's take a look at `Diet`:
 
 ```{r}
-test2 <- readr::read_csv("test.csv")
+sort(unique(d$Diet))
 ```
+This tells us the levels of this explanatory variable and the ordering that R
+gives it. Importantly, the level `lopro` is the first alphabetically. 
+This will come in later when we start running regressions. 
+
+Let's understand a bit more about this variable
+
 ```{r}
-summary(test2)
+summary(d$Diet) # really uninformative
+table(d$Diet)   # number of observations of each type
 ```
 
-#### `readr::read_csv()` Activity
+Unfortunately, the `summary()` function is really unhelpful. 
+Typically `table()` is what you will want as this provides the number of 
+observations of each type. 
 
-Use the `case0501` data set from the `Sleuth3` package to practice 
+
+
+
+
+#### Character Activity
+
+Use the `ex0518` data set from the `Sleuth3` package to practice 
 writing to a csv file and reading from the csv file.
-Verify that Diet is read in as a character vector. 
+For this activity, assume `Protein` is the response and `Treatment` is the only
+explanatory variable. 
+
+1. Verify that `Treatment` is read in as a character
+1. Determine the unique values of `Treatment`
+1. Determine which value of `Treatment` comes first alphabetically
+1. Determine how many observations there are for each value of `Treatment`
 
 <details><summary>Click for solution</summary> 
 ```{r, purl=FALSE}
-write.csv(Sleuth3::case0501, file = "case0501.csv", row.names = FALSE)
-tmp <- readr::read_csv("case0501.csv")
-summary(tmp)
+write.csv(Sleuth3::ex0518, file = "ex0518.csv", row.names = FALSE)
+d2 = read.csv("ex0518.csv")
+
+is.character(d2$Treatment)
+unique(d2$Treament)
+sort(unique(d2$Treatment)) # first alphabetically
+table(d2$Treatment)
 ```
 </details>
 
@@ -106,39 +135,40 @@ summary(tmp)
 
 ## Factors
 
-When you read in data using the `read.csv()` function, 
-all character vectors will automatically be converted to factor vectors. 
+A character variable can be converted to a factor. 
 
 ```{r}
-case0501 <- read.csv(file = "case0501.csv") # We are overwriting the Sleuth3::case0501 data.frame
+d = read.csv(file = "case0501.csv") # Making sure we are all on the same page
 ```
-
-Note that `Diet` is a factor. 
 
 ```{r}
-str(case0501$Diet)
+d$Diet = factor(d$Diet)
+is.character(d$Diet)
+is.factor(d$Diet)
 ```
-
-Although printing out this variable makes it look like a character:
+`Diet` is now a factor, but it almost looks like nothing has changed. 
 
 ```{r}
-case0501$Diet
+d$Diet
 ```
+
+Except there are no quotes and at the bottom there is the line that indicates
+the levels for this factor. 
 
 There is actually an internal representation via integers:
 
 ```{r}
-as.numeric(case0501$Diet)
+as.numeric(d$Diet)
 ```
 
 This representation can be accessed using `levels()`:
 
 ```{r}
-nlevels(case0501$Diet)
-levels(case0501$Diet)
+nlevels(d$Diet)
+levels(d$Diet)
 ```
 
-The ordering here is alphabetical.
+The default ordering is alphabetical.
 
 When you run `summary()` or `table()`, 
 R uses this ordering for displaying results:
@@ -148,78 +178,75 @@ summary(case0501$Diet)
 table(  case0501$Diet)
 ```
 
-You can convert factors into characters
+You can convert factor variables back into character variables
 
 ```{r}
-case0501$Diet_char <- as.character(case0501$Diet)
-str(case0501)
+d$Diet_char <- as.character(d$Diet)
+str(d)
 ```
 
 and characters back to factors
 
 ```{r}
-case0501$Diet_fact <- as.factor(case0501$Diet_char)
-str(case0501)
-all.equal(case0501$Diet, case0501$Diet_fact)
+d$Diet_fact <- factor(d$Diet_char)
+str(d)
+all.equal(d$Diet, d$Diet_fact)
 ```
+
+### Modifying the order of factors
+
+When creating factors you can choose the ordering using the `levels` argument
+of the `factor()` function. 
+
+```{r}
+d$Diet_fact <- factor(d$Diet_char, 
+                      levels = c("N/N85", "lopro", "N/R40", 
+                                 "N/R50", "NP",    "R/R50"))
+str(d)
+all.equal(d$Diet, d$Diet_fact) # no longer equal
+```
+Alternatively, you can move one of the levels to be first. 
+This will be helpful when running regression analyses. 
+We can use the `relevel()` function to choose a new "reference" level.
+
+```{r}
+d$Diet_fact = relevel(d$Diet_fact, ref = "NP")
+levels(d$Diet_fact)
+```
+Notice that "NP" is now first. 
 
 
 #### Activity
 
-Practice reading and writing files using `read.csv()` and `readr::read_csv()`.
-Specifically, do the following
+Read in the `ex0518` data set from the file you created in the previous activity.
+Convert `Treatment` into a factor variable.
 
-1. Write `case0501` to a csv using `write.csv()`. Do not write the rownames.
-1. Read in the created csv file using both `read.csv()` and `readr::read_csv()`. What differences are there?
-1. Use the help file for `read.csv()` to read in the data without converting Diet 
-to a factor.
-1. Convert Diet in the `readr::read_csv()` function to a factor. 
-1. Write `case0501` to a csv using `readr::write_csv()` and see what the differences are
-from the first step.
+1. Verify that `Treatment` is now a factor
+1. Determine the unique levels of `Treatment`
+1. Determine which level of `Treatment` comes first 
+1. Determine how many observations there are for each level of `Treatment`
+1. Change the ordering of the levels so that "CPFA50" is first.
 
 <details><summary>Click for solution</summary>  
 Here is what I would do
 ```{r, purl=FALSE, eval=FALSE}
-# Write csv file
-write.csv(case0501, file = "tmp.csv", row.names = FALSE)
+d2 = read.csv("ex0518.csv") %>%
+  mutate(Treatment = factor(Treatment))
 
-# Read csv file
-d  <- read.csv("tmp.csv") 
-d2 <- readr::read_csv("tmp.csv") 
+is.factor(d2$Treatment)
+levels(d2$Treatment)
+levels(d2$Treatment)[1] # first alphabetically
+summary(d2$Treatment)
 
-# Don't convert to factor when reading in
-d  <- read.csv("tmp.csv", stringsAsFactors = FALSE)
-
-# Convert Diet into a factor
-d2 <- d2 %>%
-  mutate(Diet = factor(Diet))
-
-readr::write_csv(case0501, path = "tmp2.csv") # Automatically doesn't include rownames
+d2$Treatment = relevel(d2$Treatment, ref = "CPFA50")
+levels(d2$Treatment)
 ```
-Depending on your application, you may decide that `read.csv()` is what you 
-typically want to use or you may decide the `readr::read_csv()` is what you 
-typically want to use.
 </details>
 
 
 
 
-### Creating factors
 
-We have already seen that you can create factors using the `as.factor()` 
-function. 
-But sometimes we want a bit more control. 
-In particular, we may be interested in affecting the ordering of the 
-levels of the factor. 
-
-To adjust the ordering of the levels of the factor, 
-use the `levels` argument of the `factor()` function.
-
-```{r}
-newDiet = factor(case0501$Diet, 
-                 levels = c("NP","N/N85","N/R40","N/R50","lopro","R/R50"))
-table(newDiet) # compare to table(case0501$Diet)
-```
 
 
 
@@ -228,18 +255,52 @@ table(newDiet) # compare to table(case0501$Diet)
 Let's make sure we have the correct `data.frame` for the following. 
 
 ```{r}
-case0501 <- Sleuth3::case0501 %>%
+d <- Sleuth3::case0501 %>%
   mutate(Diet_char = as.character(Diet),
          Diet_fact = as.factor(Diet_char))
 ```
 
+### Constructing dummy variable by hand
+
+Recall that the approach to including categorical explanatory variables in a 
+regression involves
+
+1. Choosing a reference level
+2. Creating dummy variables for all other levels 
+3. Running a multiple regression using these dummy variables
+
+Let's suppose choose "N/N85" as our reference level because this is the standard
+`Diet` that mice get. Now we need to create dummy variables for all other 
+levels. 
+
+```{r}
+d = d %>%
+  mutate(X1 = Diet == "N/R40",
+         X2 = Diet == "N/R50",
+         X3 = Diet == "NP",
+         X4 = Diet == "R/R50",
+         X5 = Diet == "lopro")
+
+m = lm(Lifetime ~ X1 + X2 + X3 + X4 + X5, data = d)
+summary(m)
+```
+
+By construction, `r round(coef(m)[1],1)` is the expected lifetime on the N/N85 
+Diet and `r round(coef(m)[2],1)` is the expected difference in lifetimes between
+the N/N85 and lopro Diets (since it is positive expected lifetime on lopro is
+higher). 
+
+This was pretty tedious. Fortunately, R can do all the work for us. 
+
+
+
 ### Using a character vector as the explanatory variable
 
-Let's perform the Lifetime-Diet ``regression'' using the character vector for
+Let's perform the Lifetime-Diet regression using the character vector for
 Diet. 
 
 ```{r}
-m <- lm(Lifetime ~ Diet_char, data = case0501)
+m <- lm(Lifetime ~ Diet_char, data = d)
 summary(m)
 ```
 
@@ -250,13 +311,14 @@ first alphabetically).
 If you leave Diet as a character vector then you cannot control the reference 
 level. 
 
+
 ### Using a factor vector as the explanatory variable
 
-Let's perform the Lifetime-Diet ``regression'' using the factor vector for
+Let's perform the Lifetime-Diet regression using the factor vector for
 Diet. 
 
 ```{r}
-m <- lm(Lifetime ~ Diet_fact, data = case0501)
+m <- lm(Lifetime ~ Diet_fact, data = d)
 summary(m)
 ```
 
@@ -269,8 +331,8 @@ reference level.
 Do this using the `relevel()` function and its `ref` argument.
 
 ```{r}
-case0501$Diet_fact <- relevel(case0501$Diet_fact, ref = "N/N85")
-table(case0501$Diet_fact)
+d$Diet_fact <- relevel(d$Diet_fact, ref = "N/N85")
+table(d$Diet_fact)
 ```
 
 Notice how N/N85 is now the first level. 
@@ -278,7 +340,7 @@ Notice how N/N85 is now the first level.
 Now  when you run the regression the reference level will be N/N85. 
 
 ```{r}
-m <- lm(Lifetime ~ Diet_fact, data = case0501)
+m <- lm(Lifetime ~ Diet_fact, data = d)
 summary(m)
 ```
 
@@ -290,28 +352,6 @@ reference level.
 m <- lm(Lifetime ~ Diet, data = Sleuth3::case0501)
 summary(m)
 ```
-
-
-#### Check the regression activity
-
-Verify that the regression is correct by constructing indicator variables for 
-the non-reference level explanatory variable levels and running the regression
-to reproduce the results above.
-
-<details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
-d <- case0501 %>% 
-  mutate(X1 = Diet == "N/R40",
-         X2 = Diet == "N/R50",
-         X3 = Diet == "NP",
-         X4 = Diet == "R/R50",
-         X5 = Diet == "lopro")
-
-m2 <- lm(Lifetime ~ X1+X2+X3+X4+X5, data = d)
-summary(m2)
-```
-</details>
-
 
 
 #### Data analysis activity 
@@ -409,5 +449,5 @@ If you want to clean up your directory, run the following lines
 
 ```{r cleanup}
 if (file.exists("case0501.csv")) file.remove("case0501.csv")
-if (file.exists("test.csv"))     file.remove("test.csv")
+if (file.exists("ex0518.csv"))   file.remove("ex0518.csv")
 ```
