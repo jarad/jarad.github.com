@@ -1,0 +1,514 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+\usepackage[hidelinks]{hyperref}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 587-2}
+\newcommand{\semester}{Fall 2020}
+\newcommand{\exam}{Final exam}
+
+<<echo=FALSE, message=FALSE, warning = FALSE>>=
+library("tidyverse")
+library("ggResidpanel"); my_plots = c("resid","qq","cookd","index","ls","lev")
+library("emmeans")
+
+opts_chunk$set(highlight=FALSE, background="white")
+@
+
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(50 points)}
+\end{center}
+
+\vspace*{1in}
+
+{\large
+\textbf{Instructions:}\\
+\begin{enumerate}
+\item Full credit will be given only if you show your work.
+\item The questions are not necessarily ordered from easiest to hardest.
+\item You are allowed to use any resource except aid from another individual.
+\item Aid from another individual will automatically earn you a 0.
+\end{enumerate}
+}
+
+
+
+\newpage
+\noindent
+{\Large Short answer (Multiple choice on Canvas)} 
+
+\begin{enumerate}
+\item Provide answers to the following questions. 
+
+\begin{enumerate}
+\item Name two ways to generate random samples.
+
+\begin{answer}
+Use a random number generator or roll a dice.
+\end{answer}
+
+\vfill
+
+\item How can we ensure our inferences are generalizable to a larger population?
+
+\begin{answer}
+Randomly sample from the population
+\end{answer}
+
+\vfill
+
+\item How can we make statistically valid cause-and-effect statements?
+
+\begin{answer}
+Randomly assign treatments to experimental units.
+\end{answer}
+
+\vfill
+
+\item State the 4 simple linear regression model assumptions.
+
+\begin{answer}
+Errors are 1) normally distributed, 2) independent, and 3) homoskedastic (constant variance); 
+there is a linear relationship between the explanatory variable and the expected response.
+\end{answer}
+
+\vfill
+
+\end{enumerate}
+
+
+\newpage
+\noindent
+{\Large Medical Cost Personal Datasets}
+
+Please answer questions on the next two pages based on the analysis provided
+on the page titled
+``Medical Cost Personal Datasets - Analysis.''
+
+<<echo=FALSE>>=
+d = read.csv("insurance.csv")
+m_insurance = lm(log(charges) ~ age + sex + bmi*smoker, data = d)
+s_insurance = summary(m_insurance)
+@
+
+\item Identify the numeric values for the following quantities. 
+
+\begin{enumerate}
+
+\item Point estimate for the intercept
+
+\begin{answer}
+\Sexpr{coef(m_insurance)[1]}
+\end{answer}
+
+\vfill
+
+\item Point estimate for the coefficient for age
+
+\begin{answer}
+\Sexpr{coef(m_insurance)[2]}
+\end{answer}
+
+\vfill
+
+\item Point estimate for the coefficient for sex
+
+\begin{answer}
+\Sexpr{coef(m_insurance)[3]}
+\end{answer}
+
+\vfill
+
+\item Point estimate for the coefficient for bmi
+
+\begin{answer}
+\Sexpr{coef(m_insurance)[4]}
+\end{answer}
+
+\vfill
+
+\item Point estimate for the coefficient for the indicator that the individual is a smoker
+
+\begin{answer}
+\Sexpr{coef(m_insurance)[5]}
+\end{answer}
+
+\vfill
+
+\item Point estimate for the coefficient for the interaction between bmi and the indicator that the 
+individual is a smoker. 
+
+\begin{answer}
+\Sexpr{coef(m_insurance)[6]}
+\end{answer}
+
+\vfill
+
+\item Point estimate for the error standard deviation
+
+\begin{answer}
+\Sexpr{s_insurance$sigma}
+\end{answer}
+
+\vfill
+
+\item Coefficient of determination
+
+\begin{answer}
+\Sexpr{s_insurance$r.squared}
+\end{answer}
+
+\vfill
+
+\newpage
+{\Large Medical Cost Personal Datasets (cont.)}
+
+Calculate the following quantities.
+
+\item The number of observations in the data set
+
+\begin{answer}
+\Sexpr{sum(s_insurance$df[-1])}
+\end{answer}
+
+\vfill
+
+\item Multiplicative effect of a one year increase in age on median charges
+
+\begin{answer}
+\Sexpr{exp(coef(m_insurance)[2])}
+\end{answer}
+
+\vfill
+
+\item Multiplicative effect of being male compared to female on median charges
+
+\begin{answer}
+\Sexpr{exp(coef(m_insurance)[3])}
+\end{answer}
+
+\vfill
+
+\item Multiplicative effect of a one unit increase in bmi on median charges
+for {\bf non-smokers}
+
+\begin{answer}
+\Sexpr{exp(coef(m_insurance)[4])}
+\end{answer}
+
+\vfill
+
+\item Multiplicative effect of a one unit increase in bmi on median charges
+for {\bf smokers}
+
+\begin{answer}
+\Sexpr{exp(sum(coef(m_insurance)[c(4,6)]))}
+\end{answer}
+
+\vfill
+
+\item Point estimate for the error variance
+
+\begin{answer}
+\Sexpr{s_insurance$sigma^2}
+\end{answer}
+
+\vfill
+
+\end{enumerate}
+
+
+
+\newpage
+{\Large Model diagnostics}
+
+\item For the following plots, indicate what simple linear regression model 
+assumptions may be evaluated. 
+Example plots are provided on the page titled ``Model diagnostics - plots''.
+Note: this question is {\bf not} asking what assumptions are violated, 
+but rather what assumptions {\bf may} be evaluated.
+
+\begin{enumerate}
+\item Residual Plot
+
+\begin{answer}
+Errors have constant variance and relationship between explanatory variable and
+response is linear.
+\end{answer}
+
+\vfill
+
+\item Q-Q Plot
+
+\begin{answer}
+Errors are normally distributed.
+\end{answer}
+
+\vfill
+
+\item COOK's D Plot
+
+\begin{answer}
+No model assumptions can be evaluated using this plot.
+\end{answer}
+
+\vfill
+
+\item Index Plot
+
+\begin{answer}
+Errors are independent.
+\end{answer}
+
+\vfill
+
+\item Location-Scale Plot
+
+\begin{answer}
+Errors have constant variance.
+\end{answer}
+
+\vfill
+
+\end{enumerate}
+
+
+
+\newpage
+{\Large Methane Production}
+
+<<echo=FALSE>>=
+set.seed(20201122)
+# Values taken from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4093558/
+b0 = 264.1
+b_Nov = 261.7-b0
+b_Dec = 205  -b0
+b_Jan = 168.5-b0
+b_Ins = 228.21-221.42
+
+d = expand.grid(month = c("Oct","Nov","Dec","Jan"),
+                insulation = c("Yes","No"),
+                rep = 1:2) %>%
+  dplyr::mutate(
+    digesterID = rep(paste0("digester", 1:4), each = 4),
+    error = rnorm(n()),
+    methane = b0 + 
+      b_Nov * (month == "Nov") + 
+      b_Dec * (month == "Dec") +
+      b_Jan * (month == "Jan") +
+      
+      b_Ins * (insulation == "Yes") +
+      
+      -1 * (month == "Nov") * (insulation == "Yes") +
+      -2 * (month == "Dec") * (insulation == "Yes") +
+      -3 * (month == "Jan") * (insulation == "Yes") +
+      
+      error,
+    
+    methane = round(methane, 2))
+
+write_csv(d %>% select(digesterID, insulation, month, methane), 
+          file = "methane.csv")
+@
+
+\item An experiment was conducted with a collection of biogas digesters to determine
+the effect of month (as a proxy for temperature) and insulation on methane
+production (L/kg volatile solids [VS]). 
+Analyze the data in \texttt{methane.csv} and write a paragraph summarizing 
+your results. 
+In your summary, include 
+\begin{itemize}
+\item complete sentences (1 point)
+\item a $p$-value for a test of the interaction between month and insulation and a conclusion (whether the interaction should be included in the model)  (2 points)
+\item an estimate and 95\% prediction interval for methane production in an 
+insulated digester in Dec (3 points)
+\item an estimate and 95\% confidence interval for the contrast of the effect of 
+insulation averaged over month (3 points)
+\item a statement about whether model assumptions appear to be met based on diagnostic plots (1 point)
+\item a statement about any other model assumptions you may be concerned about
+that cannot be addressed by the diagnostic plots (1 point)
+\end{itemize}
+
+You may include code (make it clear) for partial credit. 
+
+\begin{answer}
+<<>>=
+d = read.csv("methane.csv")
+m = lm(methane ~ month*insulation, data = d)
+dr = drop1(m, test = "F")
+# resid_panel(m, plot = my_plots)
+p = predict(m, data.frame(month = "Dec", insulation = "Yes"), 
+            interval = "prediction") %>% round(1)
+e = emmeans(m, pairwise~insulation) %>% confint
+@
+
+An experiment was conducted with a collection of biogas digesters to determine
+the effect of month (as a proxy for temperature) and insulation on methane
+production.
+A test for the interaction of month and insulation suggests evidence against
+the non-interaction model (p=\Sexpr{round(dr$`Pr(>F)`[2],3)})
+and diagnostic checks indicated no clear model violations, 
+thus the interaction was included. 
+A new insulated digester in December is expected to have a methane production
+of \Sexpr{p[1,1]} with a 95\% prediction interval of 
+(\Sexpr{p[1,2]}, \Sexpr{p[1,3]}). 
+An insulated digester is expected to produce \Sexpr{-e$contrasts$estimate} 
+(\Sexpr{-round(e$contrasts$upper.CL,2)}, \Sexpr{-round(e$contrasts$lower.CL,2)})  L/kg
+VW more
+methane averaging over the months of Oct, Nov, Dec, and Jan.
+Since multiple measurements are taken on each digester, the observations
+are likely to not be independent. 
+
+\end{answer}
+
+
+
+
+
+\newpage
+{\Large COVID-19 Filters}
+
+<<echo=FALSE>>=
+set.seed(20201121+2)
+# Values taken from https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4093558/
+b0 = .9
+bB = -0.02
+bC = +0.01
+bD = 0
+bP = -0.02
+
+n = 34
+d = data.frame(design = sample(LETTERS[1:4], n, replace = TRUE),
+                pressure = rnorm(n, 50)) %>%
+  dplyr::mutate(
+    error = rnorm(n(),0,.01),
+    percentage = b0 + 
+      bB * (design == "B") + 
+      bC * (design == "C") +
+      bD * (design == "D") +
+      
+      bP * (pressure-50) +
+      
+      -.01 * (design == "B") * (pressure-50) +
+       .015 * (design == "C") * (pressure-50) +
+          0 * (design == "D") * (pressure-50) +
+      
+      error,
+    
+    percentage = round(100*percentage, 1))
+
+write_csv(d %>% select(percentage, design, pressure),
+          file = "filters.csv")
+@
+
+\item A company is developing filters to eliminate SARS-CoV-2, 
+the coronavirus that causes COVID-19. The file \texttt{filters.csv} contains data 
+from an experiment conducted to study the effectiveness of different filter 
+designs in removing inactivated virus particles. While running the experiment,
+the researchers recorded the pressure drop (Pa) and the percentage of virus
+particles removed. 
+In practice, the filters will be run at a pressure of 50 Pa. 
+
+Fit the model with an interaction between pressure and design. Provide
+\begin{itemize}
+\item a plot of the data containing
+  \begin{itemize}
+  \item the response variable on the y-axis (1 point)
+  \item the continuous explanatory variable on the x-axis (1 point)
+  \item the categorical explanatory variable distinguished by color, shape, or both (1 point)
+  \item x axis label with units, if appropriate (1 point)
+  \item y axis label with units, if appropriate (1 point)
+  \item legend (1 point)
+  \end{itemize}
+\item a paragraph summary presenting your findings that includes
+  \begin{itemize}
+  \item complete sentences (1 point)
+  \item an estimate and 95\% credible interval for the expected difference in 
+percentage removed between design C and design A at a pressure of 50 Pa (3 points)
+  \item proportion of variability described by the model (1 point)
+  \end{itemize}
+\end{itemize}
+
+You may include code/output (make it clear) for partial credit. 
+
+
+\begin{answer}
+<<>>=
+d = read.csv("filters.csv")
+
+ggplot(d, aes(pressure, percentage, color = design, shape = design)) +
+  geom_point() +
+  theme_bw()
+
+m = lm(percentage ~ pressure*design, data = d)
+e = emmeans(m, pairwise ~ design | pressure, 
+            adjust = "none",
+            at = list(pressure = 50)) %>%
+  confint
+@
+
+An experiment was conducted to study the effectiveness of different filter 
+designs in removing inactivated virus particles.
+At 50 Pa of pressure, design C removed \Sexpr{round(-e$contrast$estimate[2],2)}\%
+more virus particles with a 95\% credible interval of 
+(\Sexpr{round(-e$contrast$upper.CL[2],2)}\%, \Sexpr{round(-e$contrast$lower.CL[2],2)}\%).
+The model containing an interaction between pressure and design accounted for 
+\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in the percentage.
+
+\end{answer}
+
+
+\end{enumerate}
+
+
+
+\newpage
+{\Large Medical Cost Personal Datasets - Analysis}
+
+The analysis here uses data from a 
+\href{https://www.kaggle.com/mirichoi0218/insurance}{kaggle competition}.
+
+<<>>=
+summary(m_insurance)
+confint(m_insurance)
+@
+
+
+
+\newpage
+{\Large Model diagnostics - plots}
+
+<<echo = FALSE>>=
+fm1 <- lm(y ~ ., data = freeny)
+resid_panel(fm1, plots = my_plots)
+@
+
+
+
+
+
+\end{document}
+
