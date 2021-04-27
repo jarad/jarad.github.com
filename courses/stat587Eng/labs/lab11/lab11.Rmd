@@ -9,7 +9,7 @@ output: html_document
 ## Preparation
 
 To follow along, use the [lab11 code](lab11.R) and make sure the following 
-packag is installed:
+package is installed:
 
 - emmeans
 
@@ -102,8 +102,8 @@ fiber <- emmeans::fiber %>%
   mutate(machine = relevel(machine, ref="C"))
   
 m <- lm(strength ~ machine, data = fiber)
-ls <- emmeans(m, ~ machine)
-(co <- contrast(ls, method = "pairwise"))
+em <- emmeans(m, ~ machine)
+(co <- contrast(em, method = "pairwise"))
 ```
 To get the CIs, use `confint`:
 
@@ -116,7 +116,7 @@ By default, these functions use a Tukey multiple comparison adjustment which is 
 You can turn off the adjustment by setting the `adjust` argument to "none", e.g.
 
 ```{r}
-(co <- contrast(ls, method = "pairwise", adjust="none"))
+(co <- contrast(em, method = "pairwise", adjust="none"))
 confint(co)
 ```
 
@@ -128,7 +128,7 @@ We can specify just these comparisons by changing the `method` argument to
 "trt.vs.ctrl" (which stands for treatment vs control).
 
 ```{r}
-(co <- contrast(ls, method = "trt.vs.ctrl"))
+(co <- contrast(em, method = "trt.vs.ctrl"))
 confint(co)
 ```
 
@@ -145,8 +145,8 @@ difference in mean protein level for all treatments compared to control.
 <details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
 m <- lm(Protein ~ Treatment, data = ex0518)
-ls <- emmeans(m, ~ Treatment)
-(co <- contrast(ls, method = "trt.vs.ctrl"))
+em <- emmeans(m, ~ Treatment)
+(co <- contrast(em, method = "trt.vs.ctrl"))
 confint(co)
 ```
 </details>
@@ -185,7 +185,7 @@ anova(m)
 ### Compare mean weight averaged across wood type
 
 ```{r}
-(ls <- emmeans(m, ~ glue))
+(em <- emmeans(m, ~ glue))
 ```
 
 The note here indicates that there may be issues with comparing glues when
@@ -195,7 +195,7 @@ the weight may be different depending on the wood type.
 If we want to compare the glues, we can use `contrast` as before.
 
 ```{r}
-(co <- contrast(ls, "pairwise"))
+(co <- contrast(em, "pairwise"))
 confint(co)
 ```
 
@@ -346,8 +346,8 @@ Compare energy expenditure at mean mass.
 
 ```{r, purl=FALSE}
 m <- lm(Energy ~ Mass*Type, data = Sleuth3::case1002)
-ls <- emmeans(m, ~ Type | Mass)
-co <- contrast(ls, "trt.vs.ctrl") 
+em <- emmeans(m, ~ Type | Mass)
+co <- contrast(em, "trt.vs.ctrl") 
 confint(co)
 ```
 
@@ -381,9 +381,9 @@ technically part of the pairwise comarisons).
 
 ```{r}
 m <- lm(Lifetime ~ Diet, data = Sleuth3::case0501)
-ls <- emmeans(m, "Diet")
+em <- emmeans(m, "Diet")
 #                                           N/N85 N/R40 N/R50  NP R/R50 lopro
-co <- contrast(ls, list(`High - Low`    = c(    4,   -1,   -1,  0,   -1,   -1) /4,
+co <- contrast(em, list(`High - Low`    = c(    4,   -1,   -1,  0,   -1,   -1) /4,
                         `Pre-wean: R-N` = c(    0,    0,   -1,  0,    1,    0) ))
 confint(co)
 ```
