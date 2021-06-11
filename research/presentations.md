@@ -11,7 +11,7 @@ who might be interested in looking at the material after the conference.
 If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
 - 2021
-  - [SSC](https://github.com/jarad/LANL2020/raw/master/SSC2021.pdf)
+  - [SSC](https://github.com/jarad/SSC2021/raw/master/SSC2021.pdf)
 - 2020
   - [U of Iowa](presentations/JaradNiemi_UIowa2020.pdf)
   - [LANL](https://github.com/jarad/LANL2020/raw/master/LANL2020.pdf)

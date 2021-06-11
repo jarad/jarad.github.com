@@ -21,9 +21,9 @@ group: navigation
 
 ## Recent presentations ([All Presentations](presentations.html))
 
+- [SSC 2021](https://github.com/jarad/SSC2021/raw/master/SSC2021.pdf)
 - [LANL 2020](https://github.com/jarad/LANL2020/raw/master/LANL2020.pdf)
 - [JSM 2020](https://github.com/jarad/JSM2020/raw/master/JaradNiemi_JSM2020.pdf)
-- [SFU 2020](https://github.com/jarad/SFU2020/raw/master/JaradNiemi_SFU2020.pdf)
 
 ## Some software ([Additional software](software.html))
 
