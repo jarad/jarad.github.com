@@ -8,6 +8,9 @@ group: navigation
 
 ## Regular courses
 
+- Fall 2021
+  - [STAT 587-1 (Engineering)](stat587Eng)
+  - [STAT 615](stat615)
 - Spring 2021
   - [STAT 330](stat330)
   - [STAT 587-3 (Engineering)](stat587Eng)
