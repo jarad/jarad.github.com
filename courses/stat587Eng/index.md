@@ -9,18 +9,6 @@ This website is designed to host course material for STAT 587
 (Engineering) - Statistical Methods for Research Workers at 
 [Iowa State University](http://www.iastate.edu).
 
-- Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Sungchan Park (<sungchan@iastate.edu>)
-
-This course meets
-
-- MWF 1:10-2 @ [Agron 2020](https://www.fpm.iastate.edu/roomscheduling/room.asp?room_id=2)
-- T 10:00-11:50 @ Zoom
-
-Office hours are
-
-- Instructor: TBD on Zoom
-- TA: TBD
 
 ## Relevant course pages
 
