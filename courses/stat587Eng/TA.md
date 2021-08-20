@@ -33,8 +33,7 @@ studies.
 
 ## TA expectations
 
-Create github.com account and accept invitation to [STAT587EngPrivate](https://github.com/jarad/STAT587EngPrivate) 
-repository
+
 
 - Office hours (2 hours)
   - Hold 2 office hour per week, ideally days immediately preceding homework due dates (currently Mondays)
@@ -52,3 +51,12 @@ repository
 - Discussion board (2 hours)
   - Respond in a timely manner to Canvas discussion board posts
   - If students send you questions via email, post to discussion board and answer there
+  
+## TA To Do
+
+Create github.com account and accept invitation to [STAT587EngPrivate](https://github.com/jarad/STAT587EngPrivate) 
+repository.
+
+I suggest you also set up your system to use 
+[R/RStudio and Git/GitHub](https://www.jarad.me/teaching/2017/08/31/getting-started-with-R-and-Git-GitHub.html). 
+
