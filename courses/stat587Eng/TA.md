@@ -8,20 +8,19 @@ tagline: Statistical Methods for Research Workers
 ## TA expectations
 
 
-- Office hours
-  - Hold 1 office hour per week, ideally days immediately preceeding homework due dates (currently Mondays)
-- Lab
-  - Attend lab (as the semester goes on, you will not need to attend as much)
-
-- Homework 
-  - Add 1 straight-forward, multi-part questions to each homework
-  - Add questions to appropriate Canvas quizzes
-  - Restructure existing Canvas quiz questions to use multiple choice/answer and numeric answer with margin of error
+- Office hours (2 hours)
+  - Hold 2 office hour per week, ideally days immediately preceding homework due dates (currently Mondays)
   
-- Exams (may change depending on COVID situation)
-  - "Take" exam ahead of time and give instructor feedback
-  - Construct Canvas quizzes for exams
+- Lab (1 hour and decreasing)
+  - Attend lab (after first 2-3 weeks, you won't need to attend anymore)
 
-- Discussion board  
+- Homework (~2 hours)
+  - Create simpler homework for each existing homework including Canvas quiz
+  
+- Exams (1 hour average)
+  - Take exam ahead of time and give instructor feedback
+  - Grade exam (~2 hours) shortly after exam is given
+
+- Discussion board (2 hours)
   - Respond in a timely manner to Canvas discussion board posts
-  - If students send you questions via email, post to discusison board and answer there
+  - If students send you questions via email, post to discussion board and answer there
