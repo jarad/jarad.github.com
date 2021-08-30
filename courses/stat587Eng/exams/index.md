@@ -7,16 +7,13 @@ tagline: previous exams
 
 Below are exams, keys, and data used in the exam.
 
-2017 exams were in-class (as opposed to in-lab) exams and students 
-could use only a one-page formula sheet.
-2020 and 2021 exams were take-home exams. 
-
 ## Exam 1
 
-- 2017: [exam](exam1/STAT401Eng_exam1_Spring2017.pdf) [key](exam1/STAT401Eng_exam1_Spring2017_key.pdf)
+- 2017: [exam](exam1/STAT401Eng_exam1_Spring2017.pdf)  [key](exam1/STAT401Eng_exam1_Spring2017_key.pdf)
 - 2018: [exam](exam1/STAT401Eng_exam1_Spring2018.pdf) [key](exam1/STAT401Eng_exam1_Spring2018_key.pdf)
 - 2019: [exam](exam1/STAT587Eng_exam1_Spring2019.pdf) [key](exam1/STAT587Eng_exam1_Spring2019_key.pdf)
 - 2020: [exam](exam1/STAT587Eng_exam1_Fall2020.pdf) [key](exam1/STAT587Eng_exam1_Fall2020_key.pdf)
+- 2021S: [exam](exam1/STAT587Eng_exam1_Spring2021.pdf) [key](exam1/STAT587Eng_exam1_Spring2021_key.pdf)
 
 ## Exam 2
 
@@ -24,11 +21,16 @@ could use only a one-page formula sheet.
 - 2018: [exam](exam2/STAT401Eng_exam2_Spring2018.pdf) [key](exam2/STAT401Eng_exam2_Spring2018_key.pdf) [carbon_dating.csv](exam2/carbon_dating.csv)
 - 2019: [exam](exam2/STAT587Eng_exam2_Spring2019.pdf) [key](exam2/STAT587Eng_exam2_Spring2019_key.pdf) [tea.csv](exam2/tea.csv)
 - 2020: [exam](exam2/STAT587_exam2_Fall2020.pdf) [key](exam2/STAT587_exam2_Fall2020_key.pdf) [concrete.csv](exam2/concrete.csv)
+- 2021S: [exam](exam2/STAT587Eng_exam2_Spring2021.pdf) [key](exam2/STAT587Eng_exam2_Spring2021_key.pdf)  [nursing_homes.csv](exam2/nursing_homes.csv)
 
 ## Final
 
-- 2016: [exam](final/STAT401Eng_final_Spring2016.pdf) [key](final/STAT401Eng_final_Spring2016_key.pdf)
-- 2017: [exam](final/STAT401Eng_final_Spring2017.pdf) [key](final/STAT401Eng_final_Spring2017_key.pdf) [diagnostics.csv](final/diagnostics.csv) [donation.csv](final/donation.csv)
+- 2016: [exam](final/STAT401Eng_final_Spring2016.pdf) 
+[key](final/STAT401Eng_final_Spring2016_key.pdf)
+- 2017: [exam](final/STAT401Eng_final_Spring2017.pdf)  [key](final/STAT401Eng_final_Spring2017_key.pdf) [diagnostics.csv](final/diagnostics.csv) [donation.csv](final/donation.csv)
 - 2018: [exam](final/STAT401Eng_final_Spring2018.pdf) [key](final/STAT401Eng_final_Spring2018_key.pdf) [hardness.csv](final/hardness.csv)
 - 2019: [exam](final/STAT587Eng_final_Spring2019.pdf) [key](final/STAT587Eng_final_Spring2019_key.pdf) [hydrocarbons.csv](final/hydrocarbons.csv)
 - 2020: [exam](final/STAT587Eng_final_Fall2020.pdf) [key](final/STAT587Eng_final_Fall2020_key.pdf) [filters.csv](final/filters.csv) [methane.csv](final/methane.csv)
+- 2021S: [exam](final/STAT587Eng_final_Spring2021.pdf) [key](final/STAT587Eng_final_Spring2021_key.pdf)  [imports.csv](final/imports.csv)
+
+
