@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -30,7 +30,7 @@
 # These are only needed for the slides
 # No need to run if you are just running the R code
 opts_chunk$set(fig.width=7,
-               fig.height=5,
+               fig.height=3.5,
                out.width='.8\\linewidth',
                fig.align='center',
                size='tiny',
@@ -39,7 +39,7 @@ options(width=100)
 @
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
-library(ggplot2)
+library(ggplot2); theme_set(theme_bw())
 library(plyr)
 library(dplyr)
 library(reshape2)
@@ -61,7 +61,7 @@ Consider the model
 with prior
 \[ \theta \sim N(m,C) \]
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Then the posterior is
 \[ \theta|y \sim N(m',C') \]
@@ -81,12 +81,20 @@ For simplicity, let $V=C=1$ and $m=0$, then $\theta|y \sim N(y/2, 1/2)$. \pause
 Suppose $y=1$, then we have
 
 <<colors_and_lines>>=
-colors = c(prior = "#E69F00",
-           likelihood = "#56B4E9",
-           posterior = "#009E73")
-linetypes = c(prior = 1,
-              likelihood = 2,
-              posterior = 3)
+colors = c(prior = "#56B4E9",
+           likelihood = "#E69F00",
+           posterior = "#009E73",
+           mle = "#808080",
+           map_normal = "#56B4E9",
+           map_t = "#E69F00",
+           map_laplace = "#009E73")
+linetypes = c(prior = 2,
+              likelihood = 1,
+              posterior = 3,
+              mle = 1,
+              map_normal = 2,
+              map_t = 3,
+              map_laplace = 4)
 @
 
 
@@ -100,10 +108,9 @@ d = data.frame(x=seq(-2,3,by=.01)) %>%
 
 ggplot(d, aes(x,density, color=distribution, linetype=distribution)) +
   geom_line() +
-  theme_bw() +
-  labs(x='theta') +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 \end{frame}
 
@@ -123,9 +130,9 @@ d = data.frame(theta=seq(-2,12,by=.01)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
   geom_line() +
-  theme_bw() +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 \end{frame}
 
@@ -141,7 +148,7 @@ ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
 and data.
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 \alert{Can we construct a prior that allows the posterior to be reasonable always?}
 
@@ -158,7 +165,7 @@ with
 \[ \theta \sim t_v(m,C), \]
 where $E[\theta] = m$ for $v>1$ and $Var[\theta] = C \frac{v}{v-2}$ for $v>2$.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Now the posterior is
 \[ p(\theta|y) \propto e^{-(y-\theta)^2/2V} \left( 1+\frac{1}{v}\frac{(\theta-m)^2}{C}\right)^{-(v+1)/2}   \]
@@ -184,7 +191,8 @@ where
 \item $t_v(\theta;m,C)$ is the $t$ distribution with degrees of freedom $v$, location $m$, and scale $C$ evaluated at $\theta$.
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
+
 and then find the posterior
 \[ p(\theta|y) = N(y;\theta, V) t_v(\theta;m,C) / p(y). \]
 \end{frame}
@@ -230,9 +238,9 @@ d = data.frame(theta=seq(-2,3,by=.01)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
   geom_line() +
-  theme_bw() +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 
 \end{frame}
@@ -254,9 +262,9 @@ d = data.frame(theta=seq(-2,12,by=.1)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
   geom_line() +
-  theme_bw() +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 \end{frame}
 
@@ -276,9 +284,12 @@ map = adply(seq(-mx,mx,length=101), 1, function(d){
   data.frame(y = d, map_t = o$maximum, mle=d, map_normal=d/2)
 })[,-1] %>%
   melt(id.vars='y', variable.name='model', value.name='theta')
-ggplot(map, aes(y, theta, color=model)) +
+
+ggplot(map, aes(y, theta, color = model, linetype = model)) +
   geom_line() +
-  theme_bw()
+  labs(x=expression(y), y = expression(hat(theta)[MAP])) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 
 \end{frame}
@@ -294,11 +305,11 @@ ggplot(map, aes(y, theta, color=model)) +
 \item The posterior variance decreases the most when the data and prior agree and decreases less as the data and prior disagree.
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 There are many times that we might believe the possibility of $\theta=0$ or, at least, $\theta\approx 0$. \pause In these scenarios, we would like our prior to be able to tell us this.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 \alert{Can we construct a prior that allows us to learn about null effects?}
 
@@ -331,7 +342,7 @@ Let
 and
 \[ \theta \sim La(m,b) \]
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Now the posterior is
 \[ p(\theta|y) = \frac{N(y;\theta,V) La(\theta;m,b)}{p(y)} \propto e^{-(y-\theta)^2/2V} e^{-|\theta-m|/b} \]
@@ -348,7 +359,7 @@ where
 
 For simplicity, let $b=V=1$, $m=0$ and suppose we observe $y=1$.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 <<normal_model_laplace_prior>>=
 f = Vectorize(function(theta,y,V,m,b,log=FALSE) {
@@ -368,7 +379,9 @@ d = data.frame(theta=seq(-2,3,by=.01)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
   geom_line() +
-  theme_bw()
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 \end{frame}
 
@@ -379,7 +392,7 @@ ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
 
 For simplicity, let $b=V=1$, $m=0$ and suppose we observe $y=10$.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 <<normal_model_laplace_prior2>>=
 y = 10
@@ -393,9 +406,9 @@ d = data.frame(theta=seq(-2,y+2,length=1001)) %>%
 
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
   geom_line() +
-  theme_bw() +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 \end{frame}
 
@@ -411,9 +424,12 @@ d = adply(unique(map$y), 1, function(d){
   data.frame(y = d, map_laplace = o$maximum)
 })[,-1] %>%
   melt(id.vars='y', variable.name='model', value.name='theta')
-ggplot(rbind(map, d), aes(y, theta, color=model)) +
+
+ggplot(rbind(map, d), aes(y, theta, color = model, linetype = model)) +
   geom_line() +
-  theme_bw()
+  labs(x=expression(y), y = expression(hat(theta)[MAP])) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 
 \end{frame}
@@ -431,12 +447,12 @@ but more shrinkage than a $t$ distribution.
 $y$.
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 It's fine that the MAP is zero, but since the posterior is continuous,
 we have $P(\theta=0|y) = 0$ for any $y$.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 \alert{Can we construct a prior such that the posterior has mass at zero?}
 
@@ -460,7 +476,7 @@ Let $\delta_c(x)$ be the Dirac $\delta$ function, i.e. formally
 and
 \[ \int_{-\infty}^\infty \delta_c(x) dx = 1. \]
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Thus $\theta\sim \delta_c \stackrel{d}{=} \delta_c(\theta)$ indicates that the
 random variable $\theta$ is a degenerate random variable with $P(\theta=c)=1$.
@@ -491,7 +507,7 @@ cdf = Vectorize(function(x) {
   if (x==0) return(.75)
   return(.5+pnorm(x)/2)
 })
-curve(cdf(x), -2, 2, 1001, xlab='theta', ylab='CDF', lwd=2)
+curve(cdf(x), -2, 2, 1001, xlab=expression(theta), ylab='CDF', lwd=2)
 @
 
 
@@ -507,7 +523,7 @@ Suppose
 and
 \[ \theta \sim p\delta_0 + (1-p) N(m,C). \]
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Then
 \[
@@ -553,9 +569,9 @@ d2 = data.frame(distribution = c('prior','posterior'),
 ggplot(d, aes(theta, density, color=distribution, linetype=distribution)) +
   geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
   geom_line() +
-  theme_bw() +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 
 \end{frame}
@@ -590,9 +606,9 @@ d2 = data.frame(distribution = c('prior','posterior'),
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
   geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
   geom_line() +
-  theme_bw() +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 \end{frame}
 
@@ -605,7 +621,7 @@ ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
 \item For large signals, the posterior puts most of its mass away from zero (or $m$) and therefore has the same problems that a normal prior has.
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 \alert{Can we create a prior that 1) puts most of the posterior mass at zero for small signals and 2) leaves large signals unshrunk?}
 
@@ -620,7 +636,7 @@ Suppose
 and
 \[ \theta \sim p\delta_0 + (1-p) t_v(m,C). \]
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Then
 \[
@@ -647,7 +663,7 @@ But we already calculated this posterior earlier in the lecture, i.e. normal mod
 
 Suppose $v=V=C=1$, $p=0.5$, $m=0$, and $y=1$.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Then, we can calculate the following integral (marginal likelihood) numerically
 
@@ -704,9 +720,9 @@ d2 = data.frame(distribution = c('prior','posterior'),
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
   geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
   geom_line() +
-  theme_bw()  +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 
 \end{frame}
@@ -745,9 +761,9 @@ d2 = data.frame(distribution = c('prior','posterior'),
 ggplot(d, aes(theta,density, color=distribution, linetype=distribution)) +
   geom_segment(data = d2, aes(x=x,xend=xend,y=y,yend=yend)) +
   geom_line() +
-  theme_bw()  +
-  scale_color_manual(values = colors) +
-  scale_linetype_manual(values = linetypes)
+  labs(x=expression(theta)) +
+  scale_color_manual(values = colors, limits = force) +
+  scale_linetype_manual(values = linetypes, limits = force)
 @
 
 \end{frame}

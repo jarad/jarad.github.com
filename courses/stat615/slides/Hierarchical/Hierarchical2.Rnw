@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout, aspectratio=169]{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -128,7 +128,7 @@ Here is a 2-step Gibbs sampler:
 \pause 
  
 \begin{enumerate}
-\item Sample $\theta = (\theta_1,\ldots,G) \sim p(\theta|\cdots)$. \pause 
+\item Sample $\theta = (\theta_1,\ldots,\theta_G) \sim p(\theta|\cdots)$. \pause 
 \item Sample $\mu,\sigma^2,\tau^2 \sim p(\mu,\sigma^2,\tau^2|\cdots)$. 
 \end{enumerate}
 
@@ -151,7 +151,7 @@ p(\theta|\cdots)
 &\propto p(y|\theta,\sigma^2)p(\theta|\mu,\tau^2) \pause \\
 &=\prod_{g=1}^G p(y_g|\theta_g,\sigma^2) p(\theta_g|\mu,\tau^2) 
 \end{array} \]
-where $y_g = (y_{1g},\ldots,y_{n_gg})$. 
+where $y_g = (y_{1,g},\ldots,y_{n_g,g})$. 
 \pause
 We now know that the $\theta_g$ are conditionally independent of each other.
 \end{frame}
@@ -198,7 +198,8 @@ p(\mu,\sigma^2,\tau^2|\cdots)
 &= p(y|\theta,\sigma^2)p(\sigma^2) p(\theta|\mu,\tau^2)p(\mu)p(\tau^2)
 \end{array} \]
 \pause 
-So we know that $\sigma^2$ is independent of $\mu$ and $\tau^2$.
+So we know that, conditional on $\theta$ and $y$,
+$\sigma^2$ is independent of $\mu$ and $\tau^2$.
 \end{frame}
 
 
@@ -264,7 +265,7 @@ The posterior under the standard non-informative prior is
 \[ 
 \tau^2|\cdots \sim \mbox{Inv-}\chi^2(G-1,s_\theta^2) 
 \mbox{ and } 
-\mu|\tau^2,\ldots \sim N(\overline{\theta}, \tau^2/G)
+\mu|\tau^2,\ldots \sim N\left(\overline{\theta}, \tau^2/G\right)
 \]
 where $\overline{\theta} = \frac{1}{G} \sum_{g=1}^G \theta_g$ and 
 $s_\theta^2 = \frac{1}{G-1}(\theta_g-\overline{\theta})^2$. 
@@ -616,11 +617,12 @@ Since this is just $G$ independent normal data models with a known mean and inde
 \small
  
 Let 
-\[ \theta_g \ind N(\mu,\tau^2) \mbox{ and } \tau \sim Ca^+(0,c). \]
+\[ \theta_g \ind N(\mu,\tau^2) \mbox{ and } \tau \sim Ca^+(0,c) \]
 \pause
-so the full conditional is 
-\[ p(\eta|\cdots) \propto \eta^{-G/2} e^{-\sum_{g=1}^G (\theta_g-\mu)^2/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2} \]
-where we performed the transformation $\eta = \tau^2$ on the prior.
+and $\eta = \tau^2$. 
+\pause
+The full conditional is 
+\[ p(\eta|\cdots) \propto \eta^{-G/2} e^{-\sum_{g=1}^G (\theta_g-\mu)^2/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2}. \]
 
 \vspace{0.1in} \pause
 
@@ -645,14 +647,14 @@ Let
 so the full conditional is 
 \[ p(\eta|\cdots) \propto \eta^{-G} e^{-\sum_{g=1}^G \phi_g/2\eta} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2}. \]
 
-\vspace{0.1in} \pause
+\pause
 
 Let's use Metropolis-Hastings with proposal distribution 
 \[ \eta^* \sim IG\left(G-\frac{1}{2}, \sum_{g=1}^G \frac{\phi_g}{2}\right) \]
 and acceptance probability $\min\{1,\rho\}$ where again
 \[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2}.\]
 
-\vspace{0.1in} \pause
+\pause
 
 Then we calculate $\tau = \sqrt{\eta}$.
 
@@ -668,14 +670,14 @@ Let
 so the full conditional is 
 \[ p(\eta|\cdots) \propto \eta^{G v/2} e^{-\frac{\eta}{2} \sum_{g=1}^G \frac{1}{\phi_g}} \left( 1+\eta/c^2\right)^{-1} \eta^{-1/2}. \]
 
-\vspace{0.1in} \pause
+\pause
 
 Let's use Metropolis-Hastings with proposal distribution 
 \[ \eta^* \sim Ga\left(\frac{G v + 1}{2}, \frac{1}{2}\sum_{g=1}^G \frac{1}{\phi_g}\right) \]
 and acceptance probability $\min\{1,\rho\}$ where again
 \[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2} .\]
 
-\vspace{0.1in} \pause
+\pause
 
 Then we calculate $\tau = \sqrt{\eta}$.
 
@@ -684,9 +686,6 @@ Then we calculate $\tau = \sqrt{\eta}$.
 
 
 \subsection{Point-mass distributions}
-
-
-
 \begin{frame}
 \frametitle{Dealing with point-mass distributions}
 We would also like to consider models with 
@@ -727,7 +726,7 @@ and $\mu$ and $\phi_g$ get updated using only those $\theta_g$ that are non-zero
 \frametitle{Dealing with point-mass distributions (cont.)}
 
 Updating $\mu$, $\phi_g$, and $\tau$, will be exactly the same as it was before
-EXCEPT, you will only use $g$ such that $\theta_g \ne 0$. 
+EXCEPT you will only use $g$ such that $\theta_g \ne 0$. 
 So 
 \begin{itemize}
 \item \[ \mu|\cdots \sim \pause N(m',C') \]
