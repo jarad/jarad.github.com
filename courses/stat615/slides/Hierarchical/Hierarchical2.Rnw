@@ -497,7 +497,13 @@ p(\theta|\cdots)
 \end{array} \]
 \pause
 Thus $\theta_g$ are conditionally independent given everything else. \pause It should be obvious that 
-\[ \theta_g|\cdots \sim \pause N\left(\left[ \frac{1}{\phi_g}\mu + \frac{n_g}{\sigma^2}\overline{y}_g  \right], \left[\frac{1}{\phi_g} + \frac{n_g}{\sigma^2} \right]^{-1} \right) \]
+\[ \theta_g|\cdots \sim \pause N\left(\mu_g', \phi_g' \right) \]
+with 
+\[
+\phi_g' = \left[\frac{1}{\phi_g} + \frac{n_g}{\sigma^2} \right]^{-1} 
+\quad \mbox{and} \quad
+\mu_g' = \phi_g' \left[ \frac{1}{\phi_g}\mu + \frac{n_g}{\sigma^2}\overline{y}_g  \right]
+\]
 where $\overline{y}_g = \sum_{i=1}^{n_g} y_{ig} / n_g$.
 \end{frame}
 
@@ -654,10 +660,6 @@ Let's use Metropolis-Hastings with proposal distribution
 and acceptance probability $\min\{1,\rho\}$ where again
 \[ \rho = \frac{ 1+\eta^{(i)}/c^2}{1+\eta^*/c^2}.\]
 
-\pause
-
-Then we calculate $\tau = \sqrt{\eta}$.
-
 \end{frame}
 
 
@@ -701,7 +703,7 @@ To sample $\theta_g$, we calculate
 \[ \begin{array}{rl}
 \pi' &= \frac{\pi \prod_{i=1}^{n_g} N(y_{ig}; 0, \sigma^2)}{\pi \prod_{i=1}^{n_g} N(y_{ig}; 0, \sigma^2) + (1-\pi) \prod_{i=1}^{n_g} N(y_{ig}; \mu, \phi_g+\sigma^2) }. \\
 \phi_g' &= \left( \frac{1}{\phi_g} + \frac{n_g}{\sigma^2} \right)^{-1} \\
-\mu_g' &= \phi_g' \left( \frac{\mu}{\phi_g} + \frac{n_g}{\sigma^2}\overline{y}_g \right)
+\mu_g' &= \phi_g' \left( \frac{1}{\phi_g}\mu + \frac{n_g}{\sigma^2}\overline{y}_g \right)
 \end{array} \]
 \end{frame}
 
@@ -725,9 +727,9 @@ and $\mu$ and $\phi_g$ get updated using only those $\theta_g$ that are non-zero
 \begin{frame}
 \frametitle{Dealing with point-mass distributions (cont.)}
 
-Updating $\mu$, $\phi_g$, and $\tau$, will be exactly the same as it was before
-EXCEPT you will only use $g$ such that $\theta_g \ne 0$. 
-So 
+Updating $\mu$, $\phi_g$, and $\tau$ will be very similar.
+\pause
+Specifically,
 \begin{itemize}
 \item \[ \mu|\cdots \sim \pause N(m',C') \]
 with 
@@ -736,11 +738,13 @@ C' &= \left(\frac{1}{C} + \sum_{g:\theta_g\ne 0} \frac{1}{\phi_g} \right)^{-1} \
 m' &= C'\left(\frac{1}{C}m + \sum_{g:\theta_g\ne 0} \frac{1}{\phi_g}\theta_g \right),
 \end{array} \]
 \pause
-\item $\tau$ will still require a MH step, but the proposal should only depend on 
-$g:\theta_g\ne 0$, \pause and
-\item $\phi_g$ will be exactly as before when $\theta_g\ne 0$, 
-but when $\theta_g=0$, then it actually doesn't matter what distribution you 
-are sampling from (Carlin and Chib 1995).
+\item $\phi_g$:
+  \begin{itemize}
+  \item if $\theta_g = 0$, then $\phi_g$ from the prior
+  \item if $\theta_g \ne 0$, then $\phi_g$ from its conditional distribution
+  \end{itemize}
+\item $\tau$ will be the same as before
+
 \end{itemize}
 
 
