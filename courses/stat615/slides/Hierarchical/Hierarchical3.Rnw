@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout, aspectratio=169]{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -68,7 +68,7 @@ where
 \item $\sigma^2$ is an unknown scalar
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 For a given design matrix $X$, we are interested in the posterior 
 \[ p(\beta,\sigma^2|y), \]
@@ -111,7 +111,7 @@ Let
 \item $X_i$ is the temperature in Fahrenheit.
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 And we assume 
 \[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
@@ -127,7 +127,7 @@ then
 \begin{frame}[fragile]
 \frametitle{Cricket chirps}
 	As an example, consider the relationship between the number of cricket chirps (in 15 seconds) and temperature (in Fahrenheit). From example in {\tt LearnBayes::blinreg}.
-<<chirps_data, fig.width=8>>=
+<<chirps_data, fig.width=10>>=
 chirps=c(20,16.0,19.8,18.4,17.1,15.5,14.7,17.1,15.4,16.2,15,17.2,16,17,14.1)
 temp=c(88.6,71.6,93.3,84.3,80.6,75.2,69.7,82,69.4,83.3,78.6,82.6,80.6,83.5,76.3)
 qplot(temp,chirps)  + 
@@ -173,7 +173,7 @@ Let
 \item $X_i$ is the temperature in Fahrenheit.
 \end{itemize}
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 And we assume 
 \[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
@@ -182,7 +182,7 @@ then
 \item $\beta_0$ is the expected number of chirps at 0 degrees Fahrenheit
 \item $\beta_1$ is the expected increase in number of chirps (per 15 seconds) for each degree increase in Fahrenheit.
 \end{itemize}
-
+\pause
 Perhaps a reasonable prior is $p(\beta_0,\beta_1,\sigma^2) \propto N(\beta_0;0,10^2) N(\beta_1;0,1^2) \frac{1}{\sigma^2}$.
 
 \end{frame}
@@ -218,13 +218,11 @@ summary(m)
 \begin{frame}[fragile]
 \frametitle{Subjective vs Default}
 <<t-distribution, message=FALSE, echo=TRUE>>=
-# default analysis
-tmp = lm(chirps~temp)
+tmp = lm(chirps~temp) # default analysis
 tmp$coefficients
 confint(tmp)
 
-# Subjective analysis
-m$coefficients
+m$coefficients # subjective analysis
 confint(m)
 @
 \end{frame}
@@ -234,7 +232,7 @@ confint(m)
 
 \begin{frame}[fragile]
 \frametitle{Subjective vs Default}
-<<t-distribution_fit, message=FALSE, fig.width=8>>=
+<<t-distribution_fit, message=FALSE, fig.width=10>>=
 qplot(temp, chirps) +
   geom_smooth(method='lm',formula=y~x, se=FALSE, color='red', linetype=2, size=2) + 
   geom_abline(intercept=m$coefficients[1], slope=m$coefficients[2], color='blue', linetype=3, size=2) + 
@@ -248,7 +246,7 @@ qplot(temp, chirps) +
 
 \begin{frame}[fragile]
 \frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
-<<shrinkage, fig.width=8>>=
+<<shrinkage, fig.width=10>>=
 d = ddply(data.frame(V=10^seq(-2,2,by=0.2)), .(V), function(x) {
   m = bayesglm(chirps~temp, prior.mean=0, prior.scale=x$V, prior.df=Inf)
   data.frame(beta0=m$coefficients[1], beta1=m$coefficients[2])
@@ -267,7 +265,7 @@ ggplot(tmp, aes(V, estimate)) +
 
 \begin{frame}[fragile]
 \frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
-<<shrinkage2>>=
+<<shrinkage2, fig.width=10>>=
 ggplot(data.frame(chirps=chirps, temperature=temp), aes(temp, chirps)) + 
   geom_point() + 
   geom_abline(data=d, aes(intercept=beta0, slope=beta1, color=V)) + 
@@ -287,7 +285,7 @@ Let
 \[ y = X\beta + \epsilon, \quad \epsilon \sim N(\sigma^2 \I). \]
 If we choose the conjugate prior $\beta \sim N(b_0, \sigma^2 B_0)$, we still need to choose $b_0$ and $B_0$. \pause It seems natural to set $b_0=0$ which will shrink the estimates for $\beta$ toward zero, i.e. toward no effect. \pause But how should we choose $B_0$?
 
-\vspace{0.2in} \pause 
+\vspace{0.1in} \pause 
 
 One option is \alert{Zellner's $g$-prior} where $B_0 = g[X^\top X]^{-1}$ \pause where $g$ is either set or learned.
 
@@ -303,9 +301,9 @@ Suppose
 where $X$ is $n\times p$ \pause 
 and you use Zellner's g-prior
 \[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}) \]
-and independently assume $p(\sigma^2) \propto 1/\sigma^2$. 
+and assume $p(\sigma^2) \propto 1/\sigma^2$. 
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 The posterior is then 
 \[ 
@@ -323,10 +321,10 @@ In Zellner's g-prior,
 \[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}), p(\sigma^2)\propto 1/\sigma^2 \]
 we need to determine how to set g.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Here are some thoughts:
-\begin{itemize}[<+->]
+\begin{itemize}
 \item $g\to 0$ makes posterior equal to the prior, \pause
 \item $g=1$ puts equal weight to prior and likelihood, \pause
 \item $g=n$ means prior has the equivalent weight of 1 observation, \pause
@@ -350,9 +348,9 @@ p(y|g) = \frac{\mG\left(\frac{n-1}{2}\right)}{\pi^{\frac{n-1}{2}}n^{1/2}} ||y-\o
 \end{array} \]
 where $R^2$ is the coefficient of determination.
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
-We use the marginal likelihood as evidence in favor of the model, i.e. when comparing models those with higher marginal likelihoods should be prefered over the rest.
+We use the marginal likelihood as evidence in favor of the model, i.e. when comparing models those with higher marginal likelihoods should be preferred over the rest.
 \end{frame}
 
 
@@ -375,7 +373,14 @@ Taking logarithms yields
 \log p(y|M) = \log(y|\theta,M) + \log p(\theta|M) - \log p(\theta|y,M) 
 \]
 \pause
-where $\log(y|\theta,M)$ is the likelihood and $\log p(\theta|M) - \log p(\theta|y,M)$ is the penalty. 
+To compare with other model selection criterion, 
+multiply by -2 and plug in $\theta = \hat\theta_{MLE}$:
+\[
+-2 \log p(y|M) = -2 \log(y|\hat\theta_{MLE},M) + 
+2 \left[ \log p(\hat\theta_{MLE}|y,M) - \log p(\hat\theta_{MLE}|M) \right]
+\]
+where the penalty is the logarithm of the ratio of the posterior to 
+the prior evaluated at the MLE.
 
 \end{frame}
 
@@ -394,7 +399,7 @@ If $\beta$ is a vector of length $p$, let $\gamma$ be a vector with binary eleme
 indicates that $\beta$ is of length 8 and that the first, third, fourth, and eighth elements are non-zero. \pause
 Then we have $X_\gamma$ which indicates the design matrix that only has columns corresponding to those columns in $\gamma$ that are non-zero \pause and $\beta_\gamma$ is the subset of $\beta$ including elements of $\beta$ where $\gamma$ is 1. \pause
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 Now, we have $2^p$ models $M_\gamma$ of the form
 \[ y = X_\gamma \beta_\gamma + \epsilon \]
@@ -418,7 +423,10 @@ BF(M_\gamma:M_{null}) = \frac{p(y|M_\gamma,g)}{p(y|M_{null},g)} = \frac{(1+g)^{\
 Then, for any two models with a common $g$, we can compare these models using 
 {\small
 \[
-BF(M_\gamma:M_{\gamma'}) = \frac{BF(M_\gamma:M_{null}) }{BF(M_{\gamma'}:M_{null})} = \frac{p(y|M_\gamma,g)/p(y|M_{null},g)}{p(y|M_{\gamma'},g)/p(y|M_{null},g)} = \frac{p(y|M_\gamma,g)}{p(y|M_{\gamma'},g)}
+BF(M_\gamma:M_{\gamma'}) 
+= \frac{p(y|M_\gamma,g)}{p(y|M_{\gamma'},g)} \pause
+= \frac{p(y|M_\gamma,g)/p(y|M_{null},g)}{p(y|M_{\gamma'},g)/p(y|M_{null},g)} \pause
+= \frac{BF(M_\gamma:M_{null}) }{BF(M_{\gamma'}:M_{null})}  
 \]
 }
 \pause
@@ -459,10 +467,10 @@ BF(M_\gamma:M_{null}) = \frac{(1+g)^{(n-p_\gamma-1)/2}}{(1+g[1-R_\gamma^2])^{(n-
 \]
 where $p_\gamma$ is the number of non-zero elements in $\gamma$, i.e. the number of explanatory variables included in the model.
 
-\vspace{0.2in} \pause 
+\vspace{0.1in} \pause 
 
 \begin{itemize}
-\item As $g\to \infty$, $(M_\gamma:M_{null}) \to 0$. \pause (Lindley's Paradox) \pause
+\item As $g\to \infty$, $BF(M_\gamma:M_{null}) \to 0$. \pause (Lindley's Paradox) \pause
 \item As $n\to\infty$, $BF(M_\gamma:M_{null})\to \infty$. \pause
 \item As $R_\gamma^2 \to 1$, $BF(M_\gamma:M_{null}) \to (1+g)^{(n-p_\gamma-1)/2}$. \pause (information paradox)
 \end{itemize}
@@ -471,7 +479,8 @@ where $p_\gamma$ is the number of non-zero elements in $\gamma$, i.e. the number
 
 If $M^*$ is the true model, we would like 
 \[ 
-BF(M^*:M_\gamma) \stackrel{a.s.}{\longrightarrow} \infty
+BF(M^*:M_\gamma) \stackrel{a.s.}{\longrightarrow} \infty, 
+\quad \mbox{as } n\to\infty
 \]
 for any other model $M_\gamma$. \pause This is called \alert{model selection consistency}.
 
@@ -487,11 +496,13 @@ The empirical Bayes approach chooses $g$ such that it maximizes $p(y|M_\gamma,g)
 \[ 
 F_\gamma = \frac{R_\gamma^2/p_\gamma}{(1-R_\gamma^2)/(n-p_\gamma-1)}.
 \]
+\pause
 Plugging this back into the expression for the Bayes Factor, we find that 
 \[ 
 BF^{EB}(M_\gamma:M_{null}) \to \infty
 \]
-as $R_\gamma \to 1$ and thus the empirical Bayes approach does not suffer from either paradox. \pause The empirical is model selection consistent if the true model is not the null model, but is inconsistent if it is.
+\pause
+as $R_\gamma \to 1$ and thus the empirical Bayes approach does not suffer from either paradox. \pause This empirical Bayes approach is model selection consistent if the true model is not the null model, but is inconsistent if it is.
 \end{frame}
 
 
@@ -503,11 +514,11 @@ as $R_\gamma \to 1$ and thus the empirical Bayes approach does not suffer from e
 Alternatively, we can perform a fully Bayes analysis by putting a prior on $g$. \pause The \alert{Zellner-Siow} prior is 
 \[ g \sim IG\left( \frac{1}{2}, \frac{n}{2} \right) \]
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 For this prior, we have $BF^{EB}(M_\gamma:M_{null}) \to \infty$ as $R_\gamma^2 \to 1$ and thus do not suffer from any paradoxes \pause and we have model selection consistency, i.e. $BF(M^*:M_\gamma) \stackrel{a.s.}{\longrightarrow} \infty$ for true model $M^*$ compared to any other model $M_\gamma$. 
 
-\vspace{0.2in} \pause
+\vspace{0.1in} \pause
 
 There are other priors for $g$ that have these properties.
 
