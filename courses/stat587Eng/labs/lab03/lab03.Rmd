@@ -3,7 +3,8 @@ title: "Lab03 - Probability Distributions in R"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: 
-   html_document
+  html_document:
+    toc: true
 ---
 
 To follow along, use the [lab03 code](lab03.R).
@@ -34,7 +35,8 @@ provides the probability the random variable is less than or equal to a particul
 value.
 The quantile function is the inverse of the cumulative distribution function, 
 i.e. you provide a probability and the quantile function returns the value of the
-random variable such the cdf will return that probability.
+random variable such that the cdf will return that probability.
+(This is not very useful for discrete distributions.)
 
 ### Binomial distribution
 
@@ -84,12 +86,6 @@ plot(x, pbinom(x, size = n, prob = p), type="s", main = "Cumulative distribution
 For a discrete random variable, the cdf is a step function since the function 
 *jumps* whenever it comes across a value in the support for the random variable.
 
-Here is the quantile function using the `qbinom` function:
-
-```{r}
-p_seq <- seq(from = 0, to = 1, length = 101)
-plot(p_seq, qbinom(p_seq, size = n, prob = p), type="s", main = "Quantile function for Bin(13,0.7)")
-```
  
 Finally, we can draw random values from this binomial distribution using the 
 `rbinom` function. 
@@ -112,7 +108,7 @@ points(x, dbinom(x, size = n, prob = p), col="red")
 
 #### Activity
 
-Plot the pmf, cdf, and quantile function for the binomial distribution with 
+Plot the pmf and cdf function for the binomial distribution with 
 probability of success 0.25 and 39 trials, i.e. $X\sim Bin(39,0.25)$. 
 Then sample 999 random binomials with 39 trials and probability of success 0.25
 and plot them on a histogram with the true probability mass function.
@@ -123,9 +119,10 @@ n <- 39
 p <- 0.25
 x <- 0:n
 
-plot(x, dbinom(x, size = n, prob = p),                     main = 'Probability mass function for Bin(39,0.25)')
-plot(x, pbinom(x, size = n, prob = p),         type = 's', main = 'Cumulative distribution function for Bin(39, 0.25)')
-plot(p_seq, qbinom(p_seq, size = n, prob = p), type = 's', main = 'Quantile function for Bin(39, 0.25)')
+plot(x, dbinom(x, size = n, prob = p),                     
+     main = 'Probability mass function for Bin(39,0.25)')
+plot(x, pbinom(x, size = n, prob = p), type = 's', 
+     main = 'Cumulative distribution function for Bin(39, 0.25)')
 
 draws <- rbinom(999, size = n, prob = p)
 brks  <- (0:(n+1)) - 0.5
@@ -144,13 +141,13 @@ While the binomial distribution has an upper limit ($n$),
 we sometimes run an experiment and are counting *successes* without any 
 **technical** upper limit. 
 These experiments are usually run for some amount of time or over some amount
-of space.
+of space or both.
 For example, 
 
 - the number of photos observed by a detector in a minute
 - the number of times an a/c unit comes on in an hour
 - the number of buildings in a square mile
-- the number of transitors on a circuit board
+- the number of transistors on a circuit board
 
 When there is no technical upper limit (even if the probability of more is 
 extremely small), then a [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution)
@@ -178,12 +175,6 @@ Here is the cdf:
 ```{r}
 plot(x, ppois(x, lambda = rate), type="s", main = "Cumulative distribution function for Po(2)")
 ```
- 
-Here is the quantile function:
-
-```{r}
-plot(p_seq, qpois(p_seq, lambda = rate), type="s", ylim=c(0,10), main = "Quantile function for Po(2)") # Change the y limits for comparison purposes
-```
 
 And random draws
 
@@ -197,7 +188,7 @@ points(x, dpois(x, lambda = rate), col="red")
 
 #### Activity
 
-Plot the pmf, cdf, and quantile function for a Poisson distribution with rate
+Plot the pmf and cdf function for a Poisson distribution with rate
 23, i.e. $X\sim Po(23)$.
 Then sample 999 Poisson random variables with rate 23
 and plot them on a histogram with the true probability mass function.
@@ -207,12 +198,14 @@ and plot them on a histogram with the true probability mass function.
 rate <- 23
 x <- 5:40 # with no upper limit we need to decide on an upper limit
 
-plot(x, dpois(x, lambda = rate),                   main = 'Probability mass function for Po(23)')
-plot(x, ppois(x, lambda = rate),         type="s", main = 'Cumulative distribution function for Po(23)')
-plot(p_seq, qpois(p_seq, lambda = rate), type="s", main = 'Quantile function for Po(23)')
+plot(x, dpois(x, lambda = rate), 
+     main = 'Probability mass function for Po(23)')
+plot(x, ppois(x, lambda = rate), type="s", 
+     main = 'Cumulative distribution function for Po(23)')
 
 draws <- rpois(999, lambda = rate) 
-hist(draws, breaks = (min(draws):(max(draws)+1)) - 0.5, probability = TRUE, main = "Random draws from Po(23)")
+hist(draws, breaks = (min(draws):(max(draws)+1)) - 0.5, probability = TRUE, 
+     main = "Random draws from Po(23)")
 points(x, dpois(x, lambda = rate), col="red")
 ```
 </details>
@@ -226,7 +219,7 @@ In constrast to discrete random variables,
 [continuous random variables](http://stattrek.com/probability-distributions/discrete-continuous.aspx?Tutorial=Stat)
 can take on an uncountably infinite number of values. 
 The easiest way for this to happen is that the random variable can take on any
-value between two specified values (and infinity counts). 
+value between two specified values (and infinity counts), i.e. an interval. 
 
 Continuous random variables have a 
 [probability density function (pdf)](https://en.wikipedia.org/wiki/Probability_density_function)
@@ -274,6 +267,7 @@ curve(punif(x, min = a, max = b), from = -1, to = 2,
 The quantile function is the inverse of the cumulative distribution function.
 For a given probability p, it finds the value such that the 
 probability the random variable is below that value is p.
+That is it finds the value x in the expression $P(X < x) = p$.
 
 ```{r}
 curve(qunif(x, min = a, max = b), from = 0, to = 1,
