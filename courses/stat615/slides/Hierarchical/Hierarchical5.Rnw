@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \usetheme{AnnArbor}
 \usecolortheme{beaver}
@@ -31,7 +31,7 @@
 <<options, results='hide', echo=FALSE>>=
 # These are only needed for the slides
 # No need to run if you are just running the R code
-opts_chunk$set(fig.width=7, 
+opts_chunk$set(fig.width=10, 
                fig.height=5, 
                out.width='.8\\linewidth', 
                fig.align='center', 
@@ -53,7 +53,7 @@ set.seed(2)
 @
 
 \frame{\maketitle
-Adapted from Radford Neal's MCMC Using Hamltonian Dynamics in Handbook of Markov Chain Monte Carlo (2011).}
+Adapted from \href{https://arxiv.org/abs/1206.1901}{Radford Neal's MCMC Using Hamltonian Dynamics} in Handbook of Markov Chain Monte Carlo (2011).}
 
 \section{Hamiltonian dynamics}
 \begin{frame}
@@ -87,7 +87,7 @@ we have
 \pause
 The Hamiltonian $H(\theta,\omega)$ describes the time evolution of the system through 
 \[ \begin{array}{rl}
-\frac{d\theta_i}{dt} &= \phantom{-}\frac{\partial H}{\partial \omega_i} \\
+\frac{d\theta_i}{dt} &= \phantom{-}\frac{\partial H}{\partial \omega_i} \\ \\
 \frac{d\omega_i}{dt} &= -\frac{\partial H}{\partial \theta_i}
 \end{array} \]
 for $i=1,\ldots,d$. 
@@ -178,9 +178,10 @@ for (i in 1:length(tt)) {
 
 
 \subsection{Reversibility}
+\frametitle{Reversibility}
 \begin{frame}
 Hamiltonian dynamics is reversible, 
-i.e. the mapping $T_s$ from the state at time $t$, $(\theta(t),omega(t))$, to the state 
+i.e. the mapping $T_s$ from the state at time $t$, $(\theta(t),\omega(t))$, to the state 
 at time $t+s$, $(\theta(t+s),p(t+s))$, is one-to-one, and hence as an inverse,
 $T_{-s}$.
 \pause
@@ -199,7 +200,7 @@ The dynamics conserve the Hamiltonian since
 \[ \begin{array}{rl}
 \frac{dH}{dt} &= 
 \sum_{i=1}^d \left[ \frac{d\theta_i}{dt}\frac{\partial H}{\partial \theta_i}
-+ \frac{d\omega_i}{dt} \frac{\partial H}{\partial \omega_i}\right] \\
++ \frac{d\omega_i}{dt} \frac{\partial H}{\partial \omega_i}\right] \\ \\
 &= 
 \sum_{i=1}^d \left[ \frac{\partial H}{\partial \omega_i}\frac{\partial H}{\partial \theta_i}
 -\frac{\partial H}{\partial \theta_i}\frac{\partial H}{\partial \omega_i} \right]
@@ -209,7 +210,7 @@ The dynamics conserve the Hamiltonian since
 If $h$ is conserved, then the acceptance probability based on Hamiltonian 
 dynamics is 1. 
 \pause
-In practice, we can oly make $H$ approximately invariant.
+In practice, we can only make $H$ approximately invariant.
 
 \end{frame}
 
@@ -217,12 +218,15 @@ In practice, we can oly make $H$ approximately invariant.
 
 \begin{frame}[fragile]
 \frametitle{Conservation of the Hamiltonian}
-<<oned_volume, fig.show='animate', interval=.1, fig.asp=1, fig.width=5, out.width='.6\\linewidth'>>=
+
+\vspace{-0.5in}
+
+<<oned_volume, fig.show='animate', interval=.1, fig.asp=1, fig.width=4, out.width='.6\\linewidth'>>=
 t3 <- seq(0,2*pi, length=1000)
 d <- data.frame(x = cos(t3), y=-sin(t3))
 for (i in 1:length(tt)) {
   plot(y~x, d, type='l', col='gray', xlab='Location', ylab='Momentum')
-  points(qt[i], pt[i], pch=19)
+  points(theta[i], omega[i], pch=19)
 }
 @
 \end{frame}
@@ -232,7 +236,7 @@ for (i in 1:length(tt)) {
 \begin{frame}
 \frametitle{Volume preservation}
 
-If we apply the mapping $T_s$ to point in some region $R$ of $(\theta,\omega)$ space with
+If we apply the mapping $T_s$ to points in some region $R$ in $(\theta,\omega)$ space with
 volume $V$, the image of $R$ under $T_s$ will also have volume $V$. 
 \pause 
 This feature simplifies calculation of the acceptance probability for 
@@ -390,14 +394,14 @@ $\theta$,
 and ``momentum'', $\omega$, 
 and so defines a joint distribution for them, via
 \[
-P(\theta,\omega) = \frac{1}{Z} \exp\left(-H(\theta,\omega)\right)
+p(\theta,\omega) = \frac{1}{Z} \exp\left(-H(\theta,\omega)\right)
 \]
 where $Z$ is the normalizing constant.
 \pause
 
 If $H(\theta,\omega) = U(\theta)+K(\omega)$, the joint density is 
 \[
-P(\theta,\omega) = \frac{1}{Z} \exp\left(-U(\theta)\right)\exp\left(-K(\omega)\right).
+p(\theta,\omega) = \frac{1}{Z} \exp\left(-U(\theta)\right)\exp\left(-K(\omega)\right).
 \]
 \pause
 
@@ -478,12 +482,12 @@ otherwise set $\theta^{(i+1)} = \theta^{(i)}$.
 Reversibility for the leapfrog means that
 \begin{itemize}
 \item if you simulate from $(\theta,\omega)$ to $(\theta^*,\omega^*)$ for some step size $e$ and number of steps $L$ \pause then
-\item if you simulate from $(\theta^*,\omega^*)$ for the same $e$ and $L$, you will end up at $(\theta,\omega)$.
+\item if you simulate from $(\theta^*,-\omega^*)$ for the same $e$ and $L$, you will end up at $(\theta,-\omega)$.
 \end{itemize}
 \pause
-If we use $\theta$ to denote our simulation ``density'', then reversibility means
+If we use $q$ to denote our simulation ``density'', then reversibility means
 \[
-\theta(\theta^*,\omega^*|\theta,\omega) = \theta(\theta,\omega|\theta^*,\omega^*)
+q(\theta^*,\omega^*|\theta,\omega) = q(\theta,-\omega|\theta^*,-\omega^*)
 \]
 \pause
 and thus in the Metropolis-Hastings calculation, the proposal is symmetric.
@@ -491,7 +495,7 @@ and thus in the Metropolis-Hastings calculation, the proposal is symmetric.
 In order to ensure reversibility of our proposal, 
 we need to negate momentum after we complete the leap-frog simulation.
 \pause 
-So long as $p(\omega) = p(-\omega)$, 
+So long as $q(\omega) =q(-\omega)$, 
 which is true for a multivariate normal centered at 0, 
 this will not affect our acceptance probability.
 
