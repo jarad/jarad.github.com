@@ -24,7 +24,7 @@
 \newcommand{\exam}{Exam I}
 
 
-\excludecomment{answer}
+% \excludecomment{answer}
 
 \begin{document}
 
@@ -334,7 +334,7 @@ the tanker is less than 30,000 gallons? (10 points)
 
 \begin{answer}
 Let $Y$ be the actual amount of ethanol for $n$ extra gallons.
-By the CLT, $Y \stackrel{\cdot}{\sim} N(3000+n,[3000+n]\times 0.01^2)$ and thus 
+By the CLT, $Y \stackrel{\cdot}{\sim} N(30000+n,[30000+n]\times 0.01^2)$ and thus 
 the approximate probability for $n=1$ is 
 <<>>=
 sd <- 0.01
@@ -355,15 +355,31 @@ The 0.01 quantile of a standard normal random variable is
 qnorm(0.01)
 @
 Thus, we need to find $n$ such that
-\[
-\frac{30000-(30000+n)}{0.01\sqrt{30000+n}} < -2.326348
+\[ \begin{array}{rl}
+0.99 &= P(Y \ge 30,000) = 1-P(Y < 30,000) \\
+0.01 &= P(Y < 30,000) \\
+&= 
+P\left( \frac{Y -(30000+n)}{0.01\sqrt{30000+n}} < \frac{30000-(30000+n)}{0.01\sqrt{30000+n}}\right) \\
+&= P\left(Z< \frac{30000-(30000+n)}{0.01\sqrt{30000+n}} \right) 
+\end{array} \]
+One approach is to set 
+\[ 
+\frac{30000-(30000+n)}{0.01\sqrt{30000+n}} = \Sexpr{qnorm(0.01)}
 \]
-By trial-and-error, we can find that $n=5$ extra gallons suffices while 4 extra
-gallons is insufficient.
+and solve for $n$ (and then round up). 
+This is a bit difficult as $n$ appears in both the numerator and denominator
+(in the square root). 
+
+An alternative approaches uses trial-and-error by plugging in different values 
+of $n$. 
+Using this approach, we can find that $n=5$ extra gallons suffices while 4 extra
+gallons is (just barely) insufficient.
 <<>>=
-n <- 5; pnorm(30000, 30000+n, sd * sqrt(30000+n))
-n <- 4; pnorm(30000, 30000+n, sd * sqrt(30000+n))
+n <- 5; 1-pnorm(30000, 30000+n, sd * sqrt(30000+n))
+n <- 4; 1-pnorm(30000, 30000+n, sd * sqrt(30000+n))
 @
+When this exam was graded, I believe I gave full credit to either 4 or 5 since
+4 is so close.
 \end{answer}
 \vfill
 
