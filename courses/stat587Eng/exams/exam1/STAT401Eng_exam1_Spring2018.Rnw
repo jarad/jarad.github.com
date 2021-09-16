@@ -24,7 +24,7 @@
 \newcommand{\exam}{Exam I}
 
 
-% \excludecomment{answer}
+\excludecomment{answer}
 
 \begin{document}
 
@@ -323,30 +323,28 @@ one time.
 \newpage
 % CLT question
 \item A positive displacement pump is used to fill an ethanol tanker.
-The pump measures 1 gallon of ethanol at a time with a mean of 1 gallon and 
+The pump pumps 1 gallon of ethanol at a time with a mean of 1 gallon and 
 a standard deviation of 0.01 gallons and independently of all other 
-measurements. The pump repeats this process 30,001 times.
+measurements. Assume each pump is normally distributed.
 
 
 \begin{enumerate}
-\item What is the approximate probability that the true amount of ethanol in 
+\item If the pump, pumps 30,001 times, 
+what is the probability that the true amount of ethanol in 
 the tanker is less than 30,000 gallons? (10 points)
 
 \begin{answer}
 Let $Y$ be the actual amount of ethanol for $n$ extra gallons.
-By the CLT, $Y \stackrel{\cdot}{\sim} N(30000+n,[30000+n]\times 0.01^2)$ and thus 
-the approximate probability for $n=1$ is 
+By the CLT, $Y \stackrel{\cdot}{\sim} N(30001,[30001]\times 0.01^2)$ and thus 
+the approximate probability for is 
 <<>>=
 sd <- 0.01
-n <- 1; pnorm(30000, 30000+n, sd * sqrt(30000+n))
+pnorm(30000, 30001, sd * sqrt(30001))
 @
 \end{answer}
 \vfill
 
-\item The company wants to ensure the amount in the tanker is greater than 
-30,000 gallons with 99\% probability. 
-How many gallons above 30,000 should the pump measure to ensure
-with 99\% probability that the true amount is greater than 30,000 gallons.
+\item How many pumps should the pump pump to ensure that the true amount is greater than 30,000 gallons with probability 99\%.
 (10 points)
 
 \begin{answer}
@@ -359,12 +357,12 @@ Thus, we need to find $n$ such that
 0.99 &= P(Y \ge 30,000) = 1-P(Y < 30,000) \\
 0.01 &= P(Y < 30,000) \\
 &= 
-P\left( \frac{Y -(30000+n)}{0.01\sqrt{30000+n}} < \frac{30000-(30000+n)}{0.01\sqrt{30000+n}}\right) \\
-&= P\left(Z< \frac{30000-(30000+n)}{0.01\sqrt{30000+n}} \right) 
+P\left( \frac{Y -(n)}{0.01\sqrt{n}} < \frac{30000-n}{0.01\sqrt{n}}\right) \\
+&= P\left(Z< \frac{30000-n}{0.01\sqrt{n}} \right) 
 \end{array} \]
 One approach is to set 
 \[ 
-\frac{30000-(30000+n)}{0.01\sqrt{30000+n}} = \Sexpr{qnorm(0.01)}
+\frac{30000-n}{0.01\sqrt{n}} = \Sexpr{qnorm(0.01)}
 \]
 and solve for $n$ (and then round up). 
 This is a bit difficult as $n$ appears in both the numerator and denominator
@@ -372,14 +370,12 @@ This is a bit difficult as $n$ appears in both the numerator and denominator
 
 An alternative approaches uses trial-and-error by plugging in different values 
 of $n$. 
-Using this approach, we can find that $n=5$ extra gallons suffices while 4 extra
-gallons is (just barely) insufficient.
+Using this approach, we can find that $n=30005$ pumps suffices while 
+30,004 pumps is (just barely) insufficient.
 <<>>=
-n <- 5; 1-pnorm(30000, 30000+n, sd * sqrt(30000+n))
-n <- 4; 1-pnorm(30000, 30000+n, sd * sqrt(30000+n))
+n <- 30005; 1-pnorm(30000, n, sd * sqrt(n))
+n <- 30004; 1-pnorm(30000, n, sd * sqrt(n))
 @
-When this exam was graded, I believe I gave full credit to either 4 or 5 since
-4 is so close.
 \end{answer}
 \vfill
 
