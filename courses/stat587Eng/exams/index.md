@@ -14,6 +14,7 @@ Below are exams, keys, and data used in the exam.
 - 2019: [exam](exam1/STAT587Eng_exam1_Spring2019.pdf) [key](exam1/STAT587Eng_exam1_Spring2019_key.pdf)
 - 2020: [exam](exam1/STAT587Eng_exam1_Fall2020.pdf) [key](exam1/STAT587Eng_exam1_Fall2020_key.pdf)
 - 2021S: [exam](exam1/STAT587Eng_exam1_Spring2021.pdf) [key](exam1/STAT587Eng_exam1_Spring2021_key.pdf)
+- 2021F: [exam](exam1/STAT587Eng_exam1_Fall2021.pdf) [key](exam1/STAT587Eng_exam1_Fall2021_key.pdf)
 
 ## Exam 2
 
