@@ -18,6 +18,7 @@ INFERENCE := \
   Inference/I04-Normal_model/I04-Normal_model.pdf \
   Inference/I05-Confidence_intervals/Sampling_distribution.pdf \
   Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf \
+  Inference/I06-Pvalues/Statistical_hypotheses.pdf \
   Inference/I06-Pvalues/I06-Pvalues.pdf \
   Inference/I06-Pvalues/Hypothesis_tests.pdf \
   Inference/I06-Pvalues/Correspondence_between_pvalues_and_confidence_intervals.pdf \
