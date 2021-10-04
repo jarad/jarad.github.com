@@ -21,6 +21,7 @@ graduates of STAT 587.
   - STAT 474/574 - Introduction to Bayesian Data Analysis
   - STAT 478/578 - Introduction to Stochastic Process Models
   - STAT 476/576 - Introduction to Spatial Data Analysis
+  - STAT 533 - Reliability
 - STAT 471/571 - Introduction to Experimental Design 
 - STAT 472/572 - Introduction to Time Series
 - STAT 473/573 - Introduction to Survey Sampling

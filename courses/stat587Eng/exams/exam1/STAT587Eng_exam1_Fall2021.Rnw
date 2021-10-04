@@ -1,0 +1,505 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+% \usepackage{fullpage}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.3in
+\oddsidemargin-.3in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 587-1}
+\newcommand{\semester}{Fall 2021}
+\newcommand{\exam}{Exam I}
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(70 points)}
+\end{center}
+
+\vspace*{1in}
+
+
+\textbf{Instructions:}\\
+\begin{itemize}
+\item {\large Write your name on the top, but do not open the exam.}
+\item {\large You are allowed to use any resource except aid from another individual.}
+\item {\large A total of 4 pages with a front and back.}
+\item {\large For full/partial credit, show all your work.}
+\end{itemize}
+
+\begin{enumerate}
+\newpage
+\item The United States has identified a previously unknown piece of space
+debris and is trying to determine the probability it is from a US space craft.
+
+\begin{answer}
+
+<<>>=
+prevalence <- c("Russia"=4/10, "US"=3/10, "China"=2/10, "Other"=1/10)
+probability <- c("Russia"=1/100, "US"=1/10, "China"=5/100, "Other"=2/100)
+@
+\end{answer}
+For identified space debris, we have the following proportions by country
+<<echo=FALSE>>=
+prevalence
+@
+The space debris is giving off a signature in the infrared spectrum.
+The following table provides the proportion of existing space debris for each
+country that has this particular signature, 
+i.e. the conditional probability given the country: 
+
+<<echo=FALSE>>=
+probability
+@
+Given that the space debris is giving off this signature, determine the
+probability that the debris belongs to Russia, US, China, and Other. (10 points)
+
+\begin{answer}
+This is a Bayes Rule question, but instead of just calculating one probability
+we must calculate all the probabilities. 
+Assume the following notation:
+\begin{itemize}
+\item $R$ is the event the debris is from Russia
+\item $U$ is the event the debris is from US
+\item $C$ is the event the debris is from China
+\item $O$ is the event the debris is from Other
+\item $S$ is the event the debris is giving off the signature
+\end{itemize}
+
+We have the marginal probability the debris is from each country, 
+e.g. $P(R)$, as
+<<>>=
+prevalence
+@
+and the conditional probability the debris is giving off the signature given
+the country of origin, e.g. $P(S|R)$, is
+<<>>=
+probability
+@
+Now for a particular country we use Bayes Rule to calculate
+\[ P(R|S) = \frac{P(S|R)P(R)}{P(S|R)P(R)+P(S|U)P(U)+P(S|C)P(C)+P(S|O)P(O)}. \]
+Note that the denominator will be the same for every calculation. 
+The purpose the denominator serves is to ensure that the following probabilities
+sum to 1:
+\[ P(R|S) + P(U|S) + P(C|S) + P(O|S) = 1. \]
+
+The final conditional probabilities can be computed in R via 
+<<>>=
+probability*prevalence/sum(probability*prevalence)
+@
+\end{answer}
+
+\newpage
+\item For the following variables,
+identify the most appropriate distribution to model the variable from this list:
+binomial, Poisson, uniform, and normal. (1 point each)
+
+\begin{enumerate}
+\item strength of \#3 carbon steel rebar
+
+\begin{answer}
+normal
+\end{answer}
+\vfill
+
+\item weight of dust in my office
+
+\begin{answer}
+normal
+\end{answer}
+\vfill
+
+\item number of occupied chairs in Gilman 2272 during this exam (there are a 
+total of 70 chairs)
+
+\begin{answer}
+binomial 
+\end{answer}
+\vfill
+
+\item number of car accidents in Story County in August 2021
+
+\begin{answer}
+Poisson
+\end{answer}
+\vfill
+
+\item number of visitors to a website who click on an advertisement out of
+the next one thousand visitors
+
+\begin{answer}
+binomial
+\end{answer}
+\vfill
+
+\item elasticity of a polymer network
+
+\begin{answer}
+normal
+\end{answer}
+\vfill
+
+\item time it will take to read The Black Swan
+
+\begin{answer}
+normal
+\end{answer}
+\vfill
+
+\item number of student organizations at Iowa State University
+
+\begin{answer}
+Poisson
+\end{answer}
+\vfill
+
+\item number of books on my office bookshelf, 
+out of the 74 books on my bookshelf,
+with the word ``Statistics'' in the title
+
+\begin{answer}
+binomial
+\end{answer}
+\vfill
+
+\item thickness of my office window
+
+\begin{answer}
+normal
+\end{answer}
+\vfill
+
+\end{enumerate}
+
+\newpage
+\item As a road is constructed, there is an average of 1.5 defects per mile
+segment of the road. Let $Y_i$ be the number of defects on segment $i$.
+Assume $Y_i \sim Po(1.5)$ and that the number of defects in each segment is
+independent.
+
+\begin{answer}
+<<>>=
+rate <- 1.5
+@
+\end{answer}
+
+\begin{enumerate}
+
+\item The following questions are about the first road segment. 
+
+\begin{itemize}
+\item What is the expected number of defects in the first segment? (2 points)
+
+\begin{answer}
+<<>>=
+rate
+@
+\end{answer}
+
+\vfill
+
+\item What is the {\bf standard deviation} of the number of defects in the first segment?
+(2 points)
+
+\begin{answer}
+<<>>=
+sqrt(rate)
+@
+\end{answer}
+
+\vfill
+
+\item Calculate the probability of no defects in the first segment. (3 points)
+
+\begin{answer}
+$P(Y_1 = 0)$ is
+<<>>=
+dpois(0, lambda = rate)
+@
+\end{answer}
+
+\vfill
+
+\item Calculate the probability of two or more defects in the second segment. (3 points)
+
+\begin{answer}
+$P(Y_2 \ge 2) = 1 - P(Y_2 < 2) = 1 - P(Y_2 \le 1)$ is
+<<>>=
+1 - ppois(1, lambda = rate)
+@
+\end{answer}
+
+\vfill
+
+\end{itemize}
+
+\newpage
+\item The following questions are about a 10 mile stretch of road. 
+Assume the number of defects in each mile stretch is independent.
+(3 points each)
+
+\begin{itemize}
+
+\item What is the expected number of total defects in a 10 mile stretch of the
+road? (2 points)
+
+\begin{answer}
+Let $S$ be the number of defects in a 10 mile stretch.
+Then $S = \sum_{i=1}^{10} Y_i \sim Po(10*1.5)$.
+<<>>=
+n <- 10
+rate10 <- n*rate
+rate10
+@
+\end{answer}
+
+\vfill
+
+\item What is the {\bf standard deviation} in the number of total defects in a 10
+mile stretch of the road? (2 points)
+
+\begin{answer}
+<<>>=
+sqrt(rate10)
+@
+\end{answer}
+
+\vfill
+
+\item What is the probability of exactly 14 defects in a 10 mile stretch of
+the road? (3 points)
+
+\begin{answer}
+$P(S = 14)$ is
+<<>>=
+dpois(14, lambda = rate10)
+@
+\end{answer}
+
+\vfill
+
+\item What is the probability of 12 or fewer defects in a 10 mile stretch of
+the road? (3 points)
+
+\begin{answer}
+$P(S \le 12)$ is
+<<>>=
+ppois(12, lambda = rate10)
+@
+\end{answer}
+
+\vfill
+
+\end{itemize}
+
+\end{enumerate}
+
+\newpage
+\item Assume the compressive strength of residential concrete follows a
+normal distribution with a mean of 17 MPa and a standard deviation of 2 MPa.
+(2 points each)
+
+
+\begin{answer}
+<<>>=
+m = 17
+s = 2
+@
+\end{answer}
+
+\begin{enumerate}
+\item What is the expected compressive strength? 
+
+\begin{answer}
+<<>>=
+m
+@
+\end{answer}
+
+\vfill
+
+\item What is the {\bf variance} on the compressive strength?
+
+\begin{answer}
+<<>>=
+s^2
+@
+\end{answer}
+
+\vfill
+
+\item The coefficent of variation (cv) is the standard deviation divided by the
+mean. What is the coefficient of variation for compressive strength of
+residential concrete?
+
+\begin{answer}
+<<>>=
+s/m
+@
+Note that this quantity is unitless.
+\end{answer}
+
+\vfill
+
+\item What is the probability the compressive stength of a particular sample
+of residential concrete is below 15 MPa? 
+
+\begin{answer}
+<<>>=
+pnorm(15, mean = m, sd = s)
+@
+\end{answer}
+
+\vfill
+
+\item Provide an interval such that 95\% of all residential concrete samples
+will have compressive strength within that interval. 
+
+\begin{answer}
+<<>>=
+m + c(-1,1)*2*s
+@
+\end{answer}
+
+\vfill
+
+
+\newpage
+A company has indicated that they can double the compressive strength plus 5 Mpa
+by adding a proprietary ingredient. Specifically, if $Y$ is the normal
+compressive strength, the company can make it $2Y+5$.
+
+\item What is the expected compressive stength of the concrete with this
+ingredient? (3 points)
+
+\begin{answer}
+<<>>=
+(m_new <- 2*m+5)
+@
+\end{answer}
+
+\vfill
+
+\item What is the {\bf variance} in compressive strength of the concrete with this ingredient? (3 points)
+
+\begin{answer}
+<<>>=
+(s2_new <- 2^2*s^2)
+@
+\end{answer}
+
+\vfill
+
+\item What is the probability the new strength will be greater than 40? (4 points)
+
+\begin{answer}
+<<>>=
+1-pnorm(40, mean = m_new, sd = sqrt(s2_new))
+@
+\end{answer}
+
+\vfill
+
+\end{enumerate}
+
+
+\newpage
+\item An extruding machine has a screw that propels plastic through a barrel
+to be extruded. Each turn of the screw pushes, on average, a 5 millimeter (mm)
+length of plastic with a standard deviation of 0.3 mm.
+
+
+\begin{answer}
+<<>>=
+m = 5
+s = 0.3
+@
+\end{answer}
+
+\begin{enumerate}
+\item After 70 turns of the screw, what is the expected length of the extruded
+plastic? (2 points)
+
+\begin{answer}
+<<>>=
+n <- 70
+(m70 <- n*m) ## mm
+@
+\end{answer}
+
+\vfill
+
+\item After 70 turns of the screw, what is the {\bf standard deviation} of the length
+of the extruded plastic? (2 points)
+
+\begin{answer}
+<<>>=
+(s70 <- sqrt(n*s^2)) # mm 
+@
+\end{answer}
+
+\vfill
+
+\item What is the probability the extruded plastic after 70 turns is less than 
+355 mm in length? (3 points)
+
+\begin{answer}
+<<>>=
+pnorm(355, mean = m70, s = s70)
+@
+\end{answer}
+
+\vfill
+
+\item The machine must be adjusted to ensure that after 70 turns the probability
+the extruded plastic is less than 355 mm is, at most, 0.99. 
+What is the maximum standard deviation for a single turn required to ensure 
+this probability? (3 points)
+
+\begin{answer}
+Let $X \sim N(70\times 5, 70\times \sigma^2)$ and our goal is to find $\sigma$ such that
+$P(X < 355) \ge 0.99$. The z-statistic that corresponds to 0.99 is
+<<>>=
+(z = qnorm(0.99))
+@
+\[ \begin{array}{rl}
+0.99 &= P(X < 355) \\
+&= P\left( \frac{X - 70*5}{\sqrt{70\sigma^2}} < \frac{355 - 70*5}{\sqrt{70\sigma^2}}  \right) \\
+&= P\left( Z < \frac{(355-350)/\sqrt{70}}{\sigma} \right)
+\end{array} \]
+<<>>=
+(355-350)/sqrt(70) / z
+@
+Thus if $\sigma$ is this value or smaller, we are guaranteed that the
+probability of being less than 355 mm is at least 0.99.
+\end{answer}
+
+\vfill \vfill
+
+\end{enumerate}
+
+
+\end{enumerate}
+
+
+\end{document}
+
