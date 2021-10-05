@@ -59,17 +59,17 @@ Adapted from \href{https://arxiv.org/abs/1206.1901}{Radford Neal's MCMC Using Ha
 \begin{frame}
 \frametitle{Hamiltonian system}
 
-Considering a body in a frictionless 1-dimensional environment, let 
+Considering a body in a frictionless 1-dimensional environment with  
 \begin{itemize}
-\item $m$ be its mass,
-\item $\theta$ be its position, and
-\item $\omega$ be its momentum.
+\item mass $m$,
+\item location $\theta$, and
+\item momentum $\omega = mv$ where $v$ is velocity.
 \end{itemize}
 \pause
 The mass has 
 \begin{itemize}
-\item potential energy $U(\theta)$ (which is proportional to its height) and
-\item kinetic energy $K(\omega)=\omega^2/(2m)$. 
+\item potential energy $U(\theta)$, proportional to its height, and
+\item kinetic energy $K(\omega)= \frac{1}{2}mv^2 =\frac{1\omega^2}{2m}$. 
 \end{itemize}
 \end{frame}
 
@@ -82,7 +82,7 @@ Extending this to $d$ dimensions,
 we have 
 \begin{itemize}
 \item position vector $\theta$ and 
-\item momentum vector $\omega$. 
+\item momentum vector $\omega$.
 \end{itemize}
 \pause
 The Hamiltonian $H(\theta,\omega)$ describes the time evolution of the system through 
@@ -557,6 +557,8 @@ HMC_neal = function(U, grad_U, e, L, current_theta) {
   proposed_U = U(theta)
   proposed_K = sum(omega^2)/2
   
+  # cat(paste(e,L,i,theta,omega,"\n"))
+  
   if (runif(1) < exp(current_U-proposed_U+current_K-proposed_K))
   {
     return(theta)
@@ -620,7 +622,7 @@ We can update this estimate throughout burn-in (or warm-up).
 \frametitle{Effect of $e$ and $L$}
 <<tuning, cache=TRUE, echo=TRUE>>=
 n_reps = 1e4
-d = expand.grid(e=10^c(-3:3), L=10^seq(0,3))
+d = expand.grid(e=10^c(-2:2), L=10^c(-2:0))
 r = ddply(d, .(e,L), function(xx) {
   data.frame(
     iteration = 1:n_reps,
@@ -634,7 +636,9 @@ r = ddply(d, .(e,L), function(xx) {
 ggplot(r, aes(iteration,theta)) + 
   geom_line() + 
   facet_grid(L~e) +
-  theme_bw()
+  theme_bw() +
+  labs(title = "Traceplots for HMC runs",
+       y = expression(theta))
 @
 \end{frame}
 
