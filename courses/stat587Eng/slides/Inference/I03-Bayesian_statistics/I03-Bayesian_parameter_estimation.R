@@ -26,6 +26,7 @@ ggplot(d, aes(x=theta, y=density)) +
   geom_line() +
   facet_grid(a~b) +
   theme_bw() +
+  labs(x = expression(theta)) +
   ylim(0,5)
 
 
