@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -28,9 +28,9 @@ library("gstat")
 library("geoR")
 library("GGally")
 library("CARBayes")
-library("shapefiles")
-library("sp")
-library("spdep")
+# library("shapefiles")
+# library("sp")
+# library("spdep")
 @
 
 <<set_seed, echo=FALSE>>=
@@ -1062,40 +1062,6 @@ p(\omega_1,\ldots,\omega_S) \propto
 
 
 \subsection{Housing price in Glasgow}
-\frametitle{Housing price in Glasgow}
-\begin{frame}
-<<CARBayes_data>>=
-#library(shapefiles)
-#library(sp)
-
-data(GGHB.IG)
-data(pricedata)
-
-
-###################################################
-### code chunk number 6: CARBayes.Rnw:429-433
-###################################################
-missing.IG <- setdiff(rownames(GGHB.IG@data), pricedata$IG)
-missing.IG.row <- which(missing.IG==rownames(GGHB.IG@data))
-propertydata.spatial <- GGHB.IG[-missing.IG.row, ]
-propertydata.spatial@data <- data.frame(propertydata.spatial@data, pricedata)
-
-
-###################################################
-### code chunk number 7: CARBayes.Rnw:461-471
-###################################################
-northarrow <- list("SpatialPolygonsRescale", layout.north.arrow(), 
-    offset = c(220000,647000), scale = 4000)
-scalebar <- list("SpatialPolygonsRescale", layout.scale.bar(), 
-    offset = c(225000,647000), scale = 10000, fill=c("transparent","black"))
-text1 <- list("sp.text", c(225000,649000), "0")
-text2 <- list("sp.text", c(230000,649000), "5000 m")
-breakpoints <- seq(min(pricedata$price)-1, max(pricedata$price)+1, length.out=8)
-spplot(propertydata.spatial, c("price"), sp.layout=list(northarrow, scalebar, 
-    text1, text2), scales=list(draw = TRUE), at=breakpoints,
-    col.regions=terrain.colors(n=length(breakpoints)-1), col="transparent")
-@
-\end{frame}
 
 
 \begin{frame}
@@ -1120,26 +1086,26 @@ Let
 \frametitle{Housing price model}
 Assume
 \[
-Y_i \ind N(X_i\beta + \omega_i, \nu^2)
+Y_i \ind N(X_i\beta + \omega_{s[i]}, \nu^2)
 \]
 \pause
 or, alternatively,
 \[
-Y_i = X_\beta+\omega_i+\epsilon_i, \quad \epsilon_i\ind N(0,\nu^2)
+Y_i = X_i \beta+\omega_{s[i]}+\epsilon_i, \quad \epsilon_i\ind N(0,\nu^2)
 \]
 \pause
 where
 \begin{itemize}[<+->]
 \item $\beta$ are the regression parameters and
-\item $\omega_i$ are assumed to come from an intrinsic CAR model with proximity matrix indicating those regions that share a border
+\item $\omega_s$ are assumed to come from an intrinsic CAR model with proximity matrix indicating those regions that share a border
 \end{itemize}
 
 \end{frame}
 
-
+\end{document}
 
 \begin{frame}[fragile]
-<<CARBayes_analysis, dependson='CARBayes_data', echo=TRUE>>=
+<<CARBayes_analysis, dependson='CARBayes_data', echo=TRUE, eval=FALSE>>=
 propertydata.spatial@data$logprice <- log(propertydata.spatial@data$price)
 propertydata.spatial@data$logdriveshop <- log(propertydata.spatial@data$driveshop)
 
@@ -1175,7 +1141,7 @@ summary(model)
 
 \begin{frame}[fragile]
 \frametitle{Bayesian analysis using Leroux CAR}
-<<CARleroux, dependson = "CARBayes_analysis", echo=TRUE>>=
+<<CARleroux, dependson = "CARBayes_analysis", echo=TRUE, eval=FALSE>>=
 W <- nb2mat(W.nb, style = "B")
 model.spatial <- S.CARleroux(formula = form,
                              data = propertydata.spatial@data,
@@ -1362,6 +1328,4 @@ model.spatial <- S.CARleroux(formula = form,
 % 
 % 
 
-
-\end{document}
 
