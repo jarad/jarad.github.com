@@ -2,7 +2,9 @@
 title: "Lab09 - Multiple Regression in R"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    toc: true
 ---
 
 
@@ -178,6 +180,39 @@ m <- lm(sqrt(count) ~ no3 + maxdepth, data = longnosedace)
 summary(m)
 ```
 
+You can run a regression with all variables using `.`
+
+```{r}
+m <- lm(sqrt(count) ~ ., data = longnosedace)
+summary(m)
+```
+
+But you need to make sure you want to include all the variables. 
+In this case, we probably wanted to exclude the `stream` variable 
+
+```{r}
+m <- lm(sqrt(count) ~ ., data = longnosedace %>% select(-stream))
+summary(m)
+```
+
+or
+
+```{r}
+m <- lm(sqrt(count) ~ .-stream, data = longnosedace)
+summary(m)
+```
+
+You can also use this technique to eliminate the intercept and perform
+"regression through the origin". 
+
+```{r}
+m <- lm(sqrt(count) ~ no3 + acreage - 1, data = longnosedace)
+summary(m)
+```
+
+This is not a common model but there may be a time when you want to force
+the intercept to be 0. 
+
 ## Interactions
 
 Interactions can be added to a model by using a colon (:) between two 
@@ -220,6 +255,31 @@ summary(m5)
 m5 <- lm(sqrt(count) ~ no3 * maxdepth * acreage, data = longnosedace) # main effects, two-way interactions, and three-way interaction
 summary(m5)
 ```
+
+We can combine the `.` with this notation for higher order terms. 
+
+```{r}
+m <- lm(sqrt(count) ~ .^2, data = longnosedace %>% select(-stream))
+summary(m)
+```
+
+
+## Adding or removing variables
+
+Another approach that might be useful is to construct a model and then add or 
+remove variables from that model.
+
+```{r}
+m <- lm(sqrt(count) ~ no3, data = longnosedace)
+summary(m)
+
+mA <- update(m, ~ . + acreage)
+summary(mA)
+
+mR <- update(mA, ~ . - no3)
+summary(mR)
+```
+
 
 
 You can find out more information by looking at 
