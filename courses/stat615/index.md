@@ -11,9 +11,6 @@ This website is designed to host course material for [STAT 615 - Advanced Bayesi
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@NiemiSTAT](https://twitter.com/NiemiSTAT))
 - Office hours: TBD
 
-This course meets
-
-- TR 11-12:20 @ East 0111
 
 ## Textbook
 
@@ -24,6 +21,9 @@ The required textbook for the course is [Bayesian Data Analysis (3rd edition)](h
 - [Slides](slides.html)
 - [Textbook](textbook.html)
 - [Readings](readings.html)
+- [Report](../stat544/report.html)
+  - [Rubric](../stat544/report_rubric.html)
+  - [Outline](../stat544/outline.html)
 
 ## Course Description
 

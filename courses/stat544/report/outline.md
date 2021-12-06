@@ -7,13 +7,32 @@ tagline: Bayesian Statistics
 
 ## Report outline
 
-A general outline for data analysis reports is 
+A general section structure for a data analysis report is 
 
 - Introduction
 - Data
 - Methods 
 - Results 
 - Discussion
+
+Please note that these do not need to be the titles of the sections. 
+Using informative titles provides readers with a quick understand of the report
+topic and approach being used. 
+For example, consider the following section titles.
+
+- Radon rates in Minnesota
+- Floor-specific radon measurements in MN counties
+- Regression model with CAR spacial random effects for counties
+- Results
+  - Decreased radon measurements in upper floors
+  - Radon higher in northeastern MN
+- Discussion
+  - Observational study
+  - Radon mitigation
+  
+These section titles still use the general structure with informative section
+names that allow the reader to understand the entirety of the report without
+needing to read all the details. 
 
 The contents of each section are described below.
 

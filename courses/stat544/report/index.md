@@ -8,7 +8,7 @@ tagline: Bayesian Statistics
 The major culmination of STAT 544 is the final project report. 
 This report is a data analysis performed from a Bayesian perspective typically 
 using either JAGS or Stan to perform the computation. 
-This page is design to provide guidance for the report.
+This page is designed to provide guidance for the report.
 
 
 
