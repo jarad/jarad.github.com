@@ -191,23 +191,78 @@ Options:
 
 
 \subsection{INLA Computing Scheme}
-\begin{frame}
-\frametitle{INLA Computing Scheme}
+% \begin{frame}
+% \frametitle{INLA Computing Scheme}
+% 
+% \begin{enumerate}
+% \item Explore $\tilde{p}(\theta|y)$: find mode of $\tilde{p}(\theta|y)$ and locate $\{\theta^1,\ldots,\theta^K\}$ with high density of $\tilde{p}(\theta|y)$.
+% \item Compute $\tilde{p}(\theta^1|y),\ldots,\tilde{p}(\theta^K|y).$
+% \item For each $\theta^k$, find $\pi(\phi_i|\theta^k,y)$ using one of three (?) possible approximations: Laplace, Simplified Laplace, or Gaussian.
+% \item Via numerical integration, find 
+% \[ 
+% \tilde{p}(\phi_i|y) = \sum_{k=1}^K \tilde{p}(x_i|\theta^k,y)\tilde{p}(\theta^k|y) \delta_k
+% \]
+% where $\delta_k$ are appropriate weights. 
+% \end{enumerate}
+% 
+% \end{frame}
 
-\begin{enumerate}
-\item Explore $\tilde{p}(\theta|y)$: find mode of $\tilde{p}(\theta|y)$ and locate $\{\theta^1,\ldots,\theta^K}$ with high density of $\tilde{p}(\theta|y)$.
-\item Compute $\tilde{p}(\theta^1|y),\ldots,\tilde{p}(\theta^K|y).$
-\item For each $\theta^k$, find $\pi(\phi_i|\theta^k,y)$ using one of three (?) possible approximations: Laplace, Simplified Laplace, or Gaussian.
-\item Via numerical integration, find 
-\[ 
-\tilde{p}(\phi_i|y) = \sum_{k=1}^K \tilde{p}(x_i|\theta^k,y)\tilde{p}(\theta^k|y) \delta_k
-\]
-where $\delta_k$ are appropriate weights. 
-\end{enumerate}
 
+
+\section{Salmonella data}
+\begin{frame}[fragile]
+\frametitle{Salmonella data}
+<<salm, echo = TRUE>>=
+library("INLA")
+head(Salm)
+@
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Salmonella model}
+
+Let $Y_{ij}$ be the number of salmonella bacteria for the $j$th observation under dose $i$. 
+
+\vspace{0.1in} \pause
+
+Data model:
+\[
+Y_{ij} \stackrel{ind}{\sim} Po(\lambda_{ij})
+\]
+
+Latent Gaussian structure:
+\[
+\log(\lambda_{ij}) = \beta_0 + \beta_1 \log(dose[i] + 10) + \beta_2 dose[i] + u_{ij}, \quad u_{ij} \stackrel{ind}{\sim} N(0,\sigma^2)
+\]
+
+Prior:
+\[
+\sigma^2 \sim \mbox{PC-prior?}
+\]
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Run INLA}
+<<salm_fit, dependson="salm", echo = TRUE>>=
+# specify the prior for the log precision parameter
+my.hyper <- list(theta = list(prior="pc.prec", param=c(1,0.01)))
+
+# specify the linear predictor
+formula <- y ~ log(dose + 10) + dose + f(rand, model = "iid", hyper = my.hyper)
+
+# run INLA
+result <- inla(formula=formula, data=Salm, family="Poisson")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<salm_summary, dependson="salm_fit", echo=TRUE>>=
+summary(result)
+@
+\end{frame}
 
 
 \begin{frame}[allowframebreaks]
