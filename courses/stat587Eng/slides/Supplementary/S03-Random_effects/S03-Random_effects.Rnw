@@ -211,9 +211,9 @@ Y_{ij} = \beta_0 + \beta_1 X_{ij} + \alpha_{0j} + \alpha_{1j}X_{ij} + \epsilon_{
 and, independent of $\epsilon_{ij}$,
 \[ 
 \left(\begin{array}{rl} \alpha_{0j} \\ \alpha_{1j} \end{array} \right) \ind 
-N(0,\Sigma_\alpha)
+N_2(0,\Sigma_\alpha)
 \]
-$N(0,\Sigma_\alpha)$ represents a bivariate normal with mean 0 and covariance
+$N_2(0,\Sigma_\alpha)$ represents a bivariate normal with mean 0 and covariance
 matrix $\Sigma_\alpha$.
 \pause
 This model is often referred to as a \alert{random slope model} because
@@ -264,6 +264,11 @@ summary(me <- lmer(Reaction ~ Days + (Days|Subject), sleepstudy))
 
 
 \section{Generalized linear mixed effect models}
+\begin{frame}
+Generalized linear mixed effect models
+\end{frame}
+
+
 \begin{frame}[fragile]
 \frametitle{Contagious bovine pleuropneumonia (CBPP)}
 
@@ -329,6 +334,7 @@ confint(co)
 
 
 
+
 \section{Summary}
 \begin{frame}
 \frametitle{Summary}
@@ -352,6 +358,53 @@ For example, in the CBPP data set,
 thus I would treat period as a fixed effect and herd as random effect.
 
 \end{frame}
+
+\section{Temporal random effects}
+\begin{frame}
+\frametitle{Temporal random effects}
+
+Suppose observations are indexed by a time $t=1,2,\ldots,T$. 
+\pause
+Then we could have a spatial random effect $\alpha_t$ for observation
+at time $t$, e.g. 
+\[ 
+Y_t = \beta_0 + \beta_1 X_t + \alpha_t + \epsilon_t, 
+\quad \epsilon_t \stackrel{ind}{\sim} N(0,\sigma^2)
+\]
+\pause
+with 
+\[
+\alpha_t = \rho\alpha_{t-1} + \nu_t, 
+\quad \nu_t \stackrel{ind}{\sim} N(0,\tau^2).
+\]
+\end{frame}
+
+\section{Spatial random effects}
+\begin{frame}
+\frametitle{Spatial random effects}
+
+Suppose observations are indexed by a location $s$ 
+(perhaps lat/long). 
+\pause
+Then we could have a spatial random effect $\alpha(s)$ for observations
+at location $s$, e.g. 
+\[ 
+Y(s) = \beta_0 + \beta_1 X(s) + \alpha(s) + \epsilon(s), 
+\quad \epsilon(s) \stackrel{ind}{\sim} N(0,\sigma^2)
+\]
+\pause
+with 
+\[
+\alpha = \left( \begin{array}{c} \alpha(s_1) \\ \vdots \\ \alpha(s_n) \end{array} \right) \sim N_n(0, \Sigma)
+\]
+\pause 
+where
+\[
+\Sigma[s,s'] = \tau^2 e^{-d(s,s')/\rho} 
+\]
+and $d(s,s')$ is the distance between $s$ and $s'$. 
+\end{frame}
+
 
 \end{document}
 
