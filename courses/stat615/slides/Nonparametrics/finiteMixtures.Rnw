@@ -95,17 +95,20 @@ The Dirichlet distribution (named after Peter Gustav Lejeune Dirichlet), i.e. $P
 \[
 p(P;a) = \frac{\mG(a_1+\cdots+a_H)}{\mG(a_1)\cdots \mG(a_H)} \prod_{h=1}^H p_h^{a_h-1}
 \]
-where $p_h\ge 0$, $\sum_{h=1}^H p_h=1$, and $a_h>0$. 
+where $p_h\ge 0$, $\sum_{h=1}^H p_h=1$, 
+and concentration parameters $a_h>0$. 
 
 \vspace{0.2in} \pause
 
-Letting $a_0 = \sum_{h=1}^H a_h$, then some moments are
-\begin{itemize}[<+->]
-\item $E[p_h] = \frac{a_h}{a_0}$,
-\item $V[p_h] = \frac{a_h(a_0-a_h)}{a_0^2(a_0+1)}$,
-\item $Cov(p_h,p_k) = -\frac{a_ha_k}{a_0^2(a_0+1)}$, and 
+Letting $a_0 = \sum_{h=1}^H a_h$, \pause then some moments are
+\begin{itemize}
+\item $E[p_h] = \frac{a_h}{a_0}$, \pause
+\item $V[p_h] = \frac{a_h(a_0-a_h)}{a_0^2(a_0+1)}$, \pause
+\item $Cov(p_h,p_k) = -\frac{a_ha_k}{a_0^2(a_0+1)}$, \pause and 
 \item $\mbox{mode}(p_h) = \frac{a_h-1}{a_0-H}$ for $a_h>1$.
 \end{itemize}
+
+\pause
 
 A special case is $H=2$ which is the beta distribution.
 
@@ -230,7 +233,7 @@ do.call("grid.arrange", c(plots, ncol=5))
 \begin{frame}
 \frametitle{Finite mixtures}
 
-Let's focus on modeling the univariate distribution for $\phi$
+Let's focus on modeling the univariate distribution for $\hat\phi$
 
 <<phi, dependson='rnaseq', message=FALSE>>=
 ggplot(hat, aes(phi)) + 
@@ -249,7 +252,7 @@ ggplot(hat, aes(phi)) +
 \begin{frame}
 \frametitle{Finite mixture}
 
-A model for the marginal distribution for $Y_i=\phi_i$ is
+A model for the marginal distribution for $Y_i=\hat\phi_i$ is
 
 \[ 
 Y_i \stackrel{ind}{\sim} \sum_{h=1}^H \pi_h N(\mu_h, \sigma_h^2)
@@ -438,7 +441,7 @@ Dir(\pi;a) \I(\mu_1<\cdots<\mu_H) \prod_{h=1}^H N(\mu_h;m_h,v_h^2\phantom{\sigma
 
 Option 2:
 \[
-Dir(\pi;a) \I(\mu_1<\cdots<\mu_H)  \prod_{h=0}^1 N(\mu_h;m_h,v_h^2\sigma_h^2) IG(\sigma_h^2; c_h, d_h)
+Dir(\pi;a) \I(\mu_1<\cdots<\mu_H)  \prod_{h=1}^H N(\mu_h;m_h,v_h^2\sigma_h^2) IG(\sigma_h^2; c_h, d_h)
 \]
 
 \end{frame}
@@ -605,9 +608,9 @@ Unfortunately clustering is extremely sensitive to the parametric model chosen, 
 When using finite mixture models one of the key choices is to choose $H$, 
 the number of clusters. 
 
-\begin{itemize}[<+->]
-\item A Bayesian approach would place a prior on $H$, e.g. a Poisson or truncated Poisson, and then use reversible jump MCMC to estimate it.
-\item A more pragmatic approach is to start with a small $H$ and then determine whether there is some feature of the data that is not being adequately addressed\pause, e.g. via posterior predictive pvalues. 
+\begin{itemize}
+\item A Bayesian approach would place a prior on $H$, e.g. a Poisson or truncated Poisson, and then use reversible jump MCMC to estimate it. \pause
+\item A more pragmatic approach is to start with a small $H$ and then determine whether there is some feature of the data that is not being adequately addressed\pause, e.g. via posterior predictive pvalues.  \pause
 \item An empirical Bayes finds an MLE (or MAP) via 
 \[ 
 \hat{H} = \mbox{argmax}_H p(y|H) = \int p(y|\pi,\mu,\sigma^2,H) p(\pi,\mu,\sigma^2|H) d\pi d\mu d\sigma^2
