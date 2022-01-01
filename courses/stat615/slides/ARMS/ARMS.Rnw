@@ -22,10 +22,7 @@ options(width=100)
 @
 
 <<libraries, echo=FALSE, message=FALSE, warning=FALSE>>=
-# library("plyr")
-library("dplyr")
-# library("reshape2")
-library("ggplot2")
+library("tidyverse")
 library("gridExtra")
 @
 
@@ -224,9 +221,16 @@ s = data.frame(i = 1:n, x=rexp(n)) %>%
   mutate(y=runif(n)*M*dexp(x),
          accept=y<2*dnorm(x)) 
 
+lines <- data.frame(x = seq(0, 5, by = 0.1)) %>%
+  mutate(envelop = M*exp(-x),
+         density = 2*dnorm(x)) %>%
+  pivot_longer(-x, names_to = "type", 
+               values_to = "y") %>%
+  mutate(accept = type == "density")
+
 ggplot(s, aes(x, y, color=accept, shape=accept)) + 
   geom_point() + 
-  stat_function(fun=function(x) 2*dnorm(x) ) + 
+  geom_line(data = lines) + 
   labs(y='M*Exp(x;1)') + 
   theme_bw()
 @

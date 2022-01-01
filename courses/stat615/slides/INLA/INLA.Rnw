@@ -1,0 +1,275 @@
+\documentclass[handout]{beamer}
+
+\usepackage[round]{natbib}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title[INLA]{Integrated Nested Laplace Approximations (INLA)}
+
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=7, 
+               fig.height=5, 
+               out.width='.8\\linewidth', 
+               fig.align='center', 
+               size='tiny',
+               echo=FALSE,
+               cache=TRUE)
+options(width=100)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+# library("")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+\frame{\maketitle}
+
+\begin{frame}
+\frametitle{Resources}
+
+Original manuscript: \cite{rue2009approximate}
+
+This development based on: \cite{martino2019integrated}
+
+R package: R-INLA (which is actually ``INLA'')
+
+\end{frame}
+
+
+\section{Latent Gaussian Models}
+\begin{frame}
+\frametitle{Latent Gaussian Models}
+
+Data level model:
+\[ y|\phi,\theta \sim \prod_{i=1}^n p(y_i|\phi_i, \theta) \]
+\pause
+Latent Gaussian hierarchical structure:
+\[ \phi|\theta \sim N(0, \Omega^{-1}(\theta))\]
+\pause
+Prior:
+\[ \theta \sim p(\theta) \]
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+\frametitle{INLA Applicability}
+\begin{enumerate}
+\item Observations are conditionally independent \pause
+\item Hyperparameter vector $\theta$ is small ($<$ 15) \pause
+\item $\Omega$ is sparse \pause
+\item linear predictor depends linearly on unknown smooth function of covariates \pause
+\item inferential interest lies in univariate posterior marginals, e.g. 
+$p(\phi_i|y)$ and $p(\theta_j|y)$ rather than the joint posterior 
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Generalized mixed effect model structure}
+
+Data model:
+\[ 
+y_i|\phi_i,\theta \sim p(y_i|\phi_i, \theta) 
+\quad\mbox{with}\quad 
+E[Y_i|\phi_i,\theta] = g^{-1}(\phi)
+\]
+\pause
+\[
+\phi_i = \mu + \sum_j \beta_j x_{ij} + \sum_k w_k f^k(u_{ik})
+\]
+\pause
+with known $x$ (covariates) and $w$ (weights) \pause
+and Gaussian ``prior'' on $\mu$, $\beta$, and $f^k$ for $k=1,\ldots, K$. 
+
+\end{frame}
+
+
+\section{INLA}
+\subsection{Objective}
+\begin{frame}
+\frametitle{INLA Objective}
+
+True posterior:
+\[
+p(\phi,\theta|y) \propto \exp\left( 
+-\frac{1}{2} \phi^\top \Omega(\theta) \phi 
++ \sum_{i=1}^n \log(p(y_i|\phi_i,\theta)) 
++ \log p(\theta)
+\right)
+\]
+\vspace{0.2in} \pause
+
+INLA objective is to approximate
+\[ 
+\pi(\theta_j|y) 
+= \int \int p(\phi,\theta|y) d\phi d\theta_{-j} 
+= \int p(\theta|y) d\theta_{-j}
+\]
+and 
+\[ 
+\pi(\phi_i|y) 
+= \int \int p(\phi,\theta|y) d\phi_{-i} d\theta 
+= \int p(\phi_i|\theta,y) p(\theta|y) d\theta
+\]
+
+\end{frame}
+
+
+\subsection{Hyperparameter approximation}
+\begin{frame}
+\frametitle{Hyperparameter approximation}
+
+Target posterior
+\[ 
+p(\theta|y) 
+= \frac{p(\phi,\theta|y)}{p(\phi|\theta,y)}
+\propto \frac{p(y|\phi,\theta)p(\phi,\theta)p(\theta)}{p(\phi|\theta,y)}
+\]
+\pause
+Approximate denominator at a specific value $\theta^k$
+\[
+\tilde{p}(\theta^k|y) \propto \frac{p(y|\phi,\theta^k)p(\phi,\theta^k)p(\theta^k)}{\tilde{p}_G(\phi|\theta^k,y)}
+\]
+where $\tilde{p}_G$ indicates a Gaussian approximation constructed by matching the mode and curvature, i.e. Laplace approximation \citep{tierney1986accurate}.
+
+\pause
+
+Expensive part is Cholesky decomposition of $Q(\theta^k)$ to obtain 
+denominator approximation.
+
+\end{frame}
+
+
+\subsection{Latent Field Posterior}
+\begin{frame}
+\frametitle{Latent Field Posterior}
+
+Target (approximate) posterior
+\[ 
+p(\phi_i|\theta^k,y) 
+= \frac{p(\phi|\theta^k,y)}{p(\phi_{-i}|\phi_i,\theta^k,y)}
+\propto \frac{p(y|\phi,\theta^k)p(\phi,\theta^k)p(\theta^k)}{p(\phi_{-i}|\phi_i,\theta^k,y)}
+\]
+(Does $p(\theta^k)$ need to be in this expression? Does $\theta$ need to have $k$ superscript?)
+
+Denominator approximation (maybe?):
+\[ 
+\tilde{p}(\phi_i|\theta^k,y) 
+\propto \frac{p(y|\phi_{-i},\phi_i^k,\theta^k)p(\phi_{-i},\phi_i^k,\theta^k)p(\theta^k)}{\tilde{p}_G(\phi_{-i}|\phi_i^k,\theta^k,y)}
+\]
+using Laplace approximation around each individual $\phi_i^k$. 
+
+\pause
+(Add Simplified Laplace approximation to reduce computational requirements.)
+
+\end{frame}
+
+
+\subsection{Numerical integration for hyperparameters}
+\begin{frame}
+\frametitle{Numerical integration for hyperparameters $\theta$}
+
+Options:
+\begin{enumerate}
+\item Grid (if $\theta$ is 1 or 2 dimensions) \pause
+\item Central composite design (if $\theta$ is more than 2 dimensions) \pause
+\item Empirical Bayes, i.e. plug in $\hat\theta_{EB} = \argmax_\theta \tilde{p}(\theta|y)$ 
+\end{enumerate}
+\end{frame}
+
+
+\subsection{INLA Computing Scheme}
+\begin{frame}
+\frametitle{INLA Computing Scheme}
+
+\begin{enumerate}
+\item Explore $\tilde{p}(\theta|y)$: find mode of $\tilde{p}(\theta|y)$ and locate $\{\theta^1,\ldots,\theta^K\}$ with high density of $\tilde{p}(\theta|y)$.
+\item Compute $\tilde{p}(\theta^1|y),\ldots,\tilde{p}(\theta^K|y).$
+\item For each $\theta^k$, find $\pi(\phi_i|\theta^k,y)$ using one of three (?) possible approximations: Laplace, Simplified Laplace, or Gaussian.
+\item Via numerical integration, find
+\[
+\tilde{p}(\phi_i|y) = \sum_{k=1}^K \tilde{p}(x_i|\theta^k,y)\tilde{p}(\theta^k|y) \delta_k
+\]
+where $\delta_k$ are appropriate weights.
+\end{enumerate}
+
+\end{frame}
+
+
+
+\section{Salmonella data}
+\begin{frame}[fragile]
+\frametitle{Salmonella data}
+<<salm, echo = TRUE>>=
+library("INLA")
+head(Salm)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Salmonella model}
+
+Let $Y_{ij}$ be the number of salmonella bacteria for the $j$th observation under dose $i$. 
+
+\vspace{0.1in} \pause
+
+Data model:
+\[
+Y_{ij} \stackrel{ind}{\sim} Po(\lambda_{ij})
+\]
+
+Latent Gaussian structure:
+\[
+\log(\lambda_{ij}) = \beta_0 + \beta_1 \log(dose[i] + 10) + \beta_2 dose[i] + u_{ij}, \quad u_{ij} \stackrel{ind}{\sim} N(0,\sigma^2)
+\]
+
+Prior:
+\[
+\sigma^2 \sim \mbox{PC-prior?}
+\]
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Run INLA}
+<<salm_fit, dependson="salm", echo = TRUE>>=
+# specify the prior for the log precision parameter
+my.hyper <- list(theta = list(prior="pc.prec", param=c(1,0.01)))
+
+# specify the linear predictor
+formula <- y ~ log(dose + 10) + dose + f(rand, model = "iid", hyper = my.hyper)
+
+# run INLA
+result <- inla(formula=formula, data=Salm, family="Poisson")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<salm_summary, dependson="salm_fit", echo=TRUE>>=
+summary(result)
+@
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]
+\frametitle{References}
+\tiny
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{frame}
+
+\end{document}
