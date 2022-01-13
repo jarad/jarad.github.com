@@ -8,6 +8,8 @@ group: navigation
 
 ## Regular courses
 
+- Spring 2022
+  - [HCI 522](hci522)
 - Fall 2021
   - [STAT 587-1 (Engineering)](stat587Eng)
   - [STAT 615](stat615)

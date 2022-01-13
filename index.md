@@ -21,10 +21,9 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
   {% endfor %}
 </ul>
 
-## Fall 2021 Courses ([all courses](courses/))
+## Spring 2022 Courses ([all courses](courses/))
 
-  - [STAT 587-1 (Engineering)](courses/stat587Eng)
-  - [STAT 615](courses/stat615)
+  - [HCI 522](courses/hci522)
 
 ## Contact
 
