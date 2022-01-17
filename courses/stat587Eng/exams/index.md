@@ -23,7 +23,7 @@ Below are exams, keys, and data used in the exam.
 - 2019: [exam](exam2/STAT587Eng_exam2_Spring2019.pdf) [key](exam2/STAT587Eng_exam2_Spring2019_key.pdf) [tea.csv](exam2/tea.csv)
 - 2020: [exam](exam2/STAT587_exam2_Fall2020.pdf) [key](exam2/STAT587_exam2_Fall2020_key.pdf) [concrete.csv](exam2/concrete.csv)
 - 2021S: [exam](exam2/STAT587Eng_exam2_Spring2021.pdf) [key](exam2/STAT587Eng_exam2_Spring2021_key.pdf)  [nursing_homes.csv](exam2/nursing_homes.csv)
-- 2021F: [data.csv](exam2/data.csv)
+- 2021F: [exam](exam2/STAT587Eng_exam2_Fall2021.pdf) [key](exam2/STAT587Eng_exam2_Fall2021_key.pdf) [data.csv](exam2/data.csv)
 
 ## Final
 
