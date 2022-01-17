@@ -34,6 +34,6 @@ Below are exams, keys, and data used in the exam.
 - 2019: [exam](final/STAT587Eng_final_Spring2019.pdf) [key](final/STAT587Eng_final_Spring2019_key.pdf) [hydrocarbons.csv](final/hydrocarbons.csv)
 - 2020: [exam](final/STAT587Eng_final_Fall2020.pdf) [key](final/STAT587Eng_final_Fall2020_key.pdf) [filters.csv](final/filters.csv) [methane.csv](final/methane.csv)
 - 2021S: [exam](final/STAT587Eng_final_Spring2021.pdf) [key](final/STAT587Eng_final_Spring2021_key.pdf)  [imports.csv](final/imports.csv)
-- 2021F: [SRM_1540e_Fibrous_Glass_Board.csv](final/SRM_1540e_Fibrous_Glass_Board.csv)
+- 2021F: [exam](final/STAT587Eng_final_Fall2021.pdf) [key](final/STAT587Eng_final_Fall2021_key.pdf) [SRM_1540e_Fibrous_Glass_Board.csv](final/SRM_1540e_Fibrous_Glass_Board.csv)
 
 

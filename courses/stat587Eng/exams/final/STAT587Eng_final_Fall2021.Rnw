@@ -1,0 +1,554 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+\usepackage[hidelinks]{hyperref}
+%\usepackage{blkarray} % needed for exam2
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 587-2}
+\newcommand{\semester}{Fall 2021}
+\newcommand{\exam}{Final exam}
+
+<<echo=FALSE, message=FALSE, warning = FALSE>>=
+library("tidyverse")
+library("ggResidpanel"); my_plots = c("resid","qq","cookd","index","ls","lev")
+library("emmeans")
+
+opts_chunk$set(highlight=FALSE,
+               background="white",
+               size = "small")
+
+options(scipen = 2)
+@
+
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(50 pts)}
+\end{center}
+
+\vspace*{1in}
+
+{\large
+\textbf{Instructions:}\\
+\begin{enumerate}
+\item Full credit will be given only if you show your work.
+\item The questions are not necessarily ordered from easiest to hardest.
+\item You are allowed to use any resource except aid from another individual.
+\item Aid from another individual will automatically earn you a 0.
+\end{enumerate}
+}
+
+\newpage
+\begin{enumerate}
+\item Use the scatterplots on the page titled ``Scatterplots'' to answer the
+following questions. We will consider 3 possible regression models:
+\begin{itemize}
+\item no transformation needed (x-y)
+\item log explanatory variable only (log(x)-y)
+\item log response variable only (x-log(y))
+\end{itemize}
+For each plot, indicate which of the following models will fit the data best
+using the code in parentheses, e.g. x-log(y).
+If none of these models will fit the data well, then write ``none''.
+(1 pt each)
+
+\begin{itemize}
+\item a
+
+\begin{answer}
+x-y
+\end{answer}
+
+\vfill
+
+\item b
+
+\begin{answer}
+x-log(y)
+\end{answer}
+
+\vfill
+
+\item c
+
+\begin{answer}
+log(x)-y
+\end{answer}
+
+\vfill
+
+\item d
+
+\begin{answer}
+x-y
+\end{answer}
+
+\vfill
+
+\item e
+
+\begin{answer}
+log(x)-y
+\end{answer}
+
+\vfill
+
+\item f
+
+\begin{answer}
+x-log(y)
+\end{answer}
+
+\vfill
+
+\item g
+
+\begin{answer}
+x-y
+\end{answer}
+
+\vfill
+
+\item h
+
+\begin{answer}
+x-log(y)
+\end{answer}
+
+\vfill
+
+\item i
+
+\begin{answer}
+none ($x^2$)
+\end{answer}
+
+\vfill
+
+\item j
+
+\begin{answer}
+x-y
+\end{answer}
+
+\vfill
+
+\end{itemize}
+
+\newpage
+\item Use the code on the page titled ``Food's Carbon Footprint'' to answer the
+following questions.
+
+<<echo=FALSE>>=
+url <- 'https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-02-18/food_consumption.csv'
+food_consumption <- readr::read_csv(url,
+                                    col_types = cols(
+                                      country       = col_character(),
+                                      food_category = col_character(),
+                                      consumption   = col_double(),
+                                      co2_emmission = col_double()
+                                    )) %>%
+  filter(
+    # country %in% c("USA","India","China"),
+         food_category %in% c("Beef", "Eggs", "Fish","Pork","Poultry")) %>%
+  rename(co2_emission = co2_emmission,
+         category = food_category)
+@
+
+<<food_consumption, echo=FALSE, results='hide'>>=
+table(food_consumption$category)
+
+m <- lm(co2_emission ~ I(consumption-10) * category, data = food_consumption)
+@
+
+
+
+\begin{enumerate}
+\item How many observations are in the data set? (1 pt)
+
+\begin{answer}
+<<>>=
+m$df.residual+length(coef(m))
+@
+\end{answer}
+
+\vfill
+
+\item How many levels of food category are in the data set? (1 pt)
+
+\begin{answer}
+From the table, there are 5: Beef, Eggs, Fish, Pork, and Poultry
+\end{answer}
+
+\vfill
+
+\item What is the reference level for food category? (1 pt)
+
+\begin{answer}
+Beef
+\end{answer}
+
+\vfill
+
+\item If the design is balanced (with respect to food categories),
+how many countries are represented in the data set? (1 pt)
+
+\begin{answer}
+Since there are 650 observations and 5 food categories,
+then there should be 650/5 = 130 countries.
+\end{answer}
+
+\vfill
+
+
+\item What is the estimate for the residual standard deviation? (1 pt)
+
+\begin{answer}
+<<>>=
+summary(m)$sigma
+@
+\end{answer}
+
+\vfill
+
+\item Provide a point estimate for the CO2 emissions for Fish when consumption is
+10 kg/person/year. Show your work for full credit. (5 pts)
+
+\begin{answer}
+Calculate
+\[
+\Sexpr{coef(m)[1]} + 10\times \Sexpr{coef(m)[2]} +
+\Sexpr{coef(m)[4]} + 10\times \Sexpr{coef(m)[8]} =
+\Sexpr{coef(m)[1]+10*coef(m)[2]+coef(m)[4]+10*coef(m)[8]}
+\]
+<<>>=
+coef(m)[1]+10*coef(m)[2]+coef(m)[4]+10*coef(m)[8]
+@
+\end{answer}
+
+\vfill\vfill\vfill
+
+\newpage
+
+<<echo=FALSE>>=
+rd <- 4
+@
+
+\item Provide interpretations for the following values: (2 pts each)
+\begin{itemize}
+\item \Sexpr{round(coef(m)[1],rd)} (Intercept)
+
+\begin{answer}
+The mean CO2 emissions across countries associated with beef when consumption is
+zero is estimated to be \Sexpr{round(coef(m)[1])} kg/person/year.
+\end{answer}
+
+\vfill
+
+\item \Sexpr{round(coef(m)[2],rd)} I(consumption-10)
+
+\begin{answer}
+Each additional kg/person/year increase in beef consumption is associated with
+an additional \Sexpr{round(coef(m)[2])} kg/person/year of CO2 emissions.
+\end{answer}
+
+\vfill
+
+\item \Sexpr{round(coef(m)[3],rd)} categoryEggs
+
+\begin{answer}
+When consumption is 10, eggs produce \Sexpr{round(-coef(m)[3])} less
+kg CO2/person/year than beef.
+\end{answer}
+
+\vfill
+
+\end{itemize}
+
+\item Explain why R$^2$ is 1. (2 pts)
+
+\begin{answer}
+The model fits the data (almost) perfectly.
+This is likely due to assumptions about the amount of CO2 emissions per
+consumption across the different food categories.
+\end{answer}
+
+\vfill
+
+\item Calculate a 95\% confidence/credible interval for the coefficient for the
+indicator for Eggs. (2 pts)
+
+\begin{answer}
+<<>>=
+s <- summary(m)$coefficients[3,]
+s[1] + c(-1,1) * qt(0.975, df = m$df.residual) * s[2]
+@
+\end{answer}
+
+\vfill\vfill
+
+\end{enumerate}
+
+
+\newpage
+\item Use the data file {\tt SRM\_1540e\_Fibrous\_Glass\_Board.csv} to answer the
+following questions. In this dataset, we evaluate the thermal conductivity (W/mK)
+of SRM 1540e Fibrous Glass Board at various temperatures (K) and air
+pressure (kPa).
+
+<<echo=FALSE>>=
+# Data from
+# https://data.nist.gov/od/id/mds2-2256
+
+# d <- read_csv("~/Downloads/SRM1450e_Data .csv", skip =3) %>%
+#   select(mean_temp, air_pressure, thermal_conductivity) %>%
+#   mutate(temperature = round(mean_temp, -1),
+#          air_pressure = round(air_pressure, -1)) %>%
+#   select(-mean_temp)
+#
+# write_csv(d, file = "SRM_1540e_Fibrous_Glass_Board.csv")
+@
+
+\begin{answer}
+<<>>=
+d <- read_csv("SRM_1540e_Fibrous_Glass_Board.csv",
+              col_types = cols(.default = col_double()))
+@
+\end{answer}
+
+\begin{enumerate}
+\item What values of temperature exist in the experiment? (2 pts)
+
+\begin{answer}
+<<>>=
+unique(d$temperature)
+@
+\end{answer}
+
+\vfill
+
+\item Is the design of the experiment complete? Why or why not? (2 pts)
+
+\begin{answer}
+<<>>=
+d %>% group_by(temperature, air_pressure) %>% summarize(n = n())
+@
+
+Yes because every combination of temperature (280, 300, 320, 340, and 360)
+and air pressure (60, 80, 100) exist.
+\end{answer}
+
+\vfill
+
+\item Is the design of the experiment balanced? Why or why not? (2 pts)
+
+\begin{answer}
+Yes, because every combination of temperature and air pressure has the same
+number of observations.
+\end{answer}
+
+\vfill
+
+\item Is this a replicated experiment? Why or why not? (2 pts)
+
+\begin{answer}
+Yes, because every combination of temperature and air pressure has 3 replicates.
+\end{answer}
+
+\vfill
+
+\item What is the correlation between temperature and air pressure in these data?
+Explain why this is the correlation. (2 pts)
+
+\begin{answer}
+<<>>=
+cor(d$temperature, d$air_pressure)
+@
+We knew this would be 0 since the design is complete and balanced.
+\end{answer}
+
+\vfill
+
+\newpage
+
+{\bf Important:}
+Throughout this question, treat temperature and air pressure as categorical
+(rather than continuous) variables.
+
+\item Conduct an F-test to determine whether an interaction between
+temperature and air pressure is needed.
+
+\begin{answer}
+<<>>=
+m <- lm(thermal_conductivity ~ factor(temperature) * factor(air_pressure), data = d)
+@
+\end{answer}
+
+\begin{itemize}
+\item F-statistic (1 pt)
+
+\begin{answer}
+<<>>=
+drop1(m, test="F")$`F value`[2]
+@
+\end{answer}
+
+\vfill
+
+\item p-value (1 pt)
+
+\begin{answer}
+<<>>=
+drop1(m, test="F")$`Pr(>F)`[2]
+@
+\end{answer}
+
+\vfill
+
+\item conclusion (1 pt)
+
+\begin{answer}
+There is no evidence that the interaction needs to be included.
+\end{answer}
+
+\vfill
+
+\end{itemize}
+
+\item With the {\bf additive model}, provide a prediction with uncertainty for the thermal
+conductivity at temperature of 320 K and air pressure of 100 kPa.
+
+\begin{itemize}
+\item point estimate (1 pt)
+
+\begin{answer}
+<<>>=
+m <- lm(thermal_conductivity ~ factor(temperature) + factor(air_pressure), data = d)
+p <- predict(m, newdata = data.frame(temperature = 320, air_pressure = 100),
+                                     interval = "prediction", level = 0.9)
+p[1]
+@
+\end{answer}
+
+\vfill
+
+\item 90\% Prediction interval (2 pts)
+
+\begin{answer}
+<<>>=
+p[2:3]
+@
+\end{answer}
+
+\vfill
+
+\end{itemize}
+
+\item With the {\bf additive model},
+calculate a contrast to compare the difference in thermal conductivity
+between temperatures 360 and 280 averaged over air pressure.
+
+\begin{itemize}
+
+\item point estimate (2 pts)
+
+\begin{answer}
+<<>>=
+em <- emmeans(m, pairwise ~ temperature)
+co <- as.data.frame(confint(em, level = 0.99, adjust = "none")$contrasts)
+co[co$contrast == "280 - 360", "estimate"]
+@
+\end{answer}
+
+\vfill
+
+\item 99\% Confidence/credible interval (2 pts)
+
+\begin{answer}
+<<>>=
+co[co$contrast == "280 - 360", c("lower.CL","upper.CL")]
+@
+\end{answer}
+
+\vfill
+
+\end{itemize}
+
+\end{enumerate}
+
+\end{enumerate}
+
+\newpage
+{\Large Scatterplots}
+
+<<echo=FALSE>>=
+n = 100
+set.seed(20211201)
+
+d1 <- data.frame(x = runif(n,0,2)) %>%
+  mutate(a = rnorm(n, x, 0.5),
+         b = exp(x+rnorm(n, 0, 0.3)),
+         c = rnorm(n, log(x), 0.1),
+         d = rnorm(n, -x, 0.1),
+         e = rnorm(n, -2*log(x), 0.5),
+         f = exp(-x + rnorm(n, 0, 0.05))) %>%
+  pivot_longer(-x, names_to = "question", values_to = "y")
+
+d2 <- data.frame(x = runif(n,-2,2)) %>%
+  mutate(g = rnorm(n, x, 0.3),
+         h = exp(x + rnorm(n, 0, 1)),
+         i = rnorm(n, x^2, 0.1),
+         j = rnorm(n, -x, 1)) %>%
+  pivot_longer(-x, names_to = "question", values_to = "y")
+
+ggplot(bind_rows(d1, d2), aes(x, y)) +
+  geom_point() +
+  facet_wrap(~question , scales = "free", ncol = 2) +
+  theme_bw()
+@
+
+
+
+
+\newpage
+{\Large Food's Carbon Footprint}
+
+The following regression model analyzes the relationship between carbon
+dioxide emissions (kg CO2/person/year) and food consumption (kg/person/year)
+across a large number of countries and food categories.
+
+<<>>=
+<<food_consumption>>
+@
+
+<<>>=
+summary(m)
+@
+
+<<>>=
+anova(m)
+@
+
+\end{document}
+
+

@@ -1,0 +1,430 @@
+\documentclass[12pt,fleqn]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages, hyperref}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 587-2}
+\newcommand{\semester}{Fall 2021}
+\newcommand{\exam}{Exam II}
+
+\newcommand{\pvalue}{$p$-value}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(60 points)}
+\end{center}
+
+\vspace*{1in}
+
+
+\textbf{Instructions:}\\
+\begin{itemize}
+% \item {\large Full credit will be given only if you show your work.}
+% \item {\large The questions are not necessarily ordered from easiest to hardest.}
+\item {\large You are allowed to use any resource except aid from another individual.}
+\item {\large Aid from another individual, will automatically earn you a 0.}
+\end{itemize}
+
+
+
+% \begin{answer}
+% <<>>=
+% library("tidyverse")
+% @
+% \end{answer}
+
+
+\newpage
+(intentionally left blank)
+
+
+\newpage
+\begin{enumerate}
+\item Let $Y_i \ind N(\mu,\sigma^2)$ and we construct an equal-tail $100(1-a)$\%
+credible interval for $\mu$.
+We are interested in the width of the credible interval and how it changes in
+response to changing the following.
+For each proposed change (assuming everything else stays the same),
+indicate whether the credible interval gets wider, narrower, stays the same, or
+cannot determine based on the available information. (2 pts each)
+
+\begin{answer}
+Recall that the formula for this credible interval is
+\[ \overline{y} \pm t_{n-1,1-a/2} s/\sqrt{n} \]
+where $\overline{y}$ is the sample mean, $s$ is the sample standard deviation,
+and $n$ is the sample size.
+\end{answer}
+
+\begin{enumerate}
+\item $a$ gets larger
+
+\begin{answer}
+narrower since $1-a$ gets smaller and thus
+\end{answer}
+
+\vfill
+
+\item sample mean gets larger
+
+\begin{answer}
+stays the same as this only shifts the interval
+\end{answer}
+
+\vfill
+
+\item sample variance gets larger
+
+\begin{answer}
+wider
+\end{answer}
+
+\vfill
+
+\item sample size increases
+
+\begin{answer}
+narrower
+\end{answer}
+
+\vfill
+
+\item units of $Y_i$ are changed from kilometers to meters
+
+\begin{answer}
+wider since the sample standard deviation will be larger
+(or stays the same if you consider back converting the units)
+\end{answer}
+
+\vfill
+
+\end{enumerate}
+
+
+\newpage
+\item Let $Y_i \ind N(\mu,\sigma^2)$.
+The following are two-sided 95\% confidence intervals for $\mu$.
+What can be said about the \pvalue{} for the test $H_0: \mu = 0$ vs
+$H_A: \mu \ne 0$? (2 pts each)
+
+
+\begin{enumerate}
+\item (-1,10)
+
+\begin{answer}
+\pvalue{} is greater than 0.05
+\end{answer}
+
+\vfill
+
+\item (1,2)
+
+\begin{answer}
+\pvalue{} is less than 0.05
+\end{answer}
+
+\vfill
+
+\item (0,2)
+
+\begin{answer}
+\pvalue{} is equal to 0.05
+\end{answer}
+
+\vfill
+
+\end{enumerate}
+
+\item Let $Y_i \ind N(\mu,\sigma^2)$.
+The following are \pvalue{}s for the test $H_0: \mu = 0$ vs
+$H_A: \mu \ne 0$.
+What can be said about a two-sided 95\% confidence interval for $\mu$?
+(2 pts each)
+
+\begin{enumerate}
+\item $p=0.01$
+
+\begin{answer}
+the interval does not contain 0
+\end{answer}
+
+\vfill
+
+\item $p = 0.1$
+
+\begin{answer}
+the interval contains 0
+\end{answer}
+
+\vfill
+
+\end{enumerate}
+
+
+\newpage
+\item To detect injury in pigs, researchers conduct a study using a random set
+of already injured pigs.
+For each pig, the researcher uses a scale under each foot while a pig is eating.
+The force from each foot is measured and the researcher calculates the
+difference (injured foot minus non-injured foot).
+The researcher hypothesizes that  there will be less weight on the injured foot
+as the pig compensates for the injury.
+
+<<pig_data, echo = FALSE>>=
+n <- 10
+sample_mean <- 0.8
+sample_sd <- 1.5
+@
+
+Let $Y_i$ be the difference for pig $i$ and assume
+$Y_i \stackrel{ind}{\sim} N(\mu, \sigma^2)$.
+The following statistics are observed
+\begin{center}
+\begin{tabular}{ccc}
+n & sample mean & sample standard deviation \\
+\hline
+10 & 0.8 & 1.5
+\end{tabular}
+\end{center}
+
+\begin{answer}
+<<>>=
+<<pig_data>>
+@
+\end{answer}
+
+
+\begin{enumerate}
+\item Provide an interpretation for $\mu$,
+i.e. what is $\mu$ (in words)? (2 pts)
+
+\begin{answer}
+the population mean difference (non-injured minus injured force) amongst the
+already injured pigs
+\end{answer}
+
+\vfill \vfill
+
+\item What is $\hat\mu_{MLE}$? (2 pts)
+
+\begin{answer}
+0.8
+\end{answer}
+
+\vfill
+
+\item Compute a two-sided 80\% confidence interval for $\mu$. (6 pts)
+
+\begin{answer}
+<<>>=
+a <- 0.2
+sample_mean + c(-1,1)*qt(1-a/2, df = n-1)*sample_sd/sqrt(n)
+@
+\end{answer}
+
+\vfill \vfill \vfill \vfill
+
+\newpage
+\item Compute a \pvalue{} for testing $H_0: \mu = 0$ vs $H_A: \mu \ne 0$. (6 pts)
+
+\begin{answer}
+<<>>=
+2*(1-pt(abs(sample_mean-0)/(sample_sd/sqrt(n)), df = n-1))
+@
+\end{answer}
+
+\vfill \vfill
+
+\item State a conclusion based on the calculated \pvalue{} in the previous
+question? (2 pts)
+
+\begin{answer}
+there is insufficient evidence to indicate the data are incompatible with the
+null model, namely $Y_i \ind N(0,\sigma^2)$.
+\end{answer}
+
+\vfill \vfill
+
+\item What is a more appropriate alternative hypothesis based on the researchers
+hypothesis? (2 pts)
+
+\begin{answer}
+$\mu < 0$ since the researcher hypothesizes there will be less force on the
+injured foot
+\end{answer}
+
+\vfill
+
+\end{enumerate}
+
+
+\newpage
+
+<<nylon_data, echo=FALSE>>=
+y = 3
+n = 100
+@
+
+\item A manufacturer produces nylon with an intended modulus of elasticity of
+2.7 GPa.
+A random sample of nylon from the factory results in \Sexpr{y} of \Sexpr{n}
+samples with a modulus of elasticity less than 2.7 GPa.
+Let $Y$ be the number of samples less than 2.7 GPa and assume
+$Y \sim Bin(n,\theta)$ where $\theta$ is the population proportion of samples
+that have modulus of elasticity less than 2.7 GPa.
+
+\begin{answer}
+<<>>=
+<<nylon_data>>
+@
+\end{answer}
+
+\begin{enumerate}
+\item Determine the Bayes estimator for $\theta$, i.e. the posterior expectation.
+(2 pts)
+
+\begin{answer}
+<<>>=
+(1+y)/(2+n)
+@
+\end{answer}
+
+\vfill
+
+\item Determine a 70\% equal-tail credible interval. (2 pts)
+
+\begin{answer}
+<<>>=
+a <- 0.3
+qbeta(c(a/2, 1-a/2), 1+y, 1+n-y)
+@
+\end{answer}
+
+\vfill
+
+\item Determine the probability that $\theta$ is less than 0.05. (2 pts)
+
+\begin{answer}
+<<>>=
+pbeta(0.05, 1+y, 1+n-y)
+@
+\end{answer}
+
+\vfill
+
+\item Draw a graph of the posterior for $\theta$. (4 pts)
+
+\begin{answer}
+
+<<fig.height=3, fig.width=5, echo = FALSE>>=
+opar = par(mar = c(5,4,2,0)+.1)
+curve(dbeta(x, 1+y, 1+n-y), n = 1001,
+      xlab = expression(theta), ylab = "Posterior density")
+par(opar)
+@
+\end{answer}
+
+\vfill \vfill \vfill
+
+\end{enumerate}
+
+\newpage
+
+<<echo=FALSE>>=
+set.seed(20211021)
+d <- data.frame(y = rnorm(15, 34, 9))
+write.csv(d, file = "data.csv", row.names = FALSE)
+@
+
+\item The file {\tt data.csv} contains data that are assumed to be normally
+distributed.
+Answer the following questions based on these data.
+
+\begin{answer}
+<<>>=
+d <- read.csv("data.csv")
+y <- d$y
+@
+\end{answer}
+
+\begin{enumerate}
+\item How many observations are there? (2 pts)
+
+\begin{answer}
+<<>>=
+length(y)
+@
+\end{answer}
+
+\vfill
+
+\item What is the sample mean of the data? (2 pts)
+
+\begin{answer}
+<<>>=
+mean(y)
+@
+\end{answer}
+
+\vfill
+
+\item What is the sample variance of the data? (2 pts)
+
+\begin{answer}
+<<>>=
+var(y)
+sd(y) # half points
+@
+\end{answer}
+
+\vfill
+
+\item Construct a two-sided 98\% confidence interval for the population mean. (2 pts)
+
+\begin{answer}
+<<>>=
+t.test(y, conf.level = 0.98)$conf.int
+@
+\end{answer}
+
+\vfill \vfill
+
+\item Compute a $p$-value for the test with alternative hypothesis that the
+population mean is greater than 34. (2 pts)
+
+\begin{answer}
+<<>>=
+t.test(y, alternative = "greater", mu = 34)$p.value
+@
+\end{answer}
+
+\vfill \vfill
+
+\end{enumerate}
+
+\end{enumerate}
+
+\end{document}
+
