@@ -1,6 +1,6 @@
 ---
 layout: page
-title: HCI 522 (cross-listed as PSYCH 522)
+title: HCI/PSYCH 522
 tagline: Scientific Methods in Human Computer Interaction
 ---
 {% include JB/setup %}
