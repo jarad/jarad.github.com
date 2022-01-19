@@ -1,0 +1,128 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{02 - Experiemental Design}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=4.4,
+               size='tiny',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220119)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Workday Course Registration Case Study}
+\subsection{}
+\begin{frame}
+\frametitle{Workday Course Registration Case Study}
+
+\includegraphics[width=0.7\textwidth]{workday_registration}
+
+\end{frame}
+
+\subsection{Hypothesis}
+\begin{frame}
+\frametitle{Hypothesis}
+
+Scientific question: Does the type of registration system (A vs B) affect the time
+required to register for courses?
+
+\vspace{0.1in} \pause
+
+Null hypothesis: No
+
+Alternative hypothesis: Yes
+
+\vspace{0.1in} \pause
+
+\begin{tikzpicture}
+\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.4\textwidth]{workday_registration}};
+\node[align=left,red,font={\Huge\bfseries}] at (image.center) {A};
+\end{tikzpicture}
+\begin{tikzpicture}
+\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.4\textwidth]{workday_registration}};
+\node[align=left,red,font={\Huge\bfseries}] at (image.center) {B};
+\end{tikzpicture}
+
+\end{frame}
+
+
+\subsection{Recruitment}
+\begin{frame}
+\frametitle{Recruitment}
+
+\includegraphics[width=0.9\textwidth]{students}
+
+\end{frame}
+
+
+\subsection{Randomization}
+\begin{frame}[fragile]
+\frametitle{Randomization}
+<<echo=TRUE,size="normalsize">>=
+d <- data.frame(subjectID = 1:30,
+                system = sample(rep(c("A","B"), times = 15)))
+d
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Balanced experiment}
+<<echo=TRUE,size="normalsize">>=
+table(d$system)
+@
+\end{frame}
+
+\subsection{Data Collection}
+\begin{frame}
+\frametitle{Data Collection}
+\includegraphics[width=0.8\textwidth]{data_collection}
+\end{frame}
+
+
+\subsection{Data Analysis}
+\begin{frame}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Data Analysis}
+<<>>=
+d$registration_time <- rnorm(nrow(d),
+                             3 + 0.2*(d$system == "B"),
+                             1)
+d$registration_time[23] <- NA
+@
+\end{frame}
+
+
+\end{document}
+
+
+
