@@ -3,6 +3,7 @@
 \input{../frontmatter}
 \input{../commands}
 
+% \usepackage{verbatim}
 \usepackage{tikz}
 
 \graphicspath{{figs/}}
@@ -14,7 +15,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(fig.width=6, fig.height=4.4,
-               size='tiny',
+               size='normalsize',
                out.width='\\textwidth',
                fig.align='center',
                message=FALSE,
@@ -50,8 +51,8 @@ set.seed(20220119)
 \begin{frame}
 \frametitle{Hypothesis}
 
-Scientific question: Does the type of registration system (A vs B) affect the time
-required to register for courses?
+Scientific question: Does the type of registration system (A vs B) affect mean
+registration time?
 
 \vspace{0.1in} \pause
 
@@ -86,16 +87,16 @@ Alternative hypothesis: Yes
 \begin{frame}[fragile]
 \frametitle{Randomization}
 <<echo=TRUE,size="normalsize">>=
-d <- data.frame(subjectID = 1:30,
-                system = sample(rep(c("A","B"), times = 15)))
-d
+registration <- data.frame(subjectID = 1:30,
+                           system = sample(rep(c("A","B"), times = 15)))
+registration
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Balanced experiment}
 <<echo=TRUE,size="normalsize">>=
-table(d$system)
+table(registration$system)
 @
 \end{frame}
 
@@ -105,24 +106,210 @@ table(d$system)
 \includegraphics[width=0.8\textwidth]{data_collection}
 \end{frame}
 
+<<>>=
+# Simulate data
+registration <- registration %>%
+  mutate(time = rnorm(n(), mean = 3 + 0.2*(registration$system == "B"), sd = 1))
+
+registration$time[23] <- NA # create missing data
+@
 
 \subsection{Data Analysis}
-\begin{frame}
-\end{frame}
-
-
 \begin{frame}[fragile]
-\frametitle{Data Analysis}
-<<>>=
-d$registration_time <- rnorm(nrow(d),
-                             3 + 0.2*(d$system == "B"),
-                             1)
-d$registration_time[23] <- NA
+\frametitle{Exploratory statistics}
+<<echo=TRUE>>=
+summary(registration)
 @
 \end{frame}
 
 
-\end{document}
+\begin{frame}[fragile]
+\frametitle{Exploratory statistics}
+<<echo=TRUE>>=
+registration %>%
+  group_by(system) %>%
+  summarize(n = sum(!is.na(time)),
+            mean = mean(time, na.rm = TRUE),
+            sd = sd(time, na.rm = TRUE))
+@
+\end{frame}
 
+
+\begin{frame}
+\frametitle{Visualization}
+<<warning=FALSE, fig.height=2.8>>=
+ggplot(registration, aes(system, time)) +
+  geom_jitter(width = 0.1, color = "gray") +
+  geom_boxplot(outlier.shape = NA, fill = NA) +
+  labs(x = "Registration system",
+       y = "Time (minutes)",
+       title = "Registration system comparison") +
+  theme_bw()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Two-sample t-test}
+<<echo=TRUE>>=
+t.test(time ~ system, data = registration)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Regression}
+<<echo=TRUE,size='scriptsize'>>=
+summary(lm(time ~ system, data = registration))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Conclusion and Decision}
+Conclusion:
+Since \pvalue{} $> 0.05$, there is insufficient evidence to indicate any
+difference in mean registration time between the two systems.
+
+\vspace{0.1in} \pause
+
+Decision:
+The decision of which system to use may depend on many factors including
+cost.
+
+\vspace{0.1in}
+
+\begin{tikzpicture}
+\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.4\textwidth]{workday_registration}};
+\node[align=left,red,font={\Huge\bfseries}] at (image.center) {A};
+\end{tikzpicture}
+\begin{tikzpicture}
+\node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=0.4\textwidth]{workday_registration}};
+\node[align=left,red,font={\Huge\bfseries}] at (image.center) {B};
+\end{tikzpicture}
+
+\end{frame}
+
+
+\subsection{Discussion}
+\begin{frame}
+\frametitle{What was done well in this study?}
+\end{frame}
+
+\begin{frame}
+\frametitle{What was done poorly in this study?}
+\end{frame}
+
+\begin{frame}
+\frametitle{What else could have been done?}
+\end{frame}
+
+
+\section{Information}
+\subsection{Data vs Information}
+\begin{frame}
+\frametitle{Data vs Information}
+\includegraphics[width=0.75\textwidth]{data_vs_information}
+\end{frame}
+
+\subsection{Information spectrum}
+\begin{frame}
+\frametitle{Information spectrum}
+Data quality (least informative to most informative)
+\begin{itemize}
+\item Survey
+\item Observational study
+\item Randomized experiment
+  \begin{itemize}
+  \item paired/blocked
+  \end{itemize}
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Sample (least informative to most informative)
+\begin{itemize}
+\item You
+\item Select students
+\item Randomly selected students
+\item All students
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Scientific hypotheses}
+\begin{frame}
+\frametitle{Scientific hypotheses}
+2.2.1 Null Hypothesis and Alternative Hypothesis:
+\begin{quote}
+A null hypothesis typically states that there is no difference between
+experimental treatments.
+The alternative hypothesis is always a statement that is mutually exclusive with
+the null hypothesis.
+The goal of an experiment is to find statistical evidence to refute or nullify
+the null hypothesis in order to support the alternative hypothesis.
+\end{quote}
+
+\vspace{0.5in} \pause
+
+Null hypothesis:
+
+There is no difference in mean registration time between
+system A and B.
+
+\vspace{0.2in}
+
+Alternative hypothesis:
+
+There is a difference in mean registration time
+between system A and B.
+\end{frame}
+
+
+
+\subsection{Scientific questions}
+\begin{frame}
+\frametitle{Scientific questions: closed vs open}
+\alert{Closed} scientific question: Does the type of registration system (A vs B) affect the time
+required to register for courses?
+
+\vspace{0.5in} \pause
+
+\alert{Open} scientific question: How does the type of registration system (A vs B) affect the time
+required to register for courses?
+
+\vspace{0.5in} \pause
+
+\alert{Prefer open scientific questions}
+\end{frame}
+
+\subsection{Generating scientific hypotheses/questions}
+\begin{frame}
+\frametitle{Generating scientific hypotheses/questions}
+
+
+\end{frame}
+
+
+
+\subsection{Experiments}
+\begin{frame}
+\frametitle{In vitro vs in vivo experiments}
+
+\alert{In vitro} experiments occurs in a controlled environment
+
+\vspace{0.5in} \pause
+
+\alert{In vivo} experiments occur in their natural environment
+
+\vspace{0.5in} \pause
+
+\alert{Be wary of making decisions strictly based on in vitro experiments.}
+
+\end{frame}
+
+
+
+\end{document}
 
 
