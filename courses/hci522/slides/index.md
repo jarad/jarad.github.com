@@ -17,3 +17,4 @@ you can find them
 |Topic|slides|code|data|
 |----------------------|
 |Introduction|[pdf](01-Introduction/01-Introduction.pdf)|[R](01-Introduction/01-Introduction.R)|[keyboard.csv](01-Introduction/keyboard.csv)|
+|Scientific Process|[pdf](02-Scientific_Process/02-Scientific_Process.pdf)|[R](02-Scientific_Process/02-Scientific_Process.R)
