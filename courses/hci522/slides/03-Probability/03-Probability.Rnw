@@ -1,0 +1,338 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{03 - Probability}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='normalsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("gridExtra")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220119)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Probability}
+
+\begin{frame}
+\frametitle{Probability}
+What can you tell me about probability?
+\end{frame}
+
+\subsection{Kolmogorov's Axioms of Probability}
+\begin{frame}
+\frametitle{Kolmogorov's Axioms of Probability}
+\pause
+\begin{enumerate}
+\item Let $E$ be an \alert{event}, i.e. something happens. \pause Then $P(E) \ge 0$. \pause
+\item Let $\Omega$ be the \alert{sample space}, i.e. the collection of all possible
+outcomes. \pause  Then $P(\Omega) = 1$. \pause
+\item Let $E_1, E_2, \ldots$ be \alert{mutually exclusive events}, \pause
+i.e. no pair can both occur. \pause
+\[ P(E_1 \mbox{ or } E_2 \mbox{ or } E_3 \ldots) = \pause
+P(E_1) + P(E_2) + P(E_3) + \cdots .\]
+\end{enumerate}
+\end{frame}
+
+\subsection{Results from Kolmogorov's Axioms}
+\begin{frame}
+\frametitle{Results from Kolmogorov's Axioms}
+Let $A$ and $B$ both be events.
+\begin{itemize}
+\item $0 \le P(A) \le 1$ \pause
+\item Let $\emptyset$ be the \alert{empty set}, i.e. the ``event'' that nothing happens. \pause
+$P(\emptyset) = 0$. \pause
+\item Let $A^C$ be the \alert{complement} of $A$, i.e. all the outcomes that are not in $A$. \pause Then $P(A^C) = 1-P(A)$.
+\item Let $A\subset B$ indicate that $A$ is a \alert{subset} of $B$, i.e. all outcomes in B are also in A. \pause Then $P(A) \le P(B)$.
+\item $P(A \mbox{ or } B) = P(A) + P(B) - P(A \mbox{ and } B)$.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Conditional Probability}
+\begin{frame}
+\frametitle{Conditional Probability}
+
+Let $P(A|B)$ indicate the \alert{conditional probability} of $A$ given $B$,
+i.e. we know $B$ has occurred.
+\pause
+Define
+\[ P(A|B) = \frac{P(A \mbox{ and } B)}{P(B)} \qquad P(B) > 0.\]
+
+\end{frame}
+
+\subsection{Independence}
+\begin{frame}
+\frametitle{Independence}
+Two events $A$ and $B$ are \alert{independent} if $P(A|B) = P(A)$
+\pause
+or, equivalently, $P(B|A) = P(B)$.
+\pause
+Using the definition of conditional probability,
+we can find that for two independent events
+\[
+P(A \mbox{ and } B) = P(A) \times P(B).
+\]
+\end{frame}
+
+
+
+
+
+\subsection{Bayes' Rule}
+\begin{frame}
+\frametitle{Bayes' Rule}
+
+\alert{Bayes' Rule} states
+\[
+P(A|B) = \frac{P(A\mbox{ and }B)}{P(B)}
+\pause
+= \frac{P(B|A)P(A)}{P(B)}
+\pause
+= \frac{P(B|A)P(A)}{P(B|A)P(A) + P(B|A^C)P(A^C)}
+\]
+\pause
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Diganostic Testing}
+If a pregnant woman has a test for Down syndrome and it is positive, what is the probability that the child will have Down syndrome?
+\pause
+Let $D$ indicate a child with Down syndrome and $D^c$ the opposite.
+\pause
+Let `+' indicate a positive test result and `$-$' a negative test result.
+
+    \vspace{0.1in} \pause
+
+    \[ \begin{array}{rl}
+    \mbox{sensitivity} &= P(+|D) \hspace{0.06in}= 0.94 \pause \\
+    \mbox{specificity} &= P(-|D^c) = 0.77 \pause \\
+    \mbox{prevalence} & = P(D)\hspace{0.23in} = 1/1000 \pause \\
+    \\ \\
+    P(D|+) &= \frac{P(+|D)P(D)}{P(+)} \pause = \frac{P(+|D)P(D)}{P(+|D)P(D)+P(+|D^c)P(D^c)} \pause
+    = \frac{0.94\cdot 0.001}{0.94\cdot 0.001+0.23\cdot 0.999} \pause \\
+    &\approx 1/250 \pause \\ \\
+    P(D|-) &\approx 1/10,000
+    \end{array} \]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{How do we interpret probability in the real world?}
+\pause
+Relative frequency interpretation:
+probability is the proportion of times an event occurs in an infinite number of trials.
+
+\vspace{0.5in} \pause
+
+Personal belief interpretation:
+probability is a statement of how sure you are that an event will occur.
+
+\end{frame}
+
+
+
+\section{Random variables}
+\begin{frame}
+\frametitle{Random variables}
+
+Let $\omega$ be the outcome of an ``experiment'' (any data collection).
+\pause
+Then $X(\omega)\in \mathbb{R}$ is a \alert{random variable},
+i.e. it is a function of the outcome of an ``experiment'' that returns a number.
+
+\vspace{0.1in} \pause
+
+We often know the following quantities for random variables: \pause
+\begin{itemize}
+\item Expectation (average value), $E[X]$ \pause
+\item Variance (variability), $Var[X]$ \pause
+\item Distribution:
+  \begin{itemize}
+  \item Image, i.e. the possible values for $X$
+  \item Cumulative distribution function (cdf), $P(X\le x)$
+  \item For discrete random variables, probability mass function (pmf) $P(X=x)$
+  \item For continuous random variables, probability density function (pdf) $f_X(x)$
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\subsection{Bernoulli}
+\begin{frame}
+\frametitle{Bernoulli}
+
+If $X \sim Ber(p)$,
+\pause
+then $X$ is a \alert{Bernoulli random variable} with \alert{probability of success} $p$
+\pause
+and
+\begin{itemize}
+\item $P(X = 1) = p$ \pause
+\item $P(X = 0) = (1-p)$ \pause
+\item $E[X] = p$ \pause
+\item $Var[X] = p(1-p)$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bernoulli}
+<<>>=
+p <- 0.3
+d <- data.frame(x = c(0,1),
+                pmf = c(1-p,p))
+
+g1 <- ggplot(d, aes(x, pmf)) +
+  geom_col(width=0.1) +
+  scale_x_continuous(breaks = 0:1) +
+  labs(title = "X ~ Ber(0.3)",
+       y = "Probability mass function")
+
+d <- data.frame(x = seq(-0.1, 1.1, length = 1001)) %>%
+  mutate(cdf = pbinom(x, 1, p))
+
+g2 <- ggplot(d, aes(x, cdf)) +
+  geom_line() +
+  scale_x_continuous(breaks = 0:1) +
+  labs(title = "X ~ Ber(0.3)",
+       y = "Cumulative distribution function")
+
+grid.arrange(g1, g2, nrow = 1)
+@
+\end{frame}
+
+
+
+\subsection{Binomial}
+\begin{frame}[fragile]
+\frametitle{Binomial}
+If $Y \sim Binom(n,p)$,
+\pause
+then $Y$ is a \alert{binomial random variable} with $n$ \alert{attempts} and
+probability of success $p$
+\pause
+and
+\begin{itemize}
+\item $P(Y = y) = {n\choose y}p^y(1-p)^{n-y}$ for $y = 0,1,\ldots,n$ \pause
+\item $E[Y] = np$ \pause
+\item $Var[Y] = np(1-p)$ \pause
+\end{itemize}
+
+<<echo=TRUE>>=
+n <- 10
+p <- 0.3
+dbinom(0:n, size = n, prob = p) %>% round(2)
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Binomial}
+<<>>=
+n <- 10
+p <- 0.3
+d <- data.frame(y = 0:n) %>%
+  mutate(pmf = dbinom(y, size = n, prob = p))
+
+g1 <- ggplot(d, aes(y, pmf)) +
+  geom_col(width=0.1) +
+  scale_x_continuous(breaks = 0:n) +
+  labs(title = "Y ~ Bin(10,0.3)",
+       y = "Probability mass function")
+
+d <- data.frame(y = seq(-0.1, n+0.1, length = 1001)) %>%
+  mutate(cdf = pbinom(y, size = n, prob = p))
+
+g2 <- ggplot(d, aes(y, cdf)) +
+  geom_line() +
+  scale_x_continuous(breaks = 0:n) +
+  labs(title = "Y ~ Bin(10,0.3)",
+       y = "Cumulative distribution function")
+
+grid.arrange(g1, g2, nrow = 1)
+@
+\end{frame}
+
+
+\subsection{Normal}
+\begin{frame}
+\frametitle{Normal}
+If $X \sim N(\mu,\sigma^2)$,
+\pause
+then $X$ is a \alert{normal random variable} with mean $\mu$ and variance
+$\sigma^2$ (standard deviation $\sigma$)
+\pause
+and
+\begin{itemize}
+\item $E[X] = \mu$ \pause
+\item $Var[X] = \sigma^2$ ($SD[X] = \sigma$) \pause
+\item probability density function
+\[ f_X(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{1}{2\sigma^2}(x-\mu)^2\right).\]
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Normal}
+<<>>=
+mu <- 0
+sigma  <- 1
+d <- data.frame(x = seq(-3, 3, length=1001)) %>%
+  mutate(pdf = dnorm(x, mean = mu, sd = sigma),
+         cdf = pnorm(x, mean = mu, sd = sigma))
+
+g1 <- ggplot(d, aes(x, pdf)) +
+  geom_line() +
+  labs(title = "X ~ N(0,1)",
+       y = "Probability mass function")
+
+g2 <- ggplot(d, aes(x, cdf)) +
+  geom_line() +
+  labs(title = "X ~ N(0,1)",
+       y = "Cumulative distribution function")
+
+grid.arrange(g1, g2, nrow = 1)
+@
+\end{frame}
+
+
+
+
+
+\end{document}
+
+
