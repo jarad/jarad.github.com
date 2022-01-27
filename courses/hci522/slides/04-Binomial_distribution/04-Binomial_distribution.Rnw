@@ -1,0 +1,621 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{04 - Binomial distribution}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='normalsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("gridExtra")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220119)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overview}
+\begin{itemize}
+\item Random variables
+  \begin{itemize}
+  \item Bernoulli distribution
+    \begin{itemize}
+    \item Model for success/failure \pause
+    \end{itemize}
+  \item Binomial distribution
+    \begin{itemize}
+    \item Model for success/failure counts \pause
+    \end{itemize}
+  \end{itemize}
+\item Inference for success/failure counts
+  \begin{itemize}
+  \item Estimating 1 probability of success \pause
+  \item Comparing 2 probabilities of success \pause
+  \item Comparing 3+ probabilities of success \pause
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\section{Random variables}
+\begin{frame}
+\frametitle{Random variables}
+
+Suppose you will run a study (any data collection) and you will have some outcome.
+\pause
+A \alert{random variable} is any numerical summary of the outcome of that study.
+
+\vspace{0.1in} \pause
+
+We may know the following quantities for random variables: \pause
+\begin{itemize}
+\item Distribution: \pause
+  \begin{itemize}
+  \item Image, i.e. the possible values for $X$ \pause
+  \item For discrete random variables, probability mass function (pmf) $P(X=x)$. \pause
+  \item Cumulative distribution function (cdf), $P(X\le x)$. \pause
+  \end{itemize}
+\item Expectation (average value), $E[X]$ \pause
+\item Variance (variability), $Var[X]$ \pause
+\item Standard deviation (variability), $\sqrt{Var[X]}$ \pause
+\end{itemize}
+\end{frame}
+
+
+\subsection{Bernoulli}
+\begin{frame}
+\frametitle{Bernoulli}
+Suppose we are interested in recording the success or failure.
+\pause
+By convention, we code 1 as a success and 0 as a failure and call this value $X$. \pause
+
+\vspace{0.1in} \pause
+
+
+If $X \sim Ber(p)$,
+\pause
+then $X$ is a \alert{Bernoulli random variable} with \alert{probability of success} $p$
+\pause
+and
+\begin{itemize}
+\item $P(X = 1) = p$, \pause
+\item $P(X = 0) = (1-p)$, \pause
+\item $E[X] = p$, \pause
+\item $Var[X] = p(1-p)$, \pause and
+\item $SD[X] = \sqrt{p(1-p)}$.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bernoulli}
+<<>>=
+p <- 0.3
+d <- data.frame(x = c(0,1),
+                pmf = c(1-p,p))
+
+g1 <- ggplot(d, aes(x, pmf)) +
+  geom_col(width=0.1) +
+  scale_x_continuous(breaks = 0:1) +
+  scale_y_continuous(limits = c(0,1)) +
+  labs(title = "X ~ Ber(0.3)",
+       y = "Probability mass function")
+
+d <- data.frame(x = seq(-0.1, 1.1, length = 1001)) %>%
+  mutate(cdf = pbinom(x, 1, p))
+
+g2 <- ggplot(d, aes(x, cdf)) +
+  geom_line() +
+  scale_x_continuous(breaks = 0:1) +
+  labs(title = "X ~ Ber(0.3)",
+       y = "Cumulative distribution function")
+
+grid.arrange(g1, g2, nrow = 1)
+@
+\end{frame}
+
+
+\subsection{Example}
+\begin{frame}
+\frametitle{6-sided die example}
+
+Let $X$ be an indicator that a 1 was rolled on a 6-sided die.
+More formally
+\[
+X = \left\{ \begin{array}{ll}
+1 & \mbox{if a 1 is rolled} \\
+0 & \mbox{if anything else is rolled.}
+\end{array} \right.
+\]
+\pause
+Then we write $X\sim Ber(1/6)$
+\pause
+and know
+\begin{itemize}
+\item $P(X=1) \pause = 1/6$, \pause
+\item $P(X=0) \pause = 1-1/6 = 5/6$, \pause
+\item $E[X] \pause = 1/6$, \pause
+\item $Var[X] \pause = 1/6\times (1-1/6) = 1/6 \times 5/6 = 5/36$, \pause and
+\item $SD[X] \pause = \sqrt{5/36} = \sqrt{5}/6$.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Binomial}
+\begin{frame}[fragile]
+\frametitle{Binomial}
+
+\vspace{-0.1in} \pause
+
+Suppose we count the number of successes in $n$ attempts
+with a common probability of success $p$ \pause
+where each attempt is independent \pause
+and call this count $Y$.
+
+\vspace{0.1in} \pause
+
+
+If $Y \sim Binom(n,p)$,
+\pause
+then $Y$ is a \alert{binomial random variable} with $n$ \alert{attempts} and
+probability of success $p$
+\pause
+and
+\begin{itemize}
+\item $P(Y = y) = {n\choose y}p^y(1-p)^{n-y}$ for $y = 0,1,\ldots,n$ \pause
+\item $E[Y] = np$ \pause
+\item $Var[Y] = np(1-p)$ \pause
+\end{itemize}
+
+\vspace{0.1in}
+
+We can use R to calculate the probability mass function values, \pause
+e.g. if $Y \sim Bin(10, 1/6)$ and we want to calculate $P(Y=2)$ we use
+<<echo=TRUE>>=
+n <- 10; p <- 1/6; y <- 2
+dbinom(y, size = n, prob = p)
+@
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Binomial}
+<<>>=
+n <- 10
+p <- 0.3
+d <- data.frame(y = 0:n) %>%
+  mutate(pmf = dbinom(y, size = n, prob = p))
+
+g1 <- ggplot(d, aes(y, pmf)) +
+  geom_col(width=0.1) +
+  scale_x_continuous(breaks = 0:n) +
+  scale_y_continuous(limits = c(0,1)) +
+  labs(title = "Y ~ Bin(10,0.3)",
+       y = "Probability mass function")
+
+d <- data.frame(y = seq(-0.1, n+0.1, length = 1001)) %>%
+  mutate(cdf = pbinom(y, size = n, prob = p))
+
+g2 <- ggplot(d, aes(y, cdf)) +
+  geom_line() +
+  scale_x_continuous(breaks = 0:n) +
+  labs(title = "Y ~ Bin(10,0.3)",
+       y = "Cumulative distribution function")
+
+grid.arrange(g1, g2, nrow = 1)
+@
+\end{frame}
+
+
+\subsection{Example}
+\begin{frame}
+\frametitle{6-sided die example}
+Suppose we roll a 6-sided die 10 times and record the number of times we
+observed a 1.
+\pause
+Assume \alert{independence} between our roles, \pause
+we have $Y\sim Bin(10,1/6)$
+\pause
+and we know
+\begin{itemize}
+\item $E[X] \pause = 10\times 1/6 = 10/6$, \pause
+\item $Var[X] \pause = 10\times 1/6\times (1-1/6) = 1/6 \times 5/6 = 5/36$, \pause and
+\item $SD[X] \pause = \sqrt{10*5/36} = \sqrt{50}/6$.
+\end{itemize}
+\end{frame}
+
+
+
+% \subsection{Normal}
+% \begin{frame}
+% \frametitle{Normal}
+% If $X \sim N(\mu,\sigma^2)$,
+% \pause
+% then $X$ is a \alert{normal random variable} with mean $\mu$ and variance
+% $\sigma^2$ (standard deviation $\sigma$)
+% \pause
+% and
+% \begin{itemize}
+% \item $E[X] = \mu$ \pause
+% \item $Var[X] = \sigma^2$ ($SD[X] = \sigma$) \pause
+% \item probability density function
+% \[ f_X(x) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{1}{2\sigma^2}(x-\mu)^2\right).\]
+% \end{itemize}
+% \end{frame}
+%
+%
+% \begin{frame}
+% \frametitle{Normal}
+% <<>>=
+% mu <- 0
+% sigma  <- 1
+% d <- data.frame(x = seq(-3, 3, length=1001)) %>%
+%   mutate(pdf = dnorm(x, mean = mu, sd = sigma),
+%          cdf = pnorm(x, mean = mu, sd = sigma))
+%
+% g1 <- ggplot(d, aes(x, pdf)) +
+%   geom_line() +
+%   labs(title = "X ~ N(0,1)",
+%        y = "Probability mass function")
+%
+% g2 <- ggplot(d, aes(x, cdf)) +
+%   geom_line() +
+%   labs(title = "X ~ N(0,1)",
+%        y = "Cumulative distribution function")
+%
+% grid.arrange(g1, g2, nrow = 1)
+% @
+% \end{frame}
+
+
+
+\section{Inference for probabilities}
+\subsection{Point estimate}
+\begin{frame}
+\frametitle{Unknown probability}
+
+Suppose you run a study where
+\begin{itemize}
+\item you have $n$ trials, \pause
+\item each trial is \alert{independent}, \pause
+\item each trial has probability of success $\theta$, \pause
+\end{itemize}
+and you are interested in $\theta$.
+
+\vspace{0.1in} \pause
+
+Let $Y$ be the number of success observed in $n$ trials and assume
+$Y\sim Bin(n,\theta)$.
+\pause
+A common point estimate is
+\[ \hat{\theta} = y/n \]
+where $y$ is the observed number of successes.
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Examples}
+Suppose you run a study to see how many students correctly register for class
+using the new Workday system.
+\pause
+Since the probability of success might differ depending on what classes
+need to be registered, you give each student the same list of classes.
+
+\pause
+\begin{itemize}
+\item You randomly sample 10 ISU undergraduate students at 8 are successful.
+Our estimate of the probability of success is $\hat{\theta} \pause = 8/10 = 0.8$. \pause
+\item You randomly sample 100 ISU undergraduate students at 80 are successful.
+Our estimate of the probability of success is $\hat{\theta} \pause = 80/100 = 0.8$. \pause
+\item You randomly sample 1000 ISU undergraduate students at 800 are successful.
+Our estimate of the probability of success is $\hat{\theta} \pause = 800/1000 = 0.8$. \pause
+\end{itemize}
+
+Although the point estimate is the same, clearly we should have more certainty
+about the last estimate compared to the first.
+\pause
+We need some way to \alert{quantify our uncertainty} about the true value $\theta$.
+\end{frame}
+
+
+\subsection{Bayesian estimation}
+\begin{frame}
+\frametitle{Bayesian estimation}
+Bayes' Rule
+\pause
+\[
+p(\theta|y)
+\pause \frac{p(y|\theta)p(\theta)}{p(y)}
+\pause \propto p(y|\theta)p(\theta)
+\]
+\pause
+where
+\begin{itemize}
+\item $y$ is our data,
+\item $\theta$ are our unknowns, e.g. probability of success,
+\item $p(y|\theta)$ comes from our \alert{model}, e.g. binomial,
+(sometimes referred to as the \alert{likelihood}), \pause
+\item $p(\theta)$ is our \alert{prior} belief, \pause and
+\item $p(\theta|y)$ is our \alert{posterior} belief.
+\end{itemize}
+Thus \alert{Bayesian estimation} provides a mathematical mechanism to learn
+about the world using data, \pause e.g.
+\[
+p(\theta) \longrightarrow p(\theta|y).
+\]
+\end{frame}
+
+\subsection{Bayesian estimation for probability of success}
+\begin{frame}
+\frametitle{Bayesian estimation for probability of success}
+If we know nothing about our probability of success $\theta$, \pause
+our prior belief is reasonably represented by a uniform distribution between
+0 and 1, \pause i.e. $\theta \sim Unif(0,1)$. \pause
+When we obtain data $y$, then our \alert{posterior} belief is represented by a
+\alert{Beta distribution}, \pause i.e. $\theta|y \sim Be(1+y, 1+n-y)$.
+
+\vspace{0.1in} \pause
+
+<<fig.height=2>>=
+n <- 10; y <- 8
+d <- data.frame(x = seq(0, 1, length = 1001)) %>%
+  mutate(Prior = dunif(x),
+         Posterior = dbeta(x, 1+y, 1+n-y)) %>%
+  pivot_longer(-x, names_to = "Belief", values_to = "density") %>%
+  mutate(Belief = factor(Belief, levels = c("Prior","Posterior")))
+
+ggplot(d, aes(x, density)) +
+  facet_grid(.~Belief) +
+  geom_line() +
+  labs(x = expression(theta),
+       y = "Probability density function",
+       title = "Prior vs Posterior based on 8 successes in 10 attempts")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Comparison of posteriors}
+<<>>=
+create_posterior <- function(d) {
+  data.frame(x = seq(0, 1, length=1001)) %>%
+    mutate(density = dbeta(x, 1 + d$y, 1 + d$n - d$y))
+}
+
+d <- data.frame(y = c(8,80,800), n = c(10,100,1000)) %>%
+  group_by(y,n) %>%
+  do(create_posterior(.)) %>%
+  mutate(n = factor(n)) %>%
+  rename(`Sample size` = n)
+
+ggplot(d, aes(x, density, color = `Sample size`, linetype = `Sample size`)) +
+  geom_line() +
+  labs(x = expression(theta),
+       y = "Probability density function",
+       title = expression(paste("Posteriors for different sample sizes with ",
+                                hat(theta),"=0.8")))
+@
+\end{frame}
+
+
+\subsection{Credible intervals}
+\begin{frame}
+\frametitle{Credible intervals}
+A 95\% \alert{credible interval} for $\theta$ is the interval such that the
+area under the posterior is 0.95.
+<<>>=
+y <- 8
+n <- 10
+ggplot(data.frame(x = seq(0, 1, length=1001)), aes(x)) +
+  stat_function(fun = dbeta, xlim = qbeta(c(0.025, 0.975), 1+y, 1+n-y),
+                geom = "area" , fill = "red",
+                args = list(shape1 = 1+y, shape2 = 1+n-y)) +
+  stat_function(fun = dbeta,
+                args = list(shape1 = 1+y, shape2 = 1+n-y)) +
+  labs(x = expression(theta),
+       y = "Posterior",
+       title = "95% Credible Interval (red area = 0.95)")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{95\% Credible Intervals in R}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+a <- 1 - 0.95 # for 95\% CIs
+
+y <- 8; n <- 10
+qbeta(c(a/2, 1-a/2), shape1 = 1+y, shape2 = 1+n-y)
+y <- 80; n <- 100
+qbeta(c(a/2, 1-a/2), shape1 = 1+y, shape2 = 1+n-y) %>% round(2)
+y <- 800; n <- 1000
+qbeta(c(a/2, 1-a/2), shape1 = 1+y, shape2 = 1+n-y) %>% round(2)
+@
+\end{frame}
+
+
+
+\section{Multiple probabilities}
+\begin{frame}
+\frametitle{Multiple probabilities}
+
+If we are collecting success/failure data under multiple conditions,
+then we can estimate multiple probabilities.
+
+\vspace{0.1in} \pause
+
+Let $Y_i$ be the success count in condition $i$ out of $n_i$ attempts for
+conditions $i=1,\ldots,\I$.
+\pause
+If we assume
+\begin{itemize}
+\item all observations are independent \pause and
+\item the probability of success within a condition is constant, \pause
+\end{itemize}
+then our model is
+\[
+Y_i \ind Bin(n_i,\theta_i).
+\]
+If we assume ignorance about $\theta_i$, then we have
+\[
+\mbox{Prior: }\theta_i \ind Unif(0,1)
+\qquad \longrightarrow \qquad
+\mbox{Posterior: }\theta_i|y_i \ind Be(1+y_i, 1+n_i-y_i).
+\]
+
+\end{frame}
+
+\subsection{Example}
+\begin{frame}
+\frametitle{Example}
+
+Consider the Workday registration example where we have two conditions: \pause
+\begin{itemize}
+\item no chatbot help and
+\item with chatbot help. \pause
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Research question: How does the chatbot help affect the probability of success
+in registering for classes?
+
+\vspace{0.1in} \pause
+
+We randomly select 20 undergraduate students and randomly assign each one a
+chatbot or no chatbot help condition such that each condition has 10 students
+(balanced).
+\pause
+When we collect the data, we find that 8/10 successfully register without access
+to chatbot help and 9/10 successfully register with access to chatbot help.
+
+\end{frame}
+
+
+\subsection{Posterior distributions}
+\begin{frame}
+\frametitle{Posterior distributions}
+<<>>=
+d <- data.frame(y = c(8,9),
+                n = c(10,10),
+                condition = c("no chatbot","with chatbot")) %>%
+  group_by(condition) %>%
+  do(create_posterior(.))
+
+g <- ggplot(d, aes(x, density, color = condition, linetype = condition)) +
+  geom_line() +
+  labs(x = "Probability of success",
+       y = "Posterior",
+       title = "Comparison of probability of success with and without chatbot access")
+
+g
+@
+\end{frame}
+
+
+\subsection{Credible intervals}
+\begin{frame}[fragile]
+\frametitle{95\% Credible intervals}
+
+\vspace{-0.1in}
+
+<<echo=TRUE>>=
+a = 1-0.95
+
+# no chatbot access
+y <- 8
+n <- 10
+qbeta(c(a/2, 1-a/2), 1+y, 1+n-y) %>% round(2)
+
+# with chatbot access
+y <- 9
+n <- 10
+qbeta(c(a/2, 1-a/2), 1+y, 1+n-y) %>% round(2)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Plotting credible intervals}
+<<>>=
+y <- c(8,9)
+n <- c(10,10)
+g + geom_segment(data = data.frame(condition = c("no chatbot","with chatbot"),
+                            y = c(-0.4, -0.2),
+                            x = qbeta(.025, 1+y, 1+n-y),
+                            xend = qbeta(.975, 1+y, 1+n-y)),
+                 aes(x=x, y=y, yend=y, xend=xend))
+@
+\end{frame}
+
+
+\subsection{Calculating probabilities}
+\begin{frame}[fragile]
+\frametitle{Calculating probabilities}
+Suppose we are interested in calculate
+\[ P(\theta_{\mbox{with chatbot}} > \theta_{\mbox{no chatbot}}|y)\]
+where $y$ generally means ``all the data''.
+
+\vspace{0.1in} \pause
+
+We can use a \alert{Monte Carlo} (or simulation) approach:
+<<echo=TRUE>>=
+n_reps = 1e5 # some large number
+theta_nochatbot   <- rbeta(n_reps, 1+8, 1+10-8)
+theta_withchatbot <- rbeta(n_reps, 1+9, 1+10-9)
+mean(theta_withchatbot > theta_nochatbot)
+@
+\end{frame}
+
+
+
+% \begin{frame}
+% \frametitle{Summary}
+% Recording $y$ success in $n$ attempts when
+% \begin{itemize}
+% \item attempts are independent \pause and
+% \item probability of success $\theta$ is the same in all attempts. \pause
+% \end{itemize}
+% Then $
+%
+% \end{frame}
+
+
+\end{document}
+
+
