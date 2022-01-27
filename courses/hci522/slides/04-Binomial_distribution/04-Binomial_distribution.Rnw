@@ -584,9 +584,9 @@ g + geom_segment(data = data.frame(condition = c("no chatbot","with chatbot"),
 \end{frame}
 
 
-\subsection{Calculating probabilities}
+\subsection{Comparing probabilities}
 \begin{frame}[fragile]
-\frametitle{Calculating probabilities}
+\frametitle{Comparing probabilities}
 Suppose we are interested in calculate
 \[ P(\theta_{\mbox{with chatbot}} > \theta_{\mbox{no chatbot}}|y)\]
 where $y$ generally means ``all the data''.
@@ -604,16 +604,71 @@ mean(theta_withchatbot > theta_nochatbot)
 
 
 
-% \begin{frame}
-% \frametitle{Summary}
-% Recording $y$ success in $n$ attempts when
-% \begin{itemize}
-% \item attempts are independent \pause and
-% \item probability of success $\theta$ is the same in all attempts. \pause
-% \end{itemize}
-% Then $
-%
-% \end{frame}
+\begin{frame}[fragile]
+\frametitle{How different are the success probabilities?}
+Rather than just simply knowing if one success probability is larger than the 
+other, we may be interested in knowing how much bigger it is. 
+
+\vspace{0.1in} \pause
+
+We can use the same Monte Carlo samples, calculate the difference, and take
+quantiles of the result. \pause
+A 95\% credible interval for $\theta_{\mbox{with chatbot}}-\theta_{\mbox{no chatbot}}$ is 
+
+<<echo=TRUE>>=
+quantile(theta_withchatbot - theta_nochatbot, probs = c(a/2,1-a/2))
+@
+\end{frame}
+
+
+\subsection{More than 2 probabilities}
+\begin{frame}
+\frametitle{More than 2 probabilities}
+
+Suppose we add the condition of comparing the current registration 
+(through Accessplus?) \pause
+to the two Workday registration systems 
+(with and without chatbot help).
+
+\vspace{0.1in} \pause
+
+Research question: How does the Accessplus registration accuracy compare to the
+two Workday registration options?
+
+\vspace{0.1in} \pause
+
+Suppose we observe 5/10 successes (with randomly sampled undergraduate students)
+in the current Accessplus system. 
+\end{frame}
+
+
+\subsection{Posterior distributions}
+\begin{frame}
+\frametitle{Posterior distributions}
+<<>>=
+y <- c(8,9,5)
+n <- c(10,10,10)
+
+d <- data.frame(y = c(8,9,5),
+                n = c(10,10,10),
+                condition = c("no chatbot","with chatbot","accessplus")) %>%
+  group_by(condition) %>%
+  do(create_posterior(.)) %>%
+  mutate(condition = factor(condition, levels = c("no chatbot","with chatbot","accessplus")))
+
+ggplot(d, aes(x, density, color = condition, linetype = condition)) +
+  geom_line() +
+  labs(x = "Probability of success",
+       y = "Posterior",
+       title = "Comparison of three registration systems") + 
+  geom_segment(data = data.frame(condition = c("no chatbot","with chatbot","accessplus"),
+                            y = c(-0.4, -0.3,-0.2),
+                            x = qbeta(.025, 1+y, 1+n-y),
+                            xend = qbeta(.975, 1+y, 1+n-y)),
+                 aes(x=x, y=y, yend=y, xend=xend))   
+@
+\end{frame}
+
 
 
 \end{document}
