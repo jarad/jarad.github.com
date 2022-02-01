@@ -430,6 +430,48 @@ ggplot(d, aes(x, density, color = `Sample size`, linetype = `Sample size`)) +
 \end{frame}
 
 
+\subsection{Posterior beliefs}
+\begin{frame}[fragile]
+\frametitle{Posterior beliefs}
+
+Calculate $P(\theta < c|y)$ for some value $c$.
+\pause
+Let $\theta|y \sim Be(1+8, 1+10-8)$.
+\pause
+Calculate $P(\theta < 0.5|y)$:
+<<echo=TRUE>>=
+y <- 8; n <- 10; c <- 0.5
+
+pbeta(c, 1+y, 1+n-y)
+@
+
+\pause
+
+Calculate $P(\theta \ge c|y) = 1-P(\theta < c|y)$.
+<<echo=TRUE>>=
+1-pbeta(c, 1+y, 1+n-y)
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Posterior beliefs (in a picture)}
+<<>>=
+y <- 8
+n <- 10
+ggplot(data.frame(x = seq(0, 1, length=1001)), aes(x)) +
+  stat_function(fun = dbeta, xlim = c(0,0.5),
+                geom = "area" , fill = "red",
+                args = list(shape1 = 1+y, shape2 = 1+n-y)) +
+  stat_function(fun = dbeta,
+                args = list(shape1 = 1+y, shape2 = 1+n-y)) +
+  labs(x = expression(theta),
+       y = "Posterior",
+       title = "Posterior belief")
+@
+\end{frame}
+
 \subsection{Credible intervals}
 \begin{frame}
 \frametitle{Credible intervals}
@@ -606,14 +648,14 @@ mean(theta_withchatbot > theta_nochatbot)
 
 \begin{frame}[fragile]
 \frametitle{How different are the success probabilities?}
-Rather than just simply knowing if one success probability is larger than the 
-other, we may be interested in knowing how much bigger it is. 
+Rather than just simply knowing if one success probability is larger than the
+other, we may be interested in knowing how much bigger it is.
 
 \vspace{0.1in} \pause
 
 We can use the same Monte Carlo samples, calculate the difference, and take
 quantiles of the result. \pause
-A 95\% credible interval for $\theta_{\mbox{with chatbot}}-\theta_{\mbox{no chatbot}}$ is 
+A 95\% credible interval for $\theta_{\mbox{with chatbot}}-\theta_{\mbox{no chatbot}}$ is
 
 <<echo=TRUE>>=
 quantile(theta_withchatbot - theta_nochatbot, probs = c(a/2,1-a/2))
@@ -625,9 +667,9 @@ quantile(theta_withchatbot - theta_nochatbot, probs = c(a/2,1-a/2))
 \begin{frame}
 \frametitle{More than 2 probabilities}
 
-Suppose we add the condition of comparing the current registration 
+Suppose we add the condition of comparing the current registration
 (through Accessplus?) \pause
-to the two Workday registration systems 
+to the two Workday registration systems
 (with and without chatbot help).
 
 \vspace{0.1in} \pause
@@ -638,7 +680,7 @@ two Workday registration options?
 \vspace{0.1in} \pause
 
 Suppose we observe 5/10 successes (with randomly sampled undergraduate students)
-in the current Accessplus system. 
+in the current Accessplus system.
 \end{frame}
 
 
@@ -660,12 +702,12 @@ ggplot(d, aes(x, density, color = condition, linetype = condition)) +
   geom_line() +
   labs(x = "Probability of success",
        y = "Posterior",
-       title = "Comparison of three registration systems") + 
+       title = "Comparison of three registration systems") +
   geom_segment(data = data.frame(condition = c("no chatbot","with chatbot","accessplus"),
                             y = c(-0.4, -0.3,-0.2),
                             x = qbeta(.025, 1+y, 1+n-y),
                             xend = qbeta(.975, 1+y, 1+n-y)),
-                 aes(x=x, y=y, yend=y, xend=xend))   
+                 aes(x=x, y=y, yend=y, xend=xend))
 @
 \end{frame}
 
