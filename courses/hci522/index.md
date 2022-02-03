@@ -12,7 +12,8 @@ Scientific Methods in Human Computer Interaction at
 
 ## Relevant course pages
 
-- [Slides/Videos](slides)
+- [Slides](slides)
+- [Code](code)
 
 
 ## Textbooks
