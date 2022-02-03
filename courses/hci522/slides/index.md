@@ -1,7 +1,7 @@
 --- 
 layout: page
 title: HCI 522
-tagline: slides/videos
+tagline: slides
 ---
 {% include JB/setup %}
 
