@@ -10,4 +10,4 @@ This page will provide links to R code for completing analyses for this class.
 ## Code
 
 - [Installation](installation.html)
-- Binomial data
+- [Binomial data](binomial.html)
