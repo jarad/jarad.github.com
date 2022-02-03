@@ -19,8 +19,8 @@ Scientific Methods in Human Computer Interaction at
 ## Textbooks
 
 - Lazar, J.; Feng, J. H.; and Hochheiser, H. (2017). Research methods in human-computer interaction. John Wiley & Sons
-- Robertson, Judy and Kaptein, Maurits (2016). Modern Statistical Methods for HCI (Links to an external site.). Springer
-- Travis, David and Hodgson, Philip (2019). Think Like a UX Researcher (Links to an external site.). CRC Press
+- Robertson, Judy and Kaptein, Maurits (2016). Modern Statistical Methods for HCI. Springer
+- Travis, David and Hodgson, Philip (2019). Think Like a UX Researcher. CRC Press
 
 
 
