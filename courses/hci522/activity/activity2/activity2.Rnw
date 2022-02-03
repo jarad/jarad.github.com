@@ -1,0 +1,202 @@
+\documentclass[10pt]{article}
+\input{../topmatter}
+
+\setlength{\parskip}{\baselineskip}%
+\setlength{\parindent}{0pt}%
+
+\lhead{\Large\sffamily \course{}: Activity 2}
+
+% \excludecomment{answer}
+
+<<include=FALSE>>=
+  opts_chunk$set(fig.width=8, fig.height=4, fig.pos='htb', out.width='\\textwidth')
+@
+
+\begin{document}
+
+\section*{Part 1}
+
+\subsection*{AirPod 2nd Generation Study}
+
+AirPods can be configured to allow a user to start and stop playback:
+AirPod 1st and 2nd generation allow the user to double-click while
+AirPod Pro users click-and-hold.
+Apple would like to know what proportion of its AirPod (2nd generation) users
+use this feature as they would like at least half of the users to be using this
+feature.
+
+
+From their internal database of AirPod 2nd generation users, Apple randomly
+selects 100 users and, the next time the AirPods are connected to an internet-connected
+device, the device reports back to Apple whether the current configuration
+is set to allow the user to start and stop playback.
+Of the 100 users, Apple finds that 44 users currently have start and stop
+playback enabled.
+
+Let $Y$ be the number of AirPod 2nd generation users (in the sample)
+who currently have start and stop playback enabled.
+Assume $Y\sim Bin(n,\theta)$.
+
+Answer the following questions based on the description above.
+
+\begin{enumerate}
+\item What is the value for $y$?
+
+\begin{answer}
+<<>>=
+y <- 44
+@
+\end{answer}
+
+\item What is the value for $n$?
+
+\begin{answer}
+<<>>=
+n <- 100
+@
+\end{answer}
+
+\item What is your posterior belief about $\theta$, i.e. $\theta|y$?
+(Assume your prior belief is $\theta \sim Unif(0,1)$.)
+
+\begin{itemize}
+\item $Be(45,100)$
+\item $Be(44, 56)$
+\item $Be(45, 57)$
+\item $Be(44,100)$
+\end{itemize}
+
+\begin{answer}
+Our posterior belief is
+$\theta|y \sim Be(1+y, 1+n-y)$.
+So, plugging in numbers, we have $\theta|y \sim Be(\Sexpr{1+y}, \Sexpr{1+n-y})$.
+\end{answer}
+
+\item Determine the probability that the true proportion of all AirPod 2nd
+generation users who have start and stop playback enabled is greater than 0.5,
+i.e. $P(\theta > 0.5|y)$.
+
+\begin{answer}
+<<>>=
+1-pbeta(0.5, 1+y, 1+n-y)
+@
+\end{answer}
+
+\item Provide a 95\% credible interval for the true proportion of all AirPod
+2nd generation users that have start and stop playback enabled.
+
+\begin{answer}
+<<>>=
+a <- 1-0.95
+qbeta(c(a/2,1-a/2), 1+y, 1+n-y)
+@
+\end{answer}
+\end{enumerate}
+
+\subsection*{AirPod Pro users}
+
+In a follow up study, Apple randomly selects AirPod Pro users and find that
+only 3 out of 10 have start and stop playback enabled.
+
+\begin{enumerate}
+\setcounter{enumi}{5}
+\item Calculate the probability (belief) that a larger proportion of AirPod 2nd generation
+users have start and stop playback enabled compared to AirPod Pro users.
+
+\begin{answer}
+<<>>=
+y2 <- 3
+n2 <- 10
+
+n_reps = 1e5
+theta  <- rbeta(n_reps, shape1 = 1+y , shape2 = 1+n -y )
+theta2 <- rbeta(n_reps, shape1 = 1+y2, shape2 = 1+n2-y2)
+mean(theta > theta2)
+@
+\end{answer}
+
+\item Provide a 95\% credible interval for the difference
+(AirPod 2nd generation minus AirPod Pro)
+in proportions of users that have start and stop playback enabled.
+
+\begin{answer}
+<<>>=
+quantile(theta - theta2, probs = c(a/2, 1-a/2))
+@
+\end{answer}
+\end{enumerate}
+
+\section*{Part 2}
+
+Answer the following questions based on the descriptions above.
+
+\begin{enumerate}
+\item Is it reasonable to assume independence amongst the subjects in the study?
+
+\begin{answer}
+Yes because a random sample is used and therefore it is unlikely one of the
+subjects could affect another subject.
+\end{answer}
+
+\item Is it reasonable to assume the AirPod 2nd generation users have the same
+probability of using the start and stop playback feature?
+
+\begin{answer}
+Yes since we do not know anything else about them.
+\end{answer}
+
+\item Provide a plot showing the posterior belief concerning the proportion
+of users that have start and stop playback enabled in both the AirPod 2nd
+generation group and the AirPod Pro group.
+
+\begin{answer}
+<<message=FALSE>>=
+library("tidyverse")
+create_posterior <- function(d) {
+  data.frame(x = seq(0, 1, length=1001)) %>%
+    mutate(density = dbeta(x, 1 + d$y, 1 + d$n - d$y))
+}
+
+d <- data.frame(y = c(44,3),
+                n = c(100,10),
+                users = c("AirPod (2nd gen)","AirPod Pro")) %>%
+  group_by(users) %>%
+  do(create_posterior(.))
+
+ggplot(d, aes(x, density, color = users, linetype = users)) +
+  geom_line() +
+  labs(x = "Proportion",
+       y = "Posterior",
+       title = "Comparison of proportion of users who have enabled start and stop playback") +
+  theme_bw()
+@
+\end{answer}
+
+\item How would the interpretation of our results change if
+(rather than randomly sampling) we had just recorded data for the first
+100 AirPod 2nd generation and first 10 AirPod Pro users?
+Assume that we still observed 44 of 100 AirPod 2nd generation users and
+3 of 10 AirPod Pro users who have enabled start and stop playback.
+
+\begin{answer}
+Since this is not a random sample, we cannot make a statement about the whole
+population of AirPod 2nd generation AirPod Pro users.
+Instead, we must limit our interpretation to talk only about our sample.
+\end{answer}
+
+\item How would the interpretation of our results change if
+(rather than recording who has enabled the feature in settings)
+we instead sent out a survey to the randomly selected individuals and asked
+them whether they have the feature enabled?
+Assume that we still observed 44 of 100 AirPod 2nd generation users and
+3 of 10 AirPod Pro users who {\bf told} us they have enabled start and stop playback.
+
+\begin{answer}
+While this is a random sample, we know that individuals have relatively poor
+recall.
+Therefore, we should be a bit more hesitant to trust these results as reflective
+of the reality.
+\end{answer}
+\end{enumerate}
+
+\end{document}
