@@ -1,6 +1,9 @@
-Although R and RStudio will be available in the lab, you will likely
-want to install R and RStudio on your own personal laptop, desktop, or
-both. Below are installation instructions for R and RStudio.
+HCI/PSYCH 522
+================
+
+{% include JB/setup %}
+
+Below are installation instructions for R, RStudio, and R packages.
 
 ## Install R (may require administrator privileges)
 
@@ -73,7 +76,9 @@ install.packages("tidyverse")
 ```
 
 Packages only need to be installed once (until you update R) so you will
-only have to run `install.packages()` once for each package you need.
+only have to run `install.packages()` once for each package you need
+(although you could install multiple packages simultaneously as shown
+above).
 
 By convention, any packages that are needed in a script are included at
 the top of the script using the `library()` function. For example,
