@@ -28,16 +28,7 @@ Scientific Methods in Human Computer Interaction at
 
 We will be using the Statistical Software [R](https://www.r-project.org/). 
 I will be using RStudio as the interface to [R](https://www.r-project.org/). 
-Although both will be available on lab computers, I suggest you install 
-[R](https://www.r-project.org/) and [RStudio](https://www.rstudio.com/) 
-on your own laptop or desktop (or both).
-
-Install links:
-
-- [R](https://mirror.las.iastate.edu/CRAN/)
-- [RStudio](https://www.rstudio.com/products/rstudio/download/) 
-
-
+I suggest you [install R and RStudio](code/installation.html).
 
 
 ## Course Description
