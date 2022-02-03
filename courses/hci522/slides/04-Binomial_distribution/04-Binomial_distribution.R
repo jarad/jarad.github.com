@@ -97,6 +97,30 @@ ggplot(d, aes(x, density, color = `Sample size`, linetype = `Sample size`)) +
                                 hat(theta),"=0.8")))
 
 
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
+y <- 8; n <- 10; c <- 0.5
+
+pbeta(c, 1+y, 1+n-y)
+
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
+1-pbeta(c, 1+y, 1+n-y)
+
+
+## ---------------------------------------------------------------------------------------------------------------------
+y <- 8
+n <- 10
+ggplot(data.frame(x = seq(0, 1, length=1001)), aes(x)) +
+  stat_function(fun = dbeta, xlim = c(0,0.5),
+                geom = "area" , fill = "red",
+                args = list(shape1 = 1+y, shape2 = 1+n-y)) +
+  stat_function(fun = dbeta,
+                args = list(shape1 = 1+y, shape2 = 1+n-y)) +
+  labs(x = expression(theta),
+       y = "Posterior",
+       title = "Posterior belief")
+
+
 ## ---------------------------------------------------------------------------------------------------------------------
 y <- 8
 n <- 10
@@ -167,4 +191,31 @@ n_reps = 1e5 # some large number
 theta_nochatbot   <- rbeta(n_reps, 1+8, 1+10-8)
 theta_withchatbot <- rbeta(n_reps, 1+9, 1+10-9)
 mean(theta_withchatbot > theta_nochatbot)
+
+
+## ----echo=TRUE--------------------------------------------------------------------------------------------------------
+quantile(theta_withchatbot - theta_nochatbot, probs = c(a/2,1-a/2))
+
+
+## ---------------------------------------------------------------------------------------------------------------------
+y <- c(8,9,5)
+n <- c(10,10,10)
+
+d <- data.frame(y = c(8,9,5),
+                n = c(10,10,10),
+                condition = c("no chatbot","with chatbot","accessplus")) %>%
+  group_by(condition) %>%
+  do(create_posterior(.)) %>%
+  mutate(condition = factor(condition, levels = c("no chatbot","with chatbot","accessplus")))
+
+ggplot(d, aes(x, density, color = condition, linetype = condition)) +
+  geom_line() +
+  labs(x = "Probability of success",
+       y = "Posterior",
+       title = "Comparison of three registration systems") +
+  geom_segment(data = data.frame(condition = c("no chatbot","with chatbot","accessplus"),
+                            y = c(-0.4, -0.3,-0.2),
+                            x = qbeta(.025, 1+y, 1+n-y),
+                            xend = qbeta(.975, 1+y, 1+n-y)),
+                 aes(x=x, y=y, yend=y, xend=xend))
 
