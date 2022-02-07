@@ -1,9 +1,6 @@
-HCI/PSYCH 522
-================
-
-{% include JB/setup %}
-
-Below are installation instructions for R, RStudio, and R packages.
+Although R and RStudio will be available in the lab, you will likely
+want to install R and RStudio on your own personal laptop, desktop, or
+both. Below are installation instructions for R and RStudio.
 
 ## Install R (may require administrator privileges)
 
@@ -24,8 +21,10 @@ defaults.
 ### (Mac) OS X
 
 Click on the appropriate **.pkg** file depending on which version of Mac
-OS X you are using. Install this program like any other program on OS X
-using all the defaults.
+OS X you are using.
+
+Install this program like any other program on OS X using all the
+defaults.
 
 ### Linux
 
@@ -53,7 +52,7 @@ necessary for this course. To do so, run the following command in the
 Console in RStudio.
 
 ``` r
-install.packages(c("tidyverse","gridExtra"))
+install.packages(c("tidyverse","gridExtra")) # you will need to uncomment this line in the script
 ```
 
 This process will take about a minute (depending on your internet
@@ -76,9 +75,7 @@ install.packages("tidyverse")
 ```
 
 Packages only need to be installed once (until you update R) so you will
-only have to run `install.packages()` once for each package you need
-(although you could install multiple packages simultaneously as shown
-above).
+only have to run `install.packages()` once for each package you need.
 
 By convention, any packages that are needed in a script are included at
 the top of the script using the `library()` function. For example,
