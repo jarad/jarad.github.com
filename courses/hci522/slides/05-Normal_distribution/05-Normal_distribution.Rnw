@@ -284,9 +284,9 @@ Calculate $P(Y > 60)$.
 Suppose we have
 \begin{itemize}
 \item $n$ numerical observations, \pause
-\item with the same mean $\mu$ \pause and
-\item and standard deviation $\sigma$, \pause
-\item that are independent.
+\item with the same \alert{population mean} $\mu$ \pause and
+\item \alert{population standard deviation} $\sigma$, \pause and
+\item observations are \alert{independent}.
 \end{itemize}
 
 \pause
@@ -349,7 +349,7 @@ Please remember that sample statistics are only estimates (not the true values).
 \frametitle{Posterior belief about population mean}
 Our posterior belief about the population mean is
 \[
-\mu|y \sim t_{n-1}(\overline{y}, s^2)
+\mu|y \sim t_{n-1}(\overline{y}, s^2/n)
 \]
 \pause
 where
@@ -358,11 +358,11 @@ where
 \item $n$ is the sample size, \pause
 \item $\overline{y}$ is the sample mean, \pause
 \item $s^2$ is the sample variance, \pause and
-\item $t_{n-1}(\overline{y}, s^2)$ is a $T$ distribution \pause with
+\item $t_{n-1}(\overline{y}, s^2/n)$ is a $T$ distribution \pause with
   \begin{itemize}
   \item $n-1$ \alert{degrees of freedom}, \pause
   \item \alert{location} $\overline{y}$, \pause and
-  \item \alert{scale} $S$.
+  \item \alert{scale} $s$.
   \end{itemize}
 \end{itemize}
 \end{frame}
@@ -381,7 +381,7 @@ ggplot(data.frame(x = seq(50, 75, length = 1001)),
   stat_function(fun = dlst,
                 args = list(df = length(heights)-1,
                             location = mean(heights),
-                            scale = sd(heights))) +
+                            scale = sd(heights)/sqrt(length(heights)))) +
   labs(x = "Height (inches)",
         y = "Posterior belief",
         title = "Posterior belief about female mean height")
@@ -418,15 +418,128 @@ or
 plst <- function(q, df, location, scale) { # location-scale t distribution
   pt( (q-location)/scale, df = df)
 }
-1-plst(60, df = length(heights)-1, location = mean(heights), scale = sd(heights))
+1-plst(60, df = length(heights)-1, location = mean(heights), scale = sd(heights)/sqrt(length(heights)))
 @
 \end{frame}
 
 
-% \section{Comparing 2 means}
-% \begin{frame}
-% \frametitle{Comparing 2 means}
-% \end{frame}
+\section{Comparing 2 means}
+\begin{frame}
+\frametitle{Comparing 2 means}
+
+\vspace{-0.1in}
+
+Suppose we have groups indexed by $g=1,\ldots,G$
+\begin{itemize}
+\item $n_g$ numerical observations in group $g$, \pause
+\item the same \alert{population mean} $\mu_g$ within a group \pause and
+\item same \alert{population standard deviation} $\sigma_g$ within a group, \pause
+\item all observations are \alert{independent}.
+\end{itemize}
+
+\pause
+
+Let $Y_{ig}$ be the value for the $i$th observation in the $g$th group and assume
+$Y_{ig} \ind N(\mu_g,\sigma_g^2)$.
+
+\vspace{0.1in} \pause
+
+When we collect data, we will have a sample mean and sample standard deviation
+for each group.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Sample statistics in R}
+<<>>=
+set.seed(20220208)
+heights <- data.frame(sex = rep(c("male","female"), c(7, 11))) %>%
+  mutate(height = ifelse(sex == "female", 63.6, 69.2) +
+           rnorm(n()) * ifelse(sex == "female", 2.2, 2.5),
+         height = round(height,1))
+
+write_csv(heights, file = "heights.csv")
+@
+
+<<echo=TRUE>>=
+d <- read_csv("heights.csv")
+
+d %>%
+  group_by(sex) %>%
+  summarize(n = n(),
+            mean = mean(height),
+            sd = sd(height))
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Posterior beliefs}
+<<>>=
+s = d %>%
+  group_by(sex) %>%
+  summarize(n = n(),
+            mean = mean(height),
+            sd = sd(height))
+
+ggplot(data.frame(x = seq(55,80, length=1001)), aes(x=x)) +
+  stat_function(fun = dlst, args = list(df = s$n[s$sex == "female"],
+                                        location = s$mean[s$sex == "female"],
+                                        scale = s$sd[s$sex == "female"]/sqrt(s$n[s$sex == "female"])),
+                color = "pink") +
+  stat_function(fun = dlst, args = list(df = s$n[s$sex == "male"],
+                                        location = s$mean[s$sex == "male"],
+                                        scale = s$sd[s$sex == "male"]/sqrt(s$n[s$sex == "male"])),
+                color = "blue") +
+  labs(title = "Posterior beliefs about mean height",
+       x = "Height (inches)",
+       y = "Posterior")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior probabilities}
+
+What is the probability that males are, on average, taller than females?
+\pause
+\[
+P(\mu_{\mbox{male}} > \mu_{\mbox{female}}|y)
+\]
+\pause
+We use a Monte Carlo approach
+<<echo=TRUE>>=
+rlst <- function(n, df, location, scale) {
+  location+scale*rt(n, df = df)
+}
+n_reps <- 100000
+mu_female <- rlst(n_reps, df = 11-1, location = 64.1, scale = 1.59/sqrt(11))
+mu_male   <- rlst(n_reps, df =  7-1, location = 71.6, scale = 2.66/sqrt(7))
+mean(mu_male > mu_female)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible interval for the difference}
+<<echo=TRUE>>=
+a <- 1 - 0.95
+quantile(mu_male - mu_female, prob = c(a/2, 1-a/2))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Using built in R functions}
+
+\vspace{-0.1in}
+
+<<echo=TRUE>>=
+d <- read_csv("heights.csv")
+t.test(height ~ sex, data = d)
+@
+\end{frame}
+
 
 \end{document}
 
