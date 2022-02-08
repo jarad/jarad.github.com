@@ -14,5 +14,5 @@ The first link provides the R code and R output as well as a description of what
 the code is doing. 
 For homework, it will likely be helpful to start with the R script 
 
-- [Installation](installation.html) [installation script](installation.R)
-- [Binomial analyses](binomial.html) [binomial script](binomial.R)
+- [Installation](installation.html) ([installation script](installation.R))
+- [Binomial analyses](binomial.html) ([binomial script](binomial.R))
