@@ -16,3 +16,10 @@ For homework, it will likely be helpful to start with the R script
 
 - [Installation](installation.html) ([installation script](installation.R))
 - [Binomial analyses](binomial.html) ([binomial script](binomial.R))
+
+## Excel anlaysis
+
+The following provides approaches to analyzing data in Excel. 
+The files are constructed so that you only need to change the red valued cells. 
+
+- [Binomial analyses](binomial.xlsx)
