@@ -20,4 +20,5 @@ you can find them
 |Scientific Process|[pdf](02-Scientific_Process/02-Scientific_Process.pdf)|[R](02-Scientific_Process/02-Scientific_Process.R)
 |Probability|[pdf](03-Probability/03-Probability.pdf)|[R](03-Probability/03-Probability.R)
 |Binomial distribution|[pdf](04-Binomial_distribution/04-Binomial_distribution.pdf)|[R](04-Binomial_distribution/04-Binomial_distribution.R)
-|Normal distribution|[pdf](05-Normal_distribution/05-Normal_distribution.pdf)|[R](05-Normal_distribution/05-Normal_distribution.R)|[heights.csv](5-Normal_distribution/heights.csv)
+|Binomial analysis|[pdf](05-Binomial_analysis/05-Binomial_analysis.pdf)|[R](05-Binomial_analysis/05-Binomial_analysis.R)
+|Normal distribution|[pdf](06-Normal_distribution/06-Normal_distribution.pdf)|[R](06-Normal_distribution/06-Normal_distribution.R)|[heights.csv](06-Normal_distribution/heights.csv)

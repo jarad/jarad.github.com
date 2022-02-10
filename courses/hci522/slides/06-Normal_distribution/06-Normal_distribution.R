@@ -159,8 +159,8 @@ ggplot(data.frame(x = seq(50, 75, length = 1001)),
 t.test(heights, conf.level = 0.95)
 
 
-## ----echo=TRUE--------------------------------------------------------------------------------------------------------
-1-pt((60-mean(heights))/sd(heights), df = length(heights)-1)
+## ----echo=TRUE, size="scriptsize"-------------------------------------------------------------------------------------
+1-pt((60-mean(heights))/(sd(heights)/sqrt(length(heights))), df = length(heights)-1)
 
 
 ## ----echo=TRUE, size="scriptsize"-------------------------------------------------------------------------------------
