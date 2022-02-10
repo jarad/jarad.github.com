@@ -21,4 +21,5 @@ you can find them
 |Probability|[pdf](03-Probability/03-Probability.pdf)|[R](03-Probability/03-Probability.R)
 |Binomial distribution|[pdf](04-Binomial_distribution/04-Binomial_distribution.pdf)|[R](04-Binomial_distribution/04-Binomial_distribution.R)
 |Binomial analysis|[pdf](05-Binomial_analysis/05-Binomial_analysis.pdf)|[R](05-Binomial_analysis/05-Binomial_analysis.R)
-|Normal distribution|[pdf](06-Normal_distribution/06-Normal_distribution.pdf)|[R](06-Normal_distribution/06-Normal_distribution.R)|[heights.csv](06-Normal_distribution/heights.csv)
+|Normal distribution|[pdf](06-Normal_distribution/06-Normal_distribution.pdf)|[R](06-Normal_distribution/06-Normal_distribution.R)
+|Normal analysis|[pdf](07-Normal_analysis/07-Normal_analysis.pdf)|[R](07-Normal_analysis/07-Normal_analysis.R)|[heights.csv](07-Normal_analysis/heights.csv)
