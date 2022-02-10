@@ -23,3 +23,4 @@ The following provides approaches to analyzing data in Excel.
 The files are constructed so that you only need to change the red valued cells. 
 
 - [Binomial analyses](binomial.xlsx)
+- [Normal analyses](normal.xlsx)
