@@ -1,0 +1,647 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{08 - Statistical Inference}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("gridExtra")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overview}
+\begin{itemize}
+\item Inference
+  \begin{itemize}
+  \item Population vs sample
+  \item Convenience sample
+  \item Random sample \pause
+  \item Statistical inference \pause
+  \end{itemize}
+\item Causality
+  \begin{itemize}
+  \item Observational study
+  \item (Quasi-)experiment
+  \item Randomized experiment \pause
+  \item Causal inference \pause
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\section{Inference}
+\subsection{Population}
+\begin{frame}
+\frametitle{Population}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://www.scribbr.com/methodology/population-vs-sample/}}
+\begin{definition}
+The \alert{population} is the entire group that you want to draw conclusions about.
+\end{definition}
+
+\pause
+
+Examples: \pause
+\begin{itemize}
+\item All graduate students at ISU
+\item All Mac M1 minis
+\item All interior design apps
+\end{itemize}
+\end{frame}
+
+\subsection{Sample}
+\begin{frame}
+\frametitle{Sample}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://www.scribbr.com/methodology/population-vs-sample/}}
+\begin{definition}
+A \alert{sample} is the specific group you will collect data from.
+\end{definition}
+
+\pause
+
+Examples: \pause
+\begin{itemize}
+\item HCI students at ISU
+\item My Mac M1 mini
+\item All interior design apps on the Apple App Store
+\end{itemize}
+\end{frame}
+
+
+\subsection{Population vs Sample}
+\begin{frame}
+\frametitle{Population vs Sample}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://www.scribbr.com/methodology/population-vs-sample/}}
+\begin{center}
+\includegraphics[width=0.4\textwidth]{population-vs-sample}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Population vs Sample}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://www.omniconvert.com/what-is/sample-size/}}
+\begin{center}
+\includegraphics[width=0.8\textwidth]{sample-size-definition}
+\end{center}
+\end{frame}
+
+
+\subsection{Parameters}
+\begin{frame}
+\frametitle{Parameters}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://en.wikipedia.org/wiki/Statistical_parameter}}
+
+\begin{definition}
+A \alert{parameter} is any measur[able] quantity of a statistical population
+that summarizes or describes an aspect of the population.
+\end{definition}
+
+\pause
+
+Examples: \pause
+\begin{itemize}
+\item Population mean
+\item Population standard deviation
+\item Population probability of success \pause
+\item Population probability density function
+\end{itemize}
+\end{frame}
+
+
+\subsection{Statistics}
+\begin{frame}
+\frametitle{Statistics}
+
+\vspace{-0.1in}
+
+\begin{definition}
+A \alert{statistic} is a function of your data.
+\end{definition}
+
+\pause
+
+Examples: \pause
+\begin{itemize}
+\item Numeric quantities
+  \begin{itemize}
+  \item Sample mean
+  \item Sample standard deviation
+  \item Sample proportion of success \pause
+  \end{itemize}
+\item Graphical statistics
+  \begin{itemize}
+  \item Histogram
+  \item Scatterplot
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\subsection{Estimator}
+\begin{frame}
+\frametitle{Estimator}
+\begin{definition}
+An \alert{estimator} is a statistic that estimates a population parameter.
+\end{definition}
+
+\pause
+
+Examples: \pause
+\begin{itemize}
+\item Sample mean \alert{estimates} the population mean
+\item Sample standard deviation \alert{estimates} the population mean
+\item Sample proportion of successes \alert{estimates} the population probability of success \pause
+\item Histogram \alert{estimates} the probability density function
+\end{itemize}
+\end{frame}
+
+
+\subsection{Sampling error}
+\begin{frame}
+\frametitle{Sampling error}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://en.wikipedia.org/wiki/Sampling_error}}
+
+\begin{definition}
+\alert{Sampling error} is the error caused by observing a sample instead of
+the whole population.
+\end{definition}
+
+Examples: \pause
+\begin{itemize}
+\item Sample mean minus population mean
+\item Sample proportion minus population probability
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Representative sample}
+\begin{frame}
+\frametitle{Representative sample}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://www.investopedia.com/terms/r/representative-sample.asp}}
+
+\begin{definition}
+A \alert{representative sample} is a subset of a population that seeks to
+accurately reflect the characteristics of the larger group.
+\end{definition}
+
+\pause
+
+Random samples are probabilistically ``guaranteed'' to be representative.
+\end{frame}
+
+
+\subsection{Convenience sample}
+\begin{frame}
+\frametitle{Convenience sample}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://en.wikipedia.org/wiki/Convenience_sampling}}
+
+\begin{definition}
+\alert{Convenience sampling} is a type of non-probability sampling that involves
+the sample being drawn from that part of the population that is easy to contact
+or reach.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Examples: \pause
+\begin{itemize}
+\item Students in HCI 522 representing all ISU graduate students \pause
+\item ISU undergraduate students representing all people \pause
+\item Interior design apps on the App Store representing all interior design apps
+\end{itemize}
+\end{frame}
+
+\subsection{Random sample}
+\begin{frame}
+\frametitle{Random sample}
+\begin{definition}
+A \alert{random sample} is a sampling technique that uses random mechanism to
+include individuals in the sample.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Random mechanism examples: \pause
+\begin{itemize}
+\item Rolling dice
+\item Lotteries
+\item Random number table
+\item Random number generation, e.g. RAND() in Excel
+\end{itemize}
+\end{frame}
+
+
+\subsection{Simple random sample}
+\begin{frame}
+\frametitle{Simple random sample}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://www.investopedia.com/terms/s/simple-random-sample.asp}}
+
+\begin{definition}
+A \alert{simple random sample} is a subset of the population in which each
+member of the subset has an equal probability of being chosen.
+\end{definition}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Simple random sample in R}
+<<simple-random-sample, echo=TRUE>>=
+n <- 10000 # enumerate all n individuals
+sample(n, size = 10)
+@
+\pause
+Alternatively
+<<simple-random-sample2, echo=TRUE>>=
+data.frame(individual = 1:n,
+           random_number = runif(n)) %>% # RAND() in Excel
+  arrange(random_number) %>%
+  head(10) %>%
+  pull(individual)
+@
+\end{frame}
+
+
+% \subsection{Stratified random sample}
+% \begin{frame}
+% \frametitle{Stratified random sample}
+% \end{frame}
+
+
+\subsection{Statistical inference}
+\begin{frame}
+\frametitle{Statistical inference}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://online.stanford.edu/courses/stats200-introduction-statistical-inference}}
+\begin{definition}
+\alert{Statistical inference} is the process of using data
+[from a sample] to draw conclusions about a population.
+\end{definition}
+% \end{frame}
+%
+% \begin{frame}
+% \frametitle{Statistical inference}
+%
+% \vspace{-0.1in}
+
+{\tiny \url{https://courses.lumenlearning.com/wm-concepts-statistics/chapter/wim-linking-probability-to-statistical-inference/}}
+\includegraphics[width=0.6\textwidth]{statistical_inference}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Binomial example}
+
+Parameter: proportion of app users who use a chatbot \pause
+
+Statistic: 6 out of 20 randomly sampled users use the chatbot
+
+\vspace{0.2in} \pause
+
+<<echo=TRUE>>=
+y <- 6; n <- 20; a <- 1-0.95
+qbeta(c(a/2,1-a/2), 1+y, 1+n-y) %>% round(2)
+@
+\pause
+This 95\% credible interval is a statement about the population
+parameter.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Normal example}
+
+Parameter: mean EEG alertness level of air traffic controllers \pause
+
+Statistic: in a random sample of 30 air traffic controllers,
+normalized EEG alertness level had a mean of 73 and a standard deviation of
+5
+
+\vspace{0.2in} \pause
+
+<<echo=TRUE>>=
+n <- 30; mn <- 73; sd <- 5; se <- sd/sqrt(n); a <- 1-0.95
+(qt(c(a/2,1-a/2), df = n-1)*se + mn) %>% round(1)
+@
+\pause
+The following 95\% credible interval is a statement about the population
+parameter.
+\end{frame}
+
+
+
+\section{Causality}
+\subsection{Observational study}
+\begin{frame}
+\frametitle{Observational study}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://study.com/academy/lesson/observational-study-in-statistics-definition-examples.html}}
+
+\begin{definition}
+An \alert{observational study} is a study in which the researcher simply
+observes the subjects without interfering.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Examples: \pause
+\begin{itemize}
+\item Recording how long it takes an undergraduate student to register
+\item Recording usage of a twitter hashtag
+\end{itemize}
+\end{frame}
+
+
+% \begin{frame}
+% \frametitle{Cohort study}
+% \begin{definition}
+%
+% \end{definition}
+% \end{frame}
+
+
+
+
+
+\subsection{(Quasi-)experiment}
+\begin{frame}
+\frametitle{(Quasi-)experiment}
+\begin{definition}
+A \alert{(quasi-)experiment} is a study where the researcher (non-randomly)
+assigns a treatment to an experimental unit, e.g. individual.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Examples: \pause
+\begin{itemize}
+\item Live HCI 522 students must use R while asynchronous students must use Excel
+\item First 100 students to register have no chatbot, next 100 students to register have a chatbot
+\end{itemize}
+\end{frame}
+
+
+\subsection{Randomized Experiment}
+\begin{frame}
+\frametitle{Randomized experiment}
+\begin{definition}
+A \alert{randomized experiment} is a study where the researcher
+assigns a treatment to an experimental unit, e.g. individual.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Examples: \pause
+\begin{itemize}
+\item Randomly forcing HCI 522 students to use R or Excel
+\item Each student randomly gets a chatbot or not when registering for courses
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Randomizing treatments in R}
+<<echo=TRUE>>=
+data.frame(subject = 1:10) %>%
+  mutate(treatment = sample(c("A","B"), size = n(), replace = TRUE))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Randomizing treatments in R}
+<<echo=TRUE>>=
+data.frame(subject = 1:10) %>%
+  mutate(treatment = sample(c("A","B","C"), size = n(), replace = TRUE, prob = c(2,3,5)/10))
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Balanced}
+\begin{definition}
+An experiment is \alert{balanced} if there are the same number of experimental
+units for each treatment (or combination of treatments).
+\end{definition}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Balanced treatments in R}
+<<echo=TRUE, size="scriptsize">>=
+data.frame(subject = 1:10) %>%
+  mutate(treatment = sample(rep(c("A","B"), times = 5), size = n()))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Randomizing treatments in R}
+<<echo=TRUE, size="scriptsize">>=
+data.frame(subject = 1:10) %>%
+  mutate(treatment = sample(rep(c("A","B","C"), times = c(2,3,5)), size = n()))
+@
+\end{frame}
+
+
+\subsection{Causal inference}
+\begin{frame}
+\frametitle{Causal inference}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://methods.sagepub.com/reference/the-sage-encyclopedia-of-educational-research-measurement-and-evaluation/i4418.xml}}
+\begin{definition}
+\alert{Causal inference} refers to the process of drawing a conclusion that a
+specific treatment (i.e., intervention) was the “cause” of the effect (or outcome) that was observed.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Causal inferences can only be drawn from randomized experiments.
+\end{frame}
+
+\begin{frame}
+\frametitle{Causal inference}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://towardsdatascience.com/causal-inference-962ae97cefda}}
+
+\includegraphics[width=0.6\textwidth]{causal_inference}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Correlations (not causation)}
+Correlations can be inferred to the population from an observational study
+based on a random sample.
+\pause
+
+\includegraphics[width=0.9\textwidth]{correlation}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Spurious correlations}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://www.tylervigen.com/spurious-correlations}}
+
+\includegraphics[width=0.9\textwidth]{spurious_correlations}
+\end{frame}
+
+
+
+
+
+\subsection{Binomial comparison}
+\begin{frame}[fragile]
+\frametitle{Binomial comparison}
+
+Scientific question: effect of chatbot on probability to correctly register for courses \pause
+
+Experiment: 20 volunteer undergraduate students were randomly assigned a chatbot
+or no chatbot. Amongst the 10 in the chatbot group, all successfully registered.
+In the non-chatbot group 8/10 successfully registered.
+
+\pause
+
+<<echo=TRUE>>=
+n_reps <- 100000; a <- 1-0.95
+theta_chatbot   <- rbeta(n_reps, shape1 = 1+10, shape2 = 1+10-10)
+theta_nochatbot <- rbeta(n_reps, shape1 = 1+ 8, shape2 = 1+10- 8)
+quantile(theta_chatbot - theta_nochatbot, probs = c(a/2, 1-a/2)) %>% round(2)
+@
+\pause
+This 95\% credible interval is a causal effect of the treatment (chatbot)
+but only for those students in this study.
+\end{frame}
+
+
+\subsection{Normal comparison}
+\begin{frame}[fragile]
+\frametitle{Normal comparison}
+
+Scientific question: effect of chatbot on course registration time \pause
+
+Experiment: 40 randomly chosen ISU undergraduate students were randomly assigned a chatbot
+or no chatbot.
+Amongst the 21 in the chatbot group,
+the sample mean time was 2 minutes with a standard deviation of 1 minute.
+Amongst the 19 in the no chatbot group,
+the sample mean time was 1.5 minutes with a standard deviation of 0.75 minutes.
+
+\pause
+
+<<echo=TRUE>>=
+n_reps <- 100000; a <- 1-0.95
+mu_chatbot   <- rt(n_reps, df = 21-1)*(   1/sqrt(21)) + 2
+mu_nochatbot <- rt(n_reps, df = 19-1)*(0.75/sqrt(19)) + 1.5
+quantile(mu_chatbot - mu_nochatbot, probs = c(a/2, 1-a/2)) %>% round(2)
+@
+\pause
+This 95\% credible interval is a causal effect of the treatment (chatbot)
+for all ISU undergraduate students.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Causal inference cheat sheet}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://nc233.com/2020/04/causal-inference-cheat-sheet-for-data-scientists/}}
+
+\includegraphics[width=0.7\textwidth]{evidence}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item Samples
+  \begin{itemize}
+  \item Population vs sample
+  \item Convenience sample
+  \item Random sample
+  \item Statistical inference
+  \end{itemize}
+\item Randomized experiment
+  \begin{itemize}
+  \item Observational study
+  \item (Quasi-)experiment
+  \item Randomized experiment
+  \item Causal inference
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+
+\end{document}
+
+
