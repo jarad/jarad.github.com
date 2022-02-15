@@ -1,0 +1,224 @@
+\documentclass[10pt]{article}
+\input{../topmatter}
+
+% \setlength{\parskip}{\baselineskip}%
+
+\lhead{\Large\sffamily \course{}: Activity 3}
+
+% \excludecomment{answer}
+
+<<include=FALSE>>=
+opts_chunk$set(fig.width=8, fig.height=4, fig.pos='htb', out.width='\\textwidth',
+               echo = FALSE)
+@
+
+<<packages, warning=FALSE, message=FALSE>>=
+library("tidyverse")
+@
+
+\begin{document}
+
+\section*{Part 1}
+
+\subsection*{IKEA interior home design virtual reality application satisfaction}
+
+IKEA has a kitchen designer app that allows users to build a virtual kitchen
+in a 3D environment. You perform a large scale study of user satisfaction after
+users actually build their kitchen based on the design they produced in the app.
+You send out surveys to 10,000 recent app users with the primary question of
+interest being how satisfied the user is in their kitchen.
+You allow respondents to answer on a Likert scale from 0 to 10
+(integers only).
+The satisfcation ratings are available in the file {\texttt ikea\_rating.csv}.
+
+<<echo=FALSE>>=
+set.seed(20220212)
+n <- 673
+
+write_csv(data.frame(individual = 1:n,
+                     rating = rbinom(n, 10, 6.3/10)),
+          file = "ikea_rating.csv")
+@
+
+Let $Y_i$ be the response for individual $i$ and assume
+$Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$.
+
+\begin{answer}
+<<echo=TRUE>>=
+satisfaction <- read_csv("ikea_rating.csv",
+                     col_types = cols(
+                       individual = col_double(),
+                       rating = col_double()))
+@
+\end{answer}
+
+\begin{enumerate}
+\item How many ratings are there?
+
+\begin{answer}
+<<>>=
+n <- nrow(satisfaction)
+n
+@
+\end{answer}
+
+\item What is the sample mean of the ratings?
+
+\begin{answer}
+<<>>=
+mn <- mean(satisfaction$rating)
+mn
+@
+\end{answer}
+
+\item What is the sample standard deviation of the ratings?
+
+\begin{answer}
+<<>>=
+s <- sd(satisfaction$rating)
+s
+@
+\end{answer}
+
+\item What is the posterior probability that the mean rating is greater than
+7?
+
+\begin{answer}
+<<>>=
+se <- s/sqrt(n)
+1-pt((7-mn)/(se), df = n-1)
+@
+\end{answer}
+
+\item Provide a 95\% credible interval for the mean rating?
+
+\begin{answer}
+<<>>=
+a <- 1-0.95
+mn + c(-1,1)*qt(1-a/2, df = n-1)*se
+@
+\end{answer}
+
+\end{enumerate}
+
+<<echo=FALSE>>=
+y <- rbinom(15, size = 10, prob = 7/10)
+@
+
+\subsection*{New interior home design virtual reality application satisfaction}
+
+You have created your own interior kitchen design app.
+The same survey was given to all 15 individuals who used your app and
+subsequently remodeled their kitchens.
+Among these 15 individuals, you had a sample mean of 6.8 and a sample standard
+deviation of 1.01 when they provided their satisfaction rating.
+
+\begin{enumerate}
+\setcounter{enumi}{5}
+\item Determine the posterior probability that the mean rating for your app is
+greater than 7.
+
+\begin{answer}
+<<>>=
+1-pt((7-6.8)/(1.01/sqrt(15)), df = 15-1)
+@
+\end{answer}
+
+\item Provide a 95\% credible interval for the mean rating for your app.
+
+\begin{answer}
+<<>>=
+a <- 1-0.95
+6.8 + c(-1,1)*qt(1-a/2, df = 15-1)*1.01/15
+@
+\end{answer}
+
+\item Calculate the posterior probability that the mean rating for your app
+is larger than the mean rating for the IKEA app.
+
+\begin{answer}
+<<>>=
+n_reps <- 100000
+mu_IKEA <- rt(n_reps, df =  n-1)*se + mn
+mu_your <- rt(n_reps, df = 15-1)*(1.01/sqrt(15)) + 6.8
+mean(mu_your > mu_IKEA)
+@
+\end{answer}
+
+\end{enumerate}
+
+
+\section*{Part 2}
+
+Answer the following questions based on the descriptions above.
+
+\begin{enumerate}
+\item How much should it concern you that only a small portion of the IKEA
+surveys were returned?
+
+\begin{answer}
+This is a big concern.
+Only 673/10,000 = 6.73\% of surveys sent out were returned.
+This is very low response rate.
+The low response rate is likely to bias results quite a bit compared to if all
+10,000 surveys had been returned.
+\end{answer}
+
+\item For the survey respondents who used your interior design app,
+what is the population and what is the sample?
+
+\begin{answer}
+Since {\bf all} 15 individuals who have ever used our app and remodeled their kitchen
+responded to the survey, the population and sample are these 15 individuals.
+
+Alternatively, you could consider your population to be all individuals who
+have used or will ever use your app.
+In this case, the sample would be the first 15 users.
+\end{answer}
+
+\item Provide a plot showing your posterior belief concerning the mean rating
+for IKEA users and mean rating for users of your app.
+
+\begin{answer}
+
+<<>>=
+dlst <- function(x, df, location, scale) {
+  dt((x-location)/scale, df = df)/scale
+}
+
+d <- data.frame(mu = seq(5, 8, length = 1001)) %>%
+  mutate(IKEA = dlst(mu, df = n, location = mn, scale = se),
+         new  = dlst(mu, df = 15, location = 6.8, scale = 1.01/sqrt(15))) %>%
+  pivot_longer(cols = -mu, names_to = "app")
+
+ggplot(d, aes(x = mu, y = value, color = app, linetype = app)) +
+  geom_line() +
+  theme_bw() +
+  labs(x = "Mean", y = "Posterior",
+       title = "Posterior belief about mean rating")
+@
+\end{answer}
+
+
+\item Only 673 individuals out of 10,000 responded to the IKEA satisfaction
+survey. Describe a way to increase survey response.
+
+\begin{answer}
+A monetary reward for completing the survey would likely help increase
+survey responses, e.g. providing an IKEA gift card.
+\end{answer}
+
+\item These data were collected using a survey which requires the respondent
+to accurately recall their satisfaction.
+Describe a more objective way to measure satisfaction.
+
+\begin{answer}
+Honestly I don't know, so I'm curious what everybody comes up with.
+Perhaps if there is a physiological way to measure satisfaction, e.g. EEG,
+that could be used.
+One issue is that there might be a long delay between when the user used the
+app and when they completed the kitchen remodel and then took the survey.
+\end{answer}
+\end{enumerate}
+
+\end{document}
