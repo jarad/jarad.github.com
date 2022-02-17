@@ -1,0 +1,551 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{09 - Simple Linear Regression}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("ggResidpanel")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overview}
+\begin{itemize}
+\item Simple linear regression
+  \begin{itemize}
+  \item Dependent variable
+  \item Independent variable
+  \item Continuous independent variable
+  % \item Binary independent variable
+  \end{itemize}
+\item Assumptions
+  \begin{itemize}
+  \item Linearity
+  \item Normality
+  \item Constant Variance
+  \item Independence
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\section{Simple linear regression}
+\begin{frame}
+\frametitle{Simple linear regression}
+<<gpm-plot>>=
+mouse <- data.frame(sensitivity = rep(c(800,1200,1600,2000), times = 5)) %>%
+  mutate(gpm = rnorm(n(), 650-sensitivity/10, 10))
+
+g <- ggplot(mouse, aes(x = sensitivity, y = gpm)) +
+  geom_point() +
+  labs(x = "Mouse sensitivity (DPI)",
+       y = "Gold per minute",
+       title = "League of Legends")
+@
+\end{frame}
+
+
+\subsection{Dependent variable}
+\begin{frame}
+\frametitle{Dependent variable}
+\begin{definition}
+The distribution of the \alert{dependent variable} depends on the values of
+the independent variables.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Dependent variable examples: \pause
+\begin{itemize}
+\item Gold per minute
+\item Time to register
+\item Satisfaction
+\end{itemize}
+\end{frame}
+
+
+\subsection{Independent variable}
+\begin{frame}
+\frametitle{Independent variable}
+\begin{definition}
+The \alert{independent variable} affects the distribution of the dependent
+variable.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+Independent variable examples: \pause
+\begin{itemize}
+\item Mouse sensitivity
+\item Availability of a chatbot
+\item App being used
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Synonyms}
+	Terminology (all of these are [basically] equivalent):
+	\begin{center}
+	\begin{tabular}{ll}
+	\hline
+	dependent & independent \\
+	response & independent \\
+	outcome & covariate \\
+	endogenous & exogenous \\
+	\hline
+	\end{tabular}
+	\end{center}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Independent-dependent variable}
+\vspace{-0.1in}
+
+{\tiny \url{https://towardsdatascience.com/causal-inference-962ae97cefda}}
+
+\includegraphics[width=0.7\textwidth]{causal_inference}
+\end{frame}
+
+
+
+\subsection{Continuous independent variable}
+\begin{frame}
+\frametitle{Continuous independent variable}
+<<>>=
+g + stat_smooth(method = "lm", se = FALSE)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Continuous independent variable}
+<<>>=
+g + stat_smooth(method = "lm")
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Simpe linear regression}
+  The \alert{simple linear regression} model is
+	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+	where $Y_i$ and $X_i$ are the dependent and independent variable, respectively,
+	for individual $i$.
+
+	\vspace{0.1in} \pause
+
+	Alternatively
+	\[
+	Y_i = \beta_0 + \beta_1 X_i \pause + \epsilon_i, \qquad \epsilon_i \stackrel{ind}{\sim} N(0,\sigma^2).
+	\]
+	\pause
+	Importantly
+	\[
+	E[Y_i|X_i] = \beta_0 + \beta_1 X_i
+	\]
+	\pause
+	and
+	\[ Var[Y_i|X_i] = \sigma^2. \]
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Visualize variability}
+<<>>=
+dat <- data.frame(x = mouse$sensitivity,
+                  y = mouse$gpm)
+
+## breaks: where you want to compute densities
+breaks <- seq(800, max(dat$x), len=4)
+dat$section <- cut(dat$x, breaks)
+
+## Get the residuals
+dat$res <- residuals(lm(y ~ x, data=dat))
+
+## Compute densities for each section, and flip the axes, and add means of sections
+## Note: the densities need to be scaled in relation to the section size (2000 here)
+dens <- do.call(rbind, lapply(split(dat, dat$section), function(x) {
+    d <- density(x$res, n=50)
+    res <- data.frame(x=max(x$x)- d$y*2000, y=d$x+mean(x$y))
+    res <- res[order(res$y), ]
+    ## Get some data for normal lines as well
+    xs <- seq(min(x$res), max(x$res), len=50)
+    res <- rbind(res, data.frame(y=xs + mean(x$y),
+                                 x=max(x$x) - 2000*dnorm(xs, 0, sd(x$res))))
+    res$type <- rep(c("empirical", "normal"), each=50)
+    res
+}))
+dens$section <- rep(levels(dat$section), each=100)
+
+ggplot(dat, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method="lm", fill=NA, lwd=2) +
+  # geom_path(data=dens[dens$type=="normal",], aes(x, y, group=section), color="salmon", lwd=1.1) +
+  theme_bw() +
+  geom_vline(xintercept=breaks, lty=2)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Estimate model parameters}
+<<echo=TRUE>>=
+m <- lm(gpm ~ sensitivity, data = mouse)
+m
+@
+\pause
+\[
+\hat\beta_0 = \Sexpr{coef(m)[1] %>% round}, \qquad
+\hat\beta_1 = \Sexpr{coef(m)[2] %>% round(3)}
+\]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Fit a line}
+<<>>=
+g + stat_smooth(method = "lm", se = FALSE)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+<<echo=TRUE>>=
+confint(m)
+@
+\pause
+A 95\% CI for $\beta_0$ is (\Sexpr{confint(m)[1,1] %>% round}, \Sexpr{confint(m)[1,2] %>% round}).
+
+\pause
+
+A 95\% CI for $\beta_1$ is (\Sexpr{confint(m)[2,1] %>% round(3)}, \Sexpr{confint(m)[2,2] %>% round(3)}).
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Uncertainty in the line}
+<<>>=
+g + stat_smooth(method = "lm")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Interpretation}
+\[
+E[Y_i|X_i] = \beta_0 + \beta_1 X_i
+\]
+
+\vspace{0.1in} \pause
+
+When $X_i = 0$ (when mouse sensitivity is 0),
+$E[Y_i]$ (expected gold per minute) is
+\Sexpr{coef(m)[1] %>% round} with a 95\% CI of (\Sexpr{confint(m)[1,1] %>% round}, \Sexpr{confint(m)[1,2] %>% round}).
+
+\vspace{0.1in} \pause
+
+For every 1 increase in $X_i$ (mouse sensitivity increases by 1),
+the expected increase in $Y_i$ (gold per minute) is
+\Sexpr{coef(m)[2] %>% round(3)} with a 95\% CI of (\Sexpr{confint(m)[2,1] %>% round(3)}, \Sexpr{confint(m)[2,2] %>% round(3)}).
+
+\vspace{0.1in} \pause
+
+For every 400 increase in $X_i$ (mouse sensitivity increases by 1),
+the expected increase in $Y_i$ (gold per minute) is
+\Sexpr{400*coef(m)[2] %>% round(2)} with a 95\% CI of (\Sexpr{400*confint(m)[2,1] %>% round(2)}, \Sexpr{400*confint(m)[2,2] %>% round(2)}).
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Regression summary}
+
+\vspace{-0.1in}
+
+<<echo=TRUE>>=
+summary(m)
+@
+\end{frame}
+
+
+
+\section{Assumptions}
+\begin{frame}
+\frametitle{Simple linear regression model assumptions}
+\[
+Y_i = \beta_0 + \beta_1 X_i \pause + \epsilon_i, \qquad \epsilon_i \stackrel{ind}{\sim} N(0,\sigma^2).
+\]
+
+\vspace{0.1in}
+
+Assumptions: \pause
+\begin{itemize}
+\item Linearity
+\item Normality
+\item Constant variance
+\item Independence
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Many plots will be based off residuals:
+\[
+r_i = \hat\epsilon_i = Y_i - \hat{Y}_i = Y_i = \hat\beta_0 + \hat\beta_1 X_i.
+\]
+\end{frame}
+
+
+\subsection{Linearity}
+\begin{frame}
+\frametitle{Linearity assumption}
+Linear relationships between expected value of the dependent variable and the
+independent variable:
+\pause
+\[
+E[Y_i|X_i] = \beta_0 + \beta_1 X_i
+\]
+
+\vspace{0.1in} \pause
+
+Look at
+\begin{itemize}
+\item Independent variable vs dependent variable
+\item Residuals vs predicted value
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Linear assumption is valid}
+<<>>=
+g
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Linear assumption is valid}
+<<>>=
+g + stat_smooth(method = "lm", se = FALSE)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Linear assumption is valid}
+<<>>=
+resid_panel(m, plots = "resid")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Linear assumption is NOT valid}
+<<>>=
+d <- data.frame(x = runif(100)) %>%
+  mutate(y = rnorm(n(), (2*x)^2, 0.1))
+
+ggplot(d, aes(x=x,y=y)) +
+  geom_point()
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Linear assumption is NOT valid}
+<<>>=
+ggplot(d, aes(x=x,y=y)) +
+  geom_point() +
+  stat_smooth(method = "lm", se=FALSE)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Linear assumption is NOT valid}
+<<>>=
+m2 <- lm(y~x, data = d)
+resid_panel(m2, plots = "resid")
+@
+\end{frame}
+
+
+
+
+\subsection{Normality}
+\begin{frame}
+\frametitle{Normality}
+\[
+Y_i = \beta_0 + \beta_1 X_i \pause + \epsilon_i, \qquad \epsilon_i \stackrel{ind}{\sim} N(0,\sigma^2).
+\]
+
+\vspace{0.1in} \pause
+
+Best diagnostic is a QQ-plot
+\end{frame}
+
+
+\begin{frame}
+\frametitle{QQ-plot (normality is valid)}
+<<>>=
+resid_panel(m, plots = "qq")
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{QQ-plot (normality is valid)}
+<<>>=
+resid_panel(m, plots = "qq", qqbands = TRUE)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{QQ-plot (normality is NOT valid)}
+<<>>=
+m3 <- lm(y~x,
+         data = data.frame(x = runif(200)) %>%
+           mutate(y = x + rt(n(), df = 3)/10)
+          )
+
+resid_panel(m3, plots = "qq", qqbands = TRUE)
+@
+\end{frame}
+
+
+
+\subsection{Constant variance}
+\begin{frame}
+\frametitle{Constant variance}
+\[
+Y_i = \beta_0 + \beta_1 X_i \pause + \epsilon_i, \qquad \epsilon_i \stackrel{ind}{\sim} N(0,\sigma^2).
+\]
+
+\vspace{0.1in} \pause
+
+Plot residuals vs predicted values and look for a ``horn'' shape pattern
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Constant variance assumption is valid}
+<<>>=
+resid_panel(m, plots = "resid")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Constant variance assumption is NOT valid}
+<<>>=
+m4 <- lm(y~x,
+         data = data.frame(x = runif(200)) %>%
+           mutate(y = rnorm(n(), mean = x, sd = x))
+          )
+
+resid_panel(m4, plots = "resid")
+@
+\end{frame}
+
+\subsection{Independence}
+\begin{frame}
+\frametitle{Independence}
+\[
+Y_i = \beta_0 + \beta_1 X_i \pause + \epsilon_i, \qquad \epsilon_i \stackrel{ind}{\sim} N(0,\sigma^2).
+\]
+
+\vspace{0.1in} \pause
+
+No great way to assess this assumption other than subject matter knowledge.
+
+\vspace{0.1in} \pause
+
+Main causes for dependence are
+\begin{itemize}
+\item temporal (residuals vs index might help)
+\item spatial
+\item clustering
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Residuals vs index (independence assumption is valid)}
+<<>>=
+resid_panel(m, plots = "index")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Residuals vs index (independence assumption is NOT valid)}
+<<>>=
+m5 <- lm(y~x, data = data.frame(x = runif(100)) %>%
+  mutate(y = x + sin(1:n()/20) + rnorm(n(),0,0.5)))
+
+resid_panel(m5, plots = "index")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{All plots together}
+<<>>=
+resid_panel(m, plots = c("resid","qq","index"), qqbands = TRUE)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Summary}
+Simple linear regression model:
+\[
+Y_i = \beta_0 + \beta_1 X_i \pause + \epsilon_i, \qquad \epsilon_i \stackrel{ind}{\sim} N(0,\sigma^2).
+\]
+
+\vspace{0.1in} \pause
+
+Assumptions:
+\begin{itemize}
+\item Linearity
+\item Normality
+\item Constant variance
+\item Independence
+\end{itemize}
+\end{frame}
+
+\end{document}
+
+

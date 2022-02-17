@@ -23,4 +23,5 @@ you can find them
 |Binomial analysis|[pdf](05-Binomial_analysis/05-Binomial_analysis.pdf)|[R](05-Binomial_analysis/05-Binomial_analysis.R)
 |Normal distribution|[pdf](06-Normal_distribution/06-Normal_distribution.pdf)|[R](06-Normal_distribution/06-Normal_distribution.R)
 |Normal analysis|[pdf](07-Normal_analysis/07-Normal_analysis.pdf)|[R](07-Normal_analysis/07-Normal_analysis.R)|[heights.csv](07-Normal_analysis/heights.csv)
-|Statistical inference|[pdf](08_Statistical_inference/08_Statistical_inference.pdf)|[R](08_Statistical_inference/08_Statistical_inference.R)
+|Statistical inference|[pdf](08-Statistical_inference/08-Statistical_inference.pdf)|[R](08-Statistical_inference/08-Statistical_inference.R)
+|Simple linear regression|[pdf](09-Simple_linear_regression/09-Simple_linear_regression.pdf)|[R](09-Simple_linear_regression/09-Simple_linear_regression.R)

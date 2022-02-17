@@ -7,8 +7,9 @@ all: \
   04-Binomial_distribution/04-Binomial_distribution.pdf \
   05-Binomial_analysis/05-Binomial_analysis.pdf \
   06-Normal_distribution/06-Normal_distribution.pdf \
-  07-Normal_analysis/07-Normal_analysis.pdf\
-  08-Statistical_inference/08-Statistical_inference.pdf
+  07-Normal_analysis/07-Normal_analysis.pdf \
+  08-Statistical_inference/08-Statistical_inference.pdf \
+  09-Simple_linear_regression/09-Simple_linear_regression.pdf
 
 %.pdf: %.Rnw commands.tex frontmatter.tex
 	/Library/Frameworks/R.framework/Resources/bin/Rscript --vanilla makeslides.R $<
