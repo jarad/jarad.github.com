@@ -1,0 +1,203 @@
+---
+layout: page
+title: "HCI/PSYCH 522"
+tagline: "Normal analysis"
+output: 
+  html_document:
+    toc: true
+---
+
+{% include JB/setup %}
+
+This page provides a summary of statistical methods in R used to analyze 
+normal data. 
+It begins by considering a single group and then expands to multiple groups. 
+For completing course activities, you should copy relevant code from here and
+modifying it as necessary. 
+
+In the code below, we will make use of the `tidyverse` package, so
+make sure to load it at the beginning of your R session.
+
+```{r}
+library("tidyverse")
+theme_set(theme_bw()) # set a figure theme
+```
+
+## Single group
+
+Normal data, written $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$ for 
+individuals $i=1,\ldots,n$ is characterized by a group of continuous observations
+with 
+
+- common mean $\mu$,
+- common standard deviation $\sigma$,
+- normal distribution (bell-shaped histogram), and
+- each observation is independent. 
+
+If our sample is based on a random sample from our population, 
+then we can make inferences about that entire population. 
+
+Suppose, we obtain 33 observations with a sample mean of 13 and a sample
+standard deviation of 2. 
+In R, we can write 
+
+```{r}
+n  <- 33
+mn <- 13
+s  <- 2
+se <- s/sqrt(n) # standard error (used often below)
+```
+
+Our posterior belief about the unknown population mean $\mu$ 
+is represented by the following curve
+
+```{r}
+# Probability density function for a location-scale t-distribution
+dlst <- function(x, df, location, scale) {
+  dt((x-location)/scale, df = df)/scale
+}
+
+d <- data.frame(mu = seq(from = mn - 4*se, to = mn + 4*se, length = 1001)) %>%
+  mutate(density = dlst(mu, df = n-1, location = mn, scale = se))
+
+ggplot(d, aes(x = mu, y = density)) + 
+  geom_line() + 
+  labs(x = expression(mu),
+       y = "Posterior belief",
+       title = "Posterior belief about population mean")
+```
+
+We can calculate probabilities based on this curve by finding the area under
+the curve. 
+For example, to find the probability that $\mu$ is between 
+12 and 13.5 we use 
+
+```{r}
+pt( (13.5-mn)/se, df = n-1) - pt( (12-mn)/se, df = n-1)
+```
+
+which corresponds to the area
+
+```{r}
+ggplot(d, aes(x = mu, y = density)) + 
+  stat_function(fun = dlst, xlim = c(12,13.5), geom="area", fill = "red",
+                args = list(df = n-1, location = mn, scale = se)) + 
+  geom_line() + 
+  labs(x = expression(mu),
+       y = "Posterior belief",
+       title = "Belief that the mean is between 12 and 13.5")
+```
+
+A 95% credible interval is calculated using
+
+```{r}
+a <- 1-0.95
+qt(c(a/2, 1-a/2), df = n-1) * se + mn
+```
+
+
+
+
+## Multiple groups
+
+Normal data for multiple groups is written 
+$Y_{i,g} \stackrel{ind}{\sim} N(\mu_g, \sigma_g^2)$ 
+for
+$g=1,\ldots,G$ where $g$ is the number of groups and 
+$i = 1,\ldots,n_g$ where $n_g$ is the number of individuals in group $g$. 
+For group $g$, we have 
+
+- common mean $\mu_g$,
+- common standard deviation $\sigma_g$,
+- normal distribution (bell-shaped histogram), and
+- each observation is independent. 
+
+And, we have independence of observations across the two groups. 
+
+If our sample is based on a random sample from our population, 
+then we can make inferences about that entire population. 
+
+```{r, echo=FALSE,purl=FALSE}
+set.seed(20220217)
+
+d <- data.frame(group = rep(c("group1","group2"), times = c(15,20))) %>%
+  mutate(y = rnorm(n()) * 2^(group == "group2") + 
+           66 + 1*(group == "group1"),
+         y = round(y))
+
+write_csv(d, file = "normal-data.csv")
+```
+
+Rather than having summary data, 
+we will instead record our data in a file and read it in to R.
+
+```{r}
+d <- read_csv("normal-data.csv")
+
+head(d)
+```
+
+We can calculate summary statistics from these data
+
+```{r}
+sm <- d %>% 
+  group_by(group) %>%
+  summarize(n = n(),
+            mn = mean(y),
+            s = sd(y)) %>%
+  mutate(se = s/sqrt(n))
+
+sm
+```
+
+We can plot our posterior beliefs using the following code
+
+```{r}
+# Function to create the posterior
+create_posterior <- function(sm) {
+  
+  data.frame(mu = seq(sm$mn-4*sm$se, sm$mn+4*sm$se, length=1001)) %>%
+    mutate(posterior = dlst(mu, df = sm$n-1, location = sm$mn, scale = sm$se))
+}
+
+# Construct the curves
+curves <- sm %>%
+  group_by(group) %>%
+  do(create_posterior(.)) %>%
+  mutate(group = factor(group)) # so that we can use it as a linetype
+
+# Plot curves
+ggplot(curves, aes(x = mu, y = posterior, color = group, linetype = group)) +
+  geom_line() + 
+  labs(x = expression(mu),
+       y = "Posterior belief",
+       title = "Posterior beliefs for the mean in two groups.") 
+```
+
+If we want to calculate beliefs that one groups mean is 
+larger than the other, we use a Monte Carlo approach.
+This approach first simulates values for $\mu_1$ and $\mu_2$. 
+
+```{r}
+n_reps <- 100000
+mu1 <- rt(n_reps, df = sm$n[1]-1) * sm$se[1] + sm$mn[1]
+mu2 <- rt(n_reps, df = sm$n[2]-1) * sm$se[2] + sm$mn[2]
+```
+
+Then we calculate the proportion of times that $\mu_1$ is larger than $\mu_2$
+which is calculated in R using the `mean` function.
+
+```{r}
+mean(mu1 > mu2)
+```
+
+We can also use these samples to obtain a 95% credible interval for the 
+difference between the two probabilities of success. 
+
+```{r}
+a <- 1-0.95
+quantile(mu1 - mu2, probs = c(a/2, 1-a/2))
+```
+
+
+For additional groups a similar process can be followed. 

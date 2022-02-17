@@ -5,7 +5,7 @@ tagline: code
 ---
 {% include JB/setup %}
 
-This page will provide links to R code for completing analyses for this class. 
+This page will provide links to code for completing analyses for this class. 
 
 ## R analysis
 
@@ -16,6 +16,7 @@ For homework, it will likely be helpful to start with the R script
 
 - [Installation](installation.html) ([installation script](installation.R))
 - [Binomial analyses](binomial.html) ([binomial script](binomial.R))
+- [Normal analyses](normal/normal.html) ([normal script](normal/normal.R), [normal-data.csv](normal/normal-data.csv)) 
 
 ## Excel anlaysis
 
