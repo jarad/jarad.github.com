@@ -9,10 +9,10 @@
 
 <<include=FALSE>>=
 opts_chunk$set(fig.width=8, fig.height=4, fig.pos='htb', out.width='\\textwidth',
-               echo = FALSE)
+               echo = TRUE)
 @
 
-<<packages, warning=FALSE, message=FALSE>>=
+<<packages, warning=FALSE, message=FALSE, echo=FALSE>>=
 library("tidyverse")
 @
 
@@ -113,6 +113,15 @@ subsequently remodeled their kitchens.
 Among these 15 individuals, you had a sample mean of 6.8 and a sample standard
 deviation of 1.01 when they provided their satisfaction rating.
 
+\begin{answer}
+<<>>=
+n2 <- 15
+mn2 <- 6.8
+s2 <- 1.01
+se2 <- s2/sqrt(n2)
+@
+\end{answer}
+
 \begin{enumerate}
 \setcounter{enumi}{5}
 \item Determine the posterior probability that the mean rating for your app is
@@ -120,7 +129,7 @@ greater than 7.
 
 \begin{answer}
 <<>>=
-1-pt((7-6.8)/(1.01/sqrt(15)), df = 15-1)
+1-pt((7-mn2)/se2, df = n2-1)
 @
 \end{answer}
 
@@ -129,7 +138,7 @@ greater than 7.
 \begin{answer}
 <<>>=
 a <- 1-0.95
-6.8 + c(-1,1)*qt(1-a/2, df = 15-1)*1.01/15
+mn2 + c(-1,1)*qt(1-a/2, df = n2-1)*se2
 @
 \end{answer}
 
@@ -139,8 +148,8 @@ is larger than the mean rating for the IKEA app.
 \begin{answer}
 <<>>=
 n_reps <- 100000
-mu_IKEA <- rt(n_reps, df =  n-1)*se + mn
-mu_your <- rt(n_reps, df = 15-1)*(1.01/sqrt(15)) + 6.8
+mu_IKEA <- rt(n_reps, df =  n-1)*se  + mn
+mu_your <- rt(n_reps, df = n2-1)*se2 + mn2
 mean(mu_your > mu_IKEA)
 @
 \end{answer}
