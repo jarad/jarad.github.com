@@ -6,16 +6,6 @@ library("tidyverse"); theme_set(theme_bw())
 set.seed(20220222)
 
 
-## ----------------------------------------------------------------------------------------------------------------------
-n <- 20
-emergency <- data.frame(individual = 1:n,
-                        audio_guide = sample(rep(c("Yes","No"), times = n/2))) %>%
-  mutate(success = rbinom(n(), size = 1, prob = ifelse(audio_guide == "Yes", 0.7, 0.3)),
-         success = ifelse(success, "Yes","No"),
-         cortisol_baseline = rnorm(n(), 100, sd = 5),
-         cortisol_stress   = rnorm(n(), ifelse(audio_guide == "Yes", 120, 130)))
-
-write_csv(emergency, "emergency.csv")
 
 
 ## ----echo=TRUE---------------------------------------------------------------------------------------------------------
@@ -156,12 +146,6 @@ a <- 1-0.95
 quantile(mean_no - mean_yes, probs = c(a/2, 1-a/2))
 
 
-## ----------------------------------------------------------------------------------------------------------------------
-n <- 1000
-nielsen <- data.frame(individual = 1:n) %>%
-  mutate(satisfaction = rbinom(n(), 10, prob = 7/10))
-
-write_csv(nielsen, file = "nielsen.csv")
 
 
 ## ----echo=TRUE---------------------------------------------------------------------------------------------------------
