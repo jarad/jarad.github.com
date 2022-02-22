@@ -1,0 +1,594 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{10 - Review}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220222)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Review}
+\begin{itemize}
+\item Statistical inference
+  \begin{itemize}
+  \item Scientific question
+  \item Response variable
+  \item Explanatory variable (or grouping)
+  \item Random sample? (If yes, inference to the population.)
+  \item Randomized treatment? (If yes, causal inference.) \pause
+  \end{itemize}
+\item Statistical analysis
+  \begin{itemize}
+  \item Response variable
+    \begin{itemize}
+    \item Count data with known maximum $\to$ binomial
+    \item Continuous data $\to$ normal
+    \end{itemize}
+  \item Explanatory variable
+    \begin{itemize}
+    \item None $\to$ one group models
+    \item Groups $\to$ multiple group models
+    \item Continuous $\to$ regression
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\section{Audio guide messages}
+\subsection{Successful navigation}
+\begin{frame}
+\frametitle{Audio guide messages}
+
+An experiment was conducted to understand the impact of audio guide messages
+in emergency warnings.
+Students at Iowa State University voluntarily enrolled in a virtual reality
+simulation experiment where they were randomly assigned to a scenario that
+either included or did not include audio guide messages during the emergency
+warning.
+For each student, researchers recorded whether or not the student successfully
+navigated the emergency.
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item Scientific question
+\item Response variable
+\item Explanatory variable (or grouping)
+\item Random sample? (If yes, inference to the population.)
+\item Randomized treatment? (If yes, causal inference.) \pause
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Audio guide messages: inference}
+\begin{itemize}
+\item Scientific question: \alert{How do audio guide messages affect successful navigation during an emergency?}
+\item Response variable: \alert{Number of students who successfully navigated the emergency.}
+\item Explanatory variable (or grouping): \alert{With and without audio guide messages (two groups)}
+\item Random sample? (If yes, inference to the population.): \alert{No, volunteers}
+\item Randomized treatment? (If yes, causal inference.): \alert{Yes, presence of audio guide messages was randomized.}
+\end{itemize}
+\end{frame}
+
+<<>>=
+n <- 20
+emergency <- data.frame(individual = 1:n,
+                        audio_guide = sample(rep(c("Yes","No"), times = n/2))) %>%
+  mutate(success = rbinom(n(), size = 1, prob = ifelse(audio_guide == "Yes", 0.7, 0.3)),
+         success = ifelse(success, "Yes","No"),
+         cortisol_baseline = rnorm(n(), 100, sd = 5),
+         cortisol_stress   = rnorm(n(), ifelse(audio_guide == "Yes", 120, 130)))
+
+write_csv(emergency, "emergency.csv")
+@
+
+\begin{frame}[fragile]
+\frametitle{Audio guide messages: data}
+<<echo=TRUE>>=
+emergency <- read_csv("emergency.csv")
+
+emergency
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(emergency, aes(x = individual, y = success, color = audio_guide)) +
+  geom_point()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+<<echo=TRUE>>=
+s_emergency <- emergency %>%
+  group_by(audio_guide) %>%
+  summarize(n = n(),
+            y = sum(success == "Yes"))
+s_emergency
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior belief about probability of success}
+<<posterior-probabilities, echo=TRUE, eval=FALSE>>=
+d <- data.frame(theta = seq(from=0, to=1, length=1001)) %>%
+  mutate(yes = dbeta(theta, shape1 = 1+7, shape2 = 1+10-7),
+         no  = dbeta(theta, shape1 = 1+4, shape2 = 1+10-4)) %>%
+  pivot_longer(cols = -theta, names_to = "audio_guide", values_to = "density")
+
+ggplot(d, aes(x = theta, y = density, color = audio_guide, linetype = audio_guide)) +
+  geom_line() +
+  labs(x = "Probability of successful navigation",
+       y = "Posterior belief",
+       title = "Audio guide effect on emergency navigation")
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Posterior belief about probability of success}
+<<>>=
+<<posterior-probabilities>>
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Probability difference}
+<<echo=TRUE>>=
+n_reps <- 100000
+prob_yes <- rbeta(n_reps, shape1 = 1+7, shape2 = 1+10-7)
+prob_no  <- rbeta(n_reps, shape1 = 1+4, shape2 = 1+10-4)
+mean(prob_yes > prob_no)
+
+# Credible interval for the difference
+a <- 1-0.95
+quantile(prob_yes - prob_no, probs = c(a/2, 1-a/2))
+@
+\end{frame}
+
+
+
+
+
+\subsection{Cortisol levels}
+\begin{frame}
+\frametitle{Audio guide messages}
+
+An experiment was conducted to understand the impact of audio guide messages
+in emergency warnings.
+Students at Iowa State University voluntarily enrolled in a virtual reality
+simulation experiment where they were randomly assigned to a scenario that
+either included or did not include audio guide messages during the emergency
+warning.
+For each student, researchers recorded a baseline level of cortisol before the
+experiment began and a stress level of cortisol immediately after the
+experiment concluded.
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item Scientific question
+\item Response variable
+\item Explanatory variable (or grouping)
+\item Random sample? (If yes, inference to the population.)
+\item Randomized treatment? (If yes, causal inference.) \pause
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Audio guide messages: inference}
+\begin{itemize}
+\item Scientific question: \alert{How do audio guide messages affect cortisol levels during an emergency?}
+\item Response variable: \alert{Ratio of stress to baseline cortisol levels.}
+\item Explanatory variable (or grouping): \alert{With and without audio guide messages (two groups)}
+\item Random sample? (If yes, inference to the population.): \alert{No, volunteers}
+\item Randomized treatment? (If yes, causal inference.): \alert{Yes, presence of audio guide messages was randomized.}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Audio guide messages: data}
+<<echo=TRUE>>=
+emergency <- emergency %>%
+  mutate(ratio = cortisol_stress / cortisol_baseline)
+
+emergency
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Audio guide messages: data}
+<<echo=TRUE>>=
+summary(emergency)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(emergency, aes(x = individual, y = ratio, color = audio_guide)) +
+  geom_point()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(emergency, aes(x = audio_guide, y = ratio)) +
+  geom_jitter(width=0.1)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(emergency, aes(x = ratio, fill = audio_guide)) +
+  geom_histogram()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+<<echo=TRUE>>=
+s_emergency <- emergency %>%
+  group_by(audio_guide) %>%
+  summarize(n = n(),
+            mean = mean(ratio),
+            sd = sd(ratio)) %>%
+  mutate(se = sd/sqrt(n))
+
+s_emergency
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior belief about means}
+<<posterior-means, echo=TRUE, eval=FALSE>>=
+dlst <- function(x, df, location, scale) {
+  dt((x-location)/scale, df = df)/scale
+}
+
+d <- data.frame(mu = seq(from=1.1, to=1.35, length=1001)) %>%
+  mutate(yes = dlst(mu, df = 10-1, location = 1.21, scale = 0.0208),
+         no  = dlst(mu, df = 10-1, location = 1.27, scale = 0.0177)) %>%
+  pivot_longer(cols = -mu, names_to = "audio_guide", values_to = "density")
+
+ggplot(d, aes(x = mu, y = density, color = audio_guide, linetype = audio_guide)) +
+  geom_line() +
+  labs(x = "Probability of successful navigation",
+       y = "Posterior belief",
+       title = "Audio guide effect on cortisol ratio (stress/baseline)")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior belief about mean}
+<<>>=
+<<posterior-means>>
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Cortisol ratio difference}
+<<echo=TRUE>>=
+n_reps <- 100000
+mean_yes <- rt(n_reps, df = 10-1)*0.0208 + 1.21
+mean_no  <- rt(n_reps, df = 10-1)*0.0177 + 1.27
+mean(mean_no > mean_yes)
+
+# Credible interval for the difference
+a <- 1-0.95
+quantile(mean_no - mean_yes, probs = c(a/2, 1-a/2))
+@
+\end{frame}
+
+
+
+\section{Working from home}
+\begin{frame}
+\frametitle{Working from home}
+To try and understand the \emph{working from home} trend,
+Nielsen conducts a nationwide survey of working adults to understand their
+satisfaction.
+Nielsen uses its database of all working adults to select a random sample
+of adults to survey.
+Of the subset of those respondents who indicated they are working from home,
+Nielsen records their ``job satisfaction'' on a scale from 0-10
+(with 10 being the highest satisfaction).
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item Scientific question
+\item Response variable
+\item Explanatory variable (or grouping)
+\item Random sample? (If yes, inference to the population.)
+\item Randomized treatment? (If yes, causal inference.)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Working from home: inference}
+\begin{itemize}
+\item Scientific question: \alert{How satisfied are those who are working from home?}
+\item Response variable: \alert{Likert (0-10) scale satisfaction response.}
+\item Explanatory variable (or grouping): \alert{None}
+\item Random sample? (If yes, inference to the population.): \alert{Apparently those sent a survey were randomly sampled, but unclear what percentage returned the survey.}
+\item Randomized treatment? (If yes, causal inference.): \alert{Not applicable.}
+\end{itemize}
+\end{frame}
+
+<<>>=
+n <- 1000
+nielsen <- data.frame(individual = 1:n) %>%
+  mutate(satisfaction = rbinom(n(), 10, prob = 7/10))
+
+write_csv(nielsen, file = "nielsen.csv")
+@
+
+\begin{frame}[fragile]
+\frametitle{Nielsen satisfaction: data}
+<<echo=TRUE>>=
+nielsen <- read_csv("nielsen.csv")
+
+nielsen
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Nielsen satisfaction: data}
+<<echo=TRUE>>=
+summary(nielsen)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(nielsen, aes(x = individual, y = satisfaction)) +
+  geom_point()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<echo=TRUE>>=
+ggplot(nielsen, aes(x = satisfaction)) +
+  geom_bar() +
+  scale_x_continuous(breaks = 0:10) +
+  labs(x = "Satisfaction rating",
+       y = "Number of respondents",
+       title = "Nielsen working from home satisfaction rating")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+<<echo=TRUE>>=
+nielsen %>%
+  summarize(n = n(),
+            mean = mean(satisfaction),
+            sd = sd(satisfaction)) %>%
+  mutate(se = sd/sqrt(n))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior belief about mean}
+<<posterior-mean, echo=TRUE, eval=FALSE>>=
+d <- data.frame(mu = seq(from=6.75, to=7.25, length=1001)) %>%
+  mutate(satisfaction = dlst(mu, df = 1000-1, location = 6.95, scale = 0.0468))
+
+ggplot(d, aes(x = mu, y = satisfaction)) +
+  geom_line() +
+  labs(x = "Mean satisfaction",
+       y = "Posterior belief",
+       title = "Nielsen working from home mean satisfaction")
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Posterior belief about mean}
+<<>>=
+<<posterior-mean>>
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Mean satisfaction}
+<<echo=TRUE>>=
+# Credible interval for the difference
+a <- 1-0.95
+qt(c(a/2, 1-a/2), df = 1000-1)*0.0468 + 6.95
+
+# Probability less than 7.0
+pt( (7-6.95)/0.0468, df = 1000-1 )
+@
+\end{frame}
+
+
+
+\subsection{Proportion}
+\begin{frame}
+\frametitle{Working from home}
+To try and understand the \emph{working from home} trend,
+Nielsen conducts a nationwide survey of working adults to understand their
+satisfaction.
+Nielsen uses its database of all working adults to select a random sample
+of adults to survey.
+Of the subset of those respondents who indicated they are working from home,
+Nielsen records the number whose job satisfaction score is 7 or more
+(indicating satisfied and above).
+
+\vspace{0.1in} \pause
+
+\begin{itemize}
+\item Scientific question
+\item Response variable
+\item Explanatory variable (or grouping)
+\item Random sample? (If yes, inference to the population.)
+\item Randomized treatment? (If yes, causal inference.)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Working from home: inference}
+\begin{itemize}
+\item Scientific question: \alert{How satisfied are those who are working from home?}
+\item Response variable: \alert{Count of those greater than 7.}
+\item Explanatory variable (or grouping): \alert{None}
+\item Random sample? (If yes, inference to the population.): \alert{Apparently those sent a survey were randomly sampled, but unclear what percentage returned the survey.}
+\item Randomized treatment? (If yes, causal inference.): \alert{Not applicable.}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Summary statistics}
+<<echo=TRUE>>=
+nielsen %>%
+  summarize(n = n(),
+            y = sum(satisfaction >= 7),
+            p = y/n)
+@
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior belief about probability}
+<<posterior-probability, echo=TRUE, eval=FALSE>>=
+d <- data.frame(theta = seq(from=0.55, to=.7, length=1001)) %>%
+  mutate(satisfaction = dbeta(theta, shape1 = 1+621, shape2 = 1+1000-621))
+
+ggplot(d, aes(x = theta, y = satisfaction)) +
+  geom_line() +
+  labs(x = "Probability 'satisfied or higher'",
+       y = "Posterior belief",
+       title = "Nielsen working from home satisfaction")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Posterior belief about probability}
+<<>>=
+<<posterior-probability>>
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Mean satisfaction}
+<<echo=TRUE>>=
+# Credible interval for the difference
+a <- 1-0.95
+qt(c(a/2, 1-a/2), df = 1000-1)*0.0468 + 6.95
+
+# Probability less than 7.0
+pt( (7-6.95)/0.0468, df = 1000-1 )
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Satisfaction probability}
+<<echo=TRUE>>=
+# Credible interval for the difference
+a <- 1-0.95
+qbeta(c(a/2, 1-a/2), shape1 = 1+621, shape2 = 1+1000-621)
+
+# Probability greater than 0.6
+1-pbeta(0.6, shape1 = 1+621, shape2 = 1+1000-621)
+@
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item Statistical inference
+  \begin{itemize}
+  \item Scientific question
+  \item Response variable
+  \item Explanatory variable (or grouping)
+  \item Random sample? (If yes, inference to the population.)
+  \item Randomized treatment? (If yes, causal inference.)
+  \end{itemize}
+\item Statistical analysis
+  \begin{itemize}
+  \item Response variable
+    \begin{itemize}
+    \item Count data with known maximum $\to$ binomial
+    \item Continuous data $\to$ normal
+    \end{itemize}
+  \item Explanatory variable
+    \begin{itemize}
+    \item None $\to$ one group models
+    \item Groups $\to$ multiple group models
+    \item Continuous $\to$ regression
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\end{document}
+
+

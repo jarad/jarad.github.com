@@ -25,3 +25,4 @@ you can find them
 |Normal analysis|[pdf](07-Normal_analysis/07-Normal_analysis.pdf)|[R](07-Normal_analysis/07-Normal_analysis.R)|[heights.csv](07-Normal_analysis/heights.csv)
 |Statistical inference|[pdf](08-Statistical_inference/08-Statistical_inference.pdf)|[R](08-Statistical_inference/08-Statistical_inference.R)
 |Simple linear regression|[pdf](09-Simple_linear_regression/09-Simple_linear_regression.pdf)|[R](09-Simple_linear_regression/09-Simple_linear_regression.R)
+|Review|[pdf](10-Review/10-Review.pdf)|[R](10-Review/10-Review.R)|[emergency.csv](10-Review/emergency.csv) [nielsen.csv](10-Review/nielsen.csv)
