@@ -8,11 +8,13 @@ tagline: slides
 Below are slides (.pdf), R code (.R) extracted from the code that generated the
 slides, and YouTube links to recorded videos.
 
-## Chapter slide set files
+## PDF Slides
 
 If the files are ever not available here, 
 you can find them 
 [here](https://github.com/jarad/jarad.github.com/tree/master/courses/hci522/slides).
+
+### Statistical Methods
 
 |Topic|slides|code|data|
 |----------------------|
@@ -26,3 +28,14 @@ you can find them
 |Statistical inference|[pdf](08-Statistical_inference/08-Statistical_inference.pdf)|[R](08-Statistical_inference/08-Statistical_inference.R)
 |Simple linear regression|[pdf](09-Simple_linear_regression/09-Simple_linear_regression.pdf)|[R](09-Simple_linear_regression/09-Simple_linear_regression.R)
 |Review|[pdf](10-Review/10-Review.pdf)|[R](10-Review/10-Review.R)|[emergency.csv](10-Review/emergency.csv) [nielsen.csv](10-Review/nielsen.csv)
+
+
+
+### Group Project 
+
+|Topic|slides|
+|----------------------|
+|Overview|[pdf](G1-Overview/01-Overview.pdf)
+|Scientific questions]|[pdf](G2-Scientific_questions/G2-Scientific_questions.pdf)
+
+
