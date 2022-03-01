@@ -1,0 +1,154 @@
+\documentclass[10pt]{article}
+\input{../topmatter}
+
+% \setlength{\parskip}{\baselineskip}%
+
+\lhead{\Large\sffamily \course{}: Activity 4 - Simple linear regression}
+
+% \excludecomment{answer}
+
+<<include=FALSE>>=
+opts_chunk$set(fig.width=8, fig.height=4, fig.pos='htb', out.width='\\textwidth',
+               echo = TRUE)
+@
+
+<<packages, warning=FALSE, message=FALSE, echo=FALSE>>=
+library("tidyverse")
+@
+
+\begin{document}
+
+\section*{Part 1}
+
+We would like to investigate the relationship between calorie intake on
+Thanksgiving and expenditures on Black Friday.
+The file {\tt thanksgiving.csv} contains (fake) data on calorie intake
+and expenditures.
+We will run a simple linear regression model using calorie intake as the
+independent variable and expenditure as the dependent variable.
+
+\begin{answer}
+<<>>=
+set.seed(20220301)
+
+thanksgiving <- data.frame(calorie = runif(66, 1000, 3000)) %>%
+  mutate(expenditure = rnorm(n(), 1000 - calorie/5, sd = 100),
+         calorie = round(calorie),
+         expenditure = round(expenditure))
+
+write_csv(thanksgiving, file = "thanksgiving.csv")
+@
+\end{answer}
+
+Fit the regression model and report the following quantities:
+
+\begin{enumerate}
+\item Estimated intercept ($\hat\beta_0$)
+
+\begin{answer}
+<<>>=
+thanksgiving <- read_csv("thanksgiving.csv", show_col_types = FALSE)
+
+m <- lm(expenditure ~ calorie, data = thanksgiving)
+coef(m)[1]
+@
+\end{answer}
+
+\item Estimated slope ($\hat\beta_1$)
+
+\begin{answer}
+<<>>=
+coef(m)[2]
+@
+\end{answer}
+
+\item 95\% credible interval for the intercept
+
+\begin{answer}
+<<>>=
+confint(m)[1,]
+@
+\end{answer}
+
+
+\item 95\% credible interval for the slope
+
+\begin{answer}
+<<>>=
+confint(m)[2,]
+@
+\end{answer}
+
+\item Estimate for the error standard deviation $\hat\sigma$
+
+\begin{answer}
+<<>>=
+summary(m)$sigma
+@
+\end{answer}
+
+\item Coefficient of determination $R^2$
+
+\begin{answer}
+<<>>=
+summary(m)$r.squared
+@
+\end{answer}
+
+\item Correlation between calorie intake and expenditure
+
+\begin{answer}
+<<>>=
+cor(thanksgiving$calorie, thanksgiving$expenditure)
+@
+\end{answer}
+
+\end{enumerate}
+
+
+\section*{Part II}
+
+\begin{enumerate}
+\item Provide an interpretation for the intercept.
+
+\begin{answer}
+If no calories are consumed on Thanksgiving, the expected expenditure is
+\$\Sexpr{round(coef(m)[1], 2)}.
+Since the lowest calories consumed was about 1,000,
+this is extrapolating quite far from our data and therefore is not very
+reliable.
+\end{answer}
+
+\item Provide an interpretation for the slope.
+
+\begin{answer}
+For each additional calorie consumed on Thanksgiving, the expected
+reduction in expenditure is \$\Sexpr{-round(coef(m)[2], 2)}.
+\end{answer}
+
+\item Provide a scientific explanation for why we might observe this
+relationship between calories consumed on Thanksgiving and expenditures on
+Black Friday.
+
+\begin{answer}
+One plausible explanation is that those who consume more on Thanksgiving are
+more sluggish on Black Friday and therefore spend less.
+Another plausible explanation is that those who are planning on spending less
+time shopping on Black Friday may plan to eat more on Thanksgiving.
+\end{answer}
+
+\item Provide a plot of expenditure (y-axis) vs calorie (x-axis) with a
+regression line.
+
+\begin{answer}
+<<>>=
+ggplot(thanksgiving, aes(calorie, expenditure)) +
+  geom_point() +
+  stat_smooth(method = "lm")
+@
+\end{answer}
+
+
+\end{enumerate}
+
+\end{document}
