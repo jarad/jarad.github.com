@@ -26,9 +26,15 @@ you can find them
 |Normal distribution|[pdf](06-Normal_distribution/06-Normal_distribution.pdf)|[R](06-Normal_distribution/06-Normal_distribution.R)
 |Normal analysis|[pdf](07-Normal_analysis/07-Normal_analysis.pdf)|[R](07-Normal_analysis/07-Normal_analysis.R)|[heights.csv](07-Normal_analysis/heights.csv)
 |Statistical inference|[pdf](08-Statistical_inference/08-Statistical_inference.pdf)|[R](08-Statistical_inference/08-Statistical_inference.R)
-|Simple linear regression|[pdf](09-Simple_linear_regression/09-Simple_linear_regression.pdf)|[R](09-Simple_linear_regression/09-Simple_linear_regression.R)
 |Review|[pdf](10-Review/10-Review.pdf)|[R](10-Review/10-Review.R)|[emergency.csv](10-Review/emergency.csv) [nielsen.csv](10-Review/nielsen.csv)
 
+
+### Regression
+
+|Topic|slides|code|data|
+|----------------------|
+|Simple linear regression|[pdf](09-Simple_linear_regression/09-Simple_linear_regression.pdf)|[R](09-Simple_linear_regression/09-Simple_linear_regression.R)|
+|Categorical independent variables|[pdf](R02-Categorical_independent_variables/R02-Categorical_independent_variables.pdf)|[R](R02-Categorical_independent_variables/R02-Categorical_independent_variables.R)|[mouse.csv](R02-Categorical_independent_variables/mouse.csv)
 
 
 ### Group Project 

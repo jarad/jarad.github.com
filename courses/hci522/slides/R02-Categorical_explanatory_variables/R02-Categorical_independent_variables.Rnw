@@ -1,0 +1,480 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{R02 - Regression with Categorical Independent Variables}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA,
+               fig.width=6, fig.height=4.4,
+               size='tiny',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("tidyverse")
+library("emmeans") # install.packages("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\begin{document}
+
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Categorical independent variables}
+\subsection{Binary independent variable}
+\begin{frame}
+\frametitle{Binary independent variable}
+
+\small
+
+Recall the simple linear regression model
+\[
+Y_i \ind N(\beta_0+\beta_1X_{i}, \sigma^2).
+\]
+\pause
+If we have a binary independent variable,
+\pause
+i.e. the independent variable only has two levels say level A and level B,
+\pause
+we can code it as
+\[
+X_i = \I(\mbox{observation $i$ is level A})
+% &=
+% \left\{
+% \begin{array}{rl}
+% 1 & \mbox{observation $i$ is level 1} \\
+% 0 & \mbox{observation $i$ is level 0}
+% \end{array}
+% \right.
+\]
+\pause
+where $\I(\mbox{statement})$ is an \alert{indicator function} that is 1 when
+``statement''is true and 0 otherwise.
+\pause
+Then
+\begin{itemize}
+\item $\beta_0\phantom{+\beta_1}\,\,\,$ is the mean response for level B, \pause
+\item $\beta_0+\beta_1$ is the mean response for level A, \pause and
+\item $\beta_1$ is the mean difference in response (level A minus level B).
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Player Skill Data}
+
+<<echo=FALSE, purl=FALSE>>=
+d <- Sleuth3::case0501 %>%
+  rename(Mouse = Diet,
+         Skill = Lifetime) %>%
+  mutate(Mouse = fct_recode(Mouse,
+    Dell = "NP",
+    `Basilisk (Wired)` = "N/N85",
+    `Mamba (Wireless)` = "lopro",
+    `Mamba (Wired)` = "N/R50",
+    `Viper (Wired)` = "R/R50",
+    `Viper (Wired, light)` = "N/R40"
+  ))
+write_csv(d, "mouse.csv")
+@
+
+<<>>=
+mouse <- read_csv("mouse.csv", show_col_types = FALSE) %>% mutate(Mouse = factor(Mouse))
+head(mouse)
+summary(mouse)
+@
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Player Skill Plot}
+\bc
+<<echo=FALSE, fig.height = 4>>=
+g_two_Mouses =
+ggplot(mouse %>% filter(Mouse %in% c("Viper (Wired)","Mamba (Wired)")),
+      aes(x = Mouse, y = Skill)) +
+  geom_jitter() +
+  labs(y = "Skill (higher is better)") +
+  theme_bw()
+
+g_two_Mouses
+@
+\nc\ec
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Regression model for skill}
+
+Let
+\[Y_i \ind N(\beta_0+\beta_1X_i,\sigma^2) \]
+\pause
+where $Y_i$ is the Skill of the $i$th individual
+\pause
+and
+\[
+X_i = \mathrm{I}(\mbox{Mouse for observation $i$ is }\mbox{Viper (Wired)})
+% = \left\{
+% \begin{array}{rl}
+% 1 & \mbox{$i$th mouse Mouse is Mamba (Wired)} \\
+% 0 & \mbox{$i$th mouse Mouse is Viper (Wired)}
+% \end{array}
+% \right.
+\]
+
+\vspace{-0.2in} \pause
+
+then
+\begin{itemize}
+\item mean skill using Mamba (Wired) is \pause $\beta_0$, \pause
+\item mean skill using Viper (Wired) is \pause $\beta_0+\beta_1$, \pause and
+\item mean difference in skill [Viper (Wired) minus Mamba (Wired)] is \pause $\beta_1$.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code}
+
+\vspace{-0.4in}
+
+\bc
+<<>>=
+two_mice <- mouse %>% filter(Mouse %in% c("Viper (Wired)","Mamba (Wired)"))
+two_mice$X <- ifelse(two_mice$Mouse == "Viper (Wired)", 1, 0)
+m <- lm(Skill ~ X, data = two_mice)
+summary(m)
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code}
+
+\vspace{-0.4in}
+
+\bc
+<<>>=
+m <- lm(Skill ~ Mouse, data = two_mice)
+summary(m)
+emmeans(m, "Mouse")
+@
+\nc\ec
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Mice Skills}
+\bc
+<<echo=FALSE>>=
+d_means = mouse %>%
+  group_by(Mouse) %>%
+  summarize(Skill = mean(Skill), .groups = "drop")
+
+g_two_Mouses +
+  geom_crossbar(data = d_means %>% filter(Mouse %in% c("Viper (Wired)","Mamba (Wired)")),
+                aes(ymin = Skill, ymax = Skill), color = "magenta")
+@
+\nc\ec
+\end{frame}
+
+
+
+% \begin{frame}
+% \frametitle{Equivalence to a two-sample t-test}
+%
+% Recall that our two-sample t-test had the model
+% \[
+% Y_{ij} \ind N(\mu_j, \sigma^2)
+% \]
+% for groups $j=0,1$.
+% \pause
+% This is equivalent to our current regression model where
+% \[ \begin{array}{rl}
+% \mu_0 &= \beta_0 \\
+% \mu_1 &= \beta_0 + \beta_1
+% \end{array} \]
+% \pause
+% \bc
+% assuming
+% \begin{itemize}
+% \item $\mu_0$ represents the mean for the Viper (Wired) group and
+% \item $\mu_1$ represents the mean for Mamba (Wired) group.
+% \end{itemize}
+% \pause
+% When the models are effectively the same, but have different parameters we
+% the model is \alert{reparameterized}.
+% \nc\ec
+% \end{frame}
+%
+%
+% \begin{frame}[fragile]
+% \frametitle{Equivalence}
+%
+% \vspace{-0.4in}
+%
+% \bc
+% <<>>=
+% summary(m)$coefficients[2,4] # p-value
+% confint(m)
+% t.test(Skill ~ Mouse, data = d, subset = Mouse %in% c("Viper (Wired)","Mamba (Wired)"), var.equal=TRUE)
+% @
+% \nc\ec
+% \end{frame}
+
+
+\subsection{Many levels}
+\begin{frame}[fragile]
+\frametitle{Using a categorical variable as an independent variable.}
+\bc
+<<echo=FALSE>>=
+g_all_Mouses =
+ggplot(mouse,
+      aes(x = Mouse, y = Skill)) +
+  labs(y = "Skill (higher is better)") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+
+g_all_Mouses +
+  geom_jitter()
+@
+\nc\ec
+\end{frame}
+
+
+\frame{\frametitle{Regression with a categorical variable}
+
+\small
+
+	\begin{enumerate}
+	\item Choose one of the levels as the \alert{reference} level, e.g. Basilisk (Wired) \pause
+	\item Construct dummy variables using indicator functions, i.e.
+  \[ \I(A) = \left\{ \begin{array}{ll} 1 & A\mbox{ is TRUE} \\ 0 & A\mbox{ is FALSE} \end{array}\right.\]
+
+  \pause
+
+  for the other levels, \pause e.g.
+	\[ \begin{array}{ll}
+	X_{i,1} = \I(\mbox{Mouse for observation $i$ is Dell})\pause \\
+	X_{i,2} = \I(\mbox{Mouse for observation $i$ is Mamba (Wired)})\pause \\
+	X_{i,3} = \I(\mbox{Mouse for observation $i$ is Mamba (Wireless)})\pause \\
+	X_{i,4} = \I(\mbox{Mouse for observation $i$ is Viper (Wired, light)})\pause \\
+	X_{i,5} = \I(\mbox{Mouse for observation $i$ is Viper (Wired)})\pause
+	\end{array} \]
+	\item Estimate the parameters of a multiple regression model using these dummy variables.
+	\end{enumerate}
+}
+
+
+\begin{frame}
+\frametitle{Regression model}
+
+\small
+
+Our regression model becomes
+\[
+Y_i \ind N(
+\beta_0+\beta_1X_{i,1}+\beta_2X_{i,2}+\beta_3X_{i,3}+\beta_4X_{i,4}+\beta_5X_{i,5}, \sigma^2)
+\]
+where
+\pause
+\begin{itemize}
+\item $\beta_0\phantom{+\beta_1}\,\,\,$ is the mean skill in the Basilisk (Wired) group \pause
+\item $\beta_0+\beta_1$ is the mean skill in the Dell group \pause
+\item $\beta_0+\beta_2$ is the mean skill in the Mamba (Wired) group \pause
+\item $\beta_0+\beta_3$ is the mean skill in the Mamba (Wireless) group \pause
+\item $\beta_0+\beta_4$ is the mean skill in the Viper (Wired, light) group \pause
+\item $\beta_0+\beta_5$ is the mean skill in the Viper (Wired) group \pause
+\end{itemize}
+\pause
+and thus $\beta_p$ for $p>0$ is the difference in mean skills between one group and the \alert{reference} group.
+\end{frame}
+
+
+
+
+% \begin{frame}[fragile]
+% \frametitle{R code and output}
+%
+% <<>>=
+% # by default, R uses the alphabetically first group as the reference level
+% d$Mouse = relevel(d$Mouse, ref='Basilisk (Wired)')
+%
+% m = lm(Skill~Mouse, d)
+% summary(m)
+% @
+%
+% \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code}
+<<>>=
+m <- lm(Skill ~ Mouse, data = mouse)
+m
+confint(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{R code (cont.)}
+<<>>=
+summary(m)
+@
+\end{frame}
+
+<<echo=FALSE>>=
+co <- coef(m) %>%round(1)
+cf <- confint(m) %>% round(1)
+@
+
+\begin{frame}
+\frametitle{Interpretation}
+
+\begin{itemize} \small
+\item $\beta_0$, i.e. mean of the dependent variable for the reference level \pause
+\item $\beta_p, p>0$: mean change in the dependent variable when moving from the reference level to the level associated with the $p^{th}$ dummy variable \pause
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+For example,
+\begin{itemize} \small
+\item The mean skill using the Basilisk (Wired) mouse is \Sexpr{co[1]} (\Sexpr{cf[1,1]},\Sexpr{cf[1,2]}). \pause
+\item The mean increase in skill when using the Viper (Wired, light) mouse compared to the Basilisk (Wired) mouse is \Sexpr{co[5]} (\Sexpr{cf[5,1]},\Sexpr{cf[5,2]}). \pause
+\item This model explains \Sexpr{round(summary(m)$r.squared * 100)}\% of the variability in skill.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Using a categorical variable as an independent variable.}
+\bc
+<<echo=FALSE>>=
+d_labels = d_means %>%
+  dplyr::mutate(midpoints = (Skill + coef(m)[1])/2,
+                label = paste0("beta[",0:5,"]")) %>%
+  filter(Mouse != "Basilisk (Wired)")
+
+g_all_Mouses +
+  geom_jitter(color = "gray") +
+  geom_crossbar(data = d_means,
+                aes(ymin = Skill, ymax = Skill), color = "magenta") +
+  geom_segment(data = d_means %>% filter(Mouse != "Basilisk (Wired)"),
+                aes(xend = Mouse, y = coef(m)[1], yend = coef(m)[1] + coef(m)[-1]),
+               color = "magenta",
+               arrow = arrow(length = unit(0.03, "npc"))) +
+  geom_hline(yintercept = coef(m)[1], linetype = "dashed", color = "magenta") +
+  geom_label(data = d_labels, nudge_x = 0.2,
+             aes(y = midpoints, label = label),
+             parse = TRUE) +
+  geom_label(aes(x = "Basilisk (Wired)", y = coef(m)[1], label = "beta[0]"),
+             parse = TRUE) +
+  theme(axis.text.x=element_text(angle=45, hjust=1))
+@
+\nc\ec
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Group means with 95\% credible intervals}
+<<>>=
+em <- emmeans(m, pairwise ~ Mouse)
+em$emmeans
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Group comparisons with 95\% credible intervals}
+<<>>=
+confint(em$contrasts)
+@
+\end{frame}
+
+
+\subsection{Changing the reference level}
+\begin{frame}[fragile]
+\frametitle{Changing the reference level}
+If you want to change the reference level, you can
+<<>>=
+mouse <- mouse %>%
+  mutate(Mouse = relevel(Mouse, ref = "Dell"))
+
+m <- lm(Skill ~ Mouse, data = mouse)
+summary(m)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{(Almost) equivalence to our multiple group model}
+
+\small
+
+Recall that we had a multiple group model
+\[
+Y_{ij} \ind N(\mu_j, \sigma_{\alert{j}}^2)
+\]
+for groups $j=0,1,2,\ldots,5$.
+
+\vspace*{\baselineskip} \pause
+
+Our regression model is (almost) a \alert{reparameterization} of the multiple group model:
+\[ \begin{array}{lrl}
+\mbox{Basilisk (Wired):} & \mu_0 &= \beta_0 \\
+\mbox{Viper (Wired, light):} & \mu_1 &= \beta_0 + \beta_1 \\
+\mbox{Mamba (Wired):} & \mu_2 &= \beta_0 + \beta_2 \\
+\mbox{Dell:} & \mu_3 &= \beta_0 + \beta_3 \\
+\mbox{Viper (Wired):} & \mu_4 &= \beta_0 + \beta_4 \\
+\mbox{Mamba (Wireless):} & \mu_5 &= \beta_0 + \beta_5 \\
+\end{array} \]
+\pause
+assuming the groups are labeled appropriately.
+\end{frame}
+
+
+
+\subsection{Summary}
+\begin{frame}
+\frametitle{Summary}
+When you run a regression with a categorical variable,
+you are
+\begin{enumerate}
+\item Choosing one of the levels as the \alert{reference} level. \pause
+\item Constructing dummy variables using indicator functions for all other levels, e.g.
+\[ X_i = \I(\mbox{observation $i$ is $<$some non-reference level$>$}).
+\vspace*{-1.5\baselineskip}\pause \]
+\item Estimating the parameters of a multiple regression model using these dummy variables.
+\end{enumerate}
+\end{frame}
+
+
+\end{document}
+
+
+
