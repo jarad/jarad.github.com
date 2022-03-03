@@ -37,5 +37,6 @@ you can find them
 |----------------------|
 |Overview|[pdf](G1-Overview/01-Overview.pdf)
 |Scientific questions]|[pdf](G2-Scientific_questions/G2-Scientific_questions.pdf)
+|Annotated bibliography]|[pdf](G3-Annotated_bibliography/G3-Annotated_bibliography.pdf)
 
 
