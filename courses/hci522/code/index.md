@@ -17,6 +17,7 @@ For homework, it will likely be helpful to start with the R script
 - [Installation](installation/installation.html) ([installation.R](installation/installation.R))
 - [Binomial analyses](binomial/binomial.html) ([binomial.R](binomial/binomial.R))
 - [Normal analyses](normal/normal.html) ([normal.R](normal/normal.R), [normal-data.csv](normal/normal-data.csv)) 
+- [Simple linear regression](regression/slr.htlm) ([slr.R](regression/slr.R))
 
 ## Excel anlayses
 
