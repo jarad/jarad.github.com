@@ -17,7 +17,7 @@ For homework, it will likely be helpful to start with the R script
 - [Installation](installation/installation.html) ([installation.R](installation/installation.R))
 - [Binomial analyses](binomial/binomial.html) ([binomial.R](binomial/binomial.R))
 - [Normal analyses](normal/normal.html) ([normal.R](normal/normal.R), [normal-data.csv](normal/normal-data.csv)) 
-- [Simple linear regression](regression/slr.htlm) ([slr.R](regression/slr.R))
+- [Simple linear regression](regression/slr.html) ([slr.R](regression/slr.R))
 
 ## Excel anlayses
 
@@ -26,3 +26,4 @@ The files are constructed so that you only need to change the red valued cells.
 
 - [Binomial analyses](binomial/binomial.xlsx)
 - [Normal analyses](normal/normal.xlsx)
+- [Simple linear regression](regression/slr.xlsx) ([instructions](https://www.excel-easy.com/examples/regression.html) and [options](regression/excel_regression_options.png))
