@@ -1,0 +1,141 @@
+---
+layout: page
+title: "Simple linear regression"
+output:
+  html_document:
+    toc: true
+---
+
+In the code below, we will make use of the `Sleuth3` package.
+To install the Sleuth3 package, use 
+
+```{r, eval=FALSE}
+install.packages("Sleuth3")
+```
+
+The installation step only needs to be done once, 
+but then to use the package in an R session it needs to be loaded with the
+`library()` command as below.
+
+```{r}
+library("tidyverse")
+library("Sleuth3")
+
+options(scipen = 100) # eliminate scientific notation
+```
+
+## Simple linear regression
+
+Simple linear regression involves two variables: independent variable and 
+dependent variable. 
+In this example, we will utilize data from the Hubble Telescope regarding the
+relationship between Velocity and Distance of 24 nebulae outside the Milky Way. 
+Since the Distance depends on the recession Velocity, 
+we will use Distance as the dependent variable and Velocity as the independent
+variable. 
+
+### Plots
+
+The first step is to take a look at the data
+
+```{r}
+head(case0701)
+```
+
+```{r}
+summary(case0701)
+```
+
+```{r}
+ggplot(case0701, aes(x = Velocity, y = Distance)) + 
+  geom_point()
+```
+
+To add the regression line with uncertainty, we use 
+
+```{r}
+ggplot(case0701, aes(x = Velocity, y = Distance)) + 
+  geom_point() + 
+  stat_smooth(method = "lm", se = TRUE)
+```
+
+From the help menu for these data, we find that the Velocity is measured in 
+kilometers per second (km/s) and the Distance is measured in megaparsecs
+(Mpc).
+
+### Run the regression
+
+Recall that the simple linear regression model is 
+\[
+Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1X_i, \sigma^2).
+\]
+In this example, $X_i$ and $Y_i$ are the Velocity and Distance, respectively,
+for nebulae $i$. 
+
+To run the regression, we use 
+
+```{r}
+m <- lm(Distance ~ Velocity, data = case0701)
+```
+
+A summary of much of the regression analysis can be obtained using the 
+`summary()` function. 
+
+```{r}
+summary(m)
+```
+
+#### Coefficients
+
+To simply look at the estimated value of the coefficients. 
+
+```{r}
+coef(m)
+```
+
+Here we have $\hat\beta_0 = `r round(coef(m)[1],2)`$ and 
+$\hat\beta_1 = `r round(coef(m)[2],4)`$.
+We can obtain 95% credible intervals for these two quantities using
+
+```{r}
+confint(m)
+```
+
+The interpretation for these parameters are 
+- For a nebulae At a velocity of 0, the mean distance (Mpc) from Earth is 
+`r round(coef(m)[1],2)` (`r round(confint(m)[1,1],2)`,`r round(confint(m)[1,2],2)`).
+- For each km/s increase in velocity, the mean distance (Mpc) from Earth 
+increases by 
+`r round(coef(m)[2],4)` (`r round(confint(m)[2,1],4)`,`r round(confint(m)[2,2],4)`).
+
+#### Estimate of the error standard deviation
+
+The summary output also provides an estimate of the error standard 
+deviation $\sigma$. 
+In this exampe, it is estimated to be 
+
+```{r}
+summary(m)$sigma
+```
+
+#### Coefficient of determination
+
+The coefficient of determination, $R^2$, is interpreted as the proportion of 
+variability in the dependent variable explained by this model. 
+For these data, the coefficient of determination is 
+
+```{r}
+summary(m)$r.squared
+```
+Often this value is multiplied by 100 to represent the results on a percentage 
+basis. 
+
+Related to the coefficient of determination and regression is the 
+correlation. 
+The correlation is the square root of $R^2$ but you need to make sure the 
+sign is consistent with the coefficient for the independent variable $\beta_1$. 
+We can find the correlation directly using
+
+```{r}
+cor(case0701$Velocity, case0701$Distance)
+```
