@@ -35,6 +35,7 @@ you can find them
 |----------------------|
 |Simple linear regression|[pdf](R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](R01-Simple_linear_regression/R01-Simple_linear_regression.R)|
 |Categorical independent variables|[pdf](R02-Categorical_independent_variables/R02-Categorical_independent_variables.pdf)|[R](R02-Categorical_independent_variables/R02-Categorical_independent_variables.R)|[mouse.csv](R02-Categorical_independent_variables/mouse.csv)
+|Experimental Design|[pdf](R03-Experimental_design/R03-Experimental_design.pdf)|[R](R03-Experimental_design/R03-Experimental_design.R)|
 
 
 ### Group Project 

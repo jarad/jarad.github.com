@@ -1,0 +1,502 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\usepackage{verbatim,multicol,amsmath}
+
+\input{../frontmatter}
+\input{../commands}
+
+\title{R03 - Experimental Design}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(comment=NA,
+               fig.width=6, fig.height=4.4,
+               size='tiny',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=TRUE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
+library("tidyverse")
+library("emmeans") # install.packages("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(2)
+@
+
+\graphicspath{{figs/}}
+
+\begin{document}
+
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}
+\frametitle{Overview}
+
+\begin{itemize}
+\item Terminology
+  \begin{itemize}
+  \item Experimental unit
+  \item Observational unit
+  \item Factor
+    \begin{itemize}
+    \item Treatment
+    \item Block
+    \end{itemize}
+  \end{itemize}
+\item Designs
+  \begin{itemize}
+  \item Completely Randomized Design (CRD)
+  \item Randomized Complete Block Design (RCBD)
+    \begin{itemize}
+    \item Paired design
+    \end{itemize}
+  \item Crossover design
+  % \item Factorial
+  % \item Split-plot design
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+
+\section{Terminology}
+\subsection{Randomized Experiment}
+\begin{frame}
+\frametitle{Randomized Experiments}
+
+\vspace{-0.1in}
+
+{\tiny \url{https://www.youtube.com/watch?v=bi-LNLrFYcQ}}
+
+\begin{center}
+\includegraphics[width=0.6\textwidth]{randomised_experiment}
+\end{center}
+
+\pause
+
+Randomized experiments lead to causal inference.
+\end{frame}
+
+
+
+
+\subsection{Experimental unit}
+\begin{frame}
+\frametitle{Experimental unit}
+
+{\tiny \url{https://en.wikipedia.org/wiki/Glossary_of_experimental_design}}
+
+\begin{definition}
+The \alert{experimental unit} is the entity to which a specific treatment
+combination is applied.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+Example experimental units: \pause
+\begin{itemize}
+\item Person
+\item Classroom
+\item Device \pause
+\end{itemize}
+Example treatment combinations: \pause
+\begin{itemize}
+\item Chatbot vs no chatbot
+\item Working remotely vs going in to work \pause
+\item Interior design app (IKEA vs yours) \& Mode used (online vs downloaded)
+\end{itemize}
+\end{frame}
+
+
+\subsection{Observational unit}
+\begin{frame}
+\frametitle{Observational unit}
+{\tiny \url{https://webspace.maths.qmul.ac.uk/r.a.bailey/Histop/obsunit.html}}
+\begin{definition}
+The \alert{observational units} are what you take measurements on.
+\pause
+In many experiments [but not all] they are the same as the experimental units.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+Examples of observational units: \pause
+\begin{itemize}
+\item Person
+\item Person (within a classroom)
+\item Device
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Example experiment}
+\alert{Goal}: Assess quality of virtual learning by randomly assigning classrooms to
+be virtual or in-person and measuring student performance on the final exam.
+
+\pause
+
+\includegraphics{classroom}
+
+\vspace{-0.2in} \pause
+
+Simplest approach to analysis is to summarize data within each experimental
+unit, e.g. average final exam score for a classroom.
+\end{frame}
+
+
+\subsection{Factor}
+\begin{frame}
+\frametitle{Factor}
+
+\vspace{-0.2in}
+
+{\tiny \url{https://en.wikipedia.org/wiki/Glossary_of_experimental_design}}
+
+\begin{definition}
+A \alert{factor} is an variable that an investigator manipulates to cause a
+corresponding change in the output.
+\pause
+A factor that cannot be assigned by the researcher is a \alert{nuisance factor}
+and can often be addressed through blocking.
+\end{definition}
+
+\pause
+
+Example factors: \pause
+\begin{itemize}
+\item Chatbot availability
+\item Type of instruction
+\item TA support availability \pause
+\end{itemize}
+Example nuisance factors: \pause
+\begin{itemize}
+\item Major
+\item Classroom \pause
+\item Age?
+\item Gender?
+\end{itemize}
+\end{frame}
+
+\subsection{Treatment}
+\begin{frame}
+\frametitle{Treatment}
+
+\vspace{-0.2in}
+
+{\tiny \url{https://en.wikipedia.org/wiki/Glossary_of_experimental_design}}
+
+\begin{definition}
+A \alert{treatment (combination)} is a specific combination of factor levels
+\pause
+whose effect is to be compared with other treatments.
+\end{definition}
+
+\pause
+
+Example treatments: \pause
+\begin{itemize}
+\item Chatbot is available
+\item Chatbot is not available \pause
+\item Virtual instruction with no TA support
+\item In-person instruction with no TA support
+\item Virtual instruction with TA support
+\item In-person instruction with TA support
+\end{itemize}
+\end{frame}
+
+
+\subsection{Blocking}
+\begin{frame}
+\frametitle{Blocking}
+\begin{definition}
+\alert{Blocking} is the arranging of experimental units into groups (or blocks)
+that are similar to each other.
+\end{definition}
+
+\pause
+
+Examples of blocking: \pause
+\begin{itemize}
+\item Age groups
+\item Gender
+\item Classrooms
+\end{itemize}
+\end{frame}
+
+\section{Designs}
+\subsection{Completely randomized design (CRD)}
+\begin{frame}
+\frametitle{Completely randomized design (CRD)}
+\begin{definition}
+In a completely randomized design,
+treatments are assigned to experimental units at random.
+\end{definition}
+
+\pause
+
+\includegraphics{people}
+\end{frame}
+
+\begin{frame}
+\frametitle{Completely randomized design (CRD)}
+\begin{definition}
+In a completely randomized design,
+treatments are assigned to experimental units at random.
+\end{definition}
+
+\includegraphics{crd_twotreatments}
+\end{frame}
+
+\begin{frame}
+\frametitle{Completely randomized design (CRD)}
+\begin{definition}
+In a \alert{completely randomized design},
+treatments are assigned to experimental units at random.
+\end{definition}
+
+\includegraphics{crd_threetreatments}
+\end{frame}
+
+\subsection{Balanced}
+\begin{frame}
+\frametitle{Balanced}
+\begin{definition}
+A \alert{balanced} experiment contains the same number of observations for
+each treatment combination.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+\includegraphics[width=0.4\textwidth]{crd_threetreatments}
+vs
+\includegraphics[width=0.4\textwidth]{crd_balanced}
+\end{frame}
+
+
+\subsection{CRD - Analysis}
+\begin{frame}[fragile]
+\frametitle{CRD - Analysis}
+
+Appropriate analyses for a completely randomized design:
+\begin{itemize}
+\item Comparison of two (or more) probabilities
+\item Comparison of two (or more) means
+\item Regression
+  \begin{itemize}
+  \item Simple linear regression
+  \item Categorical independent variable
+  \end{itemize}
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+<<eval=FALSE, size="normalsize">>=
+lm(Dependent ~ Independent, data = MyData)
+@
+
+\end{frame}
+
+
+\subsection{Randomized complete block design}
+\begin{frame}
+\frametitle{Randomized complete block design}
+\begin{definition}
+In a \alert{randomized complete block design (RCBD)},
+the experimental units are blocked (similar units within a block) and then
+within each block the experimental units are randomly assigned treatments.
+\end{definition}
+
+\includegraphics[width=0.5\textwidth]{rcbd1}
+\end{frame}
+
+
+\subsection{Complete}
+\begin{frame}
+\frametitle{Complete}
+\begin{definition}
+A design is \alert{complete} if every treatment combination exists in every block.
+\end{definition}
+\pause
+\includegraphics[width=0.5\textwidth]{rcbd1}
+\end{frame}
+
+
+\subsection{Replication}
+\begin{frame}
+\frametitle{Replication}
+\begin{definition}
+An RCBD is \alert{unreplicated} if each treatment combination exists in each
+block at most once.
+\pause
+An RCBD is \alert{replicated} if each treatment combination exists in each
+block more than once.
+\end{definition}
+\pause
+\includegraphics[width=0.5\textwidth]{rcbd1}
+\end{frame}
+
+
+\subsection{Unreplicated RCBD - Analysis}
+\begin{frame}[fragile]
+\frametitle{Unreplicated RCBD - Analysis}
+For an RCBD, we need to include both the treatment factors and the blocking
+(nuisance) factors in the analysis.
+\pause
+For an unreplicated RCBD,
+we fit the \alert{main effects} regression model.
+
+\vspace{0.2in} \pause
+
+<<eval=FALSE, size="normalsize">>=
+lm(Dependent ~ Block + Treatment, data = MyData)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Randomized complete block design}
+\begin{definition}
+In a \alert{randomized complete block design (RCBD)},
+the experimental units are blocked (similar units within a block) and then
+within each block the experimental units are randomly assigned treatments.
+\end{definition}
+
+\includegraphics[width=0.5\textwidth]{rcbd2}
+\end{frame}
+
+
+\subsection{Replicated RCBD - Analysis}
+\begin{frame}[fragile]
+\frametitle{Replicated RCBD - Analysis}
+For an RCBD, we need to include both the treatment factors and the blocking
+(nuisance) factors in the analysis.
+\pause
+For a replicated RCBD,
+we can fit two possible models:
+\begin{itemize}
+\item main effects model or
+\item a model that include the interaction.
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+<<eval=FALSE, size="small">>=
+# Main effects
+lm(Dependent ~ Block + Treatment,                   data = MyData)
+
+# Interaction
+lm(Dependent ~ Block + Treatment + Block:Treatment, data = MyData) # or
+lm(Dependent ~ Block * Treatment,                   data = MyData)
+@
+\end{frame}
+
+
+\subsection{Paired experiment}
+\begin{frame}
+\frametitle{Paired experiment}
+\begin{definition}
+A \alert{paired experiment} is an RCBD with only 2 treatments and a block size
+of 2.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+\includegraphics{paired}
+\end{frame}
+
+\subsection{Paired experiment analysis}
+\begin{frame}[fragile]
+\frametitle{Paired experiment analysis}
+Although a paired experiment can be analyzed using the unreplicated RCBD
+approach, a simpler analysis is available.
+
+\pause
+
+For each block, compute a difference (or ratio) of one treatment combination
+versus the other.
+\pause
+Then analyze that difference (or ratio) using one sample approaches \pause
+\begin{itemize}
+\item Estimating one probability
+\item Estimating one mean
+\end{itemize}
+
+\pause
+
+R code:
+<<eval=FALSE, size="normalsize">>=
+lm(Difference ~ 1, data = MyData)
+@
+\end{frame}
+
+
+\subsection{Crossover experiments}
+\begin{frame}
+\frametitle{Crossover experiments}
+\begin{definition}
+A \alert{crossover experiment} is a design where the treatment combinations
+are applied sequentially to the same experimental unit.
+\end{definition}
+
+\pause
+
+\includegraphics{crossover}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Crossover experiments}
+Benefits of crossover experiments
+\begin{itemize}
+\item Reduce nuisance factor effects
+\item Efficient use sample size \pause
+\end{itemize}
+Limitations of crossover experiments
+\begin{itemize}
+\item Order effects
+\item Carry-over effects (e.g. learning) \pause
+\end{itemize}
+Suggestions
+\begin{itemize}
+\item Try to reduce carry-over effects by using a wash-out period
+\item Get statistical help to analyze these experiments
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+
+
+% \subsection{Split-plot experiments}
+% \begin{frame}
+% \frametitle{Split-plot experiments}
+% \begin{definition}
+% A \alert{split-plot experiment} occurs when there are (at least) two different
+% treatment factors and there are (at least) two different levels of
+% \end{definition}
+%
+% \pause
+%
+% \includegraphics{crossover}
+% \end{frame}
+
+\end{document}
+
+
+
