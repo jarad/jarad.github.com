@@ -33,7 +33,7 @@ you can find them
 
 |Topic|slides|code|data|
 |----------------------|
-|Simple linear regression|[pdf](09-Simple_linear_regression/09-Simple_linear_regression.pdf)|[R](09-Simple_linear_regression/09-Simple_linear_regression.R)|
+|Simple linear regression|[pdf](R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](R01-Simple_linear_regression/R01-Simple_linear_regression.R)|
 |Categorical independent variables|[pdf](R02-Categorical_independent_variables/R02-Categorical_independent_variables.pdf)|[R](R02-Categorical_independent_variables/R02-Categorical_independent_variables.R)|[mouse.csv](R02-Categorical_independent_variables/mouse.csv)
 
 
