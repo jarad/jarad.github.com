@@ -13,7 +13,7 @@
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA,
                fig.width=6, fig.height=4.4,
-               size='tiny',
+               size='normalsize',
                out.width='\\textwidth',
                fig.align='center',
                message=FALSE,
@@ -22,7 +22,7 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("emmeans") # install.packages("Sleuth3")
 @
 
@@ -53,7 +53,7 @@ set.seed(2)
     \item Block
     \end{itemize}
   \end{itemize}
-\item Designs
+\item Designs for one treatment variable
   \begin{itemize}
   \item Completely Randomized Design (CRD)
   \item Randomized Complete Block Design (RCBD)
@@ -61,8 +61,12 @@ set.seed(2)
     \item Paired design
     \end{itemize}
   \item Crossover design
-  % \item Factorial
-  % \item Split-plot design
+  \end{itemize}
+\item Designs for multiple treatment variables
+  \begin{itemize}
+  \item One-at-a-time
+  \item Factorial
+  \item Split-plot design
   \end{itemize}
 \end{itemize}
 \end{frame}
@@ -167,6 +171,8 @@ unit, e.g. average final exam score for a classroom.
 A \alert{factor} is an variable that an investigator manipulates to cause a
 corresponding change in the output.
 \pause
+Specific values of a \alert{factor} are called \alert{levels}.
+\pause
 A factor that cannot be assigned by the researcher is a \alert{nuisance factor}
 and can often be addressed through blocking.
 \end{definition}
@@ -187,6 +193,9 @@ Example nuisance factors: \pause
 \item Gender?
 \end{itemize}
 \end{frame}
+
+
+
 
 \subsection{Treatment}
 \begin{frame}
@@ -480,21 +489,258 @@ Suggestions
 
 
 
+\section{Designs for multiple treatment variables}
+\begin{frame}
+\frametitle{Multiple treatment variables}
+
+In many (all?) situations, you will have multiple treatment variables of
+interest.
+
+\vspace{0.2in} \pause
+
+For example, \pause
+\begin{itemize}
+\item Classroom efficacy study
+  \begin{itemize}
+  \item Virtual vs in-person
+  \item TA hours provided (0, 10, 20 hrs/week) \pause
+  \end{itemize}
+\item Virtual reality interior design app
+  \begin{itemize}
+  \item Developer: IKEA vs yours
+  \item Usage mode: online vs download
+  \end{itemize}
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+One option is to combine treatment variables into a single compound treatment
+variable.
+\pause This is the \alert{recommended} approach if the design is incomplete.
+
+\end{frame}
+
+
+\subsection{One-at-a-time design}
+\begin{frame}[fragile]
+\frametitle{One-at-a-time design}
+
+A common (non-ideal) approach is to investigate one of the treatment variables
+at a time and hold all other treatment variables constant.
+
+\vspace{0.2in} \pause
+
+\bc
+For example,
+\begin{itemize}
+\item Mouse accuracy
+  \begin{itemize}
+  \item Mouse sensitivity (hardware)
+  \item Mouse sensitivity (software) \pause
+  \end{itemize}
+\end{itemize}
+
+\pause
+\nc
+<<echo=FALSE, out.width='0.9\\textwidth'>>=
+sensitivity <- bind_rows(
+  data.frame(hardware = c(400,800,1600, 3200, 5000),
+             software = c(0.5)),
+  data.frame(software = seq(0,1, length = 5),
+             hardware = 1600)
+)
+
+ggplot(sensitivity, aes(software, hardware)) +
+  geom_point() +
+  scale_y_log10()
+@
+\ec
+\end{frame}
+
+\subsection{Factorial design}
+\begin{frame}
+\frametitle{Factorial design}
+\begin{definition}
+A \alert{factorial} or (\alert{fully crossed}) design uses all combinations of
+all factors in the design.
+\end{definition}
+
+\bc
+<<echo=FALSE, out.width='0.9\\textwidth'>>=
+sensitivity <- expand.grid(
+  hardware = c(400,800,1600, 3200, 5000),
+  software = seq(0,1, length = 5)
+)
+
+ggplot(sensitivity, aes(software, hardware)) +
+  geom_point() +
+  scale_y_log10() +
+  labs(title = "All combinations")
+@
+\pause
+\nc
+<<echo=FALSE, out.width='0.9\\textwidth'>>=
+sensitivity <- expand.grid(
+  hardware = c(400, 5000),
+  software = seq(0,1, length = 2)
+)
+
+g_factorial <- ggplot(sensitivity, aes(software, hardware)) +
+  geom_point() +
+  scale_y_log10() +
+  labs(title = "Extremes")
+
+g_factorial
+@
+\ec
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Comparison: Factorial vs One-at-a-time}
+\bc
+<<echo=FALSE>>=
+g_factorial + labs(title="Factorial design")
+@
+\nc
+<<echo=FALSE>>=
+sensitivity_oaat <- bind_rows(
+  data.frame(hardware = c(400,1600, 5000),
+             software = c(0.5)),
+  data.frame(software = seq(0,1, length = 3),
+             hardware = 1600)
+)
+
+ggplot(sensitivity_oaat, aes(software, hardware)) +
+  geom_point() +
+  scale_y_log10() +
+  labs(title="One-at-a-time design")
+@
+\ec
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Analysis}
+The analysis for either of these designs is similar to the RCBD design:
+
+\pause
+
+<<eval=FALSE>>=
+# Main effects model
+lm(Dependent ~ Factor1 + Factor2, data = MyData)
+
+# Interaction model
+lm(Dependent ~ Factor1 * Factor2, data = MyData)
+@
+
+\pause
+If the factors are continuous (like in the example),
+you may want to treat them as categorical.
+
+<<eval=FALSE>>=
+MyData <- MyData %>%
+  mutate(Factor1 = as.factor(Factor1),
+         Factor2 = as.factor(Factor2))
+@
+
+Then you can continue with the analyses above.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Adding a center point}
+\bc
+<<echo=FALSE>>=
+sensitivity <- bind_rows(
+  expand.grid(
+  hardware = c(400, 5000),
+  software = seq(0,1, length = 2)
+  ),
+  data.frame(hardware = 1600,
+             software = 0.5)
+)
+
+ggplot(sensitivity, aes(software, hardware)) +
+  geom_point() +
+  scale_y_log10() +
+  labs(title="Factorial design with center point")
+@
+\nc
+<<echo=FALSE>>=
+ggplot(sensitivity_oaat, aes(software, hardware)) +
+  geom_point() +
+  scale_y_log10() +
+  labs(title="One-at-a-time design")
+@
+\ec
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Analyses}
+
+The analyses for designs with a center point, will fit a quadratic curve.
+\pause
+Thus factors must be quantitative.
+\pause
+
+<<eval=FALSE>>=
+# Often we will pre-scale the factors
+MyData <- MyData %>%
+  mutate(F1 = scale(Factor1),
+         F2 = scale(Factor2))
+
+# Response surface model
+lm(Dependent ~ F1 * F2 + I(F1^2) + I(F2^2), data = MyData)
+@
+\end{frame}
+
+
+\subsection{Split-plot experiments}
+\begin{frame}
+\frametitle{Split-plot experiments}
+\begin{definition}
+A \alert{split-plot experiment} occurs when there are (at least) two different
+treatment factors and there are (at least) two different levels of experimental
+units.
+\end{definition}
+
+\pause
+
+\includegraphics<2|handout:0>{classroom}
+\includegraphics<3>{splitplot}
+\end{frame}
+
+\begin{frame}
+\frametitle{Split-plot quasi-experiment}
+\includegraphics[width=\textwidth, trim = 0 0 0 100, clip]{classroom}
+\end{frame}
+
+\begin{frame}
+\frametitle{Split-split-plot quasi-experiment}
+\includegraphics[width=\textwidth, trim = 0 0 0 100, clip]{splitplot}
+\end{frame}
 
 
 
-% \subsection{Split-plot experiments}
-% \begin{frame}
-% \frametitle{Split-plot experiments}
-% \begin{definition}
-% A \alert{split-plot experiment} occurs when there are (at least) two different
-% treatment factors and there are (at least) two different levels of
-% \end{definition}
-%
-% \pause
-%
-% \includegraphics{crossover}
-% \end{frame}
+\begin{frame}[fragile]
+\frametitle{Split-plot analysis in R}
+
+<<eval=FALSE>>=
+library("lme4") # install.packages("lme4")
+
+lmer(Dependent ~ Factor1 * Factor2 + (1|WholePlot), data = MyData)
+@
+
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+Think carefully!
+\end{frame}
 
 \end{document}
 
