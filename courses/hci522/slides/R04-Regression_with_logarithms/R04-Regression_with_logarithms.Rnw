@@ -1,0 +1,576 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R04 - Regression with Logarithms}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("ggResidpanel"); my_plots = c("resid","qq","yvp","index")
+library("car")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overview}
+\begin{itemize}
+\item Review
+  \begin{itemize}
+  \item Simple linear regression (SLR)
+  \item Regression with a categorical variable
+  \item Preview of multiple linear regression
+  % \item Binary independent variable
+  \end{itemize}
+\item Using logarithms in SLR
+  \begin{itemize}
+  \item Logarithm of the dependent variable
+  \item Logarithm of the independent variable
+  \item Logarithm of both variables
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\section{Review}
+\begin{frame}[fragile]
+\frametitle{Understand differences in salary by gender}
+<<echo=TRUE>>=
+head(Salaries)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Understand differences in salary by gender}
+<<echo=TRUE>>=
+summary(Salaries)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Understand differences in salary by gender}
+<<>>=
+ggplot(Salaries, aes(x = yrs.since.phd, y = salary, color = sex, shape = rank)) +
+  geom_point() +
+  facet_grid(discipline ~ rank)
+@
+\end{frame}
+
+
+\subsection{Simple linear regression}
+\begin{frame}
+\frametitle{Simple linear regression}
+The \alert{simple linear regression} model is
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+where $Y_i$ and $X_i$ are the dependent and independent variable, respectively,
+for individual $i$.
+
+\vspace{0.1in} \pause
+
+To analyze salaries of Male Professors in discipline B at an unknown college in
+the U.S. from 2008-2009, \pause
+we will use salary as the dependent variable ($Y$)
+\begin{itemize}
+\item years since PhD as the independent variable ($X$).
+\end{itemize}
+In this model,
+$\beta_1$ is the mean increase in salary for each year since PhD.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{SLR for Salary}
+<<>>=
+ggplot(Salaries %>% filter(rank == "Prof", sex == "Male", discipline == "B"),
+       aes(x = yrs.since.phd, y = salary)) +
+  geom_point() +
+  stat_smooth(method = "lm")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{SLR for Salary}
+<<echo=TRUE, size='tiny'>>=
+summary(m <- lm(salary ~ yrs.since.phd,
+                data = Salaries %>% filter(rank == "Prof", sex == "Male", discipline == "B")))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{SLR for Salary}
+<<echo=TRUE>>=
+confint(m)
+@
+\pause
+Manuscript statement:
+
+For each year since PhD, the model estimates an mean increase of
+(\Sexpr{round(confint(m)[2,1])}, \Sexpr{round(confint(m)[2,2])}) dollars.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Diagnostics}
+<<>>=
+resid_panel(m, plots = my_plots)
+@
+\end{frame}
+
+
+\subsection{Regression with a categorical variable}
+\begin{frame}
+\frametitle{Regression with a categorical variable}
+The \alert{simple linear regression} model is
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+where $Y_i$ and $X_i$ are the dependent and independent variable, respectively,
+for individual $i$.
+
+\vspace{0.1in} \pause
+
+To analyze salaries of Professors in discipline B at an unknown college in
+the U.S. from 2008-2009, \pause
+we will use salary as the dependent variable ($Y$)
+\begin{itemize}
+\item indicator of being male as the independent variable ($X$).
+\end{itemize}
+In this model,
+$\beta_1$ is the mean difference in salary between men and women.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Salary comparison}
+<<>>=
+ggplot(Salaries %>% filter(rank == "Prof", discipline == "B"),
+       aes(x = sex, y = salary)) +
+  geom_boxplot(color='gray', outlier.shape = NA) +
+  geom_jitter(width=0.1)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Salary comparison}
+<<echo=TRUE, size='tiny'>>=
+summary(m <- lm(salary ~ sex,
+                data = Salaries %>% filter(rank == "Prof", discipline == "B")))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Salary comparison}
+<<echo=TRUE>>=
+confint(m)
+@
+
+\pause
+
+Manuscript statement:
+
+Difference in mean salary between men and women is estimated to be between
+(\Sexpr{round(confint(m)[2,1]/1000)},\Sexpr{round(confint(m)[2,2]/1000)})
+thousand dollars more for men.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Improved model}
+This is a bit unsatisfactory \pause because this is only for
+\begin{itemize}
+\item Professors \pause in
+\item Discipline B \pause and
+\item doesn't account for years since PhD.
+\end{itemize}
+\pause
+We can run a multiple regression model that includes
+\begin{itemize}
+\item sex,
+\item rank,
+\item discipline, and
+\item years since PhD.
+\end{itemize}
+\pause
+This model will provide a comparison of the effect of sex on salary after
+\emph{adjusting} for rank, discipline, and years since PhD.
+\end{frame}
+
+
+\subsection{Multiple regression}
+\begin{frame}
+\frametitle{Multiple regression model}
+The \alert{simple linear regression} model is
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1} + \beta_2 X_{i,2} + \cdots, \sigma^2) \]
+where $Y_i$ and $X_{i,j}$ are the dependent and independent variable(s), respectively,
+for individual $i$.
+
+\vspace{0.1in} \pause
+
+To analyze salaries of Professors in discipline B at an unknown college in
+the U.S. from 2008-2009, \pause
+we will use salary as the dependent variable ($Y$)
+\begin{itemize}
+\item sex ($X1$),
+\item rank ($X2$ and $X3$),
+\item discipline ($X4$), and
+\item years since PhD ($X5$)
+\end{itemize}
+as independent variables. \pause
+In this model,
+$\beta_1$ is the mean difference in salary between men and women after adjusting
+for rank, discipline, and years since PhD.
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Multiple regression}
+<<>>=
+ggplot(Salaries, aes(x = yrs.since.phd, y = salary, color = sex, shape = rank)) +
+  geom_point() +
+  facet_grid(discipline ~ rank, scales = "free") +
+  stat_smooth(method="lm", )
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Salary comparison}
+<<reg, echo=TRUE, size='tiny', cache=TRUE>>=
+summary(m <- lm(salary ~ sex + rank + discipline + yrs.since.phd,
+                data = Salaries))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Salary comparison}
+<<reg-confint, echo=TRUE, dependson="reg">>=
+confint(m)
+@
+\pause
+Manuscript statement:
+
+Difference in mean salary between men and women is estimated to be between
+(\Sexpr{round(confint(m)[2,1]/1000)},\Sexpr{round(confint(m)[2,2]/1000)})
+thousand dollars more for men after adjusting for rank, discipline, and years
+since PhD.
+\end{frame}
+
+\subsection{Diagnostics}
+\begin{frame}
+\frametitle{Diagnostics}
+<<reg-resid, cache=TRUE, dependson="reg">>=
+resid_panel(m, plots = my_plots)
+@
+\end{frame}
+
+
+
+
+\section{Logarithms in regression}
+\begin{frame}
+\frametitle{Logarithms in regression}
+
+When running a regression, you [the data analyst] has a choice of whether to
+\begin{itemize}
+\item take logarithms of the dependent variable \pause and
+\item take logarithms of any numeric independent variables.
+\end{itemize}
+
+\pause
+
+Suggestions for when to take logarithms:
+\begin{itemize}
+\item You can only take logarithms if the variable is strictly positive. \pause
+\item If the variable is non-negative (but has zeroes), you can take the logarithm of the variable after adding the smallest non-zero value to all observations. \pause
+
+\vspace{0.2in}
+
+\item Consider taking logarithms if the maximum value divided by the minimum value is greater than 10.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Logarithms of independent variable}
+\begin{frame}
+\frametitle{Understand differences in salary by gender}
+<<>>=
+ggplot(Salaries, aes(x = yrs.since.phd, y = salary, color = sex, shape = rank)) +
+  geom_point() +
+  facet_grid(discipline ~ rank) +
+  scale_y_log10()
+@
+\end{frame}
+
+
+\subsection{Simple linear regression}
+\begin{frame}
+\frametitle{Simple linear regression}
+The \alert{simple linear regression} model is
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+where $Y_i$ and $X_i$ are the dependent and independent variable, respectively,
+for individual $i$.
+
+\vspace{0.1in} \pause
+
+To analyze salaries of Male Professors in discipline B at an unknown college in
+the U.S. from 2008-2009, \pause
+we will use \alert{log} salary as the dependent variable ($Y$)
+\begin{itemize}
+\item years since PhD as the independent variable ($X$).
+\end{itemize}
+
+\pause
+
+In this model, $100(e^{\beta_1}-1)$ will be the percent change in median salary
+per year since PhD.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{SLR for Salary}
+<<>>=
+ggplot(Salaries %>% filter(rank == "Prof", sex == "Male", discipline == "B"),
+       aes(x = yrs.since.phd, y = salary)) +
+  geom_point() +
+  stat_smooth(method = "lm") +
+  scale_y_log10()
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{SLR for Salary}
+<<echo=TRUE, size='tiny'>>=
+summary(m <- lm(log(salary) ~ yrs.since.phd,
+                data = Salaries %>% filter(rank == "Prof", sex == "Male", discipline == "B")))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{SLR for Salary}
+<<echo=TRUE>>=
+confint(m)
+exp(confint(m))
+@
+\pause
+Manuscript statement:
+
+For each year since PhD, the model estimates an increase of
+(\Sexpr{round(100*(confint(m)[2,1]-1))},
+ \Sexpr{round(100*(confint(m)[2,2]-1))})\% in median salary.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Diagnostics}
+<<>>=
+resid_panel(m, plots = my_plots)
+@
+\end{frame}
+
+
+\subsection{Regression with a categorical variable}
+\begin{frame}
+\frametitle{Regression with a categorical variable}
+The \alert{simple linear regression} model is
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i, \sigma^2) \]
+where $Y_i$ and $X_i$ are the dependent and independent variable, respectively,
+for individual $i$.
+
+\vspace{0.1in} \pause
+
+To analyze salaries of Professors in discipline B at an unknown college in
+the U.S. from 2008-2009, \pause
+we will use \alert{log} salary as the dependent variable ($Y$)
+\begin{itemize}
+\item indicator of being male as the independent variable ($X$).
+\end{itemize}
+In this model, $100(e^{\beta_1}-1)$ will be the percent difference in median
+salary of men compared to women.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Salary comparison}
+<<>>=
+ggplot(Salaries %>% filter(rank == "Prof", discipline == "B"),
+       aes(x = sex, y = salary)) +
+  geom_boxplot(color='gray', outlier.shape = NA) +
+  geom_jitter(width=0.1)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Salary comparison}
+<<echo=TRUE, size='tiny'>>=
+summary(m <- lm(log(salary) ~ sex,
+                data = Salaries %>% filter(rank == "Prof", discipline == "B")))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Salary comparison}
+<<echo=TRUE>>=
+confint(m)
+@
+
+\pause
+
+Manuscript statement:
+
+Median salary is estimated to be
+(\Sexpr{round(100*(exp(confint(m)[2,1])-1))},
+ \Sexpr{round(100*(exp(confint(m)[2,2])-1))})\% larger for men compared to
+women.
+\end{frame}
+
+
+\begin{frame}
+This is a bit unsatisfactory \pause because this is only for
+\begin{itemize}
+\item Professors \pause in
+\item Discipline B \pause and
+\item doesn't account for years since PhD.
+\end{itemize}
+\pause
+We can run a multiple regression model that includes
+\begin{itemize}
+\item sex,
+\item rank,
+\item discipline, and
+\item years since PhD.
+\end{itemize}
+\pause
+This model will provide a comparison of the effect of sex on salary after
+\emph{adjusting} for rank, discipline, and years since PhD.
+\end{frame}
+
+
+\subsection{Multiple regression}
+\begin{frame}
+\frametitle{Multiple regression}
+<<>>=
+ggplot(Salaries, aes(x = yrs.since.phd, y = salary, color = sex, shape = rank)) +
+  geom_point() +
+  facet_grid(discipline ~ rank, scales = "free") +
+  stat_smooth(method="lm", )
+@
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Multiple regression model}
+The \alert{simple linear regression} model is
+\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1} + \beta_2 X_{i,2} + \cdots, \sigma^2) \]
+where $Y_i$ and $X_{i,j}$ are the dependent and independent variable(s), respectively,
+for individual $i$.
+
+\vspace{0.1in} \pause
+
+To analyze salaries of Professors in discipline B at an unknown college in
+the U.S. from 2008-2009, \pause
+we will use \alert{log} salary as the dependent variable ($Y$)
+\begin{itemize}
+\item sex ($X1$),
+\item rank ($X2$ and $X3$),
+\item discipline ($X4$), and
+\item years since PhD ($X5$)
+\end{itemize}
+as independent variables. \pause
+In this model, $100(e^{\beta_1}-1)$ will be the percent difference in median
+salary of men compared to women after adjusting for rank, discipline, and years
+since PhD.
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Salary comparison}
+<<echo=TRUE, size='tiny'>>=
+summary(m <- lm(log(salary) ~ sex + rank + discipline + yrs.since.phd,
+                data = Salaries))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Salary comparison}
+<<echo=TRUE>>=
+confint(m)
+@
+\pause
+Manuscript statement:
+
+Percentage difference in median salary between men and women is estimated to be
+between
+(\Sexpr{round(100*(exp(confint(m)[2,1])-1))},
+ \Sexpr{round(100*(exp(confint(m)[2,2])-1))})\%
+more for men compared to women after adjusting for rank, discipline, and years
+since PhD.
+\end{frame}
+
+\subsection{Diagnostics}
+\begin{frame}
+\frametitle{Diagnostics}
+<<>>=
+resid_panel(m, plots = my_plots)
+@
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+\begin{itemize}
+\item Consider (natural) logarithms when the variable
+  \begin{itemize}
+  \item is strictly positive,
+  \item is non-negative (add smallest non-zero value to all observations), and
+  \item has a ratio (max/min) over 10. \pause
+  \end{itemize}
+\item Interpretation:
+  \begin{itemize}
+  \item When independent variable is logged, $100(e^\beta-1)$ is the percent change in median response.
+  \item When dependent variable is logged, ...
+  \item When both are logged, ...
+  \end{itemize}
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+More details in \href{https://youtu.be/f7jzXnj4ga8}{my SLR using Logarithms video}.
+\end{frame}
+
+\end{document}
+
