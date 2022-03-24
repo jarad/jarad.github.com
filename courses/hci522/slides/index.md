@@ -37,6 +37,7 @@ you can find them
 |Categorical independent variables|[pdf](R02-Categorical_independent_variables/R02-Categorical_independent_variables.pdf)|[R](R02-Categorical_independent_variables/R02-Categorical_independent_variables.R)|[mouse.csv](R02-Categorical_independent_variables/mouse.csv)
 |Experimental Design|[pdf](R03-Experimental_design/R03-Experimental_design.pdf)|[R](R03-Experimental_design/R03-Experimental_design.R)|
 |Regression with logarithms|[pdf](R04-Regression_with_logarithms/R04-Regression_with_logarithms.pdf)|[R](R04-Regression_with_logarithms/R04-Regression_with_logarithms.R)|
+|Poisson and logistic regression|[pdf](R05-Poisson_and_logistic_regression/R05-Poisson_and_logistic_regression.pdf)|[R](R05-Poisson_and_logistic_regression/R05-Poisson_and_logistic_regression.R)|
 
 
 ### Group Project 
