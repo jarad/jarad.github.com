@@ -40,6 +40,13 @@ you can find them
 |Poisson and logistic regression|[pdf](R05-Poisson_and_logistic_regression/R05-Poisson_and_logistic_regression.pdf)|[R](R05-Poisson_and_logistic_regression/R05-Poisson_and_logistic_regression.R)|
 
 
+### Scientific Methods
+
+|Topic|slides|code|data|
+|----------------------|
+|Surveys|[pdf](Surveys/Surveys.pdf)|[R](Surveys/Surveys.R)|
+
+
 ### Group Project 
 
 |Topic|slides|
