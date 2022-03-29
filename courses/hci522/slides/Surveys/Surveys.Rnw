@@ -203,10 +203,228 @@ the impact of those with large reported Salaries.
 \end{frame}
 
 
+\begin{frame}
+\frametitle{Logistic regression model}
+How does the proportion of people who indicated they Agreed or Strongly Agreed
+with the statement in question 4 relate to their Gender on question 5?
+
+\pause
+
+Let $Y_i$ be an indicator that respondent $i$ Agreed or Strongly Agreed with
+the statement in question 4.
+\pause Let $X_i$ be an indicator that Gender was reported as Female.
+\pause
+Assume a binomial model
+\[
+Y_i \ind Bin(n,\theta_i)
+\quad \mbox{and} \quad
+\log\left(\frac{\theta_i}{1-\theta_i} \right) = \beta_0 + \beta_1 X_i
+\]
+and construct a credible interval for $\beta_1$.
+\end{frame}
+
+
+
+
 \subsection{Numerical (continuous) dependent variable}
 \begin{frame}
-\frametitle{}
+\frametitle{Numerical (continuous) dependent variable}
+Construct numerical (continuous) variables from survey responses:
+\pause
+\begin{itemize}
+\item Use responses from numerical answers. \pause
+  \begin{itemize}
+  \item Consider taking a logarithm for strictly positive values.  \pause
+  \end{itemize}
+\item Convert Likert scale to integers.  \pause
+  \begin{itemize}
+  \item There are better methods, but this can often be reasonable.
+  \end{itemize}
+\end{itemize}
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Normal model}
+What is the average Salary of respondents?
+
+\pause
+
+Let $Y_i$ be the Salary response for individual $i$.
+
+\vspace{0.1in} \pause
+Assume
+\[
+Y_i \ind N(\mu,\sigma^2)
+\]
+and construct a credible interval for $\mu$.
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{(Linear) regression model}
+How does Gender affect Salary?
+
+\pause
+
+Let $Y_i$ be the Salary response for individual $i$.
+\pause
+Let $X_i$ be an indicator that Gender was reported as Female.
+\pause
+Assume a (linear) regression model
+\[
+Y_i \ind N(\beta_0+\beta_1X_i,\sigma^2)
+\]
+\pause
+and construct a credible interval for $\beta_1$.
+
+\vspace{0.1in} \pause
+
+Note: probably want to consider using $\log(Y_i)$ rather than $Y_i$ and
+interpret $100(e^{\beta_1}-1)$ as the percent change in salary for women vs
+men.
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{(Linear) regression model}
+How does IQ affect Salary?
+
+\pause
+
+Let $Y_i$ be the reported Salary response for individual $i$.
+\pause
+Let $X_i$ be the reported IQ.
+\pause
+Assume a (linear) regression model
+\[
+Y_i \ind N(\beta_0+\beta_1X_i,\sigma^2)
+\]
+\pause
+and construct a credible interval for $\beta_1$.
+
+\vspace{0.1in} \pause
+
+Note: probably want to consider using $\log(Y_i)$ rather than $Y_i$ and
+interpret $100(e^{\beta_1}-1)$ as the percent change per point increase in IQ
+in salary.
+\end{frame}
+
+
+
+\section{Missing data}
+\begin{frame}
+\frametitle{Missing data}
+
+{\tiny \url{https://stefvanbuuren.name/fimd/sec-MCAR.html}}
+
+\begin{itemize}
+\item Missing completely at random (MCAR)
+\item Missing at random (MAR)
+\item Not missing at random (NMAR)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Types of missing}
+\begin{itemize}
+\item Missing values
+\item Missing respondents
+\end{itemize}
+
+<<>>=
+library("survey")
+data(nhanes)
+nhanes %>% filter(is.na(HI_CHOL)) %>% head
+@
+\end{frame}
+
+
+
+\subsection{Missing completely at random}
+\begin{frame}
+\frametitle{Missing completely at random}
+\begin{definition}
+If the probability of being missing is the same for all cases,
+then the data are said to be \alert{missing completely at random (MCAR)}.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+For example,
+\begin{itemize}
+\item Respondents sit at home at flip a coin to determine if they will respond
+\item Scale runs out of batteries
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+If the missing data are MCAR,
+then you can ignore the missingness and proceed with your analysis.
+\pause
+Often called \alert{complete-case analysis}.
+\end{frame}
+
+
+\subsection{Missing at random}
+\begin{frame}
+\frametitle{Missing at random (MAR)}
+\begin{definition}
+If the probability of being missing is the same only within groups defined by
+the observed data, then the data are \alert{missing at random (MAR)}.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+For example,
+\begin{itemize}
+\item probability of responding depends on county \pause or
+\item probability of responding to agree/disagree question depends on gender.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+You will likely need to model the missingness and incorporate it into your
+analysis.
+\end{frame}
+
+
+
+\subsection{Missing not at random}
+\begin{frame}
+\frametitle{Missing not at random (MNAR)}
+\begin{definition}
+If neither MCAR nor MAR holds,
+then we speak of \alert{missing not at random (MNAR)}
+\pause
+or \alert{NMAR (not missing at random)}.
+\pause
+MNAR means that the probability of being missing varies for reasons that are unknown to us.
+\end{definition}
+
+\vspace{0.1in} \pause
+
+For example,
+\begin{itemize}
+\item probability of responding depends politcal affiliation \pause or
+\item probability of responding about salary depends on salary.
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+You will need to make assumptions about the probability of missing and your
+analysis will depend on those assumptions.
+\pause
+These assumptions can only be checked by gather additional data.
+\end{frame}
+
+
+
 
 \end{document}
 
