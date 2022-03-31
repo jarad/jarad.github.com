@@ -1,0 +1,541 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R06 - Logistic Regression}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overview}
+\begin{itemize}
+\item Individual data
+  \begin{itemize}
+  \item Bernoulli distribution
+  \item Logistic regression model
+  \item Admission as a function of GRE
+  \end{itemize}
+\item Grouped data
+  \begin{itemize}
+  \item Binomial distribution
+  \item Logistic regression model
+  \item Probability of staying healthy as a function of Vitamin C intake
+  \end{itemize}
+\item Other examples
+  \begin{itemize}
+  \item Probability of extinction as a function of island size
+  \item Cancer occurrence as a function of breast-feeding
+  \item Admission as a function of GRE, GPA, and school rank
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\section{Individual Data}
+\subsection{Bernoulli Distribution}
+\begin{frame}
+\frametitle{Bernoulli Distribution}
+Let $Y$ be a random variable that indicates ``success''.
+\pause
+For example, \pause
+\begin{itemize}
+\item Winning a game
+\item Having fewer than 3 errors on a task
+\item Clicking on an ad
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Then $Y$ has a Bernoulli distribution with \alert{probability of success}
+$0<\theta<1$ \pause and we write $Y\sim Ber(\theta)$.
+\pause
+The probability mass function is
+\[
+P(Y=y) = \theta^y(1-\theta)^{1-y} \quad \mbox{for } y=0,1
+\]
+\pause
+and we can find that
+\[
+E[Y] = \theta
+\quad \mbox{and} \quad
+Var[Y] = \theta(1-\theta).
+\]
+\end{frame}
+
+\begin{frame}
+\frametitle{Bernoulli pmf}
+<<>>=
+theta <- 0.3
+d <- data.frame(y = c(0,1)) %>%
+  mutate(pmf = dbinom(y, 1, prob = theta))
+
+ggplot(d, aes(x=y, y=pmf)) +
+  geom_col(width = 0.1) +
+  labs(title = paste0("Bernoulli pmf with probability of success ", theta),
+       y = "P(Y=y)")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bernoulli probability of success }
+
+Suppose the Bernoulli probability of success changes due to some other variable.
+\pause
+For example, \pause
+\begin{itemize}
+\item Time of day
+\item Sex/gender
+\item Length of a game
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+A logistic regression model allows the probability of success to change according to these
+independent variables.
+
+\end{frame}
+
+
+\subsection{Logistic reression model}
+\begin{frame}
+\frametitle{Logistic regression model}
+For observation $i$, let
+\begin{itemize}
+\item $Y_i$ be the indicator of success \pause and
+\item $X_i$ be the value of an independent variable. \pause
+\end{itemize}
+The (simple) logistic regression model is
+\[
+Y_i \ind Ber(\theta_i)
+\quad \mbox{where} \quad
+\log\left( \frac{\theta_i}{1-\theta_i}\right) = \beta_0 + \beta_1 X_i
+\]
+\pause
+In this model, $100*(e^{\beta_1}-1)$ is the percent change in the \alert{odds}
+$\left(\frac{\theta}{1-\theta}\right)$ of success when the independent variable
+increases by 1.
+\end{frame}
+
+
+
+\subsection{Admission as a function of GRE}
+\begin{frame}[fragile]
+\frametitle{Admission as a function of GRE}
+<<echo=TRUE>>=
+admission <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+head(admission)
+summary(admission)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Admission as a function of GRE}
+<<>>=
+g_admit <- ggplot(admission, aes(x = gre, y = admit)) +
+  geom_jitter(height=0.1)
+
+g_admit
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Admission as a function of GRE}
+<<echo=TRUE>>=
+m <- glm(admit ~ gre, data = admission)
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Admission as a function of GRE}
+
+\vspace{-0.2in}
+
+<<echo=TRUE, size='tiny'>>=
+ci <- 100*(exp(confint(m)[2,])-1)
+ci
+@
+
+\vspace{0.1in} \pause
+
+For each 1 point increase in GRE score,
+the percent change in odds of admission is
+(\Sexpr{round(ci[1],3)}, \Sexpr{round(ci[2],3)})\%.
+
+\vspace{0.1in} \pause
+
+<<echo=TRUE, size='tiny'>>=
+ci <- 100*(exp(10*confint(m)[2,])-1)
+ci
+@
+
+\vspace{0.1in} \pause
+
+For each 10 point increase in GRE score,
+the percent change in odds of admission is
+(\Sexpr{round(ci[1],3)}, \Sexpr{round(ci[2],3)})\%.
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Admission as a function of GRE}
+<<>>=
+g_admit +
+  geom_smooth(method = "glm",
+    method.args = list(family = "binomial"),
+    se = FALSE)
+@
+\end{frame}
+
+
+
+\section{Grouped data}
+\begin{frame}[fragile]
+\frametitle{Grouped data}
+If the data are grouped,
+then the analysis is basically the same,
+but the mathematics and code look a bit different.
+
+\vspace{0.1in} \pause
+
+<<>>=
+Sleuth3::ex2113
+@
+\end{frame}
+
+
+
+\subsection{Binomial Distribution}
+\begin{frame}
+\frametitle{Binomial Distribution}
+Let $Y$ be a random variable the count of the number of ``successes'' in a
+group.
+\pause
+For example, \pause
+\begin{itemize}
+\item Number of games won
+\item Number of individuals having 3 or fewer errors on a task
+\item Number of visitors clicking on an ad
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+Then $Y$ has a Binomial distribution with \alert{number of attempts} $n$ and
+\alert{probability of success} $0<\theta<1$ \pause and we write
+$Y\sim Bin(n, \theta)$.
+\pause
+The probability mass function is
+\[
+P(Y=y) = {n \choose y} \theta^y(1-\theta)^{1-y} \quad \mbox{for } y=0,1,\ldots,n
+\]
+\pause
+and we can find that
+\[
+E[Y] = n\theta
+\quad \mbox{and} \quad
+Var[Y] = n\theta(1-\theta).
+\]
+\end{frame}
+
+\begin{frame}
+\frametitle{Binomial pmf}
+<<>>=
+n <- 14
+theta <- 0.3
+d <- data.frame(y = 0:n) %>%
+  mutate(pmf = dbinom(y, n, prob = theta))
+
+ggplot(d, aes(x=y, y=pmf)) +
+  geom_col(width = 0.1) +
+  labs(title = paste("Binomial pmf with", n, "attempts and probability of success ", theta),
+       y = "P(Y=y)")
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Binomial probability of success}
+
+Suppose the probability of success changes due to some other variable:
+\pause
+For example, \pause
+\begin{itemize}
+\item Time of day
+\item Sex/gender
+\item Length of a game
+\end{itemize}
+
+\vspace{0.1in} \pause
+
+A logistic regression model allows the probability of success to change according to these
+independent variables.
+
+\end{frame}
+
+
+\subsection{Model}
+\begin{frame}
+\frametitle{Logistic regression model}
+For group $g$, let
+\begin{itemize}
+\item $n_g$ be the number of individuals in the group \pause,
+\item $Y_g$ be the indicator of success, \pause and
+\item $X_g$ be the value of an independent variable associated with group $g$. \pause
+\end{itemize}
+The (simple) logistic regression model is
+\[
+Y_g \ind Bin(n_g, \theta_g)
+\quad \mbox{where} \quad
+\log\left( \frac{\theta_g}{1-\theta_g}\right) = \beta_0 + \beta_1 X_g
+\]
+\pause
+In this model, $100*(e^{\beta_1}-1)$ is the percent change in the \alert{odds}
+$\left(\frac{\theta}{1-\theta}\right)$ of success when the independent variable
+increases by 1.
+\end{frame}
+
+
+
+\subsection{Vitamin C effect on incidence of colds}
+\begin{frame}[fragile]
+\frametitle{Vitamin C effect on incidence of colds}
+<<>>=
+Sleuth3::ex2113
+@
+\end{frame}
+z
+
+\begin{frame}
+\frametitle{Vitamin C effect on incidence of colds}
+<<>>=
+g_vitc <- ggplot(ex2113, aes(x=Dose, y=ProportionWithout)) +
+  geom_point(aes(size=Number)) +
+  labs(title="Randomized Experiment",
+       x = "Dose (g) of Vitamin C",
+       y = "Proportion Healthy") +
+  scale_size_area()
+
+g_vitc
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Logistic regression model for proportion healthy}
+<<echo=TRUE>>=
+m <- glm(cbind(WithoutIllness, Number - WithoutIllness) ~ Dose,
+         data = ex2113, family = binomial)
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Logistic regression model for proportion healthy}
+<<echo=TRUE>>=
+ci <- 100*(exp(confint(m)[2,])-1)
+ci
+@
+
+\pause
+
+Manuscript statement:
+
+Each gram increase in Vitamin C \alert{causes}
+the odds of staying healthy to change by
+(\Sexpr{round(ci[1])}, \Sexpr{round(ci[2])})\%.
+\end{frame}
+
+\begin{frame}
+\frametitle{Vitamin C effect on incidence of colds}
+<<>>=
+g_vitc +
+  geom_smooth(method = "glm",
+    method.args = list(family = "binomial"),
+    se = FALSE)
+@
+\end{frame}
+
+
+
+
+
+
+
+
+\section{Other examples}
+\subsection{Probability of extinction as a function of island size}
+\begin{frame}[fragile]
+\frametitle{Probability of extinction as a function of island size}
+<<echo=TRUE>>=
+Sleuth3::case2101
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Probability of extinction as a function of island size}
+<<>>=
+ggplot(Sleuth3::case2101, aes(x = Area, y = Extinct/AtRisk)) +
+  geom_point(aes(size = AtRisk))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Probability of extinction as a function of island size}
+<<>>=
+g_island <- ggplot(Sleuth3::case2101, aes(x = Area, y = Extinct/AtRisk)) +
+  geom_point(aes(size = AtRisk)) +
+  scale_x_log10()
+
+g_island
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Probability of extinction as a function of island size}
+<<echo=TRUE>>=
+m <- glm(cbind(Extinct, AtRisk - Extinct) ~ Area,
+        data = Sleuth3::case2101, family = binomial)
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Probability of extinction as a function of island size}
+<<>>=
+g_island +
+  geom_smooth(method = "glm",
+    method.args = list(family = "binomial"),
+    se = FALSE)
+@
+\end{frame}
+
+
+
+
+\subsection{Cancer occurrence as a function of breast-feeding}
+\begin{frame}[fragile]
+\frametitle{Cancer occurrence as a function of breast-feeding}
+<<echo=TRUE>>=
+Sleuth3::ex2119 %>%
+  filter(Study == 5) %>%
+  mutate(p <- Cancer / (Cancer + NoCancer))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Cancer occurrence as a function of breast-feeding}
+<<echo=TRUE>>=
+m <- glm(cbind(Cancer, NoCancer) ~ Lactate,
+         data = Sleuth3::ex2119 %>% filter(Study == 5),
+         family = binomial)
+summary(m)
+@
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Cancer occurrence as a function of breast-feeding}
+<<>>=
+ggplot(ex2119, aes(x = Lactate, y = Cancer / (Cancer + NoCancer),
+                   group = Study, color = Study)) +
+  geom_line() +
+  geom_point(aes(size = Cancer + NoCancer))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Cancer occurrence as a function of breast-feeding}
+<<echo=TRUE>>=
+m <- glm(cbind(Cancer, NoCancer) ~ Lactate + factor(Study),
+         data = Sleuth3::ex2119,
+         family = binomial)
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Cancer occurrence as a function of breast-feeding}
+<<echo=TRUE>>=
+library("lme4")
+m <- glmer(cbind(Cancer, NoCancer) ~ Lactate + (1|Study),
+         data = Sleuth3::ex2119,
+         family = binomial)
+summary(m)
+@
+\end{frame}
+
+
+\subsection{Admission as a function of GRE, GPA, and school rank}
+\begin{frame}[fragile]
+\frametitle{Admission as a function of GRE, GPA, and school rank}
+<<echo=TRUE>>=
+m <- glm(admit ~ gre + gpa + factor(rank),
+        data = admission, family = binomial)
+summary(m)
+@
+\end{frame}
+
+
+
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item Logistic regression
+  \begin{itemize}
+  \item Dependent variable is a count with clear upper maximum
+  \item Interpret $100(e^{\beta_1}-1)$ as the percent change in odds \pause
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\end{document}
+
