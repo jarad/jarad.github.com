@@ -1,6 +1,7 @@
 ## ----libraries, message=FALSE, warning=FALSE, cache=FALSE----------------------------------------
 library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
+library("lme4")
 
 
 ## ----set_seed, echo=FALSE------------------------------------------------------------------------
@@ -32,7 +33,7 @@ g_admit
 
 
 ## ----echo=TRUE-----------------------------------------------------------------------------------
-m <- glm(admit ~ gre, data = admission)
+m <- glm(admit ~ gre, data = admission, family = binomial)
 summary(m)
 
 
@@ -53,7 +54,7 @@ g_admit +
     se = FALSE)
 
 
-## ------------------------------------------------------------------------------------------------
+## ----echo=TRUE-----------------------------------------------------------------------------------
 Sleuth3::ex2113
 
 
@@ -69,7 +70,7 @@ ggplot(d, aes(x=y, y=pmf)) +
        y = "P(Y=y)")
 
 
-## ------------------------------------------------------------------------------------------------
+## ----echo=TRUE-----------------------------------------------------------------------------------
 Sleuth3::ex2113
 
 
@@ -147,19 +148,19 @@ summary(m)
 
 ## ------------------------------------------------------------------------------------------------
 ggplot(ex2119, aes(x = Lactate, y = Cancer / (Cancer + NoCancer),
-                   group = Study, color = Study)) +
+                   group = Study)) +
   geom_line() +
   geom_point(aes(size = Cancer + NoCancer))
 
 
-## ----echo=TRUE-----------------------------------------------------------------------------------
+## ----echo=TRUE, size='tiny'----------------------------------------------------------------------
 m <- glm(cbind(Cancer, NoCancer) ~ Lactate + factor(Study),
          data = Sleuth3::ex2119,
          family = binomial)
 summary(m)
 
 
-## ----echo=TRUE-----------------------------------------------------------------------------------
+## ----echo=TRUE, size='tiny'----------------------------------------------------------------------
 library("lme4")
 m <- glmer(cbind(Cancer, NoCancer) ~ Lactate + (1|Study),
          data = Sleuth3::ex2119,
@@ -167,7 +168,7 @@ m <- glmer(cbind(Cancer, NoCancer) ~ Lactate + (1|Study),
 summary(m)
 
 
-## ----echo=TRUE-----------------------------------------------------------------------------------
+## ----echo=TRUE, size='tiny'----------------------------------------------------------------------
 m <- glm(admit ~ gre + gpa + factor(rank),
         data = admission, family = binomial)
 summary(m)
