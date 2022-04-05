@@ -84,12 +84,11 @@ set.seed(20220215)
 	\item Additional independent variables ($X_1,X_2$) \pause
 	\item Interactions ($X_1X_2$) \pause
     \begin{itemize}
-    \item Continuous-continuous \pause
-    \item Continuous-categorical \pause
     \item Categorical-categorical \pause
+    \item Continuous-categorical \pause
+    \item Continuous-continuous
     \end{itemize}
 	\end{itemize}
-
 }
 
 
@@ -423,7 +422,7 @@ each cm increase in maximum depth is associated with an additional 0.48
 Longnose Dace counted on average.
 \pause
 \item Coefficient for no3 ($\beta_2$): Holding maximum depth constant, each
-mg/liter increase in nitrate concentration is associated with an addition 8.3
+mg/L increase in nitrate concentration is associated with an addition 8.3
 (\Sexpr{round(ci[3,1],1)}, \Sexpr{round(ci[3,2],1)})
 Longnose Dace counted on average.
 \pause
@@ -761,7 +760,7 @@ ci
 \item In block B1 and treatment L, the mean cover is
 \Sexpr{round(coef(mM)[1],1)} (\Sexpr{round(ci[1,1],1)}, \Sexpr{round(ci[1,2],1)}).
 \pause
-\item The mean increase in cover from block B2 to block B2 is
+\item The mean increase in cover from block B1 to block B2 is
 \Sexpr{round(coef(mM)[2],1)} (\Sexpr{round(ci[2,1],1)}, \Sexpr{round(ci[2,2],1)})
 while holding treatment constant.
 \pause
@@ -773,7 +772,7 @@ while holding block constant.
 \Sexpr{round(coef(mM)[4],1)} (\Sexpr{round(ci[4,1],1)}, \Sexpr{round(ci[4,2],1)})
 while holding block constant.
 \pause
-\item The main effects model explains \Sexpr{round(100*summary(mM)$r.squared)}\%
+\item The model with block and treatment explains \Sexpr{round(100*summary(mM)$r.squared)}\%
 of the variability in cover.
 \end{itemize}
 \end{frame}
@@ -807,7 +806,7 @@ ci
 \item In block B1 and treatment L, the mean cover is
 \Sexpr{round(coef(mI)[1],1)} (\Sexpr{round(ci[1,1],1)}, \Sexpr{round(ci[1,2],1)}).
 \pause
-\item The mean increase in cover from block B2 to block B2 is
+\item The mean increase in cover from block B1 to block B2 is
 \Sexpr{round(coef(mI)[2],1)} (\Sexpr{round(ci[2,1],1)}, \Sexpr{round(ci[2,2],1)})
 in treatment L.
 \pause
@@ -819,7 +818,8 @@ in block B1.
 \Sexpr{round(coef(mI)[4],1)} (\Sexpr{round(ci[4,1],1)}, \Sexpr{round(ci[4,2],1)})
 in block B1.
 \pause
-\item The main effects model explains \Sexpr{round(100*summary(mI)$r.squared)}\%
+\item The model that includes block, treatment, and their interaction explains
+\Sexpr{round(100*summary(mI)$r.squared)}\%
 of the variability in cover.
 \end{itemize}
 \end{frame}
@@ -1041,8 +1041,9 @@ bats to non-echolocating birds is
 \Sexpr{round(coef(mM)[4],1)} (\Sexpr{round(ci[4,1],1)}, \Sexpr{round(ci[4,2],1)})
 while mass constant.
 \pause
-\item The main effects model explains \Sexpr{round(100*summary(mM)$r.squared)}\%
-of the variability in cover.
+\item The model the includes main effects for the logarithm of mass and the type
+of bird or bat explains \Sexpr{round(100*summary(mM)$r.squared)}\%
+of the variability in the logarithm of energy expenditure.
 \end{itemize}
 \end{frame}
 
@@ -1092,8 +1093,9 @@ bats to non-echolocating birds is
 \Sexpr{round(coef(mI)[4],1)} (\Sexpr{round(ci[4,1],1)}, \Sexpr{round(ci[4,2],1)})
 when mass is 1 (log(Mass is 0).
 \pause
-\item The main effects model explains \Sexpr{round(100*summary(mI)$r.squared)}\%
-of the variability in cover.
+\item The model that includes the logarithm of mass, the type of bird and bat,
+and their interaction explains \Sexpr{round(100*summary(mI)$r.squared)}\%
+of the variability in the logarithm of energy.
 \end{itemize}
 \end{frame}
 
@@ -1287,6 +1289,35 @@ summary(mM)
 
 
 \begin{frame}[fragile]
+\frametitle{Credible intervals}
+<<>>=
+ci <- confint(mM)
+ci
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Interpretation}
+\begin{itemize}
+\item When nitrate and maximum depth are both zero, the mean longnosedace count is
+\Sexpr{round(coef(mM)[1],1)} (\Sexpr{round(ci[1,1],1)}, \Sexpr{round(ci[1,2],1)}).
+\pause
+\item When nitrate increases by 1 mg/L, the mean longnosedace count increases by
+\Sexpr{round(coef(mM)[2],1)} (\Sexpr{round(ci[2,1],1)}, \Sexpr{round(ci[2,2],1)})
+while holding maximum depth constant.
+\pause
+\item When maximum depth increases by 1 cm, the mean longnosedace count increases by
+\Sexpr{round(coef(mM)[3],1)} (\Sexpr{round(ci[3,1],1)}, \Sexpr{round(ci[3,2],1)})
+while holding nitrate constant.
+\pause
+\item The main effects model explains \Sexpr{round(100*summary(mM)$r.squared)}\%
+of the variability in longnose dace count.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
 \frametitle{R code and output - with an interaction}
 
 \vspace{-0.25in} \pause
@@ -1297,6 +1328,38 @@ summary(mI)
 @
 
 \end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Credible intervals}
+<<>>=
+ci <- confint(mI)
+ci
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Interpretation}
+\begin{itemize}
+\item When nitrate and maximum depth are both zero, the mean longnosedace count is
+\Sexpr{round(coef(mI)[1],1)} (\Sexpr{round(ci[1,1],1)}, \Sexpr{round(ci[1,2],1)}).
+\pause
+\item When nitrate increases by 1 mg/L, the mean longnosedace count increases by
+\Sexpr{round(coef(mI)[2],1)} (\Sexpr{round(ci[2,1],1)}, \Sexpr{round(ci[2,2],1)})
+when maximum depth is zero.
+\pause
+\item When maximum depth increases by 1 cm, the mean longnosedace count increases by
+\Sexpr{round(coef(mI)[3],1)} (\Sexpr{round(ci[3,1],1)}, \Sexpr{round(ci[3,2],1)})
+when nitrate is zero.
+\pause
+\item The model with maximum depth, nitrate, and their interaction explains
+\Sexpr{round(100*summary(mI)$r.squared)}\%
+of the variability in longnose dace count.
+\end{itemize}
+\end{frame}
+
+
 
 
 \begin{frame}[fragile]
@@ -1352,9 +1415,9 @@ The possibilities for independent variables are
 	\item Dummy variables for categorical variables ($X_1=\I()$)
 	\item Interactions ($X_1X_2$)
     \begin{itemize}
-    \item Continuous-continuous
-    \item Continuous-categorical
     \item Categorical-categorical
+    \item Continuous-categorical
+    \item Continuous-continuous
     \end{itemize}
 	\end{itemize}
 
