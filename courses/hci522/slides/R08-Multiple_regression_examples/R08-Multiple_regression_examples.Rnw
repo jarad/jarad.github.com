@@ -289,23 +289,32 @@ ci
 the mean daughter's height is
 \Sexpr{round(co[1],1)} in (\Sexpr{round(ci[1,1],1)},\Sexpr{round(ci[1,2],1)}).
 \pause
-\item For each inch increase in mother's height, the mean daughter's height
+\item For each inch increase in mother's height, the mean child's height
 increases by
 \Sexpr{round(co[2],2)} (\Sexpr{round(ci[2,1],2)},\Sexpr{round(ci[2,2],2)}) inches
 while holding father's height and gender constant.
 \pause
-\item For each inch increase in father's height, the mean daughter's height
+\item For each inch increase in father's height, the mean child's height
 increases by
 \Sexpr{round(co[3],2)} (\Sexpr{round(ci[3,1],2)},\Sexpr{round(ci[3,2],2)}) inches
 while holding mother's height and gender constant.
 \pause
 \item Male children are, on average,
-\Sexpr{round(co[3],2)} (\Sexpr{round(ci[3,1],2)},\Sexpr{round(ci[3,2],2)}) inches
+\Sexpr{round(co[4],2)} (\Sexpr{round(ci[4,1],2)},\Sexpr{round(ci[4,2],2)}) inches
 taller than female children while holding mother's and father's height constant.
 \pause
 \item The model with mother's height, father's height, and gender explains
-\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in children's height.
+\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in child's height.
 \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+em <- emmeans(m, pairwise ~ Gender, adjust = "none")
+confint(em)
+@
 \end{frame}
 
 
@@ -374,22 +383,19 @@ ci
 \begin{frame}
 \frametitle{warpbreaks}
 \begin{itemize}
-\item For wool type A when tension is low, the mean number of breaks is
-\Sexpr{round(co[1],0)} in (\Sexpr{round(ci[1,1],0)},\Sexpr{round(ci[1,2],0)}).
+\item For wool type A, when tension is low the mean number of breaks is
+\Sexpr{round(co[1],0)} (\Sexpr{round(ci[1,1],0)},\Sexpr{round(ci[1,2],0)}).
 \pause
-\item For wool type A when moving from tension low to tension medium,
-the mean number of breaks is
-\Sexpr{-round(co[2],0)} (\Sexpr{-round(ci[2,2],0)},\Sexpr{-round(ci[2,1],0)})
-lower.
+\item For wool type A, moving from low to medium causes the mean
+number of breaks to decrease by
+\Sexpr{-round(co[2],0)} (\Sexpr{-round(ci[2,2],0)},\Sexpr{-round(ci[2,1],0)}).
 \pause
-\item For wool type A when moving from tension low to tension high,
-the mean number of breaks is
-\Sexpr{-round(co[3],0)} (\Sexpr{-round(ci[3,2],0)},\Sexpr{-round(ci[3,1],0)})
-lower.
+\item For wool type A, moving from low to high causes the mean
+number of breaks to decrease by
+\Sexpr{-round(co[3],0)} (\Sexpr{-round(ci[3,2],0)},\Sexpr{-round(ci[3,1],0)}).
 \pause
-\item The model with tension
-\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in number of breaks
-for Wool type A.
+\item For wool type A, The model with tension
+\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in number of breaks.
 \end{itemize}
 \end{frame}
 
@@ -451,18 +457,18 @@ ci
 \begin{frame}
 \frametitle{warpbreaks}
 \begin{itemize}
-\item For wool type A when tension is low, the mean number of breaks is
-\Sexpr{round(co[1],0)} in (\Sexpr{round(ci[1,1],0)},\Sexpr{round(ci[1,2],0)}).
+\item For wool type A and low tension, the mean number of breaks is
+\Sexpr{round(co[1],0)} (\Sexpr{round(ci[1,1],0)},\Sexpr{round(ci[1,2],0)}).
 \pause
-\item When moving from tension low to tension medium,
-the mean number of breaks is
+\item Moving from low to medium causes the mean
+number of breaks to decrease by
 \Sexpr{-round(co[2],0)} (\Sexpr{-round(ci[2,2],0)},\Sexpr{-round(ci[2,1],0)})
-lower while holding wool type constant.
+for both wool types.
 \pause
-\item When moving from tension low to tension high,
-the mean number of breaks is
+\item Moving from low to high causes the mean
+number of breaks to decrease by
 \Sexpr{-round(co[3],0)} (\Sexpr{-round(ci[3,2],0)},\Sexpr{-round(ci[3,1],0)})
-lower while holding wool type constant.
+for both wool types.
 \pause
 \item On average, wool type B has
 \Sexpr{round(-co[4],0)} (\Sexpr{-round(ci[4,2],0)},\Sexpr{-round(ci[4,1],0)})
@@ -486,6 +492,39 @@ confint(em)
 <<>>=
 em <- emmeans(m, pairwise ~ wool, adjust = "none")
 confint(em)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+em <- emmeans(m, pairwise ~ tension | wool, adjust = "none")
+confint(em)$emmeans
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+confint(em)$contrasts
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+em <- emmeans(m, pairwise ~ wool | tension, adjust = "none")
+confint(em)$emmeans
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+confint(em)$contrasts
 @
 \end{frame}
 
