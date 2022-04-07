@@ -1,0 +1,495 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R08- Multiple Regression Examples}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=TRUE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE, echo=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("ggResidpanel")
+library("emmeans")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overview}
+\begin{itemize}
+\item Children's heights depending on
+  \begin{itemize}
+  \item mother's heights
+  \item + father's heights
+  \item + gender
+  \end{itemize}
+\item Wool breaks depending on
+  \begin{itemize}
+  \item tension (L, M, H)
+  \item  + type (A, B)
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Multiple regression}
+Recall the simple linear regression model is
+\[ Y_i \stackrel{ind}{\sim} N(\mu_i, \sigma^2)\pause,
+\quad
+ \mu_i = \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p} \]
+
+	\pause where for observation $i$
+  \begin{itemize}
+  \item $Y_i$ is the dependent variable \pause and
+  \item $X_{i,p}$ is the $p^{th}$ independent variable.
+  \end{itemize}
+
+\pause
+Interpretation
+\begin{itemize}
+\item $\beta_0$ is mean of the dependent variable when all independent variables (X's) are 0 \pause
+\item $\beta_p$ for $p\ne 0$, is the mean increase in the dependent variable for each unit increase in the associated independent variable \pause
+\item $R^2$ is the proportion of variability in the dependent variable explained by the model
+\end{itemize}
+\end{frame}
+
+\section{heights}
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+ex0726
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+summary(ex0726)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+ggplot(ex0726, aes(x=Mother, y=Height, color = Gender)) + geom_point()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+ggplot(ex0726 %>% filter(Gender == "female"),
+       aes(x=Mother, y=Height)) + geom_jitter()
+@
+\end{frame}
+
+
+\subsection{depending on mother's height}
+\begin{frame}[fragile]
+<<>>=
+m <- lm(Height ~ Mother, data = ex0726 %>% filter(Gender == "female"),)
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+m <- lm(Height ~ I(Mother-64), data = ex0726)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+resid_panel(m, plots = c("qq","resid","index","cookd"), smooth = TRUE, qqbands = TRUE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+co <- coef(m)
+co
+ci <- confint(m)
+ci
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{heights}
+\begin{itemize}
+\item When the mother's height is 64 in, the mean daughter's height is
+\Sexpr{round(co[1],1)} in (\Sexpr{round(ci[1,1],1)},\Sexpr{round(ci[1,2],1)}).
+\pause
+\item For each inch increase in mother's height, the mean daughter's height
+increases by
+\Sexpr{round(co[2],2)} (\Sexpr{round(ci[2,1],2)},\Sexpr{round(ci[2,2],2)}) inches.
+\pause
+\item The model with mother's height explains
+\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in daughter's height.
+\end{itemize}
+\end{frame}
+
+
+
+
+
+\subsection{+ father's height}
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+ggplot(ex0726 %>% filter(Gender == "female"),
+       aes(x=Mother, y=Height, color = Father)) + geom_jitter()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+m <- lm(Height ~ Mother + Father, data = ex0726 %>% filter(Gender == "female"))
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+m <- lm(Height ~ I(Mother-64) + I(Father-69), data = ex0726 %>% filter(Gender == "female"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+resid_panel(m, plots = c("qq","resid","index","cookd"), smooth = TRUE, qqbands = TRUE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+co <- coef(m)
+co
+ci <- confint(m)
+ci
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{heights}
+\begin{itemize}
+\item When mother's height is 64 in and father's height is 69 in,
+the mean daughter's height is
+\Sexpr{round(co[1],1)} in (\Sexpr{round(ci[1,1],1)},\Sexpr{round(ci[1,2],1)}).
+\pause
+\item For each inch increase in mother's height, the mean children's height
+increases by
+\Sexpr{round(co[2],2)} (\Sexpr{round(ci[2,1],2)},\Sexpr{round(ci[2,2],2)}) inches
+while holding father's height constant.
+\pause
+\item For each inch increase in father's height, the mean daughter's height
+increases by
+\Sexpr{round(co[3],2)} (\Sexpr{round(ci[3,1],2)},\Sexpr{round(ci[3,2],2)}) inches
+while holding mother's height constant.
+\pause
+\item The model with mother's and father's height explains
+\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in daughter's height.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{+ gender}
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+ggplot(ex0726, aes(x=Mother, y=Height, color = Father, shape=Gender)) + geom_jitter()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+m <- lm(Height ~ Mother + Father + Gender, data = ex0726)
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+m <- lm(Height ~ I(Mother-64) + I(Father-69) + Gender, data = ex0726)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+resid_panel(m, plots = c("qq","resid","index","cookd"), smooth = TRUE, qqbands = TRUE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{heights}
+<<>>=
+co <- coef(m)
+co
+ci <- confint(m)
+ci
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{heights}
+\begin{itemize}
+\item When the mother's height is 64 in and father's height is 69 in,
+the mean daughter's height is
+\Sexpr{round(co[1],1)} in (\Sexpr{round(ci[1,1],1)},\Sexpr{round(ci[1,2],1)}).
+\pause
+\item For each inch increase in mother's height, the mean daughter's height
+increases by
+\Sexpr{round(co[2],2)} (\Sexpr{round(ci[2,1],2)},\Sexpr{round(ci[2,2],2)}) inches
+while holding father's height and gender constant.
+\pause
+\item For each inch increase in father's height, the mean daughter's height
+increases by
+\Sexpr{round(co[3],2)} (\Sexpr{round(ci[3,1],2)},\Sexpr{round(ci[3,2],2)}) inches
+while holding mother's height and gender constant.
+\pause
+\item Male children are, on average,
+\Sexpr{round(co[3],2)} (\Sexpr{round(ci[3,1],2)},\Sexpr{round(ci[3,2],2)}) inches
+taller than female children while holding mother's and father's height constant.
+\pause
+\item The model with mother's height, father's height, and gender explains
+\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in children's height.
+\end{itemize}
+\end{frame}
+
+
+
+
+\section{warpbreaks}
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+warpbreaks
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+summary(warpbreaks)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+ggplot(warpbreaks, aes(x=tension, y=breaks, color=wool, shape=wool)) + geom_point()
+@
+\end{frame}
+
+
+\subsection{depending on tension}
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+ggplot(warpbreaks %>% filter(wool == "A"), aes(x=tension, y=breaks)) + geom_point()
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+m <- lm(breaks ~ tension, data = warpbreaks %>% filter(wool == "A"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+resid_panel(m, plots = c("qq","resid","index","cookd"), smooth = TRUE, qqbands = TRUE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+co <- coef(m)
+co
+ci <- confint(m)
+ci
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{warpbreaks}
+\begin{itemize}
+\item For wool type A when tension is low, the mean number of breaks is
+\Sexpr{round(co[1],0)} in (\Sexpr{round(ci[1,1],0)},\Sexpr{round(ci[1,2],0)}).
+\pause
+\item For wool type A when moving from tension low to tension medium,
+the mean number of breaks is
+\Sexpr{-round(co[2],0)} (\Sexpr{-round(ci[2,2],0)},\Sexpr{-round(ci[2,1],0)})
+lower.
+\pause
+\item For wool type A when moving from tension low to tension high,
+the mean number of breaks is
+\Sexpr{-round(co[3],0)} (\Sexpr{-round(ci[3,2],0)},\Sexpr{-round(ci[3,1],0)})
+lower.
+\pause
+\item The model with tension
+\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in number of breaks
+for Wool type A.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+em <- emmeans(m, pairwise ~ tension, adjust = "none")
+confint(em)
+@
+\end{frame}
+
+
+
+
+
+
+\subsection{+ wool type}
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+ggplot(warpbreaks, aes(x=tension, y=breaks, color=wool, shape=wool)) + geom_point()
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+m <- lm(breaks ~ tension + wool, data = warpbreaks)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+resid_panel(m, plots = c("qq","resid","index","cookd"), smooth = TRUE, qqbands = TRUE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+co <- coef(m)
+co
+ci <- confint(m)
+ci
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{warpbreaks}
+\begin{itemize}
+\item For wool type A when tension is low, the mean number of breaks is
+\Sexpr{round(co[1],0)} in (\Sexpr{round(ci[1,1],0)},\Sexpr{round(ci[1,2],0)}).
+\pause
+\item When moving from tension low to tension medium,
+the mean number of breaks is
+\Sexpr{-round(co[2],0)} (\Sexpr{-round(ci[2,2],0)},\Sexpr{-round(ci[2,1],0)})
+lower while holding wool type constant.
+\pause
+\item When moving from tension low to tension high,
+the mean number of breaks is
+\Sexpr{-round(co[3],0)} (\Sexpr{-round(ci[3,2],0)},\Sexpr{-round(ci[3,1],0)})
+lower while holding wool type constant.
+\pause
+\item On average, wool type B has
+\Sexpr{round(-co[4],0)} (\Sexpr{-round(ci[4,2],0)},\Sexpr{-round(ci[4,1],0)})
+fewer breaks than wool type A.
+\pause
+\item The model with tension and wool type explains
+\Sexpr{round(100*summary(m)$r.squared)}\% of the variability in number of breaks.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+em <- emmeans(m, pairwise ~ tension, adjust = "none")
+confint(em)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+em <- emmeans(m, pairwise ~ wool, adjust = "none")
+confint(em)
+@
+\end{frame}
+
+
+
+\end{document}
+
