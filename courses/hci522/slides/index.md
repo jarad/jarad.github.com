@@ -41,6 +41,7 @@ you can find them
 |Logistic regression|[pdf](R06-Logistic_regression/R06-Logistic_regression.pdf)|[R](R06-Logistic_regression/R06-Logistic_regression.R)|
 |Multiple regression|[pdf](R07-Multiple_regression/R07-Multiple_regression.pdf)|[R](R07-Multiple_regression/R07-Multiple_regression.R)|
 |Multiple regression examples|[pdf](R08-Multiple_regression_examples/R08-Multiple_regression_examples.pdf)|[R](R08-Multiple_regression_examples/R08-Multiple_regression_examples.R)|
+|Poisson regression|[pdf](R09-Poisson_regression/R09-Poisson_regression.pdf)|[R](R09-Poisson_regression/R09-Poisson_regression.R)|
 
 
 ### Scientific Methods

@@ -1,0 +1,578 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R09 - Poisson Regression}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=TRUE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE, echo=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("emmeans")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overview}
+  \begin{itemize}
+  \item Linear regression (with logarithm of breaks)
+    \begin{itemize}
+    \item Tension
+    \item + Wool Type
+    \end{itemize}
+  \item Poisson regression
+    \begin{itemize}
+    \item Tension
+    \item + Wool Type
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+warpbreaks
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<>>=
+summary(warpbreaks)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<echo=FALSE>>=
+ggplot(warpbreaks, aes(tension, breaks, color = wool, shape = wool)) +
+  geom_jitter(height = 0, width = 0.1)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<echo=FALSE>>=
+ggplot(warpbreaks, aes(tension, breaks, color = wool, shape = wool)) +
+  geom_jitter(height = 0, width = 0.1) + scale_y_log10()
+@
+\end{frame}
+
+
+
+\section{Linear regression}
+\begin{frame}
+\frametitle{Linear regression with log of dependent variable}
+Regression with
+\[
+\log(Y_i) \ind N(\mu_i, \sigma^2)\pause,
+\quad
+\mu_i = \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}
+\]
+\pause
+where, for observation $i$,
+\begin{itemize}
+\item $Y_i$ is the dependent variable \pause and
+\item $X_{i,p}$ is the $p^{th}$ independent variable.
+\end{itemize}
+
+\pause
+
+Interpretation
+\begin{itemize}
+\item $e^{\beta_0}$ is \alert{median} of the dependent variable when all independent variables (X's) are 0 \pause
+\item $100(e^{\beta_p}-1)$ for $p\ne 0$, is the percent increase in the \alert{median} of the dependent variable for each unit increase in the associated independent variable \pause
+\item The coefficient of determination, $R^2$, is the proportion of variability in the \alert{logarithm} of the dependent variable explained by the model.
+\end{itemize}
+\end{frame}
+
+
+
+
+
+\subsection{Tension}
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<echo=FALSE>>=
+ggplot(warpbreaks %>% filter(wool == "A"), aes(tension, breaks)) +
+  geom_jitter(height = 0, width = 0.1) + scale_y_log10() +
+  labs(title = "Wool Type A")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<echo=FALSE>>=
+m <- lm(log(breaks) ~ tension, warpbreaks %>% filter(wool == "A"))
+summary(m)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(m, pairwise ~ tension)
+ci <- confint(em, type = "response", adjust = "none")
+ci
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{warpbreaks}
+
+\begin{itemize}
+\item For wool type A, the median number of breaks when
+  \begin{itemize}
+  \item tension is low is
+  \Sexpr{round(ci$emmeans[1,2])}
+  (\Sexpr{round(ci$emmeans[1,5])},\Sexpr{round(ci$emmeans[1,6])}), \pause
+  \item tension is medium is
+  \Sexpr{round(ci$emmeans[2,2])}
+  (\Sexpr{round(ci$emmeans[2,5])},\Sexpr{round(ci$emmeans[2,6])}), \pause
+  \item tension is high is
+  \Sexpr{round(ci$emmeans[3,2])}
+  (\Sexpr{round(ci$emmeans[3,5])},\Sexpr{round(ci$emmeans[3,6])}), \pause
+  \end{itemize}
+\item For wool type A, tension
+  \begin{itemize}
+  \item low compared to medium \alert{causes} an
+  \Sexpr{round(100*(ci$contrasts[1,2]-1))}\%
+  (\Sexpr{round(100*(ci$contrasts[1,5]-1))},\Sexpr{round(100*(ci$contrasts[1,6]-1))})
+  increase in median number of breaks, \pause
+  \item low compared to high \alert{causes} an
+  \Sexpr{round(100*(ci$contrasts[2,2]-1))}\%
+  (\Sexpr{round(100*(ci$contrasts[2,5]-1))},\Sexpr{round(100*(ci$contrasts[2,6]-1))})
+  increase in median number of breaks, \pause and
+  \item medium compared to high \alert{causes} an
+  \Sexpr{round(100*(ci$contrasts[3,2]-1))}\%
+  (\Sexpr{round(100*(ci$contrasts[3,5]-1))},\Sexpr{round(100*(ci$contrasts[3,6]-1))})
+  increase in median number of breaks.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Tension + Wool Type}
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<echo=FALSE>>=
+ggplot(warpbreaks, aes(tension, breaks, color = wool, shape = wool)) +
+  geom_jitter(height = 0, width = 0.1) + scale_y_log10()
+@
+\end{frame}
+
+\subsection{Regression model with logarithm of breaks}
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<echo=FALSE>>=
+m <- lm(log(breaks) ~ tension + wool, warpbreaks)
+summary(m)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em_tension <- emmeans(m, pairwise ~ tension)
+ci_tension <- confint(em_tension, type = "response", adjust = "none")
+ci_tension
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em_wool <- emmeans(m, pairwise ~ wool)
+ci_wool <- confint(em_wool, type = "response", adjust = "none")
+ci_wool
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em_tension_by_wool <- emmeans(m, pairwise ~ tension | wool)
+ci_tension_by_wool <- confint(em_tension_by_wool, type = "response", adjust = "none")
+ci_tension_by_wool$emmeans
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+ci_tension_by_wool$contrasts
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em_wool_by_tension <- emmeans(m, pairwise ~ wool | tension)
+ci_wool_by_tension <- confint(em_wool_by_tension, type = "response", adjust = "none")
+ci_wool_by_tension$emmeans
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+ci_wool_by_tension$contrasts
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+The estimated median number of breaks is
+
+<<>>=
+pm <- ci_tension_by_wool$emmeans %>%
+  as.data.frame() %>%
+  mutate(mean_with_ci = paste0(
+    round(response), " (", round(lower.CL), ", ", round(upper.CL), ")")
+  ) %>%
+  tidyr::pivot_wider(id_cols = tension, names_from = wool, values_from = mean_with_ci)
+pm
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+While holding wool type constant, the percent change in median number of
+breaks is
+
+<<>>=
+ci_tension$contrasts %>% as.data.frame %>%
+  mutate(
+    change = 100*(ratio-1),
+    lower  = 100*(lower.CL-1),
+    upper  = 100*(upper.CL-1),
+
+    change_with_ci = paste0(
+      round(change), " (", round(lower), ", ", round(upper), ")"
+    )) %>%
+  select(contrast, change_with_ci)
+@
+\end{frame}
+
+
+
+\section{Poisson regression}
+\begin{frame}
+\frametitle{Poisson regression}
+Poisson regression with
+\[
+Y_i \ind Po(\lambda_i)\pause,
+\quad
+\log(\lambda_i) = \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}
+\]
+\pause
+where, for observation $i$,
+\begin{itemize}
+\item $Y_i$ is the dependent variable \pause and
+\item $X_{i,p}$ is the $p^{th}$ independent variable.
+\end{itemize}
+
+\pause
+
+Interpretation
+\begin{itemize}
+\item $e^{\beta_0}$ is \alert{mean} of the dependent variable when all independent variables (X's) are 0 \pause
+\item $100(e^{\beta_p}-1)$ for $p\ne 0$, is the percent increase in the \alert{mean} of the dependent variable for each unit increase in the associated independent variable.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Tension}
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<echo=FALSE>>=
+m <- glm(breaks ~ tension, warpbreaks %>% filter(wool == "A"), family=poisson)
+summary(m)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(m, pairwise ~ tension)
+ci <- confint(em, type = "response", adjust = "none")
+ci
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{warpbreaks}
+
+\begin{itemize}
+\item For wool type A, the mean number of breaks when
+  \begin{itemize}
+  \item tension is low is
+  \Sexpr{round(ci$emmeans[1,2])}
+  (\Sexpr{round(ci$emmeans[1,5])},\Sexpr{round(ci$emmeans[1,6])}), \pause
+  \item tension is medium is
+  \Sexpr{round(ci$emmeans[2,2])}
+  (\Sexpr{round(ci$emmeans[2,5])},\Sexpr{round(ci$emmeans[2,6])}), \pause
+  \item tension is high is
+  \Sexpr{round(ci$emmeans[3,2])}
+  (\Sexpr{round(ci$emmeans[3,5])},\Sexpr{round(ci$emmeans[3,6])}), \pause
+  \end{itemize}
+\item For wool type A, tension
+  \begin{itemize}
+  \item low compared to medium \alert{causes} an
+  \Sexpr{round(100*(ci$contrasts[1,2]-1))}\%
+  (\Sexpr{round(100*(ci$contrasts[1,5]-1))},\Sexpr{round(100*(ci$contrasts[1,6]-1))})
+  increase in mean number of breaks, \pause
+  \item low compared to high \alert{causes} an
+  \Sexpr{round(100*(ci$contrasts[2,2]-1))}\%
+  (\Sexpr{round(100*(ci$contrasts[2,5]-1))},\Sexpr{round(100*(ci$contrasts[2,6]-1))})
+  increase in mean number of breaks, \pause and
+  \item medium compared to high \alert{causes} an
+  \Sexpr{round(100*(ci$contrasts[3,2]-1))}\%
+  (\Sexpr{round(100*(ci$contrasts[3,5]-1))},\Sexpr{round(100*(ci$contrasts[3,6]-1))})
+  increase in mean number of breaks.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Tension + Wool Type}
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+<<echo=FALSE>>=
+ggplot(warpbreaks, aes(tension, breaks, color = wool, shape = wool)) +
+  geom_jitter(height = 0, width = 0.1) + scale_y_log10()
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<echo=FALSE>>=
+m <- glm(breaks ~ tension + wool, warpbreaks, family = poisson)
+summary(m)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em_tension <- emmeans(m, pairwise ~ tension)
+ci_tension <- confint(em_tension, type = "response", adjust = "none")
+ci_tension
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em_wool <- emmeans(m, pairwise ~ wool)
+ci_wool <- confint(em_wool, type = "response", adjust = "none")
+ci_wool
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em_tension_by_wool <- emmeans(m, pairwise ~ tension | wool)
+ci_tension_by_wool <- confint(em_tension_by_wool, type = "response", adjust = "none")
+ci_tension_by_wool$emmeans
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+ci_tension_by_wool$contrasts
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+em_wool_by_tension <- emmeans(m, pairwise ~ wool | tension)
+ci_wool_by_tension <- confint(em_wool_by_tension, type = "response", adjust = "none")
+ci_wool_by_tension$emmeans
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+\vspace{-0.2in}
+
+<<>>=
+ci_wool_by_tension$contrasts
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+The estimated mean number of breaks is
+
+<<>>=
+pm <- ci_tension_by_wool$emmeans %>%
+  as.data.frame() %>%
+  mutate(mean_with_ci = paste0(
+    round(rate), " (", round(asymp.LCL), ", ", round(asymp.UCL), ")")
+  ) %>%
+  tidyr::pivot_wider(id_cols = tension, names_from = wool, values_from = mean_with_ci)
+pm
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{warpbreaks}
+
+While holding wool type constant, the percent change in mean number of
+breaks is
+
+<<>>=
+ci_tension$contrasts %>% as.data.frame %>%
+  mutate(
+    change = 100*(ratio-1),
+    lower  = 100*(asymp.LCL-1),
+    upper  = 100*(asymp.UCL-1),
+
+    change_with_ci = paste0(
+      round(change), " (", round(lower), ", ", round(upper), ")"
+    )) %>%
+  select(contrast, change_with_ci)
+@
+\end{frame}
+
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+With count data (with no upper limit),
+a Poisson regression model is appropriate.
+
+\end{frame}
+
+
+
+\end{document}
+
