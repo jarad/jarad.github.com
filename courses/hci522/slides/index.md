@@ -38,10 +38,11 @@ you can find them
 |Experimental Design|[pdf](R03-Experimental_design/R03-Experimental_design.pdf)|[R](R03-Experimental_design/R03-Experimental_design.R)|
 |Regression with logarithms|[pdf](R04-Regression_with_logarithms/R04-Regression_with_logarithms.pdf)|[R](R04-Regression_with_logarithms/R04-Regression_with_logarithms.R)|
 |Poisson and logistic regression|[pdf](R05-Poisson_and_logistic_regression/R05-Poisson_and_logistic_regression.pdf)|[R](R05-Poisson_and_logistic_regression/R05-Poisson_and_logistic_regression.R)|
-|Logistic regression|[pdf](R06-Logistic_regression/R06-Logistic_regression.pdf)|[R](R06-Logistic_regression/R06-Logistic_regression.R)|
+|(Simple) logistic regression|[pdf](R06-Logistic_regression/R06-Logistic_regression.pdf)|[R](R06-Logistic_regression/R06-Logistic_regression.R)|
 |Multiple regression|[pdf](R07-Multiple_regression/R07-Multiple_regression.pdf)|[R](R07-Multiple_regression/R07-Multiple_regression.R)|
 |Multiple regression examples|[pdf](R08-Multiple_regression_examples/R08-Multiple_regression_examples.pdf)|[R](R08-Multiple_regression_examples/R08-Multiple_regression_examples.R)|
 |Poisson regression|[pdf](R09-Poisson_regression/R09-Poisson_regression.pdf)|[R](R09-Poisson_regression/R09-Poisson_regression.R)|
+|Logistic regression|[pdf](R10-Logistic_regression/R10-Logistic_regression.pdf)|[R](R10-Logistic_regression/R10-Logistic_regression.R)|
 
 
 ### Scientific Methods

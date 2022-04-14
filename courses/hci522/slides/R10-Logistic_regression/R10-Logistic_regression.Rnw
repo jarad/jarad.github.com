@@ -1,0 +1,355 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R10 - Logistic Regression}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("emmeans")
+library("GGally")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Overview}
+\begin{itemize}
+\item Individual data
+  \begin{itemize}
+  \item Admission as a function of GRE and GPA
+  \end{itemize}
+\item Grouped data
+  \begin{itemize}
+  \item Effect of moth color and distance on predation
+  \item + interaction between color and distance
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\section{Individual Data}
+\subsection{Logistic reression model}
+\begin{frame}
+\frametitle{Logistic regression model}
+For observation $i$, let
+\begin{itemize}
+\item $Y_i$ be the indicator of success \pause and
+\item $X_{i,p}$ be the value of the $p$th independent variable. \pause
+\end{itemize}
+The (simple) logistic regression model is
+\[
+Y_i \ind Ber(\theta_i)
+\quad \mbox{where} \quad
+= \log\left( \frac{\theta_i}{1-\theta_i}\right) = \beta_0 + \beta_1 X_{i,1} + \cdots + \beta_p X_{i,p}
+\]
+\pause
+In this model,
+\begin{itemize}
+\item $e^{\beta_0}$ is the odds when all independent variables are zero \pause and
+\item $100(e^{\beta_p}-1)$ is the percent increase in the \alert{odds}
+$\left(\frac{\theta}{1-\theta}\right)$ of success when the $p$th independent variable
+increases by 1 holding other independent variables constant.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Admission}
+\begin{frame}[fragile]
+\frametitle{Admission}
+<<echo=TRUE>>=
+admission <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv") %>% select(-rank)
+head(admission)
+summary(admission)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Admission}
+<<>>=
+ggpairs(admission)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Admission}
+Here's code for a 3d interactive graphic.
+Unfortunately I can't figure out how to include it in the pdf.
+<<eval=FALSE, echo=TRUE>>=
+plot_ly(admission, x = ~gre, y = ~gpa, z = ~admit, color = ~rank)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Admission}
+<<echo=TRUE>>=
+m <- glm(admit ~ I(gre-580) + I(gpa-3.4), data = admission, family = binomial)
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Admission as a function of GRE}
+
+\vspace{-0.2in}
+
+<<echo=TRUE, size='tiny'>>=
+1/(1+exp(-coef(m)[1]))     # probability of acceptance with GRE 580 and GPA 3.4
+1/(1+exp(-confint(m)[1,]))
+
+100*(exp(coef(m)[-1])-1)
+100*(exp(confint(m)[-1,])-1)
+@
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Interpretation}
+\begin{itemize}
+\item With a GRE of 580 and GPA of 3.4,
+the probability of acceptance is
+\Sexpr{round(100/(1+exp(-coef(m)[1])))}\%
+(\Sexpr{round(100/(1+exp(-confint(m)[1,])))}).
+\item After adjusting for GPA, each 1 point increase in GRE score is associated
+with a
+\Sexpr{round(100*(exp(coef(m)[2])-1),2)}\%
+(\Sexpr{round(100*(exp(confint(m)[2,])-1),2)})
+increase in the odds of acceptance.
+\item After adjusting for GPA, each 100 point increase in GRE score is associated
+with a
+\Sexpr{round(100*(exp(100*coef(m)[2])-1))}\%
+(\Sexpr{round(100*(exp(100*confint(m)[2,])-1))})
+increase in the odds of acceptance.
+\item After adjusting for GRE, each 1 point increase in GPA score is associated
+with a
+\Sexpr{round(100*(exp(coef(m)[3])-1))}\%
+(\Sexpr{round(100*(exp(confint(m)[3,])-1))})
+increase in the odds of acceptance.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Admission as a function of GRE}
+<<probability-plot, echo=TRUE, eval=FALSE>>=
+nd <- expand.grid(gre = seq(220,800,length=101), gpa = 2:4)
+nd$p <- predict(m, newdata = nd, type="response")
+ggplot(nd, aes(x = gre, y = p, color = gpa, group = gpa)) +
+  geom_line() +
+  labs(x = "GRE score", y = "Probability of acceptance", color = "GPA")
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Admission as a function of GRE}
+<<echo=FALSE>>=
+<<probability-plot>>
+@
+\end{frame}
+
+
+
+\section{Grouped data}
+\begin{frame}[fragile]
+\frametitle{Grouped data}
+If the data are grouped,
+then the analysis is basically the same,
+but the mathematics and code look a bit different.
+
+\vspace{0.1in} \pause
+
+<<echo=TRUE>>=
+Sleuth3::case2102
+@
+\end{frame}
+
+
+
+\subsection{Model}
+\begin{frame}
+\frametitle{Logistic regression model}
+For group $g$, let
+\begin{itemize}
+\item $n_g$ be the number of individuals in the group \pause,
+\item $Y_g$ be the indicator of success, \pause and
+\item $X_g$ be the value of an independent variable associated with group $g$. \pause
+\end{itemize}
+The (simple) logistic regression model is
+\[
+Y_g \ind Bin(n_g, \theta_g)
+\quad \mbox{where} \quad
+\log\left( \frac{\theta_g}{1-\theta_g}\right) = \beta_0 + \beta_1 X_{g,1} + \cdots + \beta_p X_{g,p}
+\]
+\pause
+In this model,
+\begin{itemize}
+\item $e^{\beta_0}$ is the odds when all independent variables are zero \pause and
+\item $100(e^{\beta_p}-1)$ is the percent increase in the \alert{odds}
+$\left(\frac{\theta}{1-\theta}\right)$ of success when the $p$th independent variable
+increases by 1 holding other independent variables constant.
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Natural selection}
+\begin{frame}[fragile]
+\frametitle{Natural selection}
+<<echo=TRUE>>=
+Sleuth3::case2102
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Natural selection}
+<<>>=
+g_moths <- ggplot(case2102, aes(x=Distance, y=Removed/Placed, color = Morph)) +
+  geom_point(aes(size=Placed)) +
+  labs(title="Randomized Experiment",
+       x = "Distance from Liverpool (km)",
+       y = "Proportion removed") +
+  scale_color_manual(values = c("dark" = "black","light"="gray")) +
+  scale_size_area()
+
+g_moths
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Logistic regression model for proportion removed}
+<<echo=TRUE>>=
+m <- glm(cbind(Removed, Placed - Removed) ~ Distance + Morph,
+         data = case2102, family = binomial)
+summary(m)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{}
+<<>>=
+nd <- expand.grid(Distance = seq(0,60,length=101), Morph = c("dark","light"))
+nd$p <- predict(m, newdata = nd, type = "response")
+
+g_moths + geom_line(data = nd, aes(y=p))
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Logistic regression model for proportion removed}
+<<echo=TRUE>>=
+m <- glm(cbind(Removed, Placed - Removed) ~ Distance + Morph + Distance:Morph,
+         data = case2102, family = binomial)
+summary(m)
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Plot with fitted lines}
+<<>>=
+nd$p <- predict(m, newdata = nd, type = "response")
+
+g_moths + geom_line(data = nd, aes(y=p))
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{emtrends}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+em <- emmeans(m, ~ Morph, at = list(Distance = 15))
+em_ci <- confint(em, type = "response")
+em_ci
+@
+
+\pause
+
+<<echo=TRUE>>=
+et <- emtrends(m, ~ Morph, var = "Distance")
+et_ci <- confint(et)
+et_ci
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Manuscript statements}
+\begin{itemize}
+\item At 15 km from Liverpool, both light and dark morphology had
+\Sexpr{round(100*em_ci[1,2])}\%
+(\Sexpr{round(100*em_ci[1,5:6])})
+removed. \pause
+\item For dark morphology, each additional km away from Liverpool
+resulted in a
+\Sexpr{round(100*(exp(et_ci[1,2])-1),1)}\%
+(\Sexpr{round(100*(exp(et_ci[1,5:6])-1),1)})
+percent increase in odds.
+\item For light morphology, each additional km away from Liverpool
+resulted in a
+\Sexpr{round(100*(exp(-et_ci[2,2])-1),1)}\%
+(\Sexpr{round(100*(exp(-et_ci[2,6:5])-1),1)})
+percent \alert{decrease} in odds.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Summary}
+For binary data or counts with a clear upper maximum,
+logistic regression is an appropriate model.
+\end{frame}
+
+
+\end{document}
+
