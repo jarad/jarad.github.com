@@ -1,0 +1,565 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R11 - ANOVA}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='tiny',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=TRUE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE, echo=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("emmeans")
+library("GGally")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+
+\begin{itemize}
+\item One-way ANOVA
+  \begin{itemize}
+  \item Mouse data
+  \item R code
+  \item Model
+  \item Mouse analysis
+  \item Bias in jury selection
+  \end{itemize}
+\item Two-way ANOVA
+  \begin{itemize}
+  \item Seaweed grazer data
+  \item R code
+  \item Model
+  \item Seaweed grazer analysis
+  \item Pygmalion effect
+  \end{itemize}
+\item Summary
+\item Three-way ANOVA
+  \begin{itemize}
+  \item Interactions
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+\section{One-way ANOVA}
+\subsection{Mouse data}
+\begin{frame}[fragile]
+\frametitle{Mouse dataset}
+
+\vspace{-0.2in}
+
+<<>>=
+mouse <- read_csv('mouse.csv') %>% 
+  mutate(Mouse = factor(Mouse),
+         Mouse = relevel(Mouse, ref="Dell"))
+head(mouse)
+summary(mouse)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Mouse graphically}
+
+\vspace{-0.2in}
+
+<<>>=
+ggplot(mouse, aes(x = Mouse, y = Skill)) + geom_jitter(width=0.1)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Regression model}
+
+\vspace{-0.2in}
+
+<<>>=
+m <- lm(Skill ~ Mouse, data = mouse)
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Confidence/credible intervals}
+
+\vspace{-0.2in}
+
+<<>>=
+coef(m)
+confint(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Regression model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(m, pairwise ~ Mouse, adjust = "none")
+confint(em)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Regression model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(m)
+@
+\end{frame}
+
+
+
+\subsection{R code}
+\begin{frame}[fragile]
+\frametitle{Analysis of variance (ANOVA)}
+
+\vspace{-0.2in}
+
+<<>>=
+anova(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Analysis of variance (ANOVA)}
+
+\vspace{-0.2in}
+
+<<>>=
+anova(m)
+@
+\end{frame}
+
+
+\subsection{Model}
+\begin{frame}
+\frametitle{ANOVA F-test: Comparison of models}
+
+Regression model with categorical variable:
+\[
+Y_i \ind N(
+\beta_0+\beta_1X_{i,1}+\cdots+\beta_pX_{i,p}, \sigma^2)
+\]
+where
+\pause 
+$\beta_p, p>0$ is the difference between mean response in the 
+reference level compared to the level associated with the $p$th level 
+
+\vspace{0.2in} \pause
+
+F-test:
+\begin{itemize}
+\item Reduced model: no categorical variable \pause $\beta_1=\cdots=\beta_p=0$ \pause
+\item Full model: with categorical variable \pause (see above)
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Mouse analysis}
+\begin{frame}[fragile]
+\frametitle{ANOVA F-test: Summary}
+
+\vspace{-0.2in}
+
+<<>>=
+anova(m)
+@
+
+\pause
+
+There is evidence of a difference in mean player skill using 
+different mice
+($F_{\Sexpr{anova(m)$Df[1]},\Sexpr{anova(m)$Df[2]}}=\Sexpr{round(anova(m)$`F value`[1])}, p\approx \Sexpr{round(anova(m)$`Pr(>F)`[1], 2)}$).
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{YouTube videos}
+(hyperlinks)
+
+\vspace{0.2in} 
+
+Playlists:
+\begin{itemize}
+\item \href{https://www.youtube.com/playlist?list=PLFHD4aOUZFp1FxJs9BG5Sbsy6NvCO3Qb1}{Probability}
+\item \href{https://www.youtube.com/playlist?list=PLFHD4aOUZFp1PZC6SgtuS-ESq4ti1GEFj}{Inference}
+\item \href{https://www.youtube.com/playlist?list=PLFHD4aOUZFp2xijRVpW7ucwSbToEAGBzq}{Regression}
+\begin{itemize}
+\item \href{https://www.youtube.com/watch?v=1qzlZlm-2Ak&list=PLFHD4aOUZFp2xijRVpW7ucwSbToEAGBzq&index=12&ab_channel=JaradNiemi}{One-way ANOVA}
+\item \href{https://www.youtube.com/watch?v=GHNgosl97Xw&list=PLFHD4aOUZFp2xijRVpW7ucwSbToEAGBzq&index=13&ab_channel=JaradNiemi}{F-tests}
+\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+\subsection{Bias in jury selection}
+\begin{frame}[fragile]
+\frametitle{Bias in jury selection}
+
+\vspace{-0.2in}
+
+<<>>=
+case0502 <- Sleuth3::case0502 %>% mutate(Judge = relevel(Judge, ref="Spock's"))
+head(case0502)
+summary(case0502)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Bias in jury selection - Plot}
+
+\vspace{-0.2in}
+
+<<>>=
+ggplot(case0502, aes(x = Judge, y = Percent)) + geom_jitter(width=0.1)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Bias in jury selection - One-way ANOVA}
+
+\vspace{-0.2in}
+
+<<>>=
+m <- lm(Percent ~ Judge, data = case0502)
+anova(m)
+@
+
+\pause
+
+Manuscript statement: 
+There is evidence of a difference in mean percent women on juries amongst the
+judges ($F_{\Sexpr{anova(m)$Df[1]},\Sexpr{anova(m)$Df[2]}}=\Sexpr{round(anova(m)$`F value`[1])}, p\approx \Sexpr{round(anova(m)$`Pr(>F)`[1], 2)}$).
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Bias in jury selection - Model summary}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(m)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Bias in jury selection - Treatment vs Control}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(m, trt.vs.ctrl ~ Judge, adjust = "none")
+confint(em)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Bias in jury selection - Custom contrast}
+
+\vspace{-0.2in}
+
+Average of all other judge's percent women minus Spock's. 
+
+<<>>=
+em <- emmeans(m, ~ Judge)
+co <- contrast(em, list(`Mean(others) - Spock` = c(-7, rep(1,6))/7))
+confint(co)
+@
+\end{frame}
+
+
+
+\section{Two-way ANOVA}
+\subsection{Seaweed grazer data}
+\begin{frame}[fragile]
+\frametitle{Seaweed grazers}
+
+\vspace{-0.2in}
+
+<<>>=
+head(case1301)
+summary(case1301)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Seaweed grazers}
+
+\vspace{-0.2in}
+
+<<>>=
+ggplot(case1301, aes(x = Block, y = Cover, shape=Treat, color=Treat)) + geom_jitter(width=0.1, height=0)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Seaweed grazers}
+
+\vspace{-0.2in}
+
+<<>>=
+m <- lm(Cover ~ Block + Treat, data = case1301)
+summary(m)
+@
+\end{frame}
+
+
+\subsection{R code}
+\begin{frame}[fragile]
+\frametitle{Seaweed grazers}
+
+\vspace{-0.2in}
+
+<<>>=
+anova(m)
+@
+\end{frame}
+
+
+
+\subsection{Model}
+\begin{frame}
+\frametitle{Two-way ANOVA}
+
+\vspace{-0.1in}
+
+Regression model with two categorical variable:
+\[
+Y_i \ind N(
+\beta_0+
+\underbrace{\beta_1X_{i,1}+\cdots+\beta_pX_{i,p}}_{\mbox{variable 1}} +
+\underbrace{\beta_{p+1}X_{i,p+1}+\cdots+\beta_{p+q}X_{i,p+q}}_{\mbox{variable 2}}
+, \sigma^2)
+\]
+where
+\pause 
+\begin{itemize} \small
+\item $\beta_r, 1\le r \le p$ is the difference between mean response in the 
+reference level compared to the level associated with the $r$th level \pause 
+\item $\beta_r, p+1\le r \le p+q$ is the difference between mean response in the 
+reference level compared to the level associated with the $r$th level
+\end{itemize}
+
+\pause
+
+F-tests:
+\begin{enumerate} \small
+\item Variable 1 
+  \begin{itemize} \small
+  \item Reduced model: no categorical variables \pause $\beta_1=\cdots=\beta_{p+q}=0$ \pause 
+  \item Full model: with first variable \pause $\beta_{p+1}=\cdots=\beta_{p+q}=0$ \pause 
+  \end{itemize}
+\item Variable 2
+  \begin{itemize} \small
+  \item Reduced model: with first variable \pause $\beta_{p+1}=\cdots=\beta_{p+q}=0$ \pause
+  \item Full model: with both variables \pause (see model above) 
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+
+\subsection{Seaweed grazer analysis}
+\begin{frame}[fragile]
+\frametitle{Seaweed grazers}
+
+\vspace{-0.2in}
+
+<<>>=
+anova(m)
+@
+\pause
+
+Manuscript statements:
+\begin{itemize}
+\item There is evidence of a difference in mean cover amongst the blocks ($F_{\Sexpr{anova(m)$Df[1]},\Sexpr{anova(m)$Df[3]}}=\Sexpr{round(anova(m)$`F value`[1])}, p\approx \Sexpr{round(anova(m)$`Pr(>F)`[1], 2)}$). \pause
+\item There is evidence of a difference in mean cover amongst the treatments after controlling for blocks ($F_{\Sexpr{anova(m)$Df[2]},\Sexpr{anova(m)$Df[3]}}=\Sexpr{round(anova(m)$`F value`[2])}, p\approx \Sexpr{round(anova(m)$`Pr(>F)`[2], 2)}$).
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Pygmalion effect}
+\begin{frame}[fragile]
+\frametitle{Pygmalion effect}
+
+\vspace{-0.2in}
+
+<<>>=
+head(case1302)
+summary(case1302)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Pygmalion effect}
+
+\vspace{-0.2in}
+
+<<>>=
+ggplot(case1302, aes(x = Company, y = Score, shape=Treat, color=Treat)) + geom_jitter(width=0.1, height=0)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Pygmalion effect}
+
+\vspace{-0.2in}
+
+<<>>=
+m <- lm(Score ~ Company + Treat, data = case1302)
+summary(m)
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Pygmalion effect}
+
+\vspace{-0.2in}
+
+<<>>=
+anova(m)
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Pygmalion Effect}
+
+\vspace{-0.2in}
+
+<<>>=
+anova(m)
+@
+\pause
+
+Manuscript statements:
+\begin{itemize}
+\item There is no evidence of a difference in mean score amongst the companies ($F_{\Sexpr{anova(m)$Df[1]},\Sexpr{anova(m)$Df[3]}}=\Sexpr{round(anova(m)$`F value`[1])}, p= \Sexpr{round(anova(m)$`Pr(>F)`[1], 2)}$). \pause
+\item There is evidence of a difference in mean score amongst the treatments after controlling for company ($F_{\Sexpr{anova(m)$Df[2]},\Sexpr{anova(m)$Df[3]}}=\Sexpr{round(anova(m)$`F value`[2])}, p= \Sexpr{round(anova(m)$`Pr(>F)`[2], 2)}$).
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Pygmalion Effect}
+
+\vspace{-0.2in}
+
+<<>>=
+drop1(m, test="F")
+@
+\pause
+
+Manuscript statements:
+\begin{itemize}
+\item There is no evidence of a difference in mean score amongst the companies \alert{after controlling for treatment} 
+($F_{\Sexpr{drop1(m, test="F")$Df[2]},
+\Sexpr{summary(m)$df[2]}}=
+\Sexpr{round(drop1(m, test="F")$`F value`[2])},
+p= \Sexpr{round(drop1(m, test="F")$`Pr(>F)`[2], 2)}$). \pause
+\item There is evidence of a difference in mean score amongst the treatments after controlling for company 
+($F_{\Sexpr{drop1(m, test="F")$Df[3]},
+\Sexpr{summary(m)$df[2]}}=
+\Sexpr{round(drop1(m, test="F")$`F value`[3])},
+p= \Sexpr{round(drop1(m, test="F")$`Pr(>F)`[3], 2)}$).
+\end{itemize}
+\end{frame}
+
+
+\section{Summary}
+\begin{frame}
+\frametitle{ANOVA Tables}
+\begin{itemize}[<+->]
+\item Sequential comparisons
+  \begin{itemize}
+  \item Adds new variable to model that already includes variables above it
+  \item Use \texttt{anova()} in R
+  \item SAS Type I sums of squares
+  \end{itemize}
+\item Partial comparisons
+  \begin{itemize}
+  \item Removes variable from model that includes all other variables
+  \item Use \texttt{drop()} in R
+  \item SAS Type III sums of squares
+  \item SPSS default
+  \end{itemize}
+\item Suggestions
+  \begin{itemize}
+  \item Results are the same for complete, balanced experiments
+  \item Always include variables that were part of the experimental design
+  \item Generally prefer \texttt{drop()}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\section{Three-way ANOVA}
+\begin{frame}[fragile]
+\frametitle{Three-way ANOVA}
+<<>>=
+m <- lm(log(Forrest) ~ Stress + factor(SO2) + factor(O3), data = case1402)
+drop1(m, test="F")
+@
+\end{frame}
+
+\subsection{Interactions}
+\begin{frame}[fragile]
+\frametitle{Interactions}
+<<>>=
+m <- lm(log(Forrest) ~ .^2, data = case1402 %>% select(-William))
+drop1(m, test="F")
+@
+\end{frame}
+
+\end{document}
+
