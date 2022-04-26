@@ -1,0 +1,253 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R12 - Interactions}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("lme4")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Interactions}
+\begin{frame}
+\frametitle{Independent variables}
+
+	\begin{itemize}
+	\item Functions ($f(X)$) 
+	\item Dummy variables for categorical variables ($X_1=\I()$) 
+  \item Higher order terms ($X^2$) 
+	\item Additional explanatory variables ($X_1,X_2$) \pause
+	\item Interactions ($X_1X_2$) \pause
+    \begin{itemize}
+    \item Continuous-continuous \pause
+    \item Continuous-categorical \pause
+    \item Categorical-categorical 
+    \end{itemize}
+	\end{itemize}
+
+\pause
+
+\begin{definition}
+Two independent variables are said to \alert{interact} if the effect that one 
+of them has on the mean of the dependent variable depends on the value of the other. 
+\end{definition}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{When to include interaction terms}
+
+Adapted from The Statistical Sleuth (3rd ed) page 250:
+\begin{itemize}
+\item when a research question pertains to an interaction \pause
+\item when good reason exists to suspect an interaction or \pause
+\item when statistical evidence exists to include the interaction.
+\end{itemize}
+
+\end{frame}
+
+<<>>=
+longnosedace <- read_csv("longnosedace.csv")
+@
+
+\subsection{R code for interaction}
+\begin{frame}[fragile]
+\frametitle{R code for interaction}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+longnosedace <- read_csv("longnosedace.csv")
+lm_dace <- lm(log(count) ~ do2 + no3 + do2:no3, data = longnosedace)
+summary(lm_dace)$coef
+
+lm_dace2 <- lm(log(count) ~ do2 * no3, data = longnosedace)
+summary(lm_dace2)$coef
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{R code for interaction}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+glm_dace <- glm(count ~ do2 + no3 + do2:no3, data = longnosedace, family = poisson)
+summary(glm_dace)$coef
+
+glm_dace2 <- glm(count ~ do2 * no3, data = longnosedace, family = poisson)
+summary(glm_dace2)$coef
+@
+\end{frame}
+
+
+
+\subsection{F-test or Chi-squared test}
+\begin{frame}[fragile]
+\frametitle{F-test or Chi-squared test to help assess the need for an interaction}
+
+\vspace{-0.2in}
+
+<<echo=TRUE, size="tiny">>=
+lm_dace <- lm(log(count) ~ do2 * no3, data = longnosedace)
+drop1(lm_dace, test="F")
+
+glm_dace <- glm(count ~ do2 * no3, data = longnosedace, family = poisson)
+drop1(glm_dace, test="Chi")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{F-test or Chi-squared test to help assess the need for an interaction}
+
+\vspace{-0.2in}
+
+<<echo=TRUE, size="tiny">>=
+glm_breaks <- glm(breaks ~ wool*tension, data = warpbreaks, family = poisson)
+summary(glm_breaks)$coef
+drop1(glm_breaks, test="Chi")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{F-test or Chi-squared test to help assess the need for an interaction}
+
+\vspace{-0.2in}
+
+<<echo=TRUE, size="tiny">>=
+glm_breaks <- glm(breaks ~ wool*tension, data = warpbreaks, family = poisson)
+summary(glm_breaks)$coef
+drop1(glm_breaks, test="Chi")
+@
+\end{frame}
+
+
+
+\subsection{Parallel lines}
+\begin{frame}
+\frametitle{No Interaction = Parallel Lines}
+A model without an interaction is often referred to as a \alert{main effects}
+model.
+\pause
+Models without an interaction result in parallel lines. 
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{No interaction}
+<<echo=FALSE>>=
+n <- 20
+d <- data.frame(mode = c("in-class","virtual"),
+           engagement = runif(n*2, 1, 5)) %>%
+  mutate(performance = engagement + (mode == "in-class") + rnorm(n*2, 0, 0.2))
+
+ggplot(d, aes(x = engagement, y = performance, color = mode, shape = mode)) + 
+  geom_point()
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{With interaction (extreme)}
+<<echo=FALSE>>=
+
+ggplot(d %>%
+         mutate(performance = ifelse(mode == "in-class", -performance+8, performance)), 
+       aes(x = engagement, y = performance, color = mode, shape = mode)) + 
+  geom_point() 
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{With interaction (not so extreme)}
+<<echo=FALSE>>=
+
+ggplot(d %>%
+         mutate(performance = ifelse(mode == "in-class", performance-engagement+2, performance)), 
+       aes(x = engagement, y = performance, color = mode, shape = mode)) + 
+  geom_point() 
+@
+\end{frame}
+
+
+\begin{frame}
+\frametitle{No interaction}
+<<echo=FALSE>>=
+n <- 20
+d <- data.frame(mode = c("in-class","virtual"),
+           engagement = sample(c("L","M","H"), n*2, replace = TRUE)) %>%
+  mutate(performance = -2^(engagement == "L") + (mode == "in-class") + rnorm(n*2, 3, 0.2),
+         engagement = factor(engagement, levels = c("L","M", "H")))
+
+ggplot(d, aes(x = engagement, y = performance, color = mode, shape = mode)) + 
+  geom_point()
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{With interaction (extreme)}
+<<echo=FALSE>>=
+ggplot(d %>%
+         mutate(performance = ifelse(mode == "in-class", -performance+8, performance)), 
+       aes(x = engagement, y = performance, color = mode, shape = mode)) + 
+  geom_point() 
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{With interaction (not so extreme)}
+<<echo=FALSE>>=
+ggplot(d %>%
+         mutate(performance = ifelse(mode == "in-class", performance+0.5*(engagement=="L"), performance)), 
+       aes(x = engagement, y = performance, color = mode, shape = mode)) + 
+  geom_point() 
+@
+\end{frame}
+
+
+
+
+
+
+\end{document}
+
