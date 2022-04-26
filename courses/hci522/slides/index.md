@@ -62,5 +62,6 @@ you can find them
 |Annotated bibliography]|[pdf](G3-Annotated_bibliography/G3-Annotated_bibliography.pdf)
 |Introduction]|[pdf](G4-Introduction/G4-Introduction.pdf)
 |Methods]|[pdf](G5-Methods/G5-Methods.pdf)
+|Results]|[pdf](G7-Results/G7-Results.pdf)
 
 

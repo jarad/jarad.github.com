@@ -1,0 +1,244 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\setbeamertemplate{caption}[numbered]
+
+% \usepackage{verbatim}
+
+\graphicspath{{figs/}}
+
+\title{G7 - Results}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='scriptsize',
+               out.width='\\textwidth',
+               fig.align='center',
+               message=FALSE,
+               echo=FALSE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("emmeans")
+library("xtable")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220222)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Results}
+\begin{frame}
+\frametitle{Results}
+\begin{itemize}
+\item Written prose
+  \begin{itemize}
+  \item Sentences
+  \item Paragraphs
+  \end{itemize}
+\item Statistical results
+  \begin{itemize}
+  \item Descriptive statistics
+    \begin{itemize}
+    \item Figure(s)
+    \item Table(s)
+    \end{itemize}
+  \item ``Manuscript statements''
+    \begin{itemize}
+    \item Name model fit with dependent and independent variables
+    \item Point estimates with confidence/credible intervals
+    \end{itemize}
+  \item Inference
+    \begin{itemize}
+    \item Generalization to a larger population?
+    \item Cause-and-effect
+    \end{itemize}
+  \item Behind the scenes statistics (do not include code/output)
+    \begin{itemize}
+    \item Assessing model assumptions
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\subsection{Written prose}
+\begin{frame}
+\frametitle{Written prose}
+
+{\tiny \url{https://www.bartleby.com/141/}}
+
+Write in full sentences and paragraphs. 
+
+\vspace{0.2in} \pause
+
+\begin{itemize}
+\item \href{https://www.bartleby.com/141/strunk5.html\#9}{Make the paragraph the unit of composition: one paragraph to each topic.} \pause
+\item \href{https://www.bartleby.com/141/strunk5.html\#10}{As a rule, begin each paragraph with a topic sentence; end it in conformity with the beginning.} \pause
+\item \href{https://www.bartleby.com/141/strunk5.html\#14}{Avoid a succession of loose sentences.}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Descriptive statistics}
+{\tiny \url{https://en.wikipedia.org/wiki/Descriptive_statistics}}
+
+\begin{definition}
+\alert{Descriptive statistics} provide simple summaries about the sample and about the observations that have been made. \pause
+Such summaries may be either quantitative, 
+i.e. summary statistics, or visual, i.e. simple-to-understand graphs.
+\end{definition}
+
+\pause
+
+Make sure to discuss the tables and figures in the prose. 
+\pause
+One paragraph per table or figure. 
+\end{frame}
+
+\begin{frame}
+\frametitle{Figures}
+<<>>=
+ggplot(warpbreaks %>%
+         rename(Type = "wool"), 
+       aes(x=tension, y=breaks, color = Type, shape = Type)) +
+  geom_jitter(width = 0.1, height = 0) + 
+  scale_y_log10() +
+  labs(title = "Experiment to study effect of wool type and tension on number of breaks",
+       x = "Tension",
+       y = "Number of breaks")
+@
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Tables}
+
+Table \ref{tab} contains estimated mean number of breaks based on a Poisson
+regression model with wool type and tension as the independent variables.
+\pause
+
+<<results="asis">>=
+m <- glm(breaks ~ wool + tension, data = warpbreaks, family = poisson)
+em <- emmeans(m, ~ wool + tension)
+ci <- confint(em, type = "response")
+
+ci %>% as.data.frame() %>%
+  mutate(both = paste0(round(rate), " (", 
+                       round(asymp.LCL), ", ", 
+                       round(asymp.UCL), ")")) %>%
+  pivot_wider(id_cols = wool, names_from = tension, values_from = both) %>%
+  xtable(caption = "Estimated mean number of breaks with 95\\% confidence intervals",
+         align = "lr|rrr",
+         label = "tab") %>%
+  print(include.rownames = FALSE,
+        caption.placement = "top")
+@
+
+ 
+\pause
+As can be seen from the table, wool type B and high tension generally have 
+smaller estimated mean number of breaks.
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Manuscript statements}
+
+Within the prose include plain English statements with statistical support.
+
+\vspace{0.2in} \pause
+
+<<>>=
+et <- em <- emmeans(m, pairwise ~ tension)
+ct <- confint(et, type = "response")$contrast
+
+ew <- em <- emmeans(m, pairwise ~ wool)
+cw <- confint(ew, type = "response")$contrast
+@
+
+For warpbreaks data analysis,
+\begin{quote}
+A Poisson regression model was fit using number of breaks as the dependent 
+variable and wool type and tension level as the independent variables. 
+\pause 
+Model diagnostics were checked and no clear deviations from model assumptions 
+were observed. 
+\pause
+Averaging over the levels of tension, wool type A had 
+\Sexpr{round(100*(cw$ratio-1))}\%
+more estimated breaks 
+than wool type B with a 95\% confidence interval
+(\Sexpr{round(100*(cw[,c("asymp.LCL", "asymp.UCL")]-1))}).
+\pause
+Averaging over wool type, low tension \alert{caused} more breaks than medium and high with
+an increase of 
+\Sexpr{round(100*(ct$ratio[1]-1))}\% (\Sexpr{round(100*(ct[1,c("asymp.LCL", "asymp.UCL")]-1))})
+and
+\Sexpr{round(100*(ct$ratio[2]-1))}\% (\Sexpr{round(100*(ct[2,c("asymp.LCL", "asymp.UCL")]-1))}),
+respectively.
+Medium tension \alert{caused} more breaks than high tension with an increase of 
+\Sexpr{round(100*(ct$ratio[3]-1))}\% (\Sexpr{round(100*(ct[3,c("asymp.LCL", "asymp.UCL")]-1))}).
+\pause
+
+\end{quote}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Behind-the-scenes statistics}
+<<echo=TRUE, eval=FALSE, size="tiny">>=
+# Plotting data
+ggplot(warpbreaks %>%
+         rename(Type = "wool"), 
+       aes(x=tension, y=breaks, color = Type, shape = Type)) +
+  geom_jitter(width = 0.1, height = 0) + 
+  scale_y_log10() +
+  labs(title = "Experiment to study effect of wool type and tension on number of breaks",
+       x = "Tension",
+       y = "Number of breaks")
+
+# Fit model
+m <- glm(breaks ~ wool + tension, data = warpbreaks, family = poisson)
+
+# Check model assumptions
+resid_panel(m, plots = c("resid","qq","index","cookd"), qqbands = TRUE)
+
+# Obtain values for table and prose
+em <- emmeans(m, ~ wool + tension)
+ci <- confint(em, type = "response")
+
+et <- em <- emmeans(m, pairwise ~ tension)
+ct <- confint(et, type = "response")$contrast
+
+ew <- em <- emmeans(m, pairwise ~ wool)
+cw <- confint(ew, type = "response")$contrast
+@
+\end{frame}
+
+
+
+\end{document}
+
+
+
+
