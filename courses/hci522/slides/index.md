@@ -46,6 +46,7 @@ you can find them
 |ANOVA|[pdf](R11-ANOVA/R11-ANOVA.pdf)|[R](R11-ANOVA/R11-ANOVA.R)|[mouse.csv](R11-ANOVA/mouse.csv)
 |P-values|[pdf](R12-Pvalues/R12-Pvalues.pdf)|[R](R12-Pvalues/R12-Pvalues.R)|[mouse.csv](R12-Pvalues/mouse.csv)
 |Interactions|[pdf](R13-Interactions/R13-Interactions.pdf)|[R](R13-Interactions/R13-Interactions.R)|[longnosedace.csv](R13-Interactions/longnosedace.csv)
+|Interactions in regression|[pdf](R14-Interactions_in_regression/R14-Interactions_in_regression.pdf)|[R](R14-Interactions_in_regression/R14-Interactions_in_regression.R)
 
 
 ### Scientific Methods

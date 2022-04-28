@@ -1,0 +1,350 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R14 - Interactions in regression}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='tiny',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=TRUE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE, echo=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("ggResidpanel")
+library("emmeans")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Interactions}
+\begin{frame}
+\frametitle{Interactions}
+Independent variables
+\begin{itemize}
+\item Categorical-continuous
+\item Categorical-categorical
+\item Continuous-continuous
+\end{itemize}
+\end{frame}
+
+\subsection{Categorical-continuous}
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Descriptive Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+case0901 <- Sleuth3::case0901 %>% 
+  mutate(Start = recode(Time, `1` = "Late", `2` = "Early"),
+         Start = factor(Start, levels = c("Early","Late")))
+head(case0901)
+summary(case0901)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Graphical Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+g <- ggplot(case0901, aes(x = Intensity, y = Flowers, color = Start, shape = Start)) +
+  geom_point() 
+g + geom_smooth(method="lm", se = FALSE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Models}
+
+\vspace{-0.2in}
+
+<<>>=
+mM <- lm(Flowers ~ Start + Intensity, data = case0901) # Main effects model
+mI <- lm(Flowers ~ Start * Intensity, data = case0901) # Interaction model
+
+drop1(mI, test="F")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Diagnostics}
+
+\vspace{-0.2in}
+
+<<>>=
+resid_panel(mM, plots = c("qq", "resid", "index", "cookd"), qqbands = TRUE)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(mM)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(mM, pairwise ~ Start | Intensity, at = list(Intensity = c(150,500,900)))
+(cm <- confint(em, type = "response"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+et <- emtrends(mM, pairwise ~ Start, var = "Intensity")
+(ct <- confint(et, type = "response"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+g + geom_smooth(method = "lm", mapping=aes(y=predict(mM, case0901)))
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(mI)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(mI, pairwise ~ Start | Intensity, at = list(Intensity = c(150,500,900)))
+(cm <- confint(em, type = "response"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+et <- emtrends(mI, pairwise ~ Start, var = "Intensity")
+(ct <- confint(et, type = "response"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Light on Meadowfoam Flowering - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+g + geom_smooth(method = "lm", se=FALSE)
+@
+\end{frame}
+
+
+
+
+
+\subsection{Categorical-categorical}
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Descriptive Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+case1301 <- Sleuth3::case1301 %>% 
+  filter(Treat %in% c("C","L","f","Lf"), Block %in% c("B1","B2","B3"))
+head(case1301)
+summary(case1301)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Graphical Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+g <- ggplot(case1301, aes(x = Block, y = Cover, color = Treat, shape = Treat)) +
+  geom_point() + scale_y_log10()
+g 
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Models}
+
+\vspace{-0.2in}
+
+<<>>=
+mM <- lm(log(Cover) ~ Treat + Block, data = case1301) # Main effects model
+mI <- lm(log(Cover) ~ Treat * Block, data = case1301) # Interaction model
+
+drop1(mI, test="F")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Diagnostics}
+
+\vspace{-0.2in}
+
+<<>>=
+resid_panel(mM, plots = c("qq", "resid", "index", "cookd"), qqbands = TRUE)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(mM)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(mM, trt.vs.ctrl ~ Treat)
+(cm <- confint(em, type = "response"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+et <- emmeans(mM, pairwise ~ Block)
+(ct <- confint(et, type = "response"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+g + geom_smooth(method = "lm", mapping=aes(y=predict(mM, case1301)))
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(mI)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(mI, pairwise ~ Treat | Block)
+(cm <- confint(em, type = "response"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+et <- emtrends(mI, pairwise ~ Treat, var = "Block")
+(ct <- confint(et, type = "response"))
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Effects of Seaweed Grazers - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+g
+@
+\end{frame}
+
+
+
+
+
+\end{document}
+
