@@ -44,6 +44,7 @@ you can find them
 |Poisson regression|[pdf](R09-Poisson_regression/R09-Poisson_regression.pdf)|[R](R09-Poisson_regression/R09-Poisson_regression.R)|
 |Logistic regression|[pdf](R10-Logistic_regression/R10-Logistic_regression.pdf)|[R](R10-Logistic_regression/R10-Logistic_regression.R)|
 |ANOVA|[pdf](R11-ANOVA/R11-ANOVA.pdf)|[R](R11-ANOVA/R11-ANOVA.R)|[mouse.csv](R11-ANOVA/mouse.csv)
+|P-values|[pdf](R12-Pvalues/R12-Pvalues.pdf)|[R](R12-Pvalues/R12-Pvalues.R)|[mouse.csv](R12-Pvalues/mouse.csv)
 |Interactions|[pdf](R13-Interactions/R13-Interactions.pdf)|[R](R13-Interactions/R13-Interactions.R)|[longnosedace.csv](R13-Interactions/longnosedace.csv)
 
 

@@ -1,0 +1,432 @@
+\documentclass[t,aspectratio=169]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+\graphicspath{{figs/}}
+
+\title{R12 - Pvalues}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='tiny',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=TRUE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE, echo=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("emmeans")
+library("GGally")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{p-values}
+\begin{frame}
+\frametitle{p-values}
+\begin{definition}
+A \alert{p-value} is the probability of observing a test statistic as or more
+extreme than the value observed if the null model is true.
+\end{definition}
+\end{frame}
+
+
+
+
+\subsection{T-test}
+\begin{frame}
+\frametitle{One-sample t-test}
+Let $Y_i \ind N(\mu,\sigma^2)$ with \alert{null model} that assumes $\mu=0$.
+\pause
+Use \alert{test statistic}
+\[
+t_{n-1} = \frac{\overline{y}-\mu}{s/\sqrt{n}} \pause
+= \frac{\overline{y}}{s/\sqrt{n}}
+\]
+\pause
+where $\overline{y}$ is the sample average and $s$ is the sample standard
+deviation.
+\pause
+Mathematically
+\[
+\overline{y} = \frac{1}{n} \sum_{i=1}^n y_i
+\pause
+\qquad \mbox{and} \qquad
+s^2 = \frac{1}{n-1} \sum_{i=1}^n (y_i-\overline{y})^2.
+\]
+\pause
+If the null model is true,
+\pause
+then $t_{n-1}$ has a Student's t-distribution with $n-1$
+\alert{degrees of freedom}
+\pause
+when we think about repeatedly getting new data.
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Student's t-distributions}
+<<echo=FALSE>>=
+sigma <- 3
+n <- 13
+d <- data.frame(t = replicate(1e4, {
+  y <- rnorm(n, mean = 0, sd = sigma)
+  mean(y) / ( sd(y) / sqrt(n) )
+})
+)
+@
+
+<<echo=FALSE>>=
+ggplot(d, aes(x=t)) +
+  geom_histogram(aes(y = ..density..), bins = 100) +
+  geom_function(fun = dt, color = "red", args = list(df = n-1)) +
+  labs(
+    x = "t-statistic values",
+    title = paste("t-statistic with", n-1, "degrees of freedom"),
+       subtitle = paste("theoretical density overlaid"))
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{p-values}
+\begin{definition}
+A \alert{p-value} is the probability of observing a test statistic
+\alert<2->{as or more extreme than the value observed} if the null model is true.
+\end{definition}
+
+\pause \pause
+
+<<>>=
+tstat <- 2.5
+@
+Suppose we collected data with a sample size of $n=\Sexpr{n}$
+\pause
+and calculated the t-statistic and found it to be \Sexpr{tstat}.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{As or more extreme regions}
+<<echo=FALSE>>=
+g_base <- ggplot(d, aes(x=t)) +
+  geom_function(fun = dt, color = "red", args = list(df = n-1)) +
+  xlim(-6,6) +
+  labs(
+    x = "t",
+    title = paste("t density with", n-1, "degrees of freedom"))
+
+g_base
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{As or more extreme regions}
+<<echo=FALSE>>=
+g_base <- g_base +
+  geom_vline(xintercept = tstat, color = "blue") +
+  labs(subtitle = paste("observed value is", tstat))
+
+g_base
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{As or more extreme regions}
+<<echo=FALSE>>=
+g_base <- g_base +
+  stat_function(fun = dt, fill = "blue", args = list(df = n-1), xlim = c(tstat, 6), geom = "area") +
+  labs(subtitle = "one-sided p-value")
+
+g_base
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{As or more extreme regions}
+<<echo=FALSE>>=
+g_base +
+  stat_function(fun = dt, fill = "blue", args = list(df = n-1), xlim = c(-6, -tstat), geom = "area") +
+  labs(subtitle = "two-sided p-value")
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{p-value summary}
+\begin{definition}
+A \alert{p-value} is the probability of observing a test statistic
+as or more extreme than the value observed if the null model is true.
+\end{definition}
+
+\vspace{0.2in} \pause
+
+Small p-values provide evidence against the null model.
+\end{frame}
+
+
+
+\subsection{Regression coefficients}
+\begin{frame}
+\frametitle{Regression model}
+
+Regression model with categorical variable:
+\[
+Y_i \ind N(
+\beta_0+\beta_1X_{i,1}+\cdots+\beta_pX_{i,p}, \sigma^2)
+\]
+where
+\begin{itemize}
+\item $\beta_0$ (intercept) is the mean value of the dependent variable $Y_i$ when \alert{all} independent variables are zero  \pause and
+\item $\beta_p,\,p> 0$ is the mean increase in the dependent variable for a one-unit increase in the $p^{th}$ independent variable \alert{when all other independent variables are held constant}.
+\end{itemize}
+
+\pause
+
+Default p-values provided have null models where
+\begin{itemize}
+\item $\beta_p=0$ for some $p$ \pause (t-tests with $n-(p+1)$ degrees of freedom) \pause
+\item some set of $\beta$s are 0 \pause (F-tests).
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Regression output in R - continuous independent variables}
+
+\vspace{0.2in} \pause
+
+<<echo=FALSE>>=
+longnosedace <- structure(list(stream = structure(1:67, .Label = c("BASIN_RUN",
+"BEAR_BR", "BEAR_CR", "BEAVER_DAM_CR", "BEAVER_RUN", "BENNETT_CR",
+"BIG_BR", "BIG_ELK_CR", "BIG_PIPE_CR", "BLUE_LICK_RUN", "BROAD_RUN",
+"BUFFALO_RUN", "BUSH_CR", "CABIN_JOHN_CR", "CARROLL_BR", "COLLIER_RUN",
+"CONOWINGO_CR", "DEAD_RUN", "DEEP_RUN", "DEER_CR", "DORSEY_RUN",
+"FALLS_RUN", "FISHING_CR", "FLINTSTONE_CR", "GREAT_SENECA_CR",
+"GREENE_BR", "GUNPOWDER_FALLS", "HAINES_BR", "HAWLINGS_R", "HAY_MEADOW_BR",
+"HERRINGTON_RUN", "HOLLANDS_BR", "ISRAEL_CR", "LIBERTY_RES",
+"LITTLE_ANTIETAM_CR", "LITTLE_BEAR_CR", "LITTLE_CONOCOCHEAGUE_CR",
+"LITTLE_DEER_CR", "LITTLE_FALLS", "LITTLE_GUNPOWDER_R", "LITTLE_HUNTING_CR",
+"LITTLE_PAINT_BR", "MAINSTEM_PATUXENT_R", "MEADOW_BR", "MILL_CR",
+"MORGAN_RUN", "MUDDY_BR", "MUDLICK_RUN", "NORTH_BR", "NORTH_BR_CASSELMAN_R",
+"NORTHWEST_BR", "NORTHWEST_BR_ANACOSTIA_R", "OWENS_CR", "PATAPSCO_R",
+"PINEY_BR", "PINEY_CR", "PINEY_RUN", "PRETTYBOY_BR", "RED_RUN",
+"ROCK_CR", "SAVAGE_R", "SECOND_MINE_BR", "SENECA_CR", "SOUTH_BR_CASSELMAN_R",
+"SOUTH_BR_PATAPSCO", "SOUTH_FORK_LINGANORE_CR", "TUSCARORA_CR"
+), class = "factor"), count = c(13L, 12L, 54L, 19L, 37L, 2L,
+72L, 164L, 18L, 1L, 53L, 16L, 32L, 21L, 23L, 18L, 112L, 25L,
+5L, 26L, 8L, 15L, 11L, 11L, 87L, 33L, 22L, 98L, 1L, 5L, 1L, 38L,
+30L, 12L, 24L, 6L, 15L, 38L, 84L, 3L, 18L, 63L, 239L, 234L, 6L,
+76L, 25L, 8L, 23L, 16L, 6L, 100L, 80L, 28L, 48L, 18L, 36L, 19L,
+32L, 3L, 106L, 62L, 23L, 2L, 26L, 20L, 38L), acreage = c(2528L,
+3333L, 19611L, 3570L, 1722L, 583L, 4790L, 35971L, 25440L, 2217L,
+1971L, 12620L, 19046L, 8612L, 3896L, 6298L, 27350L, 4145L, 1175L,
+8297L, 7814L, 1745L, 5046L, 18943L, 8624L, 2225L, 12659L, 1967L,
+1172L, 639L, 7056L, 1934L, 6260L, 424L, 3488L, 3330L, 2227L,
+8115L, 1600L, 15305L, 7121L, 5794L, 8636L, 4803L, 1097L, 9765L,
+4266L, 1507L, 3836L, 17419L, 8735L, 22550L, 9961L, 4706L, 4011L,
+6949L, 11405L, 904L, 3332L, 575L, 29708L, 2511L, 18422L, 6311L,
+1450L, 4106L, 10274L), do2 = c(9.6, 8.5, 8.3, 9.2, 8.1, 9.2,
+9.4, 10.2, 7.5, 8.5, 11.9, 8.3, 8.3, 8.2, 10.4, 8.6, 8.5, 8.7,
+7.7, 9.9, 6.8, 9.4, 7.6, 9.2, 8.6, 9.1, 9.7, 8.6, 8.3, 9.5, 6.4,
+10.5, 9.5, 8.3, 9.3, 9.1, 6.8, 9.6, 10.2, 9.7, 9.5, 9.4, 8.4,
+8.5, 8.3, 9.3, 8.9, 7.4, 8.3, 7.4, 8.2, 8.4, 8.6, 8.9, 8.3, 9.3,
+9.2, 9.8, 8.4, 6.8, 7.7, 10.2, 9.9, 7.6, 7.9, 10, 9.3), maxdepth = c(80L,
+83L, 96L, 56L, 43L, 51L, 91L, 81L, 120L, 46L, 56L, 37L, 120L,
+103L, 105L, 42L, 65L, 51L, 57L, 60L, 160L, 48L, 109L, 50L, 78L,
+41L, 65L, 50L, 73L, 26L, 60L, 85L, 133L, 62L, 44L, 67L, 54L,
+110L, 56L, 85L, 58L, 34L, 150L, 93L, 53L, 130L, 68L, 51L, 121L,
+48L, 63L, 107L, 79L, 61L, 52L, 100L, 70L, 39L, 73L, 33L, 73L,
+60L, 45L, 46L, 60L, 96L, 90L), no3 = c(2.28, 5.34, 0.99, 5.44,
+5.66, 2.26, 4.1, 3.2, 3.53, 1.2, 3.25, 0.61, 2.93, 1.57, 2.77,
+0.26, 6.95, 0.34, 1.3, 5.26, 0.44, 2.19, 0.73, 0.25, 3.37, 2.3,
+3.3, 7.71, 2.62, 3.53, 0.25, 2.34, 2.41, 3.49, 2.11, 0.81, 0.33,
+3.4, 3.54, 2.6, 0.51, 1.19, 3.31, 5.01, 1.71, 4.38, 2.05, 0.84,
+1.32, 0.29, 1.56, 1.41, 1.02, 4.06, 4.7, 4.57, 2.17, 6.81, 2.09,
+2.47, 0.63, 4.17, 1.58, 0.64, 2.96, 2.62, 5.45), so4 = c(16.75,
+7.74, 10.92, 16.53, 5.91, 8.81, 5.65, 17.53, 8.2, 10.85, 11.12,
+18.87, 11.31, 16.09, 12.79, 17.63, 14.94, 44.93, 21.68, 6.36,
+20.24, 10.27, 7.1, 14.21, 7.51, 9.72, 5.98, 26.44, 4.64, 4.46,
+9.82, 11.44, 13.77, 5.82, 13.37, 8.16, 7.6, 9.22, 5.69, 6.96,
+7.41, 12.27, 5.95, 10.98, 15.77, 5.74, 12.77, 16.3, 7.36, 2.5,
+13.22, 14.45, 9.07, 9.9, 5.38, 17.84, 10.17, 9.2, 5.5, 7.61,
+12.28, 10.75, 8.37, 21.16, 8.84, 5.45, 24.76), temp = c(15.3,
+19.4, 19.5, 17, 19.3, 12.9, 16.7, 13.8, 13.7, 14.3, 22.2, 16.8,
+18, 15, 18.4, 18.2, 24.1, 23, 21.8, 19.1, 22.6, 14.3, 19, 18.5,
+21.3, 20.5, 18, 16.8, 20.5, 20.1, 24.5, 12, 21, 20.2, 24, 14.9,
+24, 20.5, 19.5, 17.5, 16, 17.5, 18.1, 24.3, 13.1, 16.9, 17, 21,
+18.5, 18, 20.8, 23, 21.8, 19.7, 18.9, 18.6, 23.6, 19.2, 17.7,
+18, 21.4, 17.7, 20.1, 18.5, 18.6, 15.4, 15)), .Names = c("stream",
+"count", "acreage", "do2", "maxdepth", "no3", "so4", "temp"), class = "data.frame", row.names = c(NA,
+-67L))
+@
+
+<<echo=TRUE>>=
+m <- lm(log(count) ~ acreage + do2 + maxdepth + no3 + so4 + temp, data = longnosedace)
+summary(m)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Regression output in R - categorical independent variables}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+mouse <- read_csv("mouse.csv", show_col_types = FALSE)
+m <- lm(Skill ~ Mouse, data = mouse)
+summary(m)
+@
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Regression model with a categorical variable}
+
+Regression model
+\[
+Y_i \ind N(
+\beta_0+\beta_1X_{i,1}+\beta_2X_{i,2}+\beta_3X_{i,3}+\beta_4X_{i,4}+\beta_5X_{i,5}, \sigma^2)
+\]
+\pause
+\[ \begin{array}{ll}
+X_{i,1} = \I(\mbox{Mouse for observation $i$ is Dell})\pause \\
+X_{i,2} = \I(\mbox{Mouse for observation $i$ is Mamba (Wired)})\pause \\
+X_{i,3} = \I(\mbox{Mouse for observation $i$ is Mamba (Wireless)})\pause \\
+X_{i,4} = \I(\mbox{Mouse for observation $i$ is Viper (Wired, light)})\pause \\
+X_{i,5} = \I(\mbox{Mouse for observation $i$ is Viper (Wired)})\pause
+\end{array} \]
+
+\vspace{0.2in} \pause
+
+An F-test has null model with $\beta_1=\beta_2=\beta_3=\beta_4=\beta_5=0$.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{ANOVA - categorical independent variables}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+mouse <- read_csv("mouse.csv", show_col_types = FALSE)
+m <- lm(Skill ~ Mouse, data = mouse)
+drop1(m, test="F")
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Regression output in R - categorical independent variables}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+m <- lm(breaks ~ wool + tension, data = warpbreaks)
+summary(m)
+@
+\end{frame}
+
+
+
+\subsection{ANOVA F-test}
+\begin{frame}[fragile]
+\frametitle{ANOVA}
+<<echo=TRUE>>=
+mouse <- read_csv("mouse.csv", show_col_types = FALSE)
+m <- lm(Skill ~ Mouse, data = mouse)
+drop1(m, test="F")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{ANOVA}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+m <- lm(breaks ~ wool + tension, data = warpbreaks)
+drop1(m, test = "F")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{ANOVA for interactions}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+m <- lm(breaks ~ wool + tension + wool:tension, data = warpbreaks)
+drop1(m, test = "F")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Regression with interactions}
+
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
+m <- lm(breaks ~ wool + tension + wool:tension, data = warpbreaks)
+summary(m)
+@
+\end{frame}
+
+
+
+\section{ASA Statement on p-values}
+\begin{frame}
+\frametitle{American Statistical Association Statement on p-values}
+
+{\tiny \url{https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108}}
+
+\pause
+
+\begin{itemize}
+\item \alert<9->{P-values can indicate how incompatible the data are
+with a specified statistical model.} \pause
+\item P-values do not measure the probability that the studied
+hypothesis is true, \pause or the probability that the data
+were produced by random chance alone. \pause
+\item Scientific conclusions and business or policy decisions
+should not be based only on whether a p-value passes
+a specific threshold. \pause
+\item Proper inference requires full reporting and transparency. \pause
+\item A p-value, or statistical significance, does not measure
+the size of an effect or the importance of a result. \pause
+\item By itself, a p-value does not provide a good measure of
+evidence regarding a model or hypothesis.
+\end{itemize}
+\end{frame}
+
+
+\end{document}
+
