@@ -66,5 +66,6 @@ you can find them
 |Methods]|[pdf](G5-Methods/G5-Methods.pdf)
 |Code]|[pdf](G6-Code/G6-Code.pdf)
 |Results]|[pdf](G7-Results/G7-Results.pdf)
+|Discussion]|[pdf](G8-Discussion/G8-Discussion.pdf)
 
 
