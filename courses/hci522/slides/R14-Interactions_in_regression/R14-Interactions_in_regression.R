@@ -40,12 +40,12 @@ summary(mM)
 
 ## ----------------------------------------------------------------------------------------
 em <- emmeans(mM, pairwise ~ Start | Intensity, at = list(Intensity = c(150,500,900)))
-(cm <- confint(em, type = "response"))
+cm <- confint(em, type = "response"); cm
 
 
 ## ----------------------------------------------------------------------------------------
 et <- emtrends(mM, pairwise ~ Start, var = "Intensity")
-(ct <- confint(et, type = "response"))
+ct <- confint(et, type = "response"); ct
 
 
 ## ----------------------------------------------------------------------------------------
@@ -58,12 +58,12 @@ summary(mI)
 
 ## ----------------------------------------------------------------------------------------
 em <- emmeans(mI, pairwise ~ Start | Intensity, at = list(Intensity = c(150,500,900)))
-(cm <- confint(em, type = "response"))
+cm <- confint(em, type = "response"); cm
 
 
 ## ----------------------------------------------------------------------------------------
 et <- emtrends(mI, pairwise ~ Start, var = "Intensity")
-(ct <- confint(et, type = "response"))
+ct <- confint(et, type = "response"); ct
 
 
 ## ----------------------------------------------------------------------------------------
@@ -78,9 +78,10 @@ summary(case1301)
 
 
 ## ----------------------------------------------------------------------------------------
-g <- ggplot(case1301, aes(x = Block, y = Cover, color = Treat, shape = Treat)) +
-  geom_point() + scale_y_log10()
-g 
+g <- ggplot(case1301, aes(x = Block, y = Cover, 
+                          color = Treat, shape = Treat, group = Treat)) +
+  geom_point() + scale_y_log10() 
+g + stat_summary(fun = mean, geom = "line")
 
 
 ## ----------------------------------------------------------------------------------------
@@ -100,16 +101,16 @@ summary(mM)
 
 ## ----------------------------------------------------------------------------------------
 em <- emmeans(mM, trt.vs.ctrl ~ Treat)
-(cm <- confint(em, type = "response"))
+cm <- confint(em, type = "response"); cm
 
 
 ## ----------------------------------------------------------------------------------------
-et <- emmeans(mM, pairwise ~ Block)
-(ct <- confint(et, type = "response"))
+et <- emmeans(mM, trt.vs.ctrl ~ Block)
+ct <- confint(et, type = "response"); ct
 
 
 ## ----------------------------------------------------------------------------------------
-g + geom_smooth(method = "lm", mapping=aes(y=predict(mM, case1301)))
+g + geom_line(mapping=aes(y=exp(predict(mM, case1301))))
 
 
 ## ----------------------------------------------------------------------------------------
@@ -117,15 +118,15 @@ summary(mI)
 
 
 ## ----------------------------------------------------------------------------------------
-em <- emmeans(mI, pairwise ~ Treat | Block)
-(cm <- confint(em, type = "response"))
+em <- emmeans(mI, trt.vs.ctrl ~ Treat | Block)
+cm <- confint(em, type = "response"); cm$contrasts
 
 
 ## ----------------------------------------------------------------------------------------
-et <- emtrends(mI, pairwise ~ Treat, var = "Block")
-(ct <- confint(et, type = "response"))
+et <- emmeans(mI, trt.vs.ctrl ~ Block | Treat)
+ct <- confint(et, type = "response"); ct$contrasts
 
 
 ## ----------------------------------------------------------------------------------------
-g
+g + stat_summary(fun = mean, geom = "line")
 
