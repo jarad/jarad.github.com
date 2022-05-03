@@ -1,0 +1,448 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R15 - Interactions in Logistic and Poisson Regression}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='tiny',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=TRUE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE, echo=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("ggResidpanel")
+library("emmeans")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+
+\section{Interactions}
+\begin{frame}
+\frametitle{Interactions}
+Independent variables
+\begin{itemize}
+\item Categorical-continuous
+\item Categorical-categorical
+\item Continuous-continuous (not discussed)
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+Generalized linear models
+\begin{itemize}
+\item Poisson regression
+\item Logistic regression
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
+\subsection{Categorical-categorical}
+\begin{frame}
+\frametitle{Poisson regression}
+Poisson regression with two (continuous) independent variables: \pause
+\begin{itemize}[<+->]
+\item Data model
+\[ Y_i \ind Po(\lambda_i) \]
+\item Main effects model
+\[ \log(\lambda_i) = \beta_0+\beta_1 X_{i,1}+\beta_2 X_{i,2}
+\phantom{ + \beta_3 X_{i,1} X_{i,2}}
+\]
+\item Interaction model
+\[ \log(\lambda_i) = \beta_0 + \beta_1 X_{i,1} + \beta_2 X_{i,2} + \beta_3 X_{i,1} X_{i,2} \]
+\end{itemize}
+\pause \pause \pause
+The interaction occurs on the \alert{log} scale.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Descriptive Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+head(warpbreaks)
+summary(warpbreaks)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Graphical Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+g <- ggplot(warpbreaks, aes(x = tension, y = breaks,
+                          color = wool, shape = wool, group = wool)) +
+  geom_jitter(width=0.1, height=0) + scale_y_log10()
+g
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Graphical Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+g + stat_summary(fun = mean, geom = "line")
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Models}
+
+\vspace{-0.2in}
+
+<<>>=
+mM <- glm(breaks ~ wool + tension, data = warpbreaks, family = poisson) # Main effects model
+mI <- glm(breaks ~ wool * tension, data = warpbreaks, family = poisson) # Interaction model
+
+drop1(mI, test="Chi")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Diagnostics}
+
+\vspace{-0.2in}
+
+<<>>=
+resid_panel(mM, plots = c("qq", "resid", "index", "cookd"), qqbands = TRUE)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(mM)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(mM, pairwise ~ wool)
+cm <- confint(em, type  = "unlink"); cm
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+et <- emmeans(mM, pairwise ~ tension)
+ct <- confint(et, type  = "unlink"); ct
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+g + geom_line(mapping=aes(y=predict(mM, warpbreaks, type  = "unlink")))
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(mI)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(mI, pairwise ~ wool | tension)
+cm <- confint(em, type  = "unlink"); cm$emmeans
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+cm$contrasts
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+et <- emmeans(mI, pairwise ~ tension | wool)
+ct <- confint(et, type  = "unlink"); ct$contrasts
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Warpbreaks - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+g + stat_summary(fun = mean, geom = "line")
+@
+\end{frame}
+
+
+
+\subsection{Categorical-continuous}
+\begin{frame}
+\frametitle{Logistic regression}
+Logistic regression with two (continuous) independent varibles.
+\begin{itemize}
+\item Data model
+\[ Y_g \ind Bin(n_g, \theta_g) \]
+\item Main effects model
+\[
+\log\left( \frac{\theta_g}{1-\theta_g}\right) = \beta_0 + \beta_1 X_{g,1} + \beta_2 X_{g,2}
+\phantom{ + \beta_3 X_{g,1} X_{g,2}}
+\]
+\item Interaction model
+\[
+\log\left( \frac{\theta_g}{1-\theta_g}\right) = \beta_0 + \beta_1 X_{g,1} + \beta_2 X_{g,2}
++ \beta_3 X_{g,1} X_{g,2}
+\]
+\end{itemize}
+\pause
+
+The interaction occurs on the \alert{log-odds} scale.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Descriptive Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+head(case2001)
+summary(case2001)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Graphical Statistics}
+
+\vspace{-0.2in}
+
+<<>>=
+g <- ggplot(case2001, aes(x = Age, y = Status, color = Sex, shape = Sex)) +
+  geom_jitter(width=0, height = 0.05)
+g
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Models}
+
+\vspace{-0.2in}
+
+<<>>=
+mM <- glm(Status == "Survived" ~ Sex + Age, data = case2001, family = binomial) # Main effects model
+mI <- glm(Status == "Survived" ~ Sex * Age, data = case2001, family = binomial) # Interaction model
+
+drop1(mI, test="Chi")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Diagnostics}
+
+\vspace{-0.2in}
+
+<<>>=
+resid_panel(mM, plots = c("qq", "resid", "index", "cookd"), qqbands = TRUE)
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(mM)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(mM, pairwise ~ Sex | Age, at = list(Age = c(15,28,65)))
+cm <- confint(em, type = "unlink"); cm$emmeans
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+cm$contrasts
+@
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+et <- emtrends(mM, pairwise ~ Sex, var = "Age")
+ct <- confint(et); ct
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Main effects model}
+
+\vspace{-0.2in}
+
+<<>>=
+g + geom_smooth(mapping=aes(y=predict(mM, case2001, type="response")+1))
+@
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+summary(mI)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+em <- emmeans(mI, pairwise ~ Sex | Age, at = list(Age = c(15,28,65)))
+cm <- confint(em); cm$emmeans
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+cm$contrasts
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+et <- emtrends(mI, pairwise ~ Sex, var = "Age")
+ct <- confint(et); ct
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Donner Party - Interaction model}
+
+\vspace{-0.2in}
+
+<<>>=
+g + geom_smooth(mapping=aes(y=predict(mI, case2001, type="response")+1))
+@
+\end{frame}
+
+
+
+
+
+\end{document}
+

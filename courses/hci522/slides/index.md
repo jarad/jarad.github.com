@@ -47,6 +47,7 @@ you can find them
 |P-values|[pdf](R12-Pvalues/R12-Pvalues.pdf)|[R](R12-Pvalues/R12-Pvalues.R)|[mouse.csv](R12-Pvalues/mouse.csv)
 |Interactions|[pdf](R13-Interactions/R13-Interactions.pdf)|[R](R13-Interactions/R13-Interactions.R)|[longnosedace.csv](R13-Interactions/longnosedace.csv)
 |Interactions in regression|[pdf](R14-Interactions_in_regression/R14-Interactions_in_regression.pdf)|[R](R14-Interactions_in_regression/R14-Interactions_in_regression.R)
+|Interactions in GLMs|[pdf](R15-Interactions_in_glms/R15-Interactions_in_glms.pdf)|[R](R15-Interactions_in_glms/R15-Interactions_in_glms.R)
 
 
 ### Scientific Methods
