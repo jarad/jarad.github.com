@@ -1,0 +1,248 @@
+\documentclass[t,aspectratio=169,handout]{beamer}
+
+\input{../frontmatter}
+\input{../commands}
+
+% \usepackage{verbatim}
+\usepackage{tikz}
+
+\graphicspath{{figs/}}
+
+\title{R16 - Crossover designs}
+
+% \setbeamertemplate{background}
+% {\includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{video_overlay}}
+
+<<options, results='hide', echo=FALSE, purl=FALSE>>=
+opts_chunk$set(fig.width=6, fig.height=2.5,
+               size='tiny',
+               out.width='\\textwidth',
+               fig.align='center',
+               warning = FALSE,
+               message=FALSE,
+               echo=TRUE,
+               cache=FALSE)
+options(width=120)
+@
+
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE, echo=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("ggResidpanel")
+library("emmeans")
+@
+
+<<set_seed, echo=FALSE>>=
+set.seed(20220215)
+@
+
+\begin{document}
+\begin{frame}
+\maketitle
+\end{frame}
+
+\section{Crossover designs}
+\begin{frame}
+\frametitle{Crossover designs}
+
+{\tiny \url{https://en.wikipedia.org/wiki/Crossover_study}}
+
+\begin{definition}
+A \alert{crossover study} is one in which each subject receives a sequence
+of different treatments. 
+\end{definition}
+
+\vspace{0.2in} \pause
+
+\begin{itemize}
+\item Crossover designs can increase precision and reduce costs
+  \begin{itemize}
+  \item subjects being used as blocks \pause
+  \end{itemize}
+\item Design to avoid confounding time period effects with treatments
+  \begin{itemize}
+  \item each treatment in every period \pause 
+  \end{itemize}
+\item Carryover effect can persist after the treatment period
+  \begin{itemize}
+  \item increase washout period between treatment periods \pause
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Confounding}
+
+\begin{definition}
+A \alert{confounding variable} is a variable the influences both the 
+dependent and the independent variable. 
+\end{definition}
+
+\pause
+
+<<echo=FALSE,size='LARGE'>>=
+d <- data.frame(period = c("I","II"),
+                sequence = LETTERS[1:2])
+d
+@
+
+\pause
+
+In this example, period is a confounding variable since it determines the 
+treatment order (A $\to$ B) and (may) have an effect on the dependent variable. 
+\pause
+Treatment and period are said to be \alert{confounded} with each other. 
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Example balanced 3 treatment in 3 period design}
+
+\vspace{-0.2in}
+
+
+<<echo=FALSE,size='LARGE'>>=
+d <- data.frame(period = c("I","II","III"),
+                seq1 = LETTERS[1:3],
+                seq2 = LETTERS[c(2,3,1)],
+                seq3 = LETTERS[c(3,1,2)],
+                seq4 = LETTERS[c(1,3,2)],
+                seq5 = LETTERS[c(2,1,3)],
+                seq6 = LETTERS[3:1])
+d
+@
+
+\pause
+
+\begin{definition}
+A crossover design is \alert{balanced for carryover effects} when each 
+treatment follows each of the other treatments an equal number of times. 
+\end{definition}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Analysis}
+
+In general,
+an analysis of a crossover design wants to account for the following
+
+\begin{itemize}
+\item Fixed effects
+  \begin{itemize}
+  \item treatment
+  \item period
+  \item carryover
+  \item sequence (= treatment:period interaction)\pause
+  \end{itemize}
+\item Random effects
+  \begin{itemize}
+  \item subject
+  \end{itemize}
+\end{itemize}
+
+\pause 
+
+Simpler analyses are possible if you can assume negligible effects of 
+\begin{itemize}
+\item sequence
+\item carryover
+\end{itemize}
+
+\pause
+
+But these assumptions may be dubious. 
+\end{frame}
+
+
+
+\subsection{2 x 2 Crossover}
+\begin{frame}[fragile]
+\frametitle{2x2 Crossover}
+
+\vspace{-0.2in} 
+
+<<echo=FALSE,size='Large'>>=
+d <- data.frame(period = c("I","II"),
+                seqAB = LETTERS[1:2],
+                seqBA = LETTERS[2:1])
+d
+@
+
+Consider a regression model with period, treatment, sequence, and carryover. 
+\pause
+You will have the following terms
+\begin{itemize}
+\item Intercept (reference level: I, A, AB, carryover from A)
+\item Indicator for period II
+\item Indicator for treatment B
+\item Indicator for sequence BA
+\item Indicator for carryover from B
+\end{itemize}
+\pause
+Since there are only 4 combinations of period and treatment, 
+we only have 4 means. 
+\pause
+Thus, we cannot estimate all of the terms in this model. 
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Extra Period Design}
+
+\vspace{-0.2in} 
+
+<<echo=FALSE,size='Large'>>=
+d <- data.frame(period = c("I","II","III"),
+                seqABB = LETTERS[c(1:2,2)],
+                seqBAA = LETTERS[c(2:1,1)])
+d
+@
+
+Consider a regression model with period, treatment, sequence, and carryover. 
+\pause
+You will have the following terms
+\begin{itemize}
+\item Intercept (reference level: I, A, AB, carryover from A)
+\item Indicators for period II and III
+\item Indicator for treatment B
+\item Indicator for sequence BA
+\item Indicator for carryover from B
+\end{itemize}
+\pause
+Since we now have 6 means we can estimate all of the terms in this model. 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{R Code for Extra Period Design}
+
+\vspace{-0.2in}
+
+<<echo=TRUE, eval=FALSE, size='large'>>=
+library(lme4) # library(lmerTest)?
+m <- lmer(y ~
+            # fixed effects
+            treatment + period + sequence + 
+            carryover + # carryover missing in first period
+            
+            # random effect
+            (1|subject),   
+          
+          data = d)
+
+anova(m) # Type III ? 
+em <- emmeans(m, pairwise ~ treatment) # ??
+confint(em) # ??
+@
+\end{frame}
+
+
+\end{document}
+

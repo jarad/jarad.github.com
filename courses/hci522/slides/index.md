@@ -48,6 +48,7 @@ you can find them
 |Interactions|[pdf](R13-Interactions/R13-Interactions.pdf)|[R](R13-Interactions/R13-Interactions.R)|[longnosedace.csv](R13-Interactions/longnosedace.csv)
 |Interactions in regression|[pdf](R14-Interactions_in_regression/R14-Interactions_in_regression.pdf)|[R](R14-Interactions_in_regression/R14-Interactions_in_regression.R)
 |Interactions in GLMs|[pdf](R15-Interactions_in_glms/R15-Interactions_in_glms.pdf)|[R](R15-Interactions_in_glms/R15-Interactions_in_glms.R)
+|Crossover designs|[pdf](R16-Crossover_designs/R16-Crossover_designs.pdf)|[R](R16-Crossover_designs/R16-Crossover_designs.R)
 
 
 ### Scientific Methods
@@ -62,12 +63,13 @@ you can find them
 |Topic|slides|
 |----------------------|
 |Overview|[pdf](G1-Overview/01-Overview.pdf)
-|Scientific questions]|[pdf](G2-Scientific_questions/G2-Scientific_questions.pdf)
-|Annotated bibliography]|[pdf](G3-Annotated_bibliography/G3-Annotated_bibliography.pdf)
-|Introduction]|[pdf](G4-Introduction/G4-Introduction.pdf)
-|Methods]|[pdf](G5-Methods/G5-Methods.pdf)
-|Code]|[pdf](G6-Code/G6-Code.pdf)
-|Results]|[pdf](G7-Results/G7-Results.pdf)
-|Discussion]|[pdf](G8-Discussion/G8-Discussion.pdf)
+|Scientific questions|[pdf](G2-Scientific_questions/G2-Scientific_questions.pdf)
+|Annotated bibliography|[pdf](G3-Annotated_bibliography/G3-Annotated_bibliography.pdf)
+|Introduction|[pdf](G4-Introduction/G4-Introduction.pdf)
+|Methods|[pdf](G5-Methods/G5-Methods.pdf)
+|Code|[pdf](G6-Code/G6-Code.pdf)
+|Results|[pdf](G7-Results/G7-Results.pdf)
+|Discussion|[pdf](G8-Discussion/G8-Discussion.pdf)
+|Presentation|[pdf](G9-Presentation/G9-Presentation.pdf)
 
 
