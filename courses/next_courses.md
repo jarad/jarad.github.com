@@ -10,7 +10,9 @@ description: "for STAT 587 students"
 A [minor in Statistics for an individual in a Masters Program](https://www.stat.iastate.edu/statistics-minor-master%E2%80%99s-students) requires 587, 
 588, and at least one other 3-credit 400-level or above STAT course. 
 A [minor in Statistics for an individual in a PhD Program](https://www.stat.iastate.edu/statistics-minor-phd-students) requires 587, 588, and at least 2 other 3-credit 400-level or above STAT courses.
-A maximum of nine 400-level courses can be included on a graduate program of study (POS). 
+A maximum of 
+[9 credits at the undergraduate level](https://www.grad-college.iastate.edu/handbook/chapter.php?id=5)
+can be included on a graduate program of study (POS). 
 
 Statistics courses are listed on 
 [the University Course Catalog](https://catalog.iastate.edu/azcourses/stat/), 
