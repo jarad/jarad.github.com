@@ -7,26 +7,27 @@ tagline: Probability and Statistics for Computer Science
 
 This website is designed to host course material for STAT 330 - Probability and Statistics for Computer Science at 
 [Iowa State University](http://www.iastate.edu).
+These materials will be available even after the course is over, 
+although they may be updated. 
 
 - Instructor: [Jarad Niemi](http://jarad.me) (<niemi@iastate.edu>, [@jaradniemi](https://twitter.com/jaradniemi))
-- TA: Yifan Wang (<wangyf@iastate.edu>)
 
-This course meets
 
-- MWF 3:20-4:10 @ [Mol-Bio 1414](https://www.fpm.iastate.edu/roomscheduling/room.asp?room_id=149)
-
-Office hours are
-
-- Instructor: TBD on Zoom
-- TA: TBD
 
 
 
 ## Textbook
 
 The optional textbook for this course is 
+Probability and Statistics for Computer Scientists by Michael Baron (3rd ed). 
 
-<a href="https://www.amazon.com/Probability-Statistics-Computer-Scientists-Michael/dp/1439875901/ref=as_li_ss_il?dchild=1&keywords=PROBABILITY+and+STATISTICS+for+computer+scientists+baron&qid=1610990006&sr=8-2&linkCode=li2&tag=jaradniemicom-20&linkId=562db9c93226e47eeaad0b611689258c&language=en_US" target="_blank"><img border="0" src="//ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&ASIN=1439875901&Format=_SL160_&ID=AsinImage&MarketPlace=US&ServiceVersion=20070822&WS=1&tag=jaradniemicom-20&language=en_US" ></a><img src="https://ir-na.amazon-adsystem.com/e/ir?t=jaradniemicom-20&language=en_US&l=li2&o=1&a=1439875901" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" />
+![](baron_3rd.jpeg "Probability and Statistics for Computer Scientists by Michael Baron (3rd ed)")
+
+The main improvement in the 3rd edition is the inclusion of R code in addition
+to the MATLAB code. 
+Since I use R for any code that I write, 
+this is an appreciated inclusion. 
+
 
 Here are some free resources that can be used:
 
@@ -59,7 +60,66 @@ Install links:
 - [RStudio](https://www.rstudio.com/products/rstudio/download/) 
 
 
+## Videos
 
+For Basic Probability, I have a 
+[1 hour video](https://www.youtube.com/watch?v=zBP7KBtM9vI) 
+containing all the probability required for the course. 
+Alternatively, I have a 
+[playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp0a_m9HXdVu3_ZnfphUY0oJ) 
+that has the basic probability topics separated into individual videos.
+
+For random varibles, I have an 
+[introductory video](https://youtu.be/ajLFqrPTAcY) 
+that describes the different between discrete and continuous random variables. 
+Then, I have a video about 
+[general discrete random variables](https://youtu.be/FrL4Dcoy9MI)
+and videos about 
+
+- [Bernoulli](https://youtu.be/NXUkzZhrrcA),
+- [binomial](https://youtu.be/cnJjKX5AHi4), and
+- [Poisson](https://youtu.be/NTWD-EyTkR0)
+
+random variables and their distributions as well as a video about 
+[multiple discrete random variables](https://youtu.be/1U537aiXJzM).
+
+Moving on to continuous random variables, I have a video about
+[general continuous random variables](https://youtu.be/KbfUnaiarps)
+and videos specfically about 
+
+- [uniform](https://youtu.be/S_tw8UZqJ6U),
+- [exponential](https://youtu.be/e5vCX4uCGvY),
+- [gamma](https://youtu.be/YkF3D8OHZwc), and
+- [normal (or Gaussian)](https://youtu.be/c22x0xpvkyY)
+
+random variables and their distributions.
+
+The normal distribution is extremely important due to the result of the 
+Central Limit Theorem (CLT) introduced in 
+[this video](https://youtu.be/xSNg9Vp1wko) 
+and made a bit more practical in 
+[this follow up video](https://youtu.be/xSNg9Vp1wko).
+There is a 3rd video in this CLT series, but I don't think it is too helpful
+(in retrospect). 
+
+At the moment, I don't have videos on Markov chains, Poisson processes, and
+queuing systems. 
+
+The videos I have on statistical inference a much more in depth than we have 
+time for in STAT 330. 
+If you are interested in this depth, then you can following along with 
+[this playlist]9https://www.youtube.com/playlist?list=PLFHD4aOUZFp1PZC6SgtuS-ESq4ti1GEFj). 
+From this playlist, the most relevant videos are 
+
+- []()
+- []()
+- []()
+- []()
+- []()
+- []()
+- []()
+- []()
+- []()
 
 ## Course Description
 
@@ -72,18 +132,11 @@ Basic statistical inference; Introduction to regression.
 
 ## Prerequisite
 
-MATH 166
-
-
-## Q&A
-
-Please use the [Canvas](http://canvas.iastate.edu/) discussion forum. 
+This course requires MATH 166 (Calculus II). 
+Integrals are needed to compute expectations of continuous random variables and
+derivatives are needed to obtain maximum likelihood estimators (MLEs). 
 
 
 
 
-
-## Center for Excellence in Learning and Teaching Recommendations
-
-This course abides by the [Center for Excellence in Learning and Teaching Recommendations](http://www.celt.iastate.edu/teaching/preparing-to-teach/recommended-iowa-state-university-syllabus-statements).
 
