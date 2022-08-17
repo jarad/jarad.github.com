@@ -73,6 +73,7 @@ Install links:
 
 - [R](https://mirror.las.iastate.edu/CRAN/)
 - [RStudio](https://www.rstudio.com/products/rstudio/download/) 
+
 I am currently 
 [recording videos](https://www.youtube.com/playlist?list=PLFHD4aOUZFp1wYrk8AIW0LGL4f9lBg79B) 
 to help new R users.
@@ -89,12 +90,16 @@ within the semester to spend a lot of time on multiple regression models.
 In contrast, STAT 330 just barely has time to discuss simple linear regression
 models. 
 
+### Probability
+
 For basic probability, I have a 
 [1 hour video](https://www.youtube.com/watch?v=zBP7KBtM9vI) 
 containing all the probability required for the course. 
 Alternatively, I have 
 [a playlist](https://www.youtube.com/playlist?list=PLFHD4aOUZFp0a_m9HXdVu3_ZnfphUY0oJ) 
 that has the basic probability topics separated into individual videos.
+
+### Discrete random variables
 
 For random variables, I have an 
 [introductory video](https://youtu.be/ajLFqrPTAcY) 
@@ -109,6 +114,8 @@ and videos about
 
 random variables and their distributions as well as a video about 
 [multiple discrete random variables](https://youtu.be/1U537aiXJzM).
+
+### Continuous random variables
 
 Moving on to continuous random variables, I have a video about
 [general continuous random variables](https://youtu.be/KbfUnaiarps)
@@ -129,8 +136,12 @@ and made a bit more practical in
 There is a 3rd video in this CLT series, but I don't think it is too helpful
 (in retrospect). 
 
+### Stochastic processes
+
 At the moment, I don't have videos on Markov chains, Poisson processes, and
 queuing systems. 
+
+### Statistical inference
 
 The videos I have on statistical inference a much more in depth than we have 
 time for in STAT 330. 
@@ -154,6 +165,8 @@ I also introduce Bayesian approaches to statistical inference.
 This approach is not required for this course, 
 but some students may be interested in this alternative to p-values, 
 confidence intervals, and hypothesis testing. 
+
+### Simple linear regression
 
 For the topic of simple linear regression, 
 the main videos are 
