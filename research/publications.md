@@ -23,11 +23,10 @@ other lists:
 Scientific Data (to appear)
 [medRxiv](https://www.medrxiv.org/content/10.1101/2021.11.04.21265886v1)
 [pdf](papers/Cram_unit_2022.pdf)
-1. Estee Y Cramer, Evan L Ray, Velma K Lopez, Johannes Bracher, Andrea Brennen, Alvaro J Castro Ri-
-vadeneira, Aaron Gerding, Tilmann Gneiting, Katie H House, Yuxin Huang, Dasuni Jayawardena, Abdul
-H Kanji, Ayush Khandelwal, Khoa Le, Anja Muhlemann, Jarad Niemi, [256 other authors], Nicholas G
-Reich. (2022) "Evaluation of individual and ensemble probabilistic forecasts of COVID-19 mortality in the
-US" Proceedings of the National Academy of Sciences, 119(15), e2113561119.
+1. Estee Y Cramer, Evan L Ray, Velma K Lopez, Johannes Bracher, Andrea Brennen, Alvaro J Castro Rivadeneira, Aaron Gerding, Tilmann Gneiting, Katie H House, Yuxin Huang, Dasuni Jayawardena, Abdul H Kanji, Ayush Khandelwal, Khoa Le, Anja Muhlemann, Jarad Niemi, [256 other authors], Nicholas G Reich. (2022) 
+"Evaluation of individual and ensemble probabilistic forecasts of COVID-19 
+mortality in the US" 
+Proceedings of the National Academy of Sciences, 119(15), e2113561119.
 [url](https://www.pnas.org/doi/10.1073/pnas.2113561119) 
 [doi](https://doi.org/10.1073/pnas.2113561119) 
 [pdf](papers/Cram_eval_2022.pdf) 
@@ -40,7 +39,7 @@ US" Proceedings of the National Academy of Sciences, 119(15), e2113561119.
 [url](https://acsess.onlinelibrary.wiley.com/doi/full/10.1002/agg2.20159) 
 [doi](https://doi.org/10.1002/agg2.20159) 
 [pdf](papers/Tome_comp_2021.pdf) 
-1. Adam Martin-Schwarze*, Jarad Niemi, and Philip Dixon. (2021) "Joint modeling of distances and times in point-count surveys." 
+1. Adam Martin-Schwarze\*, Jarad Niemi, and Philip Dixon. (2021) "Joint modeling of distances and times in point-count surveys." 
 Journal of Agricultural, Biological, and Environmental Statistics. 
 26, 289-305
 [url](https://link.springer.com/article/10.1007/s13253-021-00437-3) 
@@ -49,10 +48,10 @@ Journal of Agricultural, Biological, and Environmental Statistics.
 1. Ashley N. Dean, Jarad B. Niemi, John C. Tyndall, Erin W. Hodgson, and Matthew E. ONeal. (2021) "Developing a decision-making framework for insect pest management: a case study using soybean aphid (Hemiptera: Aphididae)." Pest Management Science. 77(2): 886-894 [url](https://onlinelibrary.wiley.com/doi/full/10.1002/ps.6093) 
 [doi](https://doi.org/10.1002/ps.6093) 
 [pdf](papers/Dean_2021_developing.pdf) 
-1. Nate Garton, Jarad Niemi, and Alicia Carriquiry. (2020) "Knot selection in sparse Gaussian processes with a variational objective." Statistical Analysis and Data Mining. 13(4): 324-336. [url](https://onlinelibrary.wiley.com/doi/full/10.1002/sam.11459)
+1. Nate Garton\*, Jarad Niemi, and Alicia Carriquiry. (2020) "Knot selection in sparse Gaussian processes with a variational objective." Statistical Analysis and Data Mining. 13(4): 324-336. [url](https://onlinelibrary.wiley.com/doi/full/10.1002/sam.11459)
 [doi](https://doi.org/10.1002/sam.11459) 
 [pdf](papers/Gart_knot_2020.pdf)
-1. Colin Lewis-Beck, Victoria A. Walker, Jarad Niemi, Petrutza Caragea, and Brian K. Hornbuckle. (2020) "Extracting Agronomic Information from SMOS Vegetation Optical Depth in the US Corn Belt Using a Nonlinear Hierarchical Model." Remote Sensing. 12(5): 827. 
+1. Colin Lewis-Beck\*, Victoria A. Walker, Jarad Niemi, Petrutza Caragea, and Brian K. Hornbuckle. (2020) "Extracting Agronomic Information from SMOS Vegetation Optical Depth in the US Corn Belt Using a Nonlinear Hierarchical Model." Remote Sensing. 12(5): 827. 
 [url](https://www.mdpi.com/2072-4292/12/5/827) 
 [pdf](papers/Lewi_Walk_Niem_Cara_Horn_extr_2020.pdf)
 1. M.D. Tomer, J.D. Van Horn, S.A. Porter, D.E. James, and J. Niemi. (2020) ``Comparing agricultural conservation planning framework (ACPF) practice placements for runoff mitigation and controlled drainage among 32 watersheds representing Iowa landscapes.'' Journal of Soil and Water Conservation. 75(4): 460-271. 
@@ -65,17 +64,23 @@ Journal of Agricultural, Biological, and Environmental Statistics.
 1. E. A. Hines, M. R. Romoser, Z. E. Kiefer, A. F. Keating, L. H. Baumgard, J. Niemi, N. K. Gabler, J. F. Patience, G. Haberl, N. H. Williams, B. J. Kerr, K. J. Touchette, and J. W. Ross. (2019) ``The impact of dietary supplementation of arginine during gestation in a commerical herd: I. Gilt.'' (2019) Journal of Animal Science. 97(9), 3617-3625. [url](https://academic.oup.com/jas/advance-article-abstract/doi/10.1093/jas/skz233/5531590)
 [doi](https://doi.org/10.1093/jas/skz233)
 [pdf](papers/Hine_impa_2019.pdf)
-1. Ignacio Alvarez and Jarad Niemi. (2019) ``Fully Bayesian analysis of allele-specific RNA-seq data.'' (2019) Mathematical Biosciences and Engineering. 16(6), 7751-7770. [url](https://www.aimspress.com/article/10.3934/mbe.2019389)
+1. Ignacio Alvarez\* and Jarad Niemi. (2019) 
+``Fully Bayesian analysis of allele-specific RNA-seq data.'' 
+Mathematical Biosciences and Engineering. 16(6), 7751-7770. [url](https://www.aimspress.com/article/10.3934/mbe.2019389)
 [pdf](papers/Alva_full_2019.pdf)
-1. Nathaniel Garton and Jarad Niemi. (2019) ``Multivariate temporal modeling of crime with dynamic linear models.'' PLOS ONE. 14(7), e0218375. [url](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0218375)
+1. Nathaniel Garton\* and Jarad Niemi. (2019) 
+``Multivariate temporal modeling of crime with dynamic linear models.'' 
+PLOS ONE. 14(7), e0218375. [url](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0218375)
 [pdf](Gart_mult_2019.pdf)
-1. Will Landau, Jarad Niemi, and Dan Nettleton. (2019) ``Fully Bayesian analysis of RNA-seq counts for the detection of gene expression heterosis.'' Journal of the American Statistical Association, 114(526), 610-621. 
+1. Will Landau\*, Jarad Niemi, and Dan Nettleton. (2019) 
+``Fully Bayesian analysis of RNA-seq counts for the detection of gene expression heterosis.'' 
+Journal of the American Statistical Association, 114(526), 610-621. 
 [url](https://www.tandfonline.com/doi/full/10.1080/01621459.2018.1497496)
 [pdf](papers/Land_full_2019.pdf)
 1. Craig J. McGowan, Matthew Biggerstaff, Michael Johansson, Karyn M. Apfeldorf, 
 Michal Ben-Nun, Logan Brooks, Matteo Convertino, Madhav Erraguntla, 
 David C. Farrow, John Freeze, Saurav Ghosh, Sangwon Hyun, Sasikiran Kandula, 
-Joceline Lega, Yang Liu, Nicholas Michaud, Haruka Morita, Jarad Niemi, 
+Joceline Lega, Yang Liu, Nicholas Michaud\*, Haruka Morita, Jarad Niemi, 
 Naren Ramakrishnan, Evan L. Ray, Nicholas G. Reich, Pete Riley, Jeffrey Shaman, 
 Ryan Tibshirani, Alessandro Vespignani, Qian Zhang, Carrie Reed & The Influenza 
 Forecasting Working Group (2019) ``Collaborative efforts to forecast seasonal 
