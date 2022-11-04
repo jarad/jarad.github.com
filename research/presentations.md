@@ -10,6 +10,8 @@ I've started archiving my talks and posters here for ease of access to those
 who might be interested in looking at the material after the conference. 
 If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
+- 2022
+  - [Virginia Tech](https://github.com/jarad/VirginiaTech2022/raw/main/JaradNiemi_VirginiaTech2022.pdf)
 - 2021
   - [SSC](https://github.com/jarad/SSC2021/raw/main/SSC2021.pdf)
 - 2020
