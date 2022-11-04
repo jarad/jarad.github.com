@@ -21,9 +21,9 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
   {% endfor %}
 </ul>
 
-## Spring 2022 Courses ([all courses](courses/))
+## Fall 2022 Courses ([all courses](courses/))
 
-  - [HCI 522](courses/hci522)
+  - [STAT 330](courses/stat330)
 
 ## Contact
 

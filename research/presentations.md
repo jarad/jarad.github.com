@@ -12,6 +12,8 @@ If there is a talk/poster that is missing, please email me <niemi@iastate.edu>.
 
 - 2022
   - [Virginia Tech](https://github.com/jarad/VirginiaTech2022/raw/main/JaradNiemi_VirginiaTech2022.pdf)
+  - [ISU](https://github.com/jarad/ISU2022/raw/main/JaradNiemi_ISU_2022.pdf)
+  - [NCCC-170](presentations/JaradNiemi_NCCC-170_2022.pdf)
 - 2021
   - [SSC](https://github.com/jarad/SSC2021/raw/main/SSC2021.pdf)
 - 2020

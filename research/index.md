@@ -8,22 +8,34 @@ group: navigation
 
 ## Select publications ([All publications](publications.html))
 
-1. Adam Martin-Schwarze*, Jarad Niemi, and Philip Dixon. (2021) "Joint modeling of distances and times in point-count surveys." Journal of Agricultural, Biological, and Environmental Statistics. (to appear)
-1. Ashley N. Dean, Jarad B. Niemi, John C. Tyndall, Erin W. Hodgson, and Matthew E. ONeal. (2021) "Developing a decision-making framework for insect pest management: a case study using soybean aphid (Hemiptera: Aphididae)." Pest Management Science. 77(2): 886-894 [url](https://onlinelibrary.wiley.com/doi/full/10.1002/ps.6093) [doi](https://doi.org/10.1002/ps.6093) [pdf](papers/Dean_2021_developing.pdf) 
+1. Estee Y Cramer, Evan L Ray, Velma K Lopez, Johannes Bracher, Andrea Brennen, Alvaro J Castro Ri-
+vadeneira, Aaron Gerding, Tilmann Gneiting, Katie H House, Yuxin Huang, Dasuni Jayawardena, Abdul
+H Kanji, Ayush Khandelwal, Khoa Le, Anja Muhlemann, Jarad Niemi, [256 other authors], Nicholas G
+Reich. (2022) "Evaluation of individual and ensemble probabilistic forecasts of COVID-19 mortality in the
+US" Proceedings of the National Academy of Sciences, 119(15), e2113561119.
+[url](https://www.pnas.org/doi/10.1073/pnas.2113561119) 
+[doi](https://doi.org/10.1073/pnas.2113561119) 
+[pdf](papers/Cram_eval_2022.pdf) 
+1. Adam Martin-Schwarze*, Jarad Niemi, and Philip Dixon. (2021) "Joint modeling of distances and times in point-count surveys." 
+Journal of Agricultural, Biological, and Environmental Statistics. 
+26, 289-305
+[url](https://link.springer.com/article/10.1007/s13253-021-00437-3) 
+[doi](https://doi.org/10.1007/s13253-021-00437-3) 
+[pdf](papers/Mart_join_2021.pdf)
 1. Nate Garton, Jarad Niemi, and Alicia Carriquiry. (2020) ``Knot selection in sparse Gaussian processes with a variational objective.'' Statistical Analysis and Data Mining. 13(4): 324-336. [url](https://onlinelibrary.wiley.com/doi/full/10.1002/sam.11459)
 1. Colin Lewis-Beck, Victoria A. Walker, Jarad Niemi, Petrutza Caragea, and Brian K. Hornbuckle. (2020) ``Extracting Agronomic Information from SMOS Vegetation Optical Depth in the US Corn Belt Using a Nonlinear Hierarchical Model.'' Remote Sensing. 12(5): 827. [url](https://www.mdpi.com/2072-4292/12/5/827) [pdf](papers/Lewi_Walk_Niem_Cara_Horn_extr_2020.pdf)
 
 
 ## Current advisees ([All advisees](students.html))
 
-- [Luis Damiano](https://luisdamiano.github.io/)
-- Spencer Wadsworth
+- [Luis Damiano](https://www.stat.iastate.edu/people/luis-damiano)
+- [Spencer Wadsworth](https://www.stat.iastate.edu/people/spencer-wadsworth)
+- [Aditya Ranade](https://www.stat.iastate.edu/people/aditya-ranade)
 
 ## Recent presentations ([All Presentations](presentations.html))
 
+- [NCCC-170 2022](presentations/JaradNiemi_NCCC-170_2022.pdf)
 - [SSC 2021](https://github.com/jarad/SSC2021/raw/main/SSC2021.pdf)
-- [LANL 2020](https://github.com/jarad/LANL2020/raw/master/LANL2020.pdf)
-- [JSM 2020](https://github.com/jarad/JSM2020/raw/master/JaradNiemi_JSM2020.pdf)
 
 ## Some software ([Additional software](software.html))
 

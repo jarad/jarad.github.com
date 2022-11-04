@@ -21,11 +21,11 @@ help.start()
 
 In this documentation, the above command will be executed at the command prompt, see below. 
 
-## Brief introduction to R
+## Brief introduction to R and RStudio
 
 From `help.start()`:
 
-> R is an integrated suite of software facilities for data manipulation, calculation and graphical display.
+> R is a free software environment for statistical computing and graphics.
 
 and from <https://www.rstudio.com/products/RStudio/>:
 
@@ -67,7 +67,7 @@ then send those commands to the command line using `Ctrl-R` (PC) or
 ```{r}
 a = 1 
 b = 2
-a+b
+a + b
 ```
 
 Multiple lines can be run in sequence by selecting them and then using 
@@ -85,10 +85,10 @@ Cut-and-paste the following commands into a **new script** and then run those
 commands directly from the script using `Ctrl-R` (PC) or `Command-Enter` (Mac).
 
 ```{r}
-x = 1:10
-y = rep(c(1,2), each=5)
-m = lm(y~x)
-s = summary(m)
+x <- 1:10
+y <- rep(c(1,2), each=5)
+m <- lm(y~x)
+s <- summary(m)
 ```
 
 Now, look at the result of each line
@@ -128,6 +128,7 @@ All basic calculator operations can be performed in R.
 1-2
 1/2
 1*2
+2^3 # same as 2**3
 ```
 
 For now, you can ignore the [1] at the beginning of the line, 
@@ -139,12 +140,11 @@ we'll learn about that when we get to vectors.
 Many advanced calculator operations are also available.
 
 ```{r}
-(1+3)*2 + 100^2  # standard order of operations
+(1+3)*2 + 100^2  # standard order of operations (PEMDAS)
 sin(2*pi)        # the result is in scientific notation, i.e. -2.449294 x 10^-16 
 sqrt(4)
-10^2
 log(10)          # the default is base e
-log(10, base=10)
+log(10, base = 10)
 ```
 
 
@@ -157,10 +157,11 @@ ability to store quantities using variables.
 ```{r}
 a = 1
 b = 2
-a+b
-a-b
-a/b
-a*b
+a + b
+a - b
+a / b
+a * b
+b ^ 3
 ```
 
 ### Assignment operators =, <-, and ->
@@ -169,9 +170,9 @@ When assigning variables values, you can also use arrows <- and -> and you will
 often see this in code, e.g. 
 
 ```{r}
-a <- 1
-2 -> b
-c = 3  # is the same as <-
+a <- 1 # recommended
+2 -> b # uncommon, but sometimes useful
+c = 3  # similar to other languages
 ```
 
 Now print them.
@@ -195,11 +196,15 @@ width  <- 3
 area <- length * width
 area
 
+perimeter <- 2 * (length + width)
+
 
 # Circle
 radius <- 2
+
 area   <- pi*radius^2 # this overwrites the previous `area` variable
 circumference <- 2*pi*radius
+
 area
 circumference
 
@@ -208,6 +213,7 @@ circumference
 opposite     <- 1
 angleDegrees <- 30
 angleRadians <- angleDegrees * pi/180
+
 (adjacent     <- opposite / tan(angleRadians)) # = sqrt(3)
 (hypotenuse   <- opposite / sin(angleRadians)) # = 2
 ```
@@ -244,17 +250,17 @@ Calculate the probability the individual has the disease if the test is positive
 - the prevalence of the disease is 0.001.
 
 ```{r, echo=FALSE}
-# Find the probability the individual has the disease if 
-# specificity is 0.95, sensitivity is 0.99, and prevalence is 0.001
+# Given an individual tested positive, find the probability the individual has 
+# the disease if specificity is 0.95, sensitivity is 0.99, and prevalence is 0.001
 ```
 
 
 <details><summary>Click for solution</summary> 
 ```{r, purl=FALSE}
-specificity = 0.95
-sensitivity = 0.99
-prevalence = 0.001
-probability = (sensitivity*prevalence) / (sensitivity*prevalence + (1-specificity)*(1-prevalence))
+specificity <- 0.95
+sensitivity <- 0.99
+prevalence <- 0.001
+probability <- (sensitivity*prevalence) / (sensitivity*prevalence + (1-specificity)*(1-prevalence))
 probability
 ```
 </details>
@@ -275,11 +281,10 @@ Objects in R can be broadly classified according to their dimensions:
 
 and according to the type of variable they contain:
 
+- logical
 - integer
 - numeric
 - character (string)
-- logical
-- factor
 
 
 ### Scalars
@@ -287,9 +292,9 @@ and according to the type of variable they contain:
 Scalars have a single value assigned to the object in R. 
 
 ```{r}
-a = 3.14159265 
-b = "STAT 587 (Eng)" 
-c = TRUE
+a <- 3.14159265 
+b <- "STAT 587 (Eng)" 
+c <- TRUE
 ```
 
 Print the objects
@@ -306,9 +311,9 @@ c
 The `c()` function creates a vector in R
 
 ```{r}
-a = c(1,2,-5,3.6)
-b = c("STAT","587", "(Eng)")
-c = c(TRUE, FALSE, TRUE, TRUE)
+a <- c(1, 2, -5, 3.6)
+b <- c("STAT", "587", "(Eng)")
+c <- c(TRUE, FALSE, TRUE, TRUE)
 ```
 
 To determine the length of a vector in R use `length()`
@@ -357,7 +362,7 @@ I will often name all but the first argument.
 Elements of a vector can be accessed using brackets, e.g. [index].
 
 ```{r}
-a = c("one","two","three","four","five")
+a <- c("one","two","three","four","five")
 a[1]
 a[2:4]
 a[c(3,5)]
@@ -383,11 +388,11 @@ a[-(2:3)]
 You can assign new values to elements in a vector using = or <-.
 
 ```{r}
-a[2] = "twenty-two"
+a[2] <- "twenty-two"
 a
-a[3:4] = "three-four" # assigns "three-four" to both the 3rd and 4th elements
+a[3:4] <- "three-four" # assigns "three-four" to both the 3rd and 4th elements
 a
-a[c(3,5)] = c("thirty-three","fifty-five")
+a[c(3,5)] <- c("thirty-three","fifty-five")
 a
 ```
 
@@ -398,16 +403,16 @@ a
 Matrices can be constructed using `cbind()`, `rbind()`, and `matrix()`:
 
 ```{r}
-m1 = cbind(c(1,2), c(3,4))       # Column bind
-m2 = rbind(c(1,3), c(2,4))       # Row bind
+m1 <- cbind(c(1,2), c(3,4))       # Column bind
+m2 <- rbind(c(1,3), c(2,4))       # Row bind
 
 m1
 all.equal(m1, m2)
 
-m3 = matrix(1:4, nrow = 2, ncol = 2)
+m3 <- matrix(1:4, nrow = 2, ncol = 2)
 all.equal(m1, m3)
 
-m4 = matrix(1:4, nrow = 2, ncol = 2, byrow = TRUE)
+m4 <- matrix(1:4, nrow = 2, ncol = 2, byrow = TRUE)
 all.equal(m3, m4)
 
 m3
@@ -421,7 +426,7 @@ Elements of a matrix can be accessed using brackets separated by a comma,
 e.g. [row index, column index].
 
 ```{r}
-m = matrix(1:12, nrow=3, ncol=4)
+m <- matrix(1:12, nrow=3, ncol=4)
 m
 m[2,3]
 ```
@@ -459,7 +464,7 @@ You can also construct an object with more than 2 dimensions using the
 You cannot mix types within a vector, matrix, or array
 
 ```{r}
-c(1,"a")
+c(1, "a")
 ```
 
 The number 1 is in quotes indicating that R is treating it as a character rather 
@@ -487,7 +492,7 @@ Using the matrix below,
 1. Print all but the 3rd row
 
 ```{r}
-m = rbind(c(1, 12, 8, 6),
+m <- rbind(c(1, 12, 8, 6),
           c(4, 10, 2, 9),
           c(11, 3, 5, 7))
 m
@@ -518,7 +523,7 @@ m[,2]
 m[-3,]
 
 # Reconstruct the matrix if time allows
-n = matrix(c(1,12,8,6,4,10,2,9,11,3,5,7), nrow=3, ncol=4, byrow=TRUE)
+n <- matrix(c(1,12,8,6,4,10,2,9,11,3,5,7), nrow=3, ncol=4, byrow=TRUE)
 n
 all.equal(m,n)
 ```
@@ -646,6 +651,7 @@ devtools::install_github("jarad/swgoh")
 A package only needs to be installed once on your system (until you upgrade R),
 but you will need to either load the package when you want to use it or
 explicitly indicate the package name when using functions in the package. 
+
 To load the package in an R session, use
 ```{r, eval = FALSE}
 library("ggplot2")
@@ -712,7 +718,7 @@ helpful.
 If you know the function name, then you can use `?<function>`, e.g.
 
 ```{r, eval=FALSE}
-?mean
+?seq
 ```
 
 The structure of help is 
@@ -720,7 +726,8 @@ The structure of help is
 - Description: quick description of what the function does
 - Usage: the arguments, their order, and default values (if any)
 - Arguments: more thorough description about the arguments
-- Value: what the funtion returns
+- Details: more in depth information about the function
+- Value: what the function returns
 - See Also: similar functions
 - Examples: examples of how to use the function
 
@@ -731,7 +738,7 @@ If you cannot remember the function name, then you can use
 `help.search("<something>")`, e.g.
 
 ```{r, eval=FALSE}
-help.search("mean")
+help.search("sequence")
 ```
 
 Depending on how many packages you have installed, you will find a lot or a 
@@ -743,7 +750,7 @@ little here.
 
 I google for `<something> R`, e.g. 
 
-    calculate mean R
+    sequence R
 
 Some useful sites are 
 

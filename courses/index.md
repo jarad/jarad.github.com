@@ -8,6 +8,8 @@ group: navigation
 
 ## Regular courses
 
+- Fall 2022
+  - [STAT 330](stat330)
 - Spring 2022
   - [HCI 522](hci522)
 - Fall 2021
@@ -26,13 +28,13 @@ group: navigation
 - Spring 2018
   - [STAT 401C (Engineering)](stat401Eng)
   - [STAT 544](stat544)
-- Fall 2018
+- Fall 2017
   - [STAT 615](stat615)
 - Spring 2017
   - [STAT 401D (Engineering)](stat401Eng)
   - [STAT 544](stat544)
 - Fall 2016
-  - STAT 330
+  - [STAT 330](stat330)
 - Spring 2016
   - [STAT 544](stat544)
 - Fall 2015
@@ -41,11 +43,11 @@ group: navigation
   - [STAT 544](stat544)
 - Fall 2014
   - [STAT 401A](stat401A)
-  - STAT 330
+  - [STAT 330](stat330)
 - Spring 2014
   - [STAT 544](stat544)
 - Fall 2013
-  - STAT 401A
+  - [STAT 401A](stat401A)
   - [STAT 615](stat615)
 - Spring 2013
   - [STAT 544](stat544)
