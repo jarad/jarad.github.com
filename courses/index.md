@@ -8,6 +8,8 @@ group: navigation
 
 ## Regular courses
 
+- Spring 2023
+  - [STAT 486/586](stat486)
 - Fall 2022
   - [STAT 330](stat330)
 - Spring 2022
