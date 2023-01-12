@@ -2,6 +2,9 @@
 layout: page
 title: STAT 486/586
 tagline: Introduction to Statistical Computing
+output:
+  html_document:
+    toc: true
 ---
 {% include JB/setup %}
 
