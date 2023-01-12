@@ -5,12 +5,10 @@ tagline: Introduction to Statistical Computing
 ---
 {% include JB/setup %}
 
-## TA Information
-
 This page is intended to include all information necessary for the teaching
 assistant (TA) for this course. 
 
-### Setup
+## Setup
 
 At the beginning of the semester, 
 the instructor needs to 
@@ -19,12 +17,12 @@ the instructor needs to
   - Co-Teacher allows TA to construct Canvas quizes
 
 
-### Background
+## Background
 
 Spring 2023 is the first time Jarad Niemi is teaching this course. 
 Thus many aspects of the course will be in flux. 
 
-#### Prerequisites
+### Prerequisites
 
 Students are coming from three different prereq courses:
 
@@ -34,7 +32,7 @@ Students are coming from three different prereq courses:
 
 For students from 
 
-#### Previous versions
+### Previous versions
 
 Previous versions of this course were taught by 
 
@@ -46,7 +44,7 @@ the course for the Master's of Applied Statistics Program.
 [Their materials are available on CyBox](https://iastate.box.com/s/ae4ic5m0beawux1khd1n1oqan2jvm3ht) 
 (only available to those we have shared with).
 
-### TA responsibilities
+## TA responsibilities
 
 A 20 hr/week TA should 
 
@@ -58,9 +56,9 @@ A 20 hr/week TA should
   - grade assignments (second ~half of semester)
   
 
-### Spring 2023 Plan
+## Spring 2023 Plan
 
-#### Content
+### Content
 
 Introduce students to other aspects of statistics while teaching them the 
 computational techniques to accomplish those aspects. 
@@ -86,7 +84,7 @@ Computational techniques
 - Reproducible analyses
 
 
-#### Assessment
+### Assessment
 
 Initial assessment will be based on background knowledge. 
 These will be assessed via homework assignments implemented as Canvas quizzes. 
