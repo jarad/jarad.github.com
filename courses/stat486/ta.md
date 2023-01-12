@@ -6,7 +6,6 @@ output:
   html_document:
     toc: true
 ---
-{% include JB/setup %}
 
 This page is intended to include all information necessary for the teaching
 assistant (TA) for this course. 
