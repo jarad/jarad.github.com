@@ -2,10 +2,9 @@
 layout: page
 title: STAT 486/586
 tagline: Introduction to Statistical Computing
-output:
-  html_document:
-    toc: true
 ---
+
+{:toc}
 
 This page is intended to include all information necessary for the teaching
 assistant (TA) for this course. 
