@@ -13,7 +13,8 @@ At the beginning of the semester,
 the instructor needs to 
 
 - Add the TA to the Canvas course 
-  - Co-Teacher allows TA to construct Canvas quizes
+  - Co-Teacher allows TA to construct Canvas quizzes
+- TA Add information about themselves to "Instructor(s) Page"
 
 
 ## Background
