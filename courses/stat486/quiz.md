@@ -179,7 +179,8 @@ if the document exists.
 Repeating this process, the students can find all files for the course 
 including "hidden" files. 
 
-Apparently the way to create security is to "Schedule student availability"
+Apparently the way to create security is to 
+"[Schedule student availability])(https://community.canvaslms.com/t5/Instructor-Guide/How-do-I-restrict-files-and-folders-to-students-in-Canvas/ta-p/610"
 for the file. 
 The only way I know to do this is to 1) upload the file, 2) select the file,
 and 3) click on the cloud with a lock to "Manage access". 
