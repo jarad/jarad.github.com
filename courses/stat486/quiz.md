@@ -31,6 +31,8 @@ Then check your answers versus my answers.
 In the past, I have found that it is just as likely that the TA is correct as
 the instructor. 
 
+Let the instructor know of any discrepancies so these can get resolved as soon
+as possible (ideally) before you start implementing the Canvas quiz.
 
 
 ## Create Canvas quiz
@@ -47,13 +49,23 @@ Now you should be able to click on the assignment name in the "Assignments"
 area of the Canvas course. 
 To start editing the assignment, click on "Edit". 
 
-## Adding data files
 
+
+## Adding external files
+
+All assignments will be provided as pdf files. 
 Many assignments will have associated data files. 
+
 These should be added into the "Quiz instructions" by clicking on the icon 
 that allows you to "Upload Documents". 
 Just put each data file on its own line named according to the file name.
+When uploading these documents, please put them in the "assignments" folder. 
+
 Otherwise, no other instructions are provided. 
+
+Adding assignment keys, i.e. solutions, is discussed below. 
+
+
 
 
 ## Canvas quiz options
@@ -124,6 +136,12 @@ Typically this will be ~4% of the actual answer.
 Please make sure to remove automatic answers that have a default correct value
 of 0.
 
+Sometimes answers aren't immediately numeric answers but can be quickly 
+converted to numeric answers.
+For example, confidence intervals are really just two numeric answers.
+In the Canvas quiz, just use the same number, e.g. 3.(b) and indicate 
+"confidence interval lower bound" and "confidence interval upper bound".
+
 ### Multiple choice
 
 For questions with a single correct, non-numeric answer the type should be set
@@ -143,5 +161,38 @@ to multiple answer.
 These will be used sparingly and the instructor will try to provide suggestions 
 for what the answers should be. 
 
+## Double-check Canvas answers
 
-## 
+After
+
+
+## Assignment keys
+
+The 
+[Canvas system is extremely easy to hack](https://community.canvaslms.com/t5/Canvas-Question-Forum/Think-your-Course-Files-are-safe-Think-again/td-p/211576)
+because the security employed by
+Canvas developers is to reference each file by a number and this number is 
+sequential across the university. 
+Thus, any student in the course can attempt to find all documents for a course
+that they have Canvas access to by simply adding 1 to this number and seeing 
+if the document exists. 
+Repeating this process, the students can find all files for the course 
+including "hidden" files. 
+
+Apparently the way to create security is to "Schedule student availability"
+for the file. 
+The only way I know to do this is to 1) upload the file, 2) select the file,
+and 3) click on the cloud with a lock to "Manage access". 
+Then "Schedule Availability" to start after the assignment is due. 
+Let's set it for 1 day later. 
+
+A link to this key can be included in the "Quiz Instructions". 
+It should not let the students have access to the key until the file release
+date-time. 
+
+
+## Instructor will publish
+
+When the Canvas quiz has been implemented and files have been uploaded. 
+Let the instructor know and he will take one last look over everything and 
+publish the Canvas quiz when everything looks good, .
