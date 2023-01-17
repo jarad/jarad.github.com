@@ -68,6 +68,13 @@ Modern statistical computing. Topics may include: data management; spread sheets
 The prerequisite for the course is previous enrollment in one of the following
 statistics (STAT) courses: 301, 326, 401, or 587.
 
+## Schedule
+
+Week|Topic|Reading
+------------------
+1|Review|[Open Intro (entire book)](https://www.openintro.org/book/os/)
+2|Visualization|[R4DS](https://r4ds.had.co.nz/data-visualisation.html) Ch1-3
+
 
 ## Q&A
 
