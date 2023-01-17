@@ -52,10 +52,10 @@ A 20 hr/week TA should
 - hold 2 hours of office hours (2 hrs)
 - respond in a timely fashion to Discussion board (2 hrs)
 - additional assignments (~14 hrs)
-  - implement Canvas quizzes (first ~half of semester)
+  - [implement Canvas quizzes](quiz.html) (first ~half of semester)
   - grade assignments (second ~half of semester)
   
-
+  
 ## Spring 2023 Plan
 
 ### Content
