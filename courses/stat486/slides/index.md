@@ -7,3 +7,4 @@ tagline: Introduction to Statistical Computing
 
 # Slides
 
+- [Review](review.html)
