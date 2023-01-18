@@ -151,7 +151,7 @@ Let $Y\sim Bin(n,p)$ indicate a binomial random variable with $n>0$ *attempts* a
 *probability of success* $0<p<1$. 
 The probability mass function is 
 $$p(y) = {n\choose y}p^y(1-p)^{n-y}, \quad y=0,1,2,\ldots,n.$$
-If $n=1$, then this is also referred to as a Bernoulli random variable.
+If $n=1$, then this is also referred to as a *Bernoulli* random variable.
 
 The expected value of a binomial random variable is $E[Y] = np$ and the variance
 is $Var[Y] = np(1-p)$. 
@@ -205,6 +205,8 @@ the standard deviation (square root of the variance) is more relevant because
 - 95\% of normal random variables are within 2 standard deviations of the mean
 - 99.7\% of normal random variables are within 3 standard deviations of the mean.
 
+If $m=0$ and $C=1$, we have a *standard normal* random variable.
+
 #### Central Limit Theorem
 
 The normal distribution is so important because of the result of the Central 
@@ -217,31 +219,300 @@ $Var[X_i] = V$ for all $i$, then
 $$\overline{X} \stackrel{\cdot}{\sim} N(m, V/n)$$
 and 
 $$S = n\overline{X} \stackrel{\cdot}{\sim} N(nm, nV)$$
-for sufficiently large $n$.
+for sufficiently large $n$ where $\stackrel{\cdot}{\sim}$ means
+*approximately distributed*.
 
 
 
 # Data
 
-
+One of the most important skills as a data analyst the *abstraction* of the 
+scientific problem into a standard statistical method. 
+Part of this abstraction involves identifying the structure of the data in 
+terms of the type of variables involved. 
+The type of variable involved are closely related with distributional 
+assumptions.
+The two main data types are categorical and continuous.
 
 ## Categorical
 
-## Continuous
+Categorical (or qualitative) data are non-numeric. 
+There are two main types of categorical data: ordinal and nominal. 
+
+### Ordinal
+
+For ordinal data, order matters. 
+An example of ordinal data is levels of education:
+high school, bachelor's, master's, PhD. 
+
+#### Likert 
+
+A very common type of ordinal data that often occurs on surveys is 
+Likert scale data, e.g. strongly disagree, disagree, neither, agree, and
+strongly agree. 
+
+It is extremely common to analyze these data using a numeric scale, e.g. 
+1 to 5 to correspond to the ordinal scale. 
+This is a strong assumption and not required as there are statistical
+methodologies that can analyze the data directly on the ordinal scale. 
+
+### Nominal
+
+For nominal data, order does not matter.
+An example of ordinal data is type of fruit: apple, banana, orange, etc. 
+
+### Binary
+
+When a categorical variable only has two levels it is *binary*. 
+Some examples of categorical binary variables are 
+
+- success/failure
+- true/false
+- above/below
+
+Typically we convert this categorical variable into a quantitative variable
+by assigning one of the two categories to 0 and the other to 1. 
+Then, we will typically model binary variables using the Bernoulli distribution.
+
+
+## Quantitative
+
+Quantitative are numeric. 
+The two main types of quantitative data are continuous and count. 
+
+### Continuous
+
+Continuous data are numeric data that can take on any value within a range. 
+In practice, we are often limited in the precision with which we can measure 
+something, but it is often easier to treat the resulting data as continuous. 
+
+The two most common types of continuous variables are those that are strictly
+positive and those that can be any real number. 
+
+#### Positive
+
+The most common type of continuous variable is positive. 
+For example, the following are all examples of continuous variables that are
+strictly positive
+
+- length
+- area
+- mass
+- temperature
+- time/duration
+- salary
+
+A common approach to analyzing strictly positive variables is to take a 
+logarithm in which case you now have an unrestricted continuous variable. 
+
+#### Unrestricted
+
+Many continuous variables can be any real number and are therefore unrestricted. 
+Although less common than positive variables, 
+these variables often result from taking differences of positive variables
+or taking logarithms of a single positive variable. 
+
+We will often transform variables to this unrestricted space in order to 
+satisfy assumptions of the normal distribution. 
+
+
+### Count
+
+Another type of numeric variable is a count variable. 
+Counts are restricted to non-negative integers, i.e. whole numbers.
+
+
+#### Binary
+
+Binary numeric variables are simply 0 or 1. 
+Note that any variable can be transformed into a binary variable and therefore,
+in some sense, this is the *universal* variable. 
+Some examples of binary variables are 
+
+
+Binary variables are typically modeled using the *Bernoulli* distribution. 
+
+#### Count with clear maximum
+
+Count data that have a clear maximum occur frequently as the count of some 
+successes in some number of attempts.
+For example,
+
+- number of free throws made in 20 attempts
+- number of houses in my neighborhood damaged by a storm out of the 65 houses
+- number of correct answers on a test out of the 99 students
+
+If we can assume independence amongst all the attempts,
+then we can utilize a *binomial* distribution.
+If we cannot, then we will typically use a *Bernoulli* distribution with a 
+regression structure, e.g. logistic regression. 
+
+#### Count with no clear maximum
+
+Often counts have no clear or obvious maximum. 
+For example,
+
+- number of free throws made in a game
+- number of students enrolled
+- number of books on my shelf
+
+In these situations, we commonly use a *Poisson* distribution to model these counts.
+Recall that the Poisson distribution has a variance equal to the mean. 
+If the variance is greater than the mean, 
+we will typically use the negative binomial distribution. 
+(This is harder than just calculating the mean and calculating the variance.)
+
+
+### Censored
+
+Although in theory any data we measure can be categorized as above. 
+Sometimes we don't actual observe the data that could have been observed
+because we end the experiment early or we only record data every so often.
+In these situations the data become *censored*. 
+The two most common types of censoring are 
+
+- right-censored: we know the data are larger than some number
+- interval-censored: we know the data are in some range
+
+When the censoring is large or occurs for a large number of the observations,
+then we need to be careful with our analyses. 
+These types of analyses are discussed in *survival* or *reliability* analysis.
+
+
 
 # Statistics
 
+Statistics can generally be broken up into exploratory statistics and 
+inferential statistics. 
+Exploratory statistics is generally what most of the population thinks about 
+when you say statistics, e.g. means, medians, figures, etc. 
+
 ## Exploratory statistics
+
+When we collect data, 
+we should always perform some exploratory analysis on it. 
+The type of exploratory analysis we perform will depend on the type of data 
+obtained. 
+Generally, exploratory statistics can be categorized into descriptive and
+graphical statistics. 
+
 
 ### Descriptive statistics
 
+Descriptive statistics are utilized when you want to numerically quantify some
+aspect of your data. 
+If your data are categorical, then you are probably counting the number of 
+observations in each category.
+If your data are continuous, then you are typically calculating some 
+*sample* statistics.
+
+- measures of location
+  - min/max
+  - mean
+  - median
+- measures of spread
+  - range
+  - interquartile range
+  - standard deviation
+  
+These sample statistics provide a concise description of the data, 
+but frankly are quite lacking for any type of understanding.
+
+
 ### Graphical statistics
+
+Much more powerful than descriptive statistics are graphical statistics that
+provides summaries of data in the form of graphics or figures. 
+Some common graphical statistics are
+
+- pie charts [I'm screaming inside]
+- bar charts [I'm still screaming inside]
+- histograms [I'm calming down...but just a little]
+- boxplots [here we go again]
+- scatterplots [whew...I'm relaxed]
+
+Constructing useful graphical statistics is a widely under-utilized skill!!
+If you can convey relationships in data using graphics, 
+then you don't need inferential statistics
+(regardless of what your statistics professors tell you). 
 
 ## Inferential statistics
 
+Inferential statistics encompasses most of what you have probably learned in 
+your prerequisite statistics courses including p-values, hypothesis tests, and
+confidence intervals. 
+
+But lost in all of those formulas are the two most important concepts in making
+*inferences*:
+
+- to infer about a population, you need a *random sample* from that population
+- to infer cause-and-effect, you must *randomly assign* the treatment
+
+When the sample is not a random sample,
+then all your inferential statistics are just convenient summaries of the data,
+but say nothing about the population you intend to study. 
+
+When the treatment is not randomly assigned,
+then you only have an association and not a causation.
+
+Thus there is a limit to what statistics can do with a particular data set,
+based on how that data were obtained.
+
+Now...on with the formulas.
+
+
 ### Binomial
 
+If we have binomial data, then we are typically interested in understanding 
+the probability of success. 
+(There are really interesting problems where you don't know the number of 
+attempts.)
+
+If $Y\sim Bin(n,\theta)$, 
+then a 100(1-a)\% (approximate) confidence interval for $\theta$ based on
+$y$ successes out of $n$ attempts is 
+$$\hat\theta \pm z_{a/2}\sqrt{\hat\theta(1-\hat\theta)}$$
+where $\hat\theta = y/n$ and $z_{a/2}$ is the z-critical value such that 
+$$a/2 = \int_{z_{a/2}}^\infty \phi(x) dx$$ where $\phi(x)$ is the probability
+density function for a standard normal. 
+This formula is based on an asymptotic (sample size
+going to infinity) argument based on the CLT. 
+
+This is one formula, but [there are a whole bunch of others](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval). 
+So, even in the simplest possible models, things are not so clear.
+Please note the [Bayesian approach](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Jeffreys_interval).
+
+To conduct a hypothesis test with null hypothesis that the true probability of 
+success is $\theta_0$, we calculate 
+$$z = \frac{\hat\theta-\theta_0}{\sqrt{\frac{\theta_0(1-\theta_0)}{n}}}.$$
+When $z$ is sufficiently large, this has an approximate standard normal and we
+can calculate a two-sided $p$-value
+$$p\mbox{-value} = 2P(Z < -|z|).$$
+If $p$-value is less than our significance level $a$, then we *reject the null model* and, otherwise, we *fail to reject the null model*.
+The *null model* is 
+$$Y \sim Bin(n,\theta_0).$$
+What does this mean? It means there is evidence against this model, but that
+could mean 
+
+- the attempts are not independent
+- the attempts don't have a common probability
+- the common probability is not $\theta_0$
+- the number of attempts is not $n$
+
+The result of the test does not tell us which of these is the problem. 
+In addition, even if everything is true except (possibly) the common probability
+$\theta_0$. 
+Our interpretation of the $p$-value requires more context about the scientific
+setup. 
+
+I highly recommend every one read the 
+[ASA's Statement on $p$-Values](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108). 
+Then reread it periodically until it makes some sense. 
+
+
 ### Normal
+
+
 
 ### Simple linear regression
 
