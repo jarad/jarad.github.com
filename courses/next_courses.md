@@ -31,6 +31,10 @@ graduates of STAT 587.
 - STAT 477/577 - Introduction to Categorical Data Analysis
 - STAT 484/584 - Computer Processing of Scientific Data
 - STAT 486/586 - Introduction to Statistical Computing
+
+Specialty courses:
+- STAT 534 - Ecological Statistics
+- STAT 536 - Statistical Genetics
 - STAT 581 - Analysis of Gene Expression Data for the Biological Sciences
 
 In the course description, in the course catalog, 
