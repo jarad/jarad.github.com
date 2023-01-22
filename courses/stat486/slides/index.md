@@ -7,4 +7,6 @@ tagline: Introduction to Statistical Computing
 
 # Slides
 
-- [Review](01-review/01-review.html)
+Review
+- [Probability](01-probability/01-probability.html) [R code](01-probability/01-probability.R)
+- [Statistics](02-statistics/02-statistics.html) [R code](02-statistics/02-statistics.R)
