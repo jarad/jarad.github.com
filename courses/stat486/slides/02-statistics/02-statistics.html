@@ -11,7 +11,7 @@
 
 <meta name="author" content="Jarad Niemi" />
 
-<meta name="date" content="2023-01-22" />
+<meta name="date" content="2023-01-26" />
 
 <title>STAT 486/586</title>
 
@@ -1493,7 +1493,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">STAT 486/586</h1>
 <h4 class="author">Jarad Niemi</h4>
-<h4 class="date">2023-01-22</h4>
+<h4 class="date">2023-01-26</h4>
 
 </div>
 
@@ -1666,106 +1666,6 @@ null model</em>. All the same caveats about hypothesis tests mentioned
 above apply.</p>
 <p>Read the damn <a href="https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108">ASA
 Statement on <span class="math inline">\(p\)</span>-Values</a>!</p>
-</div>
-</div>
-<div id="simple-linear-regression" class="section level3">
-<h3>Simple linear regression</h3>
-<p>The simple linear regression (SLR) models expands the applicability
-of normal based modeling be shifting the mean according to another
-variable. I use the terms <em>response variable</em> (<span class="math inline">\(Y\)</span>) and <em>explanatory variable</em>
-(<span class="math inline">\(X\)</span>) to<br />
-identify the variable that explains the change in the response
-variable.</p>
-<p>To run a simple linear regression model, we need to record both the
-response and explanatory variable for each observation, i.e. we have a
-double <span class="math inline">\((Y_i,X_i)\)</span> for all <span class="math inline">\(i=1,\ldots,n\)</span>. Then our model is <span class="math display">\[Y_i \stackrel{ind}{\sim}
-N(\beta_0+\beta_1X_i,\sigma^2).\]</span> Although this is a succinct way
-of writing the model, I think a more intuitive way to write the model is
-<span class="math display">\[Y_i = \beta_0+\beta_1X_i+\epsilon_i, \qquad
-\epsilon_i\stackrel{ind}{\sim} N(0,\sigma^2).\]</span> This notation
-more directly provides the 4 assumptions in a simple linear regression
-model:</p>
-<ul>
-<li>independent errors</li>
-<li>normal errors</li>
-<li>errors have constant variance</li>
-<li>linear relationship between explanatory variable (X) and the mean of
-the response variable</li>
-</ul>
-<p>The last assumption is most straight-forward when you write <span class="math display">\[E[Y_i] = \beta_0+\beta_1X_i.\]</span></p>
-<p>Now we could go through all the formulas related with the SLR model,
-but suffice it to say that we can construct confidence intervals and
-hypothesis tests for any <span class="math inline">\(\beta\)</span> and
-these involve the <span class="math inline">\(T\)</span>-distribution.
-Software generally defaults to providing hypothesis tests relative to
-the <span class="math inline">\(\beta\)</span>s being 0. This makes
-sense for <span class="math inline">\(\beta_1\)</span> since, if it is
-0, then that means the explanatory variable has no effect on the
-response variable.</p>
-<p>All the usual caveats apply for hypothesis tests here. Have you read
-the <a href="https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108">ASA
-Statement on <span class="math inline">\(p\)</span>-Values</a> yet?</p>
-<div id="interpretation" class="section level4">
-<h4>Interpretation</h4>
-<p>The most useful aspect of SLR models is the simplicity of
-interpretation:</p>
-<blockquote>
-<p>For each unit increase in the explanatory variable, the mean of the
-response variable increases by <span class="math inline">\(\beta\)</span>.</p>
-</blockquote>
-</div>
-</div>
-<div id="multiple-linear-regression" class="section level3">
-<h3>Multiple linear regression</h3>
-<p>Multiple (linear) regression is the extension of the SLR model to
-more than one continuous or binary explanatory variable. It also
-includes quadratic terms as well as interactions. Now, for each
-observation, you need to collect the value of the response variable as
-well as all of the explanatory variables, i.e. <span class="math inline">\((Y_i,X_{i,1},\ldots,X_{i,p})\)</span> for all
-<span class="math inline">\(i=1,\ldots,n\)</span>. (I’m thinking
-spreadsheets might be pretty handy about now.)</p>
-<p>The model can be written <span class="math display">\[Y_i =
-\beta_0+\beta_1X_{i,p}+\ldots+\beta_p X_{i,p}+\epsilon_i, \qquad
-\epsilon_i\stackrel{ind}{\sim} N(0,\sigma^2).\]</span> But, it is much
-more succinct when you use some linear algebra <span class="math display">\[Y = X\beta + e, \quad e \sim
-N(0,\sigma^2\mathrm{I})\]</span> but now we have to define</p>
-<ul>
-<li>vector <span class="math inline">\(Y =
-(Y_1,\ldots,Y_n)^{\top}\)</span>,</li>
-<li>vector <span class="math inline">\(\beta =
-(\beta_1,\ldots,\beta_p)\)</span>,</li>
-<li>vector errors <span class="math inline">\(\epsilon =
-(\epsilon_1,\ldots,\epsilon_n)\)</span>,</li>
-<li>model matrix <span class="math inline">\(X\)</span> which is <span class="math inline">\(n \times p\)</span> with each row being the</li>
-<li>vector <span class="math inline">\(X_i =
-(X_{i,1},\ldots,X_{i,p})\)</span>.</li>
-</ul>
-<p>And the models aren’t quite identical since the matrix version does
-not have an explicit intercept, but instead you can include an intercept
-by having the first column of X be all 1s.</p>
-<div id="maximum-likelihood-estimator-2" class="section level4">
-<h4>Maximum likelihood estimator</h4>
-<p>Using some linear algebra and assuming we have a full rank <span class="math inline">\(X\)</span>, the maximum likelihood estimator for
-<span class="math inline">\(\beta\)</span> is nice and succinct <span class="math display">\[\hat\beta_{MLE} = (X^\top X)^{-1}X^\top
-y.\]</span> How pretty is that!! (Break this out at parties and impress
-all your friends. Don’t write it down, just say it.)</p>
-</div>
-<div id="interpretation-1" class="section level4">
-<h4>Interpretation</h4>
-<p>Multiple regression models are much better at representing reality
-than simple linear regression models (because, generally, there is more
-than one explanatory variable affecting the response variable. ) With
-this flexibility, we do lose some interpretability. If there are no
-interactions, then we can interpret the coefficient for the <span class="math inline">\(j\)</span>th explantory variable like this</p>
-<blockquote>
-<p>holding all other variables constant, a one unit change in the <span class="math inline">\(j\)</span>th explanatory variable increases the
-mean of the response variable by <span class="math inline">\(\beta_j\)</span>.</p>
-</blockquote>
-<p>When you read about this in the newspaper or a journal article, they
-will often use the phrase “after adjusting for …” or “after controlling
-for …”.</p>
-<p>When interactions are present, everything becomes much more
-complicated. Are you ready to use figures yet?</p>
 </div>
 </div>
 </div>

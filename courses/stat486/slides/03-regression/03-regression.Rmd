@@ -27,11 +27,14 @@ variable we have:
 - Count (with a maximum) response $\longrightarrow$ logistic regression
 - Binary response $\longrightarrow$ logistic regression
 
-Linear regression is described below and involves assuming normality of the 
-data/errors. 
-Poisson regression assumes a Poisson distribution for the data. 
+Linear regression (described below) assumes a
+[normal (of Gaussian) distribution](../01-probability/01-probability.html#normal) 
+for the data (but really the errors). 
+Poisson regression assumes a 
+[Poisson distribution](../01-probability/01-probability.html#Poisson) 
+for the data.  
 Logistic regression assumes a 
-[binomial](../01-probability/01-probability.html#binomial) distribution for the data
+[binomial distribution](../01-probability/01-probability.html#binomial)  for the data
 (or Bernoulli when the response is binary).
 
 
@@ -163,4 +166,168 @@ or "after controlling for ...".
 When interactions are present, everything becomes much more complicated. 
 Are you ready to use figures yet?
 
-# 
+
+
+# Visualizing regression models
+
+In this section, 
+we will visualize a bunch of regression models using the 
+[ggplot2](https://ggplot2.tidyverse.org/) R package. 
+First, we need to load the package
+
+```{r load_ggplot2}
+library("ggplot2")  # you may need to install it first using install.packages("ggplot2")
+```
+
+Also, the data we will use is the in [Sleuth3](https://cran.r-project.org/web/packages/Sleuth3/index.html) R package, 
+so it also needs to be loaded. 
+
+```{r load_Sleuth3}
+library("Sleuth3")  # you may need to install it first using install.packages("Sleuth3")
+```
+
+
+## Simple linear regression
+
+We will start with the simple linear regression (SLR) model, 
+but using logarithms we will show that there is a lot of flexibility even in 
+this relatively trivial model. 
+The *simple* in SLR indicates that there is a single explanatory variable and,
+typically, it is continuous. 
+
+```{r case0801}
+ggplot(Sleuth3::case0801, 
+       aes(x = Area, y = Species)) + 
+  geom_point() +  
+  labs(title = "Number of reptile and amphibian species for West Indies islands") +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+
+### Logarithm of explanatory variable
+
+```{r case0801_log_x}
+ggplot(Sleuth3::case0801, 
+       aes(x = Area, y = Species)) + 
+  geom_point() + 
+  scale_x_log10() + 
+  labs(title = "Number of reptile and amphibian species for West Indies islands") +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+
+### Logarithm of response variable
+
+```{r case0801_log_y}
+ggplot(Sleuth3::case0801, 
+       aes(x = Area, y = Species)) + 
+  geom_point() + 
+  scale_y_log10() + 
+  labs(title = "Number of reptile and amphibian species for West Indies islands") +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+
+### Logarithm of both response and explanatory variable
+
+```{r case0801_log_xy}
+ggplot(Sleuth3::case0801, 
+       aes(x = Area, y = Species)) + 
+  geom_point() + 
+  scale_x_log10() + 
+  scale_y_log10() + 
+  labs(title = "Number of reptile and amphibian species for West Indies islands") +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+For good measure, let's run the regression analysis in R
+
+```{r case0801_regression}
+m <- lm(log(Species) ~ log(Area), data = Sleuth3::case0801)
+summary(m)
+```
+
+Since `Species` is a count with no maximum, 
+we may really want to run a Poisson regression analysis. 
+
+```{r case0801_poisson_regression}
+m <- glm(Species ~ log(Area),      
+         data = Sleuth3::case0801,
+         family = poisson)
+summary(m)
+```
+
+### SLR with binary explanatory variable
+
+```{r case0801_binary_x}
+ggplot(Sleuth3::case0801, 
+       aes(x = 1*I(Area>100), y = Species)) + 
+  geom_point() + 
+  scale_y_log10() + 
+  labs(title = "Number of reptile and amphibian species for West Indies islands") +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+
+
+## Multiple regression
+
+```{r fix_case0901}
+library("dplyr") # may need to install.packages("dplyr")
+case0901 <- Sleuth3::case0901 %>%
+  mutate(Time = ifelse(Time == 1, "Late", "Early"))
+```
+
+```{r explore_case0901}
+dim(case0901)
+summary(case0901)
+head(case0901)
+```
+
+### SLR
+
+Let's start by ignore `Time`. 
+
+```{r case0901_plot_only_flowers}
+ggplot(case0901, 
+       aes(x = Intensity, y = Flowers)) + 
+  geom_point() + 
+  labs(title = "Effects of Light on Meadowfoam Flowering") +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+```{r case0901_slr_reg}
+m <- lm(Flowers ~ Intensity, data = case0901)
+summary(m)
+```
+
+### Multiple regression
+
+Let's add `Time`
+
+```{r case0901_plot_with_time}
+ggplot(case0901, 
+       aes(x = Intensity, y = Flowers, color = Time, shape = Time)) + 
+  geom_point() + 
+  labs(title = "Effects of Light on Meadowfoam Flowering") +
+  geom_smooth(method = "lm")
+```
+
+By default, `ggplot2::geom_smooth` plots separate lines for the two `Time`s and
+thus is equivalent to a model with an interaction between `Time` and `Intensity`.
+The fact that these lines look parallel indicates an interaction is not needed.
+
+```{r case0901_reg_with_interaction}
+m <- lm(Flowers ~ Intensity*Time, data = case0901)
+anova(m)
+```
+
+Interaction is not significant, so it will simplify our interpretation if we
+exclude it.
+(Please note though, that you could keep it in the model.)
+
+```{r case0901_reg}
+m <- lm(Flowers ~ Intensity+Time, data = case0901)
+anova(m)
+summary(m)
+```
