@@ -1,0 +1,166 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Review - Statistics"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Regression
+
+Regression models explain the relationship between a response variable ($Y$)
+and a collection of explanatory variables ($X$). 
+We use different types of regression models depending on the type of response
+variable we have:
+
+- Continuous response $\longrightarrow$ linear regression
+- Count (with no maximum) response $\longrightarrow$ Poisson regression
+- Count (with a maximum) response $\longrightarrow$ logistic regression
+- Binary response $\longrightarrow$ logistic regression
+
+Linear regression is described below and involves assuming normality of the 
+data/errors. 
+Poisson regression assumes a Poisson distribution for the data. 
+Logistic regression assumes a 
+[binomial](../01-probability/01-probability.html#binomial) distribution for the data
+(or Bernoulli when the response is binary).
+
+
+Regression models alter a bit depending on the data type of the explanatory 
+variables. 
+The most natural approach is when the explanatory variable(s) are continuous
+because then we can think about the regression model drawing a line through the
+data. 
+But we have a lot of flexibility on how to include this continuous variable 
+in the model including take a logarithm of the variable and squaring the 
+variable. 
+When the explanatory variables are categorical, 
+then we need to construct *dummy* (or *indicator*) variables to include in the 
+regression model. 
+In addition, 
+if we have interaction terms (which we generally think of as multiplying 
+explanatory variables), then interpretation of the regression model 
+becomes more difficult and nuanced. 
+
+
+## Simple linear regression
+
+The simple linear regression (SLR) models expands the applicability of normal based
+modeling be shifting the mean according to **one explanatory** variable.
+I use the terms *response variable* ($Y$) and *explanatory variable* ($X$) to  
+identify the variable that explains the change in the response variable. 
+
+To run a simple linear regression model, 
+we need to record both the response and explanatory variable for each 
+observation, 
+i.e. we have a double $(Y_i,X_i)$ for all $i=1,\ldots,n$.
+Then our model is 
+$$Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1X_i,\sigma^2).$$
+Although this is a succinct way of writing the model, 
+I think a more intuitive way to write the model is 
+$$Y_i = \beta_0+\beta_1X_i+\epsilon_i, \qquad \epsilon_i\stackrel{ind}{\sim} N(0,\sigma^2).$$
+This notation more directly provides the 4 assumptions in a simple linear 
+regression model:
+
+- independent errors
+- normal errors
+- errors have constant variance
+- linear relationship between explanatory variable (X) and the mean of the response variable
+
+The last assumption is most straight-forward when you write
+$$E[Y_i] = \beta_0+\beta_1X_i.$$
+
+Now we could go through all the formulas related with the SLR model,
+but suffice it to say that we can construct confidence intervals and 
+hypothesis tests for any $\beta$ and these involve the $T$-distribution. 
+Software generally defaults to providing hypothesis tests relative to the 
+$\beta$s being 0. 
+This makes sense for $\beta_1$ since, if it is 0, then that means the 
+explanatory variable has no effect on the response variable. 
+
+All the usual caveats apply for hypothesis tests here. 
+Have you read the [ASA Statement on $p$-Values](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108)
+yet?
+
+
+### Interpretation
+
+The most useful aspect of SLR models is the simplicity of interpretation:
+
+> For each unit increase in the explanatory variable, the mean of the response variable increases by $\beta_1$.
+
+
+
+## Multiple linear regression
+
+
+Multiple (linear) regression is the extension of the SLR model to more than 
+one continuous or binary explanatory variable. 
+It also includes quadratic terms as well as interactions. 
+Now, for each observation, you need to collect the value of the response 
+variable as well as all of the explanatory variables, i.e.
+$(Y_i,X_{i,1},\ldots,X_{i,p})$ for all $i=1,\ldots,n$. 
+(I'm thinking spreadsheets might be pretty handy about now.)
+
+
+The model can be written 
+$$Y_i = \beta_0+\beta_1X_{i,p}+\ldots+\beta_p X_{i,p}+\epsilon_i, \qquad \epsilon_i\stackrel{ind}{\sim} N(0,\sigma^2).$$
+But, it is much more succinct when you use some linear algebra
+$$Y = X\beta + e, \quad e \sim N(0,\sigma^2\mathrm{I})$$
+but now we have to define 
+
+- vector $Y = (Y_1,\ldots,Y_n)^{\top}$,
+- vector $\beta = (\beta_1,\ldots,\beta_p)$, 
+- vector errors $\epsilon = (\epsilon_1,\ldots,\epsilon_n)$,
+- model matrix $X$ which is $n \times p$ with each row being the 
+- vector $X_i = (X_{i,1},\ldots,X_{i,p})$. 
+
+**Note:** 
+the models aren't quite identical since the matrix version does not 
+have an explicit intercept, 
+but instead you can include an intercept by having the
+first column of X be all 1s. 
+
+
+### Maximum likelihood estimator
+
+Using some linear algebra and assuming we have a full rank $X$, 
+the maximum likelihood estimator for $\beta$ is nice and succinct 
+$$\hat\beta_{MLE} = (X^\top X)^{-1}X^\top y.$$
+How pretty is that!!
+(Break this out at parties and impress all your friends.
+Don't write it down, just say it.)
+
+### Interpretation
+
+Multiple regression models are much better at representing reality than 
+simple linear regression models 
+because, generally, 
+
+- there is more than one explanatory variable affecting the response variable and
+- relationships between explanatory variables and the response variable is complicated.
+
+With this flexibility, 
+we do lose some interpretability. 
+If there are no interactions, 
+then we can interpret the coefficient for the $j$th explanatory variable like this
+
+> holding all other variables constant, a one unit change in the $j$th explanatory variable increases the mean of the response variable by $\beta_j$.
+
+When you read about this in the newspaper or a journal article,
+they will often use the phrase "after adjusting for ..." 
+or "after controlling for ...". 
+
+When interactions are present, everything becomes much more complicated. 
+Are you ready to use figures yet?
+
+# 

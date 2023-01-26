@@ -10,3 +10,4 @@ tagline: Introduction to Statistical Computing
 Review
 - [Probability](01-probability/01-probability.html) [R code](01-probability/01-probability.R)
 - [Statistics](02-statistics/02-statistics.html) [R code](02-statistics/02-statistics.R)
+- [Regression](03-regression/03-regression.html) [R code](03-regression/03-regression.R)
