@@ -1,0 +1,689 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Basic R - Introduction to R"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](04-intro_to_r.R)
+
+
+# Introduction to R and RStudio
+
+## Installation
+
+If you haven't already, please install **both R and RStudio** following the 
+instructions in this video
+
+
+<iframe src="https://www.youtube.com/embed/tgPuB-iNww0" data-external= "1" > </iframe>
+
+
+
+## Change default setting
+
+This setting will cause you issues in the future if you don't change it now.
+Set R/RStudio to not automatically an RData file:
+
+<iframe src="https://www.youtube.com/embed/AgUj6-2RfWA" data-external= "1" > </iframe>
+
+## Brief introduction
+
+For an extremely detailed introduction, please see
+
+```{r, eval=FALSE, purl=FALSE}
+help.start()
+```
+
+In this documentation, the above command will be executed at the command prompt, see below. 
+
+From `help.start()`:
+
+> R is a free software environment for statistical computing and graphics.
+
+and from <https://www.rstudio.com/products/RStudio/>:
+
+> RStudio is an integrated development environment (IDE) for R. 
+
+
+## R interface
+
+In contrast to many other statistical software packages that use a point-and-click interface, e.g. SPSS, JMP, Stata, etc, R has a command-line interface. The command line has a command prompt, e.g. `>`, see below.
+
+```{r, eval=FALSE, purl=FALSE}
+>
+```
+
+This means, that you will be entering commands on this command line and hitting enter to execute them, e.g. 
+
+```{r, eval=FALSE, purl=FALSE}
+help()
+```
+
+Use the **up arrow** to recover past commands.
+
+```{r, eval=FALSE, purl=FALSE}
+hepl()
+help() # Use up arrow and fix
+```
+
+
+## R GUI (or [RStudio](http://www.rstudio.com/))
+
+Most likely, you are using a graphical user interface (GUI) and therefore, 
+in addition, to the command line, you also have a windowed version of R with 
+some point-and-click options, e.g. File, Edit, and Help.
+
+In particular, there is an editor to create a new R script. So rather than 
+entering commands on the command line, you will write commands in a script and 
+then send those commands to the command line using `Ctrl-R` (PC) or 
+`Command-Enter` (Mac).
+
+```{r}
+a = 1 
+b = 2
+a + b
+```
+
+Multiple lines can be run in sequence by selecting them and then using 
+`Ctrl-R` (PC) or `Command-Enter` (Mac).
+
+
+
+
+## Intro Activity
+
+One of the most effective ways to use this documentation is to cut-and-paste 
+the commands into a script and then execute them. 
+
+Cut-and-paste the following commands into a **new script** and then run those 
+commands directly from the script using `Ctrl-R` (PC) or `Command-Enter` (Mac).
+
+```{r}
+x <- 1:10
+y <- rep(c(1,2), each=5)
+m <- lm(y~x)
+s <- summary(m)
+```
+
+Now, look at the result of each line
+
+```{r, eval=FALSE}
+x
+y
+m
+s
+s$r.squared
+```
+
+
+<details><summary>Click for solution</summary> 
+```{r, purl=FALSE}
+x
+y
+m
+s
+s$r.squared
+```
+</details>
+
+
+
+
+
+
+# Using R as a calculator
+
+## Basic calculator operations
+
+All basic calculator operations can be performed in R. 
+
+```{r}
+1+2
+1-2
+1/2
+1*2
+2^3 # same as 2**3
+```
+
+For now, you can ignore the [1] at the beginning of the line, 
+we'll learn about that when we get to vectors. 
+
+
+## Advanced calculator operations
+
+Many advanced calculator operations are also available.
+
+```{r}
+(1+3)*2 + 100^2  # standard order of operations (PEMDAS)
+sin(2*pi)        # the result is in scientific notation, i.e. -2.449294 x 10^-16 
+sqrt(4)
+log(10)          # the default is base e
+log(10, base = 10)
+```
+
+
+
+## Using variables
+
+A real advantage to using R rather than a calculator (or calculator app) is the 
+ability to store quantities using variables.
+
+```{r}
+a = 1
+b = 2
+a + b
+a - b
+a / b
+a * b
+b ^ 3
+```
+
+## Assignment operators =, <-, and ->
+
+When assigning variables values, you can also use arrows <- and -> and you will 
+often see this in code, e.g. 
+
+```{r}
+a <- 1 # recommended
+2 -> b # uncommon, but sometimes useful
+c = 3  # similar to other languages
+```
+
+Now print them.
+
+```{r}
+a
+b
+c
+```
+
+## Using informative variable names
+
+While using variables alone is useful, it is much more useful to use informative
+variables names.
+
+```{r}
+# Rectangle
+length <- 4
+width  <- 3
+
+area <- length * width
+area
+
+perimeter <- 2 * (length + width)
+
+
+# Circle
+radius <- 2
+
+area   <- pi*radius^2 # this overwrites the previous `area` variable
+circumference <- 2*pi*radius
+
+area
+circumference
+
+
+# (Right) Triangle
+opposite     <- 1
+angleDegrees <- 30
+angleRadians <- angleDegrees * pi/180
+
+(adjacent     <- opposite / tan(angleRadians)) # = sqrt(3)
+(hypotenuse   <- opposite / sin(angleRadians)) # = 2
+```
+
+
+
+## Calculator Activity
+
+### [Bayes' Rule](http://en.wikipedia.org/wiki/Bayes%27_theorem)
+
+Suppose an individual tests positive for a disease, what is the probability the 
+individual has the disease? Let 
+
+- $D$ indicates the individual has the disease
+- $N$ means the individual does not have the disease
+- $+$ indicates a positive test result
+- $-$ indicates a negative test 
+
+The above probability can be calculated using [Bayes' Rule](http://en.wikipedia.org/wiki/Bayes%27_rule):
+
+\[ P(D|+) = \frac{P(+|D)P(D)}{P(+|D)P(D)+P(+|N)P(N)} = 
+\frac{P(+|D)P(D)}{P(+|D)P(D)+(1-P(-|N))\times(1-P(D))} \]
+
+where
+
+- $P(+|D)$ is the [sensitivity](http://en.wikipedia.org/wiki/Sensitivity_and_specificity) of the test
+- $P(-|N)$ is the [specificity](http://en.wikipedia.org/wiki/Sensitivity_and_specificity) of the test
+- $P(D)$ is the [prevalence](http://en.wikipedia.org/wiki/Prevalence) of the disease
+
+Calculate the probability the individual has the disease if the test is positive when
+
+- the specificity of the test is 0.95, 
+- the sensitivity of the test is 0.99, and
+- the prevalence of the disease is 0.001.
+
+```{r, echo=FALSE}
+# Given an individual tested positive, find the probability the individual has 
+# the disease if specificity is 0.95, sensitivity is 0.99, and prevalence is 0.001
+```
+
+
+<details><summary>Click for solution</summary> 
+```{r, purl=FALSE}
+specificity <- 0.95
+sensitivity <- 0.99
+prevalence <- 0.001
+probability <- (sensitivity*prevalence) / (sensitivity*prevalence + (1-specificity)*(1-prevalence))
+probability
+```
+</details>
+
+
+
+
+
+
+# Data types
+
+Objects in R can be broadly classified according to their dimensions:
+
+- scalar
+- vector
+- matrix
+- array (higher dimensional matrix)
+
+and according to the type of variable they contain:
+
+- logical
+- integer
+- numeric
+- character (string)
+
+
+## Scalars
+
+Scalars have a single value assigned to the object in R. 
+
+```{r}
+a <- 3.14159265 
+b <- "STAT 587 (Eng)" 
+c <- TRUE
+```
+
+Print the objects
+
+```{r}
+a
+b
+c
+```
+
+
+### Vectors
+
+The `c()` function creates a vector in R
+
+```{r}
+a <- c(1, 2, -5, 3.6)
+b <- c("STAT", "587", "(Eng)")
+c <- c(TRUE, FALSE, TRUE, TRUE)
+```
+
+To determine the length of a vector in R use `length()`
+
+```{r}
+length(a)
+length(b)
+length(c)
+```
+
+To determine the type of a vector in R use `class()`
+
+```{r}
+class(a)
+class(b)
+class(c)
+```
+
+
+### Vector construction
+
+Create a numeric vector that is a sequence using : or `seq()`.
+
+```{r}
+1:10
+5:-2
+seq(from = 2, to = 5, by = .05)
+```
+
+Another useful function to create vectors is `rep()`
+
+```{r}
+rep(1:4, times = 2)
+rep(1:4, each  = 2)
+rep(1:4, each  = 2, times = 2)
+```
+
+Arguments to functions in R can be referenced either by position or by name or
+both. 
+The safest and easiest to read approach is to name all your arguments.
+I will often name all but the first argument. 
+
+
+### Accessing vector elements 
+
+Elements of a vector can be accessed using brackets, e.g. [index].
+
+```{r}
+a <- c("one","two","three","four","five")
+a[1]
+a[2:4]
+a[c(3,5)]
+a[rep(3,4)]
+```
+
+Alternatively we can access elements using a logical vector where only TRUE 
+elements are accessed.
+
+```{r}
+a[c(TRUE, TRUE, FALSE, FALSE, FALSE)]
+```
+
+You can also see all elements except some using a negative sign `-`.
+
+```{r}
+a[-1]
+a[-(2:3)]
+```
+
+### Modifying elements of a vector
+
+You can assign new values to elements in a vector using = or <-.
+
+```{r}
+a[2] <- "twenty-two"
+a
+a[3:4] <- "three-four" # assigns "three-four" to both the 3rd and 4th elements
+a
+a[c(3,5)] <- c("thirty-three","fifty-five")
+a
+```
+
+
+
+## Matrices
+
+Matrices can be constructed using `cbind()`, `rbind()`, and `matrix()`:
+
+```{r}
+m1 <- cbind(c(1,2), c(3,4))       # Column bind
+m2 <- rbind(c(1,3), c(2,4))       # Row bind
+
+m1
+all.equal(m1, m2)
+
+m3 <- matrix(1:4, nrow = 2, ncol = 2)
+all.equal(m1, m3)
+
+m4 <- matrix(1:4, nrow = 2, ncol = 2, byrow = TRUE)
+all.equal(m3, m4)
+
+m3
+m4
+```
+
+
+### Accessing matrix elements
+
+Elements of a matrix can be accessed using brackets separated by a comma, 
+e.g. [row index, column index].
+
+```{r}
+m <- matrix(1:12, nrow=3, ncol=4)
+m
+m[2,3]
+```
+
+Multiple elements can be accessed at once
+
+```{r}
+m[1:2,3:4]
+```
+
+If no row (column) index is provided, then the whole row (column) is accessed.
+
+```{r}
+m[1:2,]
+```
+
+Like vectors, you can eliminate rows (or columns)
+
+```{r}
+m[-c(3,4),]
+```
+
+Be careful not to forget the comma, e.g. 
+
+```{r}
+m[1:4]
+```
+
+
+# Packages
+
+When you install R, you actually install several R packages. 
+When you initially start R, you will load the following packages
+
+- [stats]
+- [graphics]
+- [grDevices]
+- [utils]
+- [datasets]
+- [methods]
+- [base]
+
+You can find this information by running the following code and looking at the
+attached base packages. 
+
+```{r}
+sessionInfo()
+```
+
+These packages provide a lot of functionality and have been in existence 
+(almost as they currently are) from the early days of R. 
+
+While a lot of functionality exist in these packages, 
+much more functionality exists in user contributed packages. 
+On the 
+[comprehensive R archive network (CRAN)](https://cran.r-project.org/web/packages/), 
+there are (as of 2023/01/29) 19,122 packages available for download. 
+On [Bioconductor](https://www.bioconductor.org/), there are an additional 2,183. 
+There are also additional packages that exist outside of these repositories.
+
+
+## Install packages
+
+To install packages from CRAN, use the `install.packages` function. 
+For example,
+
+```{r, eval=FALSE}
+install.packages("tidyverse")
+```
+
+or, to install all the packages needed for this class,
+
+```{r, eval=FALSE}
+install.packages(c("tidyverse",
+                   "gridExtra",
+                   "rmarkdown",
+                   "knitr"))
+```
+
+R packages almost always depend on other packages. 
+When you use the `install.packages()` function, 
+R will automatically install these dependencies. 
+
+You may run into problems during this installation process.
+Sometimes the dependencies will fail. 
+If this occurs, try to install just that dependency using
+`install.packages()`. 
+
+Sometimes you will be asked whether you want to install a newer version of a 
+package from *source*. 
+My general advice (for those new to R) is to say no and instead install the 
+older version of the package. 
+If you want to install from source, you will need 
+[Rtools (Windows)](https://cran.r-project.org/bin/windows/Rtools/)
+or 
+[Xcode (Mac)](https://developer.apple.com/xcode/).
+Alternatively, you can wait a couple of days for the newer version to be 
+pre-compiled. 
+
+
+### Load packages
+
+The installation only needs to be done once. 
+But we will need to load the packages in every R session where we want to use 
+them.
+To load the packages, use 
+
+```{r, eval=FALSE}
+library("dplyr")
+library("tidyr")
+library("ggplot2")
+```
+
+alternatively, you can load the entire (not very big) `tidyverse`.
+
+```{r}
+library("tidyverse")
+```
+
+
+
+
+
+# Getting help for R
+
+## Learning R
+
+To learn R, you may want to try the swirl package. 
+To install, use 
+
+```{r, eval=FALSE}
+install.packages("swirl")
+```
+
+After installation, use the following to get started
+
+```{r, eval=FALSE}
+library("swirl")
+swirl()
+```
+
+Also, the 
+[R 4 Data Science](https://r4ds.had.co.nz/)
+book is extremely helpful. 
+
+## General help
+
+As you work with R, there will be many times when you need to get help. 
+
+My basic approach is 
+ 
+1. Use the help contained within R.
+1. Perform an internet search for an answer.
+1. Find somebody else who knows.
+
+In all cases, knowing the R keywords, e.g. a function name, will be extremely 
+helpful.
+
+
+## Help within R I
+
+If you know the function name, then you can use `?<function>`, e.g.
+
+```{r, eval=FALSE}
+?mean
+```
+
+The structure of help is 
+
+- Description: quick description of what the function does
+- Usage: the arguments, their order, and default values (if any)
+- Arguments: more thorough description about the arguments
+- Value: what the funtion returns
+- See Also: similar functions
+- Examples: examples of how to use the function
+
+
+## Help within R II
+
+If you cannot remember the function name, then you can use 
+`help.search("<something>")`, e.g.
+
+```{r, eval=FALSE}
+help.search("mean")
+```
+
+Depending on how many packages you have installed, you will find a lot or a 
+little here. 
+
+
+
+## Internet search for R help
+
+I google for `<something> R`, e.g. 
+
+    calculate mean R
+
+Some useful sites are 
+
+- <http://www.cookbook-r.com/>
+- <http://www.r-tutor.com/r-introduction>
+- <http://www.statmethods.net/>
+- <http://stackoverflow.com/questions/tagged/r>
+- <http://www.ats.ucla.edu/stat/r/>
+- <https://sites.google.com/site/rapplicationforbiosurveillance/home/discussions>
+
+
+
+## <a name="help">Getting help on ggplot2</a>
+
+Although the general R help can still be used, e.g. 
+
+```{r, eval=FALSE}
+?ggplot
+?geom_point
+```
+
+It is much more helpful to google for an answer
+
+    geom_point 
+    ggplot2 line colors
+
+The top hits will all have the code along with what the code produces.
+
+## Helpful sites
+
+These sites all provide code. The first two also provide the plots that are produced.
+
+- <http://docs.ggplot2.org/current/>
+- <http://www.cookbook-r.com/Graphs/>
+- <http://stackoverflow.com/questions/tagged/ggplot2>
+
+```{r, eval=FALSE, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
+knitr::knit("lab01.Rmd", tangle = TRUE)
+```
+
