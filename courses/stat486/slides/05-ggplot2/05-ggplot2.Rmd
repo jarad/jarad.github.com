@@ -1,0 +1,372 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Basic R - ggplot2"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](05-ggplot2.R)
+
+We will start with loading up the necessary packages using the `library()` 
+command.
+
+```{r}
+library("tidyverse")
+```
+
+These slides utilize the 
+[ggplot2](https://ggplot2-book.org/) 
+graphics system to construct a number of graphical statistics, 
+i.e. data visualizations, 
+for data sets ranging from a single variable to a small number of 
+continuous and categorical variables. 
+The first step in constructing ggplot2 graphics is to organize your data in a 
+`data.frame`. 
+
+# Data.frames
+
+Here we introduce the basics of `data.frame`s as extensions of 
+matrices. 
+As a reminder, matrices can only contain 1 data type in the entire matrix.
+In contrast, `data.frame`s can only contain 1 data type **per column** and 
+thus make `data.frame`s an ideal storage unit for basic data sets. 
+
+Many data sets exist within the `datasets` package that is automatically 
+installed when you install R. 
+
+```{r}
+data()
+```
+
+## ToothGrowth
+
+We'll take a look at the `ToothGrowth` data set. 
+Since this data set is built into R, 
+there is a helpfile with useful information about the data set. 
+
+```{r, eval=FALSE}
+?ToothGrowth
+```
+
+A variety of utility functions are available for assessing aspects of 
+`data.frame` objects including
+
+```{r}
+dim(ToothGrowth)
+head(ToothGrowth)
+tail(ToothGrowth)
+summary(ToothGrowth)
+```
+
+# ggplot2
+
+As described in 
+[Section 3.2.3 of R4DS](https://r4ds.had.co.nz/data-visualisation.html#a-graphing-template),
+the basic structure ggplot2 code is 
+
+```{r, eval=FALSE}
+ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
+```
+
+or
+
+```{r, eval=FALSE}
+ggplot(data = <DATA>, mapping = aes(<MAPPINGS>)) + 
+  <GEOM_FUNCTION>()
+```
+
+In both cases, you need to determine ```<DATA>```, 
+```<GEOM_FUNCTION>```, and ```<MAPPINGS>```. 
+In the former case, 
+the mapping is only applied to that ```<GEOM_FUNCTION>```.
+In the latter case, 
+the mapping is applied to all future ```<GEOM_FUNCTION>```s. 
+I tend to default to the latter. 
+
+
+
+## Univariate plots
+
+Let's start by considering the response variable in this data set,
+`len`, i.e. the length of the odontoblasts. 
+
+### Histogram
+
+```{r}
+ggplot(ToothGrowth, aes(x = len)) + 
+  geom_histogram()
+```
+
+As instructed, let's choose the number of bins. 
+
+```{r}
+ggplot(ToothGrowth, aes(x = len)) + 
+  geom_histogram(bins = 20)
+```
+Or set the binwidth (which is often more convenient)
+
+```{r}
+ggplot(ToothGrowth, aes(x = len)) + 
+  geom_histogram(binwidth = 1)
+```
+
+
+### Boxplot
+
+```{r}
+ggplot(ToothGrowth, aes(x = len)) + 
+  geom_boxplot()
+```
+
+### Density plot
+
+```{r}
+ggplot(ToothGrowth, aes(x = len)) + 
+  geom_density()
+```
+
+### Violin plot
+
+```{r}
+ggplot(ToothGrowth, aes(x = len, y = 1)) + # note the y = 1
+  geom_violin()
+```
+
+
+## Multiple univariate plots
+
+### Violin plots
+
+```{r}
+ggplot(ToothGrowth, aes(x = len, y = supp)) + 
+  geom_violin()
+```
+
+```{r}
+ggplot(ToothGrowth, aes(x = len, y = supp)) + 
+  geom_violin(trim = FALSE)
+```
+
+### Combine geoms
+
+```{r}
+ggplot(ToothGrowth, aes(x = len, y = supp)) + 
+  geom_violin(trim = FALSE) + 
+  geom_point()
+```
+
+```{r}
+ggplot(ToothGrowth, aes(x = len, y = supp)) + 
+  geom_violin(trim = FALSE) + 
+  geom_jitter()
+```
+
+If we want the plot vertical rather than horizontal, 
+just change the ```<MAPPINGS>```.
+
+```{r}
+ggplot(ToothGrowth, aes(x = supp, y = len)) + 
+  geom_violin(trim = FALSE) + 
+  geom_jitter()
+```
+
+Alternatively, you can use the `coord_flip()` function:
+
+```{r}
+ggplot(ToothGrowth, aes(y = supp, x = len)) + 
+  geom_violin(trim = FALSE) + 
+  geom_jitter() + 
+  coord_flip()
+```
+
+### Alternative DATA
+
+Let's modify the ```<DATA>``` argument using the `chickwts` data set. 
+
+```{r}
+ggplot(chickwts, aes(x = feed, y = weight)) + 
+  geom_violin(trim = TRUE) + 
+  geom_jitter() 
+```
+
+
+
+## Scatterplots
+
+Recall that the tooth growth experiment included a dose that we have, so far,
+ignored. 
+
+```{r}
+ggplot(ToothGrowth, aes(x = dose, y = len)) + 
+  geom_point()
+```
+
+You have already seen the use of the `geom_jitter()` function, 
+but here is another option. 
+
+### Jitterplots
+
+```{r}
+ggplot(ToothGrowth, aes(x = dose, y = len)) + 
+  geom_jitter(width=0.1)
+```
+
+### Logarithmic axis
+
+```{r}
+ggplot(ToothGrowth, aes(x = dose, y = len)) + 
+  geom_jitter(width=0.01) +
+  scale_x_log10()
+```
+
+### Colors and shapes
+
+```{r}
+ggplot(ToothGrowth, aes(x = dose, y = len, color = supp, shape = supp)) + 
+  geom_jitter(width=0.01) +
+  scale_x_log10()
+```
+
+### Regression line
+
+```{r}
+ggplot(ToothGrowth, aes(x = dose, y = len, color = supp, shape = supp)) + 
+  geom_jitter(width=0.01) +
+  scale_x_log10() +
+  geom_smooth(method = "lm")
+```
+
+Are these lines parallel?
+
+```{r}
+m <- lm(len ~ dose*supp, data = ToothGrowth)
+anova(m)
+```
+
+## Professional graphics
+
+To construct professional looking graphics,
+we need to modify and customizing much of the look of these default graphics.
+We will use a combination of modifying the underlying data as well as 
+modify the output graphic. 
+
+### Labels
+
+Improve underlying data
+
+```{r}
+d <- ToothGrowth %>%
+  rename(
+    Length = len,
+    Delivery = supp,
+    Dose = dose) %>%
+  mutate(Delivery = fct_recode(Delivery, 
+                               "Orange Juice" = "OJ",
+                               "Ascorbic Acid" = "VC"))
+```
+
+```{r}
+ggplot(d,                       # Note the new data.frame
+       aes(
+         x = Dose, 
+         y = Length, 
+         color = Delivery, 
+         shape = Delivery)) + 
+  geom_jitter(width = 0.01) +
+  scale_x_log10() +
+  geom_smooth(method = "lm") + 
+  labs(
+    x = "Dose (mg/day)", 
+    y = "Length (\u00b5m)", # unicode \u005b is the Greek letter mu
+    title = "Odontoblast length vs Vitamin C in Guinea Pigs",
+    color = "Delivery Method",
+    shape = "Delivery Method") +
+  theme_bw() +
+  theme(legend.position = c(0.8, 0.2),
+        legend.background = element_rect(fill = "white",
+                                        color = "black"))
+```
+
+### Save the graphic
+
+```{r}
+# Save to an object
+g <- ggplot(d,                      
+       aes(
+         x = Dose, 
+         y = Length, 
+         color = Delivery, 
+         shape = Delivery)) + 
+  geom_jitter(width = 0.01) +
+  scale_x_log10() +
+  geom_smooth(method = "lm") + 
+  labs(
+    x = "Dose (mg/day)", 
+    y = "Length (\u00b5m)", # unicode \u005b is the Greek letter mu
+    title = "Odontoblast length vs Vitamin C in Guinea Pigs",
+    color = "Delivery Method",
+    shape = "Delivery Method") +
+  theme_bw() +
+  theme(legend.position = c(0.8, 0.2),
+        legend.background = element_rect(fill = "white",
+                                        color = "black"))
+g <- ggplot(d,                      
+       aes(
+         x = Dose, 
+         y = Length, 
+         color = Delivery, 
+         shape = Delivery)) + 
+  geom_jitter()
+
+# Write to a file
+fn <- "toothgrowth.png"
+ggsave(fn, plot = g, width = 6, height = 4)
+
+# Clean up
+unlink(fn) # remove the file
+```
+
+## Diamonds data set
+
+```{r, eval=FALSE}
+?diamonds
+```
+
+What kind of informative plot can you construct?
+
+```{r}
+ggplot(diamonds, 
+       aes(
+         x = carat,
+         y = price,
+         color = depth)) +
+  scale_color_gradientn(colors = rainbow(5)) +
+  geom_point(alpha = 0.2) +
+  facet_grid(color ~ cut) + 
+  scale_y_log10() + 
+  scale_x_log10() + 
+  theme_bw()
+```
+
+
+Multiple regression model (all interactions)
+
+```{r}
+m <- lm(log(price) ~ log(carat) * depth * cut * color, data = diamonds)
+drop1(m, test = "F")
+```
+
+## Additional resources
+
+- [ggplot2 book](https://ggplot2-book.org/)
+- [ggplot2 gallery](https://r-graph-gallery.com/)

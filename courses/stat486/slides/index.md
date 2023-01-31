@@ -15,3 +15,4 @@ Review
 # Basic R
 
 - [Introduction to R](04-intro_to_r/04-intro_to_r.html) [R code](04-intro_to_r/04-intro_to_r.R)
+- [ggplot2](05-ggplot2/05-ggplot2.html) [R code](05-ggplot2/05-ggplot2.R)
