@@ -150,8 +150,15 @@ ggplot(d,                       # Note the new data.frame
          y = Length, 
          color = Delivery, 
          shape = Delivery)) + 
-  geom_jitter(width = 0.01) +
+  geom_point(position = position_jitterdodge(
+    jitter.width = 0.005,
+    dodge.width = 0.01           # moves Delivery method left and right of Dose
+  )) +
   scale_x_log10() +
+  scale_color_manual(
+    values = c("Orange Juice" = "orange",
+               "Ascorbic Acid" = "blue")
+  ) +
   geom_smooth(method = "lm") + 
   labs(
     x = "Dose (mg/day)", 
@@ -167,14 +174,21 @@ ggplot(d,                       # Note the new data.frame
 
 ## ---------------------------------------------------------------------------------------
 # Save to an object
-g <- ggplot(d,                      
+g <- ggplot(d,                       # Note the new data.frame
        aes(
          x = Dose, 
          y = Length, 
          color = Delivery, 
          shape = Delivery)) + 
-  geom_jitter(width = 0.01) +
+  geom_point(position = position_jitterdodge(
+    jitter.width = 0.005,
+    dodge.width = 0.01
+  )) +
   scale_x_log10() +
+  scale_color_manual(
+    values = c("Orange Juice" = "orange",
+               "Ascorbic Acid" = "blue")
+  ) +
   geom_smooth(method = "lm") + 
   labs(
     x = "Dose (mg/day)", 
@@ -186,13 +200,6 @@ g <- ggplot(d,
   theme(legend.position = c(0.8, 0.2),
         legend.background = element_rect(fill = "white",
                                         color = "black"))
-g <- ggplot(d,                      
-       aes(
-         x = Dose, 
-         y = Length, 
-         color = Delivery, 
-         shape = Delivery)) + 
-  geom_jitter()
 
 # Write to a file
 fn <- "toothgrowth.png"
