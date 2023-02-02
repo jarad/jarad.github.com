@@ -15,6 +15,7 @@ dim(ToothGrowth)
 head(ToothGrowth)
 tail(ToothGrowth)
 summary(ToothGrowth)
+str(ToothGrowth)
 
 
 ## ---- eval=FALSE------------------------------------------------------------------------
@@ -40,6 +41,16 @@ ggplot(ToothGrowth, aes(x = len)) +
 ## ---------------------------------------------------------------------------------------
 ggplot(ToothGrowth, aes(x = len)) + 
   geom_histogram(binwidth = 1)
+
+
+## ---------------------------------------------------------------------------------------
+ggplot(ToothGrowth, aes(x = len)) + 
+  geom_histogram(aes(y = ..density..), binwidth = 1) +
+  stat_function(fun = dnorm,
+                args = list(mean = mean(ToothGrowth$len),
+                            sd   = sd(  ToothGrowth$len)),
+                col = "red",
+                linewidth = 2)
 
 
 ## ---------------------------------------------------------------------------------------
@@ -115,9 +126,46 @@ ggplot(ToothGrowth, aes(x = dose, y = len)) +
 
 
 ## ---------------------------------------------------------------------------------------
+ggplot(ToothGrowth, aes(x = dose, y = len)) + 
+  geom_jitter(width=0.01) +
+  scale_y_log10()
+
+
+## ---------------------------------------------------------------------------------------
+ggplot(ToothGrowth, aes(x = dose, y = len)) + 
+  geom_jitter(width=0.01) +
+  scale_x_log10() +
+  scale_y_log10()
+
+
+## ---------------------------------------------------------------------------------------
 ggplot(ToothGrowth, aes(x = dose, y = len, color = supp, shape = supp)) + 
   geom_jitter(width=0.01) +
   scale_x_log10()
+
+
+## ---------------------------------------------------------------------------------------
+ggplot(ToothGrowth, aes(x = dose, y = len, color = supp, shape = supp)) + 
+  geom_jitter(width=0.01) +
+  scale_color_manual(
+    values = 
+      c(
+        OJ = "orange",
+        VC = "blue"
+      )) +
+  scale_shape_manual(
+    values = 
+      c(
+        OJ = 21,
+        VC = 7
+      )
+  ) +
+  scale_x_log10()
+
+
+## ---- eval=FALSE------------------------------------------------------------------------
+## ?points
+## colors()
 
 
 ## ---------------------------------------------------------------------------------------
@@ -174,7 +222,7 @@ ggplot(d,                       # Note the new data.frame
 
 ## ---------------------------------------------------------------------------------------
 # Save to an object
-g <- ggplot(d,                       # Note the new data.frame
+g <- ggplot(d,                      
        aes(
          x = Dose, 
          y = Length, 
@@ -230,4 +278,16 @@ ggplot(diamonds,
 ## ---------------------------------------------------------------------------------------
 m <- lm(log(price) ~ log(carat) * depth * cut * color, data = diamonds)
 drop1(m, test = "F")
+
+
+## ---------------------------------------------------------------------------------------
+ggplot(diamonds, 
+       aes(
+         x = carat,
+         y = price)) +
+  geom_hex() + # requires `hexbin` package
+  facet_grid(color ~ cut) + 
+  scale_y_log10() + 
+  scale_x_log10() +
+  theme_bw()
 
