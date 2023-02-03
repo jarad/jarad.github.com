@@ -1545,7 +1545,49 @@ data.</p>
 <div id="binomial-model" class="section level2">
 <h2>Binomial model</h2>
 <p>The authors run directly to GLMs, but perhaps it is instructive to
-think about how a catalytic prior works in a binomial model.</p>
+think about how a catalytic prior works in a binomial model. So suppose
+<span class="math inline">\(Y\sim Bin(n,\theta)\)</span> with unknown
+<span class="math inline">\(\theta\)</span>. We generate <span class="math inline">\(\tilde{Y} \sim Bin(m,\psi)\)</span> for some value
+<span class="math inline">\(\psi\)</span> (it wouldn’t be
+<em>simpler</em> if we didn’t use a plug-in value). The posterior is
+<span class="math display">\[
+p(\theta|y) \propto
+\theta^{\tilde{y}\tau/m}(1-\theta)^{(m-\tilde{y})\tau/m}\theta^{y}(1-\theta)^{n-y}
+=
+\theta^{\hat{p}_{\tilde{y}}\tau+y}(1-\theta)^{(1-\hat{p}_{\tilde{y}})\tau
++ n-y}
+\]</span> where <span class="math inline">\(\hat{p}_{\tilde{y}} =
+\tilde{y}/m\)</span>.</p>
+<p>The posterior is then <span class="math inline">\(\theta|y \sim
+Be(\hat{p}_{\tilde{y}}\tau+y, (1-\hat{p}_{\tilde{y})\tau +
+n-y)\)</span>. Of course, in this simple example, we could just use
+<span class="math inline">\(\psi\)</span> instead of <span class="math inline">\(\hat{p}_\tilde{y}\)</span>.</p>
+<p>It is clear from this formulation that <span class="math inline">\(\tau=1\)</span> allows the catalytic prior to be
+worth the equivalent of 1 observation.</p>
+<p>In this example, the data actually had no role in constructing the
+prior.</p>
+</div>
+<div id="normal-model" class="section level2">
+<h2>Normal model</h2>
+<p>Assume <span class="math inline">\(Y_i \stackrel{ind}{\sim}
+N(\mu,\sigma^2)\)</span>. To construct a simpler model, we can set
+either <span class="math inline">\(\mu\)</span> or <span class="math inline">\(\sigma^2\)</span> to some value. As our simpler
+model, let’s use <span class="math inline">\(N(\mu,1)\)</span>. Assuming
+an improper uniform prior on <span class="math inline">\(\mu\)</span>,
+we have a posterior predictive distribution based on <span class="math inline">\(y\)</span> of <span class="math inline">\(N(\overline{y}, 1/n+1)\)</span>. So, we simulate
+<span class="math inline">\(\tilde{y}_i \stackrel{ind}{\sim}
+N(\overline{y}, 1/n+1)\)</span> for <span class="math inline">\(i=1,\ldots,n\)</span>.</p>
+<p>Our posterior is then <span class="math display">\[\begin{array}{rl}
+p(\theta|y) &amp;\propto \left[\prod_{i=1}^m (\sigma^2)^{-1/2}
+\exp\left(-\frac{1}{2\sigma^2}(\tilde{y}_i-\mu)^2\right)\right]^{\tau/m}
+\left[\prod_{i=1}^m (\sigma^2)^{-1/2}
+\exp\left(-\frac{1}{2\sigma^2}(y_i-\mu)^2\right)\right] \\
+&amp;= (\sigma^2)^{-(\tau+n)/2}\exp(-\frac{1}{2\sigma^2}([\tau +
+n]\mu^2-2\mu[\tau\overline{\tilde{y}}+n\overline{y}]))
+\end{array}.\]</span></p>
+<p>Thus, <span class="math inline">\(\mu|y,\sigma^2 \sim
+N\left(\frac{\tau\overline{\tilde{y}}+n\overline{y}]}{\tau+n},
+\sigma^2/[\tau+n]\right)\)</span> and <span class="math inline">\(\sigma^2|y \sim IG([\tau+n]/2, ?)\)</span>.</p>
 </div>
 </div>
 
