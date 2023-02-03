@@ -73,8 +73,8 @@ p(\theta|y) \propto \theta^{\tilde{y}\tau/m}(1-\theta)^{(m-\tilde{y})\tau/m}\the
 $$
 where $\hat{p}_{\tilde{y}} = \tilde{y}/m$.
 
-The posterior is then $\theta|y \sim Be(\hat{p}_{\tilde{y}}\tau+y, (1-\hat{p}_{\tilde{y})\tau + n-y)$.
-Of course, in this simple example, we could just use $\psi$ instead of $\hat{p}_\tilde{y}$. 
+The posterior is then $\theta|y \sim Be(\hat{p}_{\tilde{y}}\tau+y, (1-\hat{p}_{\tilde{y}})\tau + n-y)$.
+The *population catalytic prior* replaces $\hat{p}_\tilde{y}$ with $\psi$. 
 
 It is clear from this formulation that $\tau=1$ allows the catalytic prior to
 be worth the equivalent of 1 observation. 
@@ -96,8 +96,13 @@ Our posterior is then
 $$\begin{array}{rl}
 p(\theta|y) &\propto \left[\prod_{i=1}^m (\sigma^2)^{-1/2} \exp\left(-\frac{1}{2\sigma^2}(\tilde{y}_i-\mu)^2\right)\right]^{\tau/m}
 \left[\prod_{i=1}^m (\sigma^2)^{-1/2} \exp\left(-\frac{1}{2\sigma^2}(y_i-\mu)^2\right)\right] \\
-&= (\sigma^2)^{-(\tau+n)/2}\exp(-\frac{1}{2\sigma^2}([\tau + n]\mu^2-2\mu[\tau\overline{\tilde{y}}+n\overline{y}]))
+&\propto (\sigma^2)^{-(\tau+n)/2}\exp(-\frac{1}{2\sigma^2}([\tau + n]\mu^2-2\mu[\tau\overline{\tilde{y}}+n\overline{y}]))
+\exp\left(-\frac{1}{2\sigma^2}\left[\frac{\tau}{m}\sum_{i=1}^m (\tilde{y}_i - \overline{\tilde{y}}_i)^2 + \sum_{i=1}^n (y_i-\overline{y})^2 \right]\right)
 \end{array}.$$
 
 Thus, $\mu|y,\sigma^2 \sim N\left(\frac{\tau\overline{\tilde{y}}+n\overline{y}]}{\tau+n}, \sigma^2/[\tau+n]\right)$ 
-and $\sigma^2|y \sim IG([\tau+n]/2, ?)$.
+and $\sigma^2|y \sim IG([\tau+n]/2, \frac{\tau}{m}\sum_{i=1}^m (\tilde{y}_i - \overline{\tilde{y}}_i)^2 + (n-1)s^2)$ 
+where $s^2$ is the sample variance. 
+As $m\to\infty$ we have $\mu|y,\sigma^2 \sim N\left(\overline{y}, \sigma^2/[\tau+n]\right)$ and
+$\sigma^2|y \sim IG([\tau+n]/2, \tau 1 + (n-1)s^2)$
+(or something pretty similar).
