@@ -1,0 +1,411 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Basic R - dplyr"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](06-dplyr.R)
+
+We will start with loading up the necessary packages using the `library()` 
+command.
+
+```{r}
+library("tidyverse")
+```
+
+# Data transformation
+
+The dplyr package provides a number of convenience functions for dealing with
+`data.frame` objects in R. 
+As a reminder, a `data.frame` is a special matrix that allows different
+columns to have different data types. 
+
+Although, we will focus on the [dplyr package](https://dplyr.tidyverse.org/), 
+you may want to look up the [data.table package](https://cran.r-project.org/web/packages/data.table/index.html). 
+Generally, dplyr tries to make the code readable while data.table tries to 
+make the most efficient code. 
+
+Technically, the output of a dplyr function is a `tibble` which is a 
+specialized `data.frame`. 
+
+## tibble
+
+```{r, eval=FALSE}
+?tibble
+```
+
+```{r}
+ToothGrowth
+```
+
+vs 
+
+```{r}
+as_tibble(ToothGrowth)
+```
+
+
+
+## Filtering observations
+
+Filter means to remove a set of observations according to some criterion. 
+
+### base R
+
+```{r}
+ToothGrowth[ToothGrowth$supp == "VC", ]
+subset(ToothGrowth, supp == "VC")
+```
+
+or
+
+```{r}
+ToothGrowth[ToothGrowth$len < 10, ]
+subset(ToothGrowth, len < 10)
+```
+
+```{r}
+subset(ToothGrowth, len < 10 & supp == "VC") # using the AND operator &
+```
+
+### dplyr::filter
+
+Note that `dplyr::filter` masks `stats::filter()`. 
+We will be explicit here and call the `filter` function from the `dplyr` package
+using the double colon operator.
+
+```{r, eval=FALSE}
+?`::`
+```
+
+```{r}
+dplyr::filter(ToothGrowth, supp == "VC")
+```
+
+```{r}
+dplyr::filter(ToothGrowth, len < 10)
+```
+
+```{r}
+dplyr::filter(ToothGrowth, len < 10, supp == "VC")
+```
+
+## arrange
+
+Arrange arranges the `data.frame` according to a variable. 
+
+### base R
+
+```{r}
+ToothGrowth[order(ToothGrowth$len), ]
+```
+
+What happens if we want to arrange by supp and then by dose?
+I don't know. 
+
+### dplyr::arrange
+
+```{r}
+arrange(ToothGrowth, len)
+```
+
+```{r}
+arrange(ToothGrowth, supp, dose)
+```
+
+## Selecting variables
+
+Here we will select which columns to keep. 
+
+### base::subset
+
+```{r}
+ToothGrowth[, c("len","dose")]
+```
+
+```{r}
+ToothGrowth[, c(1,3)]
+```
+
+
+```{r}
+ToothGrowth[, -2]
+```
+
+```{r}
+subset(ToothGrowth, select = c(len, dose))
+```
+
+
+### dplyr::select
+
+```{r}
+dplyr::select(ToothGrowth, len, dose)
+```
+
+```{r}
+dplyr::select(ToothGrowth, c(1,3))
+```
+
+```{r}
+dplyr::select(ToothGrowth, -2)
+```
+
+```{r}
+dplyr::select(ToothGrowth, -supp)
+```
+
+#### tidyselect::starts_with()
+
+When data.frames get large, it is annoying to type all the variables you 
+want to keep. 
+Often times we want to keep a collection of variables that have certain 
+properties in their name. 
+
+```{r}
+select(ToothGrowth, starts_with("len"))
+```
+
+There are a variety of these helper functions, see
+
+```{r, eval=FALSE}
+?starts_with
+```
+
+## Renaming variables
+
+Many times variable names needed to be modified. 
+
+### base::names()
+
+```{r}
+d <- ToothGrowth
+names(d)
+names(d) <- c("Length","Delivery","Dose")
+head(d)
+```
+
+Valid variable names, see
+
+```{r, eval=FALSE}
+?make.names
+```
+
+```{r}
+names(d)[2] <- "Delivery Method"
+names(d)
+```
+
+This can get you into trouble
+
+```{r, error=TRUE}
+d$Delivery Method
+```
+
+but you can use "bad" variable names 
+
+```{r}
+d$`Delivery Method`
+```
+
+### dplyr::rename()
+
+```{r}
+d <- ToothGrowth
+names(d)
+
+d <- rename(d,
+  Length = len,
+  `Delivery Method` = supp,
+  Dose = dose
+)
+names(d)
+```
+
+
+
+## Adding and modifying variables
+
+We will often want to create new variables or modify existing variables. 
+
+### base::`$`
+
+We have already seen the extract operator to extract a column out of a 
+data.frame.
+Here we will use it to create a new variable. 
+
+
+```{r, eval=FALSE}
+d <- ToothGrowth
+d$`Length (mm)` = d$len / 1000 # original length was in microns
+head(d)
+```
+
+### dplyr::mutate()
+
+```{r}
+mutate(ToothGrowth, `Length (mm)` = len)
+```
+
+
+## Data summaries
+
+Often we will want to create summaries of our data.
+
+### base::mean
+
+```{r}
+mean(ToothGrowth$len)
+```
+
+```{r}
+table(ToothGrowth$supp)
+```
+
+
+
+### dplyr::summarize()
+
+```{r}
+dplyr::summarize(ToothGrowth, mean_len = mean(len))
+```
+
+```{r}
+dplyr::summarize(
+  ToothGrowth,
+  n_VC = sum(supp == "VC"),
+  n_OJ = sum(supp == "OJ"),               
+)
+```
+
+
+
+# Data pipelines
+
+According to [IBM](https://www.ibm.com/topics/data-pipeline), 
+
+> A data pipeline is a method in which raw data is ingested from various data sources and then ported to data store, like a data lake or data warehouse, for analysis. Before data flows into a data repository, it usually undergoes some data processing. This is inclusive of data transformations, such as filtering, masking, and aggregations, which ensure appropriate data integration and standardization.
+
+## %>%
+
+The pipe operator is a simple function that takes everything on the left-hand
+side (lhs) of the pipe and "pipes" it as the first argument to the function
+on the right-hand side. 
+
+```{r}
+16 %>% sqrt()
+```
+
+This becomes especially useful when used in conjuction with additional pipe
+operators. 
+
+```{r}
+256 %>% sqrt() %>% sqrt()
+```
+
+The original pipe operator has moved around a bit, but (I believe) it is now
+defined in the [magrittr](https://cran.r-project.org/web/packages/magrittr/index.html).
+Now, base R has its own pipe operator as of version 4.1.0.
+
+```{r}
+16 |> sqrt()
+```
+
+Here is a [brief history of the pipe operator in R](http://adolfoalvarez.cl/blog/2021-09-16-plumbers-chains-and-famous-painters-the-history-of-the-pipe-operator-in-r/). 
+
+
+## Combining operations
+
+```{r}
+ToothGrowth %>%
+  filter(dose == 0.5, supp == "VC") %>%
+  summarize(
+    n = n(), 
+    mean = mean(len),
+    sd = sd(len))
+```
+
+
+## split-apply-combine
+
+Often, we want to split our data up, apply some operations to it, 
+and then combine the splits back together. 
+In the `ToothGrowth` data.frame, 
+we may want to calculate some summary statistics for both delivery methods. 
+
+### dplyr::group_by()
+
+```{r}
+ToothGrowth %>%
+  group_by(supp, dose) %>%
+  summarize(
+    n = n(),
+    mean = mean(len),
+    sd = sd(len),
+    .groups = "drop"
+  ) 
+```
+
+## Advanced plotting
+
+
+```{r}
+s <- ToothGrowth %>%
+  group_by(supp, dose) %>%
+  summarize(
+    n = n(),
+    mean = mean(len),
+    sd = sd(len),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    ucl = mean + qt(.975, n-1)*sd/sqrt(n),
+    lcl = mean - qt(.975, n-1)*sd/sqrt(n)
+  )
+
+dw <- 0.1
+ggplot(s, 
+       aes(x = dose, color = supp, shape = supp)) +
+  
+  geom_point(
+    data = ToothGrowth,
+    aes(y = len),
+    position = position_jitterdodge(dodge.width = dw, jitter.width = 0.05)) +
+  
+  geom_pointrange(
+    data = s, 
+    aes(y = mean, ymin = lcl, ymax = ucl),
+    position = position_dodge(width = dw), 
+    shape = 0,
+    show.legend = FALSE
+    ) +
+  
+  geom_line(
+    aes(y = mean, group = supp),
+    position = position_dodge(width = dw)) +
+  
+  labs(
+    x = "Dose (mg/day)", 
+    y = "Length (\u00b5m)", # unicode \u00b5 is the Greek letter mu
+    title = "Odontoblast length vs Vitamin C in Guinea Pigs",
+    color = "Delivery Method",
+    shape = "Delivery Method") +
+  
+  theme_bw() +
+  theme(legend.position = c(0.8, 0.2),
+        legend.background = element_rect(fill = "white",
+                                        color = "black"))
+  
+```
+
+# 
