@@ -14,12 +14,12 @@ you can find the source files
 
 ##Review
 
-- [Probability](01-probability/01-probability.html) [R code](01-probability/01-probability.R)
+- [Probability](01-probability/01-probability.html) [![R Code](rstudio.png)](01-probability/01-probability.R)
 - [Statistics](02-statistics/02-statistics.html) [R code](02-statistics/02-statistics.R)
 - [Regression](03-regression/03-regression.html) [R code](03-regression/03-regression.R)
 
 ## Basic R
 
 - [Introduction to R](04-intro_to_r/04-intro_to_r.html) [R code](04-intro_to_r/04-intro_to_r.R)
-- [ggplot2](05-ggplot2/05-ggplot2.html) [R code](05-ggplot2/05-ggplot2.R)
-- [dplyr](06-dplyr/06-dplyr.html) [R code](06-dplyr/06-dplyr.R)
+- [Data Visualization](05-ggplot2/05-ggplot2.html) [R code](05-ggplot2/05-ggplot2.R)
+- [Data Transformation](06-dplyr/06-dplyr.html) [R code](06-dplyr/06-dplyr.R)
