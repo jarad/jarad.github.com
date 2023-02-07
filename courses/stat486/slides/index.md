@@ -12,7 +12,7 @@ rmarkdown files look like,
 you can find the source files 
 [in the courses/stat486/slides/ folder in the github repository for my website](https://github.com/jarad/jarad.github.com/tree/master/courses/stat486/slides). 
 
-##Review
+## Review
 
 - [Probability](01-probability/01-probability.html) [![R Code](rstudio.png)](01-probability/01-probability.R)
 - [Statistics](02-statistics/02-statistics.html) [R code](02-statistics/02-statistics.R)
