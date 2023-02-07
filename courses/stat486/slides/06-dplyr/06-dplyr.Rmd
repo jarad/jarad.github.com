@@ -314,7 +314,7 @@ operators.
 ```
 
 The original pipe operator has moved around a bit, but (I believe) it is now
-defined in the [magrittr](https://cran.r-project.org/web/packages/magrittr/index.html).
+defined in the [magrittr](https://cran.r-project.org/web/packages/magrittr/index.html) package.
 Now, base R has its own pipe operator as of version 4.1.0.
 
 ```{r}
@@ -349,30 +349,35 @@ we may want to calculate some summary statistics for both delivery methods.
 ToothGrowth %>%
   group_by(supp, dose) %>%
   summarize(
-    n = n(),
+    n    = n(),
     mean = mean(len),
-    sd = sd(len),
+    sd   = sd(len),
     .groups = "drop"
   ) 
 ```
 
 ## Advanced plotting
 
+First construct necessary data.frames
 
 ```{r}
 s <- ToothGrowth %>%
   group_by(supp, dose) %>%
   summarize(
-    n = n(),
+    n    = n(),
     mean = mean(len),
-    sd = sd(len),
+    sd   = sd(len),
     .groups = "drop"
   ) %>%
   mutate(
     ucl = mean + qt(.975, n-1)*sd/sqrt(n),
     lcl = mean - qt(.975, n-1)*sd/sqrt(n)
   )
+```
 
+Then construct the plot
+
+```{r}
 dw <- 0.1
 ggplot(s, 
        aes(x = dose, color = supp, shape = supp)) +
@@ -394,6 +399,8 @@ ggplot(s,
     aes(y = mean, group = supp),
     position = position_dodge(width = dw)) +
   
+  scale_x_log10() +
+  
   labs(
     x = "Dose (mg/day)", 
     y = "Length (\u00b5m)", # unicode \u00b5 is the Greek letter mu
@@ -405,7 +412,51 @@ ggplot(s,
   theme(legend.position = c(0.8, 0.2),
         legend.background = element_rect(fill = "white",
                                         color = "black"))
-  
 ```
 
-# 
+## Advanced tables
+
+The `s`  data.frame is not quite ideal for creating a table. 
+We will preview an approach called `pivoting` from the `tidyr` package. 
+
+```{r}
+t <- s %>%
+  mutate(ci = paste0(format(mean, digits = 1, nsmall = 1), 
+                    " (", 
+                    format(lcl,  digits = 1, nsmall = 1),
+                    ", ",
+                    format(ucl,  digits = 1, nsmall = 1),
+                    ")")) %>%
+  tidyr::pivot_wider(id_cols = dose, names_from = supp, values_from = ci) %>%
+  rename(
+    `Orange Juice` = "OJ",
+    `Ascorbic Acid` = "VC",
+    Dose = dose
+  )
+
+t
+```
+
+The output above is just the data.frame in R. 
+We can construct better looking tables using a variety of methods. 
+
+```{r}
+library("xtable")
+cap <- "Mean odonotoblast length (\u00b5m) with 95% CIs."
+xt <- xtable::xtable(t, 
+             caption=cap,
+             align="rr|rr")
+```
+
+```{r, results='asis'}
+print(xt, type = "html", 
+      include.rownames = FALSE,
+      caption.placement = "top")
+```
+
+Using knitr::kable
+
+```{r}
+library("knitr")
+knitr::kable(t, caption = cap, align = "r")
+```
