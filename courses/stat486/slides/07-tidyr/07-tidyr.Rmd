@@ -1,0 +1,232 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Basic R - tidyr"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](07-tidyr.R)
+
+We will start with loading up the necessary packages using the `library()` 
+command.
+
+```{r}
+library("tidyverse")
+```
+
+# Read data 
+
+Before, we can start reading data in from our file system, 
+we need to 1) understand the concept of a working directory and 
+2) have a file that we can read. 
+
+## Working directory
+
+
+
+```{r}
+getwd()
+```
+
+### Set working directory
+
+You can set the working directory in RStudio by going to 
+
+    Session > Set Working Directory > Choose Working Directory
+
+Alternatively, we can use the `setwd()` function. 
+
+```{r, eval=FALSE}
+?setwd
+```
+
+Use RStudio projects!! This will set your working directory to the same 
+folder every time you open that project. 
+
+
+## Write csv
+
+In order to read a file, we need an appropriate file. 
+Comma-separated value (csv) files are a de-facto standard for transporting 
+data. 
+In this file type, each column is separated by a comma and each row is 
+separated by a newline. 
+
+```{r}
+readr::write_csv(ToothGrowth, file = "ToothGrowth.csv")
+```
+
+
+
+## Read csv
+
+```{r}
+d <- readr::read_csv("ToothGrowth.csv")
+```
+
+```{r}
+all.equal(ToothGrowth, d)
+```
+
+```{r}
+str(ToothGrowth)
+str(d)
+```
+
+### Options
+
+```{r}
+d <- readr::read_csv("ToothGrowth.csv",
+                     col_types = cols(
+                       len = col_double(),
+                       supp = col_factor(),
+                       dose = col_double()
+                     ))
+```
+
+## Read Excel
+
+Check out 
+
+```{r, eval=FALSE}
+install.packages("readxl")
+?readxl::read_excel
+```
+
+
+## Databases
+
+To read other types of files, including databases, 
+start with [these suggestions in R4DS](https://r4ds.had.co.nz/data-import.html#other-types-of-data). 
+
+
+# CSV file format
+
+- commas
+- line return
+- header
+- quotes
+
+
+
+
+
+
+
+# Tidy data
+
+
+
+## Bind
+
+### Bind rows
+
+```{r}
+dA <- ToothGrowth %>% filter(supp == "VC")
+dB <- ToothGrowth %>% filter(supp == "OJ")
+bind_rows(dA, dB)
+```
+
+```{r}
+d <- list(
+  A = ToothGrowth %>% filter(supp == "VC", dose == 0.5),
+  B = ToothGrowth %>% filter(supp == "VC", dose == 1),
+  C = ToothGrowth %>% filter(supp == "VC", dose == 2),
+  D = ToothGrowth %>% filter(supp == "OJ", dose == 0.5),
+  E = ToothGrowth %>% filter(supp == "OJ", dose == 1),
+  F = ToothGrowth %>% filter(supp == "OJ", dose == 2)
+)
+```
+
+```{r}
+class(d)
+d[[1]]
+d$B
+```
+
+```{r}
+bind_rows(d)
+```
+
+### Bind columns
+
+Hmm...maybe don't bother
+
+## Join
+
+Data sets are often in multiple files with each file contain some of the
+information. 
+
+### Left_join
+
+### Right_join
+
+### Inner_join
+
+### Anti-join
+
+
+## Transform
+
+
+
+### Wider
+
+### Longer
+
+
+# Binary file formats
+
+Generally, I don't suggest story data in binary formats,
+but these formats can be useful to store intermediate data.
+For example, if there is some important results from a statistical 
+analysis that takes a long time to perform 
+(I'm looking at you Bayesians)
+you might want to store the results in a binary format. 
+
+## RData
+
+There are two functions that will save `RData` files:
+`save()` and `save.image()`. 
+The latter will save everything in the environment while the former will 
+only save what it is specifically told to save. 
+Both of these are read using the `load()` function. 
+
+```{r}
+a <- 1
+save(a, file = "a.RData")
+rm(a)
+```
+
+## RDS
+
+An RDS file contains a single R object. 
+These files can be written using `saveRDS()` and read using `readRDS()`.
+
+```{r}
+saveRDS(a, file = "a.RDS")
+```
+
+When you read this file, you need to save it into an R object. 
+
+```{r}
+b <- readRDS("a.RDS")
+```
+
+## Cleanup 
+
+```{a}
+load("a.RData")
+unlink("a.RData")
+```
+
+
