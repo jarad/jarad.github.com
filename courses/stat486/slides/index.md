@@ -7,7 +7,7 @@ tagline: Slides and Code
 
 # Slides
 
-If the slides here aren't updated or you are just interestd in what the 
+If the slides here aren't updated or you are just interested in what the 
 rmarkdown files look like, 
 you can find the source files 
 [in the courses/stat486/slides/ folder in the github repository for my website](https://github.com/jarad/jarad.github.com/tree/master/courses/stat486/slides). 
