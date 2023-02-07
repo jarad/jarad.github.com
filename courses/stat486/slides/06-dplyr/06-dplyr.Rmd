@@ -254,7 +254,7 @@ head(d)
 ### dplyr::mutate()
 
 ```{r}
-mutate(ToothGrowth, `Length (mm)` = len)
+mutate(ToothGrowth, `Length (mm)` = len / 1000)
 ```
 
 
@@ -421,13 +421,14 @@ We will preview an approach called `pivoting` from the `tidyr` package.
 
 ```{r}
 t <- s %>%
-  mutate(ci = paste0(format(mean, digits = 1, nsmall = 1), 
-                    " (", 
-                    format(lcl,  digits = 1, nsmall = 1),
-                    ", ",
-                    format(ucl,  digits = 1, nsmall = 1),
-                    ")")) %>%
-  tidyr::pivot_wider(id_cols = dose, names_from = supp, values_from = ci) %>%
+  mutate(ci = paste0(
+    format(mean, digits = 1, nsmall = 1), " (", 
+    format(lcl,  digits = 1, nsmall = 1), ", ",
+    format(ucl,  digits = 1, nsmall = 1), ")")) %>%
+  tidyr::pivot_wider(
+    id_cols = dose, 
+    names_from = supp, 
+    values_from = ci) %>%
   rename(
     `Orange Juice` = "OJ",
     `Ascorbic Acid` = "VC",
@@ -436,6 +437,8 @@ t <- s %>%
 
 t
 ```
+
+### xtable::xtable
 
 The output above is just the data.frame in R. 
 We can construct better looking tables using a variety of methods. 
@@ -454,7 +457,11 @@ print(xt, type = "html",
       caption.placement = "top")
 ```
 
-Using knitr::kable
+So this table doesn't look so good. 
+If you happen to be using LaTeX, the xtable package produces good-looking tables,
+but the html tables aren't so great (out of the box). 
+
+### knitr::kable
 
 ```{r}
 library("knitr")
