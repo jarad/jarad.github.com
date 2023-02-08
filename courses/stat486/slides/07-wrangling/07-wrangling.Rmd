@@ -1,0 +1,395 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Basic R - Data Wrangling"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](07-wrangling.R)
+
+We will start with loading up the necessary packages using the `library()` 
+command.
+
+```{r}
+library("tidyverse")
+```
+
+# Read data 
+
+Before, we can start reading data in from our file system, 
+we need to 1) understand the concept of a working directory and 
+2) have a file that we can read. 
+
+## Working directory
+
+
+
+```{r}
+getwd()
+```
+
+### Set working directory
+
+You can set the working directory in RStudio by going to 
+
+    Session > Set Working Directory > Choose Working Directory
+
+Alternatively, we can use the `setwd()` function. 
+
+```{r, eval=FALSE}
+?setwd
+```
+
+Use RStudio projects!! This will set your working directory to the same 
+folder every time you open that project. 
+
+
+## Write csv
+
+In order to read a file, we need an appropriate file. 
+Comma-separated value (csv) files are a de-facto standard for transporting 
+data. 
+In this file type, each column is separated by a comma and each row is 
+separated by a newline. 
+
+```{r}
+readr::write_csv(ToothGrowth, file = "ToothGrowth.csv")
+```
+
+
+
+## Read csv
+
+```{r}
+d <- readr::read_csv("ToothGrowth.csv")
+```
+
+```{r}
+all.equal(ToothGrowth, d)
+```
+
+```{r}
+str(ToothGrowth)
+str(d)
+```
+
+### Options
+
+```{r}
+d <- readr::read_csv("ToothGrowth.csv",
+                     col_types = cols(
+                       len = col_double(),
+                       supp = col_factor(),
+                       dose = col_double()
+                     ))
+```
+
+## Read Excel
+
+Check out 
+
+```{r, eval=FALSE}
+install.packages("readxl")
+?readxl::read_excel
+```
+
+
+## Databases
+
+To read other types of files, including databases, 
+start with [these suggestions in R4DS](https://r4ds.had.co.nz/data-import.html#other-types-of-data). 
+
+
+# CSV file format
+
+There is no official standard for CSV file formats, 
+but there are attempts to define a standard or at least outline what is standard.
+
+[Library of Congress](https://www.loc.gov/preservation/digital/formats/fdd/fdd000323.shtml)
+
+[The Internet Society](https://www.rfc-editor.org/rfc/rfc4180)
+
+## Formatting
+
+- commas (or semi-colons)
+- line return (CR or LF, mabye CRLF)
+- header (optional)
+- quotes (optional)
+
+
+## Bad formatting
+
+### Additional rows
+
+The file format only suggests an (optional) header row. 
+Otherwise all rows should strictly be data. 
+
+Some (Canvas....ahem!) add additional row(s) between the header and the data. 
+This should not be done as it makes it difficult for standard software
+including R to read it since data is assumed to immediately come after the
+header.
+
+If you want to include additional rows, you can include rows above the header
+row. 
+See the `skip` argument of `readr::read_csv()`.
+
+#### Subtotals
+
+A common use of spreadsheets is to calculate subtotals either by adding
+additional rows or columns.
+Although these can be removed, it is annoying and therefore should be 
+avoided. 
+Simply calculate subtotals in a different Excel sheet or copy the data over
+to a new Excel sheet. 
+
+
+
+
+# Data wrangling
+
+Data often come in multiple files and need to be *wrangled* to get it into the 
+format necessary for analysis. 
+
+
+
+## Bind
+
+A common issue is that data are created on a periodic basis and each period
+has its own file. 
+In these circumstances, you need to *bind* the data together. 
+
+### Bind rows
+
+```{r}
+dA <- ToothGrowth %>% filter(supp == "VC")
+dB <- ToothGrowth %>% filter(supp == "OJ")
+bind_rows(dA, dB)
+```
+
+```{r}
+d <- list(
+  A = ToothGrowth %>% filter(supp == "VC", dose == 0.5),
+  B = ToothGrowth %>% filter(supp == "VC", dose == 1),
+  C = ToothGrowth %>% filter(supp == "VC", dose == 2),
+  D = ToothGrowth %>% filter(supp == "OJ", dose == 0.5),
+  E = ToothGrowth %>% filter(supp == "OJ", dose == 1),
+  F = ToothGrowth %>% filter(supp == "OJ", dose == 2)
+)
+```
+
+```{r}
+class(d)
+d[[1]]
+d$B
+```
+
+```{r}
+bind_rows(d)
+```
+
+### Bind columns
+
+Hmm...maybe don't bother??
+
+## Join
+
+Data sets are often in multiple files with each file contain some of the
+information. 
+
+### Left_join
+
+The most common join operation I use is `left_join()`. 
+
+Rather than refactoring the `supp` column in `ToothGrowth`, 
+I would probably just create a new tibble that contains the necessary 
+information. 
+
+```{r}
+suppTranslation <- tibble(
+  supp = c("VC","OJ"),
+  `Delivery Method` = c("Ascorbic Acid","Orange Juice")
+)
+```
+
+Now, I can simply `left_join()` these two data sets:
+
+```{r}
+left_join(ToothGrowth, suppTranslation, by = "supp")
+```
+
+### Right_join
+
+Of course, if the tibbles were in a different order 
+(perhaps due to a data pipeline), I could use `right_join()`. 
+
+```{r}
+right_join(suppTranslation, ToothGrowth, by = "supp")
+```
+
+
+### Anti-join
+
+One way to filter observations is to use the `dplyr::filter()` function.
+If the observations you want to remove are already part of a data.frame,
+then you can use the `anti_join()` function. 
+
+```{r}
+len10 <- filter(ToothGrowth, len < 10)
+
+anti_join(ToothGrowth, len10, by = c("len", "supp", "dose"))
+```
+### Other joins
+
+There are also `inner_join()`, `full_join()`, `semi_join()`, and 
+`nest_join()`. I don't use these, but probably I should.
+
+
+## Transform
+
+Another very common need is to convert data from a relatively *wide* format
+to a *long* format for the purpose of visualization or modeling. 
+Wide is generally a more efficient storage structure while most statistical
+software expects a long format. 
+
+For example, the `AirPassengers` data.frame contains monthly air passengers
+across years. 
+
+```{r}
+AirPassengers
+```
+
+Formally, `AirPassengers` is a time series object and thus R treats it a bit
+differently. 
+Let's convert it to a data.frame. 
+Can you understand the piped code below?
+
+```{r}
+months <- c("Jan","Feb","Mar","Apr","May","Jun",
+             "July","Aug","Sep","Oct","Nov","Dec")
+
+d <- AirPassengers %>% 
+  matrix(ncol=12) %>%
+  as.data.frame() %>%
+  setNames(months) %>%
+  mutate(year = 1949:1960) %>%
+  relocate(year)
+```
+
+Now we have a wide data frame, but we will typically want a long data.frame
+for visualization or analysis. 
+
+### Longer
+
+To convert to a longer data.frame where each row is a single observation, 
+we can use `pivot_longer()`. 
+
+```{r}
+dl <- d %>%
+  pivot_longer(Jan:Dec, names_to = "month", values_to = "passengers") %>%
+  mutate(month = factor(month, levels = months)) # to order the months
+```
+
+```{r}
+table(dl$month)
+```
+
+#### Create monthly totals
+
+```{r}
+dl %>%
+  group_by(month) %>%
+  summarize(
+    n = n(),
+    mean = mean(passengers),
+    sd = sd(passengers)
+  ) 
+```
+
+Plot yearly comparisons
+
+```{r}
+ggplot(dl, aes(x = month, y = passengers, 
+               group = year, color = year)) +
+  geom_line() + 
+  scale_y_log10() +
+  theme_bw()
+```
+
+Fit a regression model
+
+```{r}
+m <- lm(log(passengers) ~ year + month, data = dl)
+summary(m)
+```
+
+### Wider
+
+Less often, we want to convert back to a wide format.
+
+```{r}
+dl %>% pivot_wider(id_cols = year, 
+                   names_from = "month", 
+                   values_from = "passengers")
+```
+
+
+# Binary file formats
+
+Generally, I don't suggest story data in binary formats,
+but these formats can be useful to store intermediate data.
+For example, if there is some important results from a statistical 
+analysis that takes a long time to perform 
+(I'm looking at you Bayesians)
+you might want to store the results in a binary format. 
+
+## RData
+
+There are two functions that will save `RData` files:
+`save()` and `save.image()`. 
+The latter will save everything in the environment while the former will 
+only save what it is specifically told to save. 
+Both of these are read using the `load()` function. 
+
+```{r}
+a <- 1
+save(a, file = "a.RData")
+```
+
+## RDS
+
+An RDS file contains a single R object. 
+These files can be written using `saveRDS()` and read using `readRDS()`.
+
+```{r}
+saveRDS(a, file = "a.RDS")
+rm(a)
+```
+
+When you read this file, you need to save it into an R object. 
+
+```{r}
+b <- readRDS("a.RDS")
+```
+
+## Cleanup 
+
+```{r}
+unlink("ToothGrowth.csv")
+unlink("a.RData")
+unlink("a.RDS")
+```
+
+
+
+# Other resources
+
+[Data transformation cheatsheet](https://raw.githubusercontent.com/rstudio/cheatsheets/main/data-transformation.pdf)

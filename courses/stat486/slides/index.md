@@ -23,3 +23,4 @@ you can find the source files
 - [Introduction to R](04-intro_to_r/04-intro_to_r.html) [R code](04-intro_to_r/04-intro_to_r.R)
 - [Data Visualization](05-ggplot2/05-ggplot2.html) [R code](05-ggplot2/05-ggplot2.R)
 - [Data Transformation](06-dplyr/06-dplyr.html) [R code](06-dplyr/06-dplyr.R)
+- [Data Wrangling](07-wrangling/07-wrangling.html) [R code](07-wrangling/07-wrangling.R)
