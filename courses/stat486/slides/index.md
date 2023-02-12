@@ -27,5 +27,10 @@ you can find the source files
 
 ## Programming in R
 
-- Basic Programming
+- [R Objects](08-objects/08-objects.html) [R code](08-objects/08-objects.R)
+- [Logical Operations](09-logical/09-logical.html) [R code](09-logical/09-logical.R)
+- [Control Flow](10-control/10-control.html) [R code](10-control/10-control.R)
+- [Logical Operations](11-functions/11-functions.html) [R code](11-functions/11-functions.R)
+
+
 - Monte Carlo Methods
