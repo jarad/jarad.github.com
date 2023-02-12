@@ -1,0 +1,272 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Logical Operations"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](09-logical.R)
+
+
+
+```{r}
+library("tidyverse")
+```
+
+# TRUE/FALSE
+
+**Always use TRUE/FALSE and not T/F!**
+
+```{r}
+T
+F
+TRUE
+FALSE
+```
+
+T and TRUE appear the same. 
+
+```{r}
+isTRUE(T)
+isTRUE(TRUE)
+```
+
+But T/F can be reassigned. 
+
+```{r}
+T <- FALSE
+
+isTRUE(T)
+```
+
+TRUE/FALSE cannot be reassigned.
+
+```{r, error=TRUE}
+TRUE <- FALSE
+```
+
+The reason is because R has a short list of reserved words
+
+```{r}
+?Reserved
+```
+
+
+
+# NOT (!)
+
+```{r NOT}
+!TRUE
+!FALSE
+```
+
+# OR (|)
+
+```{r OR}
+TRUE | TRUE
+TRUE | FALSE
+FALSE | TRUE
+FALSE | FALSE
+```
+
+# AND (&)
+
+```{r AND}
+TRUE & TRUE
+TRUE & FALSE
+FALSE & TRUE
+FALSE & FALSE
+```
+
+# XOR (xor)
+
+```{r XOR}
+xor(TRUE, TRUE)
+xor(TRUE, FALSE)
+xor(FALSE, TRUE)
+xor(FALSE, FALSE)
+```
+
+# Multiple comparisons
+
+## Elementwise comparisons
+
+The operations above perofrm elementwise comparisons.
+
+```{r}
+b <- c(TRUE,FALSE)
+x <- rep(b, times = 2)
+y <- rep(b, each = 2)
+x
+y
+
+x | y
+x & y
+xor(x,y)
+!x
+```
+
+## Left-to-right comparison
+
+If you want left-to-right comparisons, 
+you can use `&&` and `||`.
+
+```{r}
+TRUE && TRUE && TRUE
+TRUE && TRUE && FALSE
+TRUE && FALSE && TRUE
+FALSE && FALSE && FALSE
+
+TRUE || TRUE || TRUE
+FALSE || FALSE || TRUE
+FALSE || FALSE || FALSE
+```
+
+You will get a warning if you try to pass a vector to these 
+left-to-right comparisons. 
+
+```{r, error=TRUE}
+c(TRUE,FALSE) && c(TRUE,TRUE)
+```
+
+## any()
+
+```{r}
+any(c(TRUE,   TRUE,  TRUE,  TRUE))
+any(c(TRUE,  FALSE, FALSE, FALSE))
+any(c(FALSE, FALSE, FALSE, FALSE))
+```
+
+## all()
+
+```{r}
+all(c(TRUE,   TRUE,  TRUE,  TRUE))
+all(c(TRUE,  FALSE, FALSE, FALSE))
+all(c(FALSE, FALSE, FALSE, FALSE))
+```
+
+
+# Comparisons
+
+## Character
+
+```{r}
+"a" == "a"
+"a" != "a"
+"a" == ""
+"a" != "b"
+```
+
+### Partial matching
+
+```{r}
+grepl("a", "abcd")
+grepl("a", letters)
+grepl("a", LETTERS, ignore.case = TRUE)
+```
+
+
+
+
+## Numeric
+
+```{r}
+a <- 1
+b <- 2
+
+a < b
+a > b
+a <= b
+a >= b
+```
+
+### Equality
+
+```{r}
+a == 1
+a == 2
+a != 1
+a != 2
+
+a == b
+a != b
+```
+
+Be careful with double precision 
+
+```{r}
+sin(0)    == 0
+sin(2*pi) == 0
+```
+
+```{r}
+abs(sin(2*pi) - 0) < .Machine$double.eps^0.5
+```
+
+```{r}
+near(sin(2*pi), 0)
+```
+
+
+
+
+# Force TRUE/FALSE
+
+Not all seemingly logical functions return TRUE/FALSE.
+
+```{r}
+all.equal(1,1)
+all.equal(1,2)
+
+all(c(TRUE, FALSE))
+all(c(TRUE, FALSE, NA))
+all(c(TRUE, TRUE,  NA))
+```
+
+This can cause issues in flow control
+
+```{r, error=TRUE}
+if (all(c(TRUE, TRUE,  NA))) {
+  # Do something
+}
+```
+
+## isTRUE()
+
+The `isTRUE()` and `isFALSE()` functions ALWAYS resolve to TRUE/FALSE. 
+
+```{r}
+isTRUE(TRUE)
+isTRUE(NA)
+isTRUE(1)
+isTRUE(as.logical(NA))
+isTRUE(as.logical(1))  # all non-zero numeric values are coerced to TRUE
+isTRUE(as.logical(2))  
+isTRUE(as.logical(1e-16))  
+
+isFALSE(FALSE)
+isFALSE(NA)
+isFALSE(1)
+isFALSE(as.logical(NA))
+isFALSE(as.logical(0))  # only 0 is coerced to FALSE
+isFALSE(as.logical(2)) 
+```
+
+```{r}
+isTRUE(all.equal(1,2))
+isFALSE(all.equal(1,2))
+
+isFALSE(!all.equal(1,1))
+
+isTRUE(NA)
+isFALSE(NA)
+```
