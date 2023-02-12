@@ -1,0 +1,344 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Control Flow"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](10-control.R)
+
+
+
+```{r}
+library("tidyverse")
+```
+
+
+Control structures in R provide conditional flow as well as looping. 
+An R `expression` is evaluated within the loop or as the result of a
+conditional statement. 
+
+The following are example R expressions
+
+```{r}
+# First expression
+1+2
+
+# Second expression
+a <- 1; b <- 2; a+b
+
+# Third expression
+{
+  a <- 1
+  b <- 2
+  a + b
+}
+```
+
+See 
+
+```{r}
+?expression
+```
+
+# Conditionals
+
+Conditionals include if-else type statements
+
+## if
+
+```{r}
+if (TRUE) {
+  print("This was true!")
+}
+```
+
+```{r}
+this <- TRUE
+if (this) {
+  print("`this` was true!")
+}
+```
+
+```{r}
+if (1<2) {
+  print("one is less than two!")
+}
+if (1>2) {
+  print("one is greater than two!")
+}
+```
+
+Using variables
+
+```{r}
+a <- 1
+b <- 2
+if (a < 2) {
+  print("`a` is less than 2!")
+}
+if (a < b) {
+  print("`a` is less than `b`!")
+}
+```
+
+## if-else
+
+```{r}
+if (a < b) {
+  print("`a` is less than `b`!")
+} else {
+  print("`b` is not less than `a`!")
+}
+```
+
+
+```{r}
+if (a > b) {
+  print("`a` is greater than `b`!")
+} else {
+  print("`a` is not greater than `b`!")
+}
+```
+
+```{r}
+if (a > b) {
+  print("`a` is greater than `b`!")
+} else if (dplyr::near(a,b)) {
+  print("`a` is near `b`!")
+} else {
+  print("`a` must be greater than b")
+}
+```
+
+You can omit the brackets { } for single line expressions
+
+```{r}
+if (a < b)
+  print("`a` is less than `b`!")
+```
+
+## ifelse
+
+The `ifelse()` function takes a logical vector as a first argument and then
+two scalars. 
+
+```{r}
+ifelse(c(TRUE, FALSE, TRUE), "this was true", "this was false")
+```
+
+
+## switch
+
+A rarely used function is `switch()` which implements a case-switch comparison.
+
+```{r}
+this <- "a"
+switch(this,
+       a = "`this` is `a`",
+       b = "`this` is `b`",
+       "`this` is not `a` or `b`")
+
+this <- "b"
+switch(this,
+       a = "`this` is `a`",
+       b = "`this` is `b`",
+       "`this` is not `a` or `b`")
+
+this <- "c"
+switch(this,
+       a = "`this` is `a`",
+       b = "`this` is `b`",
+       "`this` is not `a` or `b`")
+```
+
+
+
+# Loops
+
+There are 3 base types of loops: `for`, `while`, and `repeat`. 
+
+
+## for 
+
+These loops use the reserved words `for` and `in`, 
+
+### Iterating over integers
+
+The most common use of a `for` loop is to loop over integers. 
+
+```{r}
+for (i  in 1:10) {
+  print(i)
+}
+```
+
+
+### Combine with control structures
+
+```{r}
+for (i  in 1:10) {
+  if (i > 5)
+    print(i)
+}
+```
+
+### Iterate over non-integers
+
+Can also iterate over non-integers
+
+```{r}
+for (d in c(2.3, 3.5, 4.6)) {
+  print(d)
+}
+```
+
+```{r}
+for (c in c("my","char","vector")) {
+  print(c)
+}
+```
+
+While these are possible, I find I rarely use them. 
+
+
+### `seq_along()`
+
+Be careful when iterating over objects that a potentially NULL. 
+
+```{r}
+this <- NULL
+for (i in 1:length(this)) {
+  print(i)
+}
+```
+
+Since `this` had no length, you probably didn't want to enter the `for` loop
+at all. 
+To be safe, you can use `seq_along()`.
+
+```{r}
+for (i in seq_along(this)) {
+  print(i)
+}
+```
+
+```{r}
+my_chars <- c("my","char","vector")
+for (i in seq_along(my_chars)) {
+  print(paste(i, ":", my_chars[i]))
+}
+```
+
+### `seq_len()`
+
+For `data.frame`s use `seq_len()` with `nrow()`. 
+
+```{r}
+for (i in seq_len(nrow(ToothGrowth))) {
+  if (ToothGrowth$supp[i] == "OJ" & 
+      near(ToothGrowth$dose[i], 2) &
+      ToothGrowth$len[i] > 25) {
+    print(ToothGrowth[i,])
+  }
+}
+```
+
+Like with `if` and `else` statements, 
+`for` loops can omit the brackets { } for single line expressions.
+
+```{r}
+for (i in 1:10) 
+  print(i)
+```
+
+## while
+
+The `while()` loop can be used to construct while loops.
+
+```{r}
+a <- TRUE
+while (a) {
+  print(a)
+  a <- FALSE
+}
+```
+
+```{r}
+i <- 0
+while (i < 10) {
+  print(i)
+  i <- i + 1
+}
+```
+
+```{r}
+x <- 2
+while (x < 1) { # Evaluated before the loop
+  print("We entered the loop.")
+}
+
+while (x < 100) { # Evaluated after each loop
+  x <- x*x
+  print(x)
+}
+```
+
+Be careful about infinite loops
+
+```{r, eval=FALSE}
+while (TRUE) {
+  # do something
+}
+```
+
+You can typically **Escape** out of infinite loops. 
+Often, you will want to make sure the infinite loop never occurs. 
+
+```{r}
+max_iterations <- 1000
+i <- 1
+while (TRUE & (i < max_iterations) ) {
+  i <- i + 1
+  # Do something
+}
+print(i)
+```
+
+
+## repeat
+
+An alternative to `while()` is `repeat` combined with `break`. 
+
+```{r}
+i <- 10
+repeat {
+  print(i)
+  i <- i + 1
+  if (i > 13)
+    break
+}
+```
+
+```{r}
+i <- 1
+repeat {
+  print(i)
+  i <- i + 1
+  if (i %% 2) { # %% is the mod function, 0 is FALSE and 1 is TRUE
+    next        # skips to next iteration of repeat
+  }
+  if (i > 14)
+    break
+}
+```
+
