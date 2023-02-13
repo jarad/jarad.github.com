@@ -19,20 +19,85 @@ knitr::opts_chunk$set(echo = TRUE)
 R is a [functional programming language](https://en.wikipedia.org/wiki/Functional_programming).
 
 ```{r}
-class(mean)
-typeof(mean)
+class(log)
 ```
 
-If you receive an error about a `closure` this is referring to a function. 
-
-```{r,error=TRUE}
-mean[1:3] 
-```
 
 
 # Function basics
 
-## Definition
+## Arguments
+
+```{r}
+log(10)
+log(x = 10)
+log(10, base = exp(1))
+log(10, base = 10)
+log(x = 10, base = 10)
+```
+
+```{r}
+args(log)
+```
+
+### Default arguments
+
+In the `log` function, 
+the default value for the `base` argument is `exp(1)`. 
+
+```{r}
+all.equal(
+  log(10),
+  log(10, base = exp(1))
+)
+```
+
+### Positional matching
+
+```{r}
+log(10, exp(1))
+log(exp(1), 10)
+```
+
+### Name matching
+
+```{r}
+log(x = 10, base = exp(1))
+log(base = exp(1), x = 10)
+```
+
+
+
+### Partial matching
+
+```{r}
+log(10, b = exp(1))
+log(10, ba = exp(1))
+log(10, bas = exp(1))
+log(10, base = exp(1))
+```
+
+## Return value
+
+```{r}
+class(log(10))
+class(as.data.frame(10))
+```
+
+```{r}
+class(all.equal(1,1))
+class(all.equal(1,2))
+```
+
+```{r}
+m <- lm(len ~ dose, data = ToothGrowth)
+class(m)
+class(summary(m))
+```
+
+# Building functions
+
+## Function definition
 
 ```{r}
 # Create a function
@@ -43,58 +108,112 @@ add <- function(x, y) {
 
 ```{r}
 add(1,2)
-add(2,1)
 add(x = 1, y = 2)
-add(1, y = 2)
-add(2, x = 1)
-```
-
-## Arguments
-
-```{r}
-my_fun <- function(x, y) {
-  return(x + y/2)
-}
 ```
 
 ```{r}
-my_fun(1,2)
-my_fun(2,1)
-my_fun(x = 1, y = 2)
-my_fun(1, y = 2)
-my_fun(1, x = 2)
+add(1:2, 3:4)
 ```
-
 
 ```{r}
-# Don't do this 
-my_fun(x <- 1, y <- 2)
-my_fun(1, y <- 2)
-my_fun(1, x <- 2)
+add(1:2, 3)
 ```
-
-We have actually assigned values to x and y outside the function. 
 
 ```{r}
-x
-y
+add(1:2, 3:5)
 ```
 
 
-### Default arguments
+
+## Default arguments
 
 ```{r}
 add <- function(x = 1, y = 2) {
   return(x + y)
 }
+```
+
+```{r}
 add()
-add(x = 9)
-add(y = 20)
+add(3)
+add(y = 5)
 ```
 
 
 
-## Generic functions
+
+## Error handling
+
+```{r, error=TRUE}
+add(1, "a")
+```
+
+### message()
+
+```{r}
+add <- function(x, y) {
+  message("Here is a message!")
+  return(x + y)
+}
+```
+
+```{r}
+add(1,2)
+```
+
+
+### warning()
+
+```{r}
+add <- function(x, y) {
+  warning("Here is a warning!")
+  return(x + y)
+}
+```
+
+```{r}
+add(1,2)
+```
+
+### stop()
+
+```{r}
+add <- function(x, y) {
+  stop("Here is an error!")
+  return(x + y)
+}
+```
+
+```{r, error=TRUE}
+add(1,2)
+```
+### stopifnot()
+
+```{r}
+add <- function(x, y) {
+  stopifnot(x < 0)
+  return(x + y)
+}
+```
+
+```{r, error=TRUE}
+add(1,2)
+```
+```{r}
+add <- function(x, y) {
+  stopifnot(is.numeric(x))
+  stopifnot(is.numeric(x))
+  return(x + y)
+}
+```
+
+```{r, error=TRUE}
+add(1,2)
+add(1,"a")
+add("b")
+```
+
+# Generic functions
 
 ```{r}
 print(mean)
@@ -107,7 +226,14 @@ Take a look at the help file
 ```
 
 Notice the words "Generic function". 
-This means 
+This means what the function does will depend on the first argument to the 
+function. 
+
+```{r}
+mean(1:5)
+mean(as.Date(c("2023-01-01","2022-01-01")))
+```
+
 
 
 
