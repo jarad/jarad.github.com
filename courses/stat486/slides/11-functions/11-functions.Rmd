@@ -26,6 +26,10 @@ class(log)
 
 # Function basics
 
+Functions take in some input and return some output. 
+The input are a collection of arguments to the function and the output is 
+the return value. 
+
 ## Arguments
 
 ```{r}
@@ -77,6 +81,17 @@ log(10, bas = exp(1))
 log(10, base = exp(1))
 ```
 
+
+### R objects as input
+
+```{r}
+y <- 100
+log(y)
+```
+
+
+
+
 ## Return value
 
 ```{r}
@@ -102,7 +117,7 @@ class(summary(m))
 ```{r}
 # Create a function
 add <- function(x, y) {
-  return(x + y)
+  x + y
 }
 ```
 
@@ -129,7 +144,7 @@ add(1:2, 3:5)
 
 ```{r}
 add <- function(x = 1, y = 2) {
-  return(x + y)
+  x + y
 }
 ```
 
@@ -139,6 +154,42 @@ add(3)
 add(y = 5)
 ```
 
+
+
+## Explicit return
+
+R functions will return the last 
+
+```{r explicit_return}
+add <- function(x, y) {
+  return(x + y)
+}
+```
+
+```{r}
+add(1,2)
+```
+
+
+Suppose you want to return a TRUE/FALSE depending on whether a specific 
+character is in a string.
+As soon as you find the character, you can immediately return TRUE
+If you don't find the character, you can return FALSE. 
+
+```{r}
+is_char_in_string <- function(string, char) {
+  for (i in 1:nchar(string)) {
+    if (char == substr(string, i, i))
+      return(TRUE)
+  }
+  return(FALSE)
+}
+```
+
+```{r}
+is_char_in_string("this is my string", "a")
+is_char_in_string("this is my string", "s")
+```
 
 
 
@@ -187,6 +238,9 @@ add <- function(x, y) {
 ```{r, error=TRUE}
 add(1,2)
 ```
+
+
+
 ### stopifnot()
 
 ```{r}
@@ -213,7 +267,70 @@ add(1,"a")
 add("b")
 ```
 
-# Generic functions
+
+
+# Function issues
+
+These are some issues I want you to be aware of so you (I hope) avoid issues
+in the future. 
+
+## Argument vs object assignment
+
+```{r}
+my_fancy_function <- function(x, y) {
+  return(x + y*100)
+}
+```
+
+What is the result of the following?
+
+```{r}
+my_fancy_function(y <- 5, x <- 4)
+```
+What happened?
+We assigned `y` the value 5 and `x` the value 4 outside the function. 
+Then, we passed `y`(5) as the first argument of the function and
+`x`(4) as the second argument fo the function. 
+
+This was equivalent to 
+
+```{r}
+y <- 5
+x <- 4
+my_fancy_function(x = y, y = x)
+```
+So, when assigning function arguments, use `=`. 
+Also, it is probably helpful to avoid naming objects the same name as the 
+argument names. 
+
+
+
+## Scoping
+
+Here is a function
+
+```{r scoping}
+f <- function() {
+  return(y)
+}
+```
+
+What is the result of the following?
+
+```{r}
+f()
+```
+
+Basically, R searches through a series of *environments* to find the variable
+called `y`. 
+
+
+
+
+
+## Generic functions
+
+### mean()
 
 ```{r}
 print(mean)
@@ -226,18 +343,90 @@ Take a look at the help file
 ```
 
 Notice the words "Generic function". 
-This means what the function does will depend on the first argument to the 
-function. 
+This means what the function does will depend on the class of the first argument 
+to the function. 
 
 ```{r}
 mean(1:5)
 mean(as.Date(c("2023-01-01","2022-01-01")))
 ```
 
+I bring up generic functions primarily to point out that it can be hard to 
+track down the appropriate helpful. 
+Generally you will look up `<function>.<class>`. 
+
+For example,
+```{r}
+# Determine the class
+class(as.Date(c("2023-01-01","2022-01-01")))
+
+# Look up the function
+?mean.Date
+```
+
+This didn't provide the actual help information. 
+Because it went somewhere, this was the intended behavior. 
+Why it isn't documented, I have no idea. 
+
+```{r}
+class(1:5)
+?mean.integer
+```
+
+There is typically a default method that will be used if a specific method
+can't be found.
+
+```{r}
+?mean.default
+```
+
+### summary()
+
+```{r}
+summary(ToothGrowth$len)
+summary(ToothGrowth$supp)
+summary(ToothGrowth)
+summary(lm(len ~ supp, data = ToothGrowth))
+```
+
+```{r}
+?summary
+?summary.numeric
+?summary.factor
+?summary.data.frame
+?summary.lm
+```
 
 
 
+## ... argument
+
+```{r}
+?sum
+```
+
+```{r}
+sum(1,2,3)
+```
+
+```{r}
+sum(5:6)
+```
+
+```{r}
+sum(1,2,3,5:6)
+```
+
+Typos get ignored
+
+```{r}
+sum(c(1,2,NA), na.mr = TRUE) # vs 
+sum(c(1,2,NA), na.rm = TRUE) # vs 
+```
 
 
+# Suggestions
 
-
+- Define functions for tasks that you do 2 or more times
+- Use informative names (verbs)
+- Use consistent return values
