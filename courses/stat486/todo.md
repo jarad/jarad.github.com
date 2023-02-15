@@ -9,3 +9,7 @@ In particular
 
 Initial discussion of R objects should be reduced and more discussion occur
 during R object slides. 
+
+## Slides/Lectures
+
+Remove 08-R_object lecture/slides and increase function slides
