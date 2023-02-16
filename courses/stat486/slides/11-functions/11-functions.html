@@ -11,7 +11,7 @@
 
 <meta name="author" content="Jarad Niemi" />
 
-<meta name="date" content="2023-02-15" />
+<meta name="date" content="2023-02-16" />
 
 <title>STAT 486/586</title>
 
@@ -1493,7 +1493,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">STAT 486/586</h1>
 <h4 class="author">Jarad Niemi</h4>
-<h4 class="date">2023-02-15</h4>
+<h4 class="date">2023-02-16</h4>
 
 </div>
 
@@ -1520,6 +1520,7 @@ value.</p>
 <pre><code>## [1] 1</code></pre>
 <pre class="r"><code>log(x = 10, base = 10)</code></pre>
 <pre><code>## [1] 1</code></pre>
+<p>Take a look at the arguments.</p>
 <pre class="r"><code>args(log)</code></pre>
 <pre><code>## function (x, base = exp(1)) 
 ## NULL</code></pre>
@@ -1682,13 +1683,13 @@ return FALSE.</p>
 <pre><code>## Error in add(1, 2): x &lt; 0 is not TRUE</code></pre>
 <pre class="r"><code>add &lt;- function(x, y) {
   stopifnot(is.numeric(x))
-  stopifnot(is.numeric(x))
+  stopifnot(is.numeric(y))
   return(x + y)
 }</code></pre>
 <pre class="r"><code>add(1,2)</code></pre>
 <pre><code>## [1] 3</code></pre>
 <pre class="r"><code>add(1,&quot;a&quot;)</code></pre>
-<pre><code>## Error in x + y: non-numeric argument to binary operator</code></pre>
+<pre><code>## Error in add(1, &quot;a&quot;): is.numeric(y) is not TRUE</code></pre>
 <pre class="r"><code>add(&quot;b&quot;)</code></pre>
 <pre><code>## Error in add(&quot;b&quot;): is.numeric(x) is not TRUE</code></pre>
 </div>
@@ -1731,6 +1732,23 @@ argument names.</p>
 <p>Basically, R searches through a series of <em>environments</em> to
 find the variable called <code>y</code>.</p>
 </div>
+<div id="closure-errors" class="section level2">
+<h2>Closure errors</h2>
+<p>Sometimes you get baffling error messages due to <code>closure</code>
+errors or <code>special</code> errors.</p>
+<pre class="r"><code>mean[1]</code></pre>
+<pre><code>## Error in mean[1]: object of type &#39;closure&#39; is not subsettable</code></pre>
+<pre class="r"><code>log[1]</code></pre>
+<pre><code>## Error in log[1]: object of type &#39;special&#39; is not subsettable</code></pre>
+<p>This is related to functions having a <code>typeof</code>
+<code>closure</code> or <code>special</code>.</p>
+<pre class="r"><code>typeof(mean)</code></pre>
+<pre><code>## [1] &quot;closure&quot;</code></pre>
+<pre class="r"><code>typeof(log)</code></pre>
+<pre><code>## [1] &quot;special&quot;</code></pre>
+<p>You will see <code>closure</code> errors much more commonly than
+<code>special</code> errors.</p>
+</div>
 <div id="generic-functions" class="section level2">
 <h2>Generic functions</h2>
 <div id="mean" class="section level3">
@@ -1738,11 +1756,10 @@ find the variable called <code>y</code>.</p>
 <pre class="r"><code>print(mean)</code></pre>
 <pre><code>## function (x, ...) 
 ## UseMethod(&quot;mean&quot;)
-## &lt;bytecode: 0x0000018e3a2a83a0&gt;
+## &lt;bytecode: 0x00000243fc48e350&gt;
 ## &lt;environment: namespace:base&gt;</code></pre>
 <p>Take a look at the help file</p>
 <pre class="r"><code>?mean</code></pre>
-<pre><code>## starting httpd help server ... done</code></pre>
 <p>Notice the words “Generic function”. This means what the function
 does will depend on the class of the first argument to the function.</p>
 <pre class="r"><code>mean(1:5)</code></pre>
@@ -1764,8 +1781,6 @@ have no idea.</p>
 <pre class="r"><code>class(1:5)</code></pre>
 <pre><code>## [1] &quot;integer&quot;</code></pre>
 <pre class="r"><code>?mean.integer</code></pre>
-<pre><code>## No documentation for &#39;mean.integer&#39; in specified packages and libraries:
-## you could try &#39;??mean.integer&#39;</code></pre>
 <p>There is typically a default method that will be used if a specific
 method can’t be found.</p>
 <pre class="r"><code>?mean.default</code></pre>
@@ -1806,10 +1821,8 @@ method can’t be found.</p>
 ## Multiple R-squared:  0.05948,    Adjusted R-squared:  0.04327 
 ## F-statistic: 3.668 on 1 and 58 DF,  p-value: 0.06039</code></pre>
 <pre class="r"><code>?summary
-?summary.numeric</code></pre>
-<pre><code>## No documentation for &#39;summary.numeric&#39; in specified packages and libraries:
-## you could try &#39;??summary.numeric&#39;</code></pre>
-<pre class="r"><code>?summary.factor
+?summary.numeric
+?summary.factor
 ?summary.data.frame
 ?summary.lm</code></pre>
 </div>
