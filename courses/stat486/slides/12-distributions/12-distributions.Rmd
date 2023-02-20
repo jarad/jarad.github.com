@@ -1,0 +1,166 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Distributions"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](12-distributions.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("scales") # for breaks_pretty()
+```
+
+The distributions built into base R can be found using 
+
+```{r, eval=FALSE}
+?Distributions
+```
+
+Most distributions have 4 functions:
+
+- d<name>: probability mass/density function
+- p<name>: cumulative distribution function
+- q<name>: quantile function (inverse of the cdf)
+- r<name>: random draws
+
+# Discrete distributions
+
+Let's start with discrete distributions
+
+## Binomial
+
+### Probability mass function
+
+Recall the pmf for a binomial is 
+\[ 
+P(Y=y) = {n\choose y} p^y (1-p)^{n-y}
+\]
+for integer $n>0$, $0<p<1$, and $y=0,1,\ldots,n$.
+
+We can plot this pmf using `dbinom`.
+
+```{r}
+n <- 10
+p <- 0.3
+d <- data.frame(
+  y = 0:n
+) %>%
+  mutate(pmf = dbinom(y, size = n, prob = p))
+
+ggplot(d, aes(x = y, y = pmf, yend = 0, xend = y)) +
+  geom_point() + 
+  geom_segment()
+```
+
+### Cumulative distribution function
+
+We can plot this cdf using `pbinom`.
+
+```{r}
+d <- d %>%
+  mutate(cdf = pbinom(y, size = n, prob = p))
+
+ggplot(d, aes(x = y, y = cdf, yend = 0, xend = y)) +
+  geom_step()
+```
+
+More often, we use the cdf to calculate probabilities. 
+For example, suppose $Y \sim Bin(30, 0.4)$ and we want to calculate 
+$P(10<Y<14)$.
+Recall that 
+\[
+P(10<Y<14) = P(Y\le 13) - P(Y \le 10)
+\]
+we can do this using
+
+```{r}
+n <- 30
+p <- 0.4
+pbinom(13, size = n, prob = p) - 
+  pbinom(1, size = n, prob = p)
+```
+
+
+
+### Random draws
+
+To obtain random draws from a binomial use the `rbinom` function.
+
+```{r}
+draws <- rbinom(1000, size = n, prob = p)
+
+ggplot(mapping = aes(x = draws)) +
+  geom_histogram(binwidth = 1)
+```
+
+Let's compare our empirical probabilities to the true probabilities. 
+
+```{r}
+mean(10 < draws & draws < 14) # vs 
+pbinom(13, size = n, prob = p) - 
+  pbinom(10, size = n, prob = p)
+```
+
+
+## Poisson
+
+### Probability mass function
+
+A random variable has a Poisson distribution it its probability mass 
+function is 
+\[
+P(Y=y) = \frac{e^{-r}r^y}{y!}
+\]
+for some rate $r>0$ and integer $y\ge 0$. 
+
+We use `dpois` for the Poisson pmf. 
+
+```{r}
+r <- 3
+d <- data.frame(y = 0:(3*r)) %>%
+  mutate(pmf = dpois(y, lambda = r),
+         cdf = ppois(y, lambda = r))
+
+ggplot(d, aes(x = y, y = pmf, xend = y, yend = 0)) + 
+  geom_point() + 
+  geom_segment()
+```
+
+### Cumulative distribution function
+
+We use `ppois` for the Poisson pmf. 
+
+```{r}
+ggplot(d, aes(x = y, y = cdf)) + 
+  geom_step() 
+```
+
+### Random draws
+
+To obtain random draws from a Poisson distribution use `rpois`.
+
+```{r}
+draws <- rpois(1000, lambda = r)
+
+ggplot(mapping = aes(x = draws)) + 
+  geom_histogram(binwidth = 1, color = "white") + 
+  scale_x_continuous(breaks = breaks_pretty())
+```
+
+
+# Continuous distributions
+
+## Normal
+
+## Beta
