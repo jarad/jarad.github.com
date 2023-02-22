@@ -1,0 +1,245 @@
+---
+layout: page
+title: STAT 486/586
+tagline: "Monte Carlo Methods"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](13-monte_carlo.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("scales") # for breaks_pretty()
+```
+
+# Mean
+
+## Central Limit Theorem
+
+If we have $X_i$ for $i=1,\ldots,n$ that are independent and identically 
+distributed with $E[X_i] = \mu$ and $Var[X_i] = \sigma^2 < \infty$, 
+then 
+\[
+\frac{\overline{X}-\mu}{s/\sqrt{n}} \stackrel{d}{\to} N(0,1) \quad \mbox{as } n\to \infty.
+\]
+Thus, for large enough n, 
+\[ 
+\overline{X} \stackrel{\cdot}{\sim} N(\mu, s^2/n)
+\]
+where $\stackrel{\cdot}{\sim}$ means "approximately distributed."
+
+This result is the basis of a common asymptotic confidence interval formula
+for $\mu$:
+\[ 
+\overline{x} \pm z s/\sqrt{n}
+\]
+where $z$ is a critical value that depends on the confidence level of the 
+confidence interval. 
+
+
+## Examples
+
+Let's first make a function to construct the data.frame we'll need to plot
+to visualize 
+```{r}
+create_mean_dataframe <- function(x) {
+  data.frame(n = 1:length(x)) %>%
+    mutate(
+      xbar = cumsum(x)/n,
+      s    = cumsum((x-xbar)^2)/(n-1),
+      lcl  = xbar - qnorm(.975)*s/sqrt(n),
+      ucl  = xbar + qnorm(.975)*s/sqrt(n)
+    )
+}
+```
+
+As long as we're at it, let's make a function to create the plot
+
+```{r}
+plot_mean <- function(d, truth = NULL) {
+  g <- ggplot(d, aes(x = n, y = xbar, ymin = lcl, ymax = ucl)) + 
+    geom_ribbon(fill = "blue", alpha = 0.3) + 
+    geom_line(color = "blue")
+  
+  if (!is.null(truth))
+    g <- g + geom_hline(yintercept = truth, color = "red", linetype = 2)
+  
+  return(g)
+}
+```
+
+### Normal mean
+
+Let $X_i \stackrel{ind}{\sim} N(\mu, \sigma^2)$. 
+If we sample enough $X_i$, then we can learn about $\mu$. 
+
+
+
+
+```{r}
+m <- 0
+s <- 1
+
+x <- rnorm(1e3, mean = m, sd = 1)
+
+d <- create_mean_dataframe(x)
+
+plot_mean(d, truth = m)
+```
+
+
+
+
+
+### Truncated normal mean
+
+Suppose our random variables have a normal distribution but are truncated 
+between two values $a$ and $b$. 
+We might write this as $N(\mu,\sigma^2)[a,b]$.
+
+Let's first construct a function to simulate this random variable.
+(There are better ways to do this.)
+
+```{r}
+rtnorm <- function(n, mean, sd, a, b) {
+  x <- rnorm(n, mean, sd)
+  for (i in seq_along(x)) {
+    while (x[i] < a || x[i] > b) {
+      x[i] <- rnorm(1, mean, sd)
+    }
+  }
+  return(x)
+}
+```
+
+Simulate and plot
+
+```{r}
+m <- 0
+s <- 1
+a <- 2
+b <- 4
+
+x <- rtnorm(1e3, m, s, a, b)
+
+summary(x)
+
+ggplot() +
+  geom_histogram(mapping = aes(x = x))
+```
+
+```{r}
+d <- create_mean_dataframe(x)
+plot_mean(d)
+```
+
+The mean actually can be calculated for a truncated normal
+
+```{r}
+mean <- m + (dnorm(a)-dnorm(b))/(pnorm(b) - pnorm(a)) * s
+plot_mean(d, truth = mean)
+```
+
+
+### Cauchy mean
+
+Watch out! 
+You need to pay attention to whether the variance is finite amongst 
+your random variables. 
+A Cauchy distribution has no moments and therefore its mean and variance
+are both undefined. 
+This occurs because the Cauchy distribution has extremely heavy tails. 
+
+Let's use Monte Carlo to try and estimate a Cauchy mean
+
+```{r}
+m <- 0
+s <- 1
+
+x <- rcauchy(1e3, m, s)
+
+d <- create_mean_dataframe(x)
+plot_mean(d)
+plot_mean(d) + xlim(25,100) # will likely need to adjust the limits
+```
+The CLT is not relevant here because the variance of the random variables is
+not finite. 
+
+
+# Proportion
+
+## Central Limit Theorem
+
+If we have $Y \sim Bin(n,\theta)$, 
+then 
+\[
+\frac{\hat\theta-\theta}{\sqrt{\frac{\hat\theta(1-\hat\theta)}{n}}} \stackrel{d}{\to} N(0,1) \quad \mbox{as } n\to \infty.
+\]
+Thus, for large enough n, 
+\[ 
+\hat\theta \stackrel{\cdot}{\sim} N\left(\theta, \frac{\hat\theta(1-\hat\theta)}{n}\right)
+\]
+where $\stackrel{\cdot}{\sim}$ means "approximately distributed."
+
+This result is the basis of a common asymptotic confidence interval formula
+for $\theta$:
+\[ 
+\hat\theta \pm z \sqrt{\frac{\hat\theta(1-\hat\theta)}{n}}
+\]
+where $z$ is a critical value that depends on the confidence level of the 
+confidence interval. 
+
+
+## Examples
+
+Function to create proportion data frame. 
+The data will be binary (0s and 1s).
+
+```{r}
+create_proportion_dataframe <- function(x) {
+  data.frame(n = 1:length(x)) %>%
+    mutate(
+      theta_hat = cumsum(x)/n,
+      se        = sqrt(theta_hat*(1-theta_hat)/n),
+      lcl       = theta_hat - qnorm(.975)*se,
+      ucl       = theta_hat + qnorm(.975)*se
+    )
+}
+```
+
+and the plot function
+
+```{r}
+plot_proportion <- function(d, truth = NULL) {
+  g <- ggplot(d, aes(x = n, y = theta_hat, ymin = lcl, ymax = ucl)) + 
+    geom_ribbon(fill = "blue", alpha = 0.3) + 
+    geom_line(color = "blue")
+  
+  if (!is.null(truth))
+    g <- g + geom_hline(yintercept = truth, color = "red", linetype = 2)
+  
+  return(g)
+}
+```
+
+### Binomial
+
+Let's generate some Bernoulli data that, when added, will be binomial.
+
+```{r}
+p <- 0.3
+
+x <- rbinom(1e3, size = 1, prob = p)
+
+d <- create_proportion_dataframe(x)
+plot_proportion(d, truth = p)
+```
