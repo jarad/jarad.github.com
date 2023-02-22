@@ -35,3 +35,4 @@ you can find the source files
 ## Monte Carlo Methods
 
 - [Distributions](12-distributions/12-distributions.html) [R code](12-distributions/12-distributions.R)
+- [Monte Carlo Methods](13-monte_carlo/13-monte_carlo.html) [R code](13-monte_carlo/13-monte_carlo.R)
