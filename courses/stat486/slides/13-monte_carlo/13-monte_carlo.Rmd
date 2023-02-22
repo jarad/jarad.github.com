@@ -233,7 +233,7 @@ plot_proportion <- function(d, truth = NULL) {
 
 ### Binomial
 
-Let's generate some Bernoulli data that, when added, will be binomial.
+Let's generate some Bernoulli data that, when summed, will be binomial.
 
 ```{r}
 p <- 0.3
@@ -243,3 +243,40 @@ x <- rbinom(1e3, size = 1, prob = p)
 d <- create_proportion_dataframe(x)
 plot_proportion(d, truth = p)
 ```
+
+
+### Normal probability
+
+How about the probability a normal random variable is between two end points?
+Of course, we can calculate the truth here. 
+
+
+```{r}
+m <- 0
+s <- 1
+a <- 2
+b <- 4
+
+y <- rnorm(1e3, m, s)
+x <- a < y & y < b
+
+d <- create_proportion_dataframe(x)
+plot_proportion(d, truth = diff(pnorm(c(a,b), mean = m, sd = s)))
+```
+
+### Unknown probability
+
+How about the probability that the absolute value of a normal random variable
+is less than an exponential random variable?
+
+```{r}
+n <- 1e3
+y <- rnorm(n)
+e <- rexp(n)
+
+x <- y < x
+
+d <- create_proportion_dataframe(x)
+plot_proportion(d)
+```
+
