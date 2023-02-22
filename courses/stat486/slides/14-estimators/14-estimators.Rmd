@@ -1,0 +1,340 @@
+---
+layout: page
+title: "Estimators"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](14-estimators.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("scales") # for breaks_pretty()
+```
+
+# Estimators
+
+Recall that estimators are statistics that attempt to estimate a population
+parameter. 
+We are generally assuming here that we have a simple random sample from the
+population and we are interested in estimating a mean or proportion from that
+population. 
+
+## Examples
+
+### Binomial
+
+Let $X \sim Bin(n,\theta)$. 
+The MLE for $\theta$ is 
+\[ 
+\hat\theta = \frac{x}{n}.
+\]
+
+### Normal
+
+Let $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$. 
+
+#### Mean
+
+The MLE for $\mu$ is 
+\[ 
+\hat\mu = \overline{y}.
+\]
+This also happens to be the least squares estimator and the Bayes estimator
+(assuming the standard default prior). 
+
+#### Variance
+
+The MLE for $\sigma^2$ is 
+\[ 
+\hat\sigma^2_{MLE} = \frac{1}{n} \sum_{i=1}^n (y_i-\overline{y})^2
+\]
+while the sample variance is 
+\[
+s^2 = \frac{1}{n-1} \sum_{i=1}^n (y_i-\overline{y})^2.
+\]
+So why might we prefer one of these estimators over another?
+
+
+### Regression
+
+The regression model (in multivariate normal form is 
+\[ 
+Y \sim N(X\beta,\sigma^2\mathrm{I}).
+\]
+The MLE, least squares, and Bayes estimator for $\beta$ is 
+\[ 
+\hat\beta = (X^\top X)^{-1}X^\top y.
+\]
+
+
+## Properties
+
+There are a variety of reasons we might use to choose an estimator. 
+We might appreciate the universality of the maximum likelihood estimator or
+the ability to incorporate prior information in Bayes estimator. 
+Here we will talk about some properties of estimators, namely:
+
+- bias
+- variance
+- mean squared error
+- consistency
+
+### Bias
+
+An estimator is unbiased when its expectation is equal to the true value. 
+
+For example,
+
+- $E[\hat\theta_{MLE}] = \theta$
+- $E[\hat\mu] = \mu$
+- $E[s^2] = \sigma^2$
+
+indicate that all of these estimators are *unbiased*. 
+
+In contrast
+
+- $E[\hat\sigma^2] = \frac{n-1}{n}\sigma^2$
+
+and thus the bias is 
+
+- $Bias[\hat\sigma^2] = E[\hat\sigma^2] - \sigma^2 = \frac{1}{n}$.
+
+Clearly this bias diminishes as $n\to \infty$. 
+
+
+### Variance
+
+The variance of an estimator is just the variance of the statistic, so
+
+- $Var[\hat\theta] = E[(\hat\theta - E[\hat\theta])^2] = \frac{\theta(1-\theta)}{n}$
+- $Var[\hat\mu] = E[(\hat\mu - E[\hat\mu])^2] = \sigma^2/n$
+
+Notice how both of these decrease as $n\to \infty$. 
+
+
+### Mean squared error
+
+The mean squared error of an estimator is the expectation of the squared
+difference between the estimator and the truth. 
+This turns out to have a simple formula in terms of the bias and variance.
+
+\[ MSE[\hat\theta] = E[(\hat\theta - \theta)^2] = Var[\hat\theta] + Bias[\hat\theta]^2 \]
+
+In our examples, we have 
+
+- $MSE[\hat\theta] = \frac{\theta(1-\theta)}{n} + 0^2$
+- $MSE[\hat\mu] = \sigma^2/n + 0^2$
+
+For unbiased estimators, the MSE is the same as the variance. 
+For biased estimators, the formula is a bit more exciting. 
+
+
+### Consistency
+
+An estimator is consistent if it gets closer to the true value in probability
+as the sample size gets larger. 
+Specifically
+\[ 
+\lim_{n\to\infty} P(|\hat\theta-\theta| > \epsilon) = 0
+\]
+for all $\epsilon>0$. 
+
+For unbiased estimators, 
+the estimator is consistent if the variance converges to zero as the sample size
+increases.
+
+Every estimator discussed above is consistent. 
+
+
+
+
+# Monte Carlo Evaluation
+
+Let's use Monte Carlo to evaluate these estimators.
+We will need to obtain many samples to estimate bias and variance.
+To investigate consistency, we will need many samples at a sequence of 
+sample sizes. 
+
+Throughout this section we will utilize the CLT for an expectation to construct
+a CI.
+Recall
+if $X_i$ are independent and identically distributed with $E[X_i] = \mu$ and 
+$Var[X_i] = \sigma^2 < \infty$,
+then a 100(1-a)\% CI is 
+\[ 
+\overline{x} \pm z  s / \sqrt{n}
+\]
+where 
+
+- $z$ is the z critical value associated with a 100(1-a) confidence level, 
+- $n$ is the sample size,
+- $x$ is the sample mean, and
+- $s$ is the sample standard deviation.
+
+We will encapsulate this in a function
+
+```{r}
+create_ci <- function(x, a = 0.05) {
+  n <- length(x)
+  m <- mean(x)
+  s <- sd(x)
+  
+  return(m + c(-1,1)*qnorm(1-a/2)*s/sqrt(n))
+}
+```
+
+## Binomial
+
+### Bias 
+
+```{r}
+n <- 10
+p <- 0.3
+
+x <- rbinom(1e3, size = n, prob = p)
+theta_hat = x / n
+```
+
+```{r}
+ggplot() + 
+  geom_histogram(mapping = aes(x = theta_hat), bins = 30) +
+  geom_vline(xintercept = p, col = 'red') +
+  labs(title="Sampling distribution for sample proportion")
+```
+
+```{r}
+mean(theta_hat)        # expectation
+mean(theta_hat - p)    # bias
+create_ci(theta_hat-p) # bias CI
+```
+
+### Variance
+
+```{r}
+# variance
+var(theta_hat)   # OR
+mean( (theta_hat - mean(theta_hat))^2 ) 
+
+create_ci( (theta_hat - mean(theta_hat))^2 )
+```
+
+### Mean squared error
+
+Recall that $MSE[\hat\theta] = E[(\hat\theta-\theta)^2] = Var[\hat\theta] + Bias[\hat\theta]^2$.
+
+```{r}
+# MSE
+var(theta_hat) + (mean(theta_hat)-p)^2 # OR
+mean( (theta_hat-p)^2 )
+
+# MSE CI
+create_ci( (theta_hat-p)^2  )
+```
+
+
+
+
+
+### Consistency
+
+```{r}
+epsilon <- 0.01
+n_seq <- floor(10^seq(1, 5, length = 10))
+p_seq <- numeric(length(n_seq))
+
+for (i in seq_along(n_seq)) {
+  x <- rbinom(1e3, size = n_seq[i], prob = p)
+  p_seq[i] <- mean(abs(x/n_seq[i] - p) > epsilon)
+}
+
+qplot(n_seq, p_seq, geom = c("point","line")) +
+  labs(x = "Sample size", y = "Probability",
+       title = "Consistency of sample proportion") 
+```
+
+
+## Normal
+
+### Bias
+
+```{r}
+n <- 10
+m <- 0
+s <- 1
+
+d <- data.frame(rep = 1:1e3,
+                n = 1:n) %>%
+  mutate(y = rnorm(n())) %>%
+  group_by(rep) %>%
+  summarize(
+    n    = n(),
+    ybar = mean(y),
+    sd   = sd(y)
+  )
+```
+
+```{r}
+ggplot(d, aes(x = ybar)) + 
+  geom_histogram(bins = 30) + 
+  geom_vline(xintercept = m, color = "red") +
+  labs(x = "Sample mean", 
+       title = "Sampling distribution of sample mean")
+```
+
+```{r}
+# Bias
+mean(d$ybar - m) 
+
+# Bias with CI 
+create_ci( d$ybar - m )
+```
+
+### Variance
+
+```{r}
+# Variance
+var(d$ybar) # OR
+mean( (d$ybar - mean(d$ybar))^2 )
+
+# Variance with uncertainty
+create_ci( (d$ybar - mean(d$ybar))^2 )
+```
+
+### Mean squared error
+
+```{r}
+# MSE
+mean( (d$ybar - m)^2 )
+
+# Variance with uncertainty
+create_ci( (d$ybar - m)^2 )
+```
+
+### Consistency
+
+
+```{r}
+epsilon <- 0.01
+n_seq <- floor(10^seq(1, 5, length = 10))
+p_seq <- numeric(length(n_seq))
+
+for (i in seq_along(n_seq)) {
+  xbar <- replicate(1e3, {       # replicate is another looping option
+    mean( rnorm(n_seq[i], m, s))
+  })
+  p_seq[i] <- mean( abs(xbar - m) > epsilon)
+}
+
+qplot(n_seq, p_seq, geom = c("point","line")) +
+  labs(x = "Sample size", y = "Probability",
+       title = "Consistency of sample mean") 
+```
