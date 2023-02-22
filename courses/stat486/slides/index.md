@@ -32,5 +32,6 @@ you can find the source files
 - [Control Flow](10-control/10-control.html) [R code](10-control/10-control.R)
 - [Functions](11-functions/11-functions.html) [R code](11-functions/11-functions.R)
 
+## Monte Carlo Methods
 
-- Monte Carlo Methods
+- [Distributions](12-distributions/12-distributions.html) [R code](12-distributions/12-distributions.R)

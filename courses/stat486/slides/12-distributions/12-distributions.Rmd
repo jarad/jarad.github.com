@@ -134,7 +134,8 @@ d <- data.frame(y = 0:(3*r)) %>%
 
 ggplot(d, aes(x = y, y = pmf, xend = y, yend = 0)) + 
   geom_point() + 
-  geom_segment()
+  geom_segment() +
+  scale_x_continuous(breaks = breaks_pretty())
 ```
 
 ### Cumulative distribution function
@@ -143,7 +144,8 @@ We use `ppois` for the Poisson pmf.
 
 ```{r}
 ggplot(d, aes(x = y, y = cdf)) + 
-  geom_step() 
+  geom_step() +
+  scale_x_continuous(breaks = breaks_pretty())
 ```
 
 ### Random draws
@@ -161,6 +163,174 @@ ggplot(mapping = aes(x = draws)) +
 
 # Continuous distributions
 
-## Normal
+## Normal (Gaussian)
 
-## Beta
+### Probability density function
+
+```{r}
+m <- 0
+s <- 1 # standard deviation
+
+d <- data.frame(x = seq(m - 3*s, m + 3*s, length = 1001)) %>%
+  mutate(pdf = dnorm(x, m, s),
+         cdf = pnorm(x, m, s))
+
+ggplot(d, aes(x = x, y = pdf)) +
+  geom_line()
+```
+
+
+### Cumulative distribution function
+
+```{r}
+ggplot(d, aes(x = x, y = cdf)) +
+  geom_line()
+```
+
+### Critical values
+
+The `qnorm` function provides the inverse of the normal CDF. 
+We can plot this function
+
+```{r}
+ggplot(data.frame(p = 0:1)) +
+  stat_function(fun = qnorm, n = 1001, args = list(mean = m, sd = s))
+```
+
+The most common use of this function is to obtain z critical values for us 
+in constructing confidence intervals. 
+
+```{r}
+qnorm(.975)
+```
+
+### Random draws
+
+We can use the `rnorm` function to sample random draws from the normal 
+distribution. 
+
+```{r}
+draws <- rnorm(20)
+
+ggplot() +
+  geom_histogram(mapping = aes(x = draws), bins = 10)
+```
+
+```{r}
+ggplot() +
+  geom_histogram(
+    mapping = aes(
+      x = draws, 
+      y = after_stat(density)), 
+    bins = 10) +
+  stat_function(fun = dnorm, 
+                n = 1001, 
+                args = list(
+                  mean = mean(draws), 
+                  sd = sd(draws)),
+                color = 'red') +
+  xlim(min(draws)-1, max(draws) + 1)
+```
+
+If we have a much larger sample size, 
+the histogram will look approximately normal.
+
+```{r}
+draws <- rnorm(1e4)
+
+ggplot() +
+  geom_histogram(
+    mapping = aes(
+      x = draws, 
+      y = after_stat(density)), 
+    bins = 30) +
+  stat_function(fun = dnorm, 
+                n = 1001, 
+                args = list(
+                  mean = mean(draws), 
+                  sd = sd(draws)),
+                color = 'red') +
+  xlim(min(draws)-1, max(draws) + 1)
+```
+
+
+## Student's t
+
+### Probability density function
+
+```{r}
+df <- 10
+
+d <- data.frame(x = seq(-4, 4, length = 1001)) %>%
+  mutate(pdf = dt(x, df = df),
+         cdf = pt(x, df = df))
+
+ggplot(d, aes(x = x, y = pdf)) + 
+  geom_line() +
+  stat_function(fun = dnorm, color = 'red')
+```
+
+### Calculative p-values
+
+Suppose you have the following data
+
+```{r}
+y <- round(rnorm(10), 2)
+y
+```
+
+Which has the following summary statistics
+
+```{r}
+n <- length(y); n 
+m <- mean(y); m
+s <- sd(y); s
+```
+
+If you are interested in the following hypothesis test:
+\[ 
+H_0: \mu=1 \quad \mbox{vs} \quad H_A: \mu \ne 1
+\]
+then the test statistic is 
+
+```{r}
+t <- (m-1)/(s/sqrt(n)); t
+```
+
+Under the null hypothesis, this statistic has a $t$ distribution with $n-1$ 
+degrees of freedom. 
+We can then compute the p-value using 
+
+```{r}
+pvalue <- 2*pt(-abs(t), df = n-1); pvalue
+```
+
+Of course, we could use the built-in functions in R
+
+```{r}
+t.test(y, mu = 1)$p.value
+```
+
+### Critical values
+
+The main use of the quantile function (or inverse CDF) is to compute 
+t critical values. 
+For example, 
+```{r}
+tcrit <- qt(.95, df = n-1); tcrit
+```
+
+So a 90\% CI for the mean is 
+
+```{r}
+m + c(-1,1)*tcrit*s/sqrt(n)
+```
+
+Of course, we could just use built-in functions
+
+```{r}
+t.test(y, conf.level = 0.9)$conf.int
+```
+
+
+
