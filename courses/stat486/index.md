@@ -21,21 +21,12 @@ The required textbook for this course is
 
 - [R for Data Science](http://r4ds.had.co.nz/)
 
-Here are some additional free resources that may be helpful:
+### Additional free textbooks
 
-- [OpenIntro Statistics](https://leanpub.com/openintro-statistics)
-- [Online Statistics Education](http://onlinestatbook.com/2/)
-- [Data Camp](https://www.datacamp.com/)
-- [Introduction to R for Data Science](https://www.edx.org/course/introduction-r-data-science-microsoft-dat204x-3)
+- [R Programming for Data Science](https://bookdown.org/rdpeng/rprogdatascience/)
+- [Hands on Programming with R](https://rstudio-education.github.io/hopr/)
+- [OpenIntro Statistics](https://leanpub.com/openintro-statistics) - background material
 
-
-Other resources:
-
-- [Coursera Data Science Specialization](https://www.coursera.org/specializations/jhu-data-science)
-- [The Statistical Sleuth](http://amzn.to/2jkdmct)
-- [Data Collection and Analysis](http://amzn.to/2iR692T)
-- [Data Analysis for Scientists and Engineers](http://amzn.to/2j0yuUI)
-- [An Introduction to Statistical Learning](http://amzn.to/2jasyWb)
 
 ## Software 
 
