@@ -1,7 +1,6 @@
 ---
 layout: page
-title: STAT 486/586
-tagline: "Monte Carlo Methods"
+title: "Monte Carlo Methods"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: 
@@ -18,7 +17,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library("tidyverse"); theme_set(theme_bw())
-library("scales") # for breaks_pretty()
 ```
 
 # Mean
@@ -89,7 +87,7 @@ If we sample enough $X_i$, then we can learn about $\mu$.
 m <- 0
 s <- 1
 
-x <- rnorm(1e3, mean = m, sd = 1)
+x <- rnorm(1e3, mean = m, sd = s)
 
 d <- create_mean_dataframe(x)
 
@@ -121,23 +119,36 @@ rtnorm <- function(n, mean, sd, a, b) {
 }
 ```
 
+also the density for a truncated normal
+
+```{r}
+dtnorm <- function(x, mean, sd, a, b) {
+  c <- diff(pnorm(c(a,b), mean, sd))
+  d <- dnorm(x, mean, sd)/c
+  return(d * (a < x & x < b))
+}
+```
+```
+
 Simulate and plot
 
 ```{r}
-m <- 10
-s <- 6
-a <- 2
-b <- 4
-
-x <- rtnorm(1e3, m, s, a, b)
-
-summary(x)
-
-ggplot() +
-  geom_histogram(mapping = aes(x = x))
+m <- 3
+s <- 8
+a <- 10
+b <- 20
 ```
 
+Density plot
+
 ```{r}
+curve(dtnorm(x, m, s, a, b), a-1, b+1, n = 1001)
+```
+
+Monte Carlo
+
+```{r}
+x <- rtnorm(1e3, m, s, a, b)
 d <- create_mean_dataframe(x)
 plot_mean(d)
 ```
@@ -162,7 +173,7 @@ A Cauchy distribution has no moments and therefore its mean and variance
 are both undefined. 
 This occurs because the Cauchy distribution has extremely heavy tails. 
 
-Let's use Monte Carlo to try and estimate a Cauchy mean
+Let's use Monte Carlo to try and estimate a Cauchy ``mean''
 
 ```{r}
 m <- 0
@@ -183,7 +194,7 @@ not finite.
 
 ## Central Limit Theorem
 
-If we have $Y \sim Bin(n,\theta)$, 
+If we have $Y \sim Bin(n,\theta)$ with $\theta \in (0,1)$ and $\hat\theta = Y/n$, 
 then 
 \[
 \frac{\hat\theta-\theta}{\sqrt{\frac{\hat\theta(1-\hat\theta)}{n}}} \stackrel{d}{\to} N(0,1) \quad \mbox{as } n\to \infty.
@@ -206,7 +217,7 @@ confidence interval.
 ## Examples
 
 Function to create proportion data frame. 
-The data will be binary (0s and 1s).
+The data will be binary (0/1) or logical (TRUE/FALSE).
 
 ```{r}
 create_proportion_dataframe <- function(x) {

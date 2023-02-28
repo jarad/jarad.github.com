@@ -1,6 +1,5 @@
 ## ---------------------------------------------------------------------------------
 library("tidyverse"); theme_set(theme_bw())
-library("scales") # for breaks_pretty()
 
 
 ## ---------------------------------------------------------------------------------
@@ -32,7 +31,7 @@ plot_mean <- function(d, truth = NULL) {
 m <- 0
 s <- 1
 
-x <- rnorm(1e3, mean = m, sd = 1)
+x <- rnorm(1e3, mean = m, sd = s)
 
 d <- create_mean_dataframe(x)
 
@@ -52,20 +51,26 @@ rtnorm <- function(n, mean, sd, a, b) {
 
 
 ## ---------------------------------------------------------------------------------
-m <- 10
-s <- 6
-a <- 2
-b <- 4
-
-x <- rtnorm(1e3, m, s, a, b)
-
-summary(x)
-
-ggplot() +
-  geom_histogram(mapping = aes(x = x))
+dtnorm <- function(x, mean, sd, a, b) {
+  c <- diff(pnorm(c(a,b), mean, sd))
+  d <- dnorm(x, mean, sd)/c
+  return(d * (a < x & x < b))
+}
 
 
 ## ---------------------------------------------------------------------------------
+m <- 3
+s <- 8
+a <- 10
+b <- 20
+
+
+## ---------------------------------------------------------------------------------
+curve(dtnorm(x, m, s, a, b), a-1, b+1, n = 1001)
+
+
+## ---------------------------------------------------------------------------------
+x <- rtnorm(1e3, m, s, a, b)
 d <- create_mean_dataframe(x)
 plot_mean(d)
 
