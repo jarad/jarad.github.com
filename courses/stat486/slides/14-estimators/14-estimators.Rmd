@@ -28,6 +28,8 @@ We are generally assuming here that we have a simple random sample from the
 population and we are interested in estimating a mean or proportion from that
 population. 
 
+
+
 ## Examples
 
 ### Binomial
@@ -90,7 +92,14 @@ Here we will talk about some properties of estimators, namely:
 
 ### Bias
 
-An estimator is unbiased when its expectation is equal to the true value. 
+The bias of an estimator is the expectation of the estimator minus the true
+value of the estimator:
+\[ 
+\mbox{Bias}[\hat\theta] = E[\hat\theta - \theta] = E[\hat\theta] - \theta.
+\]
+
+An estimator is unbiased when the bias is 0 or, equivalently,
+its expectation is equal to the true value. 
 
 For example,
 
@@ -113,7 +122,12 @@ Clearly this bias diminishes as $n\to \infty$.
 
 ### Variance
 
-The variance of an estimator is just the variance of the statistic, so
+The variance of an estimator is just the variance of the statistic:
+\[
+Var[\hat\theta] = E[(\hat\theta - E[\hat\theta])^2].
+\]
+
+Here are a couple of examples:
 
 - $Var[\hat\theta] = E[(\hat\theta - E[\hat\theta])^2] = \frac{\theta(1-\theta)}{n}$
 - $Var[\hat\mu] = E[(\hat\mu - E[\hat\mu])^2] = \sigma^2/n$
@@ -214,14 +228,13 @@ ggplot() +
 ```{r}
 mean(theta_hat)        # expectation
 mean(theta_hat - p)    # bias
-create_ci(theta_hat-p) # bias CI
+create_ci(theta_hat - p) # bias CI
 ```
 
 ### Variance
 
 ```{r}
 # variance
-var(theta_hat)   # OR
 mean( (theta_hat - mean(theta_hat))^2 ) 
 
 create_ci( (theta_hat - mean(theta_hat))^2 )
@@ -233,8 +246,7 @@ Recall that $MSE[\hat\theta] = E[(\hat\theta-\theta)^2] = Var[\hat\theta] + Bias
 
 ```{r}
 # MSE
-var(theta_hat) + (mean(theta_hat)-p)^2 # OR
-mean( (theta_hat-p)^2 )
+mean( (theta_hat - p)^2 )
 
 # MSE CI
 create_ci( (theta_hat-p)^2  )
@@ -256,7 +268,10 @@ for (i in seq_along(n_seq)) {
   p_seq[i] <- mean(abs(x/n_seq[i] - p) > epsilon)
 }
 
-qplot(n_seq, p_seq, geom = c("point","line")) +
+ggplot(data.frame(n = n_seq, p = p_seq),
+       aes(x = n, y = p_seq)) + 
+  geom_point() + 
+  geom_line() +
   labs(x = "Sample size", y = "Probability",
        title = "Consistency of sample proportion") 
 ```
@@ -302,7 +317,6 @@ create_ci( d$ybar - m )
 
 ```{r}
 # Variance
-var(d$ybar) # OR
 mean( (d$ybar - mean(d$ybar))^2 )
 
 # Variance with uncertainty
