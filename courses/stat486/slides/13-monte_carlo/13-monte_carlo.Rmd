@@ -124,8 +124,8 @@ rtnorm <- function(n, mean, sd, a, b) {
 Simulate and plot
 
 ```{r}
-m <- 0
-s <- 1
+m <- 10
+s <- 6
 a <- 2
 b <- 4
 
@@ -145,14 +145,17 @@ plot_mean(d)
 The mean actually can be calculated for a truncated normal
 
 ```{r}
-mean <- m + (dnorm(a)-dnorm(b))/(pnorm(b) - pnorm(a)) * s
+alpha <- (a-m)/s
+beta  <- (b-m)/s
+mean <- m + (dnorm(alpha)-dnorm(beta))/(pnorm(beta) - pnorm(alpha)) * s
 plot_mean(d, truth = mean)
 ```
 
 
 ### Cauchy mean
 
-Watch out! 
+**Watch out!**
+
 You need to pay attention to whether the variance is finite amongst 
 your random variables. 
 A Cauchy distribution has no moments and therefore its mean and variance
@@ -171,6 +174,7 @@ d <- create_mean_dataframe(x)
 plot_mean(d)
 plot_mean(d) + xlim(25,100) # will likely need to adjust the limits
 ```
+
 The CLT is not relevant here because the variance of the random variables is
 not finite. 
 
@@ -274,9 +278,11 @@ n <- 1e3
 y <- rnorm(n)
 e <- rexp(n)
 
-x <- y < x
+x <- abs(y) < e
 
 d <- create_proportion_dataframe(x)
 plot_proportion(d)
+
+tail(d,1)
 ```
 
