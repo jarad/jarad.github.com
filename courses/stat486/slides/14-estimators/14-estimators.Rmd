@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Estimators"
+title: "Estimator evaluation"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: 
@@ -17,7 +17,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library("tidyverse"); theme_set(theme_bw())
-library("scales") # for breaks_pretty()
 ```
 
 # Estimators
@@ -191,7 +190,7 @@ where
 
 - $z$ is the z critical value associated with a 100(1-a) confidence level, 
 - $n$ is the sample size,
-- $x$ is the sample mean, and
+- $\overline{x}$ is the sample mean, and
 - $s$ is the sample standard deviation.
 
 We will encapsulate this in a function
@@ -206,7 +205,14 @@ create_ci <- function(x, a = 0.05) {
 }
 ```
 
-## Binomial
+
+
+## Binomial - maximum likelihood estimator
+
+Recall that the MLE for the probability of success in a binomial is 
+\[ 
+\hat\theta_{MLE} = x/n.
+\]
 
 ### Bias 
 
@@ -253,7 +259,78 @@ create_ci( (theta_hat-p)^2  )
 ```
 
 
+### Consistency
 
+```{r}
+epsilon <- 0.01
+n_seq <- floor(10^seq(1, 5, length = 10))
+p_seq <- numeric(length(n_seq))
+
+for (i in seq_along(n_seq)) {
+  x <- rbinom(1e3, size = n_seq[i], prob = p)
+  p_seq[i] <- mean(abs(x/n_seq[i] - p) > epsilon)
+}
+
+ggplot(data.frame(n = n_seq, p = p_seq),
+       aes(x = n, y = p_seq)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Sample size", y = "Probability",
+       title = "Consistency of sample proportion") 
+```
+
+
+
+## Binomial - default Bayesian
+
+A *default Bayesian* analysis for an unknown binomial probability is 
+\[ 
+\hat\theta_{Bayes} = \frac{0.5 + x}{1 + n}
+\]
+
+### Bias 
+
+```{r}
+n <- 10
+p <- 0.3
+
+x <- rbinom(1e3, size = n, prob = p)
+theta_hat = (0.5 + x) / (1 + n)
+```
+
+```{r}
+ggplot() + 
+  geom_histogram(mapping = aes(x = theta_hat), bins = 30) +
+  geom_vline(xintercept = p, col = 'red') +
+  labs(title="Sampling distribution for sample proportion")
+```
+
+```{r}
+mean(theta_hat)        # expectation
+mean(theta_hat - p)    # bias
+create_ci(theta_hat - p) # bias CI
+```
+
+### Variance
+
+```{r}
+# variance
+mean( (theta_hat - mean(theta_hat))^2 ) 
+
+create_ci( (theta_hat - mean(theta_hat))^2 )
+```
+
+### Mean squared error
+
+Recall that $MSE[\hat\theta] = E[(\hat\theta-\theta)^2] = Var[\hat\theta] + Bias[\hat\theta]^2$.
+
+```{r}
+# MSE
+mean( (theta_hat - p)^2 )
+
+# MSE CI
+create_ci( (theta_hat-p)^2  )
+```
 
 
 ### Consistency
@@ -275,6 +352,11 @@ ggplot(data.frame(n = n_seq, p = p_seq),
   labs(x = "Sample size", y = "Probability",
        title = "Consistency of sample proportion") 
 ```
+
+
+
+
+
 
 
 ## Normal
@@ -347,8 +429,11 @@ for (i in seq_along(n_seq)) {
   })
   p_seq[i] <- mean( abs(xbar - m) > epsilon)
 }
-
-qplot(n_seq, p_seq, geom = c("point","line")) +
+   
+ggplot(data.frame(n = n_seq, p = p_seq), 
+       aes(x = n, y = p)) +
+  geom_line() +
+  geom_point() + 
   labs(x = "Sample size", y = "Probability",
-       title = "Consistency of sample mean") 
+       title = "Consistency of sample mean")
 ```
