@@ -36,4 +36,5 @@ you can find the source files
 
 - [Distributions](12-distributions/12-distributions.html) [R code](12-distributions/12-distributions.R)
 - [Monte Carlo Methods](13-monte_carlo/13-monte_carlo.html) [R code](13-monte_carlo/13-monte_carlo.R)
-- [Point estimation](14-estimators/14-estimators.html) [R code](14-estimators/14-estimators.R)
+- [Estimator evaluation](14-estimators/14-estimators.html) [R code](14-estimators/14-estimators.R)
+- [Interval coverage](15-intervals/15-intervals.html) [R code](15-intervals/15-intervals.R)

@@ -1,0 +1,399 @@
+---
+layout: page
+title: "Interval coverage"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](15-intervals.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+set.seed(20230305)
+```
+
+# Confidence intervals
+
+## Examples
+
+### Normal
+
+#### Known variance
+
+Let $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$ with $\sigma$ known.
+A 100(1-a)\% confidence interval for $\mu$ is 
+\[ 
+\overline{y} \pm z_{1-a/2} \sigma / \sqrt{n}
+\]
+where 
+
+- $n$ is the sample size,
+- $\overline{y}$ is the sample mean, and
+- $z_{1-a/2}$ is the *z critical value* such that 
+$1-a/2 = P(Z < z_{1-a/2})$ where $Z$ is a standard normal. 
+
+**Note:** The variance is known here and thus you can use a z critical value.
+
+For example
+
+```{r}
+a <- 0.05
+mu <- 0
+sigma <- 1
+
+y <- rnorm(10, mean = mu, sd = sigma)
+ybar <- mean(y)
+n <- length(y)
+z <- qnorm(1-a/2)
+
+ybar + c(-1,1) * z * sigma / n
+```
+
+
+#### Unknown variance
+
+Let $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$ with $\mu$ and $\sigma^2$ both
+unknown.
+A 100(1-a)\% confidence interval for $\mu$ is 
+\[ 
+\overline{y} \pm t_{n-1,1-a/2} s / \sqrt{n}
+\]
+where 
+
+- $n$ is the sample size,
+- $\overline{y}$ is the sample mean,
+- $s$ is the sample standard deviation, and
+- $t_{n-1,1-a/2}$ is the *t critical value* such that 
+$1-a/2 = P(T_{n-1} < t_{n-1,1-a/2})$ where 
+$T_{n-1}$ is a student $T$ distribution with $n-1$ degrees of freedom.
+
+For example
+
+```{r}
+s <- sd(y)
+t <- qt(1-a/2, df = n-1)
+
+ybar + c(-1,1) * t * s / n
+```
+
+
+
+As $n\to\infty$, $t_{n-1,1-a/2} \to z_{1-a/2}$ and $s^2 \to \sigma^2$.
+(That is, $s^2$ is a *consistent* estimator for $\sigma^2$.)
+Thus, for large sample sizes, an *approximate* 100(1-a)\% confidence interval
+for $\mu$ is 
+\[ 
+\overline{y} \pm z_{1-a/2} s / \sqrt{n}
+\]
+where we have replaced the t critical value with a z critical value. 
+
+For example
+```{r}
+ybar + c(-1,1) * z * s / sqrt(n)
+```
+
+**Note:** The t interval is an exact confidence interval while this interval
+is an approximate confidence interval. 
+
+
+
+### Binomial
+
+#### Large sample 
+
+Let $X\sim Bin(n,\theta)$. 
+An approximate 100(1-a)\% confidence interval for $\theta$ is 
+\[ 
+\hat\theta \pm z_{1-a/2} \sqrt{\frac{\hat\theta(1-\hat\theta)}{n}}
+\]
+where $\hat\theta = x/n$.
+
+This is an approximate confidence interval because it is constructed based 
+on the Central Limit Theorem (CLT) which states that, 
+for large enough sample size,
+\[ 
+\hat\theta \stackrel{\cdot}{\sim} N\left( \theta, \frac{\hat\theta(1-\hat\theta)}{n} \right).
+\]
+
+For example
+```{r}
+p <- 0.5
+n <- 30
+
+x <- rbinom(1, size = n, prob = p)
+
+theta_hat <- x/n
+
+theta_hat + c(-1,1) * z * sqrt(theta_hat*(1-theta_hat)/n)
+```
+
+
+#### binom.test()
+
+R actually does not implement this interval in any of its base R functions. 
+Instead, it provides better confidence intervals.
+
+For example,
+```{r}
+binom.test(x, n)$conf.int
+```
+
+This interval is based on [the Clopper-Pearson interval](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Clopper%E2%80%93Pearson_interval).
+This interval finds all the values for theta that do not reject a 
+hypothesis test (when those values are set as the null value) 
+and constructing the interval based on those values. 
+These confidence intervals are *exact*.
+
+
+#### prop.test()
+
+Here are some improved *approximate* confidence intervals. 
+
+```{r}
+prop.test(x, n)$conf.int
+prop.test(x, n, correct = FALSE)$conf.int
+```
+
+These intervals are based on [Wilson's score interval](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Wilson_score_interval)
+with and without [continuity correction](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Wilson_score_interval_with_continuity_correction). 
+There are all approximate as they are based on a better asymptotic approximation. 
+
+There are many more [approximate confidence intervals for a binomial probability](https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval). 
+
+## Interpretation
+
+So what is a confidence interval anyway?
+When we have a $100(1-a)$\% confidence interval, 
+what does the $100(1-a)$\% mean? 
+When the interval is approximate, what does that mean?
+
+An exact $100(1-a)$\% confidence interval means that,
+across different realizations of your data, 
+the probability that the interval will contain the truth is at least $1-a$. 
+
+An approximate $100(1-a)$\% confidence interval means that
+as the sample size tends to infinity,
+across different realizations of your data, 
+the probability that the interval will contain the truth converges to at least $1-a$. 
+
+The key to both of these definitions is that it is talking about what happens 
+for different realizations of your data. 
+
+
+# Monte Carlo 
+
+Remember that to understand the uncertainty in our Monte Carlo estimate we can 
+utilize the CLT. 
+
+```{r}
+create_ci <- function(x, a = 0.05) {
+  theta_hat <- mean(x)
+  n <- length(x)
+  
+  theta_hat + c(-1,1) * qnorm(1-a/2) * sqrt(theta_hat*(1-theta_hat)/n)
+}
+```
+
+## Normal
+
+### Known variance
+
+```{r}
+a <- 0.05
+n <- 10
+mu <- 0
+sigma <- 1
+
+z <- qnorm(1-a/2)
+
+expand.grid(rep = 1:1e3,
+            n = 1:n) %>%
+  mutate(
+    y = rnorm(n(), 
+              mean = mu, 
+              sd = sigma)
+  ) %>%
+  group_by(rep) %>%
+  summarize(
+    n = n(),
+    ybar = mean(y),
+    lcl = ybar - z * sigma / sqrt(n),
+    ucl = ybar + z * sigma / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    within = lcl <= mu & mu <= ucl
+  ) %>%
+  pull(within) %>%
+  create_ci()
+```
+
+
+
+
+### Unknown variance
+
+```{r}
+a <- 0.05
+n <- 10
+mu <- 0
+sigma <- 1
+
+t <- qt(1-a/2, df = n-1)
+
+expand.grid(rep = 1:1e3,
+            n = 1:n) %>%
+  mutate(
+    y = rnorm(n(), 
+              mean = mu, 
+              sd = sigma)
+  ) %>%
+  group_by(rep) %>%
+  summarize(
+    n = n(),
+    ybar = mean(y),
+    s = sd(y), 
+    lcl = ybar - t * s / sqrt(n),
+    ucl = ybar + t * s / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    within = lcl <= mu & mu <= ucl
+  ) %>%
+  pull(within) %>%
+  create_ci()
+```
+
+
+
+
+
+### Approximate
+
+```{r}
+a <- 0.05
+n <- 10
+mu <- 0
+sigma <- 1
+
+z <- qnorm(1-a/2)
+
+expand.grid(rep = 1:1e3,
+            n = 1:n) %>%
+  mutate(
+    y = rnorm(n(), 
+              mean = mu, 
+              sd = sigma)
+  ) %>%
+  group_by(rep) %>%
+  summarize(
+    n = n(),
+    ybar = mean(y),
+    s = sd(y), 
+    lcl = ybar - z * s / sqrt(n),
+    ucl = ybar + z * s / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    within = lcl <= mu & mu <= ucl
+  ) %>%
+  pull(within) %>%
+  create_ci()
+```
+
+
+## Binomial
+
+### CLT
+
+```{r}
+a <- 0.05
+n <- 30
+p <- 0.5
+
+z <- qnorm(1-a/2)
+
+data.frame(
+  x = rbinom(1e3, size = n, prob = p)
+) %>%
+  mutate(
+    theta_hat = x/n,
+    
+    lcl = theta_hat - z * sqrt(theta_hat*(1-theta_hat)/n),
+    ucl = theta_hat + z * sqrt(theta_hat*(1-theta_hat)/n),
+    within = lcl <= p & p <= ucl
+  ) %>%
+  pull(within) %>%
+  create_ci()
+```
+
+### Exact
+
+```{r}
+a <- 0.05
+n <- 30
+p <- 0.5
+
+data.frame(
+  x = rbinom(1e3, size = n, prob = p)
+) %>%
+  rowwise() %>%
+  mutate(
+    lcl = binom.test(x, n)$conf.int[1],
+    ucl = binom.test(x, n)$conf.int[2],
+    within = lcl <= p & p <= ucl
+  ) %>%
+  pull(within) %>%
+  create_ci()
+```
+
+
+### Wilson's score interval
+
+```{r}
+a <- 0.05
+n <- 30
+p <- 0.5
+
+data.frame(
+  x = rbinom(1e3, size = n, prob = p)
+) %>%
+  rowwise() %>%
+  mutate(
+    lcl = prop.test(x, n, correct = FALSE)$conf.int[1],
+    ucl = prop.test(x, n, correct = FALSE)$conf.int[2],
+    within = lcl <= p & p <= ucl
+  ) %>%
+  pull(within) %>%
+  create_ci()
+```
+
+
+### Wilson's score interval with continuity correction
+
+```{r}
+a <- 0.05
+n <- 10
+p <- 0.5
+
+data.frame(
+  x = rbinom(1e3, size = n, prob = p)
+) %>%
+  rowwise() %>%
+  mutate(
+    lcl = prop.test(x, n, correct = TRUE)$conf.int[1],
+    ucl = prop.test(x, n, correct = TRUE)$conf.int[2],
+    within = lcl <= p & p <= ucl
+  ) %>%
+  pull(within) %>%
+  create_ci()
+```
+
