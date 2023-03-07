@@ -1,0 +1,81 @@
+---
+layout: page
+title: "Continuous time Markov processes"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+header-includes:
+- \usepackage{blkarray}
+- \usepackage{amsmath}
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](16-processes.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+set.seed(20230307)
+```
+
+# Continuous time Markov process
+
+Consider a collection of moving molecules of different species in a volume.
+
+```{r}
+n <- 20
+
+d <- data.frame(
+  x = runif(n),
+  y = runif(n),
+  species = sample(c("S","I","R"), size = n, replace = TRUE, 
+                   prob = c(0.6,0.2,0.2)),
+  speed = runif(n,0.05, 0.1),
+  direction = runif(n, max = 2*pi)
+) %>%
+  mutate(
+    xend = x + speed*cos(direction),
+    yend = y + speed*sin(direction),
+    species = factor(species, levels = c("S","I","R"))
+  )
+
+
+
+ggplot(d, aes(x = x, y = y, xend = xend, yend=yend,
+              color = species, shape = species)) +
+  geom_point(size = 5) +
+  geom_segment(arrow = arrow(length = unit(0.2, "cm")), color = "black") +
+  scale_color_manual(
+    values = c(
+      "S" = "seagreen",
+      "I" = "blue",
+      "R" = "red"
+    )
+  )
+```
+
+When the molecules collide, they 
+can change according to a set of reactions, 
+e.g. 
+\[ \begin{array}{r\quad{}ll}
+I:&S + I &\to 2I \\
+II:&I &\to R
+\end{array} \]
+
+These reactions create a stoichiometry,
+i.e. the rules for what occurs when a reaction happens. 
+The stoichiometry here is 
+\[ \begin{array}{r|rrr}
+& S & I & R \\
+\hline
+  I  & -1 & 1 & 0 \\
+  II & 0 & -1 & 1\\
+\end{array} \]
+
+Each reaction also has a rate that may depend on the number of molecules of the
+different species. 
