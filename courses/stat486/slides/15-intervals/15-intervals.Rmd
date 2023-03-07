@@ -54,7 +54,7 @@ ybar <- mean(y)
 n <- length(y)
 z <- qnorm(1-a/2)
 
-ybar + c(-1,1) * z * sigma / n
+ybar + c(-1,1) * z * sigma / sqrt(n)
 ```
 
 
@@ -81,7 +81,7 @@ For example
 s <- sd(y)
 t <- qt(1-a/2, df = n-1)
 
-ybar + c(-1,1) * t * s / n
+ybar + c(-1,1) * t * s / sqrt(n)
 ```
 
 
@@ -214,7 +214,7 @@ sigma <- 1
 
 z <- qnorm(1-a/2)
 
-expand.grid(rep = 1:1e3,
+d <- expand.grid(rep = 1:1e3,
             n = 1:n) %>%
   mutate(
     y = rnorm(n(), 
@@ -231,7 +231,14 @@ expand.grid(rep = 1:1e3,
   ) %>%
   mutate(
     within = lcl <= mu & mu <= ucl
-  ) %>%
+  ) 
+
+ggplot(d %>% filter(rep <= 50), 
+       aes(x = rep, ymin = lcl, ymax = ucl, color = within)) + 
+  geom_linerange() + 
+  coord_flip()
+
+d %>% 
   pull(within) %>%
   create_ci()
 ```
@@ -242,11 +249,6 @@ expand.grid(rep = 1:1e3,
 ### Unknown variance
 
 ```{r}
-a <- 0.05
-n <- 10
-mu <- 0
-sigma <- 1
-
 t <- qt(1-a/2, df = n-1)
 
 expand.grid(rep = 1:1e3,
@@ -279,13 +281,6 @@ expand.grid(rep = 1:1e3,
 ### Approximate
 
 ```{r}
-a <- 0.05
-n <- 10
-mu <- 0
-sigma <- 1
-
-z <- qnorm(1-a/2)
-
 expand.grid(rep = 1:1e3,
             n = 1:n) %>%
   mutate(
@@ -315,11 +310,8 @@ expand.grid(rep = 1:1e3,
 ### CLT
 
 ```{r}
-a <- 0.05
 n <- 30
 p <- 0.5
-
-z <- qnorm(1-a/2)
 
 data.frame(
   x = rbinom(1e3, size = n, prob = p)
@@ -338,10 +330,6 @@ data.frame(
 ### Exact
 
 ```{r}
-a <- 0.05
-n <- 30
-p <- 0.5
-
 data.frame(
   x = rbinom(1e3, size = n, prob = p)
 ) %>%
@@ -380,10 +368,6 @@ data.frame(
 ### Wilson's score interval with continuity correction
 
 ```{r}
-a <- 0.05
-n <- 10
-p <- 0.5
-
 data.frame(
   x = rbinom(1e3, size = n, prob = p)
 ) %>%
