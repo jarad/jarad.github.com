@@ -12,4 +12,10 @@ during R object slides.
 
 ## Slides/Lectures
 
-Remove 08-R_object lecture/slides and increase function slides
+- Remove 08-R_object lecture/slides and increase function slides
+- Reorganize Monte Carlo module
+  - Distributions (add `sample` and `set.seed`)
+  - Monte Carlo
+  - Processes
+  - Estimator
+  - Interval
