@@ -21,6 +21,10 @@ library("tidyverse"); theme_set(theme_bw())
 library("scales") # for breaks_pretty()
 ```
 
+# R conventions
+
+## Distribution naming
+
 The distributions built into base R can be found using 
 
 ```{r, eval=FALSE}
@@ -33,6 +37,33 @@ Most distributions have 4 functions:
 - p<name>: cumulative distribution function
 - q<name>: quantile function (inverse of the cdf)
 - r<name>: random draws
+
+
+
+## Reproducible random draws
+
+Simulations will necessarily be random and thus, every time you obtain a random
+draw, it will be different. 
+
+For example,
+```{r}
+runif(5)
+runif(5)
+```
+
+Many times we will want to create a reproducible set of simulations. 
+To do this, you can use the `set.seed()` function. 
+
+For example,
+```{r}
+set.seed(1)
+runif(5)
+set.seed(1)
+runif(5)
+```
+
+
+
 
 # Discrete distributions
 
@@ -161,7 +192,48 @@ ggplot(mapping = aes(x = draws)) +
 ```
 
 
+
+
+## Multinomial distribution
+
+Often times we have a distribution over a categorical variable and each category
+has a certain probability. 
+This is called a multinomial distribution and is a generalization of the 
+binomial distribution to more than two categories. 
+
+### Probability mass function
+
+Let $X_i$ for $i = 1,\ldots, k$ be the number of observations in category $i$.
+Then a random vector $(X_1,\ldots,X_k)$ has a multinomial distribution if the 
+probability mass function is 
+\[ 
+f(x_1,\ldots,x_k) = 
+\frac{n!}{x_1!\ldots x_k!}p_1^{x_1}\times \cdots \times p_k^{x_k}
+\]
+with $\sum_{i=1}^k x_i = n$ and probabilities $p_k>0$ and $\sum_{i=1}^k p_k = 1$. 
+### Random draws
+
+Unlike all the other distributions with their consistent naming convention,
+we will use the `sample()` function to draw from a multinomial distribution. 
+This will result in telling us the categories rather than the counts,
+but we can always compute the counts later. 
+
+```{r}
+sample(c("Cheerios","Trix","Cocoa puffs"), 
+       size = 10, replace = TRUE, prob = c(.4,.5,.1))
+```
+
+
 # Continuous distributions
+
+## Uniform
+
+The uniform distribution, particularly on (0,1), is the result of many 
+pseudorandom number generators and is also the basis of many algorithms to
+obtain other random variables. 
+
+### 
+
 
 ## Normal (Gaussian)
 
