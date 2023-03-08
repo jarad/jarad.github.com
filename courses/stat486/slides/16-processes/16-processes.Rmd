@@ -23,25 +23,160 @@ library("tidyverse"); theme_set(theme_bw())
 set.seed(20230307)
 ```
 
-# Continuous time Markov process
+# Exponential Distribution
 
-Consider a collection of moving molecules of different species in a volume.
+The exponential distribution is commonly used as a *waiting time* distribution,
+i.e. the time until something happens. 
+
+## Probability density function
+
+A random variable $X$ has an exponential distribution if its density function is
+\[ 
+f(x) = \lambda e^{-\lambda x} \quad \mbox{for }x>0
+\]
+for rate $\lambda>0$. 
 
 ```{r}
-n <- 20
+r <- 3 # rate
+
+ggplot(data.frame(x = 0:(4/r))) + 
+  stat_function(fun = dexp, args = list(rate = r)) 
+```
+
+The probability density function is strictly decreasing for any rate. 
+
+Note: Some parameterizations of the exponential use the mean rather than the 
+rate as the parameter. 
+
+## Cumulative distribution function
+
+The cumulative distribution function is 
+\[
+F(x) = P(X \le x) = 1-e^{-\lambda x} \quad \mbox{for }x > 0. 
+\]
+
+```{r}
+ggplot(data.frame(x = 0:(4/r))) + 
+  stat_function(fun = pexp, args = list(rate = r)) 
+```
+
+## Memoryless property
+
+The probability of being greater than some value has a simple form for the 
+exponential distribution. 
+\[ 
+P(X > x) = 1-P(X\le x) = e^{-\lambda x}.
+\]
+
+The exponential distribution has a property called the memoryless property 
+that states
+\[
+P(X > x+c | X > c) = P(X > x) = e^{-\lambda x}
+\]
+
+For example, 
+
+```{r}
+c <- 1
+
+# Check probability 
+1-pexp(c, rate = r) # if this probability is too small, the simulation will take a while
+
+# Simulate exponential random variables that are greater than c
+x <- rexp(1e4, rate = r)
+for (i in seq_along(x)) {
+  while (x[i] < c)
+    x[i] <- rexp(1, rate = r)
+}
+```
+
+```{r}
+ggplot(
+  data.frame(x=x), 
+  aes(x-c)         # performs the shift
+) +
+  stat_ecdf() +
+  stat_function(fun = pexp, args = list(rate = r), color = "red") 
+```
+
+
+
+
+
+## Minimum exponential
+
+Let 
+\[ 
+X_i \stackrel{ind}{\sim} Exp(\lambda_i)
+\]
+what is the distribution for $T = \min\{X_1,\ldots,X_n\}$?
+
+It turns out that 
+\[
+T \sim Exp\left(\sum_{i=1}^n \lambda_i\right).
+\]
+
+If you are only told that $T=t$ which $X_i=t$?  
+That is, which exponential was the minimum one?
+
+We won't know, but the probability is proportional to the rate.
+So, we know
+\[ 
+P(X_i = t) \propto \lambda_i = \frac{\lambda_i}{\sum_{j=1}^n \lambda_j}.
+\]
+
+
+
+
+
+
+
+
+
+# Continuous time Markov process
+
+These types of models are used in a wide variety of fields. 
+Here we will motivate the module using a chemistry experiment called
+[Michaelis-Menton kinetics](https://en.wikipedia.org/wiki/Michaelis%E2%80%93Menten_kinetics). 
+This experiment creates a product "P" from a substrate "S" in a reaction that is
+catalyzed by an enzyme "E". 
+In order to convert the substrate to the product, 
+the enzyme must bind to the substrate to create the enzyme-substrate complex
+"ES". 
+
+This system can be represented by this system of reactions
+\[ 
+E + S \leftrightarrows ES \to P.
+\]
+This system of reactions actually has 3 reactions:
+\[ \begin{array}{rll}
+I:& E + S &\stackrel{\lambda_1}{\to} ES \\
+II:& ES &\stackrel{\lambda_2}{\to} E + S \\
+III:& ES &\stackrel{\lambda_3}{\to} P \\
+\end{array} \]
+The $\lambda$ indicate the *rate* of the reaction. 
+
+In this system, reaction I requires that an enzyme molecule come into contact 
+with a substrate molecule. 
+
+If these molecules are in a volume, then the system might look like this
+
+```{r}
+set.seed(20230309)
+n <- 30
 
 d <- data.frame(
   x = runif(n),
   y = runif(n),
-  species = sample(c("S","I","R"), size = n, replace = TRUE, 
-                   prob = c(0.6,0.2,0.2)),
+  species = sample(c("E","S","ES","P"), size = n, replace = TRUE, 
+                   prob = c(0.2,0.6,0.1,0.1)),
   speed = runif(n,0.05, 0.1),
   direction = runif(n, max = 2*pi)
 ) %>%
   mutate(
     xend = x + speed*cos(direction),
     yend = y + speed*sin(direction),
-    species = factor(species, levels = c("S","I","R"))
+    species = factor(species, levels = c("E","S","ES","P"))
   )
 
 
@@ -52,15 +187,35 @@ ggplot(d, aes(x = x, y = y, xend = xend, yend=yend,
   geom_segment(arrow = arrow(length = unit(0.2, "cm")), color = "black") +
   scale_color_manual(
     values = c(
-      "S" = "seagreen",
-      "I" = "blue",
-      "R" = "red"
+      "E" = "red",
+      "S" = "blue",
+      "ES" = "purple",
+      "P" = "green"
+    )
+  ) +
+  scale_shape_manual(
+    values = c(
+      "E" = 4,
+      "S" = 0,
+      "ES" = 7,
+      "P" = 19
     )
   )
 ```
 
-When the molecules collide, they 
-can change according to a set of reactions, 
+
+
+
+
+
+
+
+
+
+
+
+
+Molecules can change according to a set of reactions, 
 e.g. 
 \[ \begin{array}{r\quad{}ll}
 I:&S + I &\stackrel{\lambda}{\to} 2I \\
