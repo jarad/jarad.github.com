@@ -152,7 +152,7 @@ This system of reactions actually has 3 reactions:
 \[ \begin{array}{rll}
 I:& E + S &\stackrel{\lambda_1}{\to} ES \\
 II:& ES &\stackrel{\lambda_2}{\to} E + S \\
-III:& ES &\stackrel{\lambda_3}{\to} P \\
+III:& ES &\stackrel{\lambda_3}{\to} E + P \\
 \end{array} \]
 The $\lambda$ indicate the *rate* of the reaction. 
 
@@ -203,33 +203,214 @@ ggplot(d, aes(x = x, y = y, xend = xend, yend=yend,
   )
 ```
 
+These reactions can be coded by indicting two matrices: Pre and Post. 
+These matrices indicate the reactants (Pre) and the products (Post). 
+
+```{r}
+Pre <- rbind(
+#   E  S ES  P
+  c(1, 1, 0, 0),
+  c(0, 0, 1, 0),
+  c(0, 0, 1, 0)
+)
+
+rownames(Pre) <- c("I","II","III")
+colnames(Pre) <- c("E","S","ES","P")
+Pre
+
+Post <- rbind(
+#   E  S ES  P
+  c(0, 0, 1, 0),
+  c(1, 1, 0, 0),
+  c(1, 0, 0, 1)
+)
+
+rownames(Post) <- c("I","II","III")
+colnames(Post) <- c("E","S","ES","P")
+Post
+```
+
+The *reaction* matrix is constructed by subtracting these and the 
+*stoichiometry* matrix by transposing the reaction matrix.
+
+```{r}
+A <- Post - Pre # reaction
+S <- t(A)       # stoichiometry
+
+A
+S
+```
+
+We can update the state of the system by either the stoichiometry or reaction 
+matrix. 
+
+```{r}
+x0 <- c(5, 100, 1, 0)
+x0 + S[,1]
+x0 + S[,2]
+x0 + S[,3]
+```
+
+To determine which reaction occurs we need to calculate the *propensity* of the 
+reaction. 
 
 
 
 
 
+## Examples
+
+### SIR Model
 
 
+The SIR model has three states: 
 
+- [S]usceptible
+- [I]nfectious
+- [R]ecovered
 
-
-
-
-Molecules can change according to a set of reactions, 
-e.g. 
+There are two reactions that can occur 
 \[ \begin{array}{r\quad{}ll}
 I:&S + I &\stackrel{\lambda}{\to} 2I \\
 II:&I &\stackrel{\rho}{\to} R
 \end{array} \]
 
-These reactions create a stoichiometry,
-i.e. the rules for what occurs when a reaction happens. 
-The stoichiometry here is 
+The propensity of these reactions are 
+\[ \begin{array}{r\quad{}ll}
+I:& \lambda \, S\cdot I / N \\
+II:& \rho \, I
+\end{array} \]
+
+The system is updated by the reaction matrix
+
 \[ \begin{array}{r|rrr}
 & S & I & R \\
 \hline
   I  & -1 & 1 & 0 \\
   II & 0 & -1 & 1\\
 \end{array} \]
-and a rate, i.e. $\lambda$ and $\rho$. 
 
+Due to the two reactions converting a single individual from one state to 
+another, this model has a constant population size. 
+
+#### R implementation
+
+```{r}
+#' Function to simulate a single SIR transition
+#' 
+#' This function will simulate a single SIR transition based on the current 
+#' `state` of the system and the reaction `rates`
+simulate_transition <- function(state, rate, initial_time) {
+  propensity <- c(
+    rate[1] * state[1] * state[2] / sum(state),
+    rate[2] * state[2]
+  )
+  
+  time_increment <- rexp(1, rate = sum(propensity))
+  reaction       <- sample(1:2, 1, prob = propensity)
+  
+  # Update state according to stoichiometry
+  if (reaction == 1) {
+    state[1] <- state[1] - 1
+    state[2] <- state[2] + 1
+  } else {
+    state[2] <- state[2] - 1
+    state[3] <- state[3] + 1
+  }
+  
+  return(
+    list(
+      time  = initial_time + time_increment,
+      state = state
+    ))
+}
+```
+
+```{r}
+simulate_outbreak <- function(initial_state, rate, max_rxns = 5000) {
+  # Create storage structures for state and time
+  n_possible_rxns <- min(2*initial_state[1] + initial_state[2]+1, max_rxns + 1)
+  state <- matrix(initial_state, nrow = 3, ncol = n_possible_rxns)
+  n_rxns <- 1
+  time   <- rep(0, n_possible_rxns) 
+  
+  # Simulate outbreak
+  while(state[2,n_rxns] > 0 & n_rxns <= max_rxns ) {
+    tmp <- simulate_transition(state[,n_rxns], rate, time[n_rxns])
+    n_rxns         <- n_rxns + 1
+    time[n_rxns]   <- tmp$time
+    state[,n_rxns] <- tmp$state
+  }
+  
+  # Clean up data frames
+  n <- which(state[2,] == 0)
+  
+  d <- data.frame(
+    S = state[1, 1:n],
+    I = state[2, 1:n],
+    R = state[3, 1:n],
+    time = time[1:n]
+  ) %>%
+    pivot_longer(-time, names_to = "state", values_to = "count") %>%
+    mutate(
+      state = factor(state, levels = c("S","I","R"))
+    )
+}
+```
+
+Sometimes the outbreak will die out right away
+
+```{r}
+set.seed(1)
+d <- simulate_outbreak(c(1000, 1, 0), rate = c(2,1))
+
+ggplot(d, aes(x = time, y = count, color = state)) + 
+  geom_step()
+```
+
+Sometimes the outbreak will last a while
+
+```{r}
+set.seed(4)
+d <- simulate_outbreak(c(1000, 1, 0), rate = c(2,1))
+
+ggplot(d, aes(x = time, y = count, color = state)) + 
+  geom_step()
+```
+
+#### Scientific questions
+
+One question we might ask is: what is the probability the outbreak will die 
+out quickly (before time 5) for a given initial state and reaction rates. 
+
+To answer this question, we can run a Monte Carlo study
+
+```{r}
+X0 <- c(1000, 2, 0)
+rate <- c(2,1)
+
+die_out <- replicate(1e3, {
+  d <- simulate_outbreak(X0, rate)
+  return(max(d$time) < 5)
+})
+
+mean(die_out)
+binom.test(sum(die_out), length(die_out))$conf.int
+```
+
+Another question could be, given the outbreak lasts longer than 5,
+what is the expected number of people who will be infected?
+
+```{r}
+X0 <- c(1000, 1, 0)
+rate <- c(2,1)
+
+infected <- replicate(1e3, {
+  d <- simulate_outbreak(X0, rate)
+  while(max(d$time) < 5)
+    d <- simulate_outbreak(X0, rate)
+  return(max(d$count[d$state == "R"]))
+})
+
+t.test(infected)$conf.int
+```
