@@ -1,82 +1,21 @@
----
-layout: page
-title: "Continuous time Markov processes"
-author: "Jarad Niemi"
-date: "`r Sys.Date()`"
-header-includes:
-- \usepackage{blkarray}
-- \usepackage{amsmath}
-output: 
-  html_document:
-      toc: true
-      toc_float: true
----
-
-```{r setup, include=FALSE, purl=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache=TRUE)
-```
-
-[R code](16-processes.R)
-
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------------------
 library("tidyverse"); theme_set(theme_bw())
 set.seed(20230307)
-```
 
-# Exponential Distribution
 
-The exponential distribution is commonly used as a *waiting time* distribution,
-i.e. the time until something happens. 
-
-## Probability density function
-
-A random variable $X$ has an exponential distribution if its density function is
-\[ 
-f(x) = \lambda e^{-\lambda x} \quad \mbox{for }x>0
-\]
-for rate $\lambda>0$. 
-
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------------------
 r <- 3 # rate
 
 ggplot(data.frame(x = 0:(4/r))) + 
   stat_function(fun = dexp, args = list(rate = r)) 
-```
 
-The probability density function is strictly decreasing for any rate. 
 
-Note: Some parameterizations of the exponential use the mean rather than the 
-rate as the parameter. 
-
-## Cumulative distribution function
-
-The cumulative distribution function is 
-\[
-F(x) = P(X \le x) = 1-e^{-\lambda x} \quad \mbox{for }x > 0. 
-\]
-
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------------------
 ggplot(data.frame(x = 0:(4/r))) + 
   stat_function(fun = pexp, args = list(rate = r)) 
-```
 
-## Memoryless property
 
-The probability of being greater than some value has a simple form for the 
-exponential distribution. 
-\[ 
-P(X > x) = 1-P(X\le x) = e^{-\lambda x}.
-\]
-
-The exponential distribution has a property called the memoryless property 
-that states
-\[
-P(X > x+c | X > c) = P(X > x) = e^{-\lambda x}
-\]
-
-For example, 
-
-```{r conditional_exponential}
+## ----conditional_exponential------------------------------------------------------------------------------------------------------------
 c <- 1
 
 # Check probability 
@@ -88,80 +27,18 @@ for (i in seq_along(x)) {
   while (x[i] < c)
     x[i] <- rexp(1, rate = r)
 }
-```
 
-```{r, dependson="conditional_exponential"}
+
+## ---- dependson="conditional_exponential"-----------------------------------------------------------------------------------------------
 ggplot(
   data.frame(x=x), 
   aes(x-c)         # performs the shift
 ) +
   stat_ecdf() +
   stat_function(fun = pexp, args = list(rate = r), color = "red") 
-```
 
 
-
-
-
-## Minimum exponential
-
-Let 
-\[ 
-X_i \stackrel{ind}{\sim} Exp(\lambda_i)
-\]
-what is the distribution for $T = \min\{X_1,\ldots,X_n\}$?
-
-It turns out that 
-\[
-T \sim Exp\left(\sum_{i=1}^n \lambda_i\right).
-\]
-
-If you are only told that $T=t$ which $X_i=t$?  
-That is, which exponential was the minimum one?
-
-We won't know, but the probability is proportional to the rate.
-So, we know
-\[ 
-P(X_i = t) \propto \lambda_i = \frac{\lambda_i}{\sum_{j=1}^n \lambda_j}.
-\]
-
-
-
-
-
-
-
-
-
-# Continuous time Markov process
-
-These types of models are used in a wide variety of fields. 
-Here we will motivate the module using a chemistry experiment called
-[Michaelis-Menton kinetics](https://en.wikipedia.org/wiki/Michaelis%E2%80%93Menten_kinetics). 
-This experiment creates a product "P" from a substrate "S" in a reaction that is
-catalyzed by an enzyme "E". 
-In order to convert the substrate to the product, 
-the enzyme must bind to the substrate to create the enzyme-substrate complex
-"ES". 
-
-This system can be represented by this system of reactions
-\[ 
-E + S \leftrightarrows ES \to P.
-\]
-This system of reactions actually has 3 reactions:
-\[ \begin{array}{rll}
-I:& E + S &\stackrel{\lambda_1}{\to} ES \\
-II:& ES &\stackrel{\lambda_2}{\to} E + S \\
-III:& ES &\stackrel{\lambda_3}{\to} E + P \\
-\end{array} \]
-The $\lambda$ indicate the *rate* of the reaction. 
-
-In this system, reaction I requires that an enzyme molecule come into contact 
-with a substrate molecule. 
-
-If these molecules are in a volume, then the system might look like this
-
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------------------
 set.seed(20230309)
 n <- 30
 
@@ -201,12 +78,9 @@ ggplot(d, aes(x = x, y = y, xend = xend, yend=yend,
       "P" = 19
     )
   )
-```
 
-These reactions can be coded by indicting two matrices: Pre and Post. 
-These matrices indicate the reactants (Pre) and the products (Post). 
 
-```{r PrePost}
+## ----PrePost----------------------------------------------------------------------------------------------------------------------------
 Pre <- rbind(
 #   E  S ES  P
   c(1, 1, 0, 0),
@@ -228,61 +102,24 @@ Post <- rbind(
 rownames(Post) <- c("I","II","III")
 colnames(Post) <- c("E","S","ES","P")
 Post
-```
 
-The *reaction* matrix is constructed by subtracting these and the 
-*stoichiometry* matrix by transposing the reaction matrix.
 
-```{r stoichiometry, dependson="PrePost"}
+## ----stoichiometry, dependson="PrePost"-------------------------------------------------------------------------------------------------
 A <- Post - Pre # reaction
 S <- t(A)       # stoichiometry
 
 A
 S
-```
 
-We can update the state of the system by either the stoichiometry or reaction 
-matrix. 
 
-```{r, dependson="stoichiometry"}
+## ---- dependson="stoichiometry"---------------------------------------------------------------------------------------------------------
 x0 <- c(5, 100, 1, 0)
 x0 + S[,1]
 x0 + S[,2]
 x0 + S[,3]
-```
-
-To determine which reaction occurs we need to calculate the *propensity* of the 
-reaction. 
-The propensity is the product of two components: the reaction rate and the 
-number of combinations of the Pre molecules. 
-
-For this model we have the following propensities:
-\[ \begin{array}{rll}
-I:& \lambda_1 E \cdot S \\
-II:& \lambda_2 ES \\
-III:& \lambda_3 ES \\
-\end{array} \] 
 
 
-## Simulation
-
-To simulate this continuous time Markov process, we iterate through these steps
-
-1. Simulate a time increment which has an exponential distribution with rate 
-equal to the sum of the propensities.
-1. Simulate which reaction occurred which has a discrete distribution with 
-probability proportional to the propensity. 
-1. Update time according to the time increment.
-1. Update the state according to the reaction/stoichiometry matrix
-
-
-
-
-
-
-#### R implementation
-
-```{r simulate_michaelis_menton_transition}
+## ----simulate_michaelis_menton_transition-----------------------------------------------------------------------------------------------
 michaelis_menton_reaction_matrix <- rbind(
   #  E   S  ES P
   c(-1, -1,  1, 0),
@@ -312,9 +149,9 @@ simulate_michaelis_menton_transition <- function(state, rate, initial_time) {
       state = state
     ))
 }
-```
 
-```{r simulate_michaelis_menton_system, dependson="simulate_michaelis_menton_transition"}
+
+## ----simulate_michaelis_menton_system, dependson="simulate_michaelis_menton_transition"-------------------------------------------------
 simulate_michaelis_menton_system <- function(initial_state, rate, max_rxns = 1e3) {
   # Create storage structures for state and time
   n_possible_rxns <- max_rxns + 1
@@ -342,67 +179,17 @@ simulate_michaelis_menton_system <- function(initial_state, rate, max_rxns = 1e3
       state = factor(state, levels = c("E","S","ES","P"))
     )
 }
-```
 
-This 
 
-```{r, dependson="simulate_michaelis_menton_system"}
+## ---- dependson="simulate_michaelis_menton_system"--------------------------------------------------------------------------------------
 set.seed(1)
 d <- simulate_michaelis_menton_system(c(5, 100, 0, 0), rate = c(1,1,.1), max_rxns = 1e3)
 
 ggplot(d, aes(x = time, y = count, color = state)) + 
   geom_step()
-```
-
-This model is a continuous time Markov process because 
-
-1. Time can be incremented by any amount (rather than a discrete amount).
-1. The state of the system is updated based on the current state (as opposed to past history).
 
 
-
-
-
-
-## Examples
-
-
-### SIR Model
-
-
-The SIR model has three states: 
-
-- [S]usceptible
-- [I]nfectious
-- [R]ecovered
-
-There are two reactions that can occur 
-\[ \begin{array}{r\quad{}ll}
-I:&S + I &\stackrel{\lambda}{\to} 2I \\
-II:&I &\stackrel{\rho}{\to} R
-\end{array} \]
-
-The propensity of these reactions are 
-\[ \begin{array}{r\quad{}ll}
-I:& \lambda \, S\cdot I / N \\
-II:& \rho \, I
-\end{array} \]
-
-The system is updated by the reaction matrix
-
-\[ \begin{array}{r|rrr}
-& S & I & R \\
-\hline
-  I  & -1 & 1 & 0 \\
-  II & 0 & -1 & 1\\
-\end{array} \]
-
-Due to the two reactions converting a single individual from one state to 
-another, this model has a constant population size. 
-
-#### R implementation
-
-```{r simulate_sir_transition}
+## ----simulate_sir_transition------------------------------------------------------------------------------------------------------------
 sir_reaction_matrix <- rbind(
   #  S   I  R
   c(-1,  1, 0),
@@ -431,9 +218,9 @@ simulate_sir_transition <- function(state, rate, initial_time) {
       state = state
     ))
 }
-```
 
-```{r simulate_sir_outbreak, dependson="simulate_sir_transition"}
+
+## ----simulate_sir_outbreak, dependson="simulate_sir_transition"-------------------------------------------------------------------------
 simulate_outbreak <- function(initial_state, rate, max_rxns = 5000) {
   # Create storage structures for state and time
   n_possible_rxns <- min(2*initial_state[1] + initial_state[2]+1, max_rxns + 1)
@@ -463,36 +250,25 @@ simulate_outbreak <- function(initial_state, rate, max_rxns = 5000) {
       state = factor(state, levels = c("S","I","R"))
     )
 }
-```
 
-Sometimes the outbreak will die out right away
 
-```{r, dependson="simulate_sir_outbreak"}
+## ---- dependson="simulate_sir_outbreak"-------------------------------------------------------------------------------------------------
 set.seed(1)
 d <- simulate_outbreak(c(1000, 1, 0), rate = c(2,1))
 
 ggplot(d, aes(x = time, y = count, color = state)) + 
   geom_step()
-```
 
-Sometimes the outbreak will last a while
 
-```{r, dependson="simulate_sir_outbreak"}
+## ---- dependson="simulate_sir_outbreak"-------------------------------------------------------------------------------------------------
 set.seed(4)
 d <- simulate_outbreak(c(1000, 1, 0), rate = c(2,1))
 
 ggplot(d, aes(x = time, y = count, color = state)) + 
   geom_step()
-```
 
-#### Scientific questions
 
-One question we might ask is: what is the probability the outbreak will die 
-out quickly (before time 5) for a given initial state and reaction rates. 
-
-To answer this question, we can run a Monte Carlo study
-
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------------------
 X0 <- c(1000, 2, 0)
 rate <- c(2,1)
 
@@ -503,12 +279,9 @@ die_out <- replicate(1e3, {
 
 mean(die_out)
 binom.test(sum(die_out), length(die_out))$conf.int
-```
 
-Another question could be, given the outbreak lasts longer than 5,
-what is the expected number of people who will be infected?
 
-```{r}
+## ---------------------------------------------------------------------------------------------------------------------------------------
 X0 <- c(1000, 1, 0)
 rate <- c(2,1)
 
@@ -520,50 +293,9 @@ infected <- replicate(1e3, {
 })
 
 t.test(infected)$conf.int
-```
 
 
-
-### Lotka-Volterra Model
-
-
-A simple predator-prey model
-(stochastic version of the Lotka-Volterra Model) has two states: 
-
-- [R]abbits
-- [F]oxes
-
-There are two reactions that can occur 
-\[ \begin{array}{r\quad{}ll}
-I:&R &\stackrel{\lambda}{\to} 2R \\
-II:&F+R &\stackrel{\rho}{\to} 2F \\
-II:&F &\stackrel{\delta}{\to} \emptyset \\
-\end{array} \]
-The first reaction simply 
-
-
-The propensity of these reactions are 
-\[ \begin{array}{r\quad{}ll}
-I:& \lambda \, R \\
-II:& \rho \, F\cdot R\\
-II:& \delta \, F
-\end{array} \]
-
-The system is updated by the reaction matrix
-
-\[ \begin{array}{r|rrr}
-& R & F \\
-\hline
-  I  & 1  & 0  \\
-  II & -1 & 1 \\
-  III & 0 & -1 
-\end{array} \]
-
-This model does not have a constant population size.
-
-#### R implementation
-
-```{r simulate_predator_prey_transition}
+## ----simulate_predator_prey_transition--------------------------------------------------------------------------------------------------
 predator_prey_reaction_matrix <- rbind(
   #  R   F
   c( 1,  0),
@@ -594,9 +326,9 @@ simulate_transition <- function(state, rate, initial_time) {
       state = state
     ))
 }
-```
 
-```{r simulate_predator_prey_system, dependson="simulate_predator_prey_transition"}
+
+## ----simulate_predator_prey_system, dependson="simulate_predator_prey_transition"-------------------------------------------------------
 simulate_predator_prey_system <- function(initial_state, rate, max_rxns = 1e4) {
   # Create storage structures for state and time
   n_possible_rxns <- max_rxns + 1
@@ -622,15 +354,12 @@ simulate_predator_prey_system <- function(initial_state, rate, max_rxns = 1e4) {
       state = factor(state, levels = c("R","F"))
     )
 }
-```
 
-Sometimes the foxes will eat all the rabbits
 
-```{r, dependson="simulate_predator_prey_system"}
+## ---- dependson="simulate_predator_prey_system"-----------------------------------------------------------------------------------------
 set.seed(1)
 d <- simulate_predator_prey_system(c(20,20), rate = c(1,.01,1), max_rxns = 1e5)
 
 ggplot(d, aes(x = time, y = count, color = state)) + 
   geom_step()
-```
 

@@ -38,3 +38,4 @@ you can find the source files
 - [Monte Carlo Methods](13-monte_carlo/13-monte_carlo.html) [R code](13-monte_carlo/13-monte_carlo.R)
 - [Estimator evaluation](14-estimators/14-estimators.html) [R code](14-estimators/14-estimators.R)
 - [Interval coverage](15-intervals/15-intervals.html) [R code](15-intervals/15-intervals.R)
+- [Continuous time Markov process](16-processes/16-processes.html) [R code](16-processes/16-processes.R)
