@@ -1,0 +1,283 @@
+---
+layout: page
+title: "Binomial analyses"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+header-includes:
+- \usepackage{blkarray}
+- \usepackage{amsmath}
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](17-binomial_analyses.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+set.seed(20230319)
+```
+
+# Binomial analyses
+
+Recall that if $X_i \stackrel{ind}{\sim} Ber(\theta)$,
+then 
+\[
+Y = X_1 + X_2 + \cdots + X_n \sim Bin(n,\theta)$. 
+\]
+Thus $Y$ is the number of successes out of $n$ attempts when the attempts are 
+independent and they have a common probability of success $\theta$
+(which may be unknown). 
+
+
+## One group
+
+If there is a single binomial population, 
+then we basically estimate $\theta$. 
+
+### binom.test()
+
+Modified from \verb`?binom.test`:
+```{r}
+## Conover (1971), p. 97f.
+## Under (the assumption of) simple Mendelian inheritance, a cross
+##  between plants of two particular genotypes produces progeny 1/4 of
+##  which are "dwarf" and 3/4 of which are "giant", respectively.
+##  In an experiment to determine if this assumption is reasonable, a
+##  cross results in progeny having 243 dwarf and 682 giant plants.
+##  If "giant" is taken as success, the null hypothesis is that p =
+##  3/4 and the alternative that p != 3/4.
+successes <- 682
+failures  <- 243
+
+binom.test(c(successes, failures), p = 3/4)
+```
+
+Alternatively, you can use 
+
+```{r}
+y <- successes
+n <- successes + failures
+binom.test(y, n, p = 3/4)
+```
+
+### prop.test()
+
+Asymptotic approach when the sample size is large and the true probability is
+not too close to 0 or 1. 
+
+```{r}
+prop.test(matrix(c(successes, failures), ncol = 2), p = 3/4)
+```
+
+or, more commonly, 
+
+```{r}
+prop.test(y, n, p = 3/4)
+```
+
+### Additional arguments
+
+```{r}
+args(prop.test)
+prop.test(y, n, p = 3/4, alternative = "greater", conf.level = 0.9, correct = FALSE)
+```
+
+Note: I would ALWAYS use \verb`correct = TRUE`. 
+
+Similarly for \verb`binom.test()`. 
+
+```{r}
+args(binom.test)
+binom.test(y, n, p = 3/4, alternative = "greater", conf.level = 0.9)
+```
+
+## Two groups
+
+In a two population binomial situation, we have two separate binomials. 
+
+\[ 
+Y_1 \sim Bin(n_1, \theta_1) \qquad \mbox{and} \qquad Y_2 \sim Bin(n_2, \theta_2)
+\]
+with $Y_1$ and $Y_2$ being independent. 
+
+Independent here means that, if you know $\theta_1$ and $\theta_2$,
+knowing $Y_1$ gives you no (additional) information about $Y_2$
+(and vice versa). 
+The most common situation for independence to be violated is when the data are
+\emph{paired} or \emph{blocked} and we will talk about this in the 
+contingency table section below. 
+
+When there are two populations, 
+we are often interested in understanding a causal relationship between 
+observed differences in the probability of success and the two populations. 
+
+### Observational data
+
+Remember that with observational data we cannot determine a cause-and-effect
+relationships. 
+But there is an even more common situation called 
+[Simpson's Paradox](https://en.wikipedia.org/wiki/Simpson%27s_paradox) 
+that can hamper our understanding of observational
+data as we will see with this UC-Berkeley Admissions data.
+
+Let's take a look at the admission rates by gender at UC-Berkeley by 
+calculating the total number of applicants and total number of admits by
+gender across all departments. 
+
+```{r}
+admissions <- UCBAdmissions %>%
+  as.data.frame() %>%
+  group_by(Admit, Gender) %>%
+  summarize(
+    n = sum(Freq),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(names_from = "Admit", values_from = "n") %>%
+  mutate(
+    y = Admitted, 
+    n = Admitted + Rejected,
+    p = y/n)
+
+admissions
+```
+
+Because the number of individuals is large and the probability is not clsoe to
+0 or 1, 
+we'll go ahead and use \verb`prop.test()`. 
+With two populations, the default null hypothesis is that 
+\[ 
+H_0: \theta_1 = \theta_2.
+\]
+
+```{r}
+prop.test(admissions$y, admissions$n)
+```
+This p-value suggests that the null model which assumes independence 
+(both across and within binomial samples) and equal probabilities is unlikely
+to be true. 
+As an analyst, we need to make a decision about whether the independences 
+assumptions are reasonable. 
+
+We'll come back to this example in a bit. 
+
+
+### Experimental data
+
+With experimental data, we can determine causal relationships. 
+In these data, we randomly assign participants to receive 1,000 mg of 
+Vitamin C per day through the cold season or placebo. 
+
+```{r}
+case1802 %>%
+  mutate(p = NoCold / (Cold+NoCold))
+```
+
+```{r, error = TRUE}
+prop.test(case1802[,c("Cold","NoCold")]) # I feel like this should work
+```
+
+```{r}
+prop.test(cbind(case1802$Cold, case1802$NoCold))
+```
+
+
+Remember our independence assumptions. 
+As the analyst, we don't have enough information about these data to assess
+the independence assumption. 
+
+
+## More than two groups
+
+When we have more than two populations, 
+we 
+
+Let's return to our UC-Berkeley admissions data. 
+Rather than combine across departments, 
+let's compare the probability of acceptance across departments. 
+First, let's ignore gender. 
+
+```{r}
+admissions_by_department <- UCBAdmissions %>%
+  as.data.frame() %>%
+  group_by(Dept, Admit) %>%
+  summarize(
+    n = sum(Freq),
+    .groups = "drop"  
+  ) %>%
+  pivot_wider(names_from = "Admit", values_from = "n") %>%
+  mutate(Total = Admitted + Rejected)
+```
+
+### Contingency table
+
+```{r}
+admissions_by_department %>%
+  mutate(p = Admitted / Total)
+```
+
+```{r}
+ggplot(admissions_by_department,
+       aes(x = Dept, y = Admitted / Total, size = Total)) + 
+  geom_point() + 
+  ylim(0,1)
+```
+
+### Testing equality
+
+Testing for admission probability
+
+```{r}
+prop.test(admissions_by_department$Admitted,
+          admissions_by_department$Total)
+```
+
+
+
+## Regression
+
+This isn't really the question we are interested in. 
+We are interested in the probability of admission by gender 
+controlling (or adjusting) for department. 
+
+```{r}
+admissions_by_dept_and_gender <- UCBAdmissions %>%
+  as.data.frame() %>%
+  pivot_wider(names_from = "Admit", values_from = "Freq") %>%
+  # group_by(Dept, Gender) %>%
+  mutate(
+    Total = Admitted + Rejected,
+    p_hat = Admitted / Total,
+    lcl   = p_hat - qnorm(.975)*sqrt(p_hat*(1-p_hat)/Total),
+    ucl   = p_hat + qnorm(.975)*sqrt(p_hat*(1-p_hat)/Total)
+  )
+```
+
+```{r}
+admissions_by_dept_and_gender 
+```
+
+```{r}
+ggplot(admissions_by_dept_and_gender, 
+       aes(x = Dept, y = Admitted / Total, ymin = lcl, ymax = ucl,
+           color = Gender)) +
+  geom_point(aes(size = Total), position = position_dodge(width = 0.1)) +
+  geom_linerange(position = position_dodge(width = 0.1))
+```
+
+```{r}
+m <- glm(cbind(Admitted, Rejected) ~ Dept + Gender, 
+        data = admissions_by_dept_and_gender,
+        family = "binomial")
+
+summary(m)
+```
+
+
+

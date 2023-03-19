@@ -39,3 +39,7 @@ you can find the source files
 - [Estimator evaluation](14-estimators/14-estimators.html) [R code](14-estimators/14-estimators.R)
 - [Interval coverage](15-intervals/15-intervals.html) [R code](15-intervals/15-intervals.R)
 - [Continuous time Markov process](16-processes/16-processes.html) [R code](16-processes/16-processes.R)
+
+## Modeling
+
+- [Binomial analyses](17-binomial_analyses/17-binomial_analyses.html) [R code](17-binomial_analyses/17-binomial_analyses.R)
