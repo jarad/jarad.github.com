@@ -1,0 +1,339 @@
+---
+layout: page
+title: "Normal analyses"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+header-includes:
+- \usepackage{blkarray}
+- \usepackage{amsmath}
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](18-normal_analyses.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+set.seed(20230319)
+```
+
+# Normal analyses
+
+Normal analyses are (typically) relevant for independent, continuous 
+observations. 
+These observations may need to be transformed to satisfy assumptions of 
+normality. 
+Pedagogically, we often begin with a single group with a known variance.
+A known variance is uncommon in practice and thus, here, we skip directly
+to the unknown variance situation. 
+
+## One group
+
+The single group normal analysis begins with the assumptions
+\[ 
+Y_i \stackrel{ind}{\sim} N(mu,\sigma^2)
+\]
+for $i=1,\ldots,n$.
+
+An alternative way to write this model is 
+\[ 
+Y_i = \mu + \epsilon_i, \qquad \epsilon_i \stackrel{ind}{\sim} N(0,\sigma^2)
+\]
+
+which has the following assumptions
+
+- errors are independent,
+- errors are normally distributed,
+- errors have a constant variance,
+
+and 
+
+- common mean. 
+
+### Summary statistics
+
+```{r}
+creativity <- case0101 %>%
+  filter(Treatment == "Intrinsic")
+```
+
+```{r}
+summary(creativity)
+
+creativity %>%
+  summarize(
+    n = n(),
+    mean = mean(Score),
+    sd = sd(Score)
+  )
+```
+
+```{r}
+ggplot(creativity, aes(x = Score)) + 
+  geom_histogram()
+```
+
+```{r}
+ggplot(creativity, aes(x = Score)) + 
+  geom_boxplot(outlier.shape = NA)
+```
+
+
+### t.test
+
+In a t-test, we are typically interested in the hypothesis
+\[ 
+H_0: \mu = \mu_0
+\]
+for some value $\mu_0$. 
+
+
+
+```{r}
+t.test(creativity$Score)
+```
+Alternatively, using a formula
+
+```{r}
+t.test(Score ~ 1, data = creativity)
+```
+
+
+### Additional arguments
+
+```{r}
+t.test(creativity$Score, mu = 20, alternative = "greater", conf.level = 0.9)
+```
+
+
+
+## Two groups
+
+When you have two groups, the assumption is 
+
+\[ 
+Y_{ig} \stackrel{ind}{\sim} N(\mu_g, \sigma_g^2)
+\]
+for $i = 1, \ldots, n_g$ and $g=1,2$. Alternatively
+
+\[ 
+Y_{ig} = \mu_g + \epsilon_{ig}, \qquad \epsilon_{ig} \stackrel{ind}{\sim} N(0,\sigma_g^2)
+\]
+which assumes
+
+- errors are independent,
+- errors are normally distributed, 
+- errors have constant variance within a group, 
+
+and 
+
+- each group has its own constant mean.
+
+### Summary statistics
+
+```{r}
+case0101 %>%
+  group_by(Treatment) %>%
+  summarize(
+    n = n(),
+    mean = mean(Score),
+    sd = sd(Score)
+  )
+```
+
+### Tests and confidence intervals
+
+Typically we are interested in the hypothesis
+\[ 
+H_0: \mu_1 = \mu_2 \qquad \mbox{or, equivalently,} \qquad H_0: \mu_1-\mu_2 = 0 
+\]
+and a confidence interval for the difference $\mu_1-\mu_2$. 
+
+
+#### Unequal variances
+
+To run the test, 
+we first need to get the appropriate data
+
+```{r}
+intrinsic <- case0101$Score[case0101$Treatment == "Intrinsic"]
+extrinsic <- case0101$Score[case0101$Treatment == "Extrinsic"]
+```
+
+then we can run the test
+
+```{r}
+t.test(extrinsic, intrinsic)
+```
+Alternatively, we can use the formula version and simplify our code
+
+```{r}
+t.test(Score ~ Treatment, data = case0101)
+```
+
+
+
+#### Equal variances
+
+Often, we will make the assumption that the two groups have equal variances. 
+
+```{r}
+t.test(Score ~ Treatment, data = case0101, var.equal = TRUE)
+```
+#### Additional arguments
+
+```{r}
+t.test(Score ~ Treatment, data = case0101, var.equal = TRUE,
+       mu = 5, alternative = "greater", conf.level = 0.9)
+```
+
+### Paired data
+
+A paired analysis can be used when the data are have a natural grouping 
+structure into a pair of observations.
+Within each pair of observations, 
+one observation has one level of the explanatory variable while the other
+observation has the other level of the explanatory variable. 
+
+In the following example, the data are naturally paired because each set of
+observations is on a set of identical twins. 
+One twin has schizophrenia while the other does not. 
+These data compares the volume of the left hippocampus to understand its 
+relationship to schizophrenia.
+
+#### Summary statistics
+
+```{r}
+summary(case0202)
+```
+
+```{r}
+schizophrenia <- case0202 %>%
+  mutate(pair = 1:n()) %>%
+  pivot_longer(-pair, names_to = "diagnosis", values_to = "volume")
+```
+
+```{r}
+ggplot(schizophrenia, aes(x = diagnosis, y = volume, group = pair)) + 
+  geom_line()
+```
+
+It is important to connect these points between each twin because we are 
+looking for a pattern amongst the comparisons. 
+
+#### Paired t-test
+
+When the data are paired, we can perform a paired t-test. 
+
+```{r}
+t.test(case0202$Unaffected, case0202$Affected, paired = TRUE)
+```
+This analysis is equivalent to taking the difference in each pair and 
+performing a one-sample t-test. 
+
+```{r}
+t.test(case0202$Unaffected - case0202$Affected)
+```
+
+### More than two groups
+
+If we have a single categorical variable with more than two groups, then $G > 2$. 
+
+#### Summary statistics
+
+```{r}
+case0501 %>%
+  group_by(Diet) %>%
+  summarize(n = n(),
+            mean = mean(Lifetime),
+            sd = sd(Lifetime))
+```
+
+```{r}
+ggplot(case0501, aes(x = Diet, y = Lifetime)) +
+  geom_jitter(width = 0.1)
+```
+
+## Regression
+
+As a general approach, regression allows the response variable to depend on
+categorical and continuous variables in complex patterns. 
+For the current discussion, we will limit our discussion to one categorical
+variable. 
+
+The general structure of a regression model is 
+\[ 
+Y_i \stackrel{ind}{\sim} N(\beta_0 + \beta_1X_{i,1} + \cdots + \beta_p X_{i,p}, \sigma^2)
+\]
+for $i=1,\ldots,n$
+or, equivalently,
+\[ 
+Y_i = \beta_0 + \beta_1X_{i,1} + \cdots + \beta_p X_{i,p}, \qquad \epsilon_i \stackrel{ind}{\sim} N(0, \sigma^2).
+\]
+The assumptions a regression model are 
+
+- errors are independent,
+- errors are normally distributed,
+- errors have constant variance, 
+
+and 
+
+- the expected response, $E[Y_i]$, depends on the explanatory variables according
+to a linear function (of the parameters). 
+
+### Two groups
+
+We can repeat the equal variance analysis using regression by encoding a 
+*dummy* or (*indicator*) variable to represent the group. 
+So let 
+\[ 
+X_{i,1} = \left\{ 
+\begin{array}{ll}
+1 & \mbox{if Treatment}_i \mbox{ is Intrinsic} \\
+0 & \mbox{otherwise}
+\end{array}
+\right.
+\]
+
+```{r}
+m <- lm(Score ~ Treatment, data = case0101)
+```
+
+We can summarize the analysis in a few different ways. 
+
+#### Standard regression output
+
+```{r}
+summary(m)
+```
+
+#### Confidence intervals
+
+```{r}
+confint(m)
+```
+
+#### ANOVA
+
+```{r}
+anova(m)
+```
+
+
+### More than two groups
+
+If we have a single categorical variable with more than two groups, then $G > 2$. 
+
+
+
+#### Summary statistics
+
+
+### Two categorical variables
