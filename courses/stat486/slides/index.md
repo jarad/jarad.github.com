@@ -43,7 +43,7 @@ you can find the source files
 ## Modeling
 
 - [Binomial analyses](17-binomial_analyses/17-binomial_analyses.html) [R code](17-binomial_analyses/17-binomial_analyses.R)
-- Normal analyses
+- [Normal analyses](18-normal_analyses/18-normal_analyses.html) [R code](18-normal_analyses/18-normal_analyses.R)
 - Linear regression
 - Logistic regression
 - Poisson regression

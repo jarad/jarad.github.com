@@ -38,7 +38,7 @@ to the unknown variance situation.
 
 The single group normal analysis begins with the assumptions
 \[ 
-Y_i \stackrel{ind}{\sim} N(mu,\sigma^2)
+Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)
 \]
 for $i=1,\ldots,n$.
 
@@ -86,7 +86,7 @@ ggplot(creativity, aes(x = Score)) +
 ```
 
 
-### t.test
+### Test and confidence interval
 
 In a t-test, we are typically interested in the hypothesis
 \[ 
@@ -144,11 +144,12 @@ case0101 %>%
   summarize(
     n = n(),
     mean = mean(Score),
-    sd = sd(Score)
+    sd = sd(Score),
+    .groups = "drop"
   )
 ```
 
-### Tests and confidence intervals
+### Test and confidence intervals
 
 Typically we are interested in the hypothesis
 \[ 
@@ -216,7 +217,7 @@ summary(case0202)
 
 ```{r}
 schizophrenia <- case0202 %>%
-  mutate(pair = 1:n()) %>%
+  mutate(pair = LETTERS[1:n()]) %>%
   pivot_longer(-pair, names_to = "diagnosis", values_to = "volume")
 ```
 
@@ -242,6 +243,7 @@ performing a one-sample t-test.
 t.test(case0202$Unaffected - case0202$Affected)
 ```
 
+
 ### More than two groups
 
 If we have a single categorical variable with more than two groups, then $G > 2$. 
@@ -251,15 +253,31 @@ If we have a single categorical variable with more than two groups, then $G > 2$
 ```{r}
 case0501 %>%
   group_by(Diet) %>%
-  summarize(n = n(),
-            mean = mean(Lifetime),
-            sd = sd(Lifetime))
+  summarize(
+    n = n(),
+    mean = mean(Lifetime),
+    sd = sd(Lifetime),
+    .groups = "drop"
+  )
 ```
 
 ```{r}
 ggplot(case0501, aes(x = Diet, y = Lifetime)) +
   geom_jitter(width = 0.1)
 ```
+
+#### ANOVA
+
+An ANOVA F-test considers the following null hypothesis
+\[
+H_0: \mu_g = \mu \quad \forall\, g
+\]
+
+```{r}
+m <- lm(Lifetime ~ Diet, data = case0501)
+anova(m)
+```
+
 
 ## Regression
 
@@ -329,11 +347,80 @@ anova(m)
 
 ### More than two groups
 
-If we have a single categorical variable with more than two groups, then $G > 2$. 
+If we have a single categorical variable with more than two groups, 
+we can still utilize a regression model. 
+To fit this regression model, we
+
+1. choose a reference level and
+1. create dummy variables for all other levels. 
+
+Generally, we let R do this for us where the reference level is the first
+level of the factor variable or first alphabetically for a character variable. 
+
+```{r}
+m <- lm(Lifetime ~ Diet, data = case0501)
+summary(m)
+```
+
+
+### Two categorical variables
+
+When we have two categorical variables we can utilize regression by 
+
+1. choose a reference level for all categorical variables and 
+1. constructing dummy variables for all other levels. 
+
+For simplicity, let's start with the paired analysis. 
+
+```{r}
+m <- lm(volume ~ pair + diagnosis, schizophrenia)
+summary(m)
+```
+
+The diagnosis line matches the paired analysis we did earlier:
+
+```{r}
+t.test(case0202$Unaffected, case0202$Affected, paired = TRUE)$conf.int
+confint(m)[16,]
+```
+
 
 
 
 #### Summary statistics
 
+```{r}
+case1301 %>% 
+  group_by(Block, Treat) %>%
+  summarize(
+    n = n(),
+    mean = mean(Cover),
+    sd = sd(Cover),
+    .groups = "drop"
+  )
+```
 
-### Two categorical variables
+While graphics have always been helpful, 
+they now become even more helpful. 
+We may need to play around with the plots to get one we like. 
+
+```{r}
+ggplot(case1301, aes(x = Block, y = Cover, shape = Treat, color = Treat)) +
+  geom_point()
+```
+
+```{r}
+ggplot(case1301, aes(x = Treat, y = Cover, shape = Treat, color = Treat)) +
+  geom_point() +
+  facet_wrap(~Block, ncol = 4)
+```
+
+#### Analysis
+
+```{r}
+m <- lm(Cover ~ Block + Treat, data = case1301)
+anova(m) # Two-way ANOVA
+summary(m)
+```
+
+
