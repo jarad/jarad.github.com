@@ -1,0 +1,147 @@
+---
+layout: page
+title: "Linear regression"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+header-includes:
+- \usepackage{blkarray}
+- \usepackage{amsmath}
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](19-linear_regression.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("ggResidpanel")
+```
+
+# Background
+
+As a general approach, regression allows the response variable mean 
+(or expectation) to depend on categorical and continuous explanatory variables 
+in complex patterns. 
+
+## Energy expenditure 
+
+Scientific question: 
+How does echolocation affect energy expenditure?
+
+### Two-sample normal
+
+```{r}
+d <- case1002 %>%
+  mutate(echolocating = Type == "echolocating bats")
+
+d %>% 
+  summarize(n = )
+
+t.test(Energy ~ echolocating, data = d)
+```
+
+### Regression
+
+```{r}
+ggplot(case1002, aes(x = Mass, y = Energy, color = Type, shape = Type)) +
+  geom_point() + 
+  scale_y_log10() + 
+  scale_x_log10()
+```
+
+## Model
+
+The general structure of a regression model is 
+\[ 
+Y_i \stackrel{ind}{\sim} N(\beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}, \sigma^2)
+\]
+for $i=1,\ldots,n$
+or, equivalently,
+\[ 
+Y_i = \beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}, \qquad \epsilon_i \stackrel{ind}{\sim} N(0, \sigma^2).
+\]
+
+
+
+
+
+## Matrix notation
+
+An alternative way to represent the model uses matrix notation and the 
+multivariate normal distribution. 
+\[
+Y = X\beta + \epsilon, \qquad \epsilon \sim N_n(0,\sigma^2 \mathrm{I})
+\]
+where 
+
+- $Y = (Y_1,\ldots,Y_n)^\top$ is an $n\times 1$ response variable vector
+- $X$ is an $n\times p$ *design matrix*
+  - each row $X_{r,\cdot}$ contains the explanatory variables values for one observation
+  - each column $X_{\cdot, c}$ contains the one explanatory variable values for all observations
+- $\beta = (\beta_0,\beta_1,\ldots,\beta_{p-1})$ is a $p\times 1$ coefficient parameter vector
+- $\epsilon = (\epsilon_1,\ldots,\epsilon_n)$ is an $n\times 1$ error vector
+- $N_n(\mu,\Sigma)$ is a [multivariate normal distribution](https://en.wikipedia.org/wiki/Multivariate_normal_distribution)
+with 
+  - mean $\mu$ and
+  - covariance matrix $\Sigma$ where 
+    - $\Sigma_{i,j}$ is the covariance between $\epsilon_i$ and $\epsilon_j$
+- $\mathrm{I}$ is the $n\times n$ identity matrix
+
+If you are interested in learning more about the multivariate normal distribution
+and its uses, look for a course in multivariate data analyses, 
+e.g. STAT 475.
+
+### Parameter estimates
+
+Use of matrix notation and linear algebra eases parameter estimation:
+
+- estimated coefficients $\hat\beta = (X^\top X)^{-1} X^\top y$
+- fitted/predicted values $\hat{y} = X\hat\beta$
+- residuals $\hat{\epsilon} = y - \hat{y}$
+- estimated error variance $\hat\sigma^2 = \frac{1}{n-p}\hat{e}^\top \hat{e}$
+
+
+
+## Assumptions
+
+The assumptions a regression model are 
+
+- errors are independent,
+- errors are normally distributed,
+- errors have constant variance, 
+
+and 
+
+- the expected response, $E[Y_i]$, depends on the explanatory variables according
+to a linear function (of the parameters).
+
+We generally use graphical techniques to assess these assumptions. 
+In particular, we utilize 
+
+- residuals v predictive
+
+### base R graphics
+
+```{r}
+
+```
+
+### ggResidpanel
+
+
+
+
+## Interpretation
+
+In a linear regression model there are $p$ coefficients $\beta_0,\ldots,\beta_{p-1}$
+and one variance $\sigma^2$. 
+Generally, we are most 
+
+# Examples
