@@ -68,7 +68,14 @@ or, equivalently,
 Y_i = \beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}, \qquad \epsilon_i \stackrel{ind}{\sim} N(0, \sigma^2).
 \]
 
+where, for observation $i$, 
 
+- $Y_i$ is the value of the response variable,
+- $X_{i,j}$ is the value of the $j$th explanatory variable, and
+- $\epsilon_i$ is the error.
+
+You have a lot of flexibility in your choice for the response and explanatory
+variables.
 
 
 
@@ -98,6 +105,7 @@ If you are interested in learning more about the multivariate normal distributio
 and its uses, look for a course in multivariate data analyses, 
 e.g. STAT 475.
 
+
 ### Parameter estimates
 
 Use of matrix notation and linear algebra eases parameter estimation:
@@ -106,12 +114,35 @@ Use of matrix notation and linear algebra eases parameter estimation:
 - fitted/predicted values $\hat{y} = X\hat\beta$
 - residuals $\hat{\epsilon} = y - \hat{y}$
 - estimated error variance $\hat\sigma^2 = \frac{1}{n-p}\hat{e}^\top \hat{e}$
+- coefficient of determination ($R^2$) $1-\hat{e}^\top \hat{e}/(y-\overline{y})^\top (y-\overline{y})$
+
+```{r}
+m <- lm(log(Energy) ~ log(Mass) * Type, data = case1002)
+s <- summary(m)
+
+# Coefficient estimates and confidence/credible intervals
+coef(m)            # or m$coefficients
+confint(m)
+
+# SD estimate
+s$sigma
+
+# Coefficint of determination
+s$r.squared
+
+# Fitted and residuals
+head(fitted(m))    # or head(m$fitted.values)
+head(residuals(m)) # or head(m$residuals)
+
+# A reasonable display of most of this
+summary(m)
+```
 
 
 
 ## Assumptions
 
-The assumptions a regression model are 
+The assumptions in every regression model are 
 
 - errors are independent,
 - errors are normally distributed,
@@ -125,23 +156,276 @@ to a linear function (of the parameters).
 We generally use graphical techniques to assess these assumptions. 
 In particular, we utilize 
 
-- residuals v predictive
+- residuals v fitted
+- qqplot of residuals
+- residuals v explanatory
+- residuals v index
 
 ### base R graphics
 
 ```{r}
+opar = par(mfrow = c(2,3))
+plot(m, 1:6, ask = FALSE)
+par(opar)
+```
 
+```{r}
+d <- case1002 %>%
+  mutate(residuals = residuals(m))
+
+plot(d$residuals) # residuals v index
+plot(residuals ~ Type, data = d, type = "p")
+plot(residuals ~ log(Mass), data = d)
 ```
 
 ### ggResidpanel
 
-
+```{r}
+resid_panel(m, plots = "all")
+resid_panel(m, plots = c("resid","index","qq","cookd"))
+resid_xpanel(m)
+```
 
 
 ## Interpretation
 
 In a linear regression model there are $p$ coefficients $\beta_0,\ldots,\beta_{p-1}$
 and one variance $\sigma^2$. 
-Generally, we are most 
+Generally, we are most interested in understanding the effect of explanatory 
+variables by interpreting (a transformation of) the coefficients.
+
+The general interpretation is 
+
+    a one unit increase in the explanatory variable is associated with a $\beta$
+    increase in the mean of the response when holding all other variables constant
+    
+There are several issues with this interpretation
+
+- is the one-unit increase relevant?
+- is the increase in mean relevant?
+- can you hold the other variables constant?
+
+In this class, we will focus on graphical interpretations. 
+
+
+## Tests
+
+### T-tests for regression coefficients
+
+If a regression coefficient is exactly zero, 
+this means that explanatory variable has no effect on the mean of the 
+response. 
+Thus constructing a hypothesis test with the null value being zero is reasonable.
+If the p-value for this test is small, 
+it only tells us there is something wrong with the model that includes this
+coefficient being zero. 
+But this small p-value could arise due to any (or multiple) model assumptions. 
+Thus, the analyst needs to evaluate all model assumptions. 
+
+Recall that each regression coefficient can be tested using the following
+t statistic
+\[ 
+T = \frac{\hat\beta - b_0}{SE(\hat\beta)}
+\]
+where $b_0$ is the hypothesized value. 
+Then this statistic is compared to a t-distribution with $n-p$ degrees of 
+freedom. 
+
+```{r}
+coef(s) # or s$coefficients
+```
+
+This table provides $\hat\beta$, $SE(\hat\beta)$, the t statistic with 
+$b_0, and the two-sided p-value. 
+
+
+### F-tests
+
+Two models are *nested* when setting some parameters in one of the models to 
+specific values (usually 0) produces the other model. 
+The second model is called the *simpler* model. 
+
+When we would like to compare two nested models we can use an F-test. 
+The null model for this comparison is the simpler model. 
+A small p-value provides evidence against the simpler model. 
+
+In the standard regression output, R provides an F-test to compare the 
+intercept only model to the full model. 
+
+```{r}
+summary(m)
+```
+
+We can recreate this F-test using the ANOVA function. 
+
+```{r}
+m  <- lm(log(Energy) ~ log(Mass) * Type, data = case1002)
+m0 <- lm(log(Energy) ~ 1, data = case1002)
+anova(m0, m)
+```
+But, generally this F-test is not very interesting. 
+It may help us to consider adding terms to the model sequentially. 
+
+```{r}
+anova(m)
+```
+
+This is a sequential comparison, i.e. 
+
+1. comparing log(Mass) to intercept-only model
+1. comparing Type + log(Mass) to log(Mass)
+1. comparing Type + log(Mass) + Type:log(Mass) to Type + log(Mass)
+
+If we just want to look at the highest order terms, 
+we can use `drop()`.
+
+
+```{r}
+drop1(m, test = "F")
+```
+
+
+
+
+## Model construction
+
+There are various ways to construct regression models in R. 
+
+### Multiple explanatory variables
+
+If we want to include multiple explanatory variables, 
+we simply use the `+` symbol.
+
+```{r}
+lm(Energy ~ Mass + Type, data = case1002)
+```
+
+### Transformations
+
+Transformations of the response and explanatory variables can generally be 
+included directly in the call. 
+
+```{r}
+lm(log(Energy) ~ sqrt(Mass) + Type, data = case1002)
+```
+
+The most common transformation is the `log()`. 
+
+If we want to include a polynomial term, e.g. quadratic, we need to 
+encapsulate it in `I()`. 
+
+```{r}
+lm(log(Energy) ~ Mass + I(Mass^2) + Type, data = case1002)
+```
+
+### Interactions
+
+Interactions between variables can be included by using `:`.
+
+```{r}
+lm(log(Energy) ~ log(Mass) + Type + log(Mass):Type, data = case1002)
+```
+
+But a convenient shorthand is to use `*` which will include the main effects
+as well as the interaction. 
+
+```{r}
+lm(log(Energy) ~ log(Mass)*Type, data = case1002)
+```
+
+### Include everything
+
+We can include everything in the data.frame using the `.`. 
+
+```{r}
+lm(log(Energy) ~ ., data = case1002)
+```
+
+Interactions (and main effects) can be included using `.^2`. 
+
+```{r}
+lm(log(Energy) ~ .^2, data = case1002)
+```
+
+### Remove terms
+
+```{r}
+lm(log(Energy) ~ log(Mass) + Type - 1, data = case1002) # remove intercept
+```
+
+```{r}
+lm(log(Energy) ~ log(Mass) * Type - Type, data = case1002)
+```
+
+
+
 
 # Examples
+
+## Simple linear regression
+
+```{r}
+ggplot(case0701, aes(x = Velocity, y = Distance)) +
+  geom_point() + 
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+An alternative, more general approach, utilizes the `predict()` function to
+create data for the lines. 
+
+```{r}
+m <- lm(Distance ~ Velocity, data = case0701)
+
+d <- data.frame(Velocity = range(case0701$Velocity)) %>%
+  mutate(prediction = predict(m, newdata = .))
+
+ggplot(case0701, aes(x = Velocity)) +
+  geom_point(aes(y = Distance)) + 
+  geom_line(
+    data = d,
+    aes(y = prediction), color = "blue")
+```
+
+We can obtain the equation for the line using the `summary()` output.
+
+```{r}
+summary(m)
+```
+
+Take a look at diagnostics
+
+```{r}
+resid_panel(m, plots = c("resid","index","qq","cookd"))
+resid_xpanel(m)
+```
+
+
+## One categorical variable
+
+```{r}
+ggplot(case0501, aes(x = Diet, y = Lifetime)) + 
+  geom_jitter(width = 0.1)
+```
+
+```{r}
+m <- lm(Lifetime ~ Diet, data = case0501)
+```
+
+```{r}
+resid_panel(m, plots = c("resid","index","qq","cookd"))
+resid_xpanel(m)
+```
+
+Visual representation
+
+```{r}
+d <- data.frame(Diet = unique(case0501$Diet)) 
+p <- d %>% mutate(prediction = )
+```
+
+
+## Polynomial
+
+```{r}
+
+```
