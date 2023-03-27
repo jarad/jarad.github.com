@@ -311,12 +311,22 @@ lm(log(Energy) ~ sqrt(Mass) + Type, data = case1002)
 
 The most common transformation is the `log()`. 
 
+#### I()
+
 If we want to include a polynomial term, e.g. quadratic, we need to 
 encapsulate it in `I()`. 
 
 ```{r}
 lm(log(Energy) ~ Mass + I(Mass^2) + Type, data = case1002)
 ```
+This can also be used to "Shift the intercept" to provide an interpretable
+intercept. 
+
+```{r}
+meanMass <- mean(case1002$Mass)
+lm(Energy ~ I(Mass - meanMass), data = case1002)
+```
+
 
 ### Interactions
 
@@ -330,7 +340,7 @@ But a convenient shorthand is to use `*` which will include the main effects
 as well as the interaction. 
 
 ```{r}
-lm(log(Energy) ~ log(Mass)*Type, data = case1002)
+lm(log(Energy) ~ log(Mass) * Type, data = case1002)
 ```
 
 ### Include everything
@@ -346,6 +356,10 @@ Interactions (and main effects) can be included using `.^2`.
 ```{r}
 lm(log(Energy) ~ .^2, data = case1002)
 ```
+
+If there are more explanatory variables, this can be used to include higher
+order interactions. 
+
 
 ### Remove terms
 
@@ -427,5 +441,99 @@ p <- d %>% mutate(prediction = )
 ## Polynomial
 
 ```{r}
+ggplot(Sleuth3::case1001, aes(Height, Distance)) +
+  geom_point() +
+  theme_bw()
+```
 
+```{r}
+m1 <- lm(Distance ~ Height,                             case1001)
+m2 <- lm(Distance ~ Height + I(Height^2),               case1001)
+m3 <- lm(Distance ~ Height + I(Height^2) + I(Height^3), case1001)
+```
+
+```{r}
+g <- ggplot(case1001, aes(x=Height, y=Distance)) + geom_point(size=3)
+
+g 
+g + stat_smooth(method="lm", formula = y ~ x)                                   
+g + stat_smooth(method="lm", formula = y ~ x + I(x^2))          
+g + stat_smooth(method="lm", formula = y ~ x + I(x^2) + I(x^3)) 
+```
+
+Recall that error variance will ALWAYS decrease as you add more explanatory
+variables. 
+So reduced uncertainty in the line does not ensure a better out-of-sample
+fit. 
+
+```{r}
+m <- lm(Distance ~ Height + I(Height^2) + I(Height^3) + I(Height^4), case1001)
+anova(m)
+```
+
+This suggests that that model with a quadratic term is insufficient while the 
+model with a cubic does not raise any red flags. 
+But, you should still check model assumptions. 
+
+
+## Transformations
+
+```{r}
+m <- lm(log(Energy) ~ log(Mass) + Type, data = case1002)
+
+d <- expand.grid(
+  Mass = seq(min(case1002$Mass), max(case1002$Mass), length = 1001),
+  Type = unique(case1002$Type)
+)
+
+p <- d %>%
+  mutate(Energy = exp(predict(m, newdata = d))) # note the exp()
+
+g <- ggplot() + 
+  geom_point(
+    data = case1002, aes(x = Mass, y = Energy, color = Type, shape    = Type)) + 
+  geom_line(
+    data = p,        aes(x = Mass, y = Energy, color = Type, linetype = Type)) 
+
+g
+```
+
+These lines will look straight (and parallel) on log-log axes
+
+```{r}
+g + 
+  scale_x_log10() + 
+  scale_y_log10()
+```
+
+
+
+## Interactions
+
+```{r}
+m <- lm(log(Energy) ~ log(Mass) * Type, data = case1002) # note the *
+
+d <- expand.grid(
+  Mass = seq(min(case1002$Mass), max(case1002$Mass), length = 1001),
+  Type = unique(case1002$Type)
+)
+
+p <- d %>%
+  mutate(Energy = exp(predict(m, newdata = d))) # note the exp()
+
+g <- ggplot() + 
+  geom_point(
+    data = case1002, aes(x = Mass, y = Energy, color = Type, shape    = Type)) + 
+  geom_line(
+    data = p,        aes(x = Mass, y = Energy, color = Type, linetype = Type)) 
+
+g
+```
+
+These lines will look straight (and parallel) on log-log axes
+
+```{r}
+g + 
+  scale_x_log10() + 
+  scale_y_log10()
 ```
