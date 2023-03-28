@@ -22,6 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
 library("ggResidpanel")
+library("emmeans")
 ```
 
 # Background
@@ -35,17 +36,52 @@ in complex patterns.
 Scientific question: 
 How does echolocation affect energy expenditure?
 
-### Two-sample normal
+### Two-group analysis
 
 ```{r}
 d <- case1002 %>%
+  filter(grepl("bats", Type)) %>%
   mutate(echolocating = Type == "echolocating bats")
 
 d %>% 
-  summarize(n = )
+  group_by(echolocating) %>%
+  summarize(
+    n = n(),
+    mean = mean(Energy),
+    sd = sd(Energy))
 
-t.test(Energy ~ echolocating, data = d)
+t.test(Energy ~ echolocating, data = d, var.equal = FALSE)
 ```
+
+```{r}
+# Maybe should use logarithms
+d %>% 
+  group_by(echolocating) %>%
+  summarize(
+    n = n(),
+    mean = mean(log(Energy)),
+    sd = sd(log(Energy)))
+
+t.test(log(Energy) ~ echolocating, data = d, var.equal = FALSE)
+```
+
+### Three-group analysis
+
+```{r}
+case1002 %>% 
+  group_by(Type) %>%
+  summarize(
+    n = n(),
+    mean = mean(log(Energy)),
+    sd = sd(log(Energy)))
+
+m <- lm(log(Energy) ~ Type, data = case1002)
+anova(m)
+summary(m)
+```
+
+Why does there seem to be a difference? 
+Is it due to echolocation or something else, e.g. Mass?
 
 ### Regression
 
@@ -56,7 +92,20 @@ ggplot(case1002, aes(x = Mass, y = Energy, color = Type, shape = Type)) +
   scale_x_log10()
 ```
 
-## Model
+```{r}
+m <- lm(log(Energy) ~ log(Mass) + Type, data = case1002)
+anova(m)
+```
+After we control/adjust for Mass, Type does not appear to improve the model.
+Thus, after controlling for Mass, echolocation does not appear to increase 
+energy expenditure. 
+
+Of course, now we might like to know why echolocation is primarily in low 
+mass species. 
+
+
+
+## Regression Model
 
 The general structure of a regression model is 
 \[ 
@@ -79,7 +128,7 @@ variables.
 
 
 
-## Matrix notation
+### Matrix notation
 
 An alternative way to represent the model uses matrix notation and the 
 multivariate normal distribution. 
@@ -180,10 +229,18 @@ plot(residuals ~ log(Mass), data = d)
 
 ### ggResidpanel
 
+This package is created by ISU Statistics PhD Alumni and utilizes ggplot2. 
+
 ```{r}
 resid_panel(m, plots = "all")
-resid_panel(m, plots = c("resid","index","qq","cookd"))
-resid_xpanel(m)
+
+resid_panel(m, plots = "all", 
+            qqbands = TRUE, smoother = TRUE)
+
+resid_panel(m, plots = c("resid","index","qq","cookd"), 
+            qqbands = TRUE, smoother = TRUE)
+
+resid_xpanel(m, smoother = TRUE)
 ```
 
 
@@ -285,6 +342,41 @@ drop1(m, test = "F")
 ```
 
 
+### Contrasts
+
+Contrasts are linear combinations of means who coefficients sum to zero. 
+They are useful in comparing the means of groups of groups to each other. 
+Extensions of these ideas can be used to compare group means at fixed values of
+other explanatory variables. 
+
+First, imagine that we wanted to perform all pairwise comparisons. 
+
+```{r}
+m <- lm(log(Energy) ~ Type, data = case1002)
+e <- emmeans(m, pairwise~Type)
+e
+```
+
+Suppose we wanted to compare echolocating bats vs 
+(non-echolocating bats AND non-echolocating birds). 
+One way to pose this question is to compare the mean of the echolocating bats
+to the average of the means for the non-echolocating bats and 
+non-echolocating birds. 
+
+```{r}
+contrast(e, list("echo v non-echo" = c(-1,.5,.5)))
+```
+Suppose instead you wanted to consider the model that has a different 
+slope for each type and you wanted to compare the slopes amongst the 
+different types. 
+
+```{r}
+m <- lm(log(Energy) ~ log(Mass)*Type, data = case1002)
+emtrends(m, pairwise ~ Type, var = "log(Mass)")
+```
+The tools provided in the `emmeans` package are tremendously helpful to 
+real-world statistical analysis. 
+They allow you to fit a single model and ask many scientific questions. 
 
 
 ## Model construction
@@ -434,7 +526,18 @@ Visual representation
 
 ```{r}
 d <- data.frame(Diet = unique(case0501$Diet)) 
-p <- d %>% mutate(prediction = )
+p <- d %>% mutate(prediction = predict(m, d))
+
+ggplot() + 
+  geom_jitter(
+    data = case0501,
+    aes(x = Diet, y = Lifetime),
+    width = 0.1) + 
+  geom_point(
+    data = p,
+    aes(x = Diet, y = prediction),
+    color = "red",
+    size = 3)
 ```
 
 
