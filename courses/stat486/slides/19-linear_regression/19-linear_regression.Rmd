@@ -374,6 +374,26 @@ different types.
 m <- lm(log(Energy) ~ log(Mass)*Type, data = case1002)
 emtrends(m, pairwise ~ Type, var = "log(Mass)")
 ```
+Differences between groups at a particular value of a continuous variable
+
+```{r}
+ggplot(case1002, aes(x = Mass, y = Energy, 
+       color = Type, linetype = Type, shape = Type)) +
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  scale_x_log10() + 
+  scale_y_log10() +
+  geom_vline(xintercept = 400)
+```
+
+```{r}
+m <- lm(log(Energy) ~ log(Mass)*Type, data = case1002)
+em <- emmeans(m, pairwise ~ Type, at = list(Mass = 400))
+em
+co <- contrast(em, type = "response")
+confint(co)
+```
+
 The tools provided in the `emmeans` package are tremendously helpful to 
 real-world statistical analysis. 
 They allow you to fit a single model and ask many scientific questions. 
