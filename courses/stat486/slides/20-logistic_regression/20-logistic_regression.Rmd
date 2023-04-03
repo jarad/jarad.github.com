@@ -22,6 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
 library("ggResidpanel")
+library("emmeans")
 ```
 
 # Logistic Regression
@@ -32,7 +33,7 @@ Let $Y_i$ be a Bernoulli response variable.
 Assume
 \[ 
 Y_i \stackrel{ind}{\sim} Ber(\theta_i), \quad
-\mbox{logit}(\theta_i) = \log\left(\frac{\theta_i}{1-\theta_i} \right) = 
+\eta_i = \mbox{logit}(\theta_i) = \log\left(\frac{\theta_i}{1-\theta_i} \right) = 
 \beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}
 \]
 where $\frac{\theta_i}{1-\theta_i}$ is the *odds*. 
@@ -88,9 +89,204 @@ m_bernoulli <- glm(Result ~ Treatment,
 
 ## Parameter estimation
 
-```{r}
+The maximum likelihood estimator for this model is not available in closed form
+and thus we use an iterative algorithm to find the answers. 
+But we don't have to worry about these details. 
 
+```{r}
+coef(m_bernoulli)
+```
+This MLE can be used to determine asymptotic confidence intervals.
+
+```{r}
+confint(m_bernoulli)
+```
+The fact that the interval for the coefficient for the dummy variable for 
+vitamin C does not include 0 provides evidence that,
+if the remainder of the model is correct, 
+that it is unlikely the coefficient is 0. 
+
+
+## Testing
+
+We can also compute p-values for a single parameter being zero or a collection
+of parameters being zero. 
+
+```{r}
+summary(m_bernoulli)$coefficients
 ```
 
+A small p-value here indicates evidence against the model that has that 
+coefficient equal to 0. 
+But remember that other aspects of the model could be problematic, 
+e.g. independence, constant probability (within a group), etc. 
+
+The p-value above is based on a Wald test. 
+An alternative is based on a likelihood ratio test. 
+
+```{r}
+anova(m_bernoulli, test = "LRT")
+```
+
+Unlike with the linear regression (which is based on the normal distribution)
+the p-values here don't match exactly. 
+
+
+
+## Predictions
+
+When computing predictions, we need to be explicit about whether we want 
+predictions on the linear part, i.e. $\eta_i$, or the response, 
+i.e. $\theta_i = E[Y_i]$. 
+By default, the `predict()` function provides predictions on the linear part. 
+
+```{r}
+nd <- data.frame(Treatment = unique(case1802_individual$Treatment))
+
+p <- nd %>%
+  mutate(prediction = predict(m_bernoulli, newdata = .))
+p
+```
+
+We can manually compute predictions on the response. 
+
+```{r}
+expit <- function(eta) 1/(1+exp(-eta)) # inverse logit
+
+p %>% mutate(probability = expit(prediction))
+```
+
+Alternatively, we can use `predict()` to compute these probabilities 
+directly. 
+
+```{r}
+p %>% mutate(probability = predict(m_bernoulli, newdata = ., type = "response"))
+```
+
+You can also obtain standard errors which can be used to construct asymptotic
+confidence intervals. 
+
+```{r}
+cbind(nd, predict(m_bernoulli, newdata = nd, se.fit = TRUE))
+```
+
+
+
+### emmeans()
+
+Another alternative is to use the `emmeans::emmeans()` function. 
+
+```{r}
+emmeans(m_bernoulli, ~ Treatment, type = "response")
+```
+
+This can also be used to perform the comparisons, e.g. 
+
+```{r}
+emmeans(m_bernoulli, pairwise ~ Treatment, type = "response")
+```
+The odds ratio is the simplest interpretation of a logistic regression model. 
+
+
+## Diagnostics
+
+It is much more difficult to assess model assumptions in logistic regression 
+models.
+
+```{r}
+resid_panel(m_binomial)
+resid_panel(m_bernoulli)
+```
+
+
+
+# Examples
+
+## Bird keeping
+
+This analysis intends to understand the relationship between bird keeping and 
+lung cancer. 
+But since we know smoking is related to lung cancer, 
+we need to adjust (or control for) smoking to understand the effect of bird
+keeping.
+
+The actual data here are from a case-control study where cases are found that
+(in some sense) are a match to the controls.
+
+```{r}
+summary(case2002)
+```
+In logistic regression models, it is often helpful to construct a binary variable
+so that it is clear what "success" means. 
+
+```{r}
+d <- case2002 %>%
+  mutate(LungCancer   = LC == "LungCancer",
+         
+         BirdKeeping  = ifelse(BK == "Bird", "Yes", "No"),
+         BirdKeeping  = factor(BirdKeeping, levels = c("Yes","No")),
+         
+         SmokingYears = YR) %>%
+  
+  select(LungCancer, BirdKeeping, SmokingYears)
+
+summary(d)
+```
+
+
+
+```{r}
+m <- glm(LungCancer ~ BirdKeeping * SmokingYears, 
+         data = d,
+         family = "binomial")
+```
+
+Attempt to assess assumptions
+
+```{r}
+resid_panel(m)
+```
+
+Model selection
+
+```{r}
+summary(m)
+anova(m, test = "Chi")
+```
+
+Remove interaction
+
+```{r}
+m <- glm(LungCancer ~ BirdKeeping + SmokingYears, 
+         data = d,
+         family = "binomial")
+
+summary(m)
+```
+
+```{r}
+em <- emmeans(m, pairwise ~ BirdKeeping, type = "response")
+confint(em)
+```
+Construct a plot to help understand the relationship between 
+bird keeping and years of smoking on the probability of lung cancer. 
+
+```{r}
+nd <- expand.grid(
+  BirdKeeping  = unique(d$BirdKeeping),
+  SmokingYears = seq(min(d$SmokingYears), max(d$SmokingYears), length = 1001)
+)
+
+p <- bind_cols(nd, predict(m, newdata = nd, se.fit = TRUE)) %>%
+  mutate(
+    lcl = fit - qnorm(.975)*se.fit,
+    ucl = fit + qnorm(.975)*se.fit,
+    
+    # Convert to probability scale
+    prob = expit(fit),
+    lcl  = expit(lcl),
+    ucl  = expit(ucl)
+  )
+```
 
 
