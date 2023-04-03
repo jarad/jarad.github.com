@@ -1,0 +1,177 @@
+---
+layout: page
+title: "Poisson regression"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+header-includes:
+- \usepackage{blkarray}
+- \usepackage{amsmath}
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](21-poisson_regression.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("ggResidpanel")
+library("emmeans")
+```
+
+# Poisson Regression
+
+## Model
+
+Let $Y_i$ be a Poisson response variable.
+Assume
+\[ 
+Y_i \stackrel{ind}{\sim} Po(\lambda_i), \quad
+\eta_i = \log\left(\lambda_i \right) = 
+\beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}
+\]
+
+If we invert, then
+\[
+E[Y_i] = e^{\beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}}.
+\]
+
+### glm()
+
+In R, you can fit these models both ways. 
+The following data set is recorded in a grouped fashion.
+
+```{r}
+summary(ex1509)
+```
+```{r}
+ggplot(ex1509, aes(x = Year, y = Sunspots)) + 
+  geom_point() + 
+  geom_smooth()
+```
+
+```{r}
+ggplot(ex1509, aes(x = Year, y = Sunspots)) + 
+  geom_point() + 
+  scale_y_log10() + 
+  geom_smooth()
+```
+
+
+```{r}
+m <- glm(Sunspots ~ Year, 
+         data = ex1509,
+         family = "poisson")
+```
+
+
+## Parameter estimation
+
+The maximum likelihood estimator for this model is not available in closed form
+and thus we use an iterative algorithm to find the answers. 
+But we don't have to worry about these details. 
+
+```{r}
+coef(m)
+```
+This MLE can be used to determine asymptotic confidence intervals.
+
+```{r}
+confint(m)
+```
+The fact that the interval for the coefficient for Year provides evidence that
+(if the remaining assumptions in the model are true) that the coefficient
+for Year is unlikely to be zero. 
+
+
+## Testing
+
+We can also compute p-values for a single parameter being zero or a collection
+of parameters being zero. 
+
+```{r}
+summary(m)$coefficients
+```
+
+A small p-value here indicates evidence against the model that has that 
+coefficient equal to 0. 
+But remember that other aspects of the model could be problematic, 
+e.g. independence, constant probability (within a group), etc. 
+
+The p-value above is based on a Wald test. 
+An alternative is based on a likelihood ratio test. 
+
+```{r}
+anova(m, test = "LRT")
+```
+
+Unlike with the linear regression (which is based on the normal distribution)
+the p-values here don't match exactly. 
+
+
+
+## Predictions
+
+When computing predictions, we need to be explicit about whether we want 
+predictions on the linear part, i.e. $\eta_i$, or the response, 
+i.e. $\lambda_i = E[Y_i]$. 
+By default, the `predict()` function provides predictions on the linear part. 
+
+```{r}
+p <- bind_cols(ex1509, 
+               predict(m, newdata = ex1509, se.fit = TRUE)) %>%
+  mutate(
+    lcl = fit - qnorm(.975)*se.fit,
+    ucl = fit + qnorm(.975)*se.fit,
+    
+    # convert to expected count
+    fit = exp(fit),
+    lcl = exp(lcl),
+    ucl = exp(ucl)
+  ) %>%
+  select(-residual.scale)
+
+head(p)
+```
+
+```{r}
+ggplot(p, aes(x = Year, 
+              y = Sunspots,
+              ymin = lcl,
+              ymax = ucl)) + 
+  geom_point() + 
+  geom_ribbon(fill = "blue", alpha = 0.5) +
+  geom_line(aes(y = fit), color = "blue")
+```
+
+
+### emmeans()
+
+Another alternative is to use the `emmeans::emmeans()` function. 
+
+```{r}
+emmeans(m, pairwise ~ Year, type = "response", 
+        at = list(Year = c(quantile(ex1509$Year, c(0,.5,1)))))
+```
+
+
+## Diagnostics
+
+It is more difficult to assess model assumptions in logistic regression 
+models.
+
+```{r}
+resid_panel(m)
+```
+
+
+
+# Examples
+
+## 
