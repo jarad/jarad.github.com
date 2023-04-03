@@ -1,0 +1,96 @@
+---
+layout: page
+title: "Logistic regression"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+header-includes:
+- \usepackage{blkarray}
+- \usepackage{amsmath}
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](20-logistic_regression.R)
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("ggResidpanel")
+```
+
+# Logistic Regression
+
+## Model
+
+Let $Y_i$ be a Bernoulli response variable.
+Assume
+\[ 
+Y_i \stackrel{ind}{\sim} Ber(\theta_i), \quad
+\mbox{logit}(\theta_i) = \log\left(\frac{\theta_i}{1-\theta_i} \right) = 
+\beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}
+\]
+where $\frac{\theta_i}{1-\theta_i}$ is the *odds*. 
+
+Sometimes observations can be grouped according to common explanatory varaible
+values. 
+When this is the case, the model can be written using a binomial distribution:
+\[ 
+Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i), \quad
+\mbox{logit}(\theta_i) = \log\left(\frac{\theta_i}{1-\theta_i} \right) = 
+\beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}
+\]
+Remember that a binomial is simply the sum of a set of Bernoulli random 
+variables that and **independent** and have the same probability of success.
+Thus these two models are equivalent. 
+
+### glm()
+
+In R, you can fit these models both ways. 
+The following data set is recorded in a grouped fashion.
+
+```{r}
+case1802
+```
+
+Thus, it is natural to fit binomial model
+
+```{r}
+# NoCold is success here
+m_binomial <- glm(cbind(NoCold, Cold) ~ Treatment, 
+                  data = case1802,
+                  family = "binomial")
+```
+
+Let's wrangle the data into the other format.
+
+```{r}
+case1802_individual <- case1802 %>%
+  tidyr::pivot_longer(-Treatment, names_to = "Result", values_to = "n") %>%
+  tidyr::uncount(n) %>%
+  mutate(Result = factor(Result))
+
+table(case1802_individual)
+```
+Now we can analyze this data set
+
+```{r}
+m_bernoulli <- glm(Result ~ Treatment,
+                   data = case1802_individual,
+                   family = "binomial")
+```
+
+
+## Parameter estimation
+
+```{r}
+
+```
+
+
+
