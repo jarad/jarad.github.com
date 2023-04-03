@@ -45,5 +45,5 @@ you can find the source files
 - [Binomial analyses](17-binomial_analyses/17-binomial_analyses.html) [R code](17-binomial_analyses/17-binomial_analyses.R)
 - [Normal analyses](18-normal_analyses/18-normal_analyses.html) [R code](18-normal_analyses/18-normal_analyses.R)
 - [Linear regression](19-linear_regression/19-linear_regression.html) [R code](19-linear_regression/19-linear_regression.R)
-- Logistic regression
+- [Logistic regression](20-logistic_regression/20-logistic_regression.html) [R code](20-logistic_regression/20-logistic_regression.R)
 - Poisson regression
