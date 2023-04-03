@@ -168,10 +168,105 @@ models.
 
 ```{r}
 resid_panel(m)
+resid_xpanel(m)
 ```
 
 
 
 # Examples
 
-## 
+## Warpbreaks
+
+```{r}
+summary(warpbreaks)
+```
+
+```{r}
+g <- ggplot(warpbreaks, 
+       aes(x = tension,
+           y = breaks,
+           color = wool,
+           shape = wool)) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.1)) +
+  scale_y_log10()
+g
+```
+
+```{r}
+m <- glm(breaks ~ wool * tension,
+         data = warpbreaks,
+         family = "poisson")
+```
+
+```{r}
+resid_panel(m, qqbands = TRUE, smoother = TRUE)
+```
+
+```{r}
+anova(m, test = "LRT")
+```
+```{r}
+nd <- warpbreaks %>%
+  select(wool, tension) %>%
+  unique()
+
+p <- bind_cols(nd, 
+               predict(m, nd, se.fit = TRUE)) %>%
+  mutate(
+    lcl = fit - qnorm(.975)*se.fit,
+    ucl = fit + qnorm(.975)*se.fit,
+    
+    # Convert to expected count scale
+    fit = exp(fit),
+    lcl = exp(lcl),
+    ucl = exp(ucl)
+  )
+
+g + 
+  geom_pointrange(
+    data = p,
+    aes(y = fit,
+        ymin = lcl,
+        ymax = ucl),
+    position = position_dodge(width = 0.1)
+  ) + 
+  geom_line(
+    data = p,
+    aes(y = fit, group = wool)
+  ) +
+  labs(
+    x = "Tension",
+    y = "Number of breaks",
+    title = "Number of Breaks vs Tension and Wool Type",
+    color = "Wool",
+    shape = "Wool"
+  )
+```
+
+```{r}
+tension <- emmeans(m, pairwise ~ tension, type = "response")
+confint(tension)
+
+wool    <- emmeans(m, pairwise ~ wool,    type = "response")
+confint(wool)
+```
+
+Perhaps you didn't want to compare the number of breaks for one explanatory 
+variable *averaged over* the levels of the other explanatory variable.
+Instead, you wanted to compare the number of breaks for one 
+explanatory variable *at* the levels of the other explanatory variable. 
+
+```{r}
+tension <- emmeans(m, pairwise ~ tension | wool, type = "response")
+confint(tension)
+
+
+# Compare wool 
+wool    <- emmeans(m, pairwise ~ wool | tension, type = "response")
+confint(wool)
+
+
+# Get all the comparisons
+both    <- emmeans(m, pairwise ~ wool + tension, type = "response")
+confint(both)
+```

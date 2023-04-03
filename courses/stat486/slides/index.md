@@ -46,4 +46,4 @@ you can find the source files
 - [Normal analyses](18-normal_analyses/18-normal_analyses.html) [R code](18-normal_analyses/18-normal_analyses.R)
 - [Linear regression](19-linear_regression/19-linear_regression.html) [R code](19-linear_regression/19-linear_regression.R)
 - [Logistic regression](20-logistic_regression/20-logistic_regression.html) [R code](20-logistic_regression/20-logistic_regression.R)
-- Poisson regression
+- [Poisson regression](21-poisson_regression/21-poisson_regression.html) [R code](21-poisson_regression/21-poisson_regression.R)
