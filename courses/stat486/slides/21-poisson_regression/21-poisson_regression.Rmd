@@ -175,6 +175,76 @@ resid_xpanel(m)
 
 # Examples
 
+## Number of species
+
+```{r}
+case0801
+```
+
+Due to the large ratio of max to min area, 
+I would start with a logarithm for Area. 
+Because we are considering a Poisson regression model which includes a 
+logarithmic link function, we should plot Species on a log scale. 
+
+```{r}
+g <- ggplot(case0801, aes(x = Area, y = Species)) + 
+  geom_point() +
+  scale_x_log10() + 
+  scale_y_log10()
+
+g
+```
+
+Looks pretty linear. 
+
+```{r}
+m <- glm(Species ~ log(Area), 
+         data = case0801,
+         family = "poisson")
+```
+
+```{r}
+summary(m)
+confint(m)
+```
+
+```{r}
+p <- bind_cols(case0801,
+               predict(m, se.fit = TRUE)) %>% # defaults to observed data
+  mutate(
+    lcl = fit - qnorm(.975)*se.fit,
+    ucl = fit + qnorm(.975)*se.fit,
+    
+    fit = exp(fit),
+    lcl = exp(lcl),
+    ucl = exp(ucl)
+  )
+```
+
+```{r}
+g + geom_ribbon(data = p, 
+              aes(
+                x = Area,
+                ymin = lcl,
+                ymax = ucl
+              ),
+              fill = "blue",
+              alpha = 0.5) +
+  geom_line(data = p,
+            aes(
+              x = Area,
+              y = fit
+            ), color = "blue") +
+  labs(
+    x = "Island Area (sq. miles)",
+    y = "Number of Species",
+    title = "Number of Reptile and Amphibian Species v Island Area"
+  )
+```
+
+
+
+
 ## Warpbreaks
 
 ```{r}
