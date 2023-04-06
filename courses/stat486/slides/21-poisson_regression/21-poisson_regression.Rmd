@@ -44,8 +44,8 @@ E[Y_i] = e^{\beta_0 + \beta_1X_{i,1} + \cdots + \beta_{p-1} X_{i,p-1}}.
 
 ### glm()
 
-In R, you can fit these models both ways. 
-The following data set is recorded in a grouped fashion.
+To fit a Poisson regression model in R, 
+you use the `glm()` function with argument `family = "poisson"`.
 
 ```{r}
 summary(ex1509)
@@ -53,8 +53,14 @@ summary(ex1509)
 ```{r}
 ggplot(ex1509, aes(x = Year, y = Sunspots)) + 
   geom_point() + 
-  geom_smooth()
+  geom_smooth() # smoother, not lm
 ```
+
+Poisson regression is closer to analysis using the logarithm of the response.
+But when using count data, some of the counts may be zero. 
+A common approach is to add 1 to the count, 
+but here we just plotted the data as is because there are only 3 zeros out of 
+311 data points.
 
 ```{r}
 ggplot(ex1509, aes(x = Year, y = Sunspots)) + 
@@ -62,12 +68,15 @@ ggplot(ex1509, aes(x = Year, y = Sunspots)) +
   scale_y_log10() + 
   geom_smooth()
 ```
-
+These data are not the best demonstration of Poisson regression because there
+is a clear temporal pattern.
+With that being said, if you are just interested in the overall trend of 
+sunspots through time, Poisson regression is still a reasonable approach. 
 
 ```{r}
 m <- glm(Sunspots ~ Year, 
          data = ex1509,
-         family = "poisson")
+         family = poisson)
 ```
 
 
