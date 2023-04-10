@@ -47,3 +47,7 @@ you can find the source files
 - [Linear regression](19-linear_regression/19-linear_regression.html) [R code](19-linear_regression/19-linear_regression.R)
 - [Logistic regression](20-logistic_regression/20-logistic_regression.html) [R code](20-logistic_regression/20-logistic_regression.R)
 - [Poisson regression](21-poisson_regression/21-poisson_regression.html) [R code](21-poisson_regression/21-poisson_regression.R)
+
+## Reproducibility
+
+- [Data science](22-data_science/22-data_science.html)

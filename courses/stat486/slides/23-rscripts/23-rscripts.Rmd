@@ -1,0 +1,90 @@
+---
+layout: page
+title: "R scripts"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+header-includes:
+- \usepackage{blkarray}
+- \usepackage{amsmath}
+output: 
+  html_document:
+      toc: true
+      toc_float: true
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](23-rscripts.R)
+
+# Tidyverse style guide
+
+What we will cover here is basically the 
+[tidyverse style guide](https://style.tidyverse.org/).
+Here are some additional comments.
+
+## R scripts
+
+It is helpful to organize the content in your R script. 
+Here are some recommendations.
+
+### Include meta-data
+
+Include meta-data about the R script including
+
+- purpose
+- author
+- dates
+
+```{r}
+# This script will perform ...
+#
+# Author: Jarad Niemi
+# Written: 09 Apr 2023
+# Modified: 10 Apr 2023 by Alex Wold
+```
+
+### Include packages
+
+Include all packages necessary for the script as `library()` calls at the 
+top of the script (after meta-data).
+Generally put packages in decreasing order of important, 
+i.e. most used packages [in the script] go first and least used packages go last. 
+
+```{r}
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("ggResidpanel")
+library("emmeans")
+```
+
+### Source other files
+
+You may need to source other R scripts within your R script. 
+This step, if needed, should be done right after loading packages.
+
+```{r, eval=FALSE, comment=""}
+source("01-read_data.R")
+source("02-wrangle_data.R")
+```
+
+### Keep only necessary commands
+
+Only put necessary commands in the R script. 
+If there are other steps that you perform, e.g. `summary()` of the data,
+leave these out of the R script. 
+You can, and should, run these interactively, but they should not be included
+in the R script. 
+
+### Put functions in a separate file
+
+A good way to write R, a functional programming language, is to write 
+functions for performing actions. 
+Each function should be in its own R script whose name is the same as the 
+function. 
+These files can contain helper functions, but only if their sole purpose is for
+functions within this file. 
+
+For functions, utilize 
+[roxygen2 documentation](https://r-pkgs.org/man.html). 
