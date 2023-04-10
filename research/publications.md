@@ -19,8 +19,30 @@ other lists:
 
 ## Refereed Journal Articles
 
+1. Cole Dutter, Luis A. Damiano*, Jarad Niemi, Bradley A. Miller, Lisa A. Schulte, Matt Liebman, Matt Helmers, Rick Cruse, and Marshall D. McDaniel. (2023) 
+Contour prairie strips affect adjacent soil but have only slight effects on crops.
+Field Crops Research 296.
+[url](https://www.sciencedirect.com/science/article/pii/S0378429023000989)
+[doi](https://doi.org/10.1016/j.fcr.2023.108905)
+1. Zachary P. Simpson, Jim Jordahl, Andrea Leptin, Fernando E. Miguez, Jarad Niemi, Lisa A. Schulte, Michael L. Thompson, Sebastian H. Villarino, and Marshall D. McDaniel
+(2023)
+No-tillage does not on average reduce soil carbon storage compared to conventional tillage. 
+Geoderma 430.
+[url](https://www.sciencedirect.com/science/article/pii/S0016706122006140)
+[doi](https://doi.org/10.1016/j.geoderma.2022.116307)
+1. Qinglong Tian, Colin Lewis-Beck*, Jarad Niemi, and William Meeker. (2023) 
+Specifying prior distributions in reliability applications.
+Applied Stochastic Models in Business and Industry. 
+[url](https://onlinelibrary.wiley.com/doi/full/10.1002/asmb.2752)
+[doi](https://doi.org/10.1002/asmb.2752)
+1. Matt Nowatzke, Luis Damiano*, Fernando Miguez, Gabe McNunn, Jarad Niemi, Lisa Schulte-Moore, Emily Heaton, Andy VanLoocke. (2022)
+Augmenting agroecosystem models with remote sensing data and machine learning changes overall estimates of nitrate-nitrogen leaching.
+Environmental Research Letters 17(11) 114010. 
+[url](https://iopscience.iop.org/article/10.1088/1748-9326/ac998b)
+[doi](https://doi.org/10.1088/1748-9326/ac998b)
 1. Estee Cramer, Yuxin Huang, Yijin Wang, Evan Ray, Matthew Cornell, Johannes Bracher, Andrea Brennen, Alvaro Castro Rivadeneira, Aaron Gerding, Katie H House, Dasuni Jayawardena, Abdul H Kanji, Ayush Khandelwal, Khoa Le, Vidhi Mody, Vrushti Mody, Jarad Niemi, Ariane Stark, Apurv Shah, Nutcha Wattanachit, Martha Zorn, and Nicholas Reich. (2022) The United States COVID-19 Forecast Hub Dataset.
-Scientific Data (to appear)
+Scientific Data 9(462)
+[url](https://www.nature.com/articles/s41597-022-01517-w)
 [medRxiv](https://www.medrxiv.org/content/10.1101/2021.11.04.21265886v1)
 [pdf](papers/Cram_unit_2022.pdf)
 1. Estee Y Cramer, Evan L Ray, Velma K Lopez, Johannes Bracher, Andrea Brennen, Alvaro J Castro Rivadeneira, Aaron Gerding, Tilmann Gneiting, Katie H House, Yuxin Huang, Dasuni Jayawardena, Abdul H Kanji, Ayush Khandelwal, Khoa Le, Anja Muhlemann, Jarad Niemi, [256 other authors], Nicholas G Reich. (2022) 

@@ -8,8 +8,12 @@ group: navigation
 
 ## Select publications ([All publications](publications.html))
 
-1. Estee Y Cramer, Evan L Ray, Velma K Lopez, Johannes Bracher, Andrea Brennen, Alvaro J Castro Ri-
-vadeneira, Aaron Gerding, Tilmann Gneiting, Katie H House, Yuxin Huang, Dasuni Jayawardena, Abdul
+1. Qinglong Tian, Colin Lewis-Beck*, Jarad Niemi, and William Meeker. (2023) 
+Specifying prior distributions in reliability applications.
+Applied Stochastic Models in Business and Industry
+[url](https://onlinelibrary.wiley.com/doi/full/10.1002/asmb.2752)
+[doi](https://doi.org/10.1002/asmb.2752)
+1. Estee Y Cramer, Evan L Ray, Velma K Lopez, Johannes Bracher, Andrea Brennen, Alvaro J Castro Rivadeneira, Aaron Gerding, Tilmann Gneiting, Katie H House, Yuxin Huang, Dasuni Jayawardena, Abdul
 H Kanji, Ayush Khandelwal, Khoa Le, Anja Muhlemann, Jarad Niemi, [256 other authors], Nicholas G
 Reich. (2022) "Evaluation of individual and ensemble probabilistic forecasts of COVID-19 mortality in the
 US" Proceedings of the National Academy of Sciences, 119(15), e2113561119.
