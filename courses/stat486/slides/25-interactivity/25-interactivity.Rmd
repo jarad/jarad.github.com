@@ -1,0 +1,204 @@
+---
+title: "Interactivity"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+layout: page
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](25-interactivity.R) - [R Markdown file](25-interactivity.Rmd)
+
+```{r packages}
+library("tidyverse"); theme_set(theme_bw())
+library("DT")
+library("knitr") # for kable
+library("kableExtra")
+library("formattable")
+```
+
+# Tables
+
+We will take a look at the `diamonds` data set. 
+
+```{r}
+dim(diamonds)
+```
+
+As we will see later, this data is too large for interactive tables and thus
+we will take a random sample of these data.
+
+
+
+## kable
+
+The `kable()` function in the `knitr` package provides an easy display of 
+tables in an HTML document. 
+
+By default, the kable function will show the entire table. 
+So, let's just show the first few lines.
+
+```{r diamonds-head}
+d <- diamonds %>%
+  group_by(cut) %>% # ensure we have all cuts for grouping
+  sample_n(3)
+```
+
+Also, by default, the table looks pretty bad, so let's add some styling.
+
+
+```{r kable-diamonds}
+knitr::kable(d) %>% 
+  kable_styling()
+```
+
+### Formatting
+
+```{r kable-diamonds-formatting}
+d %>%
+knitr::kable(
+  caption = "Diamonds data", 
+  align = c("rlllrrrrrr")
+) %>% 
+  kable_styling(bootstrap_options = c('striped', 'hover', 'condensed')) %>%
+  scroll_box(height = "200px")
+```
+
+### Grouping
+
+```{r kable-diamonds-grouping}
+groups <- table(d$cut)
+
+d %>%
+knitr::kable(
+  caption = "Diamonds data", 
+  align = c("rlllrrrrrr")
+) %>% 
+  kable_styling(bootstrap_options = c('striped', 'hover', 'condensed')) %>%
+  pack_rows(
+    index = setNames(groups, names(groups))
+  )
+```
+
+### Highlighting
+
+```{r kable-diamonds-highlighting}
+d %>%
+  # Conditional highlighting
+  mutate(
+    carat = cell_spec(carat, "html", color = ifelse(carat > .7, "red", "black")),
+    price = cell_spec(price, "html", color = ifelse(price < 5000, "blue", "black"))
+  ) %>%
+  
+knitr::kable(
+  escape = FALSE,
+  caption = "Diamonds data", 
+  align = c("rlllrrrrrr")
+) %>% 
+  kable_styling(bootstrap_options = c('striped', 'hover', 'condensed'))
+```
+
+
+## formattable
+
+Another function is `formattable()` in the `formattable` package.
+The default table is reasonable. 
+
+```{r formattable-diamonds}
+d %>%
+  formattable::formattable() 
+```
+
+
+```{r formattable-diamonds-highlighting}
+d %>%
+  
+  # Conditional highlighting
+  mutate(
+    carat = cell_spec(carat, "html", color = ifelse(carat > .7, "red", "black")),
+    price = cell_spec(price, "html", color = ifelse(price < 5000, "blue", "black"))
+  ) %>%
+  
+  formattable::formattable(
+    list(
+      # Width depends on proportion from 0 to max value
+      x = color_bar("#C8102E"),    
+      y = color_bar("#C8102E"),    
+      z = color_bar("#C8102E"),    
+      
+      # Color depends on proportion from min to max value
+      depth = color_tile("#CAC7A7","#524727")
+    )
+  ) 
+```
+
+
+
+
+## DT
+
+As we will see, with the pagination, `datatable()` provides the capability to
+succinctly display much larger tables. 
+So we will use more data
+
+```{r diamonds-sample}
+set.seed(20230416)
+d <- diamonds %>%
+  sample_n(1000)
+```
+
+A basic interactive table using `DT::datatable()`. 
+
+```{r datatable-diamonds}
+DT::datatable(d)
+```
+
+Many options can be added
+
+### Filtering
+
+```{r datatable-diamonds-filtering}
+DT::datatable(d, rownames = FALSE, filter = "top")
+```
+
+### Buttons
+
+```{r datatable-diamonds-buttons}
+DT::datatable(d, rownames = FALSE, 
+              extensions = "Buttons",
+              options = list(
+                dom = "Bfrtip",
+                buttons = c("copy","csv","excel","pdf","print")
+              ))
+```
+
+### Editing
+
+```{r datatable-diamonds-editing}
+DT::datatable(d, rownames = FALSE, 
+              editable = TRUE,
+              extensions = "Buttons",
+              options = list(
+                dom = "Bfrtip",
+                buttons = c("copy","csv","excel","pdf","print")
+              ))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+# Figures
