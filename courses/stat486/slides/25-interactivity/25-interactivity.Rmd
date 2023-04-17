@@ -17,10 +17,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r packages}
 library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+
+# Tables
 library("DT")
 library("knitr") # for kable
 library("kableExtra")
 library("formattable")
+
+# Figures
+library("scales")
+library("plotly")
+library("leaflet")
 ```
 
 # Tables
@@ -202,3 +210,54 @@ DT::datatable(d, rownames = FALSE,
 
 
 # Figures
+
+
+## Plots
+
+
+
+Here is a static plot of the diamonds data set. 
+
+```{r}
+d <- diamonds %>% sample_n(1000)
+
+g <- ggplot(d, 
+            aes(
+              x = carat, 
+              y = price,
+              shape = cut,
+              color = color)) + 
+  geom_point() +
+  scale_y_log10() + 
+  scale_x_log10(breaks = scales::breaks_pretty()) 
+
+g
+```
+
+```{r}
+ggplotly(g)
+```
+
+It seems [plotly.js does not support multiple legends](https://github.com/plotly/plotly.js/issues/1668). 
+
+
+```{r}
+ggplot(case)
+```
+
+
+
+## Maps
+
+```{r out.width='100%', echo=FALSE}
+leaflet::leaflet() %>% 
+  addTiles() %>%
+  setView(-93.65, 42.0285, zoom = 17) %>%
+  addPopups(
+    -93.65, 42.0285,
+    'Here is the <b>Department of Statistics</b>, ISU'
+  )
+```
+
+
+
