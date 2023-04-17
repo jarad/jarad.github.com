@@ -20,10 +20,10 @@ library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
 
 # Tables
-library("DT")
 library("knitr") # for kable
 library("kableExtra")
 library("formattable")
+library("DT")
 
 # Figures
 library("scales")
@@ -31,6 +31,24 @@ library("plotly")
 library("leaflet")
 library("gifski")
 ```
+
+Rmarkdown documents that produce HTML files can include a variety of features
+that provide an interactive document for the user. 
+Primarily this interactivity is implemented as will concern stand-alone tables, 
+figures, and animations (movies). 
+Typically this interactivity is available via an R package interface to a 
+javascript library. 
+
+We'll take a look at the construction of tables using the 
+[knitr](https://yihui.org/knitr/), 
+[formattable](https://www.rdocumentation.org/packages/formattable/versions/0.2.1),
+and [DT](https://rstudio.github.io/DT/) packages. 
+Technically, the first two packages provide non-interactive tables while the 
+third provides interactivity. 
+But we'll start with the first two as they provide some nice functionality to
+make nice looking HTML tables. 
+
+
 
 # Tables
 
@@ -40,7 +58,7 @@ We will take a look at the `diamonds` data set.
 dim(diamonds)
 ```
 
-As we will see later, this data is too large for interactive tables and thus
+These data are too large for interactive scatterplots and thus
 we will take a random sample of these data.
 
 
@@ -206,16 +224,54 @@ DT::datatable(d, rownames = FALSE,
 
 
 
-
-
-
-
 # Figures
 
+In this section, I am combining graphics, i.e. plots, as well as maps and 
+animations (movies). 
 
 ## Plots
 
-### ggplotly()
+There are a variety of approaches to including interactivity in graphics in 
+rmarkdown documents.
+We'll focus on using the 
+[plotly](https://plotly.com/r/getting-started/) library
+and specifically the `ggplotly()` function which provides interactivity for 
+ggplot2 created graphics. 
+
+
+### plotly::ggplotly()
+
+The `ggplotly()` function from the 
+[plotly](https://plotly.com/r/getting-started/) package provides 
+interactivity for (all?) ggplot2 constructed graphics. 
+The interactivity provide allows the user to 
+
+- resize (zoom, rescale, reset)
+- pan
+- hover (show vs compare)
+- toggle spike lines
+- download 
+
+#### Boxplot
+
+```{r}
+g <- ggplot(case0501, aes(x = Diet, y = Lifetime)) + 
+  geom_boxplot() +
+  coord_flip()
+
+ggplotly(g)
+```
+
+
+#### Histogram
+
+```{r}
+g <- ggplot(diamonds, aes(x = price)) + 
+  geom_histogram(bins = 100)
+
+ggplotly(g)
+```
+
 
 #### Scatterplot
 
@@ -244,25 +300,7 @@ ggplotly(g)
 It seems [plotly.js does not support multiple legends](https://github.com/plotly/plotly.js/issues/1668). 
 
 
-#### Boxplot
 
-```{r}
-g <- ggplot(case0501, aes(x = Diet, y = Lifetime)) + 
-  geom_boxplot() +
-  coord_flip()
-
-ggplotly(g)
-```
-
-
-#### Histogram
-
-```{r}
-g <- ggplot(diamonds, aes(x = price)) + 
-  geom_histogram(bins = 100)
-
-ggplotly(g)
-```
 
 
 
@@ -293,7 +331,7 @@ leaflet::leaflet() %>%
 
 
 
-## animations
+## Animations
 
 ```{r bivariate_normal_mcmc, cache=TRUE}
 gibbs_bivariate_normal = function(theta0, n_points, rho) {
@@ -356,13 +394,15 @@ bivariate_normal_animation(theta, rho = 0.9)
 
 
 
-## Additional resources/examples
+# Additional resources
+
+## Galleries
 
 Official:
 
 - [ggplotly gallery](https://plotly.com/ggplot2/)
 
-
+## Individual sites
 
 Individuals:
 
@@ -370,4 +410,20 @@ Individuals:
 - [richardlent](https://richardlent.github.io/rnotebooks/maps.nb.html)
 - [unknown](https://rstudio-pubs-static.s3.amazonaws.com/307862_b8c8460272dc4a2a9023d033d5f3ec34.html)
 
+
+## Embed 
+
+You can always embed additional interactivity.
+To get this to work, you need to add the option `data-external="1"` to the 
+iframe options.
+
+
+For example, here is a google map. 
+
+<iframe src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d11854.426768727611!2d-93.65218595123748!3d42.03016910652055!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1srestaurants!5e0!3m2!1sen!2sus!4v1681750079611!5m2!1sen!2sus" data-external="1" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+Here is an embedded video of mine from YouTube discussing the Gibbs sampler
+demonstrated above.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/a_08GKWHFWo" title="Gibbs sampling" frameborder="0" data-external="1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
