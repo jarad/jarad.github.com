@@ -13,7 +13,7 @@ layout: page
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-[R code](25-interactivity.R) - [R Markdown file](25-interactivity.Rmd)
+[R Markdown file](25-interactivity.Rmd)
 
 ```{r packages}
 library("tidyverse"); theme_set(theme_bw())
@@ -29,6 +29,7 @@ library("formattable")
 library("scales")
 library("plotly")
 library("leaflet")
+library("gifski")
 ```
 
 # Tables
@@ -214,7 +215,9 @@ DT::datatable(d, rownames = FALSE,
 
 ## Plots
 
-### Scatterplot
+### ggplotly()
+
+#### Scatterplot
 
 Here is a static plot of the diamonds data set. 
 
@@ -241,7 +244,7 @@ ggplotly(g)
 It seems [plotly.js does not support multiple legends](https://github.com/plotly/plotly.js/issues/1668). 
 
 
-### Boxplot
+#### Boxplot
 
 ```{r}
 g <- ggplot(case0501, aes(x = Diet, y = Lifetime)) + 
@@ -252,7 +255,7 @@ ggplotly(g)
 ```
 
 
-### Histogram
+#### Histogram
 
 ```{r}
 g <- ggplot(diamonds, aes(x = price)) + 
@@ -263,11 +266,22 @@ ggplotly(g)
 
 
 
+### dygraphs()
+
+Another package from constructing interactive graphics is 
+[dygraphs](https://rstudio.github.io/dygraphs/). 
+
+
+
 
 
 ## Maps
 
-```{r out.width='100%', echo=FALSE}
+### leaflet()
+
+Example taken from [here](https://bookdown.org/yihui/rmarkdown/interactive-documents.html).
+
+```{r out.width='100%'}
 leaflet::leaflet() %>% 
   addTiles() %>%
   setView(-93.65, 42.0285, zoom = 17) %>%
@@ -277,5 +291,83 @@ leaflet::leaflet() %>%
   )
 ```
 
+
+
+## animations
+
+```{r bivariate_normal_mcmc, cache=TRUE}
+gibbs_bivariate_normal = function(theta0, n_points, rho) {
+  theta = matrix(theta0, nrow=n_points, ncol=2, byrow=TRUE)
+  v = sqrt(1-rho^2)
+  for (i in 2:n_points) {
+    theta[i,1] = rnorm(1, rho*theta[i-1,2], v)
+    theta[i,2] = rnorm(1, rho*theta[i  ,1], v)
+  }
+  return(theta)
+}
+
+theta = gibbs_bivariate_normal(c(-3,3), n<-20, rho=rho<-0.9)
+```
+
+```{r bivariate_normal, dependson='bivariate_normal_mcmc', cache=TRUE}
+bivariate_normal_animation = function(x, rho, ask=interactive()) {
+  # Create contour plot
+  n.out = 101
+  xx <- seq(-3, 3, length=n.out)
+  grid <- expand.grid(x=xx, y=xx)
+  Sigma = diag(rep(.1,2))+rho
+  like <- matrix(apply(grid, 1, function(x) mvtnorm::dmvnorm(x,sigma=Sigma)),n.out,n.out)
+  
+  for (i in 2:nrow(x)) {
+    jj = (2:i)[-(i-1)] # vector from 2:(i-1) and NULL if i=2
+    for (j in 1:6) {
+      plot.new()
+      
+      # All previous plotting
+      contour(xx, xx, like, drawlabels=F, nlevels=10, xlim=c(-3,3), ylim=c(-3,3), 
+              xlab=expression(theta[1]), ylab=expression(theta[2]))  
+      segments(x[jj-1,1], x[jj-1,2], x[jj,1], x[jj-1,2], col="gray")
+      segments(x[jj  ,1], x[jj-1,2], x[jj,1], x[jj  ,2], col="gray")
+      points(x[(1:(i-1)),1], x[(1:(i-1)),2], col="red", pch=19)
+      
+      # New plotting
+      if (j>1 & j<4) abline(h=x[i-1,2], lty=2)
+      if (j>2) arrows(x[i-1,1], x[i-1,2], x[i,1], x[i-1,2], length=0.1)
+      if (j>3 & j<6) abline(v=x[i,1], lty=2)
+      if (j>4) arrows(x[i,1], x[i-1,2], x[i,1], x[i,2], length=0.1)
+      if (j>5) points(x[i,1], x[i,2], col="red", pch=19)
+      
+      if (ask) readline("hit <enter>:")
+    }
+  }
+  
+  jj=2:nrow(x)
+  contour(xx, xx, like, drawlabels=F, nlevels=10, xlim=c(-3,3), ylim=c(-3,3), 
+          xlab=expression(theta[1]), ylab=expression(theta[2]))  
+  segments(x[jj-1,1], x[jj-1,2], x[jj,1], x[jj-1,2], col="gray")
+  segments(x[jj  ,1], x[jj-1,2], x[jj,1], x[jj  ,2], col="gray")
+  points(x[,1], x[,2], col="red", pch=19)
+}
+```
+
+```{r bivariate_normal_animation, dependson=c('bivariate_normal_mcmc','bivariate_normal'), animation.hook='gifski', cache=TRUE, aniopts="controls,loop"}
+bivariate_normal_animation(theta, rho = 0.9)
+```
+
+
+
+## Additional resources/examples
+
+Official:
+
+- [ggplotly gallery](https://plotly.com/ggplot2/)
+
+
+
+Individuals:
+
+- [Alex Kaechele](https://rstudio-pubs-static.s3.amazonaws.com/379188_3a2e3e316c604840a53c73151713d7a7.html)
+- [richardlent](https://richardlent.github.io/rnotebooks/maps.nb.html)
+- [unknown](https://rstudio-pubs-static.s3.amazonaws.com/307862_b8c8460272dc4a2a9023d033d5f3ec34.html)
 
 
