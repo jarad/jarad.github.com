@@ -53,4 +53,4 @@ you can find the source files
 - [Data Science](22-data_science/22-data_science.html)
 - [Rscripts](23-rscripts/23-rscripts.html) [R code](23-rscripts/23-rscripts.R)
 - Rmarkdown
-- [Interactivity](25-interactivity/25-interactivity.html) [R code](25-interactivity/25-interactivity.R)
+- [Interactivity](25-interactivity/25-interactivity.html) [Rmd](25-interactivity/25-interactivity.Rmd)
