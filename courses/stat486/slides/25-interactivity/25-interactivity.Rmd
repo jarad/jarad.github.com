@@ -26,9 +26,12 @@ library("formattable")
 library("DT")
 
 # Figures
+library("maps")
+library("sf")
+library("tigris")
+library("leaflet")
 library("scales")
 library("plotly")
-library("leaflet")
 library("gifski")
 ```
 
@@ -315,7 +318,44 @@ Another package from constructing interactive graphics is
 
 ## Maps
 
+### ggplot2()
+
+Maps can be drawn with ggplot2, but these are not interactive. 
+
+```{r}
+ggplot(map_data("county","iowa"), 
+       aes(x = long, y = lat, fill = subregion)) + 
+  geom_polygon(color = "black") +
+  guides(fill = "none")
+```
+
+
 ### leaflet()
+
+An open source R package and JavaScript library for mobile-friendly
+interactive maps is [LeafLet](https://leafletjs.com/). 
+
+World map:
+
+```{r}
+leaflet::leaflet() %>% 
+  addTiles() 
+```
+
+In order to set the view, you will need the latitude (y) and longitude (x) in
+decimal format. 
+I typically use Google maps, but there are other options, 
+e.g. [LatLong.net](https://www.latlong.net/).
+
+Here is Ames:
+
+```{r}
+leaflet::leaflet() %>% 
+  addTiles() %>%
+  setView(lng = -93.65, lat = 42.0285, zoom = 12) 
+```
+
+
 
 Example taken from [here](https://bookdown.org/yihui/rmarkdown/interactive-documents.html).
 
@@ -328,6 +368,20 @@ leaflet::leaflet() %>%
     'Here is the <b>Department of Statistics</b>, ISU'
   )
 ```
+
+
+Modified from [here](https://community.rstudio.com/t/r-shiny-make-a-reactive-map-of-state-by-county/63224/3)
+
+```{r iowa_counties, cache=TRUE, results='hide'}
+counties <- tigris::counties(state = "IA", class = "sf")
+```
+
+```{r, dependson="iowa_counties"}
+leaflet() %>%
+  addTiles() %>%
+  addPolygons(data = counties, color = "grey")
+```
+
 
 
 
