@@ -52,7 +52,7 @@ by Vincent Nijs.
 
 ## Simple example
 
-```{r shiny-simple-ui}
+```{r shiny-simple-ui, eval=FALSE}
 ui <- fluidPage(
   titlePanel("2-D Histogram with Hexes!"),
   
@@ -71,7 +71,7 @@ ui <- fluidPage(
 )
 ```
 
-```{r shiny-simple-server}
+```{r shiny-simple-server, eval=FALSE}
 server <- function(input, output) {
   output$hexbinPlot <- renderPlot({
     g <- ggplot(diamonds, aes(x = carat, y = price)) + 
@@ -98,13 +98,160 @@ server <- function(input, output) {
 }
 ```
 
-```{r, shiny-simple}
+```{r, shiny-simple, eval=FALSE}
 shinyApp(ui = ui, server = server)
 ```
 
 
 
 # User-interface
+
+## Input
+
+```{r, eval=FALSE}
+ui <- fluidPage(
+  titlePanel("User input options"),
+  
+  column(width = 3, 
+    actionButton("action",
+                 label = "actionButton"),
+    
+    fileInput("file", 
+              label = "File input"),
+    
+    textInput("text", 
+              label = "Text")
+  ), 
+  column(width = 3,
+    checkboxInput("checkbox",
+                  label = "Checkbox"),
+    
+    checkboxGroupInput("checkboxGroup",
+                       label = "Checkbox Group", 
+                       choices = c("A","B","C")),
+    
+    radioButtons("radioButtons",
+                 label = "Radio Buttons", 
+                 choices = c("A","B","C")),
+    
+    selectInput("select", 
+                label = "Select", 
+                choices = c("A","B","C"))
+  ),
+  column(width = 3,
+    numericInput("numeric",
+                 label = "Numeric", value = 0),
+    
+    sliderInput("slider", 
+                label = "Slider", 
+                min = 0, max = 10, value = 5, step = 1),
+    
+    sliderInput("slider", 
+                label = "Slider", 
+                min = 0, max = 10, value = c(3,7), step = 1)
+  ),
+  column(width = 3,
+         dateInput("date",
+                   label = "Date"),
+         
+         dateRangeInput("daterange", 
+                        label = "Date range"),
+         
+         helpText(h3("Help text"),
+                  "Here is some help text.")
+         )
+)
+
+shinyApp(ui = ui, server = function(input, output) {} )
+```
+
+## Output
+
+### Text
+
+```{r, eval=FALSE}
+ui <- fluidPage(
+  titlePanel("Here is text output!"),
+  
+  textOutput("text")
+)
+
+server <- function(input, output) {
+  output$text <- renderText({
+    "Here's some text"
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### Table
+
+```{r, eval=FALSE}
+ui <- fluidPage(
+  titlePanel("Here is table output!"),
+  
+  tableOutput('table')
+)
+
+server <- function(input, output) {
+  output$table <- renderTable(warpbreaks)
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+### DataTable
+
+```{r, eval=FALSE}
+ui <- fluidPage(
+  titlePanel("Here is datatable output!"),
+  
+  dataTableOutput('table')
+)
+
+server <- function(input, output) {
+  output$table <- renderDataTable(warpbreaks)
+}
+
+shinyApp(ui = ui, server = server )
+```
+
+### Plot
+
+```{r, eval=FALSE}
+ui <- fluidPage(
+  titlePanel("Here is plot output!"),
+  
+  plotOutput("plot")
+)
+
+server <- function(input, output) {
+  output$plot <- renderPlot({
+    hist(rnorm(100))
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+```{r, eval=FALSE}
+ui <- fluidPage(
+  titlePanel("Here is print output!"),
+  
+  verbatimTextOutput("print")
+)
+
+server <- function(input, output) {
+  output$print <- renderPrint({
+    m <- lm(breaks ~ tension + wool, data = warpbreaks)
+    summary(m)
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
+
 
 
 
