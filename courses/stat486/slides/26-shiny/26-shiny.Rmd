@@ -1,0 +1,112 @@
+---
+title: "Shiny"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+layout: page
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[R code](26-shiny.R)
+
+```{r packages}
+library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
+library("shiny")
+```
+
+Shiny applications are interactive websites dashdboards built using R and 
+produced using an R Server backend.
+They are much more flexible in what you can do compared to using packages that 
+allow for interactive tables and figures. 
+Due to the backend requirement, 
+they are not as easy to deploy as the approaches we discussed as the 
+interactive tables and figures.
+My guess is that shiny 2.0 will utilize javascript and avoid the R server 
+backend, but we'll have to wait and see. 
+
+The backend requirement can be avoided by utilizing Posit's 
+[shinyapps.io](https://www.shinyapps.io/). 
+The downside to using this deployment platform is that you are limited in the 
+amount of monthly use on your app. 
+
+Take a look at some shiny apps on the 
+[Shiny Gallery](https://shiny.rstudio.com/gallery/) to get an idea of what shiny
+can do. 
+
+# Examples
+
+Let's take a look at some examples to see what R shiny can do. 
+
+## Diamonds example
+
+Let's explore this 
+[Radiant app](https://shiny.rstudio.com/gallery/radiant.html)
+by Vincent Nijs. 
+
+## Simple example
+
+```{r shiny-simple-ui}
+ui <- fluidPage(
+  titlePanel("2-D Histogram with Hexes!"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      checkboxInput(inputId = "logx", label = "Log Carat"),
+      checkboxInput(inputId = "logy", label = "Log Price"),
+      
+      textInput(inputId = "low",  label = "Low color",  value = "gray"),
+      textInput(inputId = "high", label = "High color", value = "blue"),
+    ),
+    mainPanel(
+      plotOutput(outputId = "hexbinPlot")
+    )
+  )
+)
+```
+
+```{r shiny-simple-server}
+server <- function(input, output) {
+  output$hexbinPlot <- renderPlot({
+    g <- ggplot(diamonds, aes(x = carat, y = price)) + 
+      geom_hex() +
+      theme_bw() + 
+      labs(
+        title = "Diamonds: Price vs Carat",
+        x     = "Carat",
+        y     = "Price ($)"
+      ) +
+      scale_fill_gradient(
+        low  = input$low,
+        high = input$high
+      ) 
+    
+    if (input$logx) 
+      g <- g + scale_x_log10()    
+    
+    if (input$logy) 
+      g <- g + scale_y_log10()
+    
+    g
+  })
+}
+```
+
+```{r, shiny-simple}
+shinyApp(ui = ui, server = server)
+```
+
+
+
+# User-interface
+
+
+
+# Server
+
