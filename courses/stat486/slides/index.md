@@ -54,3 +54,4 @@ you can find the source files
 - [Rscripts](23-rscripts/23-rscripts.html) [R code](23-rscripts/23-rscripts.R)
 - Rmarkdown
 - [Interactivity](25-interactivity/25-interactivity.html) [Rmd](https://raw.githubusercontent.com/jarad/jarad.github.com/master/courses/stat486/slides/25-interactivity/25-interactivity.Rmd)
+- [Shiny](26-shiny/26-shiny.html) [R code](26-shiny/26-shiny.R)

@@ -10,14 +10,16 @@ layout: page
 ---
 
 ```{r setup, include=FALSE, purl=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  eval=FALSE,
+  comment = "")
 ```
 
 [R code](26-shiny.R)
 
 ```{r packages}
 library("tidyverse"); theme_set(theme_bw())
-library("Sleuth3")
 library("shiny")
 ```
 
@@ -40,67 +42,12 @@ Take a look at some shiny apps on the
 [Shiny Gallery](https://shiny.rstudio.com/gallery/) to get an idea of what shiny
 can do. 
 
-# Examples
-
-Let's take a look at some examples to see what R shiny can do. 
-
-## Diamonds example
+# Explore
 
 Let's explore this 
 [Radiant app](https://shiny.rstudio.com/gallery/radiant.html)
 by Vincent Nijs. 
 
-## Simple example
-
-```{r shiny-simple-ui, eval=FALSE}
-ui <- fluidPage(
-  titlePanel("2-D Histogram with Hexes!"),
-  
-  sidebarLayout(
-    sidebarPanel(
-      checkboxInput(inputId = "logx", label = "Log Carat"),
-      checkboxInput(inputId = "logy", label = "Log Price"),
-      
-      textInput(inputId = "low",  label = "Low color",  value = "gray"),
-      textInput(inputId = "high", label = "High color", value = "blue"),
-    ),
-    mainPanel(
-      plotOutput(outputId = "hexbinPlot")
-    )
-  )
-)
-```
-
-```{r shiny-simple-server, eval=FALSE}
-server <- function(input, output) {
-  output$hexbinPlot <- renderPlot({
-    g <- ggplot(diamonds, aes(x = carat, y = price)) + 
-      geom_hex() +
-      theme_bw() + 
-      labs(
-        title = "Diamonds: Price vs Carat",
-        x     = "Carat",
-        y     = "Price ($)"
-      ) +
-      scale_fill_gradient(
-        low  = input$low,
-        high = input$high
-      ) 
-    
-    if (input$logx) 
-      g <- g + scale_x_log10()    
-    
-    if (input$logy) 
-      g <- g + scale_y_log10()
-    
-    g
-  })
-}
-```
-
-```{r, shiny-simple, eval=FALSE}
-shinyApp(ui = ui, server = server)
-```
 
 
 
@@ -108,7 +55,10 @@ shinyApp(ui = ui, server = server)
 
 ## Input
 
-```{r, eval=FALSE}
+The user can control the app through a set of _control widgets_. 
+Here is a demonstration of many of those widgets. 
+
+```{r input}
 ui <- fluidPage(
   titlePanel("User input options"),
   
@@ -136,7 +86,12 @@ ui <- fluidPage(
     
     selectInput("select", 
                 label = "Select", 
-                choices = c("A","B","C"))
+                choices = c("A","B","C")),
+    
+    selectInput("select", 
+                label = "Select", 
+                choices = c("A","B","C"),
+                multiple = TRUE)
   ),
   column(width = 3,
     numericInput("numeric",
@@ -169,7 +124,7 @@ shinyApp(ui = ui, server = function(input, output) {} )
 
 ### Text
 
-```{r, eval=FALSE}
+```{r output-text}
 ui <- fluidPage(
   titlePanel("Here is text output!"),
   
@@ -187,7 +142,7 @@ shinyApp(ui = ui, server = server)
 
 ### Table
 
-```{r, eval=FALSE}
+```{r output-table}
 ui <- fluidPage(
   titlePanel("Here is table output!"),
   
@@ -203,7 +158,7 @@ shinyApp(ui = ui, server = server)
 
 ### DataTable
 
-```{r, eval=FALSE}
+```{r output-datatable}
 ui <- fluidPage(
   titlePanel("Here is datatable output!"),
   
@@ -219,7 +174,7 @@ shinyApp(ui = ui, server = server )
 
 ### Plot
 
-```{r, eval=FALSE}
+```{r output-plot}
 ui <- fluidPage(
   titlePanel("Here is plot output!"),
   
@@ -235,7 +190,9 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 ```
 
-```{r, eval=FALSE}
+### Print
+
+```{r output-print}
 ui <- fluidPage(
   titlePanel("Here is print output!"),
   
@@ -257,3 +214,129 @@ shinyApp(ui = ui, server = server)
 
 # Server
 
+In the output examples above, you have seen that the output table, figure, 
+text, etc. are constructed in the server function, 
+`render`ed, and then shown to the user using an `*Output` function in the 
+`ui`. 
+In that `*Output` function, we used a text string that corresponded to the list
+element of the `output` object. 
+Thus, we had a connection from the `server` function to the `ui` through the 
+`output` object. 
+
+Here we will see how to create a connection from the `ui` to the `server` 
+using the `input` object and the `inputId`s in control widgets. 
+
+## Simple example
+
+```{r shiny-simple-ui}
+ui <- fluidPage(
+  titlePanel("2-D Histogram with Hexes!"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      checkboxInput(inputId = "logx", label = "Log Carat"),
+      checkboxInput(inputId = "logy", label = "Log Price"),
+      
+      textInput(inputId = "low",  label = "Low color",  value = "gray"),
+      textInput(inputId = "high", label = "High color", value = "blue"),
+    ),
+    mainPanel(
+      plotOutput(outputId = "hexbinPlot")
+    )
+  )
+)
+```
+
+```{r shiny-simple-server}
+server <- function(input, output) {
+  output$hexbinPlot <- renderPlot({
+    g <- ggplot(diamonds, aes(x = carat, y = price)) + 
+      geom_hex() +
+      theme_bw() + 
+      labs(
+        title = "Diamonds: Price vs Carat",
+        x     = "Carat",
+        y     = "Price ($)"
+      ) +
+      scale_fill_gradient(
+        low  = input$low,
+        high = input$high
+      ) 
+    
+    if (input$logx) 
+      g <- g + scale_x_log10()    
+    
+    if (input$logy) 
+      g <- g + scale_y_log10()
+    
+    g
+  })
+}
+```
+
+```{r, shiny-simple}
+shinyApp(ui = ui, server = server)
+```
+
+
+## pvalue interpretation
+
+Here is an app I created to try to understand the frequency interpretation
+of a particular p-value. 
+The idea is to understand how often the null hypothesis is true when we 
+observe a particular p-value, say 0.05.
+
+To construct the app, we consider the simple example of 
+\[ 
+Y \sim N(\mu,1).
+\]
+with null hypothesis 
+\[ 
+H_0: \mu = 0.
+\]
+
+The frequency of the null hypothesis being true will depend on 
+
+1. How often the null hypothesis is true before you ran the experiment.
+1. What values for $\mu$ are possible when the null hypothesis is not true. 
+
+To address the first question, the user will choose the proportion of times 
+the null hypothesis is true among experiments run by a scientist. 
+Various possibilities are reasonable and will depend on the scientific field
+the user is trying to emulate. 
+On one hand, scientists are typically running experiments because they think
+the null is not true and thus, probably, the null is true in only a small 
+fraction of experiments. 
+On the other hand, scientists who are running high-throughput experiments, 
+e.g. microarray or remote sensing, which are like looking for a needle in a 
+haystack. 
+In these situations, the null is true in a high fraction of experiments. 
+
+Once the user determines the proportion of null hypotheses that are true among
+the scientist's experiments, the user needs to determine what $\mu$ is when the
+null hypothesis is not true. 
+Since we will end up having many experiments where the null is not true, 
+we generally sample $\mu$ from some distribution. 
+A distribution where values for $\mu$ are far from zero (relative to the 
+data variance of 1) indicates _large_ effects. 
+In contrast, if the distribution is near zero, then this indicates 
+_small_ effects. 
+
+The app the simulates scientists experiments by randomly determining whether
+the null or alternative are true. 
+When the null is true, then $\mu$ is set to 0 while 
+when the alternative is true, it samples a new value for $\mu$.
+Then it samples an observation $Y$ according to the value for $\mu$. 
+Using this value for $Y$, the app will compute a p-value. 
+If the p-value is within a small window around the chosen p-value,
+the app will record whether or not the null hypothesis is true. 
+
+The app will repeat this process until the desired number of p-values within 
+the small window are observed. 
+It will then report how many times the null (and alternative) were true. 
+
+```{r}
+shiny::runGitHub('pvalue','jarad')
+```
+
+The code for this app can be seen at <https://github.com/jarad/pvalue>.
