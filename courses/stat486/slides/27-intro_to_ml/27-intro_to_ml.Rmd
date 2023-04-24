@@ -19,9 +19,34 @@ knitr::opts_chunk$set(
 
 ```{r packages}
 library("tidyverse"); theme_set(theme_bw())
+library("Sleuth3")
 ```
 
-Machine learning is a branch of computer science focused on prediction
+# What is machine learning?
+
+From [IBM](https://www.ibm.com/topics/machine-learning):
+
+> Machine learning is a branch of artificial intelligence (AI) and computer science which focuses on the use of data and algorithms to imitate the way that humans learn, gradually improving its accuracy.
+
+and later
+
+> machine learning algorithms are used to make a prediction or classification
+
+For the purpose of this class, 
+we will focus on the area of ML that tries to make a prediction for a 
+continuous variable and classification of a binary variable. 
+
+The fields of ML and of statistics overlap quite a bit.
+IMO, the primary distinction between the two are that 
+
+- ML prioritizes speed and predictive performance while
+- statistics prioritizes interpretation and theoretical justification. 
+
+While the fields overlap, 
+they utilize a whole different terminology.
+Here are some synonyms across the fields.
+
+
 
 
 There are a lot of synonyms between 
@@ -31,17 +56,167 @@ Here is a subset:
 ```{r, echo=FALSE}
 synonyms <- tribble(
   ~statistics, ~`machine learning`,
-  "variable","feature",
-  "response variable", "target",
+  "explanatory/independent variable","feature",
+  "response/dependent variable", "target/label",
   "clustering","unsupervised learning",
   "classification","supervised learning",
   "dummy variables","one-hot encoding",
-  "estimation","learning",
+  "estimation","learning/training",
   "transformation","feature creation"
 ) %>%
   DT::datatable()
 ```
 
+For this discussion, we'll stick with (my version) of the statistics 
+terminology. 
+
+## Speed
+
+Both ML approaches and statistical approaches are based on algorithms. 
+This is typically measured using [
+big O notation](https://en.wikipedia.org/wiki/Big_O_notation).
+Big O is a measure of how long it takes to run the code as a function one of
+the arguments in O. 
+For example, to obtain the MLEs for multiple regression, 
+we need to compute 
+\[ 
+\beta\beta = [X^\top X]^{-1}X^top y.
+\]
+Although, there are more efficient ways to perform these computations the 
+[basic approach requires the following calculations and their complexities](https://datascience.stackexchange.com/questions/35804/what-is-the-time-complexity-of-linear-regression)
+
+- matrix product $X^\top X$ with complexity $O(p^2n)$,
+- matrix-vector product $X^\top y$ with complexity $O(pn)$, and
+- inverse $(X\top X)^^{-1}$ with complexity $O(p^3)$.
+
+
+## Predictive performance
+
+A key notion in evaluating prediction is that you need to actually be making 
+predictions. 
+A common approach is to construct a train-test data set while another 
+approach is cross-validation. 
+
+### Train-test data
+
+A common approach is to split your data into two groups:
+one called _training_ and the other called _testing_. 
+You then estimate a model based on the training data, 
+but evaluate the model based on your testing data. 
+
+```{r}
+set.seed(20230424)
+
+n <- 1000
+x <- rnorm(n)
+y <- rnorm(n, x)
+d <- data.frame(y = y, x = x)
+
+# Split data
+p <- 0.5 # split 50/50 (on average)
+b <- sample(c(FALSE,TRUE), size = n*p, replace = TRUE)
+
+train <- d[ b,]
+test  <- d[!b,]
+
+# Estimate
+m <- lm(y~x, data = train)
+mean(residuals(m)^2) # in-sample error
+
+# Predict
+p <- test %>% mutate(yhat = predict(m, newdata = test))
+
+# Evaluate
+mean((p$y - p$yhat)^2) # out-of-sample error
+```
+
+Generally, your out-of-sample error will be higher than your in-sample error. 
+If your out-of-sample error is much larger than your in-sample error,
+you have likely _overfit_ your model. 
+
+Typically, you will be comparing methods based on this out-of-sample evaluation.
+
+### Cross-validation
+
+An alternative to the train-test split is $k$-fold cross-validation.
+In this approach, you split your data into $k$-folds. 
+Then you leave out one fold at a time, estimate your model based on the 
+remaining data, and then use the left out fold as the test data. 
+Repeating this process across all the folds, provides an estimate of the 
+out-of-sample error as well as the variability in this error. 
+
+```{r}
+# k folds
+k <- 10
+fold  <- sample(k, size = n, replace = TRUE)
+error <- data.frame(
+  in_sample     = numeric(k),
+  out_of_sample = numeric(k)
+)
+
+# iterate over the folds
+for (i in 1:k) {
+  train <- d[fold != i,]
+  test  <- d[fold == i,]
+  
+  m <- lm(y ~ x, data = train)
+  error$in_sample[i] <- mean(residuals(m)^2)
+  
+  p <- test %>% mutate(yhat = predict(m, newdata = test))
+  error$out_of_sample[i] <- mean((p$y - p$yhat)^2) 
+}
+
+error
+mean(error$out_of_sample)
+sd(  error$out_of_sample) 
+```
+
+A special case of $k$-fold cross-validation is 
+_leave-one-out cross-validation_ where $k$ is equal to the sample size. 
+
+
+
+### Interpretation
+
+(Statistical) regression models are appealing due to their (relatively) easy 
+interpretation. 
+For example, consider `Sleuth3::ex0722`
+
+```{r}
+ggplot(Sleuth3::ex0722, aes(Height, Force, color = Species)) + 
+  geom_point() + 
+  stat_smooth(method = "lm", se = FALSE)
+```
+
+```{r}
+m <- lm(Force ~ Height*Species, data = Sleuth3::ex0722)
+summary(m)
+```
+
+For species _Cancer productus_, each additional mm increase in claw propodus height
+is associated with a `r round(coef(m)[2],1)` N increase in claw closing strength. 
+
+This interpretability is due to the relatively simple nature of a regression
+model. 
+This simplicity generally results in worse predictive power compared to a more
+flexible model. 
+
+
+### Theoretical justification
+
+
+
+
+
+# Prediction
+
+
+
+
+
+# Classification
+
+# Artificial intelligence
 
 
 
