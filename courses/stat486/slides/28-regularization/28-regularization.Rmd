@@ -20,9 +20,198 @@ knitr::opts_chunk$set(
 ```{r packages}
 library("tidyverse"); theme_set(theme_bw())
 library("MASS")
+library("glmnet")
 library("knitr")
 library("kableExtra")
 ```
+
+
+# Variable selection
+
+In regression models with many explanatory variables, 
+there is a question of which explanatory variables should be included in a 
+model. 
+If, ultimately, we choose a single set, this is a 
+_model_ or _variable selection_ problem. 
+
+For this and future analyses in these slides, 
+I will use a subset of the diamonds data set where we randomly select
+100 observations and eliminate (for simplicity) the categorical variables. 
+
+```{r}
+set.seed(20230425)
+n <- 100
+d <- diamonds %>%
+  dplyr::select(-cut, -color, -clarity) %>%
+  rename(lprice = price) %>%
+  mutate(lprice = log(lprice))
+
+train <- d %>% sample_n(n)
+test  <- d %>% sample_n(n)
+```
+
+We already know we can formally test two models that are nested. 
+
+```{r}
+m1 <- lm(lprice ~ .,   data = train)
+m2 <- lm(lprice ~ .^2, data = train)
+anova(m1, m2)
+```
+We can utilize this approach to search through models sequentially to 
+determine which explanatory variables (and interactions) should be 
+included in the final model. 
+
+R has a `step()` function that will automatically perform this process,
+although rather than utilizing the F-test and associated p-value it will use
+Akaike's Information Criterion (AIC). 
+
+The general AIC formula is -2 times the log likelihood plus two times the 
+number of $\beta$s (call this $p$). 
+For linear regression the formula is 
+\[
+AIC: -\log(\hat\sigma^2) + 2p
+\]
+The $2p$ is a penalty that attempts to reduce the number of parameters and,
+therefore explanatory variables, in the model. 
+Since we are trying to minimize $\sigma^2$ and minimize the number of parameters
+we are looking for models whose AIC is small. 
+
+An alternative to AIC is BIC which replaces the penalty by $\log(n)\times p$. 
+Since $\log(n)>2$ for $n > 7$, BIC generally suggests smaller models than 
+AIC. 
+
+
+## Forward
+
+One approach is to start with the most basic model:
+one that only includes the intercept. 
+Then try adding variables that improve (decrease) AIC. 
+
+```{r}
+m_forward <- step(lm(lprice ~ 1, data = train), 
+          scope = formula(lm(lprice ~ .^2, data = train)), 
+          direction = "forward")
+```
+
+Final model
+
+```{r}
+summary(m_forward)$coef
+```
+
+Training and testing error
+
+```{r}
+p <- predict(m_forward, newdata = test)
+
+error <- data.frame(
+  method = "Forward selection",
+  in_sample = mean(m_forward$residuals^2),
+  out_of_sample = mean((p-test$lprice)^2)
+) 
+```
+
+
+## Backward
+
+Another approach is to start with the largest model and eliminate variables
+that (when eliminated) decrease AIC. 
+
+```{r}
+m_backward <- step(lm(lprice ~ .^2, data = train), 
+          direction = "backward")
+```
+
+Final model
+
+```{r}
+summary(m_backward)$coef
+```
+
+Training and testing error
+
+```{r}
+p <- predict(m_backward, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "Backward selection",
+    in_sample = mean(m_backward$residuals^2),
+    out_of_sample = mean((p-test$lprice)^2)
+  ) 
+)
+```
+
+
+## Forward and backward
+
+Or we can traverse in both directions starting from somewhere
+
+```{r}
+m_both <- step(lm(lprice ~ ., data = train), 
+          scope = formula(lm(lprice ~ .^2, data = train)), 
+          direction = "both")
+```
+
+Final model
+
+```{r}
+summary(m_both)$coef
+```
+As can be seen from this example, there is no reason that these approaches
+will lead to the same model.
+
+
+Training and testing error
+
+```{r}
+p <- predict(m_both, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "Forward and backward",
+    in_sample = mean(m_both$residuals^2),
+    out_of_sample = mean((p-test$lprice)^2)
+  ) 
+)
+```
+
+
+
+## Model averaging
+
+Rather than selecting a single model, 
+we can utilize all models and give each model a probability. 
+Then, for each test observation, we can average our predictions across all the 
+models. 
+
+```{r}
+m_avg <- lm(lprice ~ ., data = train, na.action = na.fail) %>%
+  MuMIn::dredge() 
+```
+
+Obtain predictions. 
+
+```{r}
+p <- m_avg %>%
+  get.models(subset = cumsum(weight) <= .99) %>%
+  model.avg() %>%
+  predict(newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "Model averaging",
+    in_sample = NA,
+    out_of_sample = mean((p-test$lprice)^2)
+  ) 
+)
+```
+
+
+
 
 # Regression
 
@@ -76,17 +265,7 @@ We can fit a ridge regression model using the `MASS::lm.ridge()` function.
 Let's utilize the `diamonds` data set, but, for simplicity, only include the
 continuous variables.
 
-```{r}
-set.seed(20230425)
-n <- 100
-d <- diamonds %>%
-  dplyr::select(-cut, -color, -clarity) %>%
-  rename(lprice = price) %>%
-  mutate(lprice = log(lprice))
 
-train <- d %>% sample_n(n)
-test  <- d %>% sample_n(n)
-```
 
 Fit ridge regression
 
