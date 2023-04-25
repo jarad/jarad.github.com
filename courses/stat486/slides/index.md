@@ -55,3 +55,7 @@ you can find the source files
 - Rmarkdown
 - [Interactivity](25-interactivity/25-interactivity.html) - [Rmd](https://raw.githubusercontent.com/jarad/jarad.github.com/master/courses/stat486/slides/25-interactivity/25-interactivity.Rmd)
 - [Shiny](26-shiny/26-shiny.html) - [R Code](26-shiny/26-shiny.R)
+
+## Machine learning
+
+- [Introduction to ML](27-intro_to_ml/27-intro_to_ml.html) - [R Code](27-intro_to_ml/27-intro_to_ml.R)

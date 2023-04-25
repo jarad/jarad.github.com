@@ -20,6 +20,8 @@ knitr::opts_chunk$set(
 ```{r packages}
 library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
+library("knitr")
+library("kableExtra")
 ```
 
 # What is machine learning?
@@ -176,7 +178,8 @@ _leave-one-out cross-validation_ where $k$ is equal to the sample size.
 
 
 
-### Interpretation
+
+## Interpretation
 
 (Statistical) regression models are appealing due to their (relatively) easy 
 interpretation. 
@@ -202,13 +205,179 @@ This simplicity generally results in worse predictive power compared to a more
 flexible model. 
 
 
-### Theoretical justification
+## Theoretical justification
 
+Statistical methods are often built on a probability model which provides 
+
+- diagnostics,
+- point estimator guarantees, and
+- interval estimator guarantees.
+
+Even when statistical methods are not built on a probability model,
+e.g. nonparametrics, the methods still provide guarantees based on 
+other theoretical results, e.g. CLT. 
+
+Diagnostics are important to understand when your method is irrelevant.
 
 
 
 
 # Prediction
+
+In prediction, we are interested in forecasting a continuous response variable. 
+So we are in the realm of multiple regression. 
+
+## Point prediction
+
+For observation $i$ in the testing data set, let
+
+- $Y_i$ be the observed value for the response variable and 
+- $\widehat{Y}_i$ be the predicted value for the response variable. 
+
+We have a variety of statistics we can calculate and therefore use to evaluate 
+method(s). 
+
+### MSE
+
+The statistic mentioned earlier is mean squared error (MSE):
+\[
+MSE = \frac{1}{n}\sum_{i=1}^n (Y_i-\widehat{Y}_i)^2.
+\]
+
+An alternative to MSE is root MSE (RMSE):
+\[
+RMSE = \sqrt{MSE} = \sqrt{\frac{1}{n}\sum_{i=1}^n (Y_i-\widehat{Y}_i)^2}.
+\]
+
+
+### MAD
+
+Rather than squared error, we can use absolute error and calculate 
+mean absolute deviation (MAD):
+\[ 
+MAD = \frac{1}{n}\sum_{i=1}^n |Y_i-\widehat{Y}_i|.
+\]
+
+### MAPE
+
+If our observed $Y_i$ can be close to zero, 
+we may want to weight errors so that the same magnitude error is more 
+important when the observed value of $Y_i$ is close to zero. 
+In this case, we can calculate mean absolute percentage error (MAPE):
+\[ 
+MAPE = \frac{1}{n}\sum_{i=1}^n \left|\frac{Y_i-\widehat{Y}_i}{Y_i}\right|.
+\]
+Note that the error is now calculated as a percentage of the observed value. 
+
+### R^2
+
+The coefficient of determination for a regression of the predicted values on 
+the observed values (or vice versa since the result is the same) is often 
+used.
+I'm not a big fan of this measure as correlation can often be good when the
+actual predictions are far off. 
+For example,
+```{r}
+y    <- runif(n)
+yhat <- y*10 + rnorm(n)
+cor(y,yhat)^2
+
+plot(yhat, y, ylim = c(0,10), xlim = c(0,10))
+abline(0, 1, col = "red")
+```
+
+
+
+## Under/overfitting
+
+When making predictions, 
+there is a trade-off between training a model so that it matches the training
+data well versus matching the testing data well. 
+If the model doesn't match either the training or testing data well, 
+the model is underfit, 
+If the model matches the training data well, but does not match the testing data
+well, then the model is overfit. 
+
+To demonstrate the phenomenon, 
+we construct a linear regression model where the first 10 explanatory variables
+are related to the response but with decreasing relevant. 
+Additional explanatory variables are availabe but are unrelated to the response. 
+
+We then consider a sequence of regression models that increasingly adds a 
+single explanatory variable. 
+For each regression model fit, we calculate the out-of-sample MSE and plot 
+versus the number of explanatory variables in the model. 
+
+```{r}
+n <- 100
+p <- 50 
+
+train <- matrix(rnorm(n*p), nrow = n, ncol = p) %>%
+  as.data.frame() %>%
+  mutate(y = V1 + V2 + V3 + V4 + V5 + rnorm(n)) %>%
+  select(y, everything())
+
+test <- matrix(rnorm(n*p), nrow = n, ncol = p) %>%
+  as.data.frame() %>%
+  mutate(y = V1 + V2 + V3 + V4 + V5 + rnorm(n))  %>%
+  select(y, everything())
+
+mse <- numeric(p)
+for (i in 1:p) {
+  m <- lm(y ~ ., data = train[,1:(i+1)])
+  yhat <- predict(m, newdata = test)
+  mse[i] <- sqrt(mean(test$y - yhat)^2)
+}
+
+plot(mse)
+```
+
+
+
+
+## Probabilistic predictions
+
+The prediction evaluations above are all evaluations of a 
+_point prediction_. 
+When using statistical approaches, we generally have an ability to quantify
+uncertainty in our predictions. 
+Typically this is through probability density function for our observations. 
+For example, predictions from a multiple regression model are given as a normal
+distribution. 
+Rather than simply evaluating the mean of that normal distribution, 
+we can evaluate the uncertainty associated with that predictive density. 
+
+### Density evaluation
+
+A simple way to evaluate a predictive density is simply to evaluate the 
+density at the observed data point $Y_i$.
+For example, if $\widehat{f}_i(\cdot)$ is our predictive density for observation $i$,
+then $\widehat{f}_i(y_i)$ is the density of our observation. 
+If the observations are independent, 
+then it makes sense to take the product of these evaluations
+\[
+p(y) = \prod_{i=1}^n \widehat{f}_i(y_i).
+\]
+(Note that if the observations are not independent, then we should evaluate 
+the joint density of the test set observations.)
+
+Often, we will use the logarithm of this product:
+\[ 
+\log p(y) = \log\left( \prod_{i=1}^n \widehat{f}_i(y_i) \right)
+= \sum_{i=1}^n \log \widehat{f}_i(y_i).
+\]
+
+### Prediction interval evaluation
+
+Sometimes we don't have a full predictive density, but instead we have 
+confidence intervals. 
+There are two aspects of confidence intervals we may want to evaluate
+
+- coverage
+- width
+
+Ideally, we have the shortest width intervals that have at least the 
+nominal coverage, e.g. 95\%.
 
 
 
@@ -216,7 +385,90 @@ flexible model.
 
 # Classification
 
-# Artificial intelligence
+Classification is prediction for a categorical variable.
+There are two main types of classification:
+binary and multiclass. 
+As the names suggestion, binary classification is predicting observations
+into one of two class while multiclass classification is predicting
+observations into more than two classes. 
 
+
+## Binary
+
+For this discussion, assume the two binary classes are 0 and 1. 
+As before, let the true value for observation $i$ be $Y_i$. 
+We build a classifier that will produce a prediction $\widehat{Y}_i$ that is 
+0 or 1 and may produce a probability $\widehat{p}_i$ that the observation is a 1. 
+
+
+### Confusion matrix
+
+With our test data and our predictions, we can compute a _confusion matrix_ 
+which describes the accuracy of our predictions. 
+
+```{r}
+d <- data.frame(
+  observed = c(0,1),
+  predicted = c(0,1,1,0),
+  number = c(84, 97, 17, 23)
+) 
+
+d %>% 
+  pivot_wider(names_from = predicted, values_from = number) %>%
+  knitr::kable(caption = "Confusion matrix") %>%
+  add_header_above(c(" " = 1, "predicted" = 2))
+```
+
+
+From this confusion matrix, we can calculate a number of quantities of 
+interest:
+
+```{r}
+TP <- d %>% filter(observed == 1, predicted == 1) %>% pull(number) # True positives
+TN <- d %>% filter(observed == 0, predicted == 0) %>% pull(number) # True negatives
+FP <- d %>% filter(observed == 0, predicted == 1) %>% pull(number) # False positives
+FN <- d %>% filter(observed == 1, predicted == 0) %>% pull(number) # False negatives
+
+allP <- TP + FN
+allN <- TN + FP
+```
+
+Quantities that are often reported are 
+
+```{r}
+(TP + TN) / (allP + allN) # Classification accuracy
+
+TP / allP # Sensitivity (true positive rate)
+TN / allN # Specificity (true negative rate)
+```
+
+
+### Log loss
+
+The confusion matrix approach has the downside that you force an algorithm to
+choose between the two class. 
+The algorithm itself may be very confident in some observations but not so 
+confident for others. 
+To incorporate this uncertainty, we can utilize the probabilities reported by 
+the algorithm for the different classes. 
+
+When we have probabilities we can calculate the _log loss_ on the test data set
+\[
+\mbox{log loss} = -\sum_{i=1}^n y_i \log(\widehat{p}_i) + (1-y_i) \log(1-\widehat{p}_i).
+\]
+Since each observation is either $y_i = 0$ or $y_i = 1$,
+only one of the two terms will get added to the sum for a particular observation. 
+When $y_i=1$, we add $\log(\widehat{p}_i)$ which we hope is close to zero and
+when $y_i=0$, we add $\log(1-\widehat{p}_i)$ which, again, we hope is close to zero.
+Since the logarithm of a number between 0 and 1 is always negative, 
+we take a negative out front so that small numbers are better. 
+
+
+## Multiclass
+
+When we have multiclass classification, we have an expanded confusion matrix
+and therefore more quantities we can calculate. 
+For the log loss, we simply add the logarithms of the class probabilities for 
+the observed classes and multiply by -1 at the end, .
 
 
