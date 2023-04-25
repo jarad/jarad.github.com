@@ -1,0 +1,181 @@
+---
+title: "Regularization"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+layout: page
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  eval = TRUE)
+```
+
+[R code](28-regularization.R)
+
+```{r packages}
+library("tidyverse"); theme_set(theme_bw())
+library("MASS")
+library("knitr")
+library("kableExtra")
+```
+
+# Regression
+
+Recall that a multiple regression model can be written 
+\[
+Y = X\beta + \epsilon, \quad \epsilon \sim N(0,\sigma^2,\mathrm{I}_n)
+\]
+where 
+
+- $Y$ is $n\times 1$ vector of response variable values,
+- $X$ is $n\times p$ matrix of explanatory variable values,
+- $\beta$ is $p\times 1$ coefficient vector, and
+- $\mathrm{I}_n$ is an $n\times n$ identity matrix. 
+
+
+The MLE for $\beta$ is 
+\[ 
+\hat\beta_{MLE} = [X^\top X]^{-1} X^\top y.
+\]
+
+This MLE is the solution to the formula 
+\[
+\hat\beta_{MLE} = \mbox{argmin}_{\beta}\, (Y-X\beta)^\top (Y-X\beta),
+\]
+i.e. the sum of squared residuals. 
+
+
+# Ridge regression
+
+For ridge regression, 
+we add a _penalty_ to the formula above. 
+Specifically, the ridge regression estimator is the solution to 
+\[
+\hat\beta_{ridge} = \mbox{argmin}_{\beta}\, (Y-X\beta)^\top (Y-X\beta) + \lambda \sum_{j} \beta_j^2
+\]
+where the penalty is $\lambda \sum_{j} \beta_j^2$ for some value of $\lambda>0$.
+Since we are trying to find the minimum and this penalty sums the square of the
+$\beta$s, 
+the solution to this formula will have $\beta$ closer to zero.
+Thus, this method is one of the _shrinkage methods_. 
+
+The solution is available in closed form as 
+\[
+\hat\beta_{ridge} = [X^\top X + \lambda\mathrm{I}_p]^{-1} X^\top y.
+\]
+
+## lm.ridge
+
+We can fit a ridge regression model using the `MASS::lm.ridge()` function. 
+
+Let's utilize the `diamonds` data set, but, for simplicity, only include the
+continuous variables.
+
+```{r}
+set.seed(20230425)
+n <- 100
+d <- diamonds %>%
+  dplyr::select(-cut, -color, -clarity) %>%
+  rename(lprice = price) %>%
+  mutate(lprice = log(lprice))
+
+train <- d %>% sample_n(n)
+test  <- d %>% sample_n(n)
+```
+
+Fit ridge regression
+
+```{r}
+m <- MASS::lm.ridge(lprice ~ ., data = train, lambda = seq(0, .1, .001))
+```
+
+### Centering and scaling
+
+For computational reasons and comparability reasons, 
+the explanatory variables have been centered and scaled. 
+Here are the values used for the centering and scaling:
+
+```{r}
+m$xm     # center
+m$scales # scaling
+```
+
+We can verify that this centering and scaling are related to the mean and 
+standard deviation of the explanatory variables. 
+
+```{r}
+apply(train, 2, mean)
+apply(train, 2, sd) * sqrt((n-1) / n)
+```
+
+### Shrinking
+
+The parameter estimates shrink toward zero as the ridge penalty increase as 
+can be seen in this plot.
+
+```{r}
+plot(m)
+```
+
+Estimation of a ridge regression model involves choosing a value for $\lambda$. 
+
+```{r}
+select(m)
+```
+Here GCV stands for generalized cross validation. 
+
+Refit the model with a chosen value for $\lambda$. 
+
+```{r}
+m <- MASS::lm.ridge(lprice ~ ., data = train, lambda = 0.035)
+```
+
+To make predictions, we need to center and scale our explanatory variables
+
+```{r}
+xtest <- scale(subset(test, select=-c(lprice)), center = m$xm, scale = m$scales)
+```
+
+```{r}
+p <- xtest %*% m$coef +   # X*beta
+  m$ym                    # need to include mean
+```
+
+```{r}
+plot(p, test$lprice)
+abline(0,1, col='red')
+```
+
+Since the predicted values and observed values following the y=x line, 
+using R2 is a reasonable statistic. 
+
+```{r}
+RIDGE_R2   <- cor(p, test$lprice)^2 
+RIDGE_RMSE <- mean((test$lprice - p)^2)
+```
+
+
+# LASSO
+
+For least absolute shrinkage and selection operator (LASSO), 
+we add a _penalty_ to the lm formula above. 
+Specifically, the LASSO estimate is the solution to 
+\[
+\hat\beta_{LASSO} = \mbox{argmin}_{\beta}\, (Y-X\beta)^\top (Y-X\beta) + \lambda \sum_{j} |\beta_j|
+\]
+where the penalty is $\lambda \sum_{j} |\beta_j|$ for some value of $\lambda>0$.
+Since we are trying to find the minimum and this penalty sums the square of the
+$\beta$s, 
+the solution to this formula will have $\beta$ closer to zero.
+Thus, this method is one of the _shrinkage methods_. 
+
+The penalty here is very similar to the ridge penalty, but here we use the 
+absolute value rather than the squared value of the coefficient. 
+
+
+
