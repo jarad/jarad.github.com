@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 ```{r packages}
 library("tidyverse"); theme_set(theme_bw())
 library("MASS")
+library("MuMIn")
 library("glmnet")
 library("knitr")
 library("kableExtra")
@@ -311,18 +312,19 @@ Here GCV stands for generalized cross validation.
 Refit the model with a chosen value for $\lambda$. 
 
 ```{r}
-m <- MASS::lm.ridge(lprice ~ ., data = train, lambda = 0.035)
+m_ridge <- MASS::lm.ridge(lprice ~ ., data = train, lambda = 0.035)
 ```
 
 To make predictions, we need to center and scale our explanatory variables
 
 ```{r}
-xtest <- scale(subset(test, select=-c(lprice)), center = m$xm, scale = m$scales)
+xtest <- scale(subset(test, select=-c(lprice)), 
+               center = m_ridge$xm, scale = m_ridge$scales)
 ```
 
 ```{r}
-p <- xtest %*% m$coef +   # X*beta
-  m$ym                    # need to include mean
+p <- xtest %*% m_ridge$coef +   # X*beta
+  m_ridge$ym                    # need to include mean
 ```
 
 ```{r}
@@ -334,9 +336,17 @@ Since the predicted values and observed values following the y=x line,
 using R2 is a reasonable statistic. 
 
 ```{r}
-RIDGE_R2   <- cor(p, test$lprice)^2 
-RIDGE_RMSE <- mean((test$lprice - p)^2)
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "Ridge",
+    in_sample = NA,
+    out_of_sample = mean((p-test$lprice)^2)
+  ) 
+)
 ```
+
+
 
 
 # LASSO
@@ -357,4 +367,9 @@ The penalty here is very similar to the ridge penalty, but here we use the
 absolute value rather than the squared value of the coefficient. 
 
 
+# Summary
+
+```{r}
+error
+```
 
