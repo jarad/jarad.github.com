@@ -1,0 +1,563 @@
+---
+title: "Penalized regression"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+layout: page
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = TRUE
+)
+```
+
+[R code](28-penalty.R)
+
+```{r packages}
+library("tidyverse")
+theme_set(theme_bw())
+library("MASS")
+library("MuMIn")
+library("glmnet")
+library("knitr")
+library("kableExtra")
+```
+
+
+These slides intend to introduce the notations of variable selection using 
+information criteria and regularized regression techniques. 
+Both of these methods have the idea of adding a penalty into the methodology and
+thus fall under an umbrella of penalized regression techniques. 
+
+
+# Variable selection
+
+In regression models with many explanatory variables, 
+there is a question of which explanatory variables should be included in a 
+model. 
+If, ultimately, we choose a single set, this is a 
+_model_ or _variable selection_ problem. 
+
+For this and future analyses in these slides, 
+I will use a subset of the diamonds data set where we randomly select
+100 observations and eliminate (for simplicity) the categorical variables. 
+
+```{r}
+set.seed(20230425)
+n <- 100
+d <- diamonds %>%
+  dplyr::select(-cut, -color, -clarity) %>%
+  rename(lprice = price) %>%
+  mutate(lprice = log(lprice))
+
+train <- d %>% sample_n(n)
+test <- d %>% sample_n(n)
+```
+
+We already know we can formally test two models that are nested. 
+
+```{r}
+m1 <- lm(lprice ~ ., data = train)
+m2 <- lm(lprice ~ .^2, data = train)
+anova(m1, m2)
+```
+We can utilize this approach to search through models sequentially to 
+determine which explanatory variables (and interactions) should be 
+included in the final model. 
+
+R has a `step()` function that will automatically perform this process,
+although rather than utilizing the F-test and associated p-value it will use
+Akaike's Information Criterion (AIC). 
+
+The general AIC formula is -2 times the log likelihood plus two times the 
+number of $\beta$s (call this $p$). 
+For linear regression the formula is 
+\[
+AIC: -\log(\hat\sigma^2) + 2p
+\]
+The $2p$ is a penalty that attempts to reduce the number of parameters and,
+therefore explanatory variables, in the model. 
+We can obtain AIC from a given model using the `extractAIC()` function:
+
+```{r}
+extractAIC(m1)
+extractAIC(m2)
+```
+The first value is $p$ while the second value is AIC. 
+
+Since we are trying to minimize $\sigma^2$ and minimize the number of parameters
+we are looking for models whose AIC is small. 
+Thus, in this comparison AIC prefers model `m1` due to its lower AIC. 
+
+An alternative to AIC is BIC which replaces the penalty by $\log(n)\times p$. 
+Since $\log(n)>2$ for $n > 7$, BIC generally suggests smaller models than 
+AIC. 
+
+
+```{r}
+extractAIC(m1, k = log(n))
+extractAIC(m2, k = log(n))
+```
+BIC prefers `m1` since, again, it has the smaller BIC.
+
+
+
+## Forward
+
+One approach is to start with the most basic model:
+one that only includes the intercept. 
+Then try adding variables that improve (decrease) AIC. 
+
+```{r}
+m_forward <- step(lm(lprice ~ 1, data = train),
+  scope = formula(lm(lprice ~ .^2, data = train)),
+  direction = "forward"
+)
+```
+
+Final model
+
+```{r}
+summary(m_forward)$coef
+```
+
+Training and testing error
+
+```{r}
+p <- predict(m_forward, newdata = test)
+
+error <- data.frame(
+  method = "Forward selection",
+  in_sample = mean(m_forward$residuals^2),
+  out_of_sample = mean((p - test$lprice)^2)
+)
+```
+
+
+## Backward
+
+Another approach is to start with the largest model and eliminate variables
+that (when eliminated) decrease AIC. 
+
+```{r}
+m_backward <- step(lm(lprice ~ .^2, data = train),
+  direction = "backward"
+)
+```
+
+Final model
+
+```{r}
+summary(m_backward)$coef
+```
+
+Training and testing error
+
+```{r}
+p <- predict(m_backward, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "Backward selection",
+    in_sample = mean(m_backward$residuals^2),
+    out_of_sample = mean((p - test$lprice)^2)
+  )
+)
+```
+
+
+## Forward and backward
+
+Or we can traverse in both directions starting from somewhere
+
+```{r}
+m_both <- step(lm(lprice ~ ., data = train),
+  scope = formula(lm(lprice ~ .^2, data = train)),
+  direction = "both"
+)
+```
+
+Final model
+
+```{r}
+summary(m_both)$coef
+```
+As can be seen from this example, there is no reason that these approaches
+will lead to the same model.
+
+
+Training and testing error
+
+```{r}
+p <- predict(m_both, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "Forward and backward",
+    in_sample = mean(m_both$residuals^2),
+    out_of_sample = mean((p - test$lprice)^2)
+  )
+)
+```
+
+
+
+## Model averaging
+
+Rather than selecting a single model, 
+we can utilize all models and give each model a probability. 
+Then, for each test observation, we can average our predictions across all the 
+models. 
+
+```{r}
+m_avg <- lm(lprice ~ ., data = train, na.action = na.fail) %>%
+  MuMIn::dredge()
+```
+
+Obtain predictions. 
+
+```{r}
+mp <- m_avg %>%
+  get.models(subset = cumsum(weight) <= .99) %>%
+  model.avg()
+
+p_train <- predict(mp, newdata = train)
+p_test <- predict(mp, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "Model averaging",
+    in_sample = mean((p_train - train$lprice)^2),
+    out_of_sample = mean((p_test - test$lprice)^2)
+  )
+)
+```
+
+
+
+
+# Regularized regression
+
+Recall that a multiple regression model can be written 
+\[
+Y = X\beta + \epsilon, \quad \epsilon \sim N(0,\sigma^2,\mathrm{I}_n)
+\]
+where 
+
+- $Y$ is $n\times 1$ vector of response variable values,
+- $X$ is $n\times p$ matrix of explanatory variable values,
+- $\beta$ is $p\times 1$ coefficient vector, and
+- $\mathrm{I}_n$ is an $n\times n$ identity matrix. 
+
+
+The MLE for $\beta$ is 
+\[ 
+\hat\beta_{MLE} = [X^\top X]^{-1} X^\top y.
+\]
+
+This MLE is the solution to the formula 
+\[
+\hat\beta_{MLE} = \mbox{argmin}_{\beta}\, (Y-X\beta)^\top (Y-X\beta),
+\]
+i.e. the sum of squared residuals. 
+
+In this section, we will be using the 
+[glmnet package](https://cran.r-project.org/web/packages/glmnet/index.html) 
+which takes as input the response vector and the explanatory variable matrix. 
+
+```{r}
+train <- list(
+  y = train$lprice,
+  x = subset(train, select = -c(lprice)) %>% as.matrix()
+)
+
+test <- list(
+  y = test$lprice,
+  x = subset(test, select = -c(lprice)) %>% as.matrix()
+)
+```
+
+
+
+## Ridge regression
+
+For ridge regression, 
+we add a _penalty_ to the formula above. 
+Specifically, the ridge regression estimator is the solution to 
+\[
+\hat\beta_{ridge} 
+= \mbox{argmin}_{\beta}\, (Y-X\beta)^\top (Y-X\beta)/2n
++ \lambda \sum_{j} \beta_j^2
+\]
+where the penalty is $\lambda \sum_{j} \beta_j^2$ for some value of $\lambda>0$.
+Note that this corresponds to the `glmnet` definition and may differ from other
+sources, 
+but the idea is the same. 
+
+Since we are trying to find the minimum and this penalty sums the square of the
+$\beta$s, 
+the solution to this formula will have $\beta$ closer to zero.
+Thus, this method is one of the _shrinkage methods_. 
+
+The solution is available in closed form as 
+\[
+\hat\beta_{ridge} = [X^\top X + \lambda\mathrm{I}_p]^{-1} X^\top y.
+\]
+
+We can fit a ridge regression model using the `MASS::lm.ridge()` function. 
+
+Let's utilize the `diamonds` data set, but, for simplicity, only include the
+continuous variables.
+
+Fit ridge regression
+
+```{r}
+m <- glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 0 # ridge regression
+)
+```
+
+### Shrinkage
+
+The parameter estimates shrink toward zero as the ridge penalty increase as 
+can be seen in this plot.
+
+```{r}
+plot(m, xvar = "lambda", label = TRUE)
+```
+
+Note that all coefficients estimates converge to zero 
+(although not monotonically), 
+but are never equal to zero. 
+
+### Choosing penalty
+
+Estimation of a ridge regression model involves choosing a value for $\lambda$.
+
+```{r}
+cv_m <- cv.glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 0 # ridge regression
+)
+```
+
+```{r}
+plot(cv_m)
+```
+
+Choose $\lambda$ that minimizes cross-validation error in the training set. 
+
+```{r}
+best_lambda <- cv_m$lambda.min
+m <- glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 0, # ridge regression
+  lambda = best_lambda
+)
+```
+
+
+### In and out of sample error
+
+```{r}
+p_train <- predict(m, newx = train$x)
+p_test <- predict(m, newx = test$x)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "Ridge",
+    in_sample = mean((p_train - train$y)^2),
+    out_of_sample = mean((p_test - test$y)^2)
+  )
+)
+```
+
+When I performed this analysis using `MASS::lm.ridge` my in and out of sample 
+error was almost exactly the same as the other methods. 
+So I'm not sure what is going on with the `glmnet` implementation of ridge
+regression.
+
+### Bayesian interpretation
+
+There is a Bayesian interpretation of the ridge regression as a normal prior 
+on the coefficients centered at 0. 
+\[
+Y \sim N(X\beta, \sigma^2 \mathrm{I}_n), \quad
+\beta \sim N\left(0, \lambda^{-1}\mathrm{I}_p\right)
+\]
+
+
+## LASSO
+
+For least absolute shrinkage and selection operator (LASSO), 
+we add a _penalty_ to the lm formula above. 
+Specifically, the LASSO estimate is the solution to 
+\[
+\hat\beta_{LASSO} 
+= \mbox{argmin}_{\beta}\, (Y-X\beta)^\top (Y-X\beta)/2n
++ \lambda \sum_{j} |\beta_j|
+\]
+where the penalty is $\lambda \sum_{j} |\beta_j|$ for some value of $\lambda>0$.
+Note that this corresponds to the `glmnet` definition and may differ from other
+sources, but the idea is the same. 
+
+
+Since we are trying to find the minimum and this penalty sums the square of the
+$\beta$s, 
+the solution to this formula will have $\beta$ closer to zero.
+Thus, this method is one of the _shrinkage methods_. 
+
+The penalty here is very similar to the ridge penalty, but here we use the 
+absolute value rather than the squared coefficient. 
+
+### Shrinkage
+
+The LASSO point estimate cannot be written analytically, but we have reasonable
+algorithms to obtain the estimate. 
+
+```{r}
+m <- glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 1 # LASSO
+)
+```
+
+Estimated coefficients as a function of the penalty $\lambda$. 
+
+```{r}
+plot(m, xvar = "lambda", label = TRUE)
+```
+
+Note that some of the point estimates are exactly zero, unlike the ridge 
+analysis. 
+Thus, LASSO can perform model selection.
+With that being said, this is only for the point estimate and does not 
+incorporate uncertainty on the point estimate. 
+
+### Choosing penalty
+
+We still need to decide on a penalty to use. 
+We can choose based on cross-validation. 
+
+```{r}
+cv_m <- cv.glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 1 # LASSO
+)
+```
+
+```{r}
+plot(cv_m)
+```
+
+Choose $\lambda$ that minimizes cross-validation error in the training set. 
+
+```{r}
+best_lambda <- cv_m$lambda.min
+m <- glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 1, # LASSO
+  lambda = best_lambda
+)
+```
+
+### In and out of sample error
+
+```{r}
+p_train <- predict(m, newx = train$x)
+p_test <- predict(m, newx = test$x)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    method = "LASSO",
+    in_sample = mean((p_train - train$y)^2),
+    out_of_sample = mean((p_test - test$y)^2)
+  )
+)
+```
+
+ 
+
+
+### Bayesian interpretation
+
+There is a Bayesian interpretation of the LASSO as a 
+[Laplace](https://en.wikipedia.org/wiki/Laplace_distribution)
+(or double exponential) prior on the coefficients centered at 0. 
+
+
+
+## Elastic net
+
+The elastic net is a combination of the ridge and LASSO approaches. 
+As parameterized by `glmnet()`, the penalty is (I think)
+
+\[
+\hat\beta_{LASSO} 
+= \mbox{argmin}_{\beta}\, (Y-X\beta)^\top (Y-X\beta) 
++ \lambda \left[ (1-\alpha) \sum_j \beta_j^2 + \alpha \sum_{j} |\beta_j| \right]
+\]
+
+Thus, when $\alpha = 1$ we have LASSO while if $\alpha=0$ we have ridge 
+regression.
+Values of $\alpha$ between 0 and 1 are a mixture between the two.
+
+
+# Summary
+
+In these slides, 
+we introduced a number of different approaches within the context of regression
+for deciding what explanatory variables to include as well as estimating the 
+coefficients for included explanatory variables.
+All methods had in common that they penalized bigger, more flexible models in 
+some way.
+The model selection approaches utilized an information criterion that penalized
+more explanatory variables.
+The regularization techniques penalized the magnitude of the coefficients
+which had the effect of shrinking those coefficients toward 0. 
+
+
+## Comparison
+
+We may want to compare the in-sample and out-of-sample errors across our 
+different methods.
+We need to be a bit careful here because I allowed more explanatory variables 
+in the model selection and averaging approaches than I did in the regularization
+approaches. 
+
+```{r}
+error %>%
+  kable(digits = 3) %>%
+  kable_styling()
+```
+
+One pattern is certainly clear: in-sample error is smaller than out-of-sample 
+error. 
+
+## Test v train
+
+In looking over these slides, please take note of when the training data were
+used compared to when the testing data were used. 
+The testing data were only used at the very end to calculate out-of-sample 
+error.
+The training data were used everywhere else including 
+determining what explanatory variables to include and determining
+regularization penalties. 
+

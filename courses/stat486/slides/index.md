@@ -59,3 +59,4 @@ you can find the source files
 ## Machine learning
 
 - [Introduction to ML](27-intro_to_ml/27-intro_to_ml.html) - [R Code](27-intro_to_ml/27-intro_to_ml.R)
+- [Penalized regression](28-penalty/28-penalty.html) - [R Code](28-penalty/28-penalty.R)
