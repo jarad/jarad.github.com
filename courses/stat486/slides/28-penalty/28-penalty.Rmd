@@ -34,16 +34,7 @@ information criteria and regularized regression techniques.
 Both of these methods have the idea of adding a penalty into the methodology and
 thus fall under an umbrella of penalized regression techniques. 
 
-
-# Variable selection
-
-In regression models with many explanatory variables, 
-there is a question of which explanatory variables should be included in a 
-model. 
-If, ultimately, we choose a single set, this is a 
-_model_ or _variable selection_ problem. 
-
-For this and future analyses in these slides, 
+For simplicity in the analyses, 
 I will use a subset of the diamonds data set where we randomly select
 100 observations and eliminate (for simplicity) the categorical variables. 
 
@@ -58,6 +49,67 @@ d <- diamonds %>%
 train <- d %>% sample_n(n)
 test <- d %>% sample_n(n)
 ```
+
+Let's fit a couple of regression models to compare with our penalized approaches. 
+
+Intercept only
+
+```{r}
+m <- lm(lprice ~ 1, data = train)
+p <- predict(m, newdata = test)
+
+error <- data.frame(
+  group = "Regression",
+  method = "Intercept-only",
+  in_sample = mean(m$residuals^2),
+  out_of_sample = mean((p - test$lprice)^2)
+)
+```
+
+
+All main effects of the continuous variables. 
+
+```{r}
+m <- lm(lprice ~ ., data = train)
+p <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group = "Regression",
+    method = "Main effects",
+    in_sample = mean(m$residuals^2),
+    out_of_sample = mean((p - test$lprice)^2)
+  )
+)
+```
+
+Now includes all interactions
+
+```{r}
+m <- lm(lprice ~ .^2, data = train)
+p <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group = "Regression",
+    method = "Interactions",
+    in_sample = mean(m$residuals^2),
+    out_of_sample = mean((p - test$lprice)^2)
+  )
+)
+```
+
+
+# Variable selection
+
+In regression models with many explanatory variables, 
+there is a question of which explanatory variables should be included in a 
+model. 
+If, ultimately, we choose a single set, this is a 
+_model_ or _variable selection_ problem. 
+
 
 We already know we can formally test two models that are nested. 
 
@@ -131,10 +183,14 @@ Training and testing error
 ```{r}
 p <- predict(m_forward, newdata = test)
 
-error <- data.frame(
-  method = "Forward selection",
-  in_sample = mean(m_forward$residuals^2),
-  out_of_sample = mean((p - test$lprice)^2)
+error <- bind_rows(
+  error,
+  data.frame(
+    group = "Selection",
+    method = "Forward",
+    in_sample = mean(m_forward$residuals^2),
+    out_of_sample = mean((p - test$lprice)^2)
+  )
 )
 ```
 
@@ -164,7 +220,8 @@ p <- predict(m_backward, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
-    method = "Backward selection",
+    group = "Selection",
+    method = "Backward",
     in_sample = mean(m_backward$residuals^2),
     out_of_sample = mean((p - test$lprice)^2)
   )
@@ -200,6 +257,7 @@ p <- predict(m_both, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
+    group = "Selection",
     method = "Forward and backward",
     in_sample = mean(m_both$residuals^2),
     out_of_sample = mean((p - test$lprice)^2)
@@ -234,7 +292,8 @@ p_test <- predict(mp, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
-    method = "Model averaging",
+    group = "Model averaging",
+    method = "AIC",
     in_sample = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test - test$lprice)^2)
   )
@@ -348,7 +407,10 @@ Estimation of a ridge regression model involves choosing a value for $\lambda$.
 cv_m <- cv.glmnet(
   x = train$x,
   y = train$y,
-  alpha = 0 # ridge regression
+  alpha = 0, # ridge regression
+
+  # default sequence used values of lambda that are too big
+  lambda = seq(0, 0.01, length = 100)
 )
 ```
 
@@ -378,8 +440,9 @@ p_test <- predict(m, newx = test$x)
 error <- bind_rows(
   error,
   data.frame(
-    method = "Ridge",
-    in_sample = mean((p_train - train$y)^2),
+    group         = "Regularization",
+    method        = "Ridge",
+    in_sample     = mean((p_train - train$y)^2),
     out_of_sample = mean((p_test - test$y)^2)
   )
 )
@@ -486,8 +549,9 @@ p_test <- predict(m, newx = test$x)
 error <- bind_rows(
   error,
   data.frame(
-    method = "LASSO",
-    in_sample = mean((p_train - train$y)^2),
+    group         = "Regularization",
+    method        = "LASSO",
+    in_sample     = mean((p_train - train$y)^2),
     out_of_sample = mean((p_test - test$y)^2)
   )
 )
@@ -519,6 +583,45 @@ Thus, when $\alpha = 1$ we have LASSO while if $\alpha=0$ we have ridge
 regression.
 Values of $\alpha$ between 0 and 1 are a mixture between the two.
 
+```{r}
+cv_m <- cv.glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 0.5 # LASSO
+)
+```
+
+Choose $\lambda$ that minimizes cross-validation error in the training set. 
+
+```{r}
+best_lambda <- cv_m$lambda.min
+m <- glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 0.5, # LASSO
+  lambda = best_lambda
+)
+```
+
+### In and out of sample error
+
+```{r}
+p_train <- predict(m, newx = train$x)
+p_test <- predict(m, newx = test$x)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group         = "Regularization",
+    method        = "Elastic net (alpha=0.5)",
+    in_sample     = mean((p_train - train$y)^2),
+    out_of_sample = mean((p_test - test$y)^2)
+  )
+)
+```
+
+
+
 
 # Summary
 
@@ -544,7 +647,9 @@ approaches.
 
 ```{r}
 error %>%
+  dplyr::select(-group) %>%
   kable(digits = 3) %>%
+  pack_rows(index = table(fct_inorder(error$group))) %>%
   kable_styling()
 ```
 

@@ -21,6 +21,48 @@ test <- d %>% sample_n(n)
 
 
 ## ------------------------------------------------------------------------------------------
+m <- lm(lprice ~ 1, data = train)
+p <- predict(m, newdata = test)
+
+error <- data.frame(
+  group = "Regression",
+  method = "Intercept-only",
+  in_sample = mean(m$residuals^2),
+  out_of_sample = mean((p - test$lprice)^2)
+)
+
+
+## ------------------------------------------------------------------------------------------
+m <- lm(lprice ~ ., data = train)
+p <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group = "Regression",
+    method = "Main effects",
+    in_sample = mean(m$residuals^2),
+    out_of_sample = mean((p - test$lprice)^2)
+  )
+)
+
+
+## ------------------------------------------------------------------------------------------
+m <- lm(lprice ~ .^2, data = train)
+p <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group = "Regression",
+    method = "Interactions",
+    in_sample = mean(m$residuals^2),
+    out_of_sample = mean((p - test$lprice)^2)
+  )
+)
+
+
+## ------------------------------------------------------------------------------------------
 m1 <- lm(lprice ~ ., data = train)
 m2 <- lm(lprice ~ .^2, data = train)
 anova(m1, m2)
@@ -50,10 +92,14 @@ summary(m_forward)$coef
 ## ------------------------------------------------------------------------------------------
 p <- predict(m_forward, newdata = test)
 
-error <- data.frame(
-  method = "Forward selection",
-  in_sample = mean(m_forward$residuals^2),
-  out_of_sample = mean((p - test$lprice)^2)
+error <- bind_rows(
+  error,
+  data.frame(
+    group = "Selection",
+    method = "Forward",
+    in_sample = mean(m_forward$residuals^2),
+    out_of_sample = mean((p - test$lprice)^2)
+  )
 )
 
 
@@ -73,7 +119,8 @@ p <- predict(m_backward, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
-    method = "Backward selection",
+    group = "Selection",
+    method = "Backward",
     in_sample = mean(m_backward$residuals^2),
     out_of_sample = mean((p - test$lprice)^2)
   )
@@ -97,6 +144,7 @@ p <- predict(m_both, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
+    group = "Selection",
     method = "Forward and backward",
     in_sample = mean(m_both$residuals^2),
     out_of_sample = mean((p - test$lprice)^2)
@@ -120,7 +168,8 @@ p_test <- predict(mp, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
-    method = "Model averaging",
+    group = "Model averaging",
+    method = "AIC",
     in_sample = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test - test$lprice)^2)
   )
@@ -155,7 +204,10 @@ plot(m, xvar = "lambda", label = TRUE)
 cv_m <- cv.glmnet(
   x = train$x,
   y = train$y,
-  alpha = 0 # ridge regression
+  alpha = 0, # ridge regression
+
+  # default sequence used values of lambda that are too big
+  lambda = seq(0, 0.01, length = 100)
 )
 
 
@@ -180,8 +232,9 @@ p_test <- predict(m, newx = test$x)
 error <- bind_rows(
   error,
   data.frame(
-    method = "Ridge",
-    in_sample = mean((p_train - train$y)^2),
+    group         = "Regularization",
+    method        = "Ridge",
+    in_sample     = mean((p_train - train$y)^2),
     out_of_sample = mean((p_test - test$y)^2)
   )
 )
@@ -228,8 +281,42 @@ p_test <- predict(m, newx = test$x)
 error <- bind_rows(
   error,
   data.frame(
-    method = "LASSO",
-    in_sample = mean((p_train - train$y)^2),
+    group         = "Regularization",
+    method        = "LASSO",
+    in_sample     = mean((p_train - train$y)^2),
+    out_of_sample = mean((p_test - test$y)^2)
+  )
+)
+
+
+## ------------------------------------------------------------------------------------------
+cv_m <- cv.glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 0.5 # LASSO
+)
+
+
+## ------------------------------------------------------------------------------------------
+best_lambda <- cv_m$lambda.min
+m <- glmnet(
+  x = train$x,
+  y = train$y,
+  alpha = 0.5, # LASSO
+  lambda = best_lambda
+)
+
+
+## ------------------------------------------------------------------------------------------
+p_train <- predict(m, newx = train$x)
+p_test <- predict(m, newx = test$x)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group         = "Regularization",
+    method        = "Elastic net (alpha=0.5)",
+    in_sample     = mean((p_train - train$y)^2),
     out_of_sample = mean((p_test - test$y)^2)
   )
 )
@@ -237,6 +324,8 @@ error <- bind_rows(
 
 ## ------------------------------------------------------------------------------------------
 error %>%
+  dplyr::select(-group) %>%
   kable(digits = 3) %>%
+  pack_rows(index = table(fct_inorder(error$group))) %>%
   kable_styling()
 
