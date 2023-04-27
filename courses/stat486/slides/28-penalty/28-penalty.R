@@ -153,6 +153,27 @@ error <- bind_rows(
 
 
 ## ------------------------------------------------------------------------------------------
+data.frame(p = 1:20) %>%
+  mutate(`Number of models` = p^2) %>%
+  ggplot(aes(x = p, y = `Number of models`)) +
+  geom_line()
+
+
+## ------------------------------------------------------------------------------------------
+data.frame(p = 1:20) %>%
+  mutate(`Number of interactions` = choose(p,2)) %>%
+  ggplot(aes(x = p, y = `Number of interactions`)) +
+  geom_line()
+
+
+## ------------------------------------------------------------------------------------------
+data.frame(p = 1:20) %>%
+  mutate(`Number of models` = p^2 + choose(p,2)^2) %>%
+  ggplot(aes(x = p, y = `Number of models`)) +
+  geom_line()
+
+
+## ------------------------------------------------------------------------------------------
 m_avg <- lm(lprice ~ ., data = train, na.action = na.fail) %>%
   MuMIn::dredge()
 

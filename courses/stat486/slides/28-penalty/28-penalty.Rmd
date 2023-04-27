@@ -267,6 +267,56 @@ error <- bind_rows(
 
 
 
+## All subsets
+
+There is no guarantee that using a stepwise approach will lead to the model with
+the best AIC (or any other criterion). 
+Above we saw that 3 different approaches led to 3 different models. 
+
+An alternative to performing a stepwise approach to model selection is to 
+calculate AIC for all models and then choose the model that has the lowest AIC. 
+The number of models we need to consider is the number of explanatory variables 
+raised to the second power
+(since every explanatory variable can be either in or out of the model). 
+When the number of explanatory variables is small, this is possible. 
+As the number of explanatory variables increases, 
+this may be computationally infeasible. 
+
+```{r}
+data.frame(p = 1:20) %>%
+  mutate(`Number of models` = p^2) %>%
+  ggplot(aes(x = p, y = `Number of models`)) +
+  geom_line()
+```
+
+When you include interactions, the number of possible interactions between two
+explanatory variables is the number of explanatory variables choose 2. 
+
+```{r}
+data.frame(p = 1:20) %>%
+  mutate(`Number of interactions` = choose(p,2)) %>%
+  ggplot(aes(x = p, y = `Number of interactions`)) +
+  geom_line()
+```
+
+When we are considering all subsets we can consider including or excluding these
+interactions as well. 
+If all interactions between two variables to be included or excluded, 
+then we have p squared plus p choose 2 squared possible models. 
+
+```{r}
+data.frame(p = 1:20) %>%
+  mutate(`Number of models` = p^2 + choose(p,2)^2) %>%
+  ggplot(aes(x = p, y = `Number of models`)) +
+  geom_line()
+```
+
+But of course we could consider higher order interactions as well. 
+
+The bottom line is that even for a small number of explanatory variables, 
+there are a large number of possible models. 
+
+
 ## Model averaging
 
 Rather than selecting a single model, 
@@ -665,4 +715,15 @@ error.
 The training data were used everywhere else including 
 determining what explanatory variables to include and determining
 regularization penalties. 
+For the regularization approaches, cross-validation was used within the training
+data to identify the penalty that minimized cross-validation error. 
+
+## Computing
+
+In all of the above approaches, we utilized computing heavily to repeatedly
+perform tasks, e.g.
+
+- calculating AIC for a number of models
+- estimating parameters with different penalties
+
 
