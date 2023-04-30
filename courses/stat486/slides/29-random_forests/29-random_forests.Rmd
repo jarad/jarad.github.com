@@ -1,0 +1,189 @@
+---
+title: "Random Forests"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+layout: page
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = TRUE
+)
+```
+
+[R code](29-random_forests.R)
+
+```{r packages}
+library("tidyverse")
+theme_set(theme_bw())
+library("rpart")
+library("rpart.plot")
+library("glmnet")
+library("DT")
+```
+
+In these slides, we'll introduce classification and regression trees
+(CART). 
+
+For simplicity in the analyses, 
+I will use a subset of the diamonds data set where we randomly select
+100 observations and eliminate (for simplicity) the categorical variables. 
+
+```{r}
+set.seed(20230425) # This matches what was used in a previous set of slides
+n <- 100
+d <- diamonds %>%
+  dplyr::select(-cut, -color, -clarity) %>%
+  rename(lprice = price) %>%
+  mutate(lprice = log(lprice))
+
+train <- d %>% sample_n(n)
+test <- d %>% sample_n(n)
+```
+
+Load up previous error file
+
+```{r}
+error <- read_csv("../28-penalty/error.csv")
+```
+
+
+# Classification and Regression Trees (CART)
+
+```{r}
+m <- rpart(lprice ~ ., data = d)
+```
+
+## Tree
+
+```{r}
+rpart.plot(m, uniform = TRUE)
+```
+
+
+## Predictions
+
+```{r}
+p <- test %>%
+  mutate(p = predict(m, newdata = test))
+
+ggplot(p, aes(x = p, y = lprice)) + 
+  geom_abline(intercept = 0, slope = 1, color = "gray") + 
+  geom_point() 
+```
+
+```{r}
+p_train <- predict(m, newdata = train)
+p_test  <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group         = "CART",
+    method        = "default",
+    in_sample     = mean((p_train - train$lprice)^2),
+    out_of_sample = mean((p_test  -  test$lprice)^2)
+  )
+)
+```
+
+## Tuning parameters
+
+```{r}
+args(rpart.control)
+```
+Each argument can tune the CART model to underfit or overfit. 
+For example, 
+
+- minsplit
+    - low values lead to overfitting
+    - high values lead to underfitting
+- minbucket
+    - low values lead to overfitting
+    - high values lead to underfitting
+- cp
+    - low values lead to overfitting
+    - high values lead to underfitting
+    
+### Underfit
+
+```{r}
+m <- rpart(lprice ~ ., data = d,
+           control = rpart.control(
+             minsplit = 40,
+             minbucket = 20,
+             cp = 0.1
+           ))
+```
+
+```{r}
+rpart.plot(m)
+```
+
+```{r}
+p_train <- predict(m, newdata = train)
+p_test  <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group         = "CART",
+    method        = "underfit",
+    in_sample     = mean((p_train - train$lprice)^2),
+    out_of_sample = mean((p_test  -  test$lprice)^2)
+  )
+)
+```
+
+### Overfit
+
+```{r}
+m <- rpart(lprice ~ ., data = d,
+           control = rpart.control(
+             minsplit = 2,
+             minbucket = 1,
+             cp = 0.0001
+           ))
+```
+
+```{r}
+rpart.plot(m)
+```
+
+
+
+```{r}
+p_train <- predict(m, newdata = train)
+p_test  <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group         = "CART",
+    method        = "overfit?",
+    in_sample     = mean((p_train - train$lprice)^2),
+    out_of_sample = mean((p_test  -  test$lprice)^2)
+  )
+)
+```
+
+# Random forests
+
+
+
+# Summary
+
+```{r}
+error %>%
+  datatable(
+    rownames = FALSE,
+    caption = "In and out-of-sample error for various prediction methods",
+    filter = "top"
+  ) %>%
+  formatRound(columns = c("in_sample","out_of_sample"), digits = 3)
+```
