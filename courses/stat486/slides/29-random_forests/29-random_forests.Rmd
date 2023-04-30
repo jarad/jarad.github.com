@@ -56,25 +56,83 @@ error <- read_csv("../28-penalty/error.csv")
 # Classification and Regression Trees (CART)
 
 ```{r}
-m <- rpart(lprice ~ ., data = d)
+m <- rpart(lprice ~ ., data = train)
 ```
 
 ## Tree
 
+Trees (in the real world) are constructed of a trunk, branches, and leaves. 
+CART trees utilize the same structure where the trunk is composed of all 
+observations, the branches split those observations, and (eventually) 
+result in leaves. 
+
+These leaves are composed of a collection of observations. 
+The mean of those observations is the estimated and predicted mean for any
+observations that fall into that leaf. 
+
+The plot below provides the dummy variables that split the observations. 
+The top number in each box is the mean of those observations.
+The percentage in the each box is the percentage of all observations that 
+end up in that branch or leaf. 
+
 ```{r}
 rpart.plot(m, uniform = TRUE)
+```
+
+This regression tree utilizes only the explanatory variables carat, x, and z. 
+These variables are related to the size of the diamond:
+carat is weight, x is depth, and z is height. 
+Thus, this tree is ordered from left (smallest) to right (largest) diamonds and 
+the log price increases from left to right. 
+
+### Regression model
+
+Recall that a regression model is specified by a set of explanatory variables
+$X_1,\ldots,X_p$. Here those explanatory variables are the product of 
+dummy variables that lead to a leaf. 
+Based on the tree above, the explanatory variables are
+
+- $X_1 = \mathrm{I}(x < 5.7)\mathrm{I}(z < 3.1)\mathrm{I}(x < 4.4)$
+- $X_2 = \mathrm{I}(x < 5.7)\mathrm{I}(z < 3.1)\mathrm{I}(x \ge 4.4)$
+- $X_3 = \mathrm{I}(x < 5.7)\mathrm{I}(z \ge 3.1)$
+- $X_4 = \mathrm{I}(x \ge 5.7)\mathrm{I}(carat < 1.2)\mathrm{I}(x < 6.1)$
+- $X_5 = \mathrm{I}(x \ge 5.7)\mathrm{I}(carat < 1.2)\mathrm{I}(x \ge 6.1)$
+- $X_6 = \mathrm{I}(x \ge 5.7)\mathrm{I}(carat \ge 1.2)\mathrm{I}(x < 7.3)$
+- $X_7 = \mathrm{I}(x \ge 5.7)\mathrm{I}(carat \ge 1.2)\mathrm{I}(x \ge 7.3)$
+
+Recall that for these data `lprice` is our response. 
+
+Some of these dummy variables can be simplified, e.g. 
+
+- $X_1 = \mathrm{I}(z < 3.1)\mathrm{I}(x < 4.4)$
+
+The resulting regression model has 
+\[ 
+E[Y_i] = \beta_1X_1 + \beta_2X_2 + \beta_3X_3 + \beta_4X_4 + \beta_5X_5 + \beta_6X_6
+\]
+where $\beta_j$ is the mean for the observations with $X_j = 1$. 
+
+
+## Iterative construction
+
+We can take a look at the iterative construction of the model using
+
+```{r, include=FALSE}
+summary(m)
 ```
 
 
 ## Predictions
 
 ```{r}
-p <- test %>%
-  mutate(p = predict(m, newdata = test))
+p <- bind_rows(
+  test  %>% mutate(p = predict(m, newdata = test),  type = "test"),
+  train %>% mutate(p = predict(m, newdata = train), type = "train")
+)
 
-ggplot(p, aes(x = p, y = lprice)) + 
+ggplot(p, aes(x = p, y = lprice, shape = type, color = type)) + 
   geom_abline(intercept = 0, slope = 1, color = "gray") + 
-  geom_point() 
+  geom_point(position = position_dodge(width = 0.1)) 
 ```
 
 ```{r}
@@ -110,10 +168,11 @@ For example,
     - low values lead to overfitting
     - high values lead to underfitting
     
+    
 ### Underfit
 
 ```{r}
-m <- rpart(lprice ~ ., data = d,
+m <- rpart(lprice ~ ., data = train,
            control = rpart.control(
              minsplit = 40,
              minbucket = 20,
@@ -143,11 +202,11 @@ error <- bind_rows(
 ### Overfit
 
 ```{r}
-m <- rpart(lprice ~ ., data = d,
+m <- rpart(lprice ~ ., data = train,
            control = rpart.control(
-             minsplit = 2,
-             minbucket = 1,
-             cp = 0.0001
+             minsplit = 10,
+             minbucket = 5,
+             cp = 0.001
            ))
 ```
 
@@ -165,12 +224,17 @@ error <- bind_rows(
   error,
   data.frame(
     group         = "CART",
-    method        = "overfit?",
+    method        = "overfit",
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
   )
 )
 ```
+
+
+
+
+
 
 # Random forests
 
