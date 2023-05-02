@@ -1,0 +1,328 @@
+---
+title: "Predictions"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+layout: page
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = TRUE
+)
+options(width = 120)
+```
+
+[R code](30-prediction.R)
+
+```{r packages, message=FALSE, warning=FALSE}
+library("tidyverse")
+theme_set(theme_bw())
+library("caret")
+library("DT")
+```
+
+Let's take a stab at predicting 
+[Wild Blueberry Yield](https://www.kaggle.com/competitions/playground-series-s3e14/overview). 
+Here I will follow the process I used to take build a method for prediction
+of Wild Blueberry Yield. 
+
+# Data
+
+Let's read the training data and get an understanding of it.
+I am caching this chunk so that I can depend on it in future chunks. 
+I am also making the caching depend on the file. 
+
+```{r train, cache=TRUE, cache.extra=tools::md5sum("data/train.csv")}
+train <- read_csv("data/train.csv",
+                  
+                  # Good practice to formally define variable types.
+                  col_types = c(
+                    id          = col_character(),
+                    RainingDays = col_integer(),
+                    clonesize   = col_integer(),
+                    .default    = col_double()
+                  ))
+```
+
+Check to see if there are any missing values. 
+Please note that this may depend on how "not available" data are recorded in the
+data set. 
+
+```{r}
+anyNA(train)
+```
+
+It appears there are no missing data here. 
+
+
+The training data have `r nrow(train)` observations on 
+`r ncol(train)` variables.
+The variable names are 
+
+```{r variables}
+names(train)
+```
+
+which includes the response variable `yield` and the unique id `id`. 
+This `id` is not going to be important in the prediction but is simply just 
+an identifier. 
+I infer this because the `id` is just sequential numbers
+
+```{r}
+all(diff(train$id) == 1)
+```
+
+## Yield
+
+Let's take a look at yield first since it is our 
+
+```{r}
+ggplot(train, aes(x = yield)) + 
+  geom_histogram(aes(y = after_stat(density)),
+                 fill = "gray") +
+  stat_function(fun = dnorm, 
+                args = list(
+                  mean = mean(train$yield),
+                  sd   = sd(train$yield)),
+                color = "blue",
+                linewidth = 2)
+```
+
+This histogram looks slightly skewed to the left. 
+With the left-skewness and the ratio of the max to min not greater than 10,
+I am not initially considering using the logarithm of yield as my response 
+variable. 
+But, I may contemplate it in the future. 
+
+Apparently multiple observations have the same min/max yield
+
+```{r}
+train %>% filter(yield == min(yield))
+train %>% filter(yield == max(yield))
+```
+
+Thus these seem like forced min/max values. 
+When it comes to prediction, we should probably ensure that we never have 
+values outside this range. 
+
+
+
+## Explanatory variables
+
+The [original blueberry yield contest](https://www.kaggle.com/datasets/shashwatwork/wild-blueberry-yield-prediction-dataset)
+contains more information on the explanatory variables. The variables can be
+grouped by type
+
+- clonesize: average size of shrub in the field (I think)
+- bees: density of bees in the field
+    - honeybee
+    - bumbles
+    - andrena
+    - osmia
+- temperature: summaries of temperatures during the season
+    - MaxOfUpperTRange 
+    - MinOfUpperTRange 
+    - AverageOfUpperTRange
+    - MaxOfLowerTRange 
+    - MinOfLowerTRange 
+    - AverageOfLowerTRange  
+- rain: 
+    - RainingDays: the number of days when rain was greater than 0
+    - AverageRainingDays: average amount of rain on rainy days (I think)
+
+The original data did not have the other variables, 
+but these variables are included in the `test` data set and therefore are 
+features that can be used in the prediction. 
+Other than the names, I have no more information about these variables, 
+but they all seem related to the fruit (since seeds are inside the fruit).
+
+- fruit set
+- fruit mass
+- seeds
+
+### Clonesize
+
+```{r clonesize}
+ggplot(train, aes(x = clonesize, y = yield)) + 
+  geom_point(position = position_jitter(width = 0.5)) 
+```
+
+I thought this was a double, but apparently not. 
+I went back and changed how I read the data in. 
+
+```{r}
+train %>%
+  group_by(clonesize) %>%
+  summarize(
+    n = n(),
+    mean = mean(yield),
+    sd   = sd(yield),
+    max  = max(yield),
+    min  = min(yield)
+  )
+```
+
+It seems a bit weird that multiple observations have exactly the max/min values. 
+I went back and pointed this out in the [yield](#yield) section. 
+
+
+### Bee
+
+```{r bee, cache=TRUE, dependson="train"}
+bee <- train %>% select(honeybee:osmia, yield) 
+```
+
+```{r}
+summary(bee)
+```
+
+```{r}
+bee_long <- bee %>%
+  pivot_longer(honeybee:osmia) 
+
+  ggplot(bee_long, aes(x = value)) + 
+    geom_histogram() + 
+    facet_wrap(~name, scales="free")
+```
+There is clear discreteness in these data. Presumably this is to due to counting 
+the number of individual bees observed and dividing by the number of plants in
+the field. 
+Perhaps there were 50 plants, but, in some fields, some plants died?
+
+```{r}
+sort(unique(bee_long$value))*50
+```
+Some of the honeybee observations are much larger than the rest. 
+
+```{r}
+bee %>% filter(honeybee > 15)
+```
+
+
+```{r, cache=TRUE, dependson="bee"}
+pairs(bee)
+```
+
+```{r}
+cor(bee) %>% round(3)
+```
+
+### Temperature
+
+Let's take a look at the temperature variables. 
+
+```{r temp, dependson="train"}
+temp <- train %>% select(MaxOfUpperTRange:AverageOfLowerTRange, yield)
+```
+
+```{r}
+temp_long <- temp %>%
+  select(-yield) %>%
+  pivot_longer(everything())
+
+ggplot(temp_long, aes(x = value)) + 
+  geom_histogram() + 
+  facet_wrap(~name)
+```
+
+Again some clear discretization. Basically there are 4-5 unique temperature values
+for each temperature variable. 
+Probably the fields are in 4-5 spatial locations with the same temperature 
+stations. 
+
+
+```{r}
+with(train, table(MaxOfUpperTRange, MinOfUpperTRange))
+```
+Are the temperatures with only a few counts real or typos?
+
+```{r}
+temp %>%
+  # select(MaxOfUpperTRange:AverageOfLowerTRange) %>%
+  cor() %>%
+  round(3)
+```
+
+These are highly correlated and have low correlation with yield. 
+
+Perhaps we should be constructing a variable for `region` of the field based on
+temperature. But then we should make sure these same temperatures are 
+observed in the `test` data set. 
+
+### Fruit
+
+Let's take a look at the remaining variables. 
+
+```{r fruit, cache=TRUE, dependson="train"}
+fruit <- train %>% select(fruitset:yield)
+```
+
+```{r}
+fruit_long <- fruit %>%
+  pivot_longer(-yield) 
+
+ggplot(fruit_long, aes(x = value)) + 
+  geom_histogram() + 
+  facet_wrap(~name, scales = "free")
+```
+
+```{r}
+fruit %>%
+  cor() %>%
+  round(3)
+```
+
+```{r, cache=TRUE, dependson="fruit"}
+pairs(fruit)
+```
+
+
+# Modeling
+
+Here we will use the 
+[caret package](https://cran.r-project.org/web/packages/caret/)
+as it provides a consistent interface to fit a number of different methods.
+
+```{r train-no-id, cache=TRUE, dependson="train"}
+train <- train %>% select(-id)
+```
+
+## LASSO
+
+```{r lasso, cache=TRUE, dependson="train-no-id"}
+m_lasso <- train(yield ~ ., data = train, method = "lasso")
+```
+
+
+## Random forest
+
+```{r random-forest, cache=TRUE, dependson="train-no-id", eval=FALSE}
+m_ranger <- train(yield ~ ., data = train, method = "ranger")
+```
+
+
+## Neural network
+
+```{r neural-network, cache=TRUE, dependson="train-no-id", message=FALSE}
+m_nnet <- train(yield ~ ., data = train, method = "nnet")
+```
+
+
+## xgbTree
+
+```{r xgbtree, cache=TRUE, dependson="train-no-id", message=FALSE}
+m_xgbtree <- train(yield ~ ., data = train, method = "xgbTree", 
+                   verbosity=0) # eliminates deprecation warning
+```
+
+
+## xgbLinear
+
+```{r xgblinear, cache=TRUE, dependson="train-no-id", message=FALSE}
+m_xgblinear <- train(yield ~ ., data = train, method = "xgbLinear")
+```
