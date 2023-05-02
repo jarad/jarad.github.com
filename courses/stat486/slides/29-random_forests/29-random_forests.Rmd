@@ -121,6 +121,39 @@ E[Y_i] = \beta_1X_1 + \beta_2X_2 + \beta_3X_3 + \beta_4X_4 + \beta_5X_5 + \beta_
 \]
 where $\beta_j$ is the mean for the observations with $X_j = 1$. 
 
+We can verify that this is what is going on by computing group means 
+
+but in order to do so we need more accurate cut points
+
+```{r}
+m
+```
+
+```{r}
+train %>%
+  mutate(
+    X1 = (x < 5.705)*(z < 3.07)*(x < 4.37),
+    X2 = (x < 5.705)*(z < 3.07)*(x >= 4.37),
+    X3 = (x < 5.705)*(z >= 3.07),
+    X4 = (x >= 5.705)*(carat < 1.18)*(x < 6.105),
+    X5 = (x >= 5.705)*(carat < 1.18)*(x >= 6.105),
+    X6 = (x >= 5.705)*(carat >= 1.18)*(x < 7.345),
+    X7 = (x >= 5.705)*(carat >= 1.18)*(x >= 7.345)
+  ) %>%
+  summarize(
+    mean1 = sum(lprice*X1)/sum(X1),
+    mean2 = sum(lprice*X2)/sum(X2),
+    mean3 = sum(lprice*X3)/sum(X3),
+    mean4 = sum(lprice*X4)/sum(X4),
+    mean5 = sum(lprice*X5)/sum(X5),
+    mean6 = sum(lprice*X6)/sum(X6),
+    mean7 = sum(lprice*X7)/sum(X7)
+  ) %>%
+  round(1) %>%
+  pivot_longer(everything())
+```
+
+
 
 ## Iterative construction
 
@@ -307,7 +340,7 @@ error <- bind_rows(
 There are a number of arguments to the random forest algorithm that can be 
 tuned that will affect predictive performance.
 
-```{r, include=FALSE}
+```{r, eval=FALSE}
 ?randomForest
 ```
 
