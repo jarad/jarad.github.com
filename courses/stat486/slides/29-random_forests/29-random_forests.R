@@ -179,9 +179,10 @@ error <- bind_rows(
 
 ## ------------------------------------------------------------------------------------------
 m <- randomForest(lprice ~ ., data = train,
-                  sampsize = nrow(train), 
-                  mtry = 6,
-                  nodesize = 2 
+                  sampsize = nrow(train),
+                  replace = FALSE,
+                  mtry = 5,
+                  nodesize = 1 
                   )
 m
 
@@ -192,7 +193,7 @@ error <- bind_rows(
   error,
   data.frame(
     group         = "Random forest",
-    method        = "overfit?",
+    method        = "overfit",
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
   )
@@ -201,10 +202,10 @@ error <- bind_rows(
 
 ## ------------------------------------------------------------------------------------------
 m <- randomForest(lprice ~ ., data = train,
-                  sampsize = 0.5*nrow(train), # training set is same size as data
-                  mtry = 2, # number of variables to try at eac hsplit
+                  sampsize = 0.3*nrow(train), # training set is same size as data
+                  mtry = 1, # number of variables to try at each split
                   nodesize = 10, # number of observations in each leaf
-                  ntree = 50
+                  ntree = 20
                   )
 m
 
@@ -215,7 +216,7 @@ error <- bind_rows(
   error,
   data.frame(
     group         = "Random forest",
-    method        = "underfit?",
+    method        = "underfit",
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
   )

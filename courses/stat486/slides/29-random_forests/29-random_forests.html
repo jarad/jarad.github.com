@@ -4881,25 +4881,34 @@ can be tuned that will affect predictive performance.</p>
 <li>mtry: number of explanatory variable to try at each step</li>
 <li>nodesize: number of observations in each leaf</li>
 <li>ntree: number of trees to create</li>
+<li>replace: whether to sample with replacement or not</li>
 </ul>
 </div>
 <div id="overfit-1" class="section level2">
-<h2>Overfit?</h2>
+<h2>Overfit</h2>
+<p>We can overfit by using a larger portion of our data, making sampling
+without replacement, trying all explanatory variables at every split,
+and making the minimum number of observations in each split as small as
+possible.</p>
+<p>This should lead to every tree being exactly the same, but perhaps
+there are additional tuning parameters that result in this not being the
+case.</p>
 <pre class="r"><code>m &lt;- randomForest(lprice ~ ., data = train,
-                  sampsize = nrow(train), 
-                  mtry = 6,
-                  nodesize = 2 
+                  sampsize = nrow(train),
+                  replace = FALSE,
+                  mtry = 5,
+                  nodesize = 1 
                   )
 m</code></pre>
 <pre><code>## 
 ## Call:
-##  randomForest(formula = lprice ~ ., data = train, sampsize = nrow(train),      mtry = 6, nodesize = 2) 
+##  randomForest(formula = lprice ~ ., data = train, sampsize = nrow(train),      replace = FALSE, mtry = 5, nodesize = 1) 
 ##                Type of random forest: regression
 ##                      Number of trees: 500
-## No. of variables tried at each split: 6
+## No. of variables tried at each split: 5
 ## 
-##           Mean of squared residuals: 0.04743389
-##                     % Var explained: 95.28</code></pre>
+##           Mean of squared residuals: NaN
+##                     % Var explained: NaN</code></pre>
 <pre class="r"><code>p_train &lt;- predict(m, newdata = train)
 p_test  &lt;- predict(m, newdata = test)
 
@@ -4907,30 +4916,34 @@ error &lt;- bind_rows(
   error,
   data.frame(
     group         = &quot;Random forest&quot;,
-    method        = &quot;overfit?&quot;,
+    method        = &quot;overfit&quot;,
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
   )
 )</code></pre>
 </div>
 <div id="underfit-1" class="section level2">
-<h2>Underfit?</h2>
+<h2>Underfit</h2>
+<p>To underfit, we can reverse all the settings in the previous section.
+Here we will make the sample for each tree small, try only 1 explanatory
+variable for each split, require a relatively large number of
+obserations in each leaf, and use a small number of trees.</p>
 <pre class="r"><code>m &lt;- randomForest(lprice ~ ., data = train,
-                  sampsize = 0.5*nrow(train), # training set is same size as data
-                  mtry = 2, # number of variables to try at eac hsplit
+                  sampsize = 0.3*nrow(train), # training set is same size as data
+                  mtry = 1, # number of variables to try at each split
                   nodesize = 10, # number of observations in each leaf
-                  ntree = 50
+                  ntree = 20
                   )
 m</code></pre>
 <pre><code>## 
 ## Call:
-##  randomForest(formula = lprice ~ ., data = train, sampsize = 0.5 *      nrow(train), mtry = 2, nodesize = 10, ntree = 50) 
+##  randomForest(formula = lprice ~ ., data = train, sampsize = 0.3 *      nrow(train), mtry = 1, nodesize = 10, ntree = 20) 
 ##                Type of random forest: regression
-##                      Number of trees: 50
-## No. of variables tried at each split: 2
+##                      Number of trees: 20
+## No. of variables tried at each split: 1
 ## 
-##           Mean of squared residuals: 0.05230395
-##                     % Var explained: 94.8</code></pre>
+##           Mean of squared residuals: 0.1147601
+##                     % Var explained: 88.59</code></pre>
 <pre class="r"><code>p_train &lt;- predict(m, newdata = train)
 p_test  &lt;- predict(m, newdata = test)
 
@@ -4938,7 +4951,7 @@ error &lt;- bind_rows(
   error,
   data.frame(
     group         = &quot;Random forest&quot;,
-    method        = &quot;underfit?&quot;,
+    method        = &quot;underfit&quot;,
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
   )
@@ -4973,8 +4986,8 @@ methods, we should be careful in drawing too many conclusions from this
 analysis. As a reminder, for computational reasons, we are only using
 100 training and testing data points. In addition, the relationship
 between the explanatory variables and log price seem reasonably linear.
-For more complicated data sets, the more flexible methods will likely
-perform better.</p>
+For more complicated relationships and more data, the more flexible
+methods will likely perform better.</p>
 <pre class="r"><code>error %&gt;%
   datatable(
     rownames = FALSE,
@@ -4982,8 +4995,8 @@ perform better.</p>
     filter = &quot;top&quot;
   ) %&gt;%
   formatRound(columns = c(&quot;in_sample&quot;,&quot;out_of_sample&quot;), digits = 3)</code></pre>
-<div id="htmlwidget-6832e1ba705241703fe2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-6832e1ba705241703fe2">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.006793277130069\" data-max=\"1.00559771994908\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.066813902441596\" data-max=\"1.0251674286038\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","caption":"<caption>In and out-of-sample error for various prediction methods<\/caption>","data":[["Regression","Regression","Regression","Selection","Selection","Selection","Model averaging","Regularization","Regularization","Regularization","Tree","Tree","Tree","Random forest","Random forest","Random forest"],["Intercept-only","Main effects","Interactions","Forward","Backward","Forward and backward","AIC","Ridge","LASSO","Elastic net (alpha=0.5)","default","underfit","overfit","default","overfit?","underfit?"],[1.00559771994907,0.0380940731669873,0.0301683251228828,0.0387775039880809,0.0305171781661868,0.0365662162808629,0.0383383850667616,0.0386672723056191,0.0386625078314925,0.0384681571432599,0.041631010701614,0.226946862106452,0.0249347032302309,0.0103989919147398,0.00679327713006911,0.0323002752364193],[1.0251674286038,0.0668139024415967,0.0713709448675312,0.0695280422975161,0.0690182723672728,0.0673189728795562,0.0670284307213847,0.0673573263320262,0.0678551903289715,0.0674346602673874,0.0822563479303904,0.381908166584694,0.0773680148994278,0.0682577038061211,0.069329404984843,0.0744047124617371]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>group<\/th>\n      <th>method<\/th>\n      <th>in_sample<\/th>\n      <th>out_of_sample<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"targets":2,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\", null);\n  }"},{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\", null);\n  }"},{"className":"dt-right","targets":[2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render"],"jsHooks":[]}</script>
+<div id="htmlwidget-8162799af4012c623c58" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8162799af4012c623c58">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"5.983239e-09\" data-max=\"1.00559771994908\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.066813902441596\" data-max=\"1.0251674286038\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","caption":"<caption>In and out-of-sample error for various prediction methods<\/caption>","data":[["Regression","Regression","Regression","Selection","Selection","Selection","Model averaging","Regularization","Regularization","Regularization","Tree","Tree","Tree","Random forest","Random forest","Random forest"],["Intercept-only","Main effects","Interactions","Forward","Backward","Forward and backward","AIC","Ridge","LASSO","Elastic net (alpha=0.5)","default","underfit","overfit","default","overfit","underfit"],[1.00559771994907,0.0380940731669873,0.0301683251228828,0.0387775039880809,0.0305171781661868,0.0365662162808629,0.0383383850667616,0.0386672723056191,0.0386625078314925,0.0384681571432599,0.041631010701614,0.226946862106452,0.0249347032302309,0.0103989919147398,5.98323908387865e-09,0.0933136740148448],[1.0251674286038,0.0668139024415967,0.0713709448675312,0.0695280422975161,0.0690182723672728,0.0673189728795562,0.0670284307213847,0.0673573263320262,0.0678551903289715,0.0674346602673874,0.0822563479303904,0.381908166584694,0.0773680148994278,0.0682577038061211,0.0778781011199524,0.161766991729234]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>group<\/th>\n      <th>method<\/th>\n      <th>in_sample<\/th>\n      <th>out_of_sample<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"targets":2,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\", null);\n  }"},{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\", null);\n  }"},{"className":"dt-right","targets":[2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render"],"jsHooks":[]}</script>
 </div>
 </div>
 

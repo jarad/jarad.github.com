@@ -348,15 +348,25 @@ tuned that will affect predictive performance.
 - mtry: number of explanatory variable to try at each step
 - nodesize: number of observations in each leaf
 - ntree: number of trees to create
+- replace: whether to sample with replacement or not
 
 
-## Overfit?
+## Overfit
+
+We can overfit by using a larger portion of our data, 
+making sampling without replacement, 
+trying all explanatory variables at every split, and
+making the minimum number of observations in each split as small as possible.
+
+This should lead to every tree being exactly the same, but perhaps there are 
+additional tuning parameters that result in this not being the case. 
 
 ```{r}
 m <- randomForest(lprice ~ ., data = train,
-                  sampsize = nrow(train), 
-                  mtry = 6,
-                  nodesize = 2 
+                  sampsize = nrow(train),
+                  replace = FALSE,
+                  mtry = 5,
+                  nodesize = 1 
                   )
 m
 
@@ -367,7 +377,7 @@ error <- bind_rows(
   error,
   data.frame(
     group         = "Random forest",
-    method        = "overfit?",
+    method        = "overfit",
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
   )
@@ -375,14 +385,20 @@ error <- bind_rows(
 ```
 
 
-## Underfit?
+## Underfit
+
+To underfit, we can reverse all the settings in the previous section.
+Here we will make the sample for each tree small, 
+try only 1 explanatory variable for each split, 
+require a relatively large number of obserations in each leaf, and 
+use a small number of trees. 
 
 ```{r}
 m <- randomForest(lprice ~ ., data = train,
-                  sampsize = 0.5*nrow(train), # training set is same size as data
-                  mtry = 2, # number of variables to try at eac hsplit
+                  sampsize = 0.3*nrow(train), # training set is same size as data
+                  mtry = 1, # number of variables to try at each split
                   nodesize = 10, # number of observations in each leaf
-                  ntree = 50
+                  ntree = 20
                   )
 m
 
@@ -393,7 +409,7 @@ error <- bind_rows(
   error,
   data.frame(
     group         = "Random forest",
-    method        = "underfit?",
+    method        = "underfit",
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
   )
@@ -432,8 +448,8 @@ As a reminder, for computational reasons, we are only using 100 training and
 testing data points. 
 In addition, the relationship between the explanatory variables and log price
 seem reasonably linear. 
-For more complicated data sets, the more flexible methods will likely perform
-better. 
+For more complicated relationships and more data, 
+the more flexible methods will likely perform better. 
 
 ```{r}
 error %>%
