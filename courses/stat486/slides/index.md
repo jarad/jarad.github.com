@@ -60,3 +60,4 @@ you can find the source files
 
 - [Introduction to ML](27-intro_to_ml/27-intro_to_ml.html) - [R Code](27-intro_to_ml/27-intro_to_ml.R)
 - [Penalized regression](28-penalty/28-penalty.html) - [R Code](28-penalty/28-penalty.R)
+- [Random forests](29-random_forests/29-random_forests.html) - [R Code](29-random_forests/29-random_forests.R)

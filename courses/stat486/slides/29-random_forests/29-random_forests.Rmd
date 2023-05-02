@@ -23,7 +23,7 @@ library("tidyverse")
 theme_set(theme_bw())
 library("rpart")
 library("rpart.plot")
-library("glmnet")
+library("randomForest")
 library("DT")
 ```
 
@@ -151,13 +151,14 @@ p_test  <- predict(m, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
-    group         = "CART",
+    group         = "Tree",
     method        = "default",
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
   )
 )
 ```
+
 
 ## Tuning parameters
 
@@ -200,7 +201,7 @@ p_test  <- predict(m, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
-    group         = "CART",
+    group         = "Tree",
     method        = "underfit",
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
@@ -232,7 +233,7 @@ p_test  <- predict(m, newdata = test)
 error <- bind_rows(
   error,
   data.frame(
-    group         = "CART",
+    group         = "Tree",
     method        = "overfit",
     in_sample     = mean((p_train - train$lprice)^2),
     out_of_sample = mean((p_test  -  test$lprice)^2)
@@ -263,14 +264,143 @@ This randomness will be included in two steps:
 1. each time we construct a tree, we will sample from the data with replacement and
 1. at every split, we will randomly choose a subset of the explanatory variables to split on. 
 
+In the first step, we will fit the model with the resampled data. 
+Since some observations will not be included in a particular resample, 
+these data can be used to evaluate out-of-sample error. 
+In random forests, this is called the out-of-bag error. 
+
 ## Fit
 
+```{r}
+m <- randomForest(lprice ~ ., data = train)
+m
+```
+
+Out-of-bag error versus number of trees. 
+
+```{r}
+plot(m)
+```
 
 
+## Prediction
+
+
+```{r}
+p_train <- predict(m, newdata = train)
+p_test  <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group         = "Random forest",
+    method        = "default",
+    in_sample     = mean((p_train - train$lprice)^2),
+    out_of_sample = mean((p_test  -  test$lprice)^2)
+  )
+)
+```
+
+
+## Arguments
+
+There are a number of arguments to the random forest algorithm that can be 
+tuned that will affect predictive performance.
+
+```{r, include=FALSE}
+?randomForest
+```
+
+- sampsize: number of resampled observations to train on
+- mtry: number of explanatory variable to try at each step
+- nodesize: number of observations in each leaf
+- ntree: number of trees to create
+
+
+## Overfit?
+
+```{r}
+m <- randomForest(lprice ~ ., data = train,
+                  sampsize = nrow(train), 
+                  mtry = 6,
+                  nodesize = 2 
+                  )
+m
+
+p_train <- predict(m, newdata = train)
+p_test  <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group         = "Random forest",
+    method        = "overfit?",
+    in_sample     = mean((p_train - train$lprice)^2),
+    out_of_sample = mean((p_test  -  test$lprice)^2)
+  )
+)
+```
+
+
+## Underfit?
+
+```{r}
+m <- randomForest(lprice ~ ., data = train,
+                  sampsize = 0.5*nrow(train), # training set is same size as data
+                  mtry = 2, # number of variables to try at eac hsplit
+                  nodesize = 10, # number of observations in each leaf
+                  ntree = 50
+                  )
+m
+
+p_train <- predict(m, newdata = train)
+p_test  <- predict(m, newdata = test)
+
+error <- bind_rows(
+  error,
+  data.frame(
+    group         = "Random forest",
+    method        = "underfit?",
+    in_sample     = mean((p_train - train$lprice)^2),
+    out_of_sample = mean((p_test  -  test$lprice)^2)
+  )
+)
+```
 
 
 
 # Summary
+
+## Implementations
+
+There are a number of different packages that implement tree based approaches
+to regression modeling. 
+Many of those approaches and additional machine and statistical learning 
+approaches exist on the 
+[CRAN Task View: Machine Learning and Statisical Learning](https://cran.r-project.org/web/views/MachineLearning.html).
+
+## Probabilistic predictions
+
+Tree models are just a particular type of regression model and thus 
+prediction intervals should be straight-forward, but apparently are not 
+implemented in `predict.rpart`. 
+Prediction intervals construction from random forests models is an active area
+of research. 
+The [piRF](https://cran.r-project.org/web/packages/piRF/) package aims to 
+combine multiple approaches for regression models in a single package. 
+
+## Comparison
+
+Below is a table comparing performance for a number of methods for the log
+price of diamonds based on continuous explanatory variables. 
+While the results here indicating similar performance amongst all these methods,
+we should be careful in drawing too many conclusions from this analysis. 
+As a reminder, for computational reasons, we are only using 100 training and 
+testing data points. 
+In addition, the relationship between the explanatory variables and log price
+seem reasonably linear. 
+For more complicated data sets, the more flexible methods will likely perform
+better. 
 
 ```{r}
 error %>%
