@@ -22,7 +22,9 @@ options(width = 120)
 ```{r packages, message=FALSE, warning=FALSE}
 library("tidyverse")
 theme_set(theme_bw())
-library("caret")
+library("randomForest")
+library("nnet")
+library("xgboost")
 library("DT")
 ```
 
@@ -37,16 +39,17 @@ Let's read the training data and get an understanding of it.
 I am caching this chunk so that I can depend on it in future chunks. 
 I am also making the caching depend on the file. 
 
-```{r train, cache=TRUE, cache.extra=tools::md5sum("data/train.csv")}
-train <- read_csv("data/train.csv",
-                  
-                  # Good practice to formally define variable types.
-                  col_types = c(
-                    id          = col_character(),
-                    RainingDays = col_integer(),
-                    clonesize   = col_integer(),
-                    .default    = col_double()
-                  ))
+```{r data, cache=TRUE, cache.extra=tools::md5sum("data/train.csv")}
+d <- read_csv("data/train.csv",
+
+  # Good practice to formally define variable types.
+  col_types = c(
+    id          = col_character(),
+    RainingDays = col_integer(),
+    clonesize   = col_integer(),
+    .default    = col_double()
+  )
+)
 ```
 
 Check to see if there are any missing values. 
@@ -54,18 +57,18 @@ Please note that this may depend on how "not available" data are recorded in the
 data set. 
 
 ```{r}
-anyNA(train)
+anyNA(d)
 ```
 
 It appears there are no missing data here. 
 
 
-The training data have `r nrow(train)` observations on 
-`r ncol(train)` variables.
+The training data have `r nrow(d)` observations on 
+`r ncol(d)` variables.
 The variable names are 
 
 ```{r variables}
-names(train)
+names(d)
 ```
 
 which includes the response variable `yield` and the unique id `id`. 
@@ -74,7 +77,7 @@ an identifier.
 I infer this because the `id` is just sequential numbers
 
 ```{r}
-all(diff(train$id) == 1)
+all(diff(d$id) == 1)
 ```
 
 ## Yield
@@ -82,15 +85,19 @@ all(diff(train$id) == 1)
 Let's take a look at yield first since it is our 
 
 ```{r}
-ggplot(train, aes(x = yield)) + 
+ggplot(d, aes(x = yield)) +
   geom_histogram(aes(y = after_stat(density)),
-                 fill = "gray") +
-  stat_function(fun = dnorm, 
-                args = list(
-                  mean = mean(train$yield),
-                  sd   = sd(train$yield)),
-                color = "blue",
-                linewidth = 2)
+    fill = "gray"
+  ) +
+  stat_function(
+    fun = dnorm,
+    args = list(
+      mean = mean(d$yield),
+      sd   = sd(d$yield)
+    ),
+    color = "blue",
+    linewidth = 2
+  )
 ```
 
 This histogram looks slightly skewed to the left. 
@@ -102,8 +109,8 @@ But, I may contemplate it in the future.
 Apparently multiple observations have the same min/max yield
 
 ```{r}
-train %>% filter(yield == min(yield))
-train %>% filter(yield == max(yield))
+d %>% filter(yield == min(yield))
+d %>% filter(yield == max(yield))
 ```
 
 Thus these seem like forced min/max values. 
@@ -148,22 +155,22 @@ but they all seem related to the fruit (since seeds are inside the fruit).
 ### Clonesize
 
 ```{r clonesize}
-ggplot(train, aes(x = clonesize, y = yield)) + 
-  geom_point(position = position_jitter(width = 0.5)) 
+ggplot(d, aes(x = clonesize, y = yield)) +
+  geom_point(position = position_jitter(width = 0.5))
 ```
 
 I thought this was a double, but apparently not. 
 I went back and changed how I read the data in. 
 
 ```{r}
-train %>%
+d %>%
   group_by(clonesize) %>%
   summarize(
     n = n(),
     mean = mean(yield),
-    sd   = sd(yield),
-    max  = max(yield),
-    min  = min(yield)
+    sd = sd(yield),
+    max = max(yield),
+    min = min(yield)
   )
 ```
 
@@ -173,8 +180,8 @@ I went back and pointed this out in the [yield](#yield) section.
 
 ### Bee
 
-```{r bee, cache=TRUE, dependson="train"}
-bee <- train %>% select(honeybee:osmia, yield) 
+```{r bee, cache=TRUE, dependson="data"}
+bee <- d %>% select(honeybee:osmia, yield)
 ```
 
 ```{r}
@@ -183,11 +190,11 @@ summary(bee)
 
 ```{r}
 bee_long <- bee %>%
-  pivot_longer(honeybee:osmia) 
+  pivot_longer(honeybee:osmia)
 
-  ggplot(bee_long, aes(x = value)) + 
-    geom_histogram() + 
-    facet_wrap(~name, scales="free")
+ggplot(bee_long, aes(x = value)) +
+  geom_histogram() +
+  facet_wrap(~name, scales = "free")
 ```
 There is clear discreteness in these data. Presumably this is to due to counting 
 the number of individual bees observed and dividing by the number of plants in
@@ -195,7 +202,7 @@ the field.
 Perhaps there were 50 plants, but, in some fields, some plants died?
 
 ```{r}
-sort(unique(bee_long$value))*50
+sort(unique(bee_long$value)) * 50
 ```
 Some of the honeybee observations are much larger than the rest. 
 
@@ -216,8 +223,8 @@ cor(bee) %>% round(3)
 
 Let's take a look at the temperature variables. 
 
-```{r temp, dependson="train"}
-temp <- train %>% select(MaxOfUpperTRange:AverageOfLowerTRange, yield)
+```{r temp, dependson="data"}
+temp <- d %>% select(MaxOfUpperTRange:AverageOfLowerTRange, yield)
 ```
 
 ```{r}
@@ -225,8 +232,8 @@ temp_long <- temp %>%
   select(-yield) %>%
   pivot_longer(everything())
 
-ggplot(temp_long, aes(x = value)) + 
-  geom_histogram() + 
+ggplot(temp_long, aes(x = value)) +
+  geom_histogram() +
   facet_wrap(~name)
 ```
 
@@ -237,7 +244,7 @@ stations.
 
 
 ```{r}
-with(train, table(MaxOfUpperTRange, MinOfUpperTRange))
+with(d, table(MaxOfUpperTRange, MinOfUpperTRange))
 ```
 Are the temperatures with only a few counts real or typos?
 
@@ -258,16 +265,16 @@ observed in the `test` data set.
 
 Let's take a look at the remaining variables. 
 
-```{r fruit, cache=TRUE, dependson="train"}
-fruit <- train %>% select(fruitset:yield)
+```{r fruit, cache=TRUE, dependson="data"}
+fruit <- d %>% select(fruitset:yield)
 ```
 
 ```{r}
 fruit_long <- fruit %>%
-  pivot_longer(-yield) 
+  pivot_longer(-yield)
 
-ggplot(fruit_long, aes(x = value)) + 
-  geom_histogram() + 
+ggplot(fruit_long, aes(x = value)) +
+  geom_histogram() +
   facet_wrap(~name, scales = "free")
 ```
 
@@ -284,45 +291,246 @@ pairs(fruit)
 
 # Modeling
 
-Here we will use the 
+I wanted to use the 
 [caret package](https://cran.r-project.org/web/packages/caret/)
 as it provides a consistent interface to fit a number of different methods.
+It also provides automatic parameter tuning. 
+Unfortunately, for some methods, it was taking too long to run. 
+So, where possible, this package was used, but elsewhere other packages were
+utilized with their default settings, i.e. no tuning. 
 
-```{r train-no-id, cache=TRUE, dependson="train"}
-train <- train %>% select(-id)
+Here we will set up a train/test split based on the kaggle training data. 
+We will utilize 80% of the observations for training and the remaining 20% for 
+testing. 
+
+```{r train, cache=TRUE, dependson="data"}
+set.seed(20230503)
+
+# Construct our own train and test
+u <- sample(c(TRUE, FALSE),
+  size = nrow(d),
+  prob = c(.8, .2), # 80% for training, 20% for testing
+  replace = TRUE
+)
+
+train <- d[u, ] %>% select(-id) # remove id to exclude it as an explanatory variable
+test <- d[!u, ] %>% select(-id)
 ```
+
+We can also set up a function to calculate our metric to compare models.
+Since the [competition is using mean absolute deviation/error](https://www.kaggle.com/competitions/playground-series-s3e14/overview/evaluation),
+we will use this as our metric. 
+
+```{r}
+mad <- function(p) {
+  mean(abs(p - test$yield))
+}
+```
+
 
 ## LASSO
 
-```{r lasso, cache=TRUE, dependson="train-no-id"}
-m_lasso <- train(yield ~ ., data = train, method = "lasso")
+For all of the methods, we will train in one code chunk and cache the results.
+
+```{r lasso-train, cache=TRUE, dependson="train"}
+m_lasso <- caret::train(yield ~ ., data = train, method = "lasso")
+```
+
+Then we will predict in another code chunk. 
+
+```{r lasso-predict, cache=TRUE, dependson="lasso-train"}
+p_lasso <- predict(m_lasso, newdata = test)
 ```
 
 
 ## Random forest
 
-```{r random-forest, cache=TRUE, dependson="train-no-id", eval=FALSE}
-m_ranger <- train(yield ~ ., data = train, method = "ranger")
+```{r rf-train, cache=TRUE, dependson="train"}
+m_rf <- randomForest(yield ~ ., data = train)
+```
+
+```{r rf-predict, cache=TRUE, dependson="rf-train"}
+p_rf <- predict(m_rf, newdata = test)
 ```
 
 
 ## Neural network
 
-```{r neural-network, cache=TRUE, dependson="train-no-id", message=FALSE}
-m_nnet <- train(yield ~ ., data = train, method = "nnet")
+
+
+```{r nn-train, cache=TRUE, dependson="train"}
+m_nnet <- nnet(yield ~ .,
+  data = train,
+  size = 5,
+  decay = 5e-4,
+  rang = .01
+) # rang*max(abs(x)) ~= 1
+
+# Code modified from
+# https://stats.stackexchange.com/questions/209678/nnet-package-is-it-neccessary-to-scale-data
+# m_nnet <- caret::train(yield ~ ., data = train, method = "nnet",
+#                        preProcess = c("center","scale"),
+#                          trace = FALSE,
+#                         tuneGrid = expand.grid(size=1:8, decay=3**(-6:1)),
+#                         trControl = trainControl(method = 'repeatedcv',
+#                                                 number = 10,
+#                                                 repeats = 10,
+#                                                 returnResamp = 'final'))
 ```
+
+```{r nn-predict, cache=TRUE, dependson=c("nn-train","test_normalized")}
+# Need to unscale predictions
+p_nnet <- predict(m_nnet, newdata = test)
+unique(p_nnet)
+```
+The predictions from this neural network are constant. 
+I tried a variety of approaches and, so far, have failed to get anything other
+than a constant prediction. 
 
 
 ## xgbTree
 
-```{r xgbtree, cache=TRUE, dependson="train-no-id", message=FALSE}
-m_xgbtree <- train(yield ~ ., data = train, method = "xgbTree", 
-                   verbosity=0) # eliminates deprecation warning
+```{r xgbtree-train, cache=TRUE, dependson="train", message=FALSE}
+m_xgbtree <- xgboost(
+  data = train %>% select(-yield) %>% as.matrix(),
+  label = train$yield,
+  params = list(booster = "gbtree"),
+  nrounds = 20, # Increasing this reduces train RMSE
+  verbose = 0
+)
+
+# This code only increased MAD by 1
+# m_xgbtree <- caret::train(yield ~ ., data = train, method = "xgbTree",
+#                        verbose = 0)
 ```
 
+```{r xgbtree-predict, cache=TRUE, dependson="xgbtree-train"}
+p_xgbtree <- predict(m_xgbtree, newdata = as.matrix(test %>% select(-yield)))
+```
 
 ## xgbLinear
 
-```{r xgblinear, cache=TRUE, dependson="train-no-id", message=FALSE}
-m_xgblinear <- train(yield ~ ., data = train, method = "xgbLinear")
+```{r xgblinear-train, cache=TRUE, cache=TRUE, dependson="train", message=FALSE}
+# m_xgblinear <- xgboost(data = train %>% select(-yield) %>% as.matrix,
+#                      label = train$yield,
+#                      params = list(booster = "gblinear"),
+#                      nrounds = 10, # Increasing this reduces train RMSE
+#                      verbose = 0)
+
+m_xgblinear <- caret::train(yield ~ .,
+  data = train, method = "xgbLinear",
+  verbose = 0
+)
 ```
+```{r xgblinear-predict, cache=TRUE, dependson="xgblinear-train"}
+p_xgblinear <- predict(m_xgblinear, newdata = as.matrix(test %>% select(-yield)))
+```
+
+# Summary
+
+## Comparison
+
+```{r mae, cache=TRUE, dependson=paste0(c("lasso","rf","nnet","xgbtree","xgblinear"),"-predict")}
+error <- tribble(
+  ~method, ~`test-mad`,
+  "lasso", mad(p_lasso),
+  "rf", mad(p_rf),
+  "nnet", mad(p_nnet),
+  "xgbtree", mad(p_xgbtree),
+  "xgblinear", mad(p_xgblinear)
+)
+```
+
+```{r comparison, dependson="mae"}
+error |>
+  datatable(
+    rownames = FALSE,
+    caption = "Test Mean Absolute Deviation (MAD)"
+  ) |>
+  formatRound(columns = c("test-mad"), digits = 0)
+```
+
+It seems that tree based (rf and xgbtree) methods out-performed linear methods
+(lasso and xgblinear). 
+This could be due to some large values in the explanatory variables, 
+e.g. honeyee, that would be hugely influential in any regression type of 
+analysis. 
+
+## Feature creation
+
+For these slides, we did not modify the explanatory variables (features) at all. 
+But we could consider
+
+1. removing highly correlated features
+1. creating additional features
+
+The temperature variables have correlation that is close to 1 and thus we could
+eliminate all but one of these variables. 
+
+We could consider adding additional features, e.g. 
+
+- principal components analysis
+    - temperatures
+    - fruit
+- differences in max/min temperature
+- total bee density
+- total rain
+- logarithms of explanatory variables
+
+
+
+## Tuning
+
+Some of the methods we tuned parameters to fit our held out test set better. 
+For the other methods, we could probably improve our performance if we tuned
+parameters. 
+This was not done due to time constraints. 
+
+## kaggle competition entry
+
+For the kaggle competition, 
+we'll take our best performing method and fit it using the entire training 
+data and then predict for the test data. 
+
+```{r kaggle-train, cache=TRUE, cache.extra=tools::md5sum("data/train.csv")}
+train <- read_csv("data/train.csv") %>% select(-id)
+
+m <- xgboost(
+  data = train %>% select(-yield) %>% as.matrix(),
+  label = train$yield,
+  params = list(booster = "gbtree"),
+  nrounds = 20, # Increasing this reduces train RMSE
+  verbose = 0
+)
+```
+
+```{r, kaggle-test, cache=TRUE, dependson="kaggle-train", cache.extra=tools::md5sum("data/test.csv")}
+test <- read_csv("data/test.csv")
+
+prediction <- test %>%
+  mutate(
+    yield = predict(m, newdata = as.matrix(test %>% select(-id))),
+
+    # Since the training yield data seem to have a fixed min/max
+    # truncate data to that range
+    yield = ifelse(yield > max(train$yield), max(train$yield), yield),
+    yield = ifelse(yield < min(train$yield), min(train$yield), yield)
+  )
+
+write_csv(prediction %>% select(id, yield),
+  file = "submission.csv"
+)
+```
+
+
+Our out-of-sample error is estimated to be around 360 based on our study above
+and our observed error on the 20% (see below) is around 354. 
+This is much larger than other predictions on the 
+[leaderboard](https://www.kaggle.com/competitions/playground-series-s3e14/leaderboard?).
+Note that the leaderboard is calculated with approximately 20% of the test 
+data and the final results will be based on the other 80%. 
+Thus, most likely the top predictions on the leaderboard are individuals 
+overfitting that 20% and therefore they will perform poorly on the remaining
+80%. 
+
+
