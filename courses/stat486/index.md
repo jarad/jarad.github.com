@@ -13,6 +13,7 @@ Introduction to Statistical Computing at
 ## Relevant course pages
 
 - [Slides](slides)
+- [Next courses](../next_courses.html)
 
 
 ## Textbook
