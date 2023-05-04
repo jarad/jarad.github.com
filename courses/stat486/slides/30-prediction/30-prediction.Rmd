@@ -43,10 +43,8 @@ I am also making the caching depend on the file.
 d <- read_csv("data/train.csv",
 
   # Good practice to formally define variable types.
-  col_types = c(
+  col_types = cols(
     id          = col_character(),
-    RainingDays = col_integer(),
-    clonesize   = col_integer(),
     .default    = col_double()
   )
 )
@@ -56,7 +54,7 @@ Check to see if there are any missing values.
 Please note that this may depend on how "not available" data are recorded in the
 data set. 
 
-```{r}
+```{r, dependson="data"}
 anyNA(d)
 ```
 
@@ -67,7 +65,7 @@ The training data have `r nrow(d)` observations on
 `r ncol(d)` variables.
 The variable names are 
 
-```{r variables}
+```{r variables, dependson="data"}
 names(d)
 ```
 
@@ -76,15 +74,15 @@ This `id` is not going to be important in the prediction but is simply just
 an identifier. 
 I infer this because the `id` is just sequential numbers
 
-```{r}
-all(diff(d$id) == 1)
+```{r, dependson="data"}
+all(diff(as.numeric(d$id)) == 1)
 ```
 
 ## Yield
 
 Let's take a look at yield first since it is our 
 
-```{r}
+```{r, dependson="data"}
 ggplot(d, aes(x = yield)) +
   geom_histogram(aes(y = after_stat(density)),
     fill = "gray"
@@ -108,7 +106,7 @@ But, I may contemplate it in the future.
 
 Apparently multiple observations have the same min/max yield
 
-```{r}
+```{r, dependson="data"}
 d %>% filter(yield == min(yield))
 d %>% filter(yield == max(yield))
 ```
@@ -154,7 +152,7 @@ but they all seem related to the fruit (since seeds are inside the fruit).
 
 ### Clonesize
 
-```{r clonesize}
+```{r clonesize, dependson="data"}
 ggplot(d, aes(x = clonesize, y = yield)) +
   geom_point(position = position_jitter(width = 0.5))
 ```
@@ -162,7 +160,7 @@ ggplot(d, aes(x = clonesize, y = yield)) +
 I thought this was a double, but apparently not. 
 I went back and changed how I read the data in. 
 
-```{r}
+```{r, dependson="data"}
 d %>%
   group_by(clonesize) %>%
   summarize(
@@ -184,11 +182,11 @@ I went back and pointed this out in the [yield](#yield) section.
 bee <- d %>% select(honeybee:osmia, yield)
 ```
 
-```{r}
+```{r, dependson="bee"}
 summary(bee)
 ```
 
-```{r}
+```{r bee-long, cache=TRUE, dependson="bee"}
 bee_long <- bee %>%
   pivot_longer(honeybee:osmia)
 
@@ -198,15 +196,15 @@ ggplot(bee_long, aes(x = value)) +
 ```
 There is clear discreteness in these data. Presumably this is to due to counting 
 the number of individual bees observed and dividing by the number of plants in
-the field. 
+the field (or dividing by the number of days). 
 Perhaps there were 50 plants, but, in some fields, some plants died?
 
-```{r}
+```{r, dependson="bee_long"}
 sort(unique(bee_long$value)) * 50
 ```
 Some of the honeybee observations are much larger than the rest. 
 
-```{r}
+```{r, dependson="bee"}
 bee %>% filter(honeybee > 15)
 ```
 
@@ -215,7 +213,7 @@ bee %>% filter(honeybee > 15)
 pairs(bee)
 ```
 
-```{r}
+```{r, dependson="bee"}
 cor(bee) %>% round(3)
 ```
 
@@ -223,11 +221,11 @@ cor(bee) %>% round(3)
 
 Let's take a look at the temperature variables. 
 
-```{r temp, dependson="data"}
+```{r temp, cache=TRUE, dependson="data"}
 temp <- d %>% select(MaxOfUpperTRange:AverageOfLowerTRange, yield)
 ```
 
-```{r}
+```{r, dependson="temp"}
 temp_long <- temp %>%
   select(-yield) %>%
   pivot_longer(everything())
@@ -243,12 +241,12 @@ Probably the fields are in 4-5 spatial locations with the same temperature
 stations. 
 
 
-```{r}
+```{r, dependson="temp"}
 with(d, table(MaxOfUpperTRange, MinOfUpperTRange))
 ```
 Are the temperatures with only a few counts real or typos?
 
-```{r}
+```{r, dependson="temp"}
 temp %>%
   # select(MaxOfUpperTRange:AverageOfLowerTRange) %>%
   cor() %>%
@@ -269,7 +267,7 @@ Let's take a look at the remaining variables.
 fruit <- d %>% select(fruitset:yield)
 ```
 
-```{r}
+```{r, dependson="fruit"}
 fruit_long <- fruit %>%
   pivot_longer(-yield)
 
@@ -278,7 +276,7 @@ ggplot(fruit_long, aes(x = value)) +
   facet_wrap(~name, scales = "free")
 ```
 
-```{r}
+```{r, dependson="fruit"}
 fruit %>%
   cor() %>%
   round(3)
@@ -321,7 +319,7 @@ We can also set up a function to calculate our metric to compare models.
 Since the [competition is using mean absolute deviation/error](https://www.kaggle.com/competitions/playground-series-s3e14/overview/evaluation),
 we will use this as our metric. 
 
-```{r}
+```{r mad, cache=TRUE, dependson="train"}
 mad <- function(p) {
   mean(abs(p - test$yield))
 }
@@ -430,7 +428,7 @@ p_xgblinear <- predict(m_xgblinear, newdata = as.matrix(test %>% select(-yield))
 
 ## Comparison
 
-```{r mae, cache=TRUE, dependson=paste0(c("lasso","rf","nnet","xgbtree","xgblinear"),"-predict")}
+```{r mae, cache=TRUE, dependson=c("mad",paste0(c("lasso","rf","nnet","xgbtree","xgblinear"),"-predict"))}
 error <- tribble(
   ~method, ~`test-mad`,
   "lasso", mad(p_lasso),
@@ -456,35 +454,7 @@ This could be due to some large values in the explanatory variables,
 e.g. honeyee, that would be hugely influential in any regression type of 
 analysis. 
 
-## Feature creation
 
-For these slides, we did not modify the explanatory variables (features) at all. 
-But we could consider
-
-1. removing highly correlated features
-1. creating additional features
-
-The temperature variables have correlation that is close to 1 and thus we could
-eliminate all but one of these variables. 
-
-We could consider adding additional features, e.g. 
-
-- principal components analysis
-    - temperatures
-    - fruit
-- differences in max/min temperature
-- total bee density
-- total rain
-- logarithms of explanatory variables
-
-
-
-## Tuning
-
-Some of the methods we tuned parameters to fit our held out test set better. 
-For the other methods, we could probably improve our performance if we tuned
-parameters. 
-This was not done due to time constraints. 
 
 ## kaggle competition entry
 
@@ -533,4 +503,34 @@ Thus, most likely the top predictions on the leaderboard are individuals
 overfitting that 20% and therefore they will perform poorly on the remaining
 80%. 
 
+
+## Feature creation
+
+For these slides, we did not modify the explanatory variables (features) at all. 
+But we could consider
+
+1. removing highly correlated features
+1. creating additional features
+
+The temperature variables have correlation that is close to 1 and thus we could
+eliminate all but one of these variables. 
+
+We could consider adding additional features, e.g. 
+
+- principal components analysis
+    - temperatures
+    - fruit
+- differences in max/min temperature
+- total bee density
+- total rain
+- logarithms of explanatory variables
+
+
+
+## Tuning
+
+Some of the methods we tuned parameters to fit our held out test set better. 
+For the other methods, we could probably improve our performance if we tuned
+parameters. 
+This was not done due to time constraints. 
 

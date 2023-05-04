@@ -11,28 +11,26 @@ library("DT")
 d <- read_csv("data/train.csv",
 
   # Good practice to formally define variable types.
-  col_types = c(
+  col_types = cols(
     id          = col_character(),
-    RainingDays = col_integer(),
-    clonesize   = col_integer(),
     .default    = col_double()
   )
 )
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="data"------------------------------------------------------------
 anyNA(d)
 
 
-## ----variables--------------------------------------------------------------------
+## ----variables, dependson="data"--------------------------------------------------
 names(d)
 
 
-## ---------------------------------------------------------------------------------
-all(diff(d$id) == 1)
+## ---- dependson="data"------------------------------------------------------------
+all(diff(as.numeric(d$id)) == 1)
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="data"------------------------------------------------------------
 ggplot(d, aes(x = yield)) +
   geom_histogram(aes(y = after_stat(density)),
     fill = "gray"
@@ -48,17 +46,17 @@ ggplot(d, aes(x = yield)) +
   )
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="data"------------------------------------------------------------
 d %>% filter(yield == min(yield))
 d %>% filter(yield == max(yield))
 
 
-## ----clonesize--------------------------------------------------------------------
+## ----clonesize, dependson="data"--------------------------------------------------
 ggplot(d, aes(x = clonesize, y = yield)) +
   geom_point(position = position_jitter(width = 0.5))
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="data"------------------------------------------------------------
 d %>%
   group_by(clonesize) %>%
   summarize(
@@ -74,11 +72,11 @@ d %>%
 bee <- d %>% select(honeybee:osmia, yield)
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="bee"-------------------------------------------------------------
 summary(bee)
 
 
-## ---------------------------------------------------------------------------------
+## ----bee-long, cache=TRUE, dependson="bee"----------------------------------------
 bee_long <- bee %>%
   pivot_longer(honeybee:osmia)
 
@@ -87,11 +85,11 @@ ggplot(bee_long, aes(x = value)) +
   facet_wrap(~name, scales = "free")
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="bee_long"--------------------------------------------------------
 sort(unique(bee_long$value)) * 50
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="bee"-------------------------------------------------------------
 bee %>% filter(honeybee > 15)
 
 
@@ -99,15 +97,15 @@ bee %>% filter(honeybee > 15)
 pairs(bee)
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="bee"-------------------------------------------------------------
 cor(bee) %>% round(3)
 
 
-## ----temp, dependson="data"-------------------------------------------------------
+## ----temp, cache=TRUE, dependson="data"-------------------------------------------
 temp <- d %>% select(MaxOfUpperTRange:AverageOfLowerTRange, yield)
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="temp"------------------------------------------------------------
 temp_long <- temp %>%
   select(-yield) %>%
   pivot_longer(everything())
@@ -117,11 +115,11 @@ ggplot(temp_long, aes(x = value)) +
   facet_wrap(~name)
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="temp"------------------------------------------------------------
 with(d, table(MaxOfUpperTRange, MinOfUpperTRange))
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="temp"------------------------------------------------------------
 temp %>%
   # select(MaxOfUpperTRange:AverageOfLowerTRange) %>%
   cor() %>%
@@ -132,7 +130,7 @@ temp %>%
 fruit <- d %>% select(fruitset:yield)
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="fruit"-----------------------------------------------------------
 fruit_long <- fruit %>%
   pivot_longer(-yield)
 
@@ -141,7 +139,7 @@ ggplot(fruit_long, aes(x = value)) +
   facet_wrap(~name, scales = "free")
 
 
-## ---------------------------------------------------------------------------------
+## ---- dependson="fruit"-----------------------------------------------------------
 fruit %>%
   cor() %>%
   round(3)
@@ -165,7 +163,7 @@ train <- d[u, ] %>% select(-id) # remove id to exclude it as an explanatory vari
 test <- d[!u, ] %>% select(-id)
 
 
-## ---------------------------------------------------------------------------------
+## ----mad, cache=TRUE, dependson="train"-------------------------------------------
 mad <- function(p) {
   mean(abs(p - test$yield))
 }
@@ -247,7 +245,7 @@ m_xgblinear <- caret::train(yield ~ .,
 p_xgblinear <- predict(m_xgblinear, newdata = as.matrix(test %>% select(-yield)))
 
 
-## ----mae, cache=TRUE, dependson=paste0(c("lasso","rf","nnet","xgbtree","xgblinear"),"-predict")----
+## ----mae, cache=TRUE, dependson=c("mad",paste0(c("lasso","rf","nnet","xgbtree","xgblinear"),"-predict"))----
 error <- tribble(
   ~method, ~`test-mad`,
   "lasso", mad(p_lasso),
