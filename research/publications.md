@@ -126,7 +126,7 @@ Environmental Statistics. 22, 465-480
 [url](http://www.tandfonline.com/doi/full/10.1080/10618600.2015.1105748)
 [pdf](papers/Simp_inte_2017.pdf)
 1. Lisa Schulte, Anna MacDonald, Jarad Niemi, and Matthew Helmers. (2016) ``Prairie strips as a mechanism to promote land sharing by birds in industrial agricultural landscapes.''  Agriculture, Ecosystems and Environment 220: 55-63
-1. David M. Brenner, Jack Dekker, Jarad Niemi, and Lisa Pfiffner. (2016) ``Medical Oxygen Concentrators for Releasing Seed Dormancy.'' Crop Science 55:2291-2293 [pdf](papers/brenner2015medical.pdf) [url](http://www.sciencedirect.com/science/article/pii/S016788091630007X)
+1. David M. Brenner, Jack Dekker, Jarad Niemi, and Lisa Pfiffner. (2016) ``Medical Oxygen Concentrators for Releasing Seed Dormancy.'' Crop Science 55:2291-2293 [pdf](papers/brenner2015medical.pdf) [url](https://acsess.onlinelibrary.wiley.com/doi/full/10.2135/cropsci2014.11.0783)
 1. Jarad Niemi, Eric Mittman\*, Will Landau\*, and Dan Nettleton (2015) ``Empirical Bayes analysis of RNA-seq data for detection of gene expression heterosis.'' Journal of Agricultural, Biological, and Environmental Statistcs, 20(4): 614-628 [url](http://link.springer.com/article/10.1007%2Fs13253-015-0230-5#)
 1. Robert B. Gramacy, Jarad Niemi, Robin Weiss. (2014) ``Massively parallel approximate Gaussian process regression.'' SIAM/ASA Journal on Uncertainty Quantification 2(1) 564-584. [arXiv](http://arxiv.org/abs/1310.5182) [url](http://epubs.siam.org/doi/abs/10.1137/130941912) [pdf](papers/Gram_Niem_Weis_mass_2014.pdf) 
 [DOI](https://doi.org/10.1137/130941912)
