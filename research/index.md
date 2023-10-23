@@ -38,8 +38,7 @@ Journal of Agricultural, Biological, and Environmental Statistics.
 
 ## Recent presentations ([All Presentations](presentations.html))
 
-- [NCCC-170 2022](presentations/JaradNiemi_NCCC-170_2022.pdf)
-- [SSC 2021](https://github.com/jarad/SSC2021/raw/main/SSC2021.pdf)
+- [NCCC-170 2023](presentations/JaradNiemi_NCCC-170_2023.html)
 
 ## Some software ([Additional software](software.html))
 
