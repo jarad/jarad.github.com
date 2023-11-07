@@ -1,0 +1,224 @@
+---
+title: "STAT 615 Background"
+author: "Jarad Niemi"
+format: html
+---
+
+This document is intended to be a one class period (1 hr 15 min) to cover the 
+background material necessary for STAT 615. You should be familiar with this 
+content before STAT 615. 
+
+## Probability
+
+What are the two main interpretations of *probability*?
+
+- Relative frequency
+- Epistemic (belief)
+
+## Bayesian framework
+
+What makes someone a Bayesian? 
+Using conditional probability, i.e.
+
+$$P(\theta|y,K)$$
+
+where 
+
+- $K$ is what you knew before you collected the data
+- $y$ is the data
+- $\theta$ is what you don't know
+
+then we typically use Bayes rule
+
+$$P(\theta|y,K) \propto P(y|\theta,K)P(\theta|K)$$
+
+typicaly $K$ is dropped from the notation. 
+
+### Parameter estimation
+
+$$p(\theta|y) \propto p(y|\theta)p(\theta)$$
+
+### Model comparison
+
+$$P(M_1|y) \propto p(y|M_1)P(M_1)$$
+
+### Prediction
+
+$$p(\tilde{y}|y) = \int p(\tilde{y}|\theta,y)p(\theta|y) d\theta$$
+
+
+
+## Conjugate analyses
+
+### Binomial
+
+Let $Y\sim Bin(n,\theta)$. 
+
+What is the conjugate prior for $\theta$? $\theta \sim Be(a,b)$. 
+
+What is the posterior using this conjugate prior? $\theta|y \sim Be(a+y,b+n-y)$
+
+How do we interpret $a$ and $b$?
+
+What is Jeffreys prior?
+
+Is this the only conjugate prior?
+
+What is Haldanes prior? If we use Haldanes prior, what do we have to be concerned about? Propriety discussion. 
+
+#### Point estimator
+
+What is the Bayes estimator? Trick question! The answer depends on your 
+utility/loss function. 
+$$U(\hat{\theta},\theta_0) = -(\hat{\theta}-\theta_0)^2 \implies \hat{\theta} = E[\theta|y] = \frac{a+y}{a+b+n}$$
+$$U(\hat{\theta},\theta_0) = -|\hat{\theta}-\theta_0| \implies 0.5 = \int_{\infty}^\hat{\theta} p(\theta|y) d\theta$$
+Maximum a posterior (MAP) estimator is NOT a Bayes estimator for any 
+utility/loss function, but it is the estimator for the limit of the point-loss
+utility, i.e. $U(\hat{\theta,\theta_0}) = \mathrm{I}(|\hat\theta - \theta_0| < \epsilon)$. 
+
+
+#### Interval estimation
+
+A 100(1-a)\% credible interval for $\theta$ is any interval $(a,b)$ such that 
+$$\int_a^b p(\theta|y) d\theta = 1-a.$$
+An equal-tail credible interval has 
+$$a/2 = \int_{-\infty}^a p(\theta|y) d\theta = \int_b^\infty p(\theta|y) d\theta.$$
+
+The highest posterior density (HPD) interval has 
+$$p(a|y) = p(b|y)$$. This interval is the shortest interval. 
+
+
+### Normal
+
+Let $Y_i \stackrel{ind}{\sim} N(\mu,s^2)$. 
+
+What is Jeffreys prior for $\mu$? $p(\mu) \propto 1$
+
+What is the posterior using this prior? $\mu|y \sim N(\overline{y}, s^2/n)$
+
+What is $p(\tilde{y}|y)$ when $\tilde{Y} \sim N(\mu,s^2)$ independent of 
+the remaining $Y$s? Write $\tilde{y} = \mu + \tilde{\epsilon}$. Then
+$$\tilde{y}|y \sim N(\overline{y}, s^2[1+1/n]).$$
+
+
+What is the conjugate prior for $\mu$? $\mu \sim N(m,C)$
+
+What is the posterior using this conjugate prior? 
+$\mu|y \sim N([n/s^2 + 1/C]^{-1}[n/s^2 \overline{y} + m/C], [n/s^2 + 1/C]^{-1})$
+
+What is $p(\tilde{y}|y)$ when $\tilde{Y} \sim N(\mu,s^2)$ independent of 
+the remaining $Y$s?
+
+### Regression
+
+Let $Y = X\beta + \epsilon$ where 
+
+- $Y$ is $n\times 1$
+- $X$ is $n \times k$
+- $\beta$ is $k \times 1$
+- $\epsilon \sim N_n(0,\sigma^2\mathrm{I})$
+
+What is Jeffreys prior for $\beta,\sigma^2$? 
+$p(\beta,\sigma) \propto 1/(\sigma^2)^{3/2}$
+
+What is the generally accepted default prior for $\beta,\sigma^2$? 
+$p(\beta,\sigma) \propto 1/\sigma^2$
+
+What is the posterior when using this default prior?
+
+Joint posterior is 
+$$\beta|\sigma^2,y \sim N(\hat{\beta}, \sigma^2 [X^\top X]^{-1}), 
+\sigma^2|y \sim \mbox{Inv-}\chi^2(n-k, s^2)$$
+where
+$$s^2 = SSE/[n-k] = (Y-X\hat{\beta})^\top (Y-X\hat{\beta}),
+\hat{\beta} = [X^\top X]^{-1}X^\top y.$$
+
+Marginal posterior for $\beta$ is 
+$$\beta|y \sim t_{n-k}(\hat{\beta}, s^2[X^\top X]^{-1})
+
+
+What is the conjugate prior for $\beta,\sigma^2$? 
+$$\beta|\sigma^2 \sim N(b_0, \sigma^2 B_0), \sigma^2 \sim \mbox{Inv-}\chi^2(\cdot,\cdot).$$
+
+
+What is the distribution for $Y|\sigma^2$? **CONAN**
+Write $Y = X\beta + \epsilon$. Then 
+$$Y|\sigma^2 \sim N(X b_0, \sigma^2[XB_0X^\top + \mathrm{I}]).$$
+
+
+## Model comparison
+
+Suppose 
+
+## Asymptotics
+
+Generally $\theta|y$ converges to a normal distribution centered at the true 
+value $\theta_0$ with covariance matrix equal to the inverse of the
+fisher information matrix. 
+So, we can approximate the posterior distribution with the MAP of $p(\theta|y)$ 
+and the observed fisher information matrix. 
+
+What can go wrong? 
+
+Likelihood
+
+- Nonidentified parameters
+- Parameters increase with sample size
+- Unbounded likelihoods
+- Tails of the posterior
+
+Prior
+
+- Posterior is improper
+- True value not within the support for the prior
+- True value on the edge of the support for the prior
+
+## Computing
+
+### Metropolis-Hastings sample
+
+$$p(\theta|y) = q(\theta|y)/q(y)$$
+
+Propose $\theta^*\sim g(\theta|\theta^{(t)})$  
+Accept $\theta^{(t+1)}=\theta^*$ with probability $\min\{1,r\}$  where 
+$$ r = r(\theta^{(t)},\theta^*) 
+= \frac{q(\theta^*|y)/g(\theta^*|\theta^{(t)})}{q(\theta^{(t)}|y)/g(\theta^{(t)}|\theta^*)}
+= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)}|\theta^*)}{g(\theta^*|\theta^{(t)})} $$
+ otherwise, set $\theta^{(t+1)}=\theta^{(t)}$. 
+
+
+
+#### Independent
+
+$$g(\theta|\theta^{(t)}) = g(\theta)$$
+
+Want $g(\theta)$ to be a good approximation of $p(\theta|y)$. 
+Acceptance rate being high may be an indication it is a good approximation. 
+
+Proposal needs tails heavier than the target.
+
+#### Random walk
+
+$$g(\theta|\theta^{(t)}) = g(\theta^{(t)}|\theta)$$
+
+$$ r = r(\theta^{(t)},\theta^*) 
+= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}$$
+
+Hill climbing with the possibility of going downhill. 
+
+For multivariate normal target acceptance rate around 0.4 for 1 dimension down
+to 0.2 for infinite dimensions.
+
+
+
+### Gibbs sampler
+
+Consider the model $Y_i \stackrel{ind}{\sim} N(\mu,\sigma^2)$ with 
+$\mu \sim N(m,C)$ and $\sigma^2 \sim \mbox{Inv-}\chi^2(a,b)$. 
+
+Is this prior conjugate? Why not?
+
+Is the prior conditionally conjugate? Yes. 
+
+Construct a Gibbs sampler to sample from this target distribution. 
+
