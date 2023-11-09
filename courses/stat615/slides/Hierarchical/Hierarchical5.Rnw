@@ -74,7 +74,7 @@ The mass has
 \end{frame}
 
 
-\subsection{Hamilton's equations}
+\subsection{Sir William Rowan Hamilton's equations}
 \begin{frame}
 \frametitle{Hamilton's equations}
 
@@ -104,6 +104,7 @@ we usually use Hamiltonian functions that can be written as follows:
 \[ 
 H(\theta,\omega) = U(\theta) + K(\omega)
 \]
+\pause
 where 
 \begin{itemize}
 \item $U(\theta)$ is called the potential energy and will be defined to be minus the log probability density of the distribution for $\theta$ (plus any constant that is 
@@ -145,11 +146,11 @@ The dynamics resulting from this Hamiltonian are
 \frac{d\theta}{dt} = \omega, \quad \frac{d\omega}{dt}=-\theta.
 \]
 \pause
-Solutions of the form
+Solutions are of the form
 \[ 
 \theta(t) = r\, cos(a+t),\quad \omega(t) = -r\, sin(a+t)
 \]
-for some constants $r$ and $a$.
+for some constants $r$ and $a$ that depend on initial conditions.
 \end{frame}
 
 
@@ -177,19 +178,33 @@ for (i in 1:length(tt)) {
 \end{frame}
 
 
-\subsection{Reversibility}
-\frametitle{Reversibility}
+\subsection{Conservation of the Hamiltonian}
 \begin{frame}
-Hamiltonian dynamics is reversible, 
-i.e. the mapping $T_s$ from the state at time $t$, $(\theta(t),\omega(t))$, to the state 
-at time $t+s$, $(\theta(t+s),p(t+s))$, is one-to-one, and hence as an inverse,
-$T_{-s}$.
-\pause
-Under our usual assumptions for HMC, the inverse mapping can be obtained by
-negative $\omega$, applying $T_s$, and then negating $\omega$ again.
-\pause
-The reversibility of Hamiltonian dynamics is important for showing convergence
-of HMC.
+\frametitle{Conservation of the Hamiltonian}
+
+This simple model clearly conserves the Hamiltonian:
+\[ \begin{array}{rl}
+H(\theta,\omega) &= U(\theta) + K(\omega) \pause \\
+&= \frac{\theta^2}{2} + \frac{\omega^2}{2} \pause \\
+&= \frac{[r\, cos(a+t)]^2}{2} + \frac{[-r\, sin(a+t)]^2}{2} \pause \\
+&= \frac{r^2}{2} \left[ cos^2(a+t) + sin^2(a+t) \right] \pause \\
+&= r^2/2 
+\end{array} \]
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Conservation of the Hamiltonian}
+
+\vspace{-0.5in}
+
+<<oned_volume, fig.show='animate', interval=.1, fig.asp=1, fig.width=4, out.width='.5\\linewidth'>>=
+t3 <- seq(0,2*pi, length=1000)
+d <- data.frame(x = cos(t3), y=-sin(t3))
+for (i in 1:length(tt)) {
+  plot(y~x, d, type='l', col='gray', xlab='Location', ylab='Momentum')
+  points(theta[i], omega[i], pch=19)
+}
+@
 \end{frame}
 
 
@@ -207,32 +222,34 @@ The dynamics conserve the Hamiltonian since
 \end{array} \]
 
 \pause
-If $h$ is conserved, then the acceptance probability based on Hamiltonian 
+If $H$ is conserved, then the acceptance probability based on Hamiltonian 
 dynamics is 1. 
 \pause
-In practice, we can only make $H$ approximately invariant.
+Simulating most Hamiltonian systems, 
+we can only make $H$ approximately conserved.
 
 \end{frame}
 
 
-
-\begin{frame}[fragile]
-\frametitle{Conservation of the Hamiltonian}
-
-\vspace{-0.5in}
-
-<<oned_volume, fig.show='animate', interval=.1, fig.asp=1, fig.width=4, out.width='.6\\linewidth'>>=
-t3 <- seq(0,2*pi, length=1000)
-d <- data.frame(x = cos(t3), y=-sin(t3))
-for (i in 1:length(tt)) {
-  plot(y~x, d, type='l', col='gray', xlab='Location', ylab='Momentum')
-  points(theta[i], omega[i], pch=19)
-}
-@
+\subsection{Reversibility}
+\begin{frame}
+\frametitle{Reversibility}
+Hamiltonian dynamics is reversible, 
+i.e. the mapping $T_s$ from the state at time $t$, $(\theta(t),\omega(t))$, to the state 
+at time $t+s$, $(\theta(t+s),p(t+s))$, is one-to-one, and hence as an inverse,
+$T_{-s}$.
+\pause
+Under our usual assumptions for HMC, the inverse mapping can be obtained by
+negating $\omega$, applying $T_s$, and then negating $\omega$ again.
+\pause
+The reversibility of Hamiltonian dynamics is important for showing convergence
+of HMC.
 \end{frame}
 
 
 
+
+\subsection{Volume preservation}
 \begin{frame}
 \frametitle{Volume preservation}
 
@@ -245,6 +262,7 @@ Metropolis updates.
 \end{frame}
 
 
+\section{Approximating Hamiltonian dynamics}
 \subsection{Euler's method}
 \begin{frame}
 \frametitle{Euler's method}
@@ -268,7 +286,7 @@ of $e$, \pause i.e.
 \end{frame}
 
 
-
+\subsection{Leapfrog method}
 \begin{frame}
 \frametitle{Leapfrog method}
 
