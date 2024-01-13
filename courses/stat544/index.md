@@ -13,7 +13,7 @@ This website is designed to host course material for [STAT 544 - Bayesian Statis
 The required textbook for the course is 
 [Bayesian Data Analysis (3rd edition)](https://a.co/d/11huyhL).
 
-Some other introductory suggestions are linked below and [more advanced texts are here](../stat615/textbook.html):
+Some other introductory suggestions are linked below:
 
 - [Doing Bayesian Data Analysis](https://a.co/d/iPfzD13)
 - [A First Course in Bayesian Statistical Methods](https://a.co/d/ibqmX7l)
