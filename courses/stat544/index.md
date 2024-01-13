@@ -35,9 +35,9 @@ on the [software page](software.html).
 - [Applets](applets.html)
 - [Slides](slides)
 - [Previous midterms](midterm)
-- [Youtube Videos](https://www.youtube.com/playlist?list=PLFHD4aOUZFp0Xhzd5j1nWnExD54xJfnJX)
-- [Catalog of default priors](http://www.stats.org.uk/priors/noninformative/YangBerger1998.pdf)
 - [Report](report)
+- [Youtube Videos](https://www.youtube.com/playlist?list=PLFHD4aOUZFp0Xhzd5j1nWnExD54xJfnJX)
+- [Catalog of default priors](YangBerger1998.pdf)
 
 ## Course Description
 

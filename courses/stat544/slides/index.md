@@ -14,7 +14,9 @@ files which are available
 [where all the source files can be found](https://github.com/jarad/jarad.github.com/tree/master/courses/stat544/slides).
 Instructions for compiling the Rnw files can be found below.
 
-## Chapter slide source files
+## Schedule
+
+The following provides the weekly schedule of material 
 
 
 |Chapter|Topic|Source|Handouts|
@@ -30,10 +32,10 @@ Instructions for compiling the Rnw files can be found below.
 |6|Model checking|[Ch06.Rnw](Ch06/Ch06.Rnw)|[Ch06.pdf](Ch06/Ch06.pdf)|
 |7|Hypothesis testing|[Ch07a.Rnw](Ch07/Ch07a.Rnw)|[Ch07a.pdf](Ch07/Ch07a.pdf)|
 | |Comparison to LRTs|[Ch07b.Rnw](Ch07/Ch07b.Rnw)|[Ch07b.pdf](Ch07/Ch07b.pdf)|
-|9|Decision theory|[Ch09.Rnw](Ch09/Ch09.Rnw)|[Ch09.pdf](Ch09/Ch09.pdf)|
 |R|Amazon reviews analysis|[AmazonReview.Rnw](AmazonReviews/AmazonReviews.Rnw)|[AmazonReview.pdf](AmazonReviews/AmazonReviews.pdf)|
 | |Midterm review|[MidtermReview.Rnw](MidtermReview/MidtermReview.Rnw)|[MidtermReview.pdf](MidtermReview/MidtermReview.pdf)|
 | |Bayesian model averaging|[BMA.Rnw](BMA/BMA.Rnw)|[BMA.pdf](BMA/BMA.pdf)|
+|9|Decision theory|[Ch09.Rnw](Ch09/Ch09.Rnw)|[Ch09.pdf](Ch09/Ch09.pdf)|
 |10|Bayesian computation|[Ch10a.Rnw](Ch10/Ch10a.Rnw)|[Ch10a.pdf](Ch10/Ch10a.pdf)|
 ||ARS and Importance sampling|[Ch10b.Rnw](Ch10/Ch10b.Rnw)|[Ch10b.pdf](Ch10/Ch10b.pdf)|
 |11|Metropolis-Hastings|[Ch11a.Rnw](Ch11/Ch11a.Rnw)|[Ch11a.pdf](Ch11/Ch11a.pdf)|
