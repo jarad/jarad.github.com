@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -11,20 +11,19 @@
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
-opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
-               size='tiny', 
-               out.width='0.8\\textwidth', 
-               fig.align='center', 
+opts_chunk$set(comment=NA,
+               fig.width=5, fig.height=3,
+               size='tiny',
+               out.width='0.8\\textwidth',
+               fig.align='center',
                message=FALSE,
                echo=FALSE)
 options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
-library("dplyr")
-library("tidyr")
-library("ggplot2")
+library("tidyverse")
+theme_set(theme_bw())
 @
 
 <<set_seed, echo=FALSE>>=
@@ -55,7 +54,7 @@ set.seed(2)
   \end{itemize}
 \item What is probability?
   \begin{itemize}
-  \item Frequency interpretation 
+  \item Frequency interpretation
   \item Personal belief
   \end{itemize}
 \item Why or why not Bayesian?
@@ -70,10 +69,10 @@ set.seed(2)
 \frametitle{Events}
   \begin{definition}
   The set, $\Omega$, of all possible outcomes of a particular experiment is called the \alert{sample space} for the experiment.
-	\end{definition} 
-	
+	\end{definition}
+
 	\pause
-	
+
 	\begin{definition}
 	An \alert{event} is any collection of possible outcomes of an experiment, that is, any subset of $\Omega$ (including $\Omega$ itself).
 	\end{definition}
@@ -84,18 +83,18 @@ set.seed(2)
 \frametitle{Craps}
   \href{http://en.wikipedia.org/wiki/Craps}{Craps}: \pause
 	\begin{itemize}[<+->]
-	\item $\Omega=\{(1,1),(1,2),\ldots,(1,6),(2,1),(2,2),\ldots,(6,6)\}$ 
+	\item $\Omega=\{(1,1),(1,2),\ldots,(1,6),(2,1),(2,2),\ldots,(6,6)\}$
   \item Come-out roll win: the sum of the dice is 7 or 11
   \item Come-out roll loss: the sum of the dice is 2, 3, or 12
-  \item Come-out roll establishes a point: the sum of the dice is 4, 5, 6, 8, 9, or 10 
-  
-  
+  \item Come-out roll establishes a point: the sum of the dice is 4, 5, 6, 8, 9, or 10
+
+
   \vspace{0.1in}
-  
+
 	\item Events:
 		\begin{itemize}
-		\item the come-out roll wins  
-		\item the come-out roll loses 
+		\item the come-out roll wins
+		\item the come-out roll loses
 		\item the come-out roll establishes a point
 		\end{itemize}
 	\end{itemize}
@@ -104,11 +103,11 @@ set.seed(2)
 
 \frame{\frametitle{Pairwise disjoint}
 	\begin{definition}
-	Two events $A_1$ and $A_2$ are \alert{disjoint} (or \alert{mutually exclusive}) if both $A_1$ and $A_2$ cannot occur simultaneously, i.e. $A_i\cap A_j = \emptyset$. \pause The events $A_1, A_2,\ldots$ are \alert{pairwise disjoint} (or \alert{mutually exclusive}) if $A_i$ and $A_j$ cannot occur simultaneously for all $i\ne j$, i.e. $A_1\cap A_2 = \emptyset$. 
+	Two events $A_1$ and $A_2$ are \alert{disjoint} (or \alert{mutually exclusive}) if both $A_1$ and $A_2$ cannot occur simultaneously, i.e. $A_i\cap A_j = \emptyset$. \pause The events $A_1, A_2,\ldots$ are \alert{pairwise disjoint} (or \alert{mutually exclusive}) if $A_i$ and $A_j$ cannot occur simultaneously for all $i\ne j$, i.e. $A_1\cap A_2 = \emptyset$.
 	\end{definition}
-	
+
 	\vspace{0.2in} \pause
-	
+
 	Craps pairwise disjoint examples:
 	\begin{itemize}[<+->]
   \item Win ($A_1$), Loss ($A_2$)
@@ -122,21 +121,21 @@ set.seed(2)
 \subsection{Axioms of probability}
 \frame{\frametitle{Kolmogorov's axioms of probability}
   \begin{definition}
-	Given a sample space $\Omega$ and event space $E$, a \alert{probability} is a function $P:E\to \mathbb{R}$ that satisfies \pause 
+	Given a sample space $\Omega$ and event space $E$, a \alert{probability} is a function $P:E\to \mathbb{R}$ that satisfies \pause
 	\begin{enumerate}[1.]
 	\item $P(A)\ge 0$ for any $A\in E$ \pause
 	\item $P(\Omega)=1$ \pause
-	\item If $A_1, A_2,\ldots\in E$ are pairwise disjoint, then $P(A_1\mbox{ or }A_2\mbox{ or }\ldots) = \sum_{i=1}^\infty P(A_i)$. 
+	\item If $A_1, A_2,\ldots\in E$ are pairwise disjoint, then $P(A_1\mbox{ or }A_2\mbox{ or }\ldots) = \sum_{i=1}^\infty P(A_i)$.
 	\end{enumerate}
 	\end{definition}
 }
 
 \frame{\frametitle{Craps come-out roll probabilities}
-The following table provides the probability mass function for the sum of the 
+The following table provides the probability mass function for the sum of the
 two dice if we \emph{believe} the probability of each elementary outcome is equal:
-  
+
   \vspace{0.1in} \pause
-  
+
 {\small
   \begin{tabular}{l|ccccccccccc|c}
   Outcome & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & Sum \\
@@ -146,9 +145,9 @@ two dice if we \emph{believe} the probability of each elementary outcome is equa
   \hline
   \end{tabular}
 }
-  
+
   \vspace{0.2in} \pause
-  
+
 	Craps probability examples:
 	\begin{itemize}[<+->]
 	\item P(Win) = P(7 or 11) = 8/36 = 2/9
@@ -160,15 +159,15 @@ two dice if we \emph{believe} the probability of each elementary outcome is equa
 
 \frame{\frametitle{Partition}
   \begin{definition}
-  A set of events, $\{A_1,A_2,\ldots\}$, is a \alert{partition} of the sample space $\Omega$ \pause if and only if 
+  A set of events, $\{A_1,A_2,\ldots\}$, is a \alert{partition} of the sample space $\Omega$ \pause if and only if
   \begin{itemize}[<+->]
   \item the events in $\{A_1,A_2,\ldots\}$ are pairwise disjoint and
   \item $\cup_{i=1}^\infty A_i = \Omega$.
   \end{itemize}
   \end{definition}
-  
-  \vspace{0.2in} \pause 
-  
+
+  \vspace{0.2in} \pause
+
   Craps partition examples:
 	\begin{itemize}[<+->]
   \item Win ($A_1$), Loss ($A_2$), Point ($A_3$)
@@ -183,18 +182,18 @@ two dice if we \emph{believe} the probability of each elementary outcome is equa
 \subsection{Conditional probability}
 \frame{\frametitle{Conditional probability}
 	\begin{definition}
-	If $A$ and $B$ are events in $E$, and $P(B)>0$, \pause then the 
-	\alert{conditional probability of A given B}, written $P(A|B)$, \pause is 
+	If $A$ and $B$ are events in $E$, and $P(B)>0$, \pause then the
+	\alert{conditional probability of A given B}, written $P(A|B)$, \pause is
 	\[ P(A|B) = \frac{P(A \mbox{ and } B)}{P(B)} \]
 	\end{definition}
-	
+
 	\vspace{0.2in} \pause
 
   \begin{example}[Craps conditional probability]
 	\[ P(7|\mbox{Win}) \pause
 	= \frac{P(7\mbox{ and Win})}{P(\mbox{Win})} \pause
-	= \frac{P(7)}{P(\mbox{Win})} \pause 
-	= \frac{6/36}{8/36} \pause 
+	= \frac{P(7)}{P(\mbox{Win})} \pause
+	= \frac{6/36}{8/36} \pause
 	= \frac{6}{8} \]
 	\end{example}
 }
@@ -204,10 +203,10 @@ two dice if we \emph{believe} the probability of each elementary outcome is equa
 \frametitle{Law of Total Probability}
 
 \begin{corollary}[Law of Total Probability]
-Let $A_1,A_2,\ldots$ be a partition of $\Omega$ and $B$ is another event in 
+Let $A_1,A_2,\ldots$ be a partition of $\Omega$ and $B$ is another event in
 $\Omega$. \pause
-The \alert{Law of Total Probability} states that 
-\[ 
+The \alert{Law of Total Probability} states that
+\[
 P(B) = \sum_{i=1}^\infty P(B\mbox{ and }A_i) \pause = \sum_{i=1}^\infty P(B|A_i)P(A_i).
 \]
 \end{corollary}
@@ -215,14 +214,14 @@ P(B) = \sum_{i=1}^\infty P(B\mbox{ and }A_i) \pause = \sum_{i=1}^\infty P(B|A_i)
 \pause
 
 \begin{example}[Craps Win Probability]
-Let $A_i$ be the event that the sum of two die rolls is $i$. 
+Let $A_i$ be the event that the sum of two die rolls is $i$.
 \pause
-Then 
-\[ 
-P(\mbox{Win}) \pause = \sum_{i=2}^{12} P(\mbox{Win} \mbox{ and }A_i) \pause 
- = P(7) + P(11) \pause 
- = \frac{6}{36} + \frac{2}{36} 
- = \frac{8}{36} 
+Then
+\[
+P(\mbox{Win}) \pause = \sum_{i=2}^{12} P(\mbox{Win} \mbox{ and }A_i) \pause
+ = P(7) + P(11) \pause
+ = \frac{6}{36} + \frac{2}{36}
+ = \frac{8}{36}
  = \frac{2}{9}.
 \]
 \end{example}
@@ -237,13 +236,13 @@ P(\mbox{Win}) \pause = \sum_{i=2}^{12} P(\mbox{Win} \mbox{ and }A_i) \pause
 	If $A$ and $B$ are events in $E$ with $P(B)>0$, \pause then \alert{Bayes' Rule} states
 	\[ P(A|B) = \frac{P(B|A)P(A)}{P(B)}\onslide<7->{= \frac{P(B|A)P(A)}{P(B|A)P(A)+P(B|A^c)P(A^c)}} \]
 	\end{theorem}
-	
+
 	\vspace{0.48in} \pause
-	
+
 	\begin{example}[Craps Bayes' Rule]
-	\[ P(7|\mbox{Win}) 
+	\[ P(7|\mbox{Win})
 	\pause = \frac{P(\mbox{Win}|7)P(7)}{P(\mbox{Win})} \pause
-	= \frac{1\cdot P(7)}{P(\mbox{Win})} \pause 
+	= \frac{1\cdot P(7)}{P(\mbox{Win})} \pause
 	= \frac{6/36}{8/36} = \frac{6}{8} \]
 	\end{example}
 }
@@ -264,7 +263,7 @@ P(\mbox{Win}) \pause = \sum_{i=2}^{12} P(\mbox{Win} \mbox{ and }A_i) \pause
     P(D|+) &= \frac{P(+|D)P(D)}{P(+)} \pause = \frac{P(+|D)P(D)}{P(+|D)P(D)+P(+|D^c)P(D^c)} \pause
     = \frac{0.94\cdot 0.001}{0.94\cdot 0.001+0.23\cdot 0.999} \pause \\
     &\approx 1/250 \pause \\ \\
-    P(D|-) &\approx 1/10,000 
+    P(D|-) &\approx 1/10,000
     \end{array} \]
 }
 
@@ -274,16 +273,16 @@ P(\mbox{Win}) \pause = \sum_{i=2}^{12} P(\mbox{Win} \mbox{ and }A_i) \pause
 \begin{frame}
 \frametitle{A Bayesian statistician}
 
-Let 
+Let
 \begin{itemize}[<+->]
-\item $y$ be the data we will collect from an experiment, 
+\item $y$ be the data we will collect from an experiment,
 \item $K$ be everything we know for certain about the world (aside from $y$), and
 \item $\theta$ be anything we don't know for certain.
 \end{itemize}
 
 \vspace{0.2in} \pause
 
-My definition of a Bayesian statistician is an individual who makes decisions based on the probability distribution of those things we don't know conditional on what we know, \pause i.e. 
+My definition of a Bayesian statistician is an individual who makes decisions based on the probability distribution of those things we don't know conditional on what we know, \pause i.e.
 \[ p(\theta|y, K). \]
 \end{frame}
 
@@ -294,13 +293,13 @@ My definition of a Bayesian statistician is an individual who makes decisions ba
 \begin{itemize}[<+->]
 \item Parameter estimation:
 \[ p(\theta|y,M) \]
-where $M$ is a model with parameter (vector) $\theta$ and $y$ is data assumed to come from model $M$ with true parameter $\theta_0$. 
+where $M$ is a model with parameter (vector) $\theta$ and $y$ is data assumed to come from model $M$ with true parameter $\theta_0$.
 \item Hypothesis testing/model comparison:
 \[ p(M_j|y,\mathcal{M}) \]
-where $\mathcal{M}$ is a set of models with $M_j \in \mathcal{M}$ for $i=1,2,\ldots$ and $y$ is data assumed to come from some model $M_0\in\mathcal{M}$. 
+where $\mathcal{M}$ is a set of models with $M_j \in \mathcal{M}$ for $i=1,2,\ldots$ and $y$ is data assumed to come from some model $M_0\in\mathcal{M}$.
 \item Prediction:
 \[ p(\tilde{y}|y,M) \]
-where $\tilde{y}$ is unobserved data and $y$ and $\tilde{y}$ are both assumed to come from $M$. \pause Alternatively, 
+where $\tilde{y}$ is unobserved data and $y$ and $\tilde{y}$ are both assumed to come from $M$. \pause Alternatively,
 \[ p(\tilde{y}|y,\mathcal{M}) \]
 where $y$ and $\tilde{y}$ are both assumed to come from some $M_0\in\mathcal{M}$.
 \end{itemize}
@@ -316,13 +315,13 @@ where $y$ and $\tilde{y}$ are both assumed to come from some $M_0\in\mathcal{M}$
 \begin{itemize}
 \item Parameter estimation:
 \[ p(\theta|y) \]
-where $\theta$ is the unknown parameter (vector) and $y$ is the data. 
+where $\theta$ is the unknown parameter (vector) and $y$ is the data.
 \item Hypothesis testing/model comparison:
 \[ p(M_j|y) \]
-where $M_j$ is one of a set of models under consideration and $y$ is data assumed to come from one of those models. 
+where $M_j$ is one of a set of models under consideration and $y$ is data assumed to come from one of those models.
 \item Prediction:
 \[ p(\tilde{y}|y) \]
-where $\tilde{y}$ is unobserved data and $y$ and $\tilde{y}$ are both assumed to come from the same (set of) model(s). 
+where $\tilde{y}$ is unobserved data and $y$ and $\tilde{y}$ are both assumed to come from the same (set of) model(s).
 \end{itemize}
 }
 \end{frame}
@@ -334,12 +333,12 @@ where $\tilde{y}$ is unobserved data and $y$ and $\tilde{y}$ are both assumed to
 \begin{frame}
 \frametitle{Bayes' Rule}
 
-Bayes' Rule applied to a partition $P=\{A_1,A_2,\ldots\}$, 
+Bayes' Rule applied to a partition $P=\{A_1,A_2,\ldots\}$,
 \[ P(A_i|B) = \frac{P(B|A_i)P(A_i)}{P(B)} = \frac{P(B|A_i)P(A_i)}{\sum_{i=1}^\infty P(B|A_i)P(A_i)} \]
 
 \vspace{0.2in} \pause
 
-Bayes' Rule also applies to probability density (or mass) functions, e.g. 
+Bayes' Rule also applies to probability density (or mass) functions, e.g.
 \[ p(\theta|y) =\frac{p(y|\theta)p(\theta)}{p(y)} = \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta}  \]
 where the integral plays the role of the sum in the previous statement.
 \end{frame}
@@ -352,29 +351,28 @@ where the integral plays the role of the sum in the previous statement.
 \frametitle{Parameter estimation}
 Let $y$ be data from some model with unknown parameter $\theta$. \pause Then
 \[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)}= \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta} \]
-\pause and we use the following terminology 
+\pause and we use the following terminology
 \begin{center}
 \begin{tabular}{ll}
 Terminology & Notation \\
-\hline 
+\hline
 Posterior & $p(\theta|y)$ \\
 Prior & $p(\theta)$ \\
 Model & $p(y|\theta)$ \\
-Prior predictive distribution & $p(y)$ \\
-(marginal likelihood) & \\
+Prior predictive distribution (marginal likelihood) & $p(y)$ \\
 \hline
 \end{tabular}
 \end{center}
 
 \vspace{0.1in} \pause
 
-If $\theta$ is discrete (continuous), 
+If $\theta$ is discrete (continuous),
 
 \hspace{0.2in} then $p(\theta)$ and $p(\theta|y)$ are probability mass (density) functions.
 
 \pause
 
-If $y$ is discrete (continuous), 
+If $y$ is discrete (continuous),
 
 \hspace{0.2in}  then $p(y|\theta)$ and $p(y)$ are probability mass (density) functions.
 \end{frame}
@@ -386,19 +384,19 @@ If $y$ is discrete (continuous),
 \subsection{Example: exponential model}
 \begin{frame}
 \frametitle{Example: exponential model}
-Let $Y|\theta\sim Exp(\theta)$, then this defines the likelihood, \pause i.e. 
+Let $Y|\theta\sim Exp(\theta)$, then this defines the likelihood, \pause i.e.
 \[ p(y|\theta) = \theta e^{-\theta y}. \]
 \pause
-Let's assume a convenient prior $\theta \sim Ga(a, b)$, \pause then 
+Let's assume a convenient prior $\theta \sim Ga(a, b)$, \pause then
 \[ p(\theta) = \frac{b^{a}}{\mathrm{\Gamma}(a)} \theta^{a-1} e^{-b \theta}. \]
-\pause 
-The prior predictive distribution is 
+\pause
+The prior predictive distribution is
 \[ p(y) = \int p(y|\theta)p(\theta) d\theta = \frac{b^{a}}{\mathrm{\Gamma}(a)}\frac{\mathrm{\Gamma}(a+1)}{(b+y)^{a+1}}. \]
-\pause 
-The posterior is 
+\pause
+The posterior is
 \[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)} = \frac{(b+y)^{a+1}}{\mathrm{\Gamma}(a+1)} \theta^{a+1-1} e^{-(b+y) \theta}, \]
 \pause
-thus $\theta|y \sim Ga(a+1,b+y)$. 
+thus $\theta|y \sim Ga(a+1,b+y)$.
 \end{frame}
 
 \begin{frame}[fragile]
@@ -408,55 +406,59 @@ thus $\theta|y \sim Ga(a+1,b+y)$.
 a = 1; b = 1; y = 0.5
 @
 
-<<>>=
-d = data.frame(x = seq(0,3,by=0.1)) %>% 
-  mutate(prior = dgamma(x,a,b),
-         "normalized likelihood" = dgamma(x, 1, y),
-         posterior = dgamma(x, a+length(y), b+sum(y)))
+<<posterior-single-datum>>=
+d <- data.frame(theta = seq(0, 3, length.out = 1001)) %>%
+  mutate(prior                   = dgamma(theta, a, b),
+         "normalized likelihood" = dgamma(theta, 1, y),
+         posterior               = dgamma(theta, a + length(y), b + sum(y))) %>%
+  pivot_longer(-theta,
+               names_to = "Distribution",
+               values_to = "density")
 
-m <- d %>% gather(Distribution, density, -x)
-
-ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
+ggplot(d, aes(x = theta, y = density,
+              group = Distribution,
+              linetype = Distribution,
+              color= Distribution)) +
   geom_line() +
-  theme_bw()
+  labs(x = expression(theta))
 @
 \end{frame}
 
 % Consider eliminating this as well as the more data example
 \begin{frame}
 \frametitle{A shortcut}
-If 
+If
 \[ p(y) = \int p(y|\theta)p(\theta) d\theta < \infty, \]
-\pause 
+\pause
 then we can actually use the following to find the posterior
 \[ p(\theta|y) \propto p(y|\theta) p(\theta) \]
 \pause
-where the $\propto$ signifies that terms not involving $\theta$ (or anything on the left of the conditioning bar) are irrelevant and can be dropped. 
+where the $\propto$ signifies that terms not involving $\theta$ (or anything on the left of the conditioning bar) are irrelevant and can be dropped.
 
 \vspace{0.2in} \pause
 
 In the exponential example
-\[ 
-p(\theta|y) 
-\propto p(y|\theta)p(\theta) 
-\propto \theta e^{-\theta y} \theta^{a-1} e^{-b \theta} 
-= \theta^{a+1-1} e^{-(b+y)\theta} 
+\[
+p(\theta|y)
+\propto p(y|\theta)p(\theta)
+\propto \theta e^{-\theta y} \theta^{a-1} e^{-b \theta}
+= \theta^{a+1-1} e^{-(b+y)\theta}
 \]
-\pause 
-where we can recognize $p(\theta|y)$ as the \alert{kernel} of a $Ga(a+1, b+y)$ distribution \pause and thus $\theta|y \sim Ga(a+1, b+y)$ and $p(y)<\infty$. 
+\pause
+where we can recognize $p(\theta|y)$ as the \alert{kernel} of a $Ga(a+1, b+y)$ distribution \pause and thus $\theta|y \sim Ga(a+1, b+y)$ and $p(y)<\infty$.
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Independent data}
 
-Suppose $Y_i|\theta \stackrel{ind}{\sim} Exp(\theta)$ for $i=1,\ldots,n$ and $y=(y_1,\ldots,y_n)$, then 
+Suppose $Y_i|\theta \stackrel{ind}{\sim} Exp(\theta)$ for $i=1,\ldots,n$ and $y=(y_1,\ldots,y_n)$, then
 \[ p(y|\theta) = \prod_{i=1}^n p(y_i|\theta) = \theta^n e^{-\theta n\overline{y}} \]
 \pause
-Then 
+Then
 \[ p(\theta|y) \propto p(y|\theta)p(\theta) \propto \theta^{a+n-1} e^{-\left(b+n\overline{y}\right) \theta}\]
 \vspace{0.1in} \pause
-where $n\overline{y} = \sum_{i=1}^n y_i$. We recognize this as the kernel of a gamma, i.e. $\theta|y \sim Ga(a+n, b+n\overline{y})$. 
+where $n\overline{y} = \sum_{i=1}^n y_i$. We recognize this as the kernel of a gamma, i.e. $\theta|y \sim Ga(a+n, b+n\overline{y})$.
 
 \end{frame}
 
@@ -468,17 +470,21 @@ where $n\overline{y} = \sum_{i=1}^n y_i$. We recognize this as the kernel of a g
 a = 1; b = 1; set.seed(20141121); y = rexp(10, 2)
 @
 
-<<>>=
-d = data.frame(x = seq(0,5,by=0.1)) %>% 
-  mutate(prior = dgamma(x,a,b),
-         "normalized likelihood" = dgamma(x, length(y), sum(y)),
-         posterior = dgamma(x, a+length(y), b+sum(y)))
+<<posterior-multiple-data>>=
+d = data.frame(theta = seq(0, 2/mean(y), length.out = 1001)) %>%
+  mutate(prior                   = dgamma(theta, a, b),
+         "normalized likelihood" = dgamma(theta, length(y), sum(y)),
+         posterior               = dgamma(theta, a + length(y), b + sum(y))) %>%
+  pivot_longer(-theta,
+               names_to = "Distribution",
+               values_to = "density")
 
-m <- d %>% gather(Distribution, density, -x)
-
-ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
+ggplot(d, aes(x = theta, y = density,
+              group = Distribution,
+              linetype = Distribution,
+              color = Distribution)) +
   geom_line() +
-  theme_bw()
+  labs(x = expression(theta))
 @
 \end{frame}
 
@@ -491,18 +497,18 @@ So, Bayes' Rule provides a formula for updating from prior beliefs to our poster
 
 \[ p(\theta|y) = \frac{p(y|\theta)}{p(y)}p(\theta) \propto p(y|\theta)p(\theta) \]
 
-\pause Suppose we gather $y_1,\ldots,y_n$ sequentially (and we assume $y_i$ independent conditional on $\theta$), \pause then we have 
+\pause Suppose we gather $y_1,\ldots,y_n$ sequentially (and we assume $y_i$ independent conditional on $\theta$), \pause then we have
 
 \[ \begin{array}{rl}
 p(\theta|y_1) & \propto p(y_1|\theta)p(\theta) \pause \\
-p(\theta|y_1,y_2) & \propto p(y_2|\theta)p(\theta|y_1) 
+p(\theta|y_1,y_2) & \propto p(y_2|\theta)p(\theta|y_1)
 \end{array} \]
-\pause 
-and 
+\pause
+and
 \[ p(\theta|y_1,\ldots,y_i) \propto p(y_i|\theta)p(\theta|y_1,\ldots,y_{i-1}) \]
 
 \pause
-So Bayesian learning is 
+So Bayesian learning is
 \[ p(\theta) \to p(\theta|y_1) \to p(\theta|y_1,y_2) \to \cdots \to p(\theta|y_1,\ldots,y_n). \]
 \end{frame}
 
@@ -513,10 +519,10 @@ So Bayesian learning is
 
 Formally, to compare models (or average over models), we use
 \[ p(M_j|y) \propto p(y|M_j)p(M_j) \]
-\pause where 
+\pause where
 \begin{itemize}[<+->]
 \item $p(y|M_j)$ is the likelihood of the data when model $M_j$ is true
-\item $p(M_j)$ is the prior probabability for model $M_j$ 
+\item $p(M_j)$ is the prior probabability for model $M_j$
 \item $p(M_j|y)$ is the posterior probability for model $M_j$
 \end{itemize}
 
@@ -534,16 +540,16 @@ Thus, a Bayesian approach provides a natural way to learn about models, i.e. $p(
 
 Let $y$ be observed data and $\tilde{y}$ be unobserved data from a model with parameter $\theta$
 \pause
-where $\tilde{y}$ is conditionally independent of $y$ given $\theta$ 
+where $\tilde{y}$ is conditionally independent of $y$ given $\theta$
 \pause
 (true for many of the models we will discuss this semester)
 \pause
-, then 
+, then
 \[ \begin{array}{rl}
-p(\tilde{y}|y) 
+p(\tilde{y}|y)
 &= \int p(\tilde{y},\theta|y) d\theta \pause \\
 &= \int p(\tilde{y}|\theta,y) p(\theta|y) d\theta \pause \\
-&= \int p(\tilde{y}|\theta) p(\theta|y) d\theta 
+&= \int p(\tilde{y}|\theta) p(\theta|y) d\theta
 \end{array} \]
 \pause where $p(\theta|y)$ is the posterior we obtained using Bayesian parameter estimation techniques.
 \end{frame}
@@ -552,10 +558,10 @@ p(\tilde{y}|y)
 \begin{frame}
 \frametitle{Example: exponential distribution}
 
-From previous, let $y_i \stackrel{ind}{\sim} Exp(\theta)$ and $\theta \sim Ga(a,b)$, then $\theta|y \sim Ga(a+n,b+n\overline{y})$. \pause Suppose we are interested in predicting a new value $\tilde{y}\sim Exp(\theta)$ \pause (conditionally independent of $y=(y_1,\ldots,y_n)$ given $\theta$). \pause Then we have 
+From previous, let $y_i \stackrel{ind}{\sim} Exp(\theta)$ and $\theta \sim Ga(a,b)$, then $\theta|y \sim Ga(a+n,b+n\overline{y})$. \pause Suppose we are interested in predicting a new value $\tilde{y}\sim Exp(\theta)$ \pause (conditionally independent of $y=(y_1,\ldots,y_n)$ given $\theta$). \pause Then we have
 
 \[ \begin{array}{rl}
-p(\tilde{y}|y) 
+p(\tilde{y}|y)
 &= \int p(\tilde{y}|\theta) p(\theta|y) d\theta \pause \\
 &= \int \theta e^{-\theta\tilde{y}} \frac{(b+n\overline{y})^{a+n}}{\mathrm{\Gamma}(a+1)} \theta^{a+n-1} e^{-\theta (b+n\overline{y})} d\theta \pause \\
 &= \frac{(b+n\overline{y})^{a+n}}{\mathrm{\Gamma}(a+n)} \int \theta^{a+n+1-1} e^{-\theta (b+n\overline{y}+\tilde{y})} d\theta \pause \\
@@ -568,11 +574,33 @@ This is the \href{http://en.wikipedia.org/wiki/Lomax_distribution}{Lomax distrib
 
 
 
+\begin{frame}[fragile]
+\frametitle{}
+
+<<posterior-predictive>>=
+lomax <- function(x, a, b, log = FALSE) {
+  p <- log(a) + a * log(b) - (a+1) * log(x + b)
+  if (!log) p <- exp(p)
+  return(p)
+}
+
+d <- data.frame(ytilde = seq(0, 2/mean(y), length.out = 1001)) %>%
+  mutate("posterior predictive" = lomax(ytilde, a + length(y), b + sum(y)))
+
+ggplot(d, aes(x = ytilde, y = `posterior predictive`)) +
+  geom_line() +
+  labs(x = expression(tilde(y)))
+@
+\end{frame}
+
+
+
+
 \section{What is probability?}
 \begin{frame}
 \frametitle{What is probability?}
 
-\pause 
+\pause
 
 Consider the following three typical uses of the word ``probability'':
 \begin{itemize}[<+->]
@@ -587,9 +615,9 @@ Consider the following three typical uses of the word ``probability'':
 \begin{frame}
 \frametitle{Win on the come-out roll in craps}
 
-To win on the come-out roll in craps requires that the sum of two fair six-sided die is either a 7 or an 11. \pause We calculated this probability earlier (based on equal probabilities of all simple outcomes) to be 2/9. \pause We likely meant that if we were to repeatedly roll the die, the long term proportion of wins (7s and 11s) would be 2/9\pause, i.e. 
-\[ \mbox{if }X_i = \left\{ 
-\begin{array}{ll} 1 & \mbox{if win on roll $i$} \\ 0 & \mbox{otherwise} \end{array} 
+To win on the come-out roll in craps requires that the sum of two fair six-sided die is either a 7 or an 11. \pause We calculated this probability earlier (based on equal probabilities of all simple outcomes) to be 2/9. \pause We likely meant that if we were to repeatedly roll the die, the long term proportion of wins (7s and 11s) would be 2/9\pause, i.e.
+\[ \mbox{if }X_i = \left\{
+\begin{array}{ll} 1 & \mbox{if win on roll $i$} \\ 0 & \mbox{otherwise} \end{array}
 \right.
 \pause\quad\mbox{then}\quad \lim_{n\to\infty} \frac{\sum_{i=1}^n X_i}{n} \to \frac{2}{9}.
 \]
@@ -640,14 +668,14 @@ Instead, we only have our own uncertainty about whether the child has Down's syn
 \begin{frame}
 \frametitle{Down's syndrome}
 
-Also, why are we only conditioning on the positive test result, shouldn't we condition on everything else that is important, e.g. age. \pause Then the probability we care about is 
+Also, why are we only conditioning on the positive test result, shouldn't we condition on everything else that is important, e.g. age. \pause Then the probability we care about is
 
 \[ P(D|+,\mbox{mother is 33}) = \frac{P(+|D,\mbox{mother is 33})P(D|\mbox{mother is 33})}{P(+|\mbox{mother is 33})}\]
 Now the specificity, sensitivity, and prevalence are all the relative frequency of the event for this subpopulation.
 
 \vspace{0.2in} \pause
 
-But what about other measured variables, e.g. Caucasian, lives in MN, of Scandanavian descent, etc. \pause Taken to its logical extreme, each probability becomes a statement about one single event\pause, e.g. for this individual. 
+But what about other measured variables, e.g. Caucasian, lives in MN, of Scandanavian descent, etc. \pause Taken to its logical extreme, each probability becomes a statement about one single event\pause, e.g. for this individual.
 
 \end{frame}
 
@@ -687,7 +715,7 @@ Coherence of bets. The probability $p$ you assign to an event $E$ is the fractio
 
 \vspace{0.2in} \pause
 
-Rational individuals can differ about the probability of an event by having different knowledge, i.e. $P(E|K_1) \ne P(E|K_2)$. \pause But given enough data, we might have $P(E|K_1,y) \approx P(E|K_2,y)$. 
+Rational individuals can differ about the probability of an event by having different knowledge, i.e. $P(E|K_1) \ne P(E|K_2)$. \pause But given enough data, we might have $P(E|K_1,y) \approx P(E|K_2,y)$.
 
 \end{frame}
 
@@ -731,7 +759,7 @@ Why do a Bayesian analysis?
 \begin{itemize}[<+->]
 \item Incorporate prior knowledge via $p(\theta)$
 \item Coherent, i.e. everything follows from specifying $p(\theta|y)$
-\item Interpretability of results, e.g. the probability the parameter is in 
+\item Interpretability of results, e.g. the probability the parameter is in
 $(L,U)$ is 95\%
 \end{itemize}
 
@@ -739,10 +767,10 @@ $(L,U)$ is 95\%
 
 Why not do a Bayesian analysis?
 \begin{itemize}[<+->]
-\item Need to specify $p(\theta)$ 
+\item Need to specify $p(\theta)$
 \item Computational cost
-\item Does not guarantee coverage, i.e. how well do the procedures work over all 
-their uses (although \emph{frequentist matching} priors are specifically 
+\item Does not guarantee coverage, i.e. how well do the procedures work over all
+their uses (although \emph{frequentist matching} priors are specifically
 designed to ensure frequentist properties, e.g. coverage)
 \end{itemize}
 \end{frame}
