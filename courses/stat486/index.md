@@ -21,6 +21,9 @@ Introduction to Statistical Computing at
 The required textbook for this course is 
 
 - [R for Data Science](http://r4ds.had.co.nz/)
+- [R for Data Science (2nd)](https://r4ds.hadley.nz/)
+
+There is now second edition of this book 
 
 ### Additional free textbooks
 
@@ -31,11 +34,11 @@ The required textbook for this course is
 
 ## Software 
 
-We will be using the Statistical Software [R](https://www.r-project.org/). 
+We will be using the statistical software [R](https://www.r-project.org/). 
 I will be using RStudio as the interface to [R](https://www.r-project.org/). 
 Although both will be available on lab computers, I suggest you install 
 [R](https://www.r-project.org/) and [RStudio](https://www.rstudio.com/) 
-on your own laptop or desktop (or both).
+on your own laptop or desktop.
 
 Install links:
 
@@ -53,7 +56,12 @@ Modern statistical computing. Topics may include: data management; spread sheets
 
 ## Course Objectives
 
-- 
+By the end of this course, students will be able to 
+
+- Wrangle data and construct visualizations to demonstrate scientific phenomenon.
+- Implement a data management pipeline, including relevant feed back loops in order to obtain a reproducible workflow.
+- Construct R functions and scripts to obtain a stated input-output goal.
+- Produce a Monte Carlo simulation study to demonstrate a theoretical probability result.
 
 ## Prerequisite
 
