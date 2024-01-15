@@ -14,6 +14,12 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r metadata, include=FALSE}
+# Author:  Jarad Niemi
+# Date:    2024-01-15
+# Purpose: Demonstrate use of R for probability calculations
+```
+
 [R code](01-probability.R)
 
 # Probability
@@ -72,6 +78,11 @@ i.e. how many ways are there to pull $k$ items out of a set of $n$ items?
 The number of combinations are 
 $$C(n,k) = {n\choose k} = \frac{n!}{(n-k)!k!}.$$
 
+```{r combination}
+# Example combination: C(10,4)
+choose(10, 4) 
+```
+
 ### Permutations
 
 Another application is a *permutation*, 
@@ -81,11 +92,17 @@ $$P(n,k) = n(n-1)(n-2)\cdots(n-k+1) = \frac{n!}{(n-k)!}.$$
 A common question is when $n=k$, i.e. you are rearranging all $n$ items. 
 In this case, there are $n!$ permutations.
 
+```{r permutation}
+# Example permutation: P(10,4)
+factorial(10) / factorial(4)
+```
+
 ### Calculating probabilities
 
 A common application of these ideas is to calculate probabilities for the sum of
 two 6-sided dice.
-```{r}
+```{r dice-probabilities}
+# Probabilities for the sum of two 6-sided dice
 d <- data.frame(sum = 2:12, probability = c(1:6,5:1)/36)
 plot(probability ~ sum, data = d)
 ```
@@ -100,7 +117,8 @@ but the second card delt must match the rank of the first card.
 Since there are 3 cards left that match the rank and there are 51 cards left
 in the deck, the probability is 
 
-```{r}
+```{r card-probability}
+# Probability of a pair when being delt two cards
 3/51
 ```
 
@@ -113,7 +131,8 @@ we introduce the idea of a random variable.
 The basic definition of a *random variable* is that it is a function of the
 outcome of an experiment to the real numbers, i.e.
 $$X: \Omega \to \mathbb{R}.$$
-If the image of $X$ is countable, then $X$ is a discrete random variable.
+If the image of $X$ is countable or finite, 
+then $X$ is a discrete random variable.
 Otherwise, $X$ is a continuous random variable. 
 
 
@@ -153,8 +172,53 @@ The probability mass function is
 $$p(y) = {n\choose y}p^y(1-p)^{n-y}, \quad y=0,1,2,\ldots,n.$$
 If $n=1$, then this is also referred to as a *Bernoulli* random variable.
 
-The expected value of a binomial random variable is $E[Y] = np$ and the variance
-is $Var[Y] = np(1-p)$. 
+The expected value (or mean) of a binomial random variable is $E[Y] = np$
+and the variance is $Var[Y] = np(1-p)$. 
+
+#### Example
+
+Suppose $Y \sim Bin(25, 0.9)$, i.e. $Y$ is a binomial random variable with 
+$25$ attempts and probability of success $0.9$. 
+
+```{r binomial-parameters}
+
+
+#############################################################################
+# Binomial
+#############################################################################
+
+
+# Binomial parameters
+n <- 25
+p <- 0.9
+
+# Expected value (mean)
+n*p
+
+# Variance
+n*p*(1-p)
+```
+
+What is the probability that $Y$ is equal to $24$?
+
+```{r binomial-pmf}
+# Calculate probability using probability mass function
+dbinom(24, size = n, prob = p)
+```
+
+What is the probability that $Y$ is less than $23$?
+
+```{r binomial-cdf}
+# Calculate probability using the cumulative distribution function
+# Remember P(Y < y) = P(Y <= y-1)
+pbinom(23 - 1, size = n, prob = p)
+
+# Alternatively using the probability mass function
+sum(dbinom(0:22, size = n, prob = p))
+```
+
+
+
 
 
 ### [Poisson](#poisson)
@@ -167,10 +231,66 @@ For example,
 - the number of blades of grass in a square meter, or
 - the number of clicks on a website in a minute. 
 
-Let $Y\sim Po(r)$ indicate a Poisson random variable with *rate* $r>0$.
+Let $Y\sim Po(\lambda)$ indicate a Poisson random variable with *rate* $\lambda>0$.
 The probability mass function is 
-$$p(y) = \frac{e^{-r} r^y}{y!}, \quad y = 0,1,2,\ldots$$
-The expected value is $E[Y] = r$ and the variance is $Var[Y] = r$. 
+$$p(y) = \frac{e^{-\lambda} \lambda^y}{y!}, \quad y = 0,1,2,\ldots$$
+The expected value (or mean) is $E[Y] = \lambda$ 
+and the variance is $Var[Y] = \lambda$. 
+
+#### Example
+
+Suppose $Y \sim Po(5.4)$, i.e. $Y$ is a Poisson random variable with 
+rate $5.4$.
+
+```{r poisson-parameter}
+
+
+#############################################################################
+# Poisson
+#############################################################################
+
+# Poisson parameter
+rate <- 5.4
+
+# Mean
+rate
+
+# Variance
+rate
+```
+
+What is the probability $Y$ is $4$?
+
+```{r poisson-pmf}
+# Calculate Poisson probability using probability mass function
+dpois(4, lambda = rate)
+```
+
+What is the probability $Y$ is above 3 and below 9?
+
+Note that $P(3 < Y < 9) = P(Y \le 8) - P(Y \le 3)$.
+This allows us to use the cumulative distribution function. 
+
+```{r poisson-range-cdf}
+# Calculate probability of a range using the cumulative distribution function
+ppois(8, lambda = rate) - ppois(3, lambda = rate) # OR
+diff(ppois(c(3,8), lambda = rate))
+```
+
+Also note that 
+$P(3 < Y < 9) = P(Y = 4) + P(Y = 5) + P(Y = 6) + P(Y = 7) + P(Y = 8)$
+due to Kolmogorov's third axiom. 
+
+```{r poisson-range-pmf}
+# Calculate probability of a range using the sum of probability mass function values
+dpois(4, lambda = rate) + 
+  dpois(5, lambda = rate) +
+  dpois(6, lambda = rate) +
+  dpois(7, lambda = rate) +
+  dpois(8, lambda = rate)   # OR
+
+sum(dpois(4:8, lambda = rate))
+```
 
 
 ## Continuous
@@ -179,7 +299,8 @@ Continuous random variables have an image that is uncountably infinite and thus
 the probability of every value of the random variable is 0. 
 To calculate the probability of the random variable falling into an interval
 $(a,b)$, we integrate (or find the area under) the *probability density function* between $a$ and $b$. 
-Continuous random variables also have a *cumulative distribution function* that provides the probability the
+Continuous random variables also have a 
+*cumulative distribution function* that provides the probability the
 random variable is less than or equal to a particular value, 
 i.e. $F(x) = P(X \le x) = P(X < x)$. 
 
@@ -189,24 +310,107 @@ i.e. $F(x) = P(X \le x) = P(X < x)$.
 
 The most important continuous random variable is the normal (or Gaussian)
 random variable. 
-Let $Y\sim N(m,C)$ be a normal random variable with *mean* $m$ and *variance*
-$C>0$. 
-The probability density function for a normal random variable is 
-$$f(y) = \frac{1}{\sqrt{2\pi C}} \exp\left( -\frac{1}{2C} (y-m)^2\right).$$
+Let $Y\sim N(\mu,\sigma^2)$ be a normal random variable with *mean* $\mu$ and 
+*variance* $\sigma^2>0$. 
+The probability density function (PDF) for a normal random variable is 
+$$f(y) = \frac{1}{\sqrt{2\pi \sigma^2}} \exp\left( -\frac{1}{2\sigma^2} (y-\mu)^2\right).$$
 This is the canonical *bell-shaped curve*. 
+If $\mu=0$ and $\sigma^2=1$, we have a *standard normal* random variable.
 
-```{r normal_density}
-curve(dnorm, -3, 3)
+```{r normal-density}
+
+
+#############################################################################
+# Normal
+#############################################################################
+
+# Standard normal density, Y ~ N(0,1)
+mu    <- 0
+sigma <- 1 # Standard deviation
+
+# Probability density function (PDF)
+curve(dnorm(x, mean = mu, sd = sigma), from = mu-3*sigma, to = mu+3*sigma)
 ```
 
-The expectation is $E[Y] = m$ and the variance is $Var[Y] = C$. 
-While the variance is mathematically more intuitive, 
-the standard deviation (square root of the variance) is more relevant because
+The expectation is $E[Y] = \mu$ and the variance is $Var[Y] = \sigma^2$. 
+While the variance is mathematically more convenient, 
+the standard deviation ($\sigma$) is more intuitive because
+
 - 68\% of normal random variables are within 1 standard deviation of the mean
 - 95\% of normal random variables are within 2 standard deviations of the mean
 - 99.7\% of normal random variables are within 3 standard deviations of the mean.
 
-If $m=0$ and $C=1$, we have a *standard normal* random variable.
+The cumulative distribution function (CDF) is the probability of being 
+less than (or equal to) some value.
+For a continuous random variable,
+this is the integral from negative infinity up to the value. 
+
+$$P(Y \le y) = P(Y < y) = \int_{-\infty}^y f(x) dx.$$
+```{r normal-probability}
+# P(Y < 0.5)
+xmax <- 0.5
+
+# Using CDF
+pnorm(xmax, mean = mu, sd = sigma) # OR
+integrate(dnorm, -Inf, xmax, mean = mu, sd = sigma)
+```
+
+This can be visualized as the area under the PDF up to $y$.
+For example, here is the area 
+
+```{r normal-probability-visualization}
+# Visualizing the area under the PDF
+x <- seq(from = mu - 3*sigma, to = mu + 3*sigma, length = 1001)
+y <- dnorm(x, mean = mu, sd = sigma)
+
+plot(x, y, type = "l")
+polygon(c( x[x<=xmax], xmax, min(x)), c(y[x<=xmax], 0, 0), col="red")
+```
+
+
+
+#### Example
+
+Suppose $Y \sim N(3, 4^2)$, i.e. $Y$ is a normal distribution with mean $3$ 
+and variance $4^2 = 16$ (or, equivalently, standard deviation $4$).
+
+```{r normal-parameters}
+# Normal parameters
+mu    <- 3
+sigma <- 4
+
+# Mean
+mu
+
+# Variance
+sigma^2
+
+# Standard deviation
+sigma
+```
+
+What is the probability that $Y = 2$? 
+This is a trick question, as the answer is 0. 
+For any continuous random variable, the answer is 0. 
+
+What is the value of the probability density function for $Y=2$?
+
+```{r normal-pdf}
+# What is the probability density function for Y=2?
+dnorm(2, mean = mu, sd = sigma)
+```
+
+What is the probability this random variable is between -0.5 and 2?
+
+```{r normal-cdf}
+# Probability of a range using CDF
+pnorm(2, mean = mu, sd = sigma) - pnorm(-0.5, mean = mu, sd = sigma)
+diff(pnorm(c(-0.5, 2), mean = mu, sd = sigma))
+
+# Probability of a range using PDF
+integrate(dnorm, lower = -0.5, upper = 2)
+```
+
 
 #### Central Limit Theorem
 
@@ -215,11 +419,11 @@ Limit Theorem (CLT).
 The CLT states that sums and averages of independent, identically distributed
 random variables (with a finite variance) have an approximate normal distribution for large enough sample sizes.
 
-Specifically, if $X_1,X_2,\ldots,X_n$ are independent with $E[X_i] = m$ and 
-$Var[X_i] = V$ for all $i$, then
-$$\overline{X} \stackrel{\cdot}{\sim} N(m, V/n)$$
+Specifically, if $X_1,X_2,\ldots,X_n$ are independent with $E[X_i] = \mu$ and 
+$Var[X_i] = \sigma^2$ for all $i$, then
+$$\overline{X} \stackrel{\cdot}{\sim} N(\mu, \sigma^2/n)$$
 and 
-$$S = n\overline{X} \stackrel{\cdot}{\sim} N(nm, nV)$$
+$$S = n\overline{X} \stackrel{\cdot}{\sim} N(n\mu, n\sigma^2)$$
 for sufficiently large $n$ where $\stackrel{\cdot}{\sim}$ means
 *approximately distributed*.
 
@@ -279,7 +483,7 @@ Then, we will typically model binary variables using the Bernoulli distribution.
 ## Quantitative
 
 Quantitative are numeric. 
-The two main types of quantitative data are continuous and count. 
+The two most common types of quantitative data are continuous and count. 
 
 ### Continuous
 
