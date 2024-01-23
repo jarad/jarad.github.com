@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[aspectratio=169,handout]{beamer}
 
 \usepackage{verbatim,multicol,amsmath}
 
@@ -12,7 +12,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -23,13 +23,8 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-#library(plyr)
-library("dplyr")
-library("tidyr")
-library("ggplot2")
+library("tidyverse"); theme_set(theme_bw())
 library("pscl") 
-#library(xtable)
-#library(Sleuth3)
 @
 
 <<set_seed, echo=FALSE>>=
@@ -214,7 +209,7 @@ so it may seem that a reasonable approach to a default prior is to replace $p(\t
 \begin{frame}[fragile]
 \frametitle{Posterior distribution}
 
-<<data>>=
+<<data, fig.width = 5.5>>=
 n = 10
 y = 3
 a = b = 1
@@ -224,11 +219,18 @@ d = data.frame(x = seq(0,1,by=0.01)) %>%
          posterior = dbeta(x, a+y, b+n-y))
 
 m <- d %>%
-  tidyr::gather(Distribution, density, -x)
+  pivot_longer(prior:posterior, 
+               names_to = "Distribution",
+               values_to = "density")
 
-ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
+ggplot(m, 
+       aes(
+         x = x, 
+         y = density, 
+         group = Distribution, 
+         linetype = Distribution, 
+         color = Distribution)) +
   geom_line() +
-  theme_bw() + 
   theme(legend.position="bottom") 
 @
 {\tiny Try it yourself at \url{https://jaradniemi.shinyapps.io/one_parameter_conjugate/}.}
@@ -310,10 +312,16 @@ estimates = data.frame(mean = (a+y)/(a+b+n),
 
 ggplot(d, aes(x, posterior, group = 1)) +
   geom_line() +
-  geom_vline(data = estimates %>% gather(estimator, value), 
-             aes(xintercept=value, color=estimator, linetype=estimator),
+  geom_vline(data = estimates %>% 
+               pivot_longer(
+                 everything(),
+                 names_to = "estimator", 
+                 values_to = "value"), 
+             aes(
+               xintercept = value, 
+               color = estimator, 
+               linetype = estimator),
              show.legend = TRUE) +
-  theme_bw() +
   theme(legend.position="bottom")
 @
 
@@ -346,28 +354,43 @@ ggplot(d, aes(x, posterior, group = 1)) +
 
 <<intervals, dependson='data'>>=
 library("pscl") 
-hpd = betaHPD(a+y,b+n-y,.95)
+hpd = pscl::betaHPD(a+y, b+n-y, 0.95)
 
-interval = data.frame(type = c('equal-tail',
-                               'lower tail',
-                               'higher tail',
-                               'highest posterior density (HPD)'),
-                      lb = c(qbeta(.025, a+y, b+n-y),
-                             0,
-                             qbeta(.05, a+y, b+n-y),
-                             hpd[1]),
-                      ub = c(qbeta(.975, a+y, b+n-y),
-                             qbeta(.95, a+y, b+n-y),
-                             1,
-                             hpd[2]),
-                      y = (1:4)/10)
+interval = tibble::tribble(
+  ~type, ~lb, ~ub, ~y,
+  "equal", qbeta(.025, a+y, b+n-y), qbeta(.975, a+y, b+n-y), 0.1,
+  "lower", 0, qbeta(.95, a+y, b+n-y), 0.2,
+  "upper", qbeta(.05, a+y, b+n-y), 1, 0.3,
+  "HPD", hpd[1], hpd[2], 0.4
+)
+# interval = data.frame(type = c('equal-tail',
+#                                'lower tail',
+#                                'higher tail',
+#                                'highest posterior density (HPD)'),
+#                       lb = c(qbeta(.025, a+y, b+n-y),
+#                              0,
+#                              qbeta(.05, a+y, b+n-y),
+#                              hpd[1]),
+#                       ub = c(qbeta(.975, a+y, b+n-y),
+#                              qbeta(.95, a+y, b+n-y),
+#                              1,
+#                              hpd[2]),
+#                       y = (1:4)/10)
 
-ggplot(d, aes(x, posterior, group=1)) +
+ggplot(d, 
+       aes(x = x, 
+           y = posterior, 
+           group = 1)) +
   geom_line(color='gray') +
-  geom_segment(data = interval, aes(x = lb, xend = ub, y=y, yend=y, 
-                                    color = type, linetype = type)) + 
-  theme_bw() +
-  theme(legend.position="bottom") 
+  geom_segment(data = interval, 
+               aes(
+                 x = lb, 
+                 xend = ub, 
+                 y = y, 
+                 yend = y,          
+                 color = type, 
+                 linetype = type)) + 
+  theme(legend.position = "bottom") 
 @
 
 \end{frame}
@@ -380,11 +403,19 @@ ggplot(d, aes(x, posterior, group=1)) +
 
 An estimate of the full posterior can be obtained via simulation, i.e. 
 
-<<simulation, dependson='data', fig.width=7>>=
-sim = data.frame(x = rbeta(10000, a+y, b+n-y))
+<<simulation, dependson='data', echo=TRUE>>=
+sim = data.frame(x = rbeta(10000, shape1 = a + y, shape2 = b + n - y))
+@
+
+<<simulation-plot, dependson='simulation', fig.width = 7>>=
 ggplot(sim, aes(x=x)) + 
-  geom_histogram(aes(y=..density..), binwidth=.01) + 
-  stat_function(color = 'red', fun=dbeta, args=list(shape1=a+y, shape2=b+n-y)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth=.01) + 
+  stat_function(color = 'red', 
+                fun = dbeta, 
+                args = list(shape1 = a+y, 
+                          shape2 = b+n-y)) +
+  labs(x = expression(theta), 
+       y = expression("p" * (theta ~ "|" ~ y))) +
   theme_bw()
 @
 
@@ -409,10 +440,11 @@ round(c(0,quantile(sim$x, .95)),2) # Lower
 
 \section{Priors}
 \frame{\frametitle{Guess the probability}
+What do you think the probability is?
   \begin{itemize}[<+->]
-  \item A coin spins heads.
-  \item New England Patriots win 2019 Super Bowl.
-  \item The first base pair on my genome is A.
+  \item A 6-sided die lands on 1.
+  \item The first base pair in my chromosome 1 is A.
+  \item Kansas City Chiefs win 2023 Super Bowl.
   \end{itemize}
 }
 
@@ -431,7 +463,7 @@ round(c(0,quantile(sim$x, .95)),2) # Lower
 	A prior $p(\theta)$ is \alert{conjugate} if for $p(\theta)\in \mathcal{P}$ and $p(y|\theta)\in \mathcal{F}$, $p(\theta|y)\in \mathcal{P}$ where $\mathcal{F}$ and $\mathcal{P}$ are families of distributions.
 	\end{definition}
 	
-	\vspace{0.1in} \pause  
+	\vspace{0.05in} \pause  
 	
 	For example, the beta distribution ($\mathcal{P}$) is conjugate to the binomial distribution with unknown probability of success ($\mathcal{F}$) \pause since 
 	\[ \theta \sim \alert{\mbox{Be}}(a,b) \qquad\mbox{and}\qquad \theta|y \sim \alert{\mbox{Be}}(a+y,b+n-y). \] 
@@ -442,7 +474,7 @@ round(c(0,quantile(sim$x, .95)),2) # Lower
 	A \alert{natural} conjugate prior is a conjugate prior that has the same functional form as the likelihood.
 	\end{definition}
 	
-	\vspace{0.1in} \pause 
+	\vspace{0.05in} \pause 
 	
 	For example, the beta distribution is a natural conjugate prior since 
 	\[ p(\theta) \propto \theta^{a-1}(1-\theta)^{b-1} \qquad \mbox{and} \qquad L(\theta) \propto \theta^y(1-\theta)^{n-y}. \]
@@ -465,17 +497,22 @@ round(c(0,quantile(sim$x, .95)),2) # Lower
 
 \begin{frame}[fragile]
 \frametitle{Discrete prior}
-<<discrete, fig.width=10, out.width='\\textwidth'>>=
+<<discrete>>=
 dd = data.frame(theta = seq(0.01, 0.99, by=0.01)) %>%
   mutate(prior = dbeta(theta, 3, 2),
          prior = prior / sum(prior),
          posterior = prior * dbinom(y, n, theta),
          posterior = posterior / sum(posterior))
 
-ggplot(dd %>% gather(Distribution, density, -theta),
-       aes(theta, density, color = Distribution, linetype = Distribution)) +
+ggplot(dd %>% 
+         pivot_longer(prior:posterior, 
+                      names_to = "Distribution",
+                      values_to = "density"),
+       aes(x = theta, 
+           y = density, 
+           color = Distribution, 
+           linetype = Distribution)) +
   geom_point() +
-  theme_bw() +
   theme(legend.position="bottom") 
 @
 \end{frame}
@@ -492,10 +529,10 @@ ggplot(dd %>% gather(Distribution, density, -theta),
   \[ \begin{array}{rl}
   p(\theta|y) 
   &= \frac{1}{p(y)} p(y|\theta)p(\theta) \pause
-   = \frac{1}{p(y)} p(y|\theta) \sum_{i=1}^\I p_i p_i(\theta) \pause \\
-  &= \frac{1}{p(y)} \sum_{i=1}^\I p_i p(y|\theta) p_i(\theta) \pause
-   = \frac{1}{p(y)} \sum_{i=1}^\I p_i p_i(y) p_i(\theta|y) \pause \\
-  &= \sum_{i=1}^\I \frac{p_i p_i(y)}{p(y)}p_i(\theta|y) \pause 
+   = \frac{1}{p(y)} p(y|\theta) \sum_{i=1}^\I p_i p_i(\theta) \pause 
+   = \frac{1}{p(y)} \sum_{i=1}^\I p_i p(y|\theta) p_i(\theta) \pause \\
+  &= \frac{1}{p(y)} \sum_{i=1}^\I p_i p_i(y) p_i(\theta|y) \pause 
+   = \sum_{i=1}^\I \frac{p_i p_i(y)}{p(y)}p_i(\theta|y) \pause 
    = \sum_{i=1}^\I \frac{p_i p_i(y)}{\sum_{j=1}^\I p_j p_j(y)} p_i(\theta|y)
   \end{array} \]
   where $p_i(\theta|y) = p(y|\theta)p_i(\theta)/p_i(y)$. 
@@ -521,8 +558,8 @@ ggplot(dd %>% gather(Distribution, density, -theta),
   \pause
   then the marginal likelihood is
   \[ \begin{array}{ll}
-  p(y) &= \int p(y|\theta) p(\theta) d\theta \pause \\
-  &= \int {n \choose y} \theta^y (1-\theta)^{n-y} \frac{\theta^{a-1}(1-\theta)^{b-1}}{\mbox{Beta}(a,b)} \\
+  p(y) &= \int p(y|\theta) p(\theta) d\theta \pause 
+  = \int {n \choose y} \theta^y (1-\theta)^{n-y} \frac{\theta^{a-1}(1-\theta)^{b-1}}{\mbox{Beta}(a,b)} \\
   &= {n \choose y} \frac{1}{\mbox{Beta}(a,b)} \int  \theta^{a+y-1} (1-\theta)^{b+n-y-1} d\theta \\
   &= {n \choose y} \frac{\mbox{Beta}(a+y,b+n-y)}{\mbox{Beta}(a,b)} \quad y=0,\ldots,n 
   \end{array} \]
@@ -674,12 +711,12 @@ respect to $\theta_j$, of the log-likelihood.
   Since the binomial is an exponential family, 
   
   \[ \begin{array}{ll}
-  \mathcal{I}(\theta) &= -E_{y|\theta} \left[ \frac{\partial^2 }{\partial \theta^2} \log p(y|\theta) \right] \pause \\
-  &= -E_{y|\theta} \left[ \frac{\partial^2 }{\partial \theta^2} \log {n\choose y} + y\log\theta + (n-y)\log(1-\theta)  \right] \pause \\
-  &= -E_{y|\theta} \left[ \frac{\partial }{\partial \theta} \frac{y}{\theta}-\frac{n-y}{1-\theta}  \right]  \\
-  &= -E_{y|\theta} \left[ -\frac{y}{\theta^2}-\frac{n-y}{(1-\theta)^2}  \right]  \\
-  &= - \left[ -\frac{n\theta}{\theta^2}-\frac{n-n\theta}{(1-\theta)^2}  \right]  = 
-   \frac{n}{\theta}+\frac{n}{(1-\theta)} \\
+  \mathcal{I}(\theta) &= -E_{y|\theta} \left[ \frac{\partial^2 }{\partial \theta^2} \log p(y|\theta) \right] \pause 
+  = -E_{y|\theta} \left[ \frac{\partial^2 }{\partial \theta^2} \log {n\choose y} + y\log\theta + (n-y)\log(1-\theta)  \right] \pause \\
+  &= -E_{y|\theta} \left[ \frac{\partial }{\partial \theta} \frac{y}{\theta}-\frac{n-y}{1-\theta}  \right]  
+   = -E_{y|\theta} \left[ -\frac{y}{\theta^2}-\frac{n-y}{(1-\theta)^2}  \right]  
+   = - \left[ -\frac{n\theta}{\theta^2}-\frac{n-n\theta}{(1-\theta)^2}  \right]  
+   = \frac{n}{\theta}+\frac{n}{(1-\theta)} \\
   &= \frac{n}{\theta(1-\theta)}
   \end{array} \]
   \end{proof}
@@ -692,15 +729,23 @@ respect to $\theta_j$, of the log-likelihood.
 n = 10
 y = 3
 a = b = .5
-d = data.frame(x = seq(0,1,by=0.01)) %>% 
+d = data.frame(x = seq(0,1, length.out = 1001)) %>% 
   mutate(prior = dbeta(x,a,b),
          "normalized likelihood" = dbeta(x, y, n-y),
          posterior = dbeta(x, a+y, b+n-y))
 
 m <- d %>%
-  gather(Distribution, density, -x)
+  pivot_longer(prior:posterior, 
+               names_to = "Distribution", 
+               values_to = "density")
 
-ggplot(m, aes(x, density, group = Distribution, linetype = Distribution, color= Distribution)) +
+ggplot(m, 
+       aes(
+         x = x, 
+         y = density, 
+         group = Distribution, 
+         linetype = Distribution, 
+         color = Distribution)) +
   geom_line() +
   theme_bw() +
   theme(legend.position="bottom")
