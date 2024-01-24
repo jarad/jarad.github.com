@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[aspectratio=169,handout]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -11,7 +11,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=2.5, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -33,7 +33,7 @@ rstan_options(auto_write = TRUE)
 # loadfonts(device="postscript")
 @
 
-<<set_seed>>=
+<<set-seed>>=
 set.seed(2)
 @
 
@@ -188,7 +188,7 @@ set.seed(2)
 \frametitle{Example}
 
 Consider $Y_i\stackrel{ind}{\sim} N(\mu,1)$ and $\mu\sim N(0,1)$. 
-<<unknown_mean, echo=TRUE>>=
+<<unknown-mean, echo=TRUE>>=
 # Prior
 m = 0
 C = 1; P = 1/C
@@ -207,7 +207,7 @@ mp = (P*m+nQ*mean(y))/Pp
 \end{frame}
 
 \begin{frame}[fragile]
-<<unknown_mean_plot>>=
+<<unknown-mean-plot, dependson="unknown-mean", fig.height=3>>=
 # Plot 
 curve(dnorm(x,mp,sqrt(1/Pp)), col="red", lwd=2, -2, 4,
       main="Normal model with unknown mean, normal prior",
@@ -286,7 +286,7 @@ legend("topright", c("Prior","Posterior","Likelihood"), col=c("blue","red","seag
 \frametitle{Example}
 
 Suppose $Y_i\stackrel{ind}{\sim} N(1,\sigma^2)$ and $\sigma^2\sim IG(1,1)$.
-<<unknown_var, echo=TRUE>>=
+<<unknown-var, echo=TRUE>>=
 # Prior
 a = b = 1
 
@@ -296,13 +296,16 @@ n = length(y)
 y
 
 # Posterior
-ap = a+n/2
-(bp = b+sum((y-m)^2)/2)
+ap = a + n/2
+bp = b + sum((y-m)^2)/2
+
+ap
+bp
 @
 \end{frame}
 
 \begin{frame}[fragile]
-<<unknown_var_plot>>=
+<<unknown-var-plot, dependson="unknown-var", fig.height=3>>=
 # Plot 
 curve(dinvgamma(x,ap,bp), col="red", lwd=2, 0,3,
       main="Normal model with unknown variance, inverse gamma prior",
@@ -365,7 +368,7 @@ The basic workflow when using {\tt rjags} is
 
 Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$ and we observe $y=3$ successes out of $n=10$ attempts.
 
-<<jags_binomial, echo=TRUE>>=
+<<jags-binomial, echo=TRUE>>=
 model = "
 model 
 {
@@ -377,7 +380,7 @@ model
 dat = list(n=10, y=3, a=1, b=1)
 
 m = jags.model(textConnection(model), dat)
-r = coda.samples(m, "theta", n.iter=1000)
+r = coda.samples(m, "theta", n.iter = 11000)
 @
 \end{frame}
 
@@ -386,7 +389,7 @@ r = coda.samples(m, "theta", n.iter=1000)
 \begin{frame}[fragile]
 \frametitle{Binomial model}
 
-<<jags_binomial_summary, dependson='jags_binomial', echo=TRUE>>=
+<<jags-binomial-summary, dependson='jags-binomial', echo=TRUE>>=
 summary(r)
 @
 \end{frame}
@@ -395,7 +398,7 @@ summary(r)
 \begin{frame}[fragile]
 \frametitle{Binomial model}
 
-<<jags_binomial_plot, dependson='jags_binomial', echo=TRUE, fig.height=4>>=
+<<jags-binomial-plot, dependson='jags-binomial', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
@@ -411,7 +414,7 @@ plot(r)
 
 Let $Y_i \ind N(\mu,s^2)$ and $\mu\sim N(0,1)$. 
 
-<<jags_normal, echo=TRUE>>=
+<<jags-normal, echo=TRUE>>=
 model = "
 model 
 {
@@ -426,7 +429,7 @@ dat = list(m=0,C=1,s2=1,y=y)
 dat$n = length(dat$y)
 
 m = jags.model(textConnection(model), dat)
-r = coda.samples(m, "mu", n.iter=1000)
+r = coda.samples(m, "mu", n.iter = 11000)
 @
 \end{frame}
 
@@ -435,7 +438,7 @@ r = coda.samples(m, "mu", n.iter=1000)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-<<jags_normal_summary, dependson='jags_normal', echo=TRUE>>=
+<<jags-normal-summary, dependson='jags-normal', echo=TRUE>>=
 summary(r)
 @
 \end{frame}
@@ -444,7 +447,7 @@ summary(r)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-<<jags_normal_plot, dependson='jags_normal', echo=TRUE, fig.height=4>>=
+<<jags-normal-plot, dependson='jags-normal', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
@@ -457,7 +460,7 @@ plot(r)
 
 Let $Y\sim N(m,\sigma^2)$ and $\sigma^2\sim IG(1,1)$.
 
-<<jags_normal_var, echo=TRUE>>=
+<<jags-normal-var, echo=TRUE>>=
 model = "
 model 
 {
@@ -473,7 +476,7 @@ dat = list(m=1,a=1,b=1,y=y)
 dat$n = length(dat$y)
 
 m = jags.model(textConnection(model), dat)
-r = coda.samples(m, "sigma2", n.iter=1000)
+r = coda.samples(m, "sigma2", n.iter = 11000)
 @
 \end{frame}
 
@@ -482,7 +485,7 @@ r = coda.samples(m, "sigma2", n.iter=1000)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-<<jags_normal_var_summary, dependson='jags_normal_var', echo=TRUE>>=
+<<jags-normal-var-summary, dependson='jags-normal-var', echo=TRUE>>=
 summary(r)
 @
 \end{frame}
@@ -491,7 +494,7 @@ summary(r)
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-<<jags_normal_var_plot, dependson='jags_normal_var', echo=TRUE, fig.height=4>>=
+<<jags-normal-var-plot, dependson='jags-normal-var', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
@@ -530,7 +533,7 @@ But, additional coding is required for Stan.
 
 Let $Y\sim Bin(n,\theta)$ and $\theta\sim Be(1,1)$.
 
-<<stan_binomial, echo=TRUE>>=
+<<stan-binomial, echo=TRUE>>=
 model = "
 data {
   int<lower=0> n;              // define range and type 
@@ -559,10 +562,10 @@ m = stan_model(model_code = model) # Only needs to be done once
 \begin{frame}[fragile]
 \frametitle{Stan - Binomial model sampling}
 
-<<stan_binomial_sampling, dependson='stan_binomial', echo=TRUE, message=TRUE>>=
+<<stan-binomial-sampling, dependson='stan-binomial', echo=TRUE, message=TRUE>>=
 r = sampling(m, data=dat, iter = 11000, warmup = 1000, refresh=5000)
 @
-<<stan_binomial_results, dependson='stan_binomial_sampling', echo=TRUE, message=TRUE>>=
+<<stan-binomial-results, dependson='stan-binomial-sampling', echo=TRUE, message=TRUE>>=
 r
 @
 \end{frame}
@@ -571,7 +574,7 @@ r
 \begin{frame}[fragile]
 \frametitle{Stan - Binomial model}
 
-<<stan_binomial_plot, dependson='stan_binomial_sampling', echo=TRUE, out.width='0.5\\textwidth'>>=
+<<stan-binomial-plot, dependson='stan-binomial-sampling', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
@@ -587,7 +590,7 @@ plot(r)
 
 Let $Y_i \ind N(\mu,s^2)$ and $\mu\sim N(0,1)$. 
 
-<<stan_normal_mean, echo=TRUE>>=
+<<stan-normal-mean, echo=TRUE>>=
 model = "
 data {
   int<lower=0> n;
@@ -617,10 +620,10 @@ dat$n = length(dat$y)
 m = stan_model(model_code = model)
 @
 
-<<stan_normal_mean_sampling, dependson='stan_normal_mean', echo=TRUE, message=TRUE>>=
+<<stan-normal-mean-sampling, dependson='stan-normal-mean', echo=TRUE, message=TRUE>>=
 r = sampling(m, data = dat, iter = 11000, warmup = 1000, refresh=5000)
 @
-<<stan_normal_mean_results, dependson='stan_normal_mean_sampling', echo=TRUE>>=
+<<stan-normal-mean-results, dependson='stan-normal-mean-sampling', echo=TRUE>>=
 r
 @
 \end{frame}
@@ -629,7 +632,7 @@ r
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown mean}
 
-<<stan_normal_mean_plot, dependson='stan_normal_mean_sampling', echo=TRUE, out.width='0.5\\textwidth'>>=
+<<stan-normal-mean-plot, dependson='stan-normal-mean-sampling', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
@@ -644,7 +647,7 @@ plot(r)
 
 Let $Y_i \ind N(m,\sigma^2)$ and $\sigma^2\sim IG(1,1)$. 
 
-<<stan_normal_var, echo=TRUE>>=
+<<stan-normal-var, echo=TRUE>>=
 model = "
 data {
   int<lower=0> n;
@@ -672,10 +675,10 @@ dat$n = length(dat$y)
 m = stan_model(model_code = model)
 @
 
-<<stan_normal_var_sampling, dependson='stan_normal_var', echo=TRUE, message=TRUE>>=
+<<stan-normal-var-sampling, dependson='stan-normal-var', echo=TRUE, message=TRUE>>=
 r = sampling(m, data = dat, iter = 11000, warmup = 1000, refresh=5000)
 @
-<<stan_normal_var_results, dependson='stan_normal_var_sampling', echo=TRUE>>=
+<<stan-normal-var-results, dependson='stan-normal-var-sampling', echo=TRUE>>=
 r
 @
 \end{frame}
@@ -684,12 +687,37 @@ r
 \begin{frame}[fragile]
 \frametitle{Normal model, unknown variance}
 
-<<stan_normal_var_plot, dependson='stan_normal_var_sampling', echo=TRUE, out.width='0.5\\textwidth'>>=
+<<stan-normal-var-plot, dependson='stan-normal-var-sampling', echo=TRUE>>=
 plot(r)
 @
 \end{frame}
 
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+\begin{itemize}
+\item Normal model
+  \begin{itemize}
+  \item Jeffreys prior
+  \item Conjugate prior
+  \item Unknown mean
+  \item Unknown variance
+  \end{itemize}
+\item Bayesian black-box software
+  \begin{itemize}
+  \item JAGS, rjags
+  \item Stan, rstan
+  \end{itemize}
+\end{itemize}
 
+\pause
+
+Installation
+\begin{itemize}
+\item JAGS: Install both \href{https://mcmc-jags.sourceforge.io/}{JAGS} and \href{https://cran.r-project.org/web/packages/rjags/index.html}{rjags}
+\item Stan: Install only \href{https://mc-stan.org/users/interfaces/rstan}{rstan} OR Install \href{https://mc-stan.org/users/interfaces/cmdstan}{cmdstan} and \href{https://mc-stan.org/cmdstanr/}{cmdstanr}
+\end{itemize}
+\end{frame}
 
 
 \end{document}
