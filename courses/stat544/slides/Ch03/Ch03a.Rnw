@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[aspectratio=169,handout]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -11,7 +11,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -22,13 +22,11 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library("plyr")
-library("dplyr")
-library("ggplot2")
+library("tidyverse"); theme_set(theme_bw())
 library("gridExtra")
 @
 
-<<set_seed>>=
+<<set-seed>>=
 set.seed(2)
 @
 
@@ -118,46 +116,60 @@ set.seed(2)
 
 \begin{frame}[fragile]
 \frametitle{Joint posterior}
-<<joint_posterior>>=
-a = b = 1
-d = data.frame(year=1:4, y=c(36,64,67,64), n=c(95,150,171,152))
-d$a = a + d$y
-d$b = b + d$n - d$y
-plot(0, 0, type="n", main="Andre Dawkins's 3-point percentage", xlab=expression(theta), ylab="Posterior",
-     xlim=c(0,1), ylim=c(0,max(dbeta(d$y/d$n,d$a,d$b))))
-for (i in 1:nrow(d)) curve(dbeta(x, d$a[i], d$b[i]), col=i, lwd=2, lty=i, add=TRUE)
-legend("topright", paste("Season", 1:nrow(d)), col=1:4, lwd=2, lty=1:4)
+<<joint-posterior>>=
+a <- b <- 1
+d <- data.frame(year = 1:4, 
+                y = c(36, 64, 67, 64), 
+                n = c(95, 150, 171, 152)) |>
+  mutate(a = a + y, b = b + n - y) 
+
+p <- d|>
+  expand_grid(x = seq(0, 1, length = 1001)) %>%
+  mutate(density = dbeta(x, a, b))
+
+ggplot(p %>% mutate(year = factor(year)), aes(x = x, y = density, color = year, linetype = year)) +
+  geom_line() +
+  labs(x = expression(theta), y = "Posterior")
 @
 \end{frame}
 
 \section{Monte Carlo estimates}
 \begin{frame}[fragile]
-\frametitle{Monte Carlo estimates}
-Estimated means, medians, and quantiles.
-<<theta_sims, echo=TRUE>>=
-sim = ddply(d, .(year), 
-            function(x) data.frame(theta=rbeta(1e3, x$a, x$b),
-                                   a = x$a, b = x$b))
+\frametitle{Monte Carlo estimates - code}
+Estimating means, medians, and quantiles (credible intervals).
+<<theta-sims, echo=TRUE, dependson="joint-posterior", eval=FALSE>>=
+sim = d |>
+  expand_grid(rep = 1:1e3) |>
+  mutate(theta = rbeta(n(), a, b)) 
 
-# hpd 
-hpd = function(theta,a,b,p=.95) {
-  h = dbeta((a-1)/(a+b-2),a,b)
+hpd = function(theta, a, b, p=.95) {
+  h      = dbeta((a-1)/(a+b-2),a,b)
   ftheta = dbeta(theta,a,b)
-  r = uniroot(function(x) mean(ftheta>x)-p,c(0,h))
+  r      = uniroot(function(x) mean(ftheta>x)-p,c(0,h))
   range(theta[which(ftheta>r$root)])
 }
 
 # expectations
-ddply(sim, .(year), summarize,
-      mean = mean(theta),
-      median = median(theta),
-      ciL  = quantile(theta, c(.025,.975))[1],
-      ciU  = quantile(theta, c(.025,.975))[2],
-      hpdL = hpd(theta,a[1],b[1])[1],
-      hpdU = hpd(theta,a[1],b[1])[2])
+sim |> 
+  group_by(year) %>%
+  summarize(
+    mean = mean(theta),
+    median = median(theta),
+    ciL  = quantile(theta, c(.025,.975))[1],
+    ciU  = quantile(theta, c(.025,.975))[2],
+    hpdL = hpd(theta,a[1],b[1])[1],
+    hpdU = hpd(theta,a[1],b[1])[2])
 @
 \end{frame}
 
+
+\begin{frame}[fragile]
+\frametitle{Monte Carlo estimates}
+Estimated means, medians, and quantiles (credible intervals).
+<<theta-sims-results, echo=FALSE, dependson="theta-sims", eval=TRUE>>=
+<<theta-sims>>
+@
+\end{frame}
 
 
 \frame{\frametitle{Comparing probabilities across years}
@@ -177,17 +189,20 @@ ddply(sim, .(year), summarize,
 
 \begin{frame}[fragile]
 \frametitle{Estimated probabilities}
-<<theta_results, dependson='theta_sim', echo=TRUE>>=
-# Should be able to use dcast
-d = data.frame(theta_1 = sim$theta[sim$year==1],
-               theta_2 = sim$theta[sim$year==2],
-               theta_3 = sim$theta[sim$year==3],
-               theta_4 = sim$theta[sim$year==4])
+<<theta-results, dependson='theta_sim', echo=TRUE>>=
+s <- sim |> 
+  select(rep, year, theta) |>
+  mutate(year = paste0("theta_",year)) |>
+  pivot_wider(
+    id_cols = rep,
+    names_from = year,
+    values_from = theta
+  )
 
 # Probabilities that season 4 percentage is higher than other seasons
-mean(d$theta_4 > d$theta_1)
-mean(d$theta_4 > d$theta_2)
-mean(d$theta_4 > d$theta_3)
+mean(s$theta_4 > s$theta_1)
+mean(s$theta_4 > s$theta_2)
+mean(s$theta_4 > s$theta_3)
 @
 \end{frame}
 
@@ -196,7 +211,7 @@ mean(d$theta_4 > d$theta_3)
 \begin{frame}[fragile]
 \frametitle{Using JAGS}
 <<jags, echo=TRUE>>=
-library(rjags)
+library("rjags")
 independent_binomials = "
 model {
   for (i in 1:N) { 
@@ -213,14 +228,15 @@ res = coda.samples(m, "theta", 1000)
 \end{frame}
 
 \begin{frame}[fragile]
-<<jags_summary, dependson='jags', echo=TRUE>>=
+<<jags-summary, dependson='jags', echo=TRUE>>=
 summary(res)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-<<jags_results, dependson='jags', echo=TRUE>>=
+\frametitle{JAGS Analysis}
+<<jags-results, dependson='jags', echo=TRUE>>=
 # Extract sampled theta values
 theta = as.matrix(res[[1]]) # with only 1 chain, all values are in the first list element
 
@@ -283,13 +299,13 @@ mean(theta[,4] > theta[,3])
 
 \begin{frame}[fragile]
 \frametitle{Scaled-inverse $\chi^2$-distribution}
-<<scaled_inverse_chi_square, echo=TRUE>>=
+<<scaled-inverse-chi-square, echo=TRUE>>=
 dinvgamma = function(x, shape, scale, ...) dgamma(1/x, shape = shape, rate  = scale,       ...) / x^2
-dsichisq  = function(x, dof, scale, ...)dinvgamma(  x, shape = dof/2, scale = dof*scale/2, ...)
+dsichisq  = function(x, dof, scale, ...) dinvgamma(  x, shape = dof/2, scale = dof*scale/2, ...)
 @
 
-<<scaled_inverse_chi_square_plot, dependson='scaled_inverse_chi_square', out.width='0.7\\textwidth'>>=
-d = expand.grid(v = c(10,5,1), s2 = c(1,2,3), x = seq(.01,5,.01)) %>%
+<<scaled-inverse-chi-square-plot, dependson='scaled-inverse-chi-square', out.width='0.7\\textwidth'>>=
+d = expand.grid(v = c(10,5,1), s2 = c(1,2,3), x = seq(.01,5,.01)) |>
   mutate(density = dsichisq(x, dof = v, scale = s2),
          v_f  = as.factor(v),
          s2_f = as.factor(s2))
@@ -322,20 +338,20 @@ t_v(m,z^2) \stackrel{v\to\infty}{\longrightarrow} N(m,z^2).
 
 \begin{frame}[fragile]
 \frametitle{$t$ distribution as $v$ changes}
-<<t_distribution, fig.height=4.5, warning=FALSE>>=
+<<t-distribution>>=
 dtms = function(x,v,m=0,s=1) dt((x-m)/s,v)/s
 
 d = expand.grid(v=c(1,10,100), 
-               x = seq(-3,6,by=.1)) %>%
-  group_by(v) %>%
-  mutate(density = dtms(x, v)) %>%
-  ungroup %>%
+               x = seq(-3,6,by=.1)) |>
+  group_by(v) |>
+  mutate(density = dtms(x, v)) |>
+  ungroup() |>
   mutate(v = factor(v))
 
 ggplot(d, aes(x=x,y=density, group=v, linetype=v, color=v)) +
   geom_line() + 
   theme(legend.position='bottom') +
-  theme_bw()
+  labs(x = "t")
 @
 \end{frame}
 
@@ -377,8 +393,9 @@ Thus $\mu \sim t_{v}(m, z^2/k)$.
 \frametitle{Univariate normal model}
 Suppose $Y_i\stackrel{ind}{\sim} N(\mu,\sigma^2)$. 
 
-<<normal_model>>=
-curve(dnorm,-3,3,lwd=2, axes=F, frame=TRUE, 
+<<normal-model,fig.width=6>>=
+opar = par(mar = c(0, 0, 2, 0)+0.1)
+curve(dnorm, -3, 3, lwd=2, axes=F, frame=TRUE, 
       xlab="y", ylab=expression(p(y~"|"~mu,sigma^2)), main="Normal model")
 abline(v=0, lty=2)
 text(0,0,expression(mu),pos=4)
@@ -574,9 +591,6 @@ calculate $m', k', v',$ and $z'$
   \end{itemize}
 \end{itemize}
 \end{frame}
-
-
-
 
 
 \end{document}
