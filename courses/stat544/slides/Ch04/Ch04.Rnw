@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \usepackage{verbatim}
 
@@ -11,7 +11,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -23,10 +23,8 @@ options(width=120)
 
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library("reshape2")
-library("plyr")
-library("ggplot2")
-library("smcUtils")
+library("tidyverse")
+theme_set(theme_bw())
 @
 
 <<set_seed>>=
@@ -78,18 +76,19 @@ Thus
 \frametitle{Binomial probability}
 
 <<beta_normal_approximation, eval=FALSE, echo=TRUE>>=
-a = b = 1
-n = 10
-y = 3
-par(mar=c(5,4,0.5,0)+.1)
-curve(dbeta(x,a+y,b+n-y), lwd=2, xlab=expression(theta), ylab=expression(paste("p(", theta,"|y)")))
+a <- b <- 1     # Prior
+n <- 10; y <- 3 # Data (attempts, successes)
 
-# Approximation
-yp = a+y-1
-np = a+b+n-2
-theta_hat = yp/np
-curve(dnorm(x,theta_hat, sqrt(theta_hat*(1-theta_hat)/np)), add=TRUE, col="red", lwd=2)
-legend("topright",c("True posterior","Normal approximation"), col=c("black","red"), lwd=2)
+yp = a + y - 1; np = a + b + n - 2
+theta_hat = yp / np
+
+d <- data.frame(x = seq(0, 1, length = 1001)) %>%
+  mutate(beta   = dbeta(x,a+y,b+n-y),
+         normal = dnorm(x, theta_hat, sqrt(theta_hat*(1-theta_hat)/np))) %>%
+  pivot_longer(beta:normal, names_to = "Distribution", values_to = "density")
+
+ggplot(d, aes(x = x, y = density, color = Distribution, linetype = Distribution)) +
+  geom_line()
 @
 \end{frame}
 
@@ -140,18 +139,28 @@ If the parameter space $\Theta$ is continuous and $A$ is a neighborhood around $
 
 \begin{frame}[fragile]
 <<convergence_of_the_posterior_distribution_discrete, fig.width=10, echo=TRUE>>=
-library(smcUtils)
-theta = seq(0.1,0.9, by=0.1); theta0 = 0.3
-n = 1000
-y = rbinom(n, 1, theta0)
-p = matrix(NA, n,length(theta))
-p[1,] = renormalize(dbinom(y[1],1,theta, log=TRUE), log=TRUE)
-for (i in 2:n) {
-  p[i,] = renormalize(dbinom(y[i],1,theta, log=TRUE)+log(p[i-1,]), log=TRUE)
-}
-plot(p[,1], ylim=c(0,1), type="l", xlab="n", ylab="Probability")
-for (i in 1:length(theta)) lines(p[,i], col=i)
-legend("right", legend=theta, col=1:9, lty=1)
+n <- 1000
+theta0 <- 0.3
+d <- expand_grid(n     = 1:n, 
+                 y     = rbinom(n, 1, prob = 0.3), 
+                 theta = seq(0.1, 0.9, by = 0.1)) |>
+  mutate(
+    log_prob = dbinom(y, 1, prob = theta, log = TRUE),
+  ) |>
+  group_by(theta) |>
+  arrange(n) |>
+  mutate(
+    log_prob = cumsum(log_prob)
+  ) %>%
+  group_by(n) |>
+  mutate(
+    log_prob = log_prob - max(log_prob),
+    prob     = exp(log_prob),
+    prob     = prob / sum(prob)
+  )
+
+ggplot(d, aes(x = n, y = prob, color = theta)) + 
+  geom_line()
 @
 \end{frame}
 
