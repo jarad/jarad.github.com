@@ -26,6 +26,7 @@ options(width=120)
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
 library("tidyverse"); theme_set(theme_bw())
 library("gridExtra")
+library("mvtnorm")
 @
 
 <<set-seed>>=
@@ -205,17 +206,22 @@ p(y) = (2\pi)^{-k/2}|\Sigma|^{-1/2} \exp\left(-\frac{1}{2}(y-\mu)^\top \Sigma^{-
 
 <<multivariate-normal, fig.show='asis'>>=
 # Modified from http://stats.stackexchange.com/questions/24380/how-to-get-ellipse-region-from-bivariate-normal-distributed-data
-sigma = matrix(c(1,.8,.8,1), nrow=2)
-sigma.inv = solve(sigma)
-ellipse <- function(s,t) {u<-c(s,t); u %*% sigma.inv %*% u / 2}
+rho <- 0.8
+f <- function(x,y) {
+  dmvnorm(c(x,y), sigma = matrix(c(1,rho,rho,1), nrow=2))
+}
 
-e = 3
-n = 50
-x = seq(-e,e,length=n)
-y = seq(-e,e,length=n)
-z <- mapply(ellipse, as.vector(rep(x,n)), as.vector(outer(rep(0,n), y, `+`)))
-contour(x,y, matrix(z,n,n), levels=(0:10), col = terrain.colors(11), 
-        main=paste('Contours of a bivariate normal with correlation of',sigma[1,2]))
+d <- expand.grid(
+  x = seq(-3, 3, length = 101),
+  y = seq(-3, 3, length = 101)
+) |>
+  rowwise() |>
+  mutate(density = f(x,y))
+  
+ggplot(d, aes(x=x, y=y, z=density)) +
+  geom_contour() +
+  labs(x = expression(y[1]), y = expression(y[2]),
+       title = paste0("Bivariate normal: correlation ", rho))
 @
 
 \end{frame}
