@@ -141,7 +141,7 @@ If the parameter space $\Theta$ is continuous and $A$ is a neighborhood around $
 
 
 \begin{frame}[fragile]
-<<convergence_of_the_posterior_distribution_discrete, echo=TRUE>>=
+<<convergence_of_the_posterior_distribution_discrete, echo=TRUE, eval=FALSE>>=
 n <- 1000
 theta0 <- 0.3
 d <- data.frame(
@@ -178,7 +178,15 @@ ggplot(dt, aes(x = n, y = prob,
 
 
 \begin{frame}[fragile]
-<<convergence_of_the_posterior_distribution_continuous, echo=TRUE>>=
+\frametitle{Posterior distribution convergence of a discrete distribution}
+<<convergence_of_the_posterior_distribution_discrete-plot, echo=FALSE, eval=TRUE>>=
+<<convergence_of_the_posterior_distribution_discrete>>
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+<<convergence_of_the_posterior_distribution_continuous, echo=TRUE, eval=FALSE>>=
 a <- b <- 1 # prior
 e <- 0.05   # window half-width
 
@@ -196,6 +204,13 @@ ggplot(dc, aes(x = n, y = prob)) +
     title = "Posterior convergence around truth"
   ) +
   ylim(0,1)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Posterior distribution convergence of a continuous distribution}
+<<convergence_of_the_posterior_distribution_continuous-plot, echo=FALSE, eval=TRUE>>=
+<<convergence_of_the_posterior_distribution_continuous>>
 @
 \end{frame}
 
@@ -240,7 +255,7 @@ Recall that $\hat{\theta}_{MLE} = y/n$. \pause The following estimators are all 
 
 
 \begin{frame}[fragile]
-<<beta_binomial_consistency, echo=TRUE>>=
+<<beta_binomial_consistency, echo=TRUE, eval=FALSE>>=
 # Calculate posterior mean, median, and mode
 dbc <- dc |>
   mutate(
@@ -263,6 +278,13 @@ ggplot(dbc, aes(x = n, y = estimate,
 @
 \end{frame}
 
+\begin{frame}
+\frametitle{Binomial: Bayesian Estimator Convergence}
+<<beta_binomial_consistency-plot, echo=FALSE>>=
+<<beta_binomial_consistency>>
+@
+\end{frame}
+
 
 
 \begin{frame}
@@ -274,18 +296,20 @@ Consider $Y_i\stackrel{iid}{\sim} N(\theta,1)$ with known and prior $\theta\sim 
 \pause
 
 Recall that $\hat{\theta}_{MLE} = \overline{y}$. \pause Since the posterior mean converges to the MLE, then the posterior mean (as well as the median and mode) are consistent.
+\end{frame}
 
-<<normal_consistency>>=
+
+<<normal_consistency, echo=FALSE, eval=FALSE>>=
 mu0 <- 10 # true mean
 m <- 0; v <- 1 # prior
 
 # Calculate posterior mean/median/mode (which is same as MLE)
 d <- data.frame(
-  n = 1:200,
+  n = 200,
   y = rnorm(n, mu0, 1)
 ) |>
   mutate(ybar = cumsum(y)/n,
-         yhat = ybar*n/(n+v) + v*c/(n+v))
+         yhat = ybar*n/(n+v) + v*m/(n+v))
 
 # Plot MLE vs sample size
 ggplot(d, aes(x = n, y = yhat)) +
@@ -297,8 +321,6 @@ ggplot(d, aes(x = n, y = yhat)) +
     title = "Normal: Bayesian Estimator Convergence"
   )
 @
-
-\end{frame}
 
 
 
@@ -336,7 +358,7 @@ where $\I(\theta_0)$ is the expected Fisher information \pause and thus, by the 
 
 
 \begin{frame}
-\frametitle{Bernstein-von Mises THoerem}
+\frametitle{Bernstein-von Mises Theorem}
 
 For large $n$, we have
 \[
@@ -361,7 +383,7 @@ Thus, the posterior distribution is asymptotically normal.
 \begin{frame}
 \frametitle{Binomial example}
 Suppose $y\sim Bin(n,\theta)$ and $\theta\sim Be(a,b)$.
-<<binomial_example>>=
+<<binomial_example, fig.width=6>>=
 theta0 <- 0.3
 
 d <- expand_grid(
