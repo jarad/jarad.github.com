@@ -12,7 +12,8 @@ Introduction to Statistical Computing at
 
 ## Relevant course pages
 
-- [Slides](slides)
+- [2024 Slides](https://stat586.netlify.app/)
+- [2023 Slides](slides)
 - [Next courses](../next_courses.html)
 
 
