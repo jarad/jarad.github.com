@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \usepackage{verbatim}
 
@@ -11,7 +11,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -22,11 +22,8 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-# library("reshape2")
-library("dplyr")
+library("tidyverse"); theme_set(theme_bw())
 library("xtable")
-
-library("ggplot2")
 library("GGally")
 library("RColorBrewer")
 
@@ -35,7 +32,7 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 @
 
-<<set_seed>>=
+<<set-seed>>=
 set.seed(1)
 @
 
@@ -87,7 +84,7 @@ set.seed(1)
   \begin{itemize}[<+->]
   \item The 3-point percentage every season is the same, i.e. $\theta_i=\theta$.
   \item The 3-point percentage every season is independent of other seasons.
-  \item The 3-point percentage every season should be similar to other seasons.
+  \item The 3-point percentage a season should be similar to other seasons.
   \end{itemize}
 }
 
@@ -107,12 +104,12 @@ set.seed(1)
   \begin{itemize}[<+->]
   \item The 3-point percentage every game is the same, i.e. $\theta_i=\theta$.
   \item The 3-point percentage every game is independent of other games.
-  \item The 3-point percentage every game should be similar to other games.
+  \item The 3-point percentage a game should be similar to other games.
   \end{itemize}
 }
 
-<<dawkins_data, results='hide'>>=
-d = structure(list(date = structure(c(16017, 16021, 16024, 16027, 
+<<dawkins-data, results='hide'>>=
+d <- structure(list(date = structure(c(16017, 16021, 16024, 16027, 
 16028, 16033, 16036, 16038, 16042, 16055, 16058, 16067, 16070, 
 16074, 16077, 16081, 16083, 16088, 16092, 16095, 16097, 16102, 
 16105, 16109), class = "Date"), opponent = c("davidson", "kansas", 
@@ -128,8 +125,8 @@ game = 1:24),
 row.names = c(NA, -24L), class = "data.frame")
 @
 
-<<dawkins_summary, dependson="dawkins_data">>=
-d2 = bind_rows(d,
+<<dawkins-summary, dependson="dawkins-data">>=
+d2 <- bind_rows(d,
                
                # Add a total row
                tibble(date     = NA,
@@ -150,7 +147,7 @@ d2 = bind_rows(d,
 
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
-<<dawkins_plot, out.width='0.7\\textwidth', dependson="dawkins_summary">>=
+<<dawkins-plot, out.width='0.7\\textwidth', dependson="dawkins-summary">>=
 ggplot(d2,
        aes(x     = lcl,
            xend  = ucl,
@@ -160,8 +157,7 @@ ggplot(d2,
   geom_segment(lwd=1) +
   scale_color_brewer(palette='Set1') +
   labs(x=expression(theta), title='95% Credible Intervals') +
-  scale_y_reverse() +
-  theme_bw()
+  scale_y_reverse()
 @
 \end{frame}
 
@@ -170,7 +166,9 @@ ggplot(d2,
 \frametitle{Andre Dawkin's 3-point percentage}
 {\tiny
 <<results='asis'>>=
-xtable(d)
+print(xtable(d |> 
+        mutate(date = format(date,"%Y-%m-%d"))) , 
+      include.rownames = FALSE)
 @
 }
 \end{frame}
@@ -252,9 +250,9 @@ Marginal posterior for $(\alpha,\beta)$:
 \[ \begin{array}{rl}
 p(\alpha,\beta|y) &\propto p(y|\alpha,\beta)p(\alpha,\beta) \pause \\
 p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_i|\alpha,\beta) \pause = \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\alpha,\beta) d\theta_i \pause \\
-&= \prod_{i=1}^n \int Bin(y_i|n_i,\theta_i)Be(\theta_i|\alpha,\beta) d\theta_i \pause \\
-&= \prod_{i=1}^n \int_0^1 {n_i\choose y_i} \theta_i^{y_i} (1-\theta_i)^{n_i-y_i} \frac{\theta_i^{\alpha-1}(1-\theta_i)^{\beta-1}}{B(\alpha,\beta)} d\theta_i \pause \\
-&= \prod_{i=1}^n {n_i\choose y_i}\frac{1}{B(\alpha,\beta)} \int_0^1 \theta_i^{\alpha+y_i-1} (1-\theta_i)^{\beta+n_i-y_i-1}  d\theta_i \pause \\
+% &= \prod_{i=1}^n \int Bin(y_i|n_i,\theta_i)Be(\theta_i|\alpha,\beta) d\theta_i \pause \\
+% &= \prod_{i=1}^n \int_0^1 {n_i\choose y_i} \theta_i^{y_i} (1-\theta_i)^{n_i-y_i} \frac{\theta_i^{\alpha-1}(1-\theta_i)^{\beta-1}}{B(\alpha,\beta)} d\theta_i \pause \\
+% &= \prod_{i=1}^n {n_i\choose y_i}\frac{1}{B(\alpha,\beta)} \int_0^1 \theta_i^{\alpha+y_i-1} (1-\theta_i)^{\beta+n_i-y_i-1}  d\theta_i \pause \\
 &= \prod_{i=1}^n {n_i\choose y_i}\frac{B(\alpha+y_i,\beta+n_i-y_i)}{B(\alpha,\beta)}
 \end{array} \]
 }
@@ -306,7 +304,7 @@ a three-point percentage between 10\% and 50\% \pause and
 \item is somewhat diffuse for $\eta$ but has more mass for smaller values. 
 \end{itemize}
 
-<<informative_prior>>=
+<<informative-prior>>=
 a = 6
 b = 14
 e = 1/20
@@ -320,8 +318,8 @@ e = 1/20
 
   \vspace{0.1in} \pause
 
-<<informative_prior_print, dependson="informative_prior", echo=TRUE>>=
-<<informative_prior>>
+<<informative-prior-print, dependson="informative-prior", echo=TRUE>>=
+<<informative-prior>>
 @
 
 
@@ -331,10 +329,10 @@ e = 1/20
 
 \begin{frame}[fragile]
 \frametitle{Prior draws}
-<<informative_prior_plot, dependson='informative_prior', echo=TRUE>>=
-n = 1e4
+<<informative-prior-plot, dependson='informative-prior', echo=TRUE>>=
+n <- 1e4
 
-prior_draws = data.frame(mu  = rbeta(n, a, b),
+prior_draws <- data.frame(mu  = rbeta(n, a, b),
                          eta = rexp(n, e)) %>%
   mutate(alpha = eta*   mu,
          beta  = eta*(1-mu))
@@ -399,7 +397,7 @@ model {
 
 \begin{frame}[fragile]
 \frametitle{Stan}
-<<stan_run, dependson=c('informative_prior','stan',"dawkins_data"), echo=TRUE, results='hide'>>=
+<<stan-run, dependson=c('informative-prior','stan',"dawkins-data"), echo=TRUE, results='hide'>>=
 dat = list(y = d$made, n = d$attempts, N = nrow(d),a = a, b = b, e = e)
 m = stan_model(model_code = model_informative_prior)
 r = sampling(m, dat, c("mu","eta","alpha","beta","theta"),
@@ -409,8 +407,8 @@ r = sampling(m, dat, c("mu","eta","alpha","beta","theta"),
 
 
 \begin{frame}[fragile]
-\frametitle{stan}
-<<stan_post, dependson="stan_run", echo=TRUE>>=
+\frametitle{}
+<<stan-post, dependson="stan-run", echo=TRUE>>=
 r
 @
 \end{frame}
@@ -418,14 +416,14 @@ r
 
 \begin{frame}[fragile]
 \frametitle{stan}
-<<stan_plot, dependson="stan_run", message=TRUE, echo=TRUE, out.width='0.5\\textwidth'>>=
+<<stan0plot, dependson="stan-run", message=TRUE, echo=TRUE, out.width='0.5\\textwidth'>>=
 plot(r, pars=c('eta','alpha','beta'))
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{stan}
-<<stan_plot2, dependson="stan_run", echo=TRUE, out.width='0.7\\textwidth'>>=
+<<stan-plot2, dependson="stan-run", echo=TRUE, out.width='0.7\\textwidth'>>=
 plot(r, pars=c('mu','theta'))
 @
 \end{frame}
@@ -434,7 +432,7 @@ plot(r, pars=c('mu','theta'))
 
 \begin{frame}[fragile]
 \frametitle{Comparing independent and hierarchical models}
-<<quantiles, dependson="stan_run", out.width='0.7\\textwidth'>>=
+<<quantiles, dependson="stan-run", out.width='0.7\\textwidth'>>=
 d <- d %>%
   mutate(model = "independent",
          lcl      = qbeta(0.025, 0.5 + made,0.5 + attempts - made),
@@ -455,8 +453,7 @@ ggplot(bind_rows(d, new_d), aes(x=lcl,
   geom_segment(lwd=1, alpha=0.5) +
   labs(x=expression(theta), y="game", title='95% Credible Intervals') +
   scale_color_brewer(palette='Set1') +
-  scale_y_reverse() +
-  theme_bw()
+  scale_y_reverse()
 @
 \end{frame}
 
@@ -486,8 +483,8 @@ ggplot(bind_rows(d, new_d), aes(x=lcl,
 \subsection{default prior}
 \begin{frame}[fragile]
 \frametitle{Stan - default prior}
-<<stan2_run, echo=TRUE, results='hide', dependson="stan_run">>=
-model_default_prior = "
+<<stan2-run, echo=TRUE, results='hide', dependson="stan-run">>=
+model_default_prior <- "
 data {
   int<lower=0> N;
   int<lower=0> n[N];
@@ -509,9 +506,9 @@ model {
 }
 "
 
-m2 = stan_model(model_code=model_default_prior)
-r2 = sampling(m2, dat, c("alpha","beta","theta"), iter=10000,
-              control = list(adapt_delta = 0.9))
+m2 <- stan_model(model_code = model_default_prior)
+r2 <- sampling(m2, dat, c("alpha","beta","theta"), iter = 10000,
+               control = list(adapt_delta = 0.9))
 @
 \end{frame}
 
@@ -536,9 +533,9 @@ The maginal posterior for $\alpha,\beta$ is
 
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
-<<stan3_run, echo=TRUE, results='hide',dependson="stan_run">>=
+<<stan3-run, echo=TRUE, results='hide',dependson="stan-run">>=
 # Marginalized (integrated) theta out of the model
-model_marginalized = "
+model_marginalized <- "
 data {
   int<lower=0> N;
   int<lower=0> n[N];
@@ -559,15 +556,14 @@ generated quantities {
 }
 "
 
-m3 = stan_model(model_code=model_marginalized)
-r3 = sampling(m3, dat, iter = 10000)
+m3 <- stan_model(model_code = model_marginalized)
+r3 <- sampling(m3, dat, iter = 10000)
 @
 \end{frame}
 
-
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
-<<stan3_post, dependson="stan3_run">>=
+<<stan3-post, dependson="stan3-run">>=
 r3
 @
 \end{frame}
@@ -578,12 +574,12 @@ r3
 
 Posterior samples for $\alpha$ and $\beta$
 
-<<stan3_alpha_beta, dependson="stan3_run", echo=TRUE, out.width='0.7\\textwidth'>>=
-samples = extract(r3, c("alpha","beta"))
+<<stan3-alpha-beta, dependson="stan3-run", echo=FALSE>>=
+samples <- extract(r3, c("alpha","beta"))
 
 ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)),
                    log_beta  = log(as.numeric(samples$beta))),
-        lower  = list(continuous='density')) + theme_bw()
+        lower  = list(continuous='density')) 
 @
 \end{frame}
 
@@ -602,22 +598,22 @@ ggpairs(data.frame(log_alpha = log(as.numeric(samples$alpha)),
 
 \begin{frame}[fragile]
 \frametitle{Comparing all models}
-<<quantiles2, dependson=c("stan_run","stan3_run"), out.width='0.7\\textwidth'>>=
-d$prior     = "independent"
-new_d$prior = "informative"
+<<quantiles2, dependson=c("stan-run","stan3-run")>>=
+d$prior     <- "independent"
+new_d$prior <- "informative"
 
 # d = d %>%
 #   mutate(lcl = qbeta(0.025,a,b),
 #          ucl = qbeta(0.975,a,b))
   
-tmp = data.frame(summary(r3)$summary[,c(4,8)])
-new_d2 = mutate(new_d,
+tmp <- data.frame(summary(r3)$summary[,c(4,8)])
+new_d2 <- mutate(new_d,
                 prior = "default",
                 lcl = tmp[3:26,1],
                 ucl = tmp[3:26,2])
 
-bind_d = bind_rows(d,new_d,new_d2)
-bind_d$prior = factor(bind_d$prior, c('informative','default','independent'))
+bind_d <- bind_rows(d,new_d,new_d2)
+bind_d$prior <- factor(bind_d$prior, c('informative','default','independent'))
 
 e = 0.2
 ggplot(bind_d,
@@ -629,8 +625,7 @@ ggplot(bind_d,
   geom_segment(lwd=1, alpha=0.5) +
   labs(x=expression(theta), y="game", title='95% Credible Intervals') +
   scale_color_brewer(palette='Set1') +
-  scale_y_reverse() +
-  theme_bw()
+  scale_y_reverse()
 @
 \end{frame}
 
@@ -640,9 +635,9 @@ ggplot(bind_d,
 
 \begin{frame}[fragile]
 \frametitle{Posterior sample for $\theta_{22}$}
-<<stan3_theta, dependson="stan3_run", fig.width=10, echo=TRUE>>=
-game = 22
-theta22 = extract(r3, "theta")$theta[,game]
+<<stan3-theta, dependson="stan3-run", echo=TRUE, fig.width=6>>=
+game <- 22
+theta22 <- extract(r3, "theta")$theta[,game]
 
 hist(theta22, 100,
      main=paste("Posterior for game against", d$opponent[game], "on", d$date[game]),
@@ -653,11 +648,10 @@ hist(theta22, 100,
 
 \begin{frame}[fragile]
 \frametitle{$\theta$s are not independent in the posterior}
-<<stan3_thetas, dependson=c('stan3_run','stan3_theta')>>=
-theta23 = extract(r3, "theta")$theta[,23]
+<<stan3-thetas, dependson=c('stan3-run','stan3-theta'), fig.width=6>>=
+theta23 <- extract(r3, "theta")$theta[,23]
 ggpairs(data.frame(theta22=theta22,theta23=theta23), 
-        lower=list(continuous='density')) + 
-  theme_bw()
+        lower=list(continuous='density')) 
 @
 \end{frame}
 
@@ -669,9 +663,9 @@ ggpairs(data.frame(theta22=theta22,theta23=theta23),
 
 An alternative to modeling game-specific 3-point percentage is to model 3-point percentage in a season. \pause The model is exactly the same, but the data changes. \pause
 
-<<season_data, results='asis'>>=
-d = data.frame(season=1:4, y=c(36,64,67,64), n=c(95,150,171,152))
-xtable(d, digits=0)
+<<season-data, results='asis'>>=
+d <- data.frame(season = 1:4, y = c(36,64,67,64), n = c(95,150,171,152))
+print(xtable(d, digits=0), include.rownames = FALSE)
 @
 
 Due to the low number of seasons (observations), we will use an informative prior for $\alpha$ and $\beta$.
@@ -681,8 +675,8 @@ Due to the low number of seasons (observations), we will use an informative prio
 
 \begin{frame}[fragile]
 \frametitle{Stan - beta-binomial}
-<<stan_season, dependson='season_data', echo=TRUE, results='hide'>>=
-model_seasons = "
+<<stan-season, echo=TRUE, results='hide'>>=
+model_seasons <- "
 data {
   int<lower=0> N; int<lower=0> n[N]; int<lower=0> y[N];
   real<lower=0> a; real<lower=0> b; real<lower=0> e;
@@ -707,10 +701,15 @@ generated quantities {
   for (i in 1:N) theta[i] = beta_rng(alpha+y[i], beta+n[i]-y[i]);
 }
 "
+@
+\end{frame}
 
-dat  = list(N = nrow(d), y = d$y, n = d$n, a = a, b = b, e = e)
-m4 = stan_model(model_code = model_seasons)
-r_seasons = sampling(m4, dat,
+\begin{frame}[fragile]
+\frametitle{Run stan}
+<<stan-season-run, dependson=c('season-data','stan-season'), echo=TRUE>>=
+dat       <- list(N = nrow(d), y = d$y, n = d$n, a = a, b = b, e = e)
+m4        <- stan_model(model_code = model_seasons)
+r_seasons <- sampling(m4, dat, iter = 10000,
                      c("alpha","beta","mu","eta","theta"))
 @
 \end{frame}
@@ -718,7 +717,7 @@ r_seasons = sampling(m4, dat,
 \begin{frame}[fragile]
 \frametitle{Stan - hierarchical model for seasons}
 
-<<stan_season_summary, dependson="stan_season">>=
+<<stan-season-summary, dependson="stan-season-run">>=
 r_seasons
 @
 
@@ -728,8 +727,8 @@ r_seasons
 \begin{frame}[fragile]
 \frametitle{Stan - hierarchical model for seasons}
 
-<<stan_season_posteriors, dependson="stan_season">>=
-posterior = extract(r_seasons, "theta") %>%
+<<stan-season-posteriors, dependson="stan-season">>=
+posterior <- extract(r_seasons, "theta") %>%
   as.data.frame() %>%
   tidyr::gather(parameter, value) %>%
   mutate(parameter = as.factor(parameter))
@@ -737,8 +736,7 @@ posterior = extract(r_seasons, "theta") %>%
 ggplot(posterior,
        aes(x = value,
            fill = parameter)) +
-  geom_density(alpha = 0.5) +
-  theme_bw()
+  geom_density(alpha = 0.5) 
 @
 
 \end{frame}
@@ -749,7 +747,7 @@ ggplot(posterior,
 
 Probabilities that 3-point percentage is greater in season 4 than in the other seasons:
 
-<<stan_season_comparison, echo=TRUE, dependson="stan_season">>=
+<<stan-season-comparison, echo=TRUE, dependson="stan-season">>=
 theta = extract(r_seasons, "theta")[[1]]
 mean(theta[,4] > theta[,1])
 mean(theta[,4] > theta[,2])
