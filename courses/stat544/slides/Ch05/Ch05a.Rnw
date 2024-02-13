@@ -70,8 +70,12 @@ set.seed(1)
 
 \section{Modeling}
 \frame{\frametitle{Andre Dawkin's three-point percentage}
-  Suppose $Y_i$ are the number 3-pointers Andre Dawkin's makes in season $i$, \pause and assume
-  \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \]
+  Suppose $Y_i = \sum_{j=1}^{n_i} Y_{ij}$ are the number 3-pointers Andre Dawkin's makes in season $i$, \pause and assume
+\[ 
+Y_i \ind Bin(n_i,\theta_i) \pause
+\quad \mbox{or, equivalently,} \quad
+Y_{ij} \ind Ber(\theta_i) \, i=1,\ldots,n_i
+\]
   where
   \begin{itemize}[<+->]
   \item $n_i$ are the number of 3-pointers attempted and
@@ -90,10 +94,14 @@ set.seed(1)
 
 
 \frame{\frametitle{Andre Dawkin's three-point percentage}
-  Suppose $Y_i$ are the number of 3-pointers Andre Dawkin's makes in \alert{game} $i$, \pause and assume
-  \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \]
+  Suppose $Y_i= \sum_{j=1}^{n_i} Y_{ij}$ are the number of 3-pointers Andre Dawkin's makes in \alert{game} $i$, and assume
+\[ 
+Y_i \ind Bin(n_i,\theta_i) 
+\quad \mbox{or, equivalently,} \quad
+Y_{ij} \ind Ber(\theta_i) \, i=1,\ldots,n_i
+\]
   where
-  \begin{itemize}[<+->]
+  \begin{itemize}
   \item $n_i$ are the number of 3-pointers attempted in \alert{game} $i$ and
   \item $\theta_i$ is the probability of making a 3-pointer in \alert{game} $i$.
   \end{itemize}
@@ -101,10 +109,10 @@ set.seed(1)
   \vspace{0.2in} \pause
 
   Do these models make sense?
-  \begin{itemize}[<+->]
-  \item The 3-point percentage every game is the same, i.e. $\theta_i=\theta$.
-  \item The 3-point percentage every game is independent of other games.
-  \item The 3-point percentage a game should be similar to other games.
+  \begin{itemize}
+  \item The 3-point percentage every \alert{game} is the same, i.e. $\theta_i=\theta$.
+  \item The 3-point percentage every \alert{game} is independent of other \alert{games}.
+  \item The 3-point percentage a \alert{game} should be similar to other \alert{games}.
   \end{itemize}
 }
 
@@ -145,6 +153,19 @@ d2 <- bind_rows(d,
 @
 
 
+
+\begin{frame}[fragile]
+\frametitle{Andre Dawkin's 3-point percentage}
+{\tiny
+<<results='asis'>>=
+print(xtable(d |> 
+        mutate(date = format(date,"%Y-%m-%d"))) , 
+      include.rownames = FALSE)
+@
+}
+\end{frame}
+
+
 \begin{frame}[fragile]
 \frametitle{Andre Dawkin's 3-point percentage}
 <<dawkins-plot, out.width='0.7\\textwidth', dependson="dawkins-summary">>=
@@ -162,29 +183,17 @@ ggplot(d2,
 \end{frame}
 
 
-\begin{frame}[fragile]
-\frametitle{Andre Dawkin's 3-point percentage}
-{\tiny
-<<results='asis'>>=
-print(xtable(d |> 
-        mutate(date = format(date,"%Y-%m-%d"))) , 
-      include.rownames = FALSE)
-@
-}
-\end{frame}
-
-
 \section{Hierarchical models}
 \frame{\frametitle{Hierarchical models}
   Consider the following model
 	\[ \begin{array}{ll}
-	y_i &\stackrel{ind}{\sim} p(y|\theta_i) \pause \\
+	y_{ij} &\stackrel{ind}{\sim} p(y|\theta_i) \pause \\
 	\theta_i &\stackrel{ind}{\sim} p(\theta|\phi) \pause \\
 	\phi &\sim p(\phi)
 	\end{array} \]
   \pause where
   \begin{itemize}
-  \item $y_i$ is observed\pause,
+  \item $y_{ij}$ for $i=1\ldots,n_i$ are the observed data \pause,
 	\item $\theta=(\theta_1,\ldots,\theta_n)$ and $\phi$ are parameters\pause, and
 	\item only $\phi$ has a prior that is set.
 	\end{itemize}
@@ -198,12 +207,14 @@ print(xtable(d |>
 \frame{\frametitle{Posterior distribution for hierarchical models}
 	The joint posterior distribution of interest in hierarchical models is
 {\small
-	\[ \begin{array}{rl}
-  p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause =
-  p(y|\theta)p(\theta|\phi)p(\phi)\pause =
-  \Big[ \prod_{i=1}^n p(y_i|\theta_i)p(\theta_i|\phi)\Big] p(\phi).
-  \end{array} \]
+\[ \begin{array}{rl}
+p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause =
+p(y|\theta)p(\theta|\phi)p(\phi)\pause =
+\Big[ \prod_{i=1}^n  
+p(\theta_i|\phi)\Big] p(\phi).
+\end{array} \]
 }
+where $p(y_i|\theta_i) = \prod_{j=1}^{n_i} p(y_{ij}|\theta_i)$.
 	\pause The joint posterior distribution can be decomposed via
   \[ p(\theta,\phi|y) = p(\theta|\phi,y)p(\phi|y) \]
   where
@@ -292,7 +303,8 @@ Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\bet
 
 \begin{frame}[fragile]
 \frametitle{A prior distribution for $\alpha$ and $\beta$}
-  It seems reasonable to assume the mean ($\mu$) and size ($\eta$) are independent \emph{a priori}:
+  It seems reasonable to assume the expectation ($\mu$) and size ($\eta$) are 
+  independent \emph{a priori}:
   \[ p(\mu,\eta) = p(\mu)p(\eta) \]
 
     \vspace{0.1in} \pause
@@ -762,17 +774,18 @@ mean(theta[,4] > theta[,3])
 \begin{frame}
 \frametitle{Summary - hierarchical models}
 Two-level hierarchical model:
-\[ y_i\ind p(y|\theta_i) \qquad \theta_i \ind p(\theta|\phi) \qquad \phi\sim p(\phi) \phantom{|\psi\qquad \psi\sim p(\psi)} \]
+\[ y_{ij}\ind p(y|\theta_i) \qquad \theta_i \ind p(\theta|\phi) \qquad \phi\sim p(\phi) \phantom{|\psi\qquad \psi\sim p(\psi)} \]
 
 \vspace{0.2in} \pause
 
 Conditional independencies:
 \begin{itemize}
-\item $y_i \independent y_j | \theta$ for $i\ne j$
-\item $\theta_i \independent \theta_j | \phi$ for $i\ne j$
-\item $y \independent \phi | \theta$
-\item $y_i \independent y_j | \phi$ for $i\ne j$
-\item $\theta_i \independent \theta_j | \phi, y$ for $i\ne j$
+\item $y_{ij} \independent y_{ij'} | \theta$ for $j\ne j'$
+\item $y_{ij} \independent y_{i'j'} | \theta$ for $i\ne i'$ and any $j,j'$
+\item $\theta_i \independent \theta_{i'} | \phi$ for $i\ne i'$
+\item $y_{ij} \independent \phi | \theta$ for any $i,j$
+\item $y_{ij} \independent y_{i'j'} | \phi$ for $i\ne i'$ and any $j,j'$
+\item $\theta_i \independent \theta_{i'} | \phi, y$ for $i\ne i'$
 \end{itemize}
 \end{frame}
 
