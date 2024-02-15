@@ -1,4 +1,4 @@
-\documentclass[handout,aspectratio=169]{beamer}
+\documentclass[aspectratio=169]{beamer}
 
 \usepackage{verbatim}
 
@@ -233,10 +233,12 @@ where $p(y_i|\theta_i) = \prod_{j=1}^{n_i} p(y_{ij}|\theta_i)$.
 
 \section{Binomial hierarchical model}
 \frame{\frametitle{Three-pointer example}
-	Our statistical model
+	Let $Y_g$ be the number of three-pointers made in game $g$. 
+	\pause 
+	Assume
 	\[ \begin{array}{ll}
-	Y_i &\stackrel{ind}{\sim} Bin(n_i,\theta_i) \pause \\
-	\theta_i&\stackrel{ind}{\sim} Be(\alpha,\beta) \pause \\
+	Y_g &\stackrel{ind}{\sim} Bin(n_g,\theta_g) \pause \\
+	\theta_g&\stackrel{ind}{\sim} Be(\alpha,\beta) \pause \\
 	\alpha,\beta &\sim p(\alpha,\beta)
 	\end{array} \]
 
@@ -252,23 +254,23 @@ where $p(y_i|\theta_i) = \prod_{j=1}^{n_i} p(y_{ij}|\theta_i)$.
 
 \begin{frame}
 \frametitle{Decomposed posterior}
-  \[ Y_i \stackrel{ind}{\sim} Bin(n_i,\theta_i) \quad \theta_i\stackrel{ind}{\sim} Be(\alpha,\beta) \quad \alpha,\beta \sim p(\alpha,\beta) \]
+  \[ Y_g \stackrel{ind}{\sim} Bin(n_g,\theta_g) \quad \theta_g\stackrel{ind}{\sim} Be(\alpha,\beta) \quad \alpha,\beta \sim p(\alpha,\beta) \]
   Conditional posterior for $\theta$:
-\[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_i|\alpha,\beta,y_i) \pause = \prod_{i=1}^n Be(\theta_i|\alpha+y_i,\beta+n_i-y_i) \]
+\[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_g|\alpha,\beta,y_g) \pause = \prod_{i=1}^n Be(\theta_g|\alpha+y_g,\beta+n_g-y_g) \]
 \pause
 Marginal posterior for $(\alpha,\beta)$:
 {\small
 \[ \begin{array}{rl}
 p(\alpha,\beta|y) &\propto p(y|\alpha,\beta)p(\alpha,\beta) \pause \\
-p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_i|\alpha,\beta) \pause = \prod_{i=1}^n \int p(y_i|\theta_i)p(\theta_i|\alpha,\beta) d\theta_i \pause \\
-% &= \prod_{i=1}^n \int Bin(y_i|n_i,\theta_i)Be(\theta_i|\alpha,\beta) d\theta_i \pause \\
-% &= \prod_{i=1}^n \int_0^1 {n_i\choose y_i} \theta_i^{y_i} (1-\theta_i)^{n_i-y_i} \frac{\theta_i^{\alpha-1}(1-\theta_i)^{\beta-1}}{B(\alpha,\beta)} d\theta_i \pause \\
-% &= \prod_{i=1}^n {n_i\choose y_i}\frac{1}{B(\alpha,\beta)} \int_0^1 \theta_i^{\alpha+y_i-1} (1-\theta_i)^{\beta+n_i-y_i-1}  d\theta_i \pause \\
-&= \prod_{i=1}^n {n_i\choose y_i}\frac{B(\alpha+y_i,\beta+n_i-y_i)}{B(\alpha,\beta)}
+p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_g|\alpha,\beta) \pause = \prod_{i=1}^n \int p(y_g|\theta_g)p(\theta_g|\alpha,\beta) d\theta_g \pause \\
+% &= \prod_{i=1}^n \int Bin(y_g|n_g,\theta_g)Be(\theta_g|\alpha,\beta) d\theta_g \pause \\
+% &= \prod_{i=1}^n \int_0^1 {n_g\choose y_g} \theta_g^{y_g} (1-\theta_g)^{n_g-y_g} \frac{\theta_g^{\alpha-1}(1-\theta_g)^{\beta-1}}{B(\alpha,\beta)} d\theta_g \pause \\
+% &= \prod_{i=1}^n {n_g\choose y_g}\frac{1}{B(\alpha,\beta)} \int_0^1 \theta_g^{\alpha+y_g-1} (1-\theta_g)^{\beta+n_g-y_g-1}  d\theta_g \pause \\
+&= \prod_{i=1}^n {n_g\choose y_g}\frac{B(\alpha+y_g,\beta+n_g-y_g)}{B(\alpha,\beta)}
 \end{array} \]
 }
 \pause
-Thus $y_i|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_i,\alpha,\beta)$.
+Thus $y_g|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_g,\alpha,\beta)$.
 \end{frame}
 
 
@@ -673,14 +675,18 @@ ggpairs(data.frame(theta22=theta22,theta23=theta23),
 \begin{frame}[fragile]
 \frametitle{3-point percentage across seasons}
 
-An alternative to modeling game-specific 3-point percentage is to model 3-point percentage in a season. \pause The model is exactly the same, but the data changes. \pause
+An alternative to modeling game-specific 3-point percentage is to model 
+season-specific 3-point percentage. 
+\pause 
+The model is exactly the same, but the data changes. \pause
 
 <<season-data, results='asis'>>=
 d <- data.frame(season = 1:4, y = c(36,64,67,64), n = c(95,150,171,152))
 print(xtable(d, digits=0), include.rownames = FALSE)
 @
 
-Due to the low number of seasons (observations), we will use an informative prior for $\alpha$ and $\beta$.
+Due to the low number of seasons (observations), 
+we will use an informative prior for $\alpha$ and $\beta$.
 
 \end{frame}
 
