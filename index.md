@@ -29,7 +29,7 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
 ## Contact
 
 - Mailing: Department of Statistics, Iowa State University, Ames, IA 50011-1210
-- Office: [Snedecor 2208](http://www.fpm.iastate.edu/maps/default.asp?zoom=2&xcenter=1471&ycenter=1869&background=map&layer=buildingnames&xshow=1470&yshow=1868 "Map to Snedecor Hall")
+- Office: [Snedecor 2103](http://www.fpm.iastate.edu/maps/default.asp?zoom=2&xcenter=1471&ycenter=1869&background=map&layer=buildingnames&xshow=1470&yshow=1868 "Map to Snedecor Hall")
 - Email: <niemi@iastate.edu>
 - Social: 
   - [LinkedIn](http://www.linkedin.com/in/jaradniemi "Jarad Niemi's LinkedIn account")
