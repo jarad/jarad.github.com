@@ -1,4 +1,4 @@
-\documentclass[aspectratio=169]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \usepackage{verbatim}
 
@@ -70,23 +70,26 @@ set.seed(1)
 
 \section{Modeling}
 \frame{\frametitle{Andre Dawkin's three-point percentage}
-  Suppose $Y_i = \sum_{j=1}^{n_i} Y_{ij}$ are the number 3-pointers Andre Dawkin's makes in season $i$, \pause and assume
+Let $Y_s = \sum_{j=1}^{n_s} Y_{sj}$ be
+the number 3-pointers Andre Dawkin's makes in season $s$, 
+\pause 
+and assume
 \[ 
-Y_i \ind Bin(n_i,\theta_i) \pause
+Y_s \ind Bin(n_s,\theta_s) \pause
 \quad \mbox{or, equivalently,} \quad
-Y_{ij} \ind Ber(\theta_i) \, i=1,\ldots,n_i
+Y_{sj} \ind Ber(\theta_s) \, j=1,\ldots,n_s
 \]
   where
   \begin{itemize}[<+->]
-  \item $n_i$ are the number of 3-pointers attempted and
-  \item $\theta_i$ is the probability of making a 3-pointer in season $i$.
+  \item $n_s$ are the number of 3-pointers attempted and
+  \item $\theta_s$ is the probability of making a 3-pointer in season $i$.
   \end{itemize}
 
   \vspace{0.2in} \pause
 
   Do these models make sense?
   \begin{itemize}[<+->]
-  \item The 3-point percentage every season is the same, i.e. $\theta_i=\theta$.
+  \item The 3-point percentage every season is the same, i.e. $\theta_s=\theta$.
   \item The 3-point percentage every season is independent of other seasons.
   \item The 3-point percentage a season should be similar to other seasons.
   \end{itemize}
@@ -94,23 +97,25 @@ Y_{ij} \ind Ber(\theta_i) \, i=1,\ldots,n_i
 
 
 \frame{\frametitle{Andre Dawkin's three-point percentage}
-  Suppose $Y_i= \sum_{j=1}^{n_i} Y_{ij}$ are the number of 3-pointers Andre Dawkin's makes in \alert{game} $i$, and assume
+Let $Y_g= \sum_{j=1}^{n_g} Y_{gj}$ be the number of 3-pointers Andre Dawkin's 
+makes in \alert{game} $g$, 
+and assume
 \[ 
-Y_i \ind Bin(n_i,\theta_i) 
+Y_g \ind Bin(n_g,\theta_g) 
 \quad \mbox{or, equivalently,} \quad
-Y_{ij} \ind Ber(\theta_i) \, i=1,\ldots,n_i
+Y_{gj} \ind Ber(\theta_g) \, j=1,\ldots,n_g
 \]
   where
   \begin{itemize}
-  \item $n_i$ are the number of 3-pointers attempted in \alert{game} $i$ and
-  \item $\theta_i$ is the probability of making a 3-pointer in \alert{game} $i$.
+  \item $n_g$ are the number of 3-pointers attempted in \alert{game} $i$ and
+  \item $\theta_g$ is the probability of making a 3-pointer in \alert{game} $i$.
   \end{itemize}
 
   \vspace{0.2in} \pause
 
   Do these models make sense?
   \begin{itemize}
-  \item The 3-point percentage every \alert{game} is the same, i.e. $\theta_i=\theta$.
+  \item The 3-point percentage every \alert{game} is the same, i.e. $\theta_g=\theta$.
   \item The 3-point percentage every \alert{game} is independent of other \alert{games}.
   \item The 3-point percentage a \alert{game} should be similar to other \alert{games}.
   \end{itemize}
@@ -187,8 +192,8 @@ ggplot(d2,
 \frame{\frametitle{Hierarchical models}
   Consider the following model
 	\[ \begin{array}{ll}
-	y_{ij} &\stackrel{ind}{\sim} p(y|\theta_i) \pause \\
-	\theta_i &\stackrel{ind}{\sim} p(\theta|\phi) \pause \\
+	y_{ij} &\ind p(y|\theta_i) \pause \\
+	\theta_i &\ind p(\theta|\phi) \pause \\
 	\phi &\sim p(\phi)
 	\end{array} \]
   \pause where
@@ -210,7 +215,7 @@ ggplot(d2,
 \[ \begin{array}{rl}
 p(\theta,\phi|y) \pause \propto p(y|\theta,\phi)p(\theta,\phi) \pause =
 p(y|\theta)p(\theta|\phi)p(\phi)\pause =
-\Big[ \prod_{i=1}^n  
+\Big[ \prod_{i=1}^n p(y_i|\theta_i)  
 p(\theta_i|\phi)\Big] p(\phi).
 \end{array} \]
 }
@@ -233,12 +238,15 @@ where $p(y_i|\theta_i) = \prod_{j=1}^{n_i} p(y_{ij}|\theta_i)$.
 
 \section{Binomial hierarchical model}
 \frame{\frametitle{Three-pointer example}
-	Let $Y_g$ be the number of three-pointers made in game $g$. 
+Let $Y_{i,g}$ be an indicator that 3-point attempt $i$ in game $g$ was successful for $i = 1,\ldots,n_g$ \pause and $Y_g = \sum_{i=1}^{n_g} Y_{i,g}$. 
 	\pause 
 	Assume
 	\[ \begin{array}{ll}
-	Y_g &\stackrel{ind}{\sim} Bin(n_g,\theta_g) \pause \\
-	\theta_g&\stackrel{ind}{\sim} Be(\alpha,\beta) \pause \\
+	Y_{i,g} &\ind Ber(\theta_g) \pause 
+	\quad \mbox{or, equivalently} \quad
+	Y_g \ind Bin(n_g, \theta_g)
+	\pause \\
+	\theta_g&\ind Be(\alpha,\beta) \pause \\
 	\alpha,\beta &\sim p(\alpha,\beta)
 	\end{array} \]
 
@@ -254,7 +262,7 @@ where $p(y_i|\theta_i) = \prod_{j=1}^{n_i} p(y_{ij}|\theta_i)$.
 
 \begin{frame}
 \frametitle{Decomposed posterior}
-  \[ Y_g \stackrel{ind}{\sim} Bin(n_g,\theta_g) \quad \theta_g\stackrel{ind}{\sim} Be(\alpha,\beta) \quad \alpha,\beta \sim p(\alpha,\beta) \]
+  \[ Y_g \ind Bin(n_g,\theta_g) \quad \theta_g\ind Be(\alpha,\beta) \quad \alpha,\beta \sim p(\alpha,\beta) \]
   Conditional posterior for $\theta$:
 \[ p(\theta|\alpha,\beta,y) = \prod_{i=1}^n p(\theta_g|\alpha,\beta,y_g) \pause = \prod_{i=1}^n Be(\theta_g|\alpha+y_g,\beta+n_g-y_g) \]
 \pause
@@ -270,7 +278,7 @@ p(y|\alpha,\beta) &= \prod_{i=1}^n p(y_g|\alpha,\beta) \pause = \prod_{i=1}^n \i
 \end{array} \]
 }
 \pause
-Thus $y_g|\alpha,\beta \stackrel{ind}{\sim} \mbox{Beta-binomial}(n_g,\alpha,\beta)$.
+Thus $y_g|\alpha,\beta \ind \mbox{Beta-binomial}(n_g,\alpha,\beta)$.
 \end{frame}
 
 
@@ -378,9 +386,9 @@ cor(prior_draws$alpha, prior_draws$beta)
 <<stan, echo=TRUE>>=
 model_informative_prior = "
 data {
-  int<lower=0> N;    // data
-  int<lower=0> n[N];
-  int<lower=0> y[N];
+  int<lower=0> G;    // data
+  int<lower=0> n[G];
+  int<lower=0> y[G];
   real<lower=0> a;   // prior
   real<lower=0> b;
   real<lower=0> e;
@@ -388,7 +396,7 @@ data {
 parameters {
   real<lower=0,upper=1> mu;
   real<lower=0> eta;
-  real<lower=0,upper=1> theta[N];
+  real<lower=0,upper=1> theta[G];
 }
 transformed parameters {
   real<lower=0> alpha;
@@ -412,7 +420,7 @@ model {
 \begin{frame}[fragile]
 \frametitle{Stan}
 <<stan-run, dependson=c('informative-prior','stan',"dawkins-data"), echo=TRUE, results='hide'>>=
-dat = list(y = d$made, n = d$attempts, N = nrow(d),a = a, b = b, e = e)
+dat = list(y = d$made, n = d$attempts, G = nrow(d), a = a, b = b, e = e)
 m = stan_model(model_code = model_informative_prior)
 r = sampling(m, dat, c("mu","eta","alpha","beta","theta"),
              iter = 10000)
@@ -500,14 +508,14 @@ ggplot(bind_rows(d, new_d), aes(x=lcl,
 <<stan2-run, echo=TRUE, results='hide', dependson="stan-run">>=
 model_default_prior <- "
 data {
-  int<lower=0> N;
-  int<lower=0> n[N];
-  int<lower=0> y[N];
+  int<lower=0> G;
+  int<lower=0> n[G];
+  int<lower=0> y[G];
 }
 parameters {
   real<lower=0> alpha;
   real<lower=0> beta;
-  real<lower=0,upper=1> theta[N];
+  real<lower=0,upper=1> theta[G];
 }
 
 model {
@@ -534,13 +542,13 @@ r2 <- sampling(m2, dat, c("alpha","beta","theta"), iter = 10000,
 An alternative to jointly sampling $\theta,\alpha,\beta$ is to
 \begin{enumerate}
 \item sample $\alpha,\beta\sim p(\alpha,\beta|y)$\pause, and then
-\item sample $\theta_i \stackrel{ind}{\sim} p(\theta_i|\alpha,\beta,y_i) \stackrel{d}{=} Be(\alpha+y_i,\beta+n_i-y_i)$.
+\item sample $\theta_g \ind p(\theta_g|\alpha,\beta,y_g) \stackrel{d}{=} Be(\alpha+y_g,\beta+n_g-y_g)$.
 \end{enumerate}
 
 \vspace{0.2in} \pause
 
-The maginal posterior for $\alpha,\beta$ is
-\[ p(\alpha,\beta|y) \propto p(y|\alpha,\beta)p(\alpha,\beta) = \left[ \prod_{i=1}^n \mbox{Beta-binomial}(y_i|n_i,\alpha,\beta) \right] p(\alpha,\beta) \]
+The marginal posterior for $\alpha,\beta$ is
+\[ p(\alpha,\beta|y) \propto p(y|\alpha,\beta)p(\alpha,\beta) = \left[ \prod_{g=1}^G \mbox{Beta-binomial}(y_g|n_g,\alpha,\beta) \right] p(\alpha,\beta) \]
 
 \end{frame}
 
@@ -551,9 +559,9 @@ The maginal posterior for $\alpha,\beta$ is
 # Marginalized (integrated) theta out of the model
 model_marginalized <- "
 data {
-  int<lower=0> N;
-  int<lower=0> n[N];
-  int<lower=0> y[N];
+  int<lower=0> G;
+  int<lower=0> n[G];
+  int<lower=0> y[G];
 }
 parameters {
   real<lower=0> alpha;
@@ -564,8 +572,8 @@ model {
   y     ~ beta_binomial(n,alpha,beta);
 }
 generated quantities {
-  real<lower=0,upper=1> theta[N];
-  for (i in 1:N)
+  real<lower=0,upper=1> theta[G];
+  for (i in 1:G)
     theta[i] = beta_rng(alpha+y[i],beta+n[i]-y[i]);
 }
 "
@@ -696,7 +704,7 @@ we will use an informative prior for $\alpha$ and $\beta$.
 <<stan-season, echo=TRUE, results='hide'>>=
 model_seasons <- "
 data {
-  int<lower=0> N; int<lower=0> n[N]; int<lower=0> y[N];
+  int<lower=0> G; int<lower=0> n[G]; int<lower=0> y[G];
   real<lower=0> a; real<lower=0> b; real<lower=0> e;
 }
 parameters {
@@ -715,8 +723,8 @@ model {
   y   ~ beta_binomial(n,alpha,beta);
 }
 generated quantities {
-  real<lower=0,upper=1> theta[N];
-  for (i in 1:N) theta[i] = beta_rng(alpha+y[i], beta+n[i]-y[i]);
+  real<lower=0,upper=1> theta[G];
+  for (g in 1:G) theta[g] = beta_rng(alpha+y[g], beta+n[g]-y[g]);
 }
 "
 @
@@ -725,7 +733,7 @@ generated quantities {
 \begin{frame}[fragile]
 \frametitle{Run stan}
 <<stan-season-run, dependson=c('season-data','stan-season'), echo=TRUE>>=
-dat       <- list(N = nrow(d), y = d$y, n = d$n, a = a, b = b, e = e)
+dat       <- list(G = nrow(d), y = d$y, n = d$n, a = a, b = b, e = e)
 m4        <- stan_model(model_code = model_seasons)
 r_seasons <- sampling(m4, dat, iter = 10000,
                      c("alpha","beta","mu","eta","theta"))
