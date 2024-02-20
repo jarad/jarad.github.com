@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -8,32 +8,25 @@
 \begin{document}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
-opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
-               size='tiny', 
-               out.width='0.8\\textwidth', 
-               fig.align='center', 
-               message=FALSE,
-               echo=FALSE,
-               cache=TRUE)
-options(width=120)
+opts_chunk$set(comment    = NA, 
+               fig.width  = 5, 
+               fig.height = 3, 
+               size       ='tiny', 
+               out.width  ='0.8\\textwidth', 
+               fig.align  ='center', 
+               message    = FALSE,
+               echo       = FALSE,
+               cache      = TRUE)
+options(width = 120)
 @
 
-<<libraries, message=FALSE, warning=FALSE>>=
-library(reshape2)
-library(plyr)
-library(dplyr)
+<<packages, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
+library("xtable")
 
-library(ggplot2)
-library(xtable)
-
-library(rstan)
+library("rstan")
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
-@
-
-<<set_seed>>=
-set.seed(1)
 @
 
 
@@ -82,25 +75,40 @@ An experiment is run and the posterior under these different priors are compared
 \begin{frame}
 \frametitle{Posteriors}
 
-<<>>=
-prior = data.frame(a=c(1,1,100), b=c(100,1,1), 
-                   type=factor(c("skeptic","agnostic","believer"),
-                               c("skeptic","agnostic","believer")),
-                   n=10^rep(1:6, each=3)) 
+<<posteriors>>=
+prior <- tribble(
+  ~type, ~a, ~b,
+  "skeptic", 1, 100,
+  "agnostic", 1, 1,
+  "believer", 100, 1
+) |>
+  mutate(
+    type = factor(type, 
+                  levels = type)
+  )
 
-p = 0.9
-d = ddply(prior, .(type, n), function(x) {
-  data.frame(xx=seq(0,1,by=0.01)) %>%
-    mutate(yy=dbeta(xx, x$a+p*x$n, x$b+(1-p)*x$n))
-}) %>% 
-  mutate(nf = paste0("n=",n))
+p <- 0.9
+d <- expand_grid(prior,
+                 n = c(0, 10^(1:5)),
+                 x = seq(0,1,by=0.01)) |>
+  mutate(
+    density = dbeta(x,
+                    a + p*n,
+                    b + (1-p)*n)
+  )
+@
 
-ggplot(d, aes(x=xx,y=yy,col=type, linetype=type)) + 
+<<posteriors-plot, dependson="posteriors">>=
+ggplot(d, aes(x        = x,
+              y        = density,
+              col      = type, 
+              linetype = type)) + 
   geom_line() +
-  facet_wrap(~nf, scales='free') + 
-  labs(x=expression(theta), y=expression(paste("p(",theta,"|y)"))) +
-  theme_bw() +
-  theme(legend.position="bottom")
+  facet_wrap(~n, 
+             scales='free',
+             labeller = label_both) + 
+  labs(x = expression(theta), 
+       y = expression(paste("p(",theta,"|y)")))
 @
 \end{frame}
 
@@ -123,7 +131,7 @@ As an attempt to be non-informative, consider an $IG(\epsilon,\epsilon)$ prior f
 
 The \href{https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started}{8-schools example} has the following data:
 
-<<results='asis'>>=
+<<data, results='asis'>>=
 d = data.frame(y = c(28,  8, -3,  7, -1,  1, 18, 12),
                s = c(15, 10, 16, 11,  9, 11, 10, 18))
 print(xtable(t(d), digits=0))
@@ -134,49 +142,78 @@ print(xtable(t(d), digits=0))
 
 \begin{frame}
 \frametitle{Posterior for 8-schools example}
-Reproduction of \href{http://projecteuclid.org/euclid.ba/1340371048}{Gelman 2006}:
-<<analysis, echo=FALSE, fig.width=8, warning=FALSE>>=
+Reproduction of \href{http://projecteuclid.org/euclid.ba/1340371048}{Gelman 2006} and more:
+<<eight-schools, echo=FALSE, fig.width=8, warning=FALSE, dependson="data">>=
 dinvgamma = function(x, a, b) dgamma(1/x,a,b)/x^2
 dsqrtinvgamma = function(x, a, b) dinvgamma(x^2, a, b)*2*x
 
 tau_log_posterior = function(tau, y, si2) 
 {
-  spt = si2+tau^2
-  Vmu = 1/sum(1/spt)
-  mu = sum(y/spt)*Vmu
+  spt <- si2+tau^2
+  Vmu <- 1/sum(1/spt)
+  mu  <- sum(y/spt)*Vmu
   0.5*log(Vmu)+sum(-0.5*log(spt)-(y-mu)^2/(2*spt))
 }
 
-V_tau_log_posterior = Vectorize(tau_log_posterior,"tau")
+V_tau_log_posterior <- Vectorize(tau_log_posterior,"tau")
 
 
 
-h = 0.001
-e = 0.001
+h <- 0.001
+e <- 0.001
 
-df = data.frame(x = seq(0,20-h, by=h)+h/2) %>%
-  mutate(log_like = V_tau_log_posterior(x, d$y, d$s^2),
-         'IG(1,1)'    = log(dsqrtinvgamma(x,1,1)),
-         'IG(e,e)'    = log(dsqrtinvgamma(x,e,e)),
-         'Unif(0,20)' = 0,
-         'Ca^*(0,5)'  = dcauchy(x, 0, 10, log=TRUE)) %>%
-  melt(id.var=c('x','log_like'), 
-       variable.name = 'Distribution', 
-       value.name = 'log_prior') %>%
-  mutate(log_posterior = log_like + log_prior) %>%
-  group_by(Distribution) %>% 
-  mutate(prior = exp(log_prior-max(log_prior)),
-         prior = prior/sum(prior)/h,
-         posterior = exp(log_posterior-max(log_posterior)),
-         posterior = posterior/sum(posterior)/h) %>%
-  melt(measure.vars = c('prior','posterior'), 
-       value.name = 'density')
-  
-ggplot(df, aes(x, density, color=variable, linetype=variable, group=variable)) +
+df <- data.frame(x = seq(0, 20-h, by = h) + h/2) |>
+  mutate(
+    log_like     = V_tau_log_posterior(x, d$y, d$s^2),
+    'IG(10,10)'  = log(dsqrtinvgamma(x,10,10)),
+    'IG( 1, 1)'  = log(dsqrtinvgamma(x,1,1)),
+    'IG( e, e)'  = log(dsqrtinvgamma(x,e,e)),
+    'Unif(0,20)' = 0,
+    'Ca^+(0,10)'  = dcauchy(x, 0, 10, log=TRUE),
+    'N^+(0,20)'   = dnorm(  x, 0, 20, log=TRUE)
+  ) |>
+  pivot_longer(
+    `IG(10,10)`:`N^+(0,20)`,
+    names_to  = "Prior",
+    values_to = "log_prior"
+  ) |>
+  mutate(
+    Prior = factor(Prior,
+                   levels = c(
+                     'IG(10,10)',
+                     'IG( 1, 1)',
+                     'IG( e, e)',
+                     'Unif(0,20)',
+                     'Ca^+(0,10)',
+                     'N^+(0,20)'
+                   )),
+    log_posterior = log_like + log_prior,
+    
+    prior     = exp(log_prior - max(log_prior)),
+    prior     = prior / sum(prior) / h,
+    
+    posterior = exp(log_posterior - max(log_posterior)),
+    posterior = posterior / sum(posterior) / h
+  ) |>
+  pivot_longer(
+    prior:posterior,
+    names_to = "Distribution",
+    values_to = "density"
+  )
+@  
+
+<<eight-schools-plot, dependson="eight-schools">>=
+ggplot(df, 
+       aes(
+         x        = x, 
+         y        = density, 
+         color    = Distribution, 
+         linetype = Distribution, 
+         group    = Distribution)) +
   geom_line() + 
-  facet_wrap(~Distribution, scales='free') +
-  theme_bw() + 
-  theme(legend.position="bottom")
+  facet_wrap(
+    ~Prior, 
+    scales = 'free') 
 @
 \end{frame}
 
@@ -184,12 +221,14 @@ ggplot(df, aes(x, density, color=variable, linetype=variable, group=variable)) +
 \begin{frame}
 \frametitle{Summary}
 
-For a default prior on a variance ($\sigma^2$) or standard deviation ($\sigma$), use 
+For a default prior on a variance ($\sigma^2$) or standard deviation ($\sigma$),
+use 
 
 \begin{enumerate}
 \item Easy to remember.
   \begin{itemize}
-  \item Half-Cauchy on the standard deviation ($\sigma \sim Ca^+(0,C)$). \pause
+  \item Half-Cauchy on the standard deviation ($\sigma \sim Ca^+(0,C)$) \pause
+  \item Half-normal on the standard deviation ($\sigma \sim N^+(0,C)$) \pause
   \end{itemize}
 \item Harder to remember
   \begin{itemize}
@@ -200,21 +239,21 @@ For a default prior on a variance ($\sigma^2$) or standard deviation ($\sigma$),
   \item Hierarchical standard deviation
     \begin{itemize}
     \item Use uniform prior (Unif$(0,C)$) if there are enough reps (5 or more) of that parameter. \pause 
-    \item Use half-Cauchy prior ($Ca^+(0,C)$) otherwise.
+    \item Use half-Cauchy prior ($Ca^+(0,C)$) otherwise.\pause 
+    \item Use half-normal prior ($N^+(0,C)$) otherwise.
     \end{itemize}
   \end{itemize}
 \end{enumerate}
+\end{frame}
 
-\vspace{0.2in} \pause
-
-{\footnotesize
-
+\begin{frame}
+\frametitle{Summary - notes}
 When assigning the values for $C$
 \begin{itemize}
 \item For a uniform prior (Unif$(0,C)$) make sure $C$ is large enough to capture any reasonable value for the standard deviation.
 \item For a half-Cauchy prior ($Ca^+(0,C)$) err on the side of making $C$ too small since the heavy tails will let the data tell you if the standard deviation needs to be larger whereas a value of $C$ that is too large will put too much weight toward large values of the standard deviation and make the prior more informative.
+\item For a half-normal prior ($Ca^+(0,C)$) err on the side of making $C$ too large since the light tails will not allow the data to tell you if the standard deviation needs to be larger whereas a value of $C$ that is too small will put too much weight toward small values of the standard deviation and make the prior more informative.
 \end{itemize}
-}
 \end{frame}
 
 
@@ -257,12 +296,12 @@ When assigning the values for $C$
   \[ Y_i \stackrel{ind}{\sim} Po(x_i\lambda) \qquad p(\lambda)\propto 1/\sqrt{\lambda}. \]
   \pause
 \footnotesize
-<<airline_accident_data, results='asis'>>=
-d = data.frame(year=1976:1985, 
-              fatal_accidents = c(24,25,31,31,22,21,26,20,16,22),
-              passenger_deaths = c(734,516,754,877,814,362,764,809,223,1066),
-              death_rate = c(0.19,0.12,0.15,0.16,0.14,0.06,0.13,0.13,0.03,0.15))
-d$miles_flown = d$passenger_deaths/d$death_rate # 100 million miles
+<<airline-accident-data, results='asis'>>=
+d <- data.frame(year            = 1976:1985, 
+                fatal_accidents  = c(24,25,31,31,22,21,26,20,16,22),
+                passenger_deaths = c(734,516,754,877,814,362,764,809,223,1066),
+                death_rate       = c(0.19,0.12,0.15,0.16,0.14,0.06,0.13,0.13,0.03,0.15))
+d$miles_flown <- d$passenger_deaths/d$death_rate # 100 million miles
 print(xtable(d, digits=0, include.rownames=FALSE))
 @
 \end{frame}
@@ -279,26 +318,30 @@ print(xtable(d, digits=0, include.rownames=FALSE))
   \item $y^{rep,j}_i \stackrel{ind}{\sim} Po(x_i\lambda^{(j)})$ for $i=1,\ldots,n$.
   \end{enumerate}
 
-<<airline_fatalities>>=
+<<airline-accident-replicates, dependson="airline-accident-data">>=
 # Jeffreys prior
-a = 0.5 + sum(d$fatal_accidents)
-b = 0   + sum(d$miles_flown)
+a <- 0.5 + sum(d$fatal_accidents)
+b <- 0   + sum(d$miles_flown)
 
 # Replicate data
-rep = rdply(19, { 
-  tmp=d
-  lambda = rgamma(1,a,b)
-  tmp$fatal_accidents = rpois(nrow(tmp), lambda*tmp$miles_flown)
-  tmp 
-})
-id = sample(20,1) # Choose a random spot to insert observed data set
-if (id==20) {
-  d$.n = 20
-  rep = rbind(rep,d)
+rep <- data.frame(
+  .n = 1:19,
+  lambda = rgamma(19, a, b)
+) |>
+  expand_grid(d) |>
+  mutate(
+    fatal_accidents = rpois(n(), lambda * miles_flown)
+  ) |>
+  select(-lambda)
+
+id <- sample(20,1) # Choose a random spot to insert observed data set
+if (id == 20) {
+  d$.n <- 20
+  rep <- rbind(rep,d)
 } else {
-  rep$.n[rep$.n==id] = 20
-  d$.n = id
-  rep = rbind(rep,d) 
+  rep$.n[rep$.n == id] <- 20
+  d$.n <- id
+  rep <- rbind(rep,d) 
 }
 @
 \end{frame}
@@ -306,11 +349,13 @@ if (id==20) {
 
 
 \begin{frame}[fragile]
-<<histograms, message=FALSE>>=
-ggplot(rep, aes(x=fatal_accidents, fill=factor(1))) + 
+<<airline-accident-histograms, message=FALSE, dependson="airline-accident-replicates">>=
+ggplot(rep, 
+       aes(
+         x    = fatal_accidents, 
+         fill = factor(1))) + 
   geom_histogram(binwidth=1) +
   facet_wrap(~.n) +
-  theme_bw() +
   theme(legend.position="none")
 @
 \end{frame}
@@ -318,11 +363,13 @@ ggplot(rep, aes(x=fatal_accidents, fill=factor(1))) +
 
 
 \begin{frame}[fragile]
-<<histograms_observed, message=FALSE>>=
-ggplot(rep, aes(x=fatal_accidents, fill=.n==id)) + 
+<<airline-accident-histograms-observed, message=FALSE, dependson="airline-accident-replicates">>=
+ggplot(rep, 
+       aes(
+         x = fatal_accidents, 
+         fill = .n==id)) + 
   geom_histogram(binwidth=1) +
   facet_wrap(~.n) +
-  theme_bw() +
   theme(legend.position="none")
 @
 \end{frame}
@@ -339,7 +386,7 @@ ggplot(rep, aes(x=fatal_accidents, fill=.n==id)) +
   \[ Y_i \stackrel{ind}{\sim} Po(x_i\lambda) \qquad p(\lambda)\propto 1/\sqrt{\lambda}. \]
   
 \footnotesize
-<<results='asis'>>=
+<<results='asis', dependson="airline-accident-data">>=
 print(xtable(d, digits=0, include.rownames=FALSE))
 @
 \end{frame}
@@ -347,19 +394,22 @@ print(xtable(d, digits=0, include.rownames=FALSE))
 
 
 \begin{frame}[fragile]
-<<scatterplot>>=
+<<replicates-scatterplot, dependson="airline-accident-replicates">>=
 # change random data location
-old_id = id
-id = sample(20,1) # Choose a random spot to insert observed data set
-rep$.n[rep$.n==old_id] = 21
-rep$.n[rep$.n==id    ] = old_id
-rep$.n[rep$.n==21    ] = id
+old_id <- id
+id <- sample(20,1) # Choose a random spot to insert observed data set
+rep$.n[rep$.n==old_id] <- 21
+rep$.n[rep$.n==id    ] <- old_id
+rep$.n[rep$.n==21    ] <- id
 
 
-g = ggplot(rep, aes(x=year, y=fatal_accidents, col=factor(1))) + 
+g <- ggplot(rep, 
+           aes(
+             x = year, 
+             y = fatal_accidents, 
+             col = factor(1))) + 
   geom_point() + 
   facet_wrap(~.n) +
-  theme_bw() +
   theme(legend.position="none")
 g
 @
@@ -367,15 +417,15 @@ g
 
 
 \begin{frame}[fragile]
-<<scatterplot_with_regression_line>>=
-g = g + stat_smooth(method="lm", formula=y~x)
+<<replicates-scatterplot-with-regression-line, dependson="replicates-scatterplot">>=
+g <- g + stat_smooth(method="lm", formula=y~x)
 g
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-<<scatterplot_with_observed>>=
+<<replicate-scatterplot-with-observed, dependson="replicates-scatterplot-with-regression-line">>=
 g + aes(col=.n==id)
 @
 \end{frame}
@@ -426,13 +476,14 @@ g + aes(col=.n==id)
   Now compare $\beta_1^{obs}$ to the distribution of $\beta_1^{rep}$.
 
 <<slope, cache=TRUE>>=
-rep = rdply(1000, { 
-  tmp=d
-  lambda = rgamma(1,a,b)
-  tmp$fatal_accidents = rpois(nrow(d), lambda*d$miles_flown)
-  data.frame(beta1 = coefficients(lm(fatal_accidents~year, tmp))[2])
-})
-observed_slope = coefficients(lm(fatal_accidents~year,d))[2]
+rep <- data.frame(
+  beta1 = replicate(1000, {
+    lambda <- rgamma(1, a, b)
+    d$fatal_accidents <- rpois(nrow(d), lambda*d$miles_flown)
+    coefficients(lm(fatal_accidents~year, d))[2]
+  })
+)
+observed_slope <- coefficients(lm(fatal_accidents ~ year,d))[2]
 @
 \end{frame}
 
@@ -440,7 +491,7 @@ observed_slope = coefficients(lm(fatal_accidents~year,d))[2]
 
 \begin{frame}[fragile]
 <<slope_plot, dependson="slope", fig.width=8, echo=TRUE>>=
-mean(rep$beta1>observed_slope) 
+mean(rep$beta1 > observed_slope) 
 ggplot(rep, aes(x=beta1)) + geom_histogram(binwidth=0.1) + 
   geom_vline(xintercept=observed_slope, color="red") +
   theme_bw()
@@ -473,7 +524,7 @@ ggplot(rep, aes(x=beta1)) + geom_histogram(binwidth=0.1) +
 
 \begin{frame}[fragile]
 \frametitle{Stan linear model for accident rate}
-<<stan, echo=TRUE, results='hide', cache=TRUE>>=
+<<stan-model, echo=TRUE, results='hide'>>=
 model = "
 data {
   int<lower=0> n;
@@ -495,14 +546,23 @@ model {
   y ~ poisson_log(log_x + log_lambda); # _log indicates mean on log scale
 }
 "
-
-m = stan_model(model_code = model)
-r = sampling(m, list(n=nrow(d), y=d$fatal_accidents, x=d$miles_flown))
 @
 \end{frame}
 
 \begin{frame}[fragile]
-<<stan_posteriors, dependson='stan'>>=
+\frametitle{Stan run}
+<<stan, dependson=c("stan-model","airline-accident-data"), echo=TRUE, message=FALSE>>=
+m <- stan_model(model_code = model) # compile model
+r <- sampling(m, 
+              list(n = nrow(d), 
+                      y = d$fatal_accidents, 
+                      x = d$miles_flown),
+              iter = 10000)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<stan-posteriors, dependson='stan', echo=TRUE>>=
 r
 @
 \end{frame}
@@ -510,32 +570,37 @@ r
 
 \begin{frame}[fragile]
 \frametitle{Posterior predictive pvalue: slope}
-<<stan_rep, dependson='stan', cache=TRUE>>=
-log_lambda = extract(r, "log_lambda")[["log_lambda"]]
-reps = adply(log_lambda, 1, function(a) {
-  d = data.frame(yrep = rpois(nrow(d), d$miles_flown * exp(a)),
-             year = 1:10)
+<<stan-rep, dependson='stan', echo=TRUE>>=
+# Need to update to eliminate plyr dependency
+library("plyr")
+log_lambda <- extract(r, "log_lambda")[["log_lambda"]]
+reps <- plyr::adply(log_lambda, 1, function(a) {
+  d <- data.frame(
+    yrep = rpois(nrow(d), d$miles_flown * exp(a)),
+    year = 1:10)
 })
 
-rep_slopes = daply(reps, .(iterations), function(d) {
-  slopes=coefficients(lm(yrep~year, d))[2]
+rep_slopes = plyr::daply(reps, .(iterations), function(d) {
+  slopes = coefficients(lm(yrep ~ year, d))[2]
 })
 @
 
-<<echo=TRUE, dependson='stan_rep'>>=
+<<posterior-predictive-pvalue, echo=TRUE, dependson='stan-rep'>>=
 # Posterior predictive pvalue: slope
-mean(rep_slopes>observed_slope)
-@
-
-<<fig.width=8, dependson='stan_rep'>>=
-ggplot(data.frame(slopes=rep_slopes), aes(x=slopes)) + 
-  geom_histogram(binwidth=0.1) + 
-  geom_vline(xintercept = observed_slope, color='red') +
-  theme_bw()
+mean(rep_slopes > observed_slope)
 @
 \end{frame}
 
-
+\begin{frame}
+<<posterior-predictive-pvalue-plot, dependson='stan-rep'>>=
+ggplot(data.frame(slopes = rep_slopes), 
+       aes(x = slopes)) + 
+  geom_histogram(binwidth = 0.1) + 
+  geom_vline(
+    xintercept = observed_slope, 
+    color      = 'red') 
+@
+\end{frame}
 
 
 \end{document}
