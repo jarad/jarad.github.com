@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -8,11 +8,11 @@
 \begin{document}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
-opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
-               size='tiny', 
-               out.width='0.8\\textwidth', 
-               fig.align='center', 
+opts_chunk$set(comment=NA,
+               fig.width=5, fig.height=3,
+               size='tiny',
+               out.width='0.8\\textwidth',
+               fig.align='center',
                message=FALSE,
                echo=FALSE,
                cache=TRUE)
@@ -22,7 +22,7 @@ options(width=120)
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
 library("reshape2")
 library("plyr")
-library("ggplot2")
+library("ggplot2"); theme_set(theme_bw())
 library("xtable")
 library("rstan")
 @
@@ -44,14 +44,14 @@ set.seed(1)
   \item Statistical hypothesis testing
   \item Simple vs composite hypotheses
   \end{itemize}
-\item Simple Bayesian hypothesis testing 
+\item Simple Bayesian hypothesis testing
   \begin{itemize}
   \item All simple hypotheses
   \item All composite hypotheses
   \end{itemize}
-\item Propriety 
+\item Propriety
   \begin{itemize}
-  \item Posterior 
+  \item Posterior
   \item Prior predictive distribution
   \end{itemize}
 \item Bayesian hypothesis testing with mixed hypotheses (models)
@@ -73,7 +73,7 @@ set.seed(1)
   \begin{center}
   \includegraphics{Ch07a-scientific_method}
   \end{center}
-  
+
 {\tiny \url{http://www.wired.com/wiredscience/2013/04/whats-wrong-with-the-scientific-method/}}
 }
 
@@ -83,12 +83,12 @@ set.seed(1)
 
 \begin{definition}
 A \alert{simple hypothesis} specifies the value for all parameters of interest
-while a \alert{composite hypothesis} does not. 
+while a \alert{composite hypothesis} does not.
 \end{definition}
 
 \vspace{0.2in} \pause
 
-Let $Y_i \stackrel{ind}{\sim} Ber(\theta)$ and 
+Let $Y_i \stackrel{ind}{\sim} Ber(\theta)$ and
 \begin{itemize}
 \item $H_0: \theta=0.5$ (simple)
 \item $H_1: \theta\ne 0.5$ (composite)
@@ -106,9 +106,9 @@ Let $Y_i \stackrel{ind}{\sim} Ber(\theta)$ and
   \item a butterfly flapping its wings in Australia has no effect on temperature in Ames
   \item guessing the color of a card drawn from a deck has probability 0.5
   \end{itemize}
-  
-  \vspace{0.2in} \pause 
-  
+
+  \vspace{0.2in} \pause
+
   Many null hypotheses have zero probability \emph{a priori}, so why bother performing the hypothesis test?
 }
 
@@ -118,26 +118,26 @@ Let $Y_i \stackrel{ind}{\sim} Ber(\theta)$ and
 \begin{frame}
 \frametitle{Bayesian hypothesis testing with all simple hypotheses}
 
-Let $Y\sim p(y|\theta)$ and $H_j: \theta = d_j$ for $j=1,\ldots,J$. \pause Treat this as a discrete prior on the $d_j$, \pause i.e. 
+Let $Y\sim p(y|\theta)$ and $H_j: \theta = d_j$ for $j=1,\ldots,J$. \pause Treat this as a discrete prior on the $d_j$, \pause i.e.
 \[ P(\theta=d_j) = p_j. \]
-The posterior is then 
+The posterior is then
 \[ P(\theta=d_j|y) = \frac{p_j p(y|d_j)}{\sum_{k=1}^J p_k p(y|d_k)} \propto p_j p(y|d_j). \]
 
 \vspace{0.2in} \pause
 
-For example, 
+For example,
 suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $P(\theta=d_j) = 1/11$
-where $d_j=j/10$ 
-\pause 
-for $j=0,\ldots,10$. 
-\pause 
-The posterior is 
-\[ P(\theta=d_j|y) 
-\propto \frac{1}{11} \prod_{i=1}^n (d_j)^{y_i}(1-d_j)^{1-y_i} \pause 
-= (d_j)^{n\overline{y}}(1-d_j)^{n(1-\overline{y})} 
+where $d_j=j/10$
+\pause
+for $j=0,\ldots,10$.
+\pause
+The posterior is
+\[ P(\theta=d_j|y)
+\propto \frac{1}{11} \prod_{i=1}^n (d_j)^{y_i}(1-d_j)^{1-y_i} \pause
+= (d_j)^{n\overline{y}}(1-d_j)^{n(1-\overline{y})}
 \]
 \pause
-If $j=0$ ($j=10$), any $y_i=1$ ($y_i=0$) will make the posterior probability 
+If $j=0$ ($j=10$), any $y_i=1$ ($y_i=0$) will make the posterior probability
 of $H_0$ ($H_1$) zero.
 
 \end{frame}
@@ -151,16 +151,18 @@ of $H_0$ ($H_1$) zero.
 n = 13; y = rbinom(n,1,.45); sum(y)
 @
 
-<<discrete_data_discrete_prior, dependson='discrete_data', fig.width=10>>=
-d = ddply(data.frame(theta = seq(0,1,by=0.1), prior=1/11), 
-          .(theta, prior), 
+<<discrete_data_discrete_prior, dependson='discrete_data', fig.width=6>>=
+d = ddply(data.frame(theta = seq(0,1,by=0.1), prior=1/11),
+          .(theta, prior),
           function(x) {
             data.frame(posterior = x$prior * x$theta^sum(y)*(1-x$theta)^(n-sum(y)))
           })
 d$posterior = d$posterior/sum(d$posterior)
-ggplot(melt(d, id.var="theta"), aes(x=theta, y=value, color=variable)) + 
+ggplot(melt(d, id.var="theta"),
+       aes(x=theta, y=value, color=variable)) +
   geom_point(size=5) +
-  theme_bw()
+  labs(x = expression(theta),
+       y = "Probability")
 @
 
 \end{frame}
@@ -172,32 +174,32 @@ ggplot(melt(d, id.var="theta"), aes(x=theta, y=value, color=variable)) +
 \frametitle{Bayesian hypothesis testing with all composite hypotheses}
 
 Let $Y\sim p(y|\theta)$ and $H_j: \theta \in (E_{j-1},E_j]$ for $j=1,\ldots,J$. \pause Just calculate the area under the curve, i.e.
-prior probabilities are  
+prior probabilities are
 \[
-P(H_j) = 
-\pause 
-P(E_{j-1} < \theta < E_j) = 
+P(H_j) =
+\pause
+P(E_{j-1} < \theta < E_j) =
 \pause
 \int_{E_{j-1}}^{E_j} p(\theta) d\theta.
 \]
 \pause
-and posterior probabilities are 
-\[ 
-P(H_j|y) = 
-\pause 
-P(E_{j-1} < \theta < E_j|y) = 
+and posterior probabilities are
+\[
+P(H_j|y) =
 \pause
-\int_{E_{j-1}}^{E_j} p(\theta|y) d\theta 
+P(E_{j-1} < \theta < E_j|y) =
+\pause
+\int_{E_{j-1}}^{E_j} p(\theta|y) d\theta
 \]
 
 \vspace{0.2in} \pause
 
-For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $E_j = j/10$ \pause for $j=0,\ldots,10$. 
-\pause 
-Now, assume 
-\[ 
+For example, suppose $Y_i\stackrel{ind}{\sim} Ber(\theta)$ \pause and $E_j = j/10$ \pause for $j=0,\ldots,10$.
+\pause
+Now, assume
+\[
 \theta \sim Be(1,1) \pause
-\pause \quad \mbox{and thus} \quad 
+\pause \quad \mbox{and thus} \quad
 \theta|y \pause \sim Be(1+n\overline{y},1+n[1-\overline{y}]). \]
 \pause
 
@@ -207,16 +209,22 @@ Now, assume
 
 \begin{frame}[fragile]
 \frametitle{Beta example}
-The posterior probabilities are 
-<<discrete_data_continuous_prior, dependson='discrete_data', fig.width=10>>=
+The posterior probabilities are
+<<discrete_data_continuous_prior, dependson='discrete_data',fig.width=6>>=
 Ej = seq(0,1,by=0.1)
 vlines = data.frame(x=Ej, xend=Ej, y=0, yend = dbeta(Ej,1+sum(y), 1+n-sum(y)))
 heights = data.frame(x=Ej[-1]-.05, y=0.4, label = round(diff(pbeta(Ej,1+sum(y), 1+n-sum(y))),2))
-ggplot(vlines, aes(x=x,xend=xend,y=y,yend=yend)) + 
-  stat_function(fun=function(x) dbeta(x, 1+sum(y), 1+n-sum(y))) + 
-  geom_segment() +
+ggplot(vlines,
+       aes(x   = x,
+           y    = y)) +
+  geom_segment(aes(xend = x, yend = yend)) +
+  stat_function(fun=function(x) dbeta(x, 1+sum(y), 1+n-sum(y))) +
   annotate("text", x=heights$x, y=heights$y, label=heights$label) +
-  theme_bw()
+  labs(
+    x = expression(theta),
+    y = expression(paste("p(",theta,"|y)"))
+  ) +
+  scale_x_continuous(breaks = seq(0, 1, by = 0.1))
 @
 
 \end{frame}
@@ -229,14 +237,14 @@ ggplot(vlines, aes(x=x,xend=xend,y=y,yend=yend)) +
 \frametitle{Tonelli's Theorem (successor to Fubini's Theorem)}
 
 \begin{theorem}
-Tonelli's Theorem states that if $\mathcal{X}$ and $\mathcal{Y}$ are $\sigma$-finite measure spaces and $f$ is non-negative and measureable, then 
+Tonelli's Theorem states that if $\mathcal{X}$ and $\mathcal{Y}$ are $\sigma$-finite measure spaces and $f$ is non-negative and measureable, then
 \[ \int_\mathcal{X} \int_\mathcal{Y} f(x,y) dy dx =  \int_\mathcal{Y} \int_\mathcal{X}f(x,y) dx dy  \]
-i.e. you can interchange the integrals (or sums). 
+i.e. you can interchange the integrals (or sums).
 \end{theorem}
 
 \vspace{0.2in} \pause
 
-On the following slides, the use of this theorem will be indicated by TT. 
+On the following slides, the use of this theorem will be indicated by TT.
 
 \end{frame}
 
@@ -245,39 +253,39 @@ On the following slides, the use of this theorem will be indicated by TT.
 \frame{\frametitle{Proper priors with discrete data}
 \small
   \begin{theorem}
-  If the prior is proper and the data are discrete, then the posterior is always proper. 
+  If the prior is proper and the data are discrete, then the posterior is always proper.
   \end{theorem}
-  
-  \vspace{0.2in} \pause 
-	
+
+  \pause
+
 	\begin{proof}
-	Let $p(\theta)$ be the prior and $p(y|\theta)$ be the statistical model. \pause Thus, we need to show that 
+	Let $p(\theta)$ be the prior and $p(y|\theta)$ be the statistical model. \pause Thus, we need to show that
 	\[ p(y) = \int_{\Theta} p(y|\theta) p(\theta) d\theta < \infty \quad \forall y. \]
-	\pause For discrete $y$, we have 
-	\[ \begin{array}{ll} 
+	\pause For discrete $y$, we have
+	\[ \begin{array}{ll}
 	p(y) &\le \sum_{z\in \mathcal{Y}} p(z) \pause =  \sum_{z\in \mathcal{Y}} \int_{\Theta} p(z|\theta) p(\theta) d\theta \pause \stackrel{TT}{=}  \int_{\Theta} \sum_{z\in \mathcal{Y}} p(z|\theta) p(\theta) d\theta \pause \\ \\
-  &= \int_{\Theta} p(\theta) d\theta \pause = 1. 
+  &= \int_{\Theta} p(\theta) d\theta \pause = 1.
 	\end{array} \]
-	\pause Thus the posterior is always proper if $y$ is discrete and the prior is proper. 
+	\pause Thus the posterior is always proper if $y$ is discrete and the prior is proper.
 	\end{proof}
 }
 
 \frame{\frametitle{Proper priors with continuous data}
 \small
 	\begin{theorem}
-	If the prior is proper and the data are continuous, then the posterior is almost always proper. 
+	If the prior is proper and the data are continuous, then the posterior is almost always proper.
 	\end{theorem}
-	
-	\pause 
-	
+
+	\pause
+
 	\begin{proof}
-	Let $p(\theta)$ be the prior and $p(y|\theta)$ be the statistical model. Thus, we need to show that 
+	Let $p(\theta)$ be the prior and $p(y|\theta)$ be the statistical model. Thus, we need to show that
 	\[ p(y) = \int_{\Theta} p(y|\theta) p(\theta) d\theta < \infty \quad \mbox{for almost all } y. \]
-	\pause For continuous $y$, we have 
-	\[ \begin{array}{ll} 
-	\int_{\mathcal{Y}} p(z) dz \pause =  \int_{\mathcal{Y}} \int_{\Theta} p(z|\theta) p(\theta) d\theta dz \pause\stackrel{TT}{=}  \int_{\Theta} \int_{\mathcal{Y}} p(z|\theta) dz \, p(\theta) d\theta \pause= \int_{\Theta} p(\theta) d\theta \pause = 1 
+	\pause For continuous $y$, we have
+	\[ \begin{array}{ll}
+	\int_{\mathcal{Y}} p(z) dz \pause =  \int_{\mathcal{Y}} \int_{\Theta} p(z|\theta) p(\theta) d\theta dz \pause\stackrel{TT}{=}  \int_{\Theta} \int_{\mathcal{Y}} p(z|\theta) dz \, p(\theta) d\theta \pause= \int_{\Theta} p(\theta) d\theta \pause = 1
 	\end{array} \]
-	\pause thus $p(y)$ is finite except on a set of measure zero, \pause i.e. $p(\theta|y)$ is almost always proper. 
+	\pause thus $p(y)$ is finite except on a set of measure zero, \pause i.e. $p(\theta|y)$ is almost always proper.
 	\end{proof}
 }
 
@@ -287,16 +295,16 @@ On the following slides, the use of this theorem will be indicated by TT.
 \begin{frame}
 \frametitle{Proper prior predictive distributions}
 
-In the previous derivations when the prior is proper, we showed that 
-\[ \sum_{z\in \mathcal{Y}} p(z) = 1 
-\qquad \mbox{and} \qquad 
+In the previous derivations when the prior is proper, we showed that
+\[ \sum_{z\in \mathcal{Y}} p(z) = 1
+\qquad \mbox{and} \qquad
 \int_\mathcal{Y} p(z) dz = 1 \]
-for discrete and continuous data, respectively. 
+for discrete and continuous data, respectively.
 
 \vspace{0.2in} \pause
 
 \begin{corollary}
-When the prior is proper, the prior predictive distribution is also proper. 
+When the prior is proper, the prior predictive distribution is also proper.
 \end{corollary}
 
 \end{frame}
@@ -305,15 +313,15 @@ When the prior is proper, the prior predictive distribution is also proper.
 
 \frame{\frametitle{Improper prior predictive distributions}
   \begin{theorem}
-  If $p(\theta)$ is improper, then $p(y) = \int p(y|\theta) p(\theta) d\theta$ is improper. 
+  If $p(\theta)$ is improper, then $p(y) = \int p(y|\theta) p(\theta) d\theta$ is improper.
   \end{theorem}
-  
+
   \vspace{0.2in} \pause
-  
+
   \begin{proof}
   \[ \begin{array}{rl}
   \int p(y) dy &= \pause \int \int p(y|\theta) p(\theta) d\theta dy \pause \stackrel{TT}{=} \int p(\theta)  \int p(y|\theta) dy d\theta \pause \\
-  &= \int p(\theta) d\theta 
+  &= \int p(\theta) d\theta
   \end{array} \]
   \pause \pause since $p(\theta)$ is improper, so is $p(y)$. \pause A similar result holds for discrete $y$ replacing the integral with a sum.
   \end{proof}
@@ -325,12 +333,12 @@ When the prior is proper, the prior predictive distribution is also proper.
 \begin{frame}
 \frametitle{Bayesian hypothesis testing}
 
-To evaluate the relative plausibility of a hypothesis (model)\pause, we use the posterior model probability: 
+To evaluate the relative plausibility of a hypothesis (model)\pause, we use the posterior model probability:
 \[ p(H_j|y) \pause = \frac{p(y|H_j)p(H_j)}{p(y)} \pause = \frac{p(y|H_j)p(H_j)}{\sum_{k=1}^J p(y|H_k)p(H_k)} \pause \propto p(y|H_j)p(H_j).  \]
 \pause
-where $p(H_j)$ is the prior model probability \pause and 
+where $p(H_j)$ is the prior model probability \pause and
 \[ p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta \]
-\pause is the marginal likelihood under model $H_j$ \pause and $p(\theta|H_j)$ is the prior for parameters $\theta$ when model $H_j$ is true. 
+\pause is the marginal likelihood under model $H_j$ \pause and $p(\theta|H_j)$ is the prior for parameters $\theta$ when model $H_j$ is true.
 
 \end{frame}
 
@@ -340,11 +348,11 @@ where $p(H_j)$ is the prior model probability \pause and
 
 The marginal likelihood calculation differs for simple vs composite hypotheses:
 \begin{itemize}
-\item Simple hypotheses can be considered to have a Dirac delta function for a prior, \pause e.g. if $H_0:\theta=\theta_0$ then $\theta|H_0 \sim \delta_{\theta_0}$. \pause Then the marginal likelihood is 
+\item Simple hypotheses can be considered to have a Dirac delta function for a prior, \pause e.g. if $H_0:\theta=\theta_0$ then $\theta|H_0 \sim \delta_{\theta_0}$. \pause Then the marginal likelihood is
 \[
 p(y|H_0) = \int p(y|\theta)p(\theta|H_0) d\theta = p(y|\theta_0).
 \]
-\item \pause Composite hypotheses have a continuous prior and thus 
+\item \pause Composite hypotheses have a continuous prior and thus
 \[
 p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta.
 \]
@@ -355,14 +363,14 @@ p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta.
 
 
 \frame{\frametitle{Two models}
-  If we only have two models: $H_0$ and $H_1$, then 
+  If we only have two models: $H_0$ and $H_1$, then
   \[ p(H_0|y) = \frac{p(y|H_0)p(H_0)}{p(y|H_0)p(H_0)+p(y|H_1)p(H_1)} \pause = \frac{1}{1+\frac{p(y|H_1)}{p(y|H_0)}\frac{p(H_1)}{p(H_0)}} \]
-  \pause 
-  where 
+  \pause
+  where
   \[ \frac{p(H_1)}{p(H_0)} = \frac{p(H_1)}{1-p(H_1)} \]
-  is the prior odds in favor of $H_1$ \pause and 
+  is the prior odds in favor of $H_1$ \pause and
   \[ BF(H_1:H_0) = \frac{p(y|H_1)}{p(y|H_0)} = \frac{1}{BF(H_0:H_1)} \]
-  is the Bayes Factor for model $H_1$ relative to $H_0$. 
+  is the Bayes Factor for model $H_1$ relative to $H_0$.
 }
 
 \subsection{Binomial model}
@@ -374,7 +382,7 @@ p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta.
   &= \frac{0.5^n}{\frac{Beta(a+n\overline{y},b+n-n\overline{y})}{Beta(a,b)}} \pause \\
   &= \frac{0.5^n Beta(a,b)}{Beta(a+n\overline{y},b+n-n\overline{y})}
   \end{array} \]
-  \pause and with $p(H_0)=p(H_1)$ the posterior model probability is 
+  \pause and with $p(H_0)=p(H_1)$ the posterior model probability is
     \[ P(H_0|y) = \frac{1}{1+\frac{1}{BF(H_0:H_1)}}. \]
 }
 
@@ -384,17 +392,16 @@ p(y|H_j) = \int p(y|\theta)p(\theta|H_j) d\theta.
 \begin{frame}[fragile]
 \frametitle{Sample size and sample average}
 $P(H_0) = P(H_1) = 0.5$ and $\theta|H_1 \sim Be(1,1)$:
-<<fig.width=8>>=
+<<sample-size,fig.width=6>>=
 d = expand.grid(n=seq(10,30,by=10), ybar=seq(0,1,by=0.01))
 bf = function(n,ybar,a=1,b=1) exp(n*log(0.5)+lbeta(a,b)-lbeta(a+n*ybar,b+n-n*ybar))
 d = ddply(d, .(n,ybar), summarize, bf=bf(n,ybar))
 post_prob = function(bf, prior_odds=0.5) 1/(1+1/bf*prior_odds)
-ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(n))) + 
+ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(n))) +
   geom_line() +
-  labs(y=expression(paste("p(",H[0],"|y)"))) + 
-  ylim(0,1) + 
-  scale_color_discrete(name="n") +
-  theme_bw()
+  labs(y=expression(paste("p(",H[0],"|y)"))) +
+  ylim(0,1) +
+  scale_color_discrete(name="n")
 @
 \end{frame}
 
@@ -402,7 +409,7 @@ ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(n))) +
 \begin{frame}
 \frametitle{``Non-informative'' prior}
 
-Recall that $\theta \sim Be(a,b)$ has 
+Recall that $\theta \sim Be(a,b)$ has
 \begin{itemize}
 \item $a$ prior successes and
 \item $b$ prior failures.
@@ -410,11 +417,11 @@ Recall that $\theta \sim Be(a,b)$ has
 
 \pause
 
-Thus, in some sense $a,b \to 0$ puts minimal prior data into the analysis. 
+Thus, in some sense $a,b \to 0$ puts minimal prior data into the analysis.
 
-\vspace{0.2in} \pause If $\theta|H_1 \sim Be(e,e)$, then 
+\vspace{0.2in} \pause If $\theta|H_1 \sim Be(e,e)$, then
 
-\pause 
+\pause
 
 \[ BF(H_0:H_1) = \frac{0.5^n Be(e,e)}{Be(e+n\overline{y},e+n-n\overline{y})} \stackrel{e\to 0}{\longrightarrow} \infty \quad \mbox{for any } \overline{y}\in (0,1)\]
 since $Be(e,e) \stackrel{e\to 0}{\longrightarrow} \infty$.
@@ -425,17 +432,16 @@ since $Be(e,e) \stackrel{e\to 0}{\longrightarrow} \infty$.
 \begin{frame}[fragile]
 \frametitle{Limit of proper prior}
 $P(H_0) = P(H_1) = 0.5$ and $\theta|H_1 \sim Be(e,e)$:
-<<fig.width=8>>=
+<<proper-prior-limit,fig.width=6>>=
 d = expand.grid(e=10^(0:-4), ybar=seq(0,1,by=0.01), n=20)
 bf = function(n,ybar,a=1,b=1) exp(n*log(0.5)+lbeta(a,b)-lbeta(a+n*ybar,b+n-n*ybar))
 d = ddply(d, .(n,ybar,e), summarize, bf=bf(n,ybar,e,e))
 post_prob = function(bf, prior_odds=0.5) 1/(1+1/bf*prior_odds)
-ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(e))) + 
+ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(e))) +
   geom_line() +
-  labs(y=expression(paste("p(",H[0],"|y)"))) + 
-  ylim(0,1) + 
-  scale_color_discrete(name="e") +
-  theme_bw()
+  labs(y=expression(paste("p(",H[0],"|y)"))) +
+  ylim(0,1) +
+  scale_color_discrete(name="e")
 @
 \end{frame}
 
@@ -447,27 +453,26 @@ ggplot(d, aes(x=ybar, y=post_prob(bf), color=factor(e))) +
   \item $H_0: \theta=0$ versus
   \item $H_1: \theta\ne 0$ with prior $\theta|H_1 \sim N(0,C)$.
   \end{itemize}
-  
-  \vspace{0.2in} \pause 
-  
+
+  \vspace{0.2in} \pause
+
   The predictive distribution under $H_1$ is \pause
   \[ p(y|H_1) = \int p(y|\theta) p(\theta|H_1) d\theta \pause = N(y;0,1+C) \]
-  \pause and the Bayes factor is 
-  
+  \pause and the Bayes factor is
+
   \[ BF(H_0:H_1) = \frac{N(y;0,1)}{N(y;0,1+C)}. \]
   \pause The Bayes factor will increase as $C\to \infty$ for any $y$ \pause and this only gets worse if you use an improper prior.
 }
 
 \begin{frame}[fragile]
 \frametitle{Normal example}
-<<normal_bayes_factor, fig.width=8>>=
+<<normal_bayes_factor>>=
 d = ddply(expand.grid(y=seq(0,5,by=1), C=10^seq(0,4,by=0.1)), .(y,C), summarize,
           post_prob_H0 = 1/(1+1/exp(dnorm(y,0,1,log=TRUE)-dnorm(y,0,1+C,log=TRUE))))
-ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) + 
-  geom_line() + 
-  labs(x = expression(sqrt(C)), y = expression(paste("p(",H[0],"|y)"))) + 
-  scale_color_discrete(name="y") +
-  theme_bw()
+ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) +
+  geom_line() +
+  labs(x = expression(sqrt(C)), y = expression(paste("p(",H[0],"|y)"))) +
+  scale_color_discrete(name="y")
 @
 \end{frame}
 
@@ -481,16 +486,16 @@ ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) +
   \item All simple hypotheses: discrete prior
   \item All composite hypotheses: continuous prior
   \end{itemize}
-\item Formal Bayesian hypothesis testing 
+\item Formal Bayesian hypothesis testing
 
 (simple and composite hypotheses)
 
   \begin{itemize}
   \item Specify prior model probabilities
   \item Specify parameter priors for composite hypotheses
-  
+
   \alert{WARNING: Do not use non-informative priors!}
-  
+
   \item Calculate Bayes Factors or posterior model probabilities
   \end{itemize}
 \end{itemize}
@@ -499,16 +504,16 @@ ggplot(d, aes(sqrt(C), post_prob_H0, color=factor(y))) +
 
 
 \frame{\frametitle{Scientific method updated}
-\setkeys{Gin}{width=0.8\textwidth}
+\setkeys{Gin}{width=0.6\textwidth}
   \begin{quote}
   All models are wrong, but some are useful.
   \end{quote}
-  George Box 1987 \pause 
+  George Box 1987 \pause
 
   \begin{center}
   \includegraphics{Ch07a-scientific_method_updated}
   \end{center}
-  
+
 {\tiny \url{http://www.wired.com/wiredscience/2013/04/whats-wrong-with-the-scientific-method/}}
 }
 
