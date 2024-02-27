@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -9,7 +9,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -20,9 +20,9 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
 library(reshape2)
 library(plyr)
-library(ggplot2)
 library(xtable)
 @
 
@@ -78,20 +78,28 @@ Consider $y\sim N(\theta,1)$ and
   \[ BF(H_0:H_1)  = \frac{p(y|H_0)}{p(y|H_1)} \pause = \frac{p(y|\theta_0)}{\int p(y|\theta)p(\theta|H_1) d\theta} = \frac{N(y;0,1)}{N(y;0,1+C)}. \]
   \pause 
   Now, as $C\to\infty$, our predictions about $y$ become less sharp. 
+\end{frame}
   
-  \pause
   
-<<fig.height=3>>=
-curve(dnorm, -4, 4, 
-      xlab = 'y', 
-      ylab = 'p(y)',
-      main = 'Predictive distributions', 
-      lwd=2)
-curve(dnorm(x, 0, 2), lwd=2, lty=2, col=2, add=TRUE)
-legend("topright", c('H0','H1'), lwd=2, lty=1:2, col=1:2)
+\begin{frame}
+<<>>=
+d <- data.frame(x = seq(-4, 4, length.out = 1001)) |>
+  mutate(
+    H0 = dnorm(x),
+    H1 = dnorm(x, sd = 2)
+  ) |>
+  pivot_longer(
+    H0:H1,
+    names_to = "Hypothesis",
+    values_to = "density"
+  )
+
+ggplot(d, aes(x        = x, 
+              y        = density,
+              color    = Hypothesis,
+              linetype = Hypothesis)) +
+  geom_line()
 @
-  
-  
 \end{frame}
 
 
