@@ -11,14 +11,15 @@
 
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
-opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.5, 
-               size='tiny', 
-               out.width='0.8\\textwidth', 
-               fig.align='center', 
-               message=FALSE,
-               echo=FALSE,
-               cache=TRUE)
+opts_chunk$set(comment = NA, 
+               fig.width  = 6, 
+               fig.height = 4.5, 
+               size = 'tiny', 
+               out.width = '0.8\\textwidth', 
+               fig.align = 'center', 
+               message = FALSE,
+               echo = FALSE,
+               cache = TRUE)
 options(width=120)
 @
 
@@ -27,6 +28,7 @@ library("dplyr")
 library("ggplot2")
 library("xtable")
 library("rstan")
+library("reshape2")
 @
 
 <<set_seed>>=
@@ -169,7 +171,7 @@ dat = list(n = nrow(d),
            n_products = nlevels(d$product_id),
            stars = d$stars,
            product_id = as.numeric(d$product_id))
-r = sampling(m, dat)
+r = sampling(m, dat, iter = 10000)
 @
 \end{frame}
 
@@ -189,14 +191,14 @@ r
 \frametitle{Vacuum cleaner mean posteriors ($\theta_p$)}
 
 <<dependson='run_normal_model'>>=
-draws = extract(r)
-theta = draws$theta
-colnames(theta) = paste("theta_",1:ncol(theta), sep="")
-theta_m = melt(theta, varnames=c("iterations", "theta"))
-theta_m$product = levels(d$product_id)[theta_m$theta]
+draws <- extract(r)
+theta <- draws$theta
+colnames(theta) <- paste("theta_",1:ncol(theta), sep="")
+theta_m <- melt(theta, varnames=c("iterations", "theta"))
+theta_m$product <- levels(d$product_id)[theta_m$theta]
 
-ggplot(theta_m, aes(x=value, fill=product)) +  
-  geom_density(alpha=0.5) +
+ggplot(theta_m, aes(x = value, fill = product)) +  
+  geom_density(alpha = 0.5) +
   theme_bw()
 @
 
@@ -350,7 +352,7 @@ dat = list(n = nrow(d),
            n_products = nlevels(d$product_id),
            stars = d$stars,
            product_id = as.numeric(d$product_id))
-r = sampling(m, dat)
+r = sampling(m, dat, iter = 10000)
 @
 \end{frame}
 
@@ -425,10 +427,10 @@ other = rbind(data.frame(parameter = "alpha", value = as.numeric(draws$alpha)),
               data.frame(parameter = "prior_mean",   value = as.numeric(draws$alpha/(draws$alpha+draws$beta))),
               data.frame(parameter = "prior_stars",   value = 1+4*as.numeric(draws$alpha/(draws$alpha+draws$beta))))
 
-ggplot(other, aes(x=value)) +  
-  geom_histogram(aes(y=..density..)) + 
-  facet_wrap(~parameter, scales="free")  +
-  theme(legend.position="none") +
+ggplot(other, aes(x = value)) +  
+  geom_histogram(aes(y = after_stat(density))) + 
+  facet_wrap(~parameter, scales = "free")  +
+  theme(legend.position = "none") +
   theme_bw()
 @
 
@@ -526,10 +528,11 @@ ztilde2_m = ztilde2 %>%
 truth = data.frame(variable = paste("n",1:5,sep=""),
                    observed = as.numeric(for_table[2,2:6]))
 
-ggplot(ztilde2_m, aes(x=value)) + 
-  geom_histogram(aes(y=..density..), binwidth=1) + 
+ggplot(ztilde2_m, aes(x = value)) + 
+  geom_histogram(aes(y = after_stat(density)), 
+                 binwidth = 1) + 
   facet_wrap(~variable, scales="free") + 
-  geom_vline(data=truth, aes(xintercept=observed), color="red") +
+  geom_vline(data = truth, aes(xintercept = observed), color = "red") +
   theme_bw()
 @
 
@@ -547,9 +550,10 @@ Let $s_p = (s_{i1},\ldots,s_{i5})$ be the vector of the number of
 S_{i} \stackrel{ind}{\sim} Mult(n_p,\theta_p)
 \end{align*}
 where $\theta_p$ is a probability vector \pause
-\[ \theta_{ik} = \int_{\alpha_{k-1}}^{\alpha_k} N(x|\mu_p,1) dx = \mathrm{\Phi}(\alpha_k-\mu_p) - \mathrm{\Phi}(\alpha_{k-1}-\mu_p) \]
+\[ \theta_{ik} = \int_{\alpha_{k-1}}^{\alpha_k} N(x|\mu_p, 1)\, dx = \mathrm{\Phi}(\alpha_k-\mu_p) - \mathrm{\Phi}(\alpha_{k-1}-\mu_p) \]
 \pause 
-where $\alpha_0=-\infty$, $\alpha_1=0$, and $\alpha_5=\infty$, \pause and $\mathrm{\Phi}$ is the standard normal cumulative distribution function (cdf). 
+where $\alpha_0=-\infty$, $\alpha_1=0$, and $\alpha_5=\infty$, 
+\pause and $\mathrm{\Phi}$ is the standard normal cumulative distribution function (cdf). 
 
 \end{frame}
 
@@ -636,7 +640,8 @@ model {
 m = stan_model(model_code = ordinal_model)
 dat = list(n_products = nrow(for_table),
            s = as.matrix(for_table[,2:6]))
-r = sampling(m, dat, pars = c("alpha","eta","tau","mu"))
+r = sampling(m, dat, iter = 10000,
+             pars = c("alpha","eta","tau","mu"))
 @
 \end{frame}
 
@@ -658,7 +663,7 @@ r
 draws = extract(r)
 mu = draws$mu
 colnames(mu) = paste("mu_",1:ncol(mu), sep="")
-mu_m = melt(mu, varnames=c("iterations", "mu"))
+mu_m <- melt(mu, varnames=c("iterations", "mu"))
 mu_m$product = levels(d$product_id)[mu_m$mu]
 
 ggplot(mu_m, aes(x=value, fill=product)) +  
@@ -678,8 +683,8 @@ other = data.frame("alpha" = as.matrix(draws$alpha),
               "eta" = as.numeric(draws$eta),
               "tau" = as.numeric(draws$tau))
 
-ggplot(melt(other), aes(x=value)) +  
-  geom_histogram(aes(y=..density..)) + 
+ggplot(melt(other), aes(x = value)) +  
+  geom_histogram(aes(y = after_stat(density))) + 
   facet_wrap(~variable, scales="free")  +
   theme(legend.position="none") +
   theme_bw()
