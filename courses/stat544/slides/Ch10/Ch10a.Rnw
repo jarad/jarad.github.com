@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -9,7 +9,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -20,20 +20,22 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library("reshape2")
-library("plyr")
-library("dplyr")
-library("ggplot2")
-library("xtable")
+# library("reshape2")
+# library("plyr")
+# library("dplyr")
+# library("ggplot2") 
+library("tidyverse"); theme_set(theme_bw())
 @
 
-<<set_seed>>=
+<<set-seed>>=
 set.seed(1)
 @
 
 \frame{\maketitle}
 
 
+\section{Bayesian computation}
+\subsection{Goals}
 \begin{frame}
 \frametitle{Bayesian computation}
 
@@ -47,8 +49,8 @@ Goals:
 
 Approaches:
 \begin{itemize}
-\item Deterministic approximation
-\item Monte Carlo approximation
+\item Numerical integration
+\item Stochastic (Monte Carlo) integration
   \begin{itemize}
   \item Theoretical justification
   \item Gridding
@@ -56,33 +58,45 @@ Approaches:
   \item Accept-reject
   \end{itemize}
 \end{itemize}
+\end{frame}
 
+
+
+\subsection{Numerical integration - overview}
+\begin{frame}
+\frametitle{Numerical integration}
+Numerical integration where   
+\[ 
+E[h(\theta)|y] 
+= \int h(\theta)p(\theta|y) d\theta 
+\approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) 
+\]
+\begin{itemize}
+\item $\theta^{(s)}$ are selected points, 
+\item $w_s$ is the weight given to the point $\theta^{(s)}$, and
+\item the error can be bounded. 
+\end{itemize}
+\end{frame}
+
+
+
+\subsection{Stochastic integration}
+\begin{frame}
+\frametitle{Stochastic integration - overview}
+
+Monte Carlo (simulation) methods where \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right) \]
+  and
+\begin{itemize}
+\item $\theta^{(s)} \stackrel{ind}{\sim} g(\theta)$ (for some proposal distribution $g$),
+\item $w_s = p(\theta^{(s)}|y)/g(\theta^{(s)})$, 
+\item and we have SLLN and CLT.
+\end{itemize}
 \end{frame}
 
 
 
 
-%\subsection{Numerical integration}
-\frame{\frametitle{Numerical integration}
-  \begin{itemize}[<+->]
-  \item Deterministic methods where   \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) \]
-  and
-    \begin{itemize}
-    \item $\theta^{(s)}$ are selected points, 
-    \item $w_s$ is the weight given to the point $\theta^{(s)}$, and
-    \item the error can be bounded. 
-    \end{itemize}
-  \item Monte Carlo (simulation) methods where \[ E[h(\theta)|y] = \int h(\theta)p(\theta|y) d\theta \approx \sum_{S=1}^S w_s h\left(\theta^{(s)}\right) \]
-  and
-    \begin{itemize}
-    \item $\theta^{(s)} \stackrel{ind}{\sim} g(\theta)$ (for some proposal distribution $g$),
-    \item $w_s = p(\theta^{(s)}|y)/g(\theta^{(s)})$, 
-    \item and we have SLLN and CLT.
-    \end{itemize}
-	\end{itemize}
-}
-
-\section{Deterministic methods}
+\subsection{Numerical integration example}
 \begin{frame}
 \frametitle{Example: Normal-Cauchy model}
   Let $Y\sim N(\theta,1)$ with $\theta\sim Ca(0,1)$. \pause The posterior is 
@@ -101,20 +115,20 @@ Approaches:
 \begin{frame}[fragile]
 \frametitle{Normal-Cauchy: marginal likelihood }
 <<data, echo=TRUE>>=
-y = 1 # Data
+y <- 1 # Data
 @
 
 <<normal_cauchy_posterior, dependson='data', echo=TRUE>>=
-q = function(theta, y, log = FALSE) {
-  out = -(y-theta)^2/2-log(1+theta^2)
+q <- function(theta, y, log = FALSE) {
+  out <- - (y - theta)^2 / 2 - log(1 + theta^2)
   if (log) return(out)
   return(exp(out))
 }
 
 # Find normalizing constant for q(theta|y)
-w = 0.1
-theta = seq(-5,5,by=w)+y
-(cy = sum(q(theta,y)*w))                 # gridding based approach
+w     <- 0.1                             # grid width
+theta <- seq(-5, 5, by = w) + y
+(cy <- sum(q(theta,y) * w))              # grid-based estimate 
 
 integrate(function(x) q(x,y), -Inf, Inf) # numerical integration
 @
@@ -122,31 +136,40 @@ integrate(function(x) q(x,y), -Inf, Inf) # numerical integration
 
 \begin{frame}[fragile]
 \frametitle{Normal-Cauchy: distribution}
-<<normal_cauchy_posterior_plot, dependson=c('data','normal_cauchy_posterior'), echo=TRUE, fig.width=8>>=
-curve(q(x,y)/cy, -5, 5, n=1001)
-points(theta,rep(0,length(theta)), cex=0.5, pch=19)
-segments(theta,0,theta,q(theta,y)/cy)
+<<normal_cauchy_posterior_plot, dependson=c('data','normal_cauchy_posterior'), echo=FALSE, fig.width=6>>=
+ggplot(
+  data = data.frame(
+    theta = theta, 
+    pdf   = q(theta,y)/cy),
+  mapping = aes(
+    x = theta,
+    y = pdf,
+    xend = theta,
+    yend = 0)) +
+  # geom_point() +
+  geom_segment() +
+  geom_line()
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-\frametitle{Posterior expectation}
+\frametitle{Posterior expectation - Reimann Integration}
 \[ E[h(\theta)|y] \approx \sum_{s=1}^S w_s h\left(\theta^{(s)}\right)p\left(\left.\theta^{(s)}\right|y\right) = \sum_{s=1}^S w_s h\left(\theta^{(s)}\right) \frac{q\left(\left.\theta^{(s)}\right|y\right)}{c(y)} \]
 <<normal_cauchy_posterior_expectation, dependson=c('data','normal_cauchy_posterior'), echo=TRUE>>=
-h = function(theta) theta
+h <- function(theta) theta # expectation
 
-sum(w*h(theta)*q(theta,y)/cy)
+sum(w * h(theta) * q(theta,y) / cy)
 @
 
 \end{frame}
 
 
 
-<<normal_cauchy_posterior_mean, dependson=c('data','normal_cauchy_posterior'), echo=FALSE>>=
+<<normal_cauchy_posterior_mean, dependson=c('normal_cauchy_posterior'), echo=FALSE>>=
 # Calculate marginal likelihood, p(y)
-py = function(y,log=FALSE) {
-  int = integrate(function(x) q(x,y,log=FALSE),-Inf,Inf)
+py <- function(y, log = FALSE) {
+  int <- integrate(function(x) q(x, y, log = FALSE), -Inf, Inf)
   if (int$message!="OK") {
     warning(paste("Could not compute marginal likelihood for y=", y, "\n"))
     return(NA)
@@ -154,21 +177,22 @@ py = function(y,log=FALSE) {
   int$value 
 }
 
-# Find posterior expectation when y=0
-post_expectation = function(y) {
-  qy = py(y)
-  int = integrate(function(x) x*q(x,y)/qy, -Inf, Inf)
-    if (int$message!="OK") {
+# Find posterior expectation
+post_expectation <- function(y) {
+  qy  <- py(y)
+  int <- integrate(function(x) x * q(x,y) / qy, -Inf, Inf)
+  if (int$message != "OK") {
     warning(paste("Could not compute posterior expectation for y=", y, "\n"))
     return(NA)
   }
   int$value
 }
 
-res = ddply(data.frame(y=seq(-5,5, by=0.1)), 
-            .(y), 
-            function(x) { data.frame(Cauchy = post_expectation(x$y))})
-res = mutate(res, normal = y/2, "improper uniform" = y)
+res <- data.frame(y = seq(from = -5,to = 5, by = 0.1)) |>
+  rowwise(y) |>
+  summarize(Cauchy = post_expectation(y), .groups = "drop") |>
+  mutate(`N(0,1)` = y/2,
+         `improper uniform` = y)
 @
 
 
@@ -176,16 +200,26 @@ res = mutate(res, normal = y/2, "improper uniform" = y)
 
 \begin{frame}[fragile]
 \frametitle{Posterior expectation as a function of observed data}
-<<normal_cauchy_posterior_mean_plot, dependson='normal_cauchy_posterior_mean', fig.width=8>>=
-ggplot(melt(res, id.var='y', variable.name = "prior"),
-       aes(y,value,color=prior))+
+<<normal_cauchy_posterior_mean_plot, dependson='normal_cauchy_posterior_mean'>>=
+ggplot(
+  data = pivot_longer(
+    res, 
+    -y, 
+    names_to = "Prior", 
+    values_to = "value"),
+  aes(x = y, 
+      y = value, 
+      color = Prior))+
   geom_line() + 
-  labs(y="Posterior expectation") +
-  theme_bw()
+  labs(
+    x = expression(theta),
+    y = "Posterior expectation") 
 @
 \end{frame}
 
-\section{Monte Carlo methods}
+
+
+\subsection{Monte Carlo methods}
 \begin{frame}
 \frametitle{Convergence review}
 
@@ -275,18 +309,18 @@ or any other consistent estimator.
 \begin{frame}[fragile]
 \frametitle{Monte Carlo sampling randomly infills}
 <<uniform>>=
-f = function(theta) exp(-theta^2/2)
+f <- function(theta) exp(-theta^2/2)
 
 # Monte Carlo integration
 set.seed(1)
-n = 1e3
-theta = runif(n)
-ptheta = f(theta)
+n      <- 1e3
+theta  <- runif(n)
+ptheta <- f(theta)
 
 par(mfrow=c(1,2))
-n_points = 20; curve(f, main=paste(n_points, "samples"))
+n_points <- 20; curve(f, main=paste(n_points, "samples"))
 segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
-n_points = 200; curve(f, main=paste(n_points, "samples"))
+n_points <- 200; curve(f, main=paste(n_points, "samples"))
 segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
 @
 \end{frame}
@@ -407,9 +441,11 @@ Rather than determining $c(y)$ and then $E[\theta|y]$ via deterministic gridding
 we can use the grid as a discrete approximation to the posterior, 
 i.e. 
   \[ p(\theta|y) \approx \sum_{i=1}^N p_i \delta_{\theta_i}(\theta) \qquad p_i = \frac{q(\theta_i|y)}{\sum_{s=1}^N q(\theta_j|y)}  \]
-  \pause where $\delta_{\theta_i}(\theta)$ is the Dirac delta function, i.e. 
-  \[ \delta_{\theta_i}(\theta) = 0 \,\forall\, \theta\ne \theta_i \qquad \int \delta_{\theta_i}(\theta) d\theta=1. \]
-\pause  This discrete approximation to $p(\theta|y)$ can be used to approximate the expectation $E[h(\theta)|y]$ deterministically or via simulation, \pause i.e. 
+\pause 
+where $\delta_{\theta_i}(\theta)$ is the Dirac delta function, i.e. 
+$\delta_{\theta_i}(\theta) = 0 \,\forall\, \theta\ne \theta_i \qquad \int \delta_{\theta_i}(\theta) d\theta=1.$
+\pause  
+This discrete approximation to $p(\theta|y)$ can be used to approximate the expectation $E[h(\theta)|y]$ deterministically or via simulation, \pause i.e. 
   \[ E[h(\theta)|y]\approx \sum_{i=1}^N p_i h(\theta_i) \pause \qquad E[h(\theta)|y]\approx \frac{1}{S} \sum_{s=1}^S h\left(\theta^{(s)}\right) \] 
 \pause  where $\theta^{(s)} \stackrel{ind}{\sim} \sum_{i=1}^N p_i \delta_{\theta_i}(\theta)$ (with replacement).
 }
@@ -487,12 +523,16 @@ for (u in c(.1,.95)) plot_arrows(u)
 \pause
 
 <<exponential, message=FALSE, fig.width=8>>=
-n.reps = 1e4
-d = data.frame(x = -log(runif(n.reps)))
+n.reps <- 1e4
+d <- data.frame(x = -log(runif(n.reps)))
 ggplot(d, aes(x=x)) + 
-  geom_histogram(aes(y=..density..), boundary=0) + 
-  stat_function(fun=dexp, color="red") + 
-  theme_bw()
+  geom_histogram(
+    aes(
+      y = after_stat(density)), 
+    bins     = 100,
+    boundary = 0) + 
+  stat_function(fun=dexp, 
+                color="red")
 @
 \end{frame}
 
@@ -522,7 +562,7 @@ i.e. $1/(F^{-1}(b)-F^{-1}(a))$.
 \begin{frame}[fragile]
 \frametitle{Truncated normal}
 $X\sim N(5,9^2)\mathrm{I}(1\le X \le 6)$
-<<>>=
+<<truncated-normal-cdf>>=
 mean = 5; sd = 9
 curve(pnorm(x,mean,sd), mean-2*sd, mean+2*sd, lwd=2, main="N(5,9^2) cdf")
 
@@ -543,15 +583,24 @@ plot_arrows(.5, mean=mean, sd=sd)
 \begin{frame}[fragile]
 \frametitle{Truncated normal}
 $X\sim N(5,9^2)\mathrm{I}(1\le X \le 6)$
-<<truncated_normal, message=FALSE, fig.width=8>>=
-d = data.frame(x= 5+3*qnorm(runif(n.reps, pnorm((1-5)/3), pnorm((6-5)/3))))
-dtnorm = function(x,mu=5,sigma=3,a=1,b=6) {
-  dnorm(x,mu,sigma)/diff(pnorm(c(a,b),mu,sigma))
+<<truncated-normal-stochastic, fig.width=6>>=
+d <- data.frame(
+  x = 5 + 3 * qnorm(runif(n.reps, 
+                          min = pnorm((1-5)/3), 
+                          max   = pnorm((6-5)/3))))
+
+dtnorm <- function(x, mu = 5, sigma = 3, a=1, b=6) {
+  dnorm(x, mu, sigma)/diff(pnorm(c(a, b), mu, sigma))
 } 
+
 ggplot(d, aes(x=x)) + 
-  geom_histogram(aes(y=..density..), boundary = 1, binwidth = 0.1) + 
-  stat_function(fun=dtnorm, color="red") +
-  theme_bw()
+  geom_histogram(
+    aes(
+      y = after_stat(density)), 
+    boundary = 1, 
+    binwidth = 0.1) + 
+  stat_function(fun = dtnorm, 
+                color = "red")
 @
 \end{frame}
 
@@ -643,7 +692,7 @@ The accept-reject idea is to create an envelope, $M^\dagger\, g(\theta)$, above 
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
-<<rejection_sampling_plot, dependson=c("data","normal_cauchy_posterior"), echo=FALSE, fig.width=8>>=
+<<rejection_sampling_plot, dependson=c("data","normal_cauchy_posterior"), echo=FALSE>>=
 M = sqrt(2*pi)
 g = function(theta,y,log=FALSE) dnorm(theta,y,log=log)
 
@@ -659,15 +708,18 @@ d = data.frame(x = rnorm(n,y),
 #                 distribution = c(rep("envelope",length(xx)),
 #                                  rep("target",length(xx))))
 
-gg = ggplot(d, aes(x=x,y=u_scaled,col=accept)) + 
+gg <- ggplot(d, 
+            aes(
+              x = x,
+              y = u_scaled,
+              col = accept)) + 
   geom_point()
 
-clrs = unique(ggplot_build(gg)$data[[1]]$colour)
+clrs <- unique(ggplot_build(gg)$data[[1]]$colour)
 
-gg + stat_function(fun=function(x) M*g(x,y), col=clrs[2]) +
-  stat_function(fun=function(x) q(x,y), col=clrs[1]) + 
-  labs(x="sample",y=expression(paste("u M g(",theta,")"))) +
-  theme_bw()
+gg + stat_function(fun=function(x) M*g(x,y), col = clrs[2]) +
+  stat_function(fun=function(x) q(x,y), col = clrs[1]) + 
+  labs(x="sample",y=expression(paste("u M g(",theta,")")))
 
 cat("Observed acceptance rate was",mean(d$accept))
 @
