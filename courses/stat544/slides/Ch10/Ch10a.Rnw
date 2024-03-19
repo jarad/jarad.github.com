@@ -25,7 +25,6 @@ options(width=120)
 # library("dplyr")
 # library("ggplot2") 
 library("tidyverse"); theme_set(theme_bw())
-@
 
 <<set-seed>>=
 set.seed(1)
@@ -313,15 +312,41 @@ f <- function(theta) exp(-theta^2/2)
 
 # Monte Carlo integration
 set.seed(1)
-n      <- 1e3
-theta  <- runif(n)
-ptheta <- f(theta)
+d <- data.frame(
+  theta = runif(1e3)
+) |>
+  mutate(
+    ptheta = f(theta),
+    
+    # Cumulative mean
+    cumsum  = cumsum(ptheta),
+    id      = 1:n(),
+    cummean = cumsum / id,
+    
+    # Cumulative variance
+    cumth2 = cumsum(ptheta^2),
+    cumvar = cumth2/id - cummean^2,
+    
+    # Interval
+    ucl    = cummean + qnorm(.975) * sqrt(cumvar/id),
+    lcl    = cummean - qnorm(.975) * sqrt(cumvar/id)
+  )
 
-par(mfrow=c(1,2))
-n_points <- 20; curve(f, main=paste(n_points, "samples"))
-segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
-n_points <- 200; curve(f, main=paste(n_points, "samples"))
-segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
+subsample <- bind_rows(
+  d |> slice_sample(n = 20) |> mutate(`Number of samples` = 20),
+  d |> slice_sample(n = 200) |> mutate(`Number of samples` = 200)
+)
+
+ggplot(subsample,
+       aes(x    = theta,
+           y    = 0)
+) +
+  geom_segment(aes(xend = theta, yend = ptheta)) +
+  stat_function(fun = f) +
+  facet_wrap(~`Number of samples`, ncol = 1,
+             labeller = label_both) +
+  labs(y = expression(f(theta)),
+       x = expression(theta))
 @
 \end{frame}
 
@@ -331,9 +356,17 @@ segments(theta[1:n_points], 0, theta[1:n_points], ptheta[1:n_points])
 \frametitle{Strong law of large numbers}
 <<uniform2, dependson='uniform'>>=
 # Monte Carlo integration
-cummean = function(theta) return(cumsum(theta)/(1:length(theta)))
-plot(cmptheta<-cummean(ptheta), type='l', ylab="Estimate", main="Monte Carlo estimate", xlab="Number of samples")
-abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
+g <- ggplot(d |> filter(id > 2), 
+       aes(x = id,
+           y = cummean)) +
+  geom_line(color = "gray") +
+  geom_hline(yintercept = h <- diff(pnorm(c(0,1)))*sqrt(2*pi),
+             color = "red") +
+  labs(y = "Estimate",
+       x = "Number of samples",
+       title = "Monte Carlo Estimate")
+
+g
 @
 \end{frame}
 
@@ -342,24 +375,10 @@ abline(h=h<-diff(pnorm(c(0,1)))*sqrt(2*pi), col="red")
 \begin{frame}[fragile]
 \frametitle{Central limit theorem}
 <<uniform3, dependson='uniform2'>>=
-cumvar = function(theta) {
-  S = length(theta)
-  cumvar = numeric(S)
-  for (j in 1:S) { cumvar[j] = var(f(theta[1:j]))/j }
-  return(cumvar)
-}
-
-cvptheta = cumvar(ptheta)
-uci  = cmptheta+qnorm(.975)*sqrt(cvptheta)
-lci  = cmptheta-qnorm(.975)*sqrt(cvptheta)
-plot(cmptheta, main="Monte Carlo estimate", type="n",
-     ylim=range(uci,lci,na.rm=T), xlab="Number of samples", ylab="Estimate")
-abline(h=h, col="red",lwd=2)
-lines(cmptheta,lwd=2)
-lines(uci, lty=2)
-lines(lci, lty=2)
-legend("bottomright", c("Truth","Estimate","95% CI"),
-       lwd=c(2,2,1), lty=c(1,1,2), col=c("red","black","black"))
+g +
+  geom_line(aes(y = lcl)) +
+  geom_line(aes(y = ucl)) +
+  labs(title = "Monte Carlo Central Limit Theorem Uncertainty")
 @
 \end{frame}
 
@@ -391,23 +410,41 @@ legend("bottomright", c("Truth","Estimate","95% CI"),
 \begin{frame}[fragile]
 \frametitle{Non-uniform sampling}
 <<echo=FALSE>>=
-opar = par(mfrow=c(1,2))
-theta = rnorm(100)
-y = theta[1:20]
-rng = c(-3,3)
-plot(y,y, type='l',
-     main="n=20", xlab="locations, theta", ylab='h(theta)=theta',
-     xlim=rng, ylim=rng)
-segments(y,0,y,y)
-abline(0,1,lwd=2)
-abline(h=0)
-plot(theta, theta, type='l',
-     main="n=100", xlab="locations, theta", ylab='h(theta)=theta',
-     xlim=rng, ylim=rng)
-segments(theta,0,theta,theta)
-abline(0,1,lwd=2)
-abline(h=0)
-par(opar)
+d <- data.frame(
+  theta = rnorm(1000)
+) |>
+  mutate(
+    ptheta = theta,
+    
+    # Cumulative mean
+    cumsum  = cumsum(ptheta),
+    id      = 1:n(),
+    cummean = cumsum / id,
+    
+    # Cumulative variance
+    cumth2 = cumsum(ptheta^2),
+    cumvar = cumth2/id - cummean^2,
+    
+    # Interval
+    ucl    = cummean + qnorm(.975) * sqrt(cumvar/id),
+    lcl    = cummean - qnorm(.975) * sqrt(cumvar/id)
+  )
+
+subsample <- bind_rows(
+  d |> slice_sample(n = 10) |> mutate(`Number of samples` = 10),
+  d |> slice_sample(n = 100) |> mutate(`Number of samples` = 100)
+)
+
+ggplot(subsample,
+       aes(x    = theta,
+           y    = 0)
+) +
+  geom_segment(aes(xend = theta, yend = theta)) +
+  geom_abline(intercept = 0, slope = 1) +
+  facet_wrap(~`Number of samples`, ncol = 1,
+             labeller = label_both) +
+  labs(y = expression(h(theta)),
+       x = expression(theta)) 
 @
 \end{frame}
 
@@ -416,20 +453,17 @@ par(opar)
 \frametitle{Monte Carlo estimate}
 <<infinite>>=
 # Normal expectation
-set.seed(1)
-theta = rnorm(1e3)
-cmptheta = cummean(theta)
-cvptheta = cumvar(theta)
-uci  = cmptheta+qnorm(.975)*sqrt(cvptheta)
-lci  = cmptheta-qnorm(.975)*sqrt(cvptheta)
-plot(cmptheta, main="Monte Carlo estimate", type="n",
-     ylim=range(uci,lci,na.rm=T), xlab="S", ylab="Estimate")
-abline(h=0, col="red",lwd=2)
-lines(cmptheta,lwd=2)
-lines(uci, lty=2)
-lines(lci, lty=2)
-legend("bottomright", c("Truth","Estimate","95% CI"),
-       lwd=c(2,2,1), lty=c(1,1,2), col=c("red","black","black"))
+ggplot(d |> filter(id > 2), 
+       aes(x = id,
+           y = cummean)) +
+  geom_line(color = "gray") +
+  geom_hline(yintercept = 0,
+             color = "red") +
+  labs(y = "Estimate",
+       x = "Number of samples",
+       title = "Monte Carlo Central Limit Theorem Uncertainty") +
+  geom_line(aes(y = lcl)) +
+  geom_line(aes(y = ucl)) 
 @
 \end{frame}
 
@@ -494,16 +528,34 @@ for $X$.
 
 \begin{frame}[fragile]
 \frametitle{Inverse CDF}
-<<>>=
-curve(pnorm, -3, 3, lwd=2, main="Standard normal CDF")
-
-plot_arrows = function(u, ...) {
-  arrows(-100, u, qnorm(u,...), u, col='blue')
-  arrows(qnorm(u,...), u, qnorm(u,...), 0, col='blue') 
-}
-
-for (u in c(.1,.95)) plot_arrows(u)
-
+<<standard-normal-inverse-cdf>>=
+arrows <- data.frame(
+  u <- c(0.1, 0.9)
+) |>
+  mutate(
+    q = qnorm(u)
+  )
+  
+ggplot(data.frame(x = c(-3,3)),
+       aes(x = x)) +
+  stat_function(fun = pnorm) +
+  geom_segment(data = arrows,
+               mapping = aes(
+                 x = -3, xend = q,
+                 y = u,  yend = u
+               ),
+               color = "blue",
+               arrow = arrow(length = unit(0.5, "cm"))) +
+  geom_segment(data = arrows,
+               mapping = aes(
+                 x = q, xend = q,
+                 y = u,  yend = 0
+               ),
+               color = "blue",
+               arrow = arrow(length = unit(0.5, "cm"))) +
+  labs(
+    title = "Standard normal cdf"
+  )
 @
 \end{frame}
 
@@ -561,19 +613,59 @@ i.e. $1/(F^{-1}(b)-F^{-1}(a))$.
 
 \begin{frame}[fragile]
 \frametitle{Truncated normal}
-$X\sim N(5,9^2)\mathrm{I}(1\le X \le 6)$
-<<truncated-normal-cdf>>=
-mean = 5; sd = 9
-curve(pnorm(x,mean,sd), mean-2*sd, mean+2*sd, lwd=2, main="N(5,9^2) cdf")
+<<truncated-normal-inverse-cdf>>=
+mu    <- 5
+sigma <- 9
 
-plot_segments = function(e) {
-  pe = pnorm(e, mean, sd)
-  segments(-100, pe, e, pe, col='red')
-  segments(e, pe, e, 0, col='red') 
-}
+# truncation points
+truncation <- data.frame(
+  x = c(1, 6)
+) |>
+  mutate(
+    q = pnorm(x, mu, sigma)
+  )
 
-for (endpoint in c(1,6)) plot_segments(endpoint)
-plot_arrows(.5, mean=mean, sd=sd)
+arrows <- data.frame(
+  u = c(0.48)
+) |>
+  mutate(
+    q = qnorm(u, mu, sigma)
+  )
+  
+ggplot(data.frame(x = c(-20,20)),
+       aes(x = x)) +
+  stat_function(fun = pnorm,
+                args = list(mean = mu, sd = sigma)) +
+  geom_segment(data = arrows,
+               mapping = aes(
+                 x = -20, xend = q,
+                 y = u,  yend = u
+               ),
+               color = "blue",
+               arrow = arrow(length = unit(0.5, "cm"))) +
+  geom_segment(data = arrows,
+               mapping = aes(
+                 x = q, xend = q,
+                 y = u,  yend = 0
+               ),
+               color = "blue",
+               arrow = arrow(length = unit(0.5, "cm"))) +
+  geom_segment(data = truncation,
+               mapping = aes(
+                 x = -20, xend = x,
+                 y = q,  yend = q
+               ),
+               color = "red") +
+  geom_segment(data = truncation,
+               mapping = aes(
+                 x = x, xend = x,
+                 y = q,  yend = 0
+               ),
+               color = "red") +
+  labs(
+    title = "N(5,9^2)I(1< X < 6)"
+  ) +
+  ylim(0,1)
 @
 \end{frame}
 
