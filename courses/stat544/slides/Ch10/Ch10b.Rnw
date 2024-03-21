@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -9,7 +9,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -20,12 +20,11 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library(reshape2)
-library(plyr)
-library(ggplot2)
-library(xtable)
-library(weights)
-library(ars)
+library("tidyverse"); theme_set(theme_bw())
+library("scales")
+library("weights")
+library("ars")
+library("mcmcse")
 @
 
 <<set_seed>>=
@@ -75,8 +74,12 @@ segments(-2,dnorm(-2, log=T), 1, dnorm(1, log=T))
 \frametitle{Log-concavity}
 
 \begin{definition}
-A function $f(x)$ is log-concave if $\log\, f(x)$ is concave. \pause A function is log-concave if and only if $(\log\, f(x))'' \le 0$.
+A function $f(x)$ is log-concave if $\log\, f(x)$ is concave. 
 \end{definition}
+\pause
+\begin{lemma}
+A function is log-concave if and only if $(\log\, f(x))'' \le 0 \,\forall\, x$.
+\end{lemma}
 
 \vspace{0.2in}\pause
 
@@ -247,17 +250,17 @@ is the \alert{normalized} importance weight.
 
 \begin{frame}[fragile]
 \frametitle{Normalized importance weights}
-<<importance_sampling, fig.width=8>>=
+<<importance_sampling>>=
 # Taken from Ch10a
-q = function(theta,y,log=FALSE) {
-  out = -(y-theta)^2/2-log(1+theta^2)
+q <- function(theta,y,log=FALSE) {
+  out <- -(y-theta)^2/2-log(1+theta^2)
   if (log) return(out)
   return(exp(out))
 }
-g = function(theta,y,log=FALSE) dnorm(theta,y,log=log)
+g <- function(theta,y,log=FALSE) dnorm(theta,y,log=log)
 
-py = function(y,log=FALSE) {
-  int = integrate(function(x) q(x,y,log=FALSE),-Inf,Inf)
+py <- function(y,log=FALSE) {
+  int <- integrate(function(x) q(x,y,log=FALSE),-Inf,Inf)
   if (int$message!="OK") {
     warning(paste("Could not compute marginal likelihood for y=", y, "\n"))
     return(NA)
@@ -265,20 +268,31 @@ py = function(y,log=FALSE) {
   int$value
 }
 
-y = 1
-n = 1000
-theta = rnorm(n, y)
-weight = exp(q(theta,y,log=TRUE)-g(theta,y,log=TRUE))
-qplot(x=theta,y=weight/sum(weight)) +
-  geom_point() +
-  labs(y="Normalized importance weight", x = expression(theta)) +
-  theme_bw()
+y <- 1
+n <- 1000
+d <- data.frame(
+  theta  = rnorm(n, y)
+) |>
+  mutate(
+    weight = exp(q(theta, y, log=TRUE) - 
+                 g(theta, y, log=TRUE)),
+    weight = weight / sum(weight)
+  )
+
+ggplot(d,
+       aes(
+         x = theta,
+         y = weight
+       )) +
+  geom_point() + 
+  labs(y = "Normalized importance weight", x = expression(theta))
 @
 \end{frame}
 
 \begin{frame}[fragile]
 <<importance_sampling_mean, message=FALSE, fig.width=8, echo=TRUE>>=
 library(weights)
+theta  <- d$theta; weight <- d$weight
 sum(weight*theta/sum(weight)) # Estimate mean
 wtd.hist(theta, 100, prob=TRUE, weight=weight)
 curve(q(x,y)/py(y), add=TRUE, col="red", lwd=2)
@@ -287,12 +301,13 @@ curve(q(x,y)/py(y), add=TRUE, col="red", lwd=2)
 
 \begin{frame}[fragile]
 \frametitle{Resampling}
-If an unweighted sample is desired, sample $\theta^{(s)}$ with replacement with probability equal to the normalized weights, $\tilde{w}\left(\theta^{(s)}\right)$.
+If an unweighted sample is desired, 
+sample $\theta^{(s)}$ with replacement with probability equal to the normalized weights, $\tilde{w}\left(\theta^{(s)}\right)$.
 
 <<resampling, warning=FALSE, echo=TRUE, fig.width=8>>=
 # resampling
-new_theta = sample(theta, replace=TRUE, prob=weight) # internally normalized
-hist(new_theta, 100, prob=TRUE, main="Unweighted histogram of resampled draws"); curve(q(x,y)/py(y), add=TRUE, col="red", lwd=2)
+new_theta <- sample(theta, replace=TRUE, prob = weight) # internally normalized
+hist(new_theta, 100, prob = TRUE, main = "Unweighted histogram of resampled draws"); curve(q(x,y)/py(y), add = TRUE, col="red", lwd=2)
 @
 
 
@@ -301,7 +316,9 @@ hist(new_theta, 100, prob=TRUE, main="Unweighted histogram of resampled draws");
 
 
 \frame{\frametitle{Heavy-tailed proposals}
-  Although any proposal can be used for importance sampling, only proposals with heavy tails relative to the target will be efficient. 
+Although any proposal can be used for importance sampling, 
+proposals with tails as heavy as the target will be efficient
+and have a CLT. 
   
   \vspace{0.2in} \pause
   
@@ -312,17 +329,29 @@ hist(new_theta, 100, prob=TRUE, main="Unweighted histogram of resampled draws");
 
 \begin{frame}[fragile]
 \frametitle{Importance weights for proposal with thin tails}
-<<importance_sampling_weights, fig.width=8>>=
+<<importance_sampling_weights>>=
 set.seed(16)
-theta = rnorm(1000)
-weight = dcauchy(theta)/dnorm(theta)
-weight = weight/sum(weight)
-whmax = which.max(weight)
-qplot(theta,weight/sum(weight),geom="point") + 
-  ylim(0,max(weight)) + 
-  xlim(-theta[whmax],theta[whmax]) + 
-  labs(x=expression(theta), y="Normalized importance weight") +
-  theme_bw()
+
+d <- data.frame(
+  theta  = rnorm(1000)
+) |>
+  mutate(
+    unweight = dcauchy(theta) / dnorm(theta),
+    weight   = unweight/sum(unweight)
+  )
+
+whmax  = which.max(d$weight)
+
+ggplot(d,
+      aes(
+        x = theta,
+        y = weight
+      )) +
+  geom_point() + 
+  ylim(0, max(d$weight)) + 
+  xlim(-d$theta[whmax], d$theta[whmax]) + 
+  labs(x = expression(theta), 
+       y = "Normalized importance weight")
 @
 \end{frame}
 
@@ -333,32 +362,48 @@ sample size (ESS),
 i.e. how many independent unweighted draws do we effectively have:
 \[ ESS = \frac{1}{\sum_{s=1}^S (\tilde{w}\left(\theta^{(s)}\right))^2} \]
 <<effective_size, echo=TRUE>>=
-(n <- length(weight))    # Number of samples
-(ess <- 1/sum(weight^2)) # Effective sample size
-ess/n                    # Effective sample proportion
+weight <- d$unweight         # Unnormalized weight
+(n   <- length(d$weight))    # Number of samples
+(ess <- 1/sum(d$weight^2))   # Effective sample size
+ess/n                        # Effective sample proportion
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Effective sample size}
-<<cumulative_effective_size, fig.width=12, cache=TRUE, echo=TRUE>>=
+<<cumulative_effective_size, echo=TRUE, cache=TRUE>>=
 set.seed(5)
-theta = rnorm(1e4)
-lweight = dcauchy(theta,log=TRUE)-dnorm(theta,log=TRUE)
-cumulative_ess = length(lweight)
+theta          <- rnorm(1e4)
+lweight        <- dcauchy(theta,log=TRUE) - dnorm(theta,log=TRUE)
+cumulative_ess <- length(lweight)
+
 for (i in 1:length(lweight)) {
   lw = lweight[1:i]
   w = exp(lw-max(lw))
   w = w/sum(w)
   cumulative_ess[i] = 1/sum(w^2)
 }
-qplot(x=1:length(cumulative_ess), y=cumulative_ess, geom="line") + 
-  labs(x="Number of samples", y="Effective sample size") +
-  theme_bw()
 @
 \end{frame}
 
 
+\begin{frame}
+\frametitle{ESS - Light tail proposal}
+<<ess-plot, dependson="cumulative_effective_size">>=
+d <- data.frame(
+  x = 1:length(cumulative_ess), 
+  y = cumulative_ess)
+
+ggplot(d,
+       aes(
+         x = x,
+         y = y
+       )) +
+  geom_line() + 
+  labs(x = "Number of samples", 
+       y = "Effective sample size") 
+@
+\end{frame}
 
 % \begin{frame}[fragile]
 % \frametitle{The idea}
@@ -465,5 +510,72 @@ qplot(x=1:length(cumulative_ess), y=cumulative_ess, geom="line") +
 % 	\item a uniform draw.
 % 	\end{itemize}
 % }
+
+
+\section{Practical Monte Carlo}
+\begin{frame}
+\frametitle{Practical Monte Carlo}
+
+As a practical matter, 
+we typically obtain a single collection of samples, 
+say $\theta^{(s)}$ for $s=1,\ldots,S$ and we want to address many 
+scientific questions. 
+
+\vspace{0.2in} \pause
+
+For example,
+\begin{itemize}
+\item $E[\theta|y]$
+\item Equal-tail 95\% CI for $\theta$
+\item other functions of $\theta$
+\end{itemize}
+
+\vspace{0.2in} \pause
+
+\alert{So how large should $S$ be?} 
+Large enough so the Monte Carlo error on the worst estimated quantity
+is sufficiently small.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Practical Monte Carlo - Monte Carlo error}
+
+Calculate the Monte Carlo error. 
+
+<<mc-error, echo=TRUE>>=
+# Normal distribution
+theta <- rnorm(1e3)
+
+mcmcse::mcse(theta)         # expectation
+mcmcse::mcse.q(theta, .025) # quantile
+# mcmcse::mcse.q(theta, .975)
+@
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Monte Carlo Error as a Function of Sample Size}
+<<mc-sample-size, echo=FALSE>>=
+y <- rnorm(1e5)
+d <- tribble(
+  ~S, ~se,
+  1e1, mcse(y[1:1e1])$se,
+  1e2, mcse(y[1:1e2])$se,
+  1e3, mcse(y[1:1e3])$se,
+  1e4, mcse(y[1:1e4])$se,
+  1e5, mcse(y[1:1e5])$se,
+)
+
+ggplot(d, 
+       aes(x = S,
+           y = se)) +
+  geom_line() +
+  scale_y_log10() +
+  scale_x_continuous(labels = scales::label_comma(),
+                     trans = "log10")
+@
+\end{frame}
 
 \end{document}
