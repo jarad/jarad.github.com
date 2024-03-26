@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -8,26 +8,28 @@
 \begin{document}
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
-opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
-               size='tiny', 
-               out.width='0.8\\textwidth', 
-               fig.align='center', 
-               message=FALSE,
-               echo=FALSE,
-               cache=TRUE)
+opts_chunk$set(comment    = NA, 
+               fig.width  = 5, 
+               fig.height = 3, 
+               size       = 'tiny', 
+               out.width  = '0.8\\textwidth', 
+               fig.align  = 'center', 
+               message    = FALSE,
+               echo       = FALSE,
+               cache      = TRUE)
 options(width=120)
 @
 
-<<libraries, message=FALSE, warning=FALSE>>=
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
 library(MASS)
 library(reshape2)
 library(plyr)
 library(dplyr)
 library(tidyr)
-library(ggplot2)
+library(ggplot2); theme_set(theme_bw())
 library(xtable)
 library(GGally)
+library(gridExtra)
 @
 
 <<set_seed>>=
@@ -259,11 +261,28 @@ d = expand.grid(current=-1:1, proposed=-1:1) %>%
   dplyr::select(-acceptance_probability) %>%
   gather(value, theta, -cv, -pv, -accept) 
 
-ggplot(d, aes(x=theta, y=0)) + 
-  geom_point(aes(color=accept, shape=value), size=2) + 
-  facet_grid(cv~pv, switch='y') +
-  geom_line(data=curves, aes(theta,density,linetype=distribution)) +
-  theme_bw()
+ggplot(d, 
+       aes(
+         x = theta, 
+         y = 0)) + 
+  geom_point(
+    aes(
+      color = accept, 
+      shape = value), 
+    size=2) + 
+  facet_grid(
+    cv ~ pv, 
+    switch='y') +
+  geom_line(data = curves, 
+            aes(
+              theta,
+              density,
+              linetype = distribution)) +
+  labs(
+    x = expression(theta),
+    y = "density",
+    title = "Independence proposal sampling"
+  )
 @
 
 \end{frame}
@@ -300,8 +319,10 @@ d = data.frame(theta = seq(-3,3,by=0.1)) %>%
          proposal = g(theta,1))
 
 ggplot(d %>% gather(distribution, density, target, proposal), 
-       aes(x=theta, y=density, color=distribution)) + geom_line()+
-  theme_bw()
+       aes(x     = theta, 
+           y     = density, 
+           color = distribution)) + 
+  geom_line()
 @
 \end{frame}
 
@@ -310,7 +331,7 @@ ggplot(d %>% gather(distribution, density, target, proposal),
 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
-<<normal_cauchy_independence, fig.height=2.5>>=
+<<normal-cauchy-independence>>=
 set.seed(1)
 y = 0 
 n = 100
@@ -318,22 +339,42 @@ theta = rep(NA, n)
 theta[1] = rnorm(1,y)
 for (i in 2:n) {
   proposed = rnorm(1,y)
-  logr = log(1+theta[i-1]^2)-log(1+proposed^2)
-  theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
+  logr = log(1+theta[i-1]^2) - log(1+proposed^2)
+  theta[i] = ifelse(log(runif(1)) < logr, proposed, theta[i-1])
 }
-qplot(1:n, theta) +
-  labs(x="Iteration (t)", y=expression(theta), title="Independence Metropolis-Hastings") +
-  theme_bw()
 
+ggplot(data.frame(Iteration = 1:n, 
+                  theta     = theta),
+       aes(x = Iteration, 
+           y = theta)) +
+  geom_point() +
+  labs(x     = "Iteration (t)", 
+       y     = expression(theta), 
+       title = "Independence Metropolis-Hastings") 
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Example: Normal-Cauchy model - poor starting value}
+<<normal-cauchy-independence-poor-starting-value>>=
 theta[1] = 10 # This line changed
 for (i in 2:n) {
   proposed = rnorm(1,y)
   logr = log(1+theta[i-1]^2)-log(1+proposed^2)
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
-qplot(1:n, theta) +
-  labs(x="Iteration (t)", y=expression(theta), title="Independence Metropolis-Hastings (poor starting value)") +
-  theme_bw()
+
+ggplot(data.frame(Iteration = 1:n,
+                  theta     = theta),
+       aes(
+         x = Iteration,
+         y = theta
+       )) +
+  geom_point() +
+  labs(
+    x     = "Iteration (t)", 
+    y     = expression(theta), 
+    title = "Independence Metropolis-Hastings (poor starting value)") 
 @
 \end{frame}
 
@@ -369,24 +410,29 @@ will result in
 \begin{frame}[fragile]
 \frametitle{Need heavy tails - example}
 
-Suppose $\theta|y \sim Ca(0,1)$ and we use a standard normal as a proposal. \pause Then 
+Suppose $\theta|y \sim Ca(0,1)$ and we use a standard normal as a proposal. 
+\pause 
+Then 
 
-<<fig.height=2>>=
-d = mutate(data.frame(x = seq(-4,4,by=.1)), 
-           target = dcauchy(x),
-           proposal = dnorm(x),
-           log_ratio = log(target)-log(proposal))
-ggplot(melt(d[,c('x','target','proposal')], 
+<<need-heavy-tails-example, fig.height=2.5>>=
+d <- data.frame(x = seq(-4,4,by=.1)) |>
+  mutate(
+    target    = dcauchy(x),
+    proposal  = dnorm(x),
+    log_ratio = log(target) - log(proposal))
+
+g1 <- ggplot(melt(d[,c('x','target','proposal')], 
             id.var='x', variable.name='density'),
        aes(x=x, y=value, color=density)) +
   geom_line() + 
-  theme(legend.position="none")+
-  theme_bw()
-ggplot(d, aes(x=x,y=exp(log_ratio))) + 
+  theme(legend.position="none")
+
+g2 <- ggplot(d, aes(x=x,y=exp(log_ratio))) + 
   geom_line() +
-  theme_bw() +
   labs(x = "theta", y = "target / proposal") +
   scale_y_log10()
+
+grid.arrange(g1, g2, ncol = 1)
 @
 
 \end{frame}
@@ -394,7 +440,7 @@ ggplot(d, aes(x=x,y=exp(log_ratio))) +
 
 \begin{frame}[fragile]
 \frametitle{Need heavy tails}
-<<heavy_tails, fig.height=3.5, cache=TRUE>>=
+<<heavy_tails, cache=TRUE>>=
 n=1000
 theta = rep(0,n)
 for (i in 2:n) {
@@ -403,7 +449,18 @@ for (i in 2:n) {
          dnorm(theta[i-1],log=TRUE)-dnorm(proposed,log=TRUE)
   theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
-qplot(1:n, theta)+labs(x="Iteration (t)",y=expression(theta)) +theme_bw()
+
+ggplot(data.frame(Iteration = 1:n,
+                  theta     = theta),
+       aes(
+         x = Iteration,
+         y = theta
+       )) +
+  geom_point() +
+  labs(
+    x     = "Iteration (t)", 
+    y     = expression(theta), 
+    title = "Independence Metropolis-Hastings (light-tailed proposal)") 
 @
 
 \end{frame}
@@ -445,7 +502,7 @@ Notice that $r = q(\theta^*|y)/q(\theta^{(t)}|y)$ and thus will accept whenever 
 
 Suppose $\theta|y \sim N(0,1)$, $\theta^{(t)} = 1$, and $\theta^* \sim N(\theta^{(t)},1)$. \pause 
 
-<<hill_climbing, fig.width=10>>=
+<<hill_climbing, fig.width=8>>=
 curve(dnorm, -3, 3, lwd=2)
 curve(dnorm, -1, 1, lwd=5, add=TRUE)
 segments(1,0,1,dnorm(1))
@@ -485,10 +542,24 @@ for (i in 1:n) {
   current = ifelse(log(runif(1))<logr, proposed, current)
   samps[i] = current
 }
-qplot(1:n, samps) + 
-  labs(x="t", y=expression(theta), title="Random-walk Metropolis") +
-  theme_bw()
 
+ggplot(data.frame(Iteration = 1:n,
+                  theta     = samps),
+       aes(
+         x = Iteration,
+         y = theta
+       )) +
+  geom_point() +
+  labs(
+    x     = "Iteration (t)", 
+    y     = expression(theta), 
+    title = "Random-walk Metropolis") 
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Example: Normal-Cauchy model - poor starting value}
+<<normal-cauchy-model-rw-poor-starting-value>>=
 current = 10 # This line changed
 for (i in 1:n) {
   proposed = rnorm(1,current)
@@ -496,11 +567,19 @@ for (i in 1:n) {
   current = ifelse(log(runif(1))<logr, proposed, current)
   samps[i] = current
 }
-qplot(1:n, samps) + 
-  labs(x = "t", 
-       y = expression(theta), 
-       title = "Random-walk Metropolis (poor starting value)") +
-  theme_bw()
+
+ggplot(data.frame(Iteration = 1:n,
+                  theta     = samps),
+       aes(
+         x = Iteration,
+         y = theta
+       )) +
+  geom_point() + 
+  labs(
+    x     = "Iteration (t)", 
+    y     = expression(theta), 
+    title = "Random-walk Metropolis (poor starting value)") 
+
 @
 \end{frame}
 
@@ -534,12 +613,12 @@ in an acceptance rate of 40\% for $d=1$ down to 20\% as $d\to\infty$.
 
 Let $y|\theta \sim N(\theta,1)$, $\theta\sim Ca(0,1)$, and $y=1$. 
 
-<<tuning_parameter, fig.height=3>>=
+<<tuning_parameter, fig.width=5.5>>=
 random_walk = function(n, v, theta0, log_target) {
   theta = rep(theta0,n)
   for (i in 2:n) {
     proposed = rnorm(1, theta[i-1], v)
-    logr = log_target(proposed,y)-log_target(theta[i-1],y)
+    logr = log_target(proposed,y) - log_target(theta[i-1],y)
     theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
   }
   return(data.frame(iteration=1:n, theta=theta))
@@ -549,8 +628,18 @@ d = expand.grid(v=c(1/10,10))
 r = ddply(d, .(v), function(x) {
   random_walk(100, x$v, 0, log_q)
 })
-ggplot(r, aes(x=iteration, y=theta, color=as.factor(v)))+geom_point()+
-  theme_bw()
+
+ggplot(r, 
+       aes(
+         x     = iteration, 
+         y     = theta, 
+         color = as.factor(v))) +
+  geom_point() +
+  labs(
+    x = "Iteration (t)",
+    y = expression(theta),
+    title = "Random walk - tuning parameter"
+  )
 @
 
 \end{frame}
@@ -577,7 +666,7 @@ otherwise, set $\theta^{(t+1)}=\theta^{(t)}$.
 \begin{frame}[fragile]
 \frametitle{Binomial model}
 
-<<binomial, echo=TRUE>>=
+<<binomial, echo=TRUE, size='scriptsize'>>=
 n = 10000
 log_q = function(theta, y=3, n=10) {
   if (theta<0 | theta>1) return(-Inf)
@@ -603,7 +692,7 @@ length(unique(samps))/n # acceptance rate
 
 \begin{frame}[fragile]
 \frametitle{Binomial}
-<<binomial_traceplot, fig.width=10>>=
+<<binomial_traceplot>>=
 par(mfrow=c(1,2))
 plot(samps, type="l")
 hist(samps, prob=TRUE)
@@ -663,7 +752,7 @@ Proposed automatic adapting of the Metropolis-Hastings tuning parameter: \pause
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings}
 
-<<echo=TRUE>>=
+<<mh, echo=TRUE, size='scriptsize'>>=
 n = 20
 y = rnorm(n)
 sum_y2 = sum(y^2)
@@ -690,7 +779,7 @@ current = c(0,1)
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings - Adapting}
 
-<<echo=TRUE>>=
+<<mh-adapting, echo=TRUE>>=
 # Adapt
 for (b in 1:B) {
   for (m in 1:M) {
@@ -716,12 +805,12 @@ var(samps) # S_B
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings - Adapting}
 
-<<echo=TRUE, fig.width=10>>=
+<<mh-adapting-plot,echo=TRUE, fig.width=10>>=
 samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
+
 ggplot(melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iteration, y=value)) + 
   geom_line() +
-  facet_wrap(~parameter, scales='free')+
-  theme_bw()
+  facet_wrap(~parameter, scales='free')
 @
 
 \end{frame}
@@ -732,7 +821,7 @@ ggplot(melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iterati
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings - Inference}
 
-<<echo=TRUE>>=
+<<mh-inference,echo=TRUE>>=
 # Final run
 K = 10000
 samps = matrix(NA, nrow=K, ncol=2)
@@ -753,18 +842,17 @@ length(unique(na.omit(samps[,1])))/length(na.omit(samps[,1])) # acceptance rate
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings - Inference}
 
-<<fig.width=13>>=
+<<mh-inference2,fig.width=13>>=
 samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
 m = melt(samps, id.var='iteration', variable.name='parameter')
+
 ggplot(m, aes(x=iteration, y=value)) + 
   geom_line() +
-  facet_wrap(~parameter, scales='free')+
-  theme_bw()
+  facet_wrap(~parameter, scales='free')
 
-ggplot(m, aes(x=value, y=..density..)) + 
+ggplot(m, aes(x=value, y=after_stat(density))) + 
   geom_histogram(binwidth=0.1) +
-  facet_wrap(~parameter, scales='free')+
-  theme_bw()
+  facet_wrap(~parameter, scales='free')
 @
 
 \end{frame}
@@ -848,11 +936,10 @@ for (k in 1:K) {
 samps = as.data.frame(samps); names(samps) = c("alpha","beta")
 @
 
-<<dependson='beta_binomial',message=FALSE, warning=FALSE, fig.width=10>>=
+<<dependson='beta_binomial',message=FALSE, warning=FALSE, fig.height=2.5>>=
 ggpairs(samps, 
         lower = list(continuous='points'), 
-        diag  = list(continuous='barDiag')) +
-  theme_bw()
+        diag  = list(continuous='barDiag'))
 @
 
 \end{frame}
