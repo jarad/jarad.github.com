@@ -21,8 +21,8 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
-library("tidyverse"); theme_set(theme_bw())
 library(MASS)
+library("tidyverse"); theme_set(theme_bw())
 library(GGally)
 library(gridExtra)
 @
@@ -442,8 +442,11 @@ d <- data.frame(x = seq(-4, 4, by = .1)) |>
     proposal  = dnorm(x),
     log_ratio = log(target) - log(proposal))
 
-g1 <- ggplot(melt(d[,c('x','target','proposal')], 
-            id.var = 'x', variable.name = 'density'),
+g1 <- ggplot(d |>
+               dplyr::select(x, target, proposal) |>
+               pivot_longer(target:proposal,
+                            names_to  = "density",
+                            values_to = "value"),
        aes(x     = x, 
            y     = value, 
            color = density)) +
@@ -653,11 +656,9 @@ random_walk <- function(n, v, theta0, log_target) {
   return(data.frame(iteration = 1:n, theta = theta))
 }
 
-d <- expand.grid(v=c(1/10,10))
-
-r <- plyr::ddply(d, .(v), function(x) {
-  random_walk(100, x$v, 0, log_q)
-})
+r <- data.frame(v = c(1/10, 10)) |>
+  group_by(v) |>
+  do(random_walk(100, .$v, 0, log_q))
 
 ggplot(r, 
        aes(
@@ -696,7 +697,7 @@ otherwise, set $\theta^{(t+1)}=\theta^{(t)}$.
 \begin{frame}[fragile]
 \frametitle{Binomial model}
 
-<<binomial, echo=TRUE, size='scriptsize'>>=
+<<binomial, echo=TRUE>>=
 n <- 10000
 log_q <- function(theta, y = 3, n = 10) {
   if (theta < 0 | theta > 1) return(-Inf)
@@ -782,7 +783,7 @@ Proposed automatic adapting of the Metropolis-Hastings tuning parameter: \pause
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings}
 
-<<mh, echo=TRUE, size='normalsize'>>=
+<<mh, echo=TRUE>>=
 n      <- 20
 y      <- rnorm(n)
 sum_y2 <- sum(y^2)
@@ -810,7 +811,7 @@ current <- c(0,1)  # initial draw
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings - Adapting}
 
-<<mh-adapting, echo=TRUE, size='normalsize'>>=
+<<mh-adapting, echo=TRUE>>=
 # Adapt
 for (b in 1:B) {
   for (m in 1:M) {
@@ -839,9 +840,14 @@ var(samps) # S_B
 <<mh-adapting-plot>>=
 samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
 
-ggplot(reshape2::melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iteration, y=value)) + 
+ggplot(samps |>
+         pivot_longer(-iteration,
+                      names_to = 'parameter',
+                      values_to = 'value'), 
+       aes(x = iteration, 
+           y = value)) + 
   geom_line() +
-  facet_wrap(~parameter, scales='free')
+  facet_wrap(~parameter, ncol = 1, scales='free')
 @
 
 \end{frame}
@@ -852,7 +858,7 @@ ggplot(reshape2::melt(samps, id.var='iteration', variable.name='parameter'), aes
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings - Inference}
 
-<<mh-inference, echo=TRUE, size='normalsize'>>=
+<<mh-inference, echo=TRUE>>=
 # Final run
 K     <- 10000
 samps <- matrix(NA, nrow = K, ncol = 2)
@@ -877,13 +883,22 @@ length(unique(na.omit(samps[,1])))/length(na.omit(samps[,1])) # acceptance rate
 
 <<mh-inference2,fig.width=13>>=
 samps <- as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
-m     <- reshape2::melt(samps, id.var='iteration', variable.name='parameter')
+m     <- samps |>
+  pivot_longer(-iteration,
+               names_to  = 'parameter',
+               values_to = 'value')
 
-ggplot(m, aes(x=iteration, y=value)) + 
+ggplot(m, 
+       aes(
+         x = iteration, 
+         y = value)) + 
   geom_line() +
   facet_wrap(~parameter, scales='free')
 
-ggplot(m, aes(x=value, y=after_stat(density))) + 
+ggplot(m, 
+       aes(
+         x = value, 
+         y = after_stat(density))) + 
   geom_histogram(binwidth=0.1) +
   facet_wrap(~parameter, scales='free')
 @
