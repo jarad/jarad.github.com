@@ -21,19 +21,14 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
+library("tidyverse"); theme_set(theme_bw())
 library(MASS)
-library(reshape2)
-library(plyr)
-library(dplyr)
-library(tidyr)
-library(ggplot2); theme_set(theme_bw())
-library(xtable)
 library(GGally)
 library(gridExtra)
 @
 
 <<set_seed>>=
-set.seed(1)
+set.seed(20240326)
 @
 
 \frame{\maketitle}
@@ -247,42 +242,64 @@ The \alert{independence Metropolis-Hastings algorithm} performs the following \p
 \frametitle{Intuition through examples}
 
 <<independent_metropolis_hastings_intuition>>=
-curves = data.frame(theta=seq(-2,3, length=101)) %>%
+curves <- data.frame(theta = seq(-2, 3, length=101)) |>
   mutate(target   = dnorm(theta),
-         proposal = dnorm(theta,1)) %>%
-  gather(distribution,density,-theta)
+         proposal = dnorm(theta,1)) |>
+  pivot_longer(
+    target:proposal,
+    names_to = "Distribution",
+    values_to = "density"
+  )
 
-d = expand.grid(current=-1:1, proposed=-1:1) %>%
-  mutate(cv = paste("current= ", current),
-         pv = paste("proposed=", proposed),
-    acceptance_probability = 
-           dnorm(proposed)/dnorm(current)*dnorm(current,1)/dnorm(proposed,1),
-         accept = acceptance_probability>.5) %>%
-  dplyr::select(-acceptance_probability) %>%
-  gather(value, theta, -cv, -pv, -accept) 
+d <- expand.grid(
+  current  = -1:1, 
+  proposed = -1:1) |>
+  
+  mutate(
+    ratio = 
+      dnorm(proposed ) / dnorm(current   ) * 
+      dnorm(current,1) / dnorm(proposed,1), 
+    cv = paste("current=", current),
+    pv = paste("proposed=", proposed)) |>
+  
+  pivot_longer(
+    current:proposed,
+    names_to = "value",
+    values_to = "theta"
+  ) 
 
 ggplot(d, 
        aes(
          x = theta, 
-         y = 0)) + 
+         y = 0)) +
+  geom_segment(
+    aes(
+      x    = as.numeric(gsub('current= ', '',cv)),
+      xend = as.numeric(gsub('proposed= ','',pv)),
+      y = 0,
+      yend = 0
+    ),
+    arrow = arrow(length = unit(0.1, "cm"))
+  ) + 
   geom_point(
     aes(
-      color = accept, 
+      color = ratio > 0.5, 
       shape = value), 
-    size=2) + 
+    alpha = 0.7,
+    size = 2) + 
   facet_grid(
-    cv ~ pv, 
-    switch='y') +
+    cv ~ pv,
+    switch = 'y') +
   geom_line(data = curves, 
             aes(
               theta,
               density,
-              linetype = distribution)) +
+              linetype = Distribution)) +
   labs(
     x = expression(theta),
     y = "density",
     title = "Independence proposal sampling"
-  )
+  ) 
 @
 
 \end{frame}
@@ -307,18 +324,22 @@ r &= \frac{q(\theta^*|y)}{q(\theta^{(t)}|y)}\frac{g(\theta^{(t)})}{g(\theta^*)} 
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model}
 <<sampling, fig.height = 3>>=
-q = function(theta,y,log=FALSE) {
-  out = -(y-theta)^2/2-log(1+theta^2)
+q <- function(theta, y, log = FALSE) {
+  out <- -(y-theta)^2/2 - log(1+theta^2)
   if (log) return(out)
   return(exp(out))
 }
-g = function(theta,y,log=FALSE) dnorm(theta,y,log=log)
+g <- function(theta, y, log = FALSE) dnorm(theta, y, log=log)
 
-d = data.frame(theta = seq(-3,3,by=0.1)) %>%
+d <- data.frame(theta = seq(-3, 3, by = 0.1)) |>
   mutate(target = q(theta,1)/integrate(function(x) q(x,1), -Inf, Inf)$value,
          proposal = g(theta,1))
 
-ggplot(d %>% gather(distribution, density, target, proposal), 
+ggplot(d |> 
+         pivot_longer(
+           target:proposal,
+           names_to = "distribution",
+           values_to = "density"), 
        aes(x     = theta, 
            y     = density, 
            color = distribution)) + 
@@ -333,14 +354,14 @@ ggplot(d %>% gather(distribution, density, target, proposal),
 \frametitle{Example: Normal-Cauchy model}
 <<normal-cauchy-independence>>=
 set.seed(1)
-y = 0 
-n = 100
-theta = rep(NA, n)
-theta[1] = rnorm(1,y)
+y <- 0 
+n <- 100
+theta <- rep(NA, n)
+theta[1] <- rnorm(1,y)
 for (i in 2:n) {
-  proposed = rnorm(1,y)
-  logr = log(1+theta[i-1]^2) - log(1+proposed^2)
-  theta[i] = ifelse(log(runif(1)) < logr, proposed, theta[i-1])
+  proposed <- rnorm(1,y)
+  logr <- log(1+theta[i-1]^2) - log(1+proposed^2)
+  theta[i] <- ifelse(log(runif(1)) < logr, proposed, theta[i-1])
 }
 
 ggplot(data.frame(Iteration = 1:n, 
@@ -415,19 +436,24 @@ Suppose $\theta|y \sim Ca(0,1)$ and we use a standard normal as a proposal.
 Then 
 
 <<need-heavy-tails-example, fig.height=2.5>>=
-d <- data.frame(x = seq(-4,4,by=.1)) |>
+d <- data.frame(x = seq(-4, 4, by = .1)) |>
   mutate(
     target    = dcauchy(x),
     proposal  = dnorm(x),
     log_ratio = log(target) - log(proposal))
 
 g1 <- ggplot(melt(d[,c('x','target','proposal')], 
-            id.var='x', variable.name='density'),
-       aes(x=x, y=value, color=density)) +
+            id.var = 'x', variable.name = 'density'),
+       aes(x     = x, 
+           y     = value, 
+           color = density)) +
   geom_line() + 
-  theme(legend.position="none")
+  theme(legend.position = "none")
 
-g2 <- ggplot(d, aes(x=x,y=exp(log_ratio))) + 
+g2 <- ggplot(d, 
+             aes(
+               x = x,
+               y = exp(log_ratio))) + 
   geom_line() +
   labs(x = "theta", y = "target / proposal") +
   scale_y_log10()
@@ -444,10 +470,10 @@ grid.arrange(g1, g2, ncol = 1)
 n=1000
 theta = rep(0,n)
 for (i in 2:n) {
-  proposed = rnorm(1)
-  logr = dcauchy(proposed,log=TRUE)-dcauchy(theta[i-1],log=TRUE)+
-         dnorm(theta[i-1],log=TRUE)-dnorm(proposed,log=TRUE)
-  theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
+  proposed <- rnorm(1)
+  logr <- dcauchy(proposed,   log=TRUE) - dcauchy(theta[i-1], log = TRUE)+
+          dnorm(  theta[i-1], log=TRUE) - dnorm(    proposed, log = TRUE)
+  theta[i] <- ifelse(log(runif(1))<logr, proposed, theta[i-1])
 }
 
 ggplot(data.frame(Iteration = 1:n,
@@ -532,15 +558,18 @@ For this example, let $v^2 = 1$.
 \begin{frame}[fragile]
 \frametitle{Example: Normal-Cauchy model }
 <<normal_cauchy_random_walk, fig.height=2>>=
-n = 100
-log_q = function(theta,y) dnorm(y,theta,log=TRUE)+dcauchy(theta,log=TRUE)
-current = rnorm(1,y)
-samps = rep(NA, n)
+n <- 100
+log_q <- function(theta,y) {
+  dnorm(y,  theta, log = TRUE) +
+    dcauchy(theta, log = TRUE)
+}
+current <- rnorm(1,y)
+samps <- rep(NA, n)
 for (i in 1:n) {
-  proposed = rnorm(1,current)
-  logr = log_q(proposed,y)-log_q(current,y)
-  current = ifelse(log(runif(1))<logr, proposed, current)
-  samps[i] = current
+  proposed <- rnorm(1, current)
+  logr     <- log_q(proposed, y) - log_q(current, y)
+  current  <- ifelse(log(runif(1)) < logr, proposed, current)
+  samps[i] <- current
 }
 
 ggplot(data.frame(Iteration = 1:n,
@@ -560,12 +589,12 @@ ggplot(data.frame(Iteration = 1:n,
 \begin{frame}
 \frametitle{Example: Normal-Cauchy model - poor starting value}
 <<normal-cauchy-model-rw-poor-starting-value>>=
-current = 10 # This line changed
+current <- 10 # This line changed
 for (i in 1:n) {
-  proposed = rnorm(1,current)
-  logr = log_q(proposed,y)-log_q(current,y)
-  current = ifelse(log(runif(1))<logr, proposed, current)
-  samps[i] = current
+  proposed <- rnorm(1, current)
+  logr     <- log_q(proposed, y) - log_q(current, y)
+  current  <- ifelse(log(runif(1)) < logr, proposed, current)
+  samps[i] <- current
 }
 
 ggplot(data.frame(Iteration = 1:n,
@@ -614,18 +643,19 @@ in an acceptance rate of 40\% for $d=1$ down to 20\% as $d\to\infty$.
 Let $y|\theta \sim N(\theta,1)$, $\theta\sim Ca(0,1)$, and $y=1$. 
 
 <<tuning_parameter, fig.width=5.5>>=
-random_walk = function(n, v, theta0, log_target) {
-  theta = rep(theta0,n)
+random_walk <- function(n, v, theta0, log_target) {
+  theta <- rep(theta0,n)
   for (i in 2:n) {
-    proposed = rnorm(1, theta[i-1], v)
-    logr = log_target(proposed,y) - log_target(theta[i-1],y)
-    theta[i] = ifelse(log(runif(1))<logr, proposed, theta[i-1])
+    proposed <- rnorm(1, theta[i-1], v)
+    logr <- log_target(proposed, y) - log_target(theta[i-1], y)
+    theta[i] <- ifelse(log(runif(1)) < logr, proposed, theta[i-1])
   }
-  return(data.frame(iteration=1:n, theta=theta))
+  return(data.frame(iteration = 1:n, theta = theta))
 }
 
-d = expand.grid(v=c(1/10,10))
-r = ddply(d, .(v), function(x) {
+d <- expand.grid(v=c(1/10,10))
+
+r <- plyr::ddply(d, .(v), function(x) {
   random_walk(100, x$v, 0, log_q)
 })
 
@@ -667,20 +697,20 @@ otherwise, set $\theta^{(t+1)}=\theta^{(t)}$.
 \frametitle{Binomial model}
 
 <<binomial, echo=TRUE, size='scriptsize'>>=
-n = 10000
-log_q = function(theta, y=3, n=10) {
-  if (theta<0 | theta>1) return(-Inf)
-  (y-0.5)*log(theta)+(n-y-0.5)*log(1-theta)
+n <- 10000
+log_q <- function(theta, y = 3, n = 10) {
+  if (theta < 0 | theta > 1) return(-Inf)
+  (y-0.5) * log(theta) + (n-y-0.5) * log(1-theta)
 }
-current = 0.5     # Initial value
-samps = rep(NA,n) 
+current <- 0.5     # Initial value
+samps <- rep(NA,n) 
 for (i in 1:n) {
-  proposed = rnorm(1, current, 0.4) # tuning parameter is 0.4
+  proposed <- rnorm(1, current, 0.4) # tuning parameter is 0.4
   
-  logr = log_q(proposed)-log_q(current)
-  if (log(runif(1)) < logr) current = proposed
+  logr <- log_q(proposed)-log_q(current)
+  if (log(runif(1)) < logr) current <- proposed
   
-  samps[i] = current
+  samps[i] <- current
 }
 length(unique(samps))/n # acceptance rate
 @
@@ -752,25 +782,26 @@ Proposed automatic adapting of the Metropolis-Hastings tuning parameter: \pause
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings}
 
-<<mh, echo=TRUE, size='scriptsize'>>=
-n = 20
-y = rnorm(n)
-sum_y2 = sum(y^2)
-nybar  = mean(y)
-log_q = function(x) {
+<<mh, echo=TRUE, size='normalsize'>>=
+n      <- 20
+y      <- rnorm(n)
+sum_y2 <- sum(y^2)
+nybar  <- mean(y)
+
+log_q  <- function(x) {
   if (x[2]<0) return(-Inf)
   -n*log(x[2])-(sum_y2-2*nybar*x[1]+n*x[1]^2)/(2*x[2]^2)-log(1+x[2]^2)
 }
 
-B = 10
-M = 100
+B <- 10
+M <- 100
 
-samps = matrix(NA, nrow=B*M, ncol=2)
-a_rate = rep(NA, B)
+samps <- matrix(NA, nrow=B*M, ncol=2)
+a_rate <- rep(NA, B)
 
 # Initialize
-S = diag(2)  # S_0
-current = c(0,1)
+S       <- diag(2) # initial covariance matrix
+current <- c(0,1)  # initial draw
 @
 
 \end{frame}
@@ -779,20 +810,20 @@ current = c(0,1)
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings - Adapting}
 
-<<mh-adapting, echo=TRUE>>=
+<<mh-adapting, echo=TRUE, size='normalsize'>>=
 # Adapt
 for (b in 1:B) {
   for (m in 1:M) {
-    i = (b-1)*M+m
+    i <- (b-1)*M+m
     
-    proposed = mvrnorm(1, current, 2.4^2*S/2)
+    proposed <- mvrnorm(1, current, 2.4^2*S/2)
     
-    logr = log_q(proposed) - log_q(current)
-    if (log(runif(1)) < logr) current = proposed
-    samps[i,] = current    
+    logr <- log_q(proposed) - log_q(current)
+    if (log(runif(1)) < logr) current <- proposed
+    samps[i,] <- current    
   }
-  a_rate[b] = length(unique(samps[1:i,1]))/length(samps[1:i,1])
-  S = var(samps[1:i,])
+  a_rate[b] <- length(unique(samps[1:i,1]))/length(samps[1:i,1])
+  S <- var(samps[1:i,])
 }
 a_rate
 var(samps) # S_B
@@ -803,12 +834,12 @@ var(samps) # S_B
 
 
 \begin{frame}[fragile]
-\frametitle{R code for Metropolis-Hastings - Adapting}
+\frametitle{Metropolis-Hastings - Adapting Traceplots}
 
-<<mh-adapting-plot,echo=TRUE, fig.width=10>>=
+<<mh-adapting-plot>>=
 samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
 
-ggplot(melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iteration, y=value)) + 
+ggplot(reshape2::melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iteration, y=value)) + 
   geom_line() +
   facet_wrap(~parameter, scales='free')
 @
@@ -821,17 +852,19 @@ ggplot(melt(samps, id.var='iteration', variable.name='parameter'), aes(x=iterati
 \begin{frame}[fragile]
 \frametitle{R code for Metropolis-Hastings - Inference}
 
-<<mh-inference,echo=TRUE>>=
+<<mh-inference, echo=TRUE, size='normalsize'>>=
 # Final run
-K = 10000
-samps = matrix(NA, nrow=K, ncol=2)
+K     <- 10000
+samps <- matrix(NA, nrow = K, ncol = 2)
+
 for (k in 1:K) {
-  proposed = mvrnorm(1, current, 2.4^2*S/2)
+  proposed <- mvrnorm(1, current, 2.4^2*S/2)
     
-  logr = log_q(proposed) - log_q(current)
-  if (log(runif(1)) < logr) current = proposed
-  samps[k,] = current   
+  logr <- log_q(proposed) - log_q(current)
+  if (log(runif(1)) < logr) current <- proposed
+  samps[k,] <- current   
 }
+
 length(unique(na.omit(samps[,1])))/length(na.omit(samps[,1])) # acceptance rate
 @
 
@@ -843,8 +876,8 @@ length(unique(na.omit(samps[,1])))/length(na.omit(samps[,1])) # acceptance rate
 \frametitle{R code for Metropolis-Hastings - Inference}
 
 <<mh-inference2,fig.width=13>>=
-samps = as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
-m = melt(samps, id.var='iteration', variable.name='parameter')
+samps <- as.data.frame(samps); names(samps) = c("mu","sigma"); samps$iteration = 1:nrow(samps)
+m     <- reshape2::melt(samps, id.var='iteration', variable.name='parameter')
 
 ggplot(m, aes(x=iteration, y=value)) + 
   geom_line() +
@@ -888,52 +921,52 @@ We can perform exactly the same adapting procedure, but now using this posterior
 \begin{frame}[fragile]
 \frametitle{Beta-binomial hyperparameter posterior}
 
-<<beta_binomial, cache=TRUE>>=
-d = read.csv('../Ch05/Ch05a-dawkins.csv')
-y = d$made
-n = d$attempt
-log_q = function(x) {
+<<beta_binomial>>=
+d <- read.csv('../Ch05/Ch05a-dawkins.csv')
+y <- d$made
+n <- d$attempt
+log_q <- function(x) {
   if (any(x<0)) return(-Inf)
   sum(lbeta(x[1]+y, x[2]+n-y)-lbeta(x[1],x[2]))-5/2*log(x[1]+x[2])
 }
 
-B = 10
-M = 1000
+B <- 10
+M <- 1000
 
-samps = matrix(NA, nrow=B*M, ncol=2)
-a_rate = rep(NA, B)
+samps <- matrix(NA, nrow=B*M, ncol=2)
+a_rate <- rep(NA, B)
 
 # Initialize
-S = diag(2)
-current = c(1,1)
+S       <- diag(2)
+current <- c(1,1)
 
 # Adapt
 for (b in 1:B) {
   for (m in 1:M) {
-    i = (b-1)*M+m
+    i <- (b-1)*M+m
     
-    proposed = mvrnorm(1, current, 2.4^2*S/2)
+    proposed <- mvrnorm(1, current, 2.4^2*S/2)
     
-    logr = log_q(proposed) - log_q(current)
-    if (log(runif(1)) < logr) current = proposed
-    samps[i,] = current    
+    logr <- log_q(proposed) - log_q(current)
+    if (log(runif(1)) < logr) current <- proposed
+    samps[i,] <- current    
   }
-  a_rate[b] = length(unique(samps[1:i,1]))/length(samps[1:i,1])
-  S = var(samps[1:i,])
+  a_rate[b] <- length(unique(samps[1:i,1]))/length(samps[1:i,1])
+  S <- var(samps[1:i,])
 }
 
 # Final run
-K = 10000
-samps = matrix(NA, nrow=K, ncol=2)
+K <- 10000
+samps <- matrix(NA, nrow=K, ncol=2)
 for (k in 1:K) {
-  proposed = mvrnorm(1, current, 2.4^2*S/2)
+  proposed <- mvrnorm(1, current, 2.4^2*S/2)
     
-  logr = log_q(proposed) - log_q(current)
-  if (log(runif(1)) < logr) current = proposed
-  samps[k,] = current   
+  logr <- log_q(proposed) - log_q(current)
+  if (log(runif(1)) < logr) current <- proposed
+  samps[k,] <- current   
 }
 
-samps = as.data.frame(samps); names(samps) = c("alpha","beta")
+samps <- as.data.frame(samps); names(samps) <- c("alpha","beta")
 @
 
 <<dependson='beta_binomial',message=FALSE, warning=FALSE, fig.height=2.5>>=
