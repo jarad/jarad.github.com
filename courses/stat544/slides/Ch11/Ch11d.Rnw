@@ -72,7 +72,7 @@ Today we look at some practical questions involving the use of MCMC:
 An MCMC algorithm with transition kernel $K(\theta^{(t-1)},\theta^{(t)})$ constructed to sample from $p(\theta|y)$ is the following: \pause
 \begin{enumerate}[<+->]
 \item Sample $\theta^{(0)}\sim \pi^{(0)}$.
-\item For $t=1,\ldots,T$, perform the kernel $K(\theta^{(t-1)},\theta^{(t)})$ to obtain a sequence $\theta^{(1)},\ldots,\theta^{(t)}$. 
+\item For $t=1,\ldots,T$, perform the kernel $K(\theta^{(t-1)},\theta^{(t)})$ to obtain a sequence $\theta^{(1)},\ldots,\theta^{(T)}$. 
 \end{enumerate}
 
 \vspace{0.2in} \pause
@@ -81,7 +81,7 @@ The questions can then be rephrased as
 \begin{itemize}
 \item What should I use for $\pi^{(0)}$?
 \item What should $T$ be?
-\item What can I do with $\theta^{(1)},\ldots,\theta^{(t)}$?
+\item What can I do with $\theta^{(1)},\ldots,\theta^{(T)}$?
 \end{itemize}
 \end{frame}
 
@@ -504,7 +504,7 @@ model {
 <<rstan, cache=TRUE, results='hide', echo=TRUE>>=
 y = rnorm(10)
 m = stan_model(model_code = model)
-r = sampling(m, list(n=length(y), y=y))
+r = sampling(m, list(n=length(y), y=y), iter = 10000)
 @
 
 <<rstan_summary, dependson='rstan', echo=TRUE>>=
@@ -518,7 +518,7 @@ laply(extract(r, c("mu","sigma")), function(x) length(unique(x))/length(x)) # Ac
 \begin{frame}[fragile]
 \frametitle{RStan plot}
 <<dependson='rstan'>>=
-traceplot(r)
+traceplot(r, inc_warmup = TRUE)
 @
 \end{frame}
 
@@ -596,7 +596,8 @@ r = sampling(m,
                             n = dawkins$attempts,
                             y = dawkins$made),
              pars = c("alpha","beta","mu","eta"),
-             chains = 1)
+             chains = 4,
+             iter = 10000)
 @
 \end{frame}
 % 
@@ -616,7 +617,7 @@ laply(rstan::extract(r, c("mu","eta")), function(x) length(unique(x))/length(x))
 \begin{frame}[fragile]
 \frametitle{RStan plot}
 <<dependson='rstan2'>>=
-traceplot(r)
+traceplot(r, inc_warmup = TRUE)
 @
 \end{frame}
 
