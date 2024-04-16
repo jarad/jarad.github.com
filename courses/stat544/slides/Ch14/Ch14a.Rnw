@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -9,7 +9,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -19,10 +19,10 @@ opts_chunk$set(comment=NA,
 options(width=120)
 @
 
-<<libraries, message=FALSE, warning=FALSE>>=
+<<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
 library(reshape2)
 library(plyr)
-library(ggplot2)
+library(ggplot2); theme_set(theme_bw())
 library(xtable)
 library(coda)
 library(LearnBayes)
@@ -71,7 +71,7 @@ set.seed(2)
 	\[ y_i \stackrel{ind}{\sim} N(\beta_1 x_{i1} + \cdots + \beta_k x_{ik},\sigma^2) \]
 	\pause where $x_{i1}=1$ if we want to include an intercept. \pause In matrix notation, we have 
 	\[ y \sim N(X\beta, \sigma^2 \I) \]
-	\pause where $y=(y_1,\ldots,y_n)'$, $\beta=(\beta_1,\ldots,\beta_k)'$, and $X$ is an $n \times k$ full-rank matrix with each row being $x_i = (x_{i1},\ldots,x_{ik})$.
+	\pause where $y=(y_1,\ldots,y_n)^\top  $, $\beta=(\beta_1,\ldots,\beta_k)^\top  $, and $X$ is an $n \times k$ full-rank matrix with each row being $x_i = (x_{i1},\ldots,x_{ik})$.
 }
 
 \subsection{Classical regression}
@@ -82,13 +82,13 @@ set.seed(2)
   \vspace{0.2in} \pause
   
   What is the MLE for $\beta$? \pause 
-  \[ \hat{\beta}=\hat{\beta}_{MLE} = (X'X)^{-1}X'y \]
+  \[ \hat{\beta}=\hat{\beta}_{MLE} = (X^\top   X)^{-1}X^\top   y \]
   
   \vspace{0.2in} \pause
   
   What is the sampling distribution for $\hat{\beta}$?
-  \[ \hat{\beta} \sim t_{n-k}(\beta, s^2(X'X)^{-1}) \]
-  where $s^2 = SSE/[n-k]$ and $SSE = (Y-X\hat{\beta})'(Y-X\hat{\beta})$. 
+  \[ \hat{\beta} \sim t_{n-k}(\beta, s^2(X^\top   X)^{-1}) \]
+  where $s^2 = SSE/[n-k]$ and $SSE = (Y-X\hat{\beta})^\top   (Y-X\hat{\beta})$. 
   
   \vspace{0.2in} \pause
   
@@ -110,9 +110,9 @@ set.seed(2)
 	\sigma^2|y &\sim \mbox{Inv-}\chi^2(n-k,s^2) \pause \\
 	\beta|y &\sim t_{n-k}(\hat{\beta}, s^2V_{\beta}) \pause \\
 	\\
-	\hat{\beta} &= (X'X)^{-1}X'y \pause \\
-	V_\beta &= (X'X)^{-1} \pause \\
-	s^2 &= \frac{1}{n-k}(y-X\hat{\beta})'(y-X\hat{\beta})
+	\hat{\beta} &= (X^\top  X)^{-1}X^\top  y \pause \\
+	V_\beta &= (X^\top  X)^{-1} \pause \\
+	s^2 &= \frac{1}{n-k}(y-X\hat{\beta})^\top  (y-X\hat{\beta})
 	\end{array} \]
 	\pause The posterior is proper if $n>k$ and rank$(X)=k$. 
 }
@@ -128,14 +128,14 @@ set.seed(2)
 In classical regression, we have fixed, but unknown, true parameters $\beta_0$ and $\sigma_0^2$ and quantify our uncertainty about these parameters using the sampling distribution of the error variance and regression coefficients, i.e.  
   \[ \frac{[n-k]s^2}{\sigma_0^2} \sim \chi^2_{n-k}  \]
 and 
-\[ \hat{\beta} \sim t_{n-k}(\beta_0, s^2(X'X)^{-1}).  \]
+\[ \hat{\beta} \sim t_{n-k}(\beta_0, s^2[X^\top  X]^{-1}).  \]
 
 \vspace{0.2in} \pause
 
 In the default Bayesian regression, we still have the fixed, but unknown, true parameters, but quantify our uncertainty about these parameters using prior and posterior distributions, i.e. 
-\[ \left.\frac{s^2[n-k]}{\sigma^2}\right|y \sim \chi^2(n-k) \]
+\[ \left.\frac{s^2[n-k]}{\sigma^2}\right|y \sim \chi^2_{n-k} \]
 and 
-\[ \beta|y \sim t_{n-k}(\hat{\beta}, s^2(X'X)^{-1}). \]
+\[ \beta|y \sim t_{n-k}(\hat{\beta}, s^2[X^\top  X]^{-1}). \]
 
 \end{frame}
 
@@ -144,18 +144,27 @@ and
 \begin{frame}[fragile]
 \frametitle{Cricket chirps}
 	As an example, consider the relationship between the number of cricket chirps (in 15 seconds) and temperature (in Fahrenheit). From example in {\tt LearnBayes::blinreg}.
-<<chirps_data, fig.width=8>>=
+<<chirp-data, fig.width=6>>=
 chirps=c(20,16.0,19.8,18.4,17.1,15.5,14.7,17.1,15.4,16.2,15,17.2,16,17,14.1)
 temp=c(88.6,71.6,93.3,84.3,80.6,75.2,69.7,82,69.4,83.3,78.6,82.6,80.6,83.5,76.3)
-qplot(temp,chirps) + theme_bw()
+
+g <- ggplot(data.frame(chirps = chirps, temp = temp),
+       aes(x = temp, y = chirps)) + 
+  geom_point() +
+  labs(
+    x = "Temperature (F)",
+    y = "Chirps (in 15 seconds)"
+  )
+
+g
 @
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Default Bayesian regression}
 
-<<lm, echo=TRUE>>=
-summary(m <- lm(chirps~temp))
+<<chirp-lm, echo=TRUE, dependson="chirp-data">>=
+summary(m <- lm(chirps ~ temp))
 confint(m) # Credible intervals
 @
 \end{frame}
@@ -163,7 +172,7 @@ confint(m) # Credible intervals
 
 \begin{frame}[fragile]
 \frametitle{Default Bayesian regression - Full posteriors}
-<<>>=
+<<dependson="chirp-lm">>=
 beta_hat = m$coefficients
 sd       = summary(m)$coefficients[,2]
 df       = summary(m)$df[2]
@@ -185,6 +194,14 @@ par(opar)
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{Cricket chirps}
+<<chirp-posterior-plot, dependson="chirp-data">>=
+g + geom_smooth(method = "lm")
+@
+\end{frame}
+
+
 
 %\begin{comment}
 \subsection{Subjective Bayesian inference}
@@ -195,10 +212,10 @@ par(opar)
 	\[ \beta|\sigma^2,y \sim N(m_n, \sigma^2 C_n) \qquad \sigma^2|y \sim \mbox{Inv-}\chi^2(v_n,s_n^2) \]
 	\pause with
 	\[ \begin{array}{rl}
-	m_n &= m_0 + C_0X'(XC_0X'+\I)^{-1}(y-X m_0) \\
-	C_n &= C_0-C_0X'(XC_0X'+\I)^{-1}XC_0 \\
+	m_n &= m_0 + C_0X^\top  (XC_0X^\top  +\I)^{-1}(y-X m_0) \\
+	C_n &= C_0-C_0X^\top  (XC_0X^\top  +\I)^{-1}XC_0 \\
 	v_n &= v_0+n \\
-	v_ns_n^2 &= v_0s_0^2+(y-X m_0)'(XC_0X'+\I)^{-1}(y-X m_0) 
+	v_ns_n^2 &= v_0s_0^2+(y-X m_0)^\top  (XC_0X^\top  +\I)^{-1}(y-X m_0) 
 	\end{array} \]
 }
 %\end{comment}
@@ -259,18 +276,17 @@ confint(tmp)
 
 \begin{frame}[fragile]
 \frametitle{Subjective vs Default}
-<<t-distribution_fit, dependson='chirps_data', message=FALSE, fig.width=8>>=
-qplot(temp, chirps) +
-  geom_smooth(method='lm',formula=y~x, se=FALSE, color='red', linetype=2, size=2) + 
-  geom_abline(intercept=m$coefficients[1], slope=m$coefficients[2], color='blue', linetype=3, size=2) +
-  theme_bw()
+<<t-distribution_fit, dependson=c('chirp-data','chirp-lm'), message=FALSE>>=
+g +
+  geom_smooth(method='lm',formula=y~x, se=FALSE, color='red', linetype=2, linewidth=2) + 
+  geom_abline(intercept=m$coefficients[1], slope=m$coefficients[2], color='blue', linetype=3, linewidth=2)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
-<<shrinkage, dependson='chirps_data', fig.width=8>>=
+<<shrinkage, dependson='chirp-data'>>=
 d = ddply(data.frame(V=10^seq(-2,2,by=0.2)), .(V), function(x) {
   m = bayesglm(chirps~temp, prior.mean=0, prior.scale=x$V, prior.df=Inf)
   data.frame(beta0=m$coefficients[1], beta1=m$coefficients[2])
@@ -286,7 +302,7 @@ ggplot(tmp, aes(V, estimate)) +
 
 \begin{frame}[fragile]
 \frametitle{Shrinkage (as $V[\beta_1]$ gets smaller)}
-<<shrinkage2, dependson=c('shrinkage','chirps_data')>>=
+<<shrinkage2, dependson=c('shrinkage','chirp-data')>>=
 ggplot(data.frame(chirps=chirps, temperature=temp), aes(temp, chirps)) + 
   geom_point() + 
   geom_abline(data=d, aes(intercept=beta0, slope=beta1, color=V)) + 
@@ -433,7 +449,7 @@ d = structure(list(site = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L,
 \begin{frame}[fragile]
 \frametitle{Posterior for global maximum}
 Consider this potato yield data set
-<<potato_plot, fig.width=9>>=
+<<potato_plot>>=
 ggplot(d, aes(x=N.rate, y=yield)) + 
   geom_point() + 
   geom_smooth(method='lm',formula=y~x+I(x^2)) +
@@ -455,7 +471,7 @@ We assume the model
 \[  Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_i + \beta_2 X_i^2, \sigma^2)  \]
 \pause
 Assuming this quadratic curve is correct, the maximum occurs at $\gamma=-\beta_1/[2\beta_2]$. \pause
-<<potato_max, fig.width=8, echo=TRUE>>=
+<<potato_max, echo=TRUE>>=
 m = LearnBayes::blinreg(d$yield, cbind(1,d$N.rate, d$N.rate^2), 1e4)
 beta1 = m$beta[,2]; beta2 = m$beta[,3]; gamma = -beta1/(2*beta2)
 round(quantile(gamma, c(.025,.5,.975)))
@@ -472,7 +488,7 @@ This does not require any data asymptotics or approximations, e.g. delta method.
 \item Model: $y\sim N(X\beta,\sigma^2 \mathrm{I})$
 \item Default Bayesian analysis corresponds exactly to classical regression analysis
 \[ p(\beta,\sigma^2)\propto 1/\sigma^2 \implies \]
-\[ \beta|\sigma^2,y \sim N(\hat{\beta}, \sigma^2 [X'X]^{-1}), \sigma^2|y \sim \mbox{Inv-}\chi^2(n-k,s^2) \]
+\[ \beta|\sigma^2,y \sim N(\hat{\beta}, \sigma^2 [X^\top  X]^{-1}), \sigma^2|y \sim \mbox{Inv-}\chi^2(n-k,s^2) \]
 \item Conjugate subjective Bayesian analysis:
 \[ \beta|\sigma^2 \sim N(m_0, \sigma^2 C_0), \sigma^2 \sim \mbox{Inv-}\chi^2(v_0,s_0^2) \implies \]
 \[ \beta|\sigma^2,y \sim N(m_n, \sigma^2 C_n), \sigma^2|y \sim \mbox{Inv-}\chi^2(v_n,s_n^2) \]
@@ -491,11 +507,11 @@ This does not require any data asymptotics or approximations, e.g. delta method.
 	
 	\pause The quantities of interest are 
 	\[ \begin{array}{rl}
-	V_\beta &= (X'X)^{-1} \pause = ([QR]'QR)^{-1} \pause = (R'Q'QR)^{-1} \pause = (R'R)^{-1} \pause \\
-	&= R^{-1}[R']^{-1} \pause \\
+	V_\beta &= (X^\top  X)^{-1} \pause = ([QR]^\top  QR)^{-1} \pause = (R^\top  Q^\top  QR)^{-1} \pause = (R^\top  R)^{-1} \pause \\
+	&= R^{-1}[R^\top  ]^{-1} \pause \\
 	\\
-	\hat{\beta} &= (X'X)^{-1}X'y \pause = R^{-1}[R']^{-1}R'Q'y \pause = R^{-1}Q'y \pause \\
-	R\hat{\beta} &= Q'y
+	\hat{\beta} &= (X^\top  X)^{-1}X^\top  y \pause = R^{-1}[R^\top  ]^{-1}R^\top  Q^\top  y \pause = R^{-1}Q^\top  y \pause \\
+	R\hat{\beta} &= Q^\top  y
 	\end{array} \]
 	\pause The last equation is useful because R is upper triangular and therefore the system of linear equations can be solved without requiring the inverse of R.
 }
@@ -537,10 +553,9 @@ beta = matrix(betahat, n.sims, k, byrow=T) + sigma * mvrnorm(n.sims, rep(0,k), v
 \frametitle{Cricket chirps}
 <<posterior_simulations, message=FALSE>>=
 ggplot(melt(data.frame(sigma=sigma, intercept=beta[,1], chirps=beta[,2])), 
-       aes(x=value, y=..density..)) +
+       aes(x=value, y=after_stat(density))) +
   geom_histogram() + 
-  facet_wrap(~variable, scales='free') +
-  theme_bw()
+  facet_wrap(~variable, scales='free')
 @
 \end{frame}
 
