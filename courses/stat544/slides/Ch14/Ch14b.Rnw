@@ -1,4 +1,4 @@
-\documentclass[handout]{beamer}
+\documentclass[handout,aspectratio=169]{beamer}
 
 \input{../frontmatter}
 \input{../commands}
@@ -9,7 +9,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=5, 
+               fig.width=5, fig.height=3, 
                size='tiny', 
                out.width='0.8\\textwidth', 
                fig.align='center', 
@@ -22,7 +22,7 @@ options(width=120)
 <<libraries, message=FALSE, warning=FALSE>>=
 library(reshape2)
 library(plyr)
-library(ggplot2)
+library(ggplot2); theme_set(theme_bw())
 library(xtable)
 library(coda)
 library(LearnBayes)
@@ -79,7 +79,7 @@ A few special cases are
 \item $b=0$
 \item $B$ is diagonal
 \item $B= g\I$
-\item $B = g(X'X)^{-1}$
+\item $B = g(X^\top X)^{-1}$
 \end{itemize}
 
 \end{frame}
@@ -95,8 +95,8 @@ Let
 y = X\beta + e, \quad E[e] = 0, \quad Var[e] = \sigma^2 \I
 \]
 \pause then ridge regression seeks to minimize 
-\[ (y-X\beta)'(y-X\beta) + g\beta'\beta  \]
-\pause where $g$ is a penalty for $\beta'\beta$ getting too large.
+\[ (y-X\beta)^\top(y-X\beta) + g\beta^\top\beta  \]
+\pause where $g$ is a penalty for $\beta^\top \beta$ getting too large.
 
 \vspace{0.2in} \pause
 
@@ -105,7 +105,7 @@ regression analysis when using independent normal priors centered at zero with
 a common variance ($c_0$) for $\beta$: 
 \pause 
 \[ -2 \sigma^2 \log p(\beta,\sigma|y) 
-= C + (y-X\beta)'(y-X\beta) + \frac{\sigma^2}{c_0} \beta'\beta  \]
+= C + (y-X\beta)^\top (y-X\beta) + \frac{\sigma^2}{c_0} \beta^\top \beta  \]
 where $g=\sigma^2/c_0$.
 \pause
 Thus the ridge regression estimate is equivalent to a MAP estimate when 
@@ -173,6 +173,7 @@ est[round(est$lambda,4) %in% c(.0068,.053,.0057),]
 opar=par(mar=c(5,4,0,0)+0.1)
 matplot(m$lambda, t(m$coef), type = 'l',
         xlab = "penalty (g)", ylab = "Ridge regression estimates (MAP)")
+abline(v = c(.0068,.053,.0057), lty = "dashed", col = "gray")
 par(opar)
 @
 \end{frame}
@@ -186,19 +187,19 @@ par(opar)
 Suppose 
 \[ y \sim N(X\beta,\sigma^2\I) \]
 and you use Zellner's g-prior
-\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}). \]
+\[ \beta \sim N(b_0, g\sigma^2 (X^\top X)^{-1}). \]
 
 \vspace{0.2in} \pause
 
 The posterior is then 
 \[ \begin{array}{rl}
-\beta|\sigma^2,y &\sim N\left(\frac{g}{g+1}\left(\frac{b_0}{g}+\hat{\beta}\right), \frac{\sigma^2 g}{g+1}(X'X)^{-1} \right) \\
-\sigma^2|y &\sim \mbox{Inv-}\chi^2\left(n, \frac{1}{n}\left[(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)\right]\right)
+\beta|\sigma^2,y &\sim N\left(\frac{g}{g+1}\left(\frac{b_0}{g}+\hat{\beta}\right), \frac{\sigma^2 g}{g+1}(X^\top X)^{-1} \right) \\
+\sigma^2|y &\sim \mbox{Inv-}\chi^2\left(n, \frac{1}{n}\left[(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X^\top X(\hat{\beta}-b_0)\right]\right)
 \end{array} \]
 with 
 \[ \begin{array}{rl}
 E[\beta|y] &= \frac{1}{g+1}b_0 + \frac{g}{g+1}\hat\beta \\
-E[\sigma^2|y] &= \frac{(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-b_0)}{n-2}
+E[\sigma^2|y] &= \frac{(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X^\top X(\hat{\beta}-b_0)}{n-2}
 \end{array} \]
 
 \end{frame}
@@ -208,7 +209,7 @@ E[\sigma^2|y] &= \frac{(n-k)s^2 + \frac{1}{g+1}(\hat{\beta}-b_0)X'X(\hat{\beta}-
 \frametitle{Setting $g$}
 
 In Zellner's g-prior, 
-\[ \beta \sim N(b_0, g\sigma^2 (X'X)^{-1}), \]
+\[ \beta \sim N(b_0, g\sigma^2 (X^\top X)^{-1}), \]
 we need to determine how to set g.
 
 \vspace{0.2in} \pause
@@ -247,7 +248,7 @@ Consider two models with design matrices $X^1$and $X^2$ (not including an interc
 
 \[ \begin{array}{rl}
 y &\sim N(\alpha 1_n + X^1 \beta^1, \sigma^2 \I) \\
-\beta &\sim N(b_1, g_1\sigma^2 [(X^1)'(X^1)]^{-1}) \\
+\beta &\sim N(b_1, g_1\sigma^2 [(X^1)^\top (X^1)]^{-1}) \\
 p(\alpha,\sigma^2) &\propto 1/\sigma^2
 \end{array} \]
 
@@ -255,7 +256,7 @@ and
 
 \[ \begin{array}{rl}
 y &\sim N(\alpha 1_n + X^2 \beta^2, \sigma^2 \I) \\
-\beta &\sim N(b_2, g_2\sigma^2 [(X^2)'(X^2)]^{-1}) \\
+\beta &\sim N(b_2, g_2\sigma^2 [(X^2)^\top (X^2)]^{-1}) \\
 p(\alpha,\sigma^2) &\propto 1/\sigma^2
 \end{array} \]
 \end{frame}
@@ -266,7 +267,7 @@ p(\alpha,\sigma^2) &\propto 1/\sigma^2
 
 The Bayes Factor for comparing these two models is 
 {\tiny
-\[ B_{12}(y) = \frac{(g_1+1)^{-p_1/2}\left[ (n-p_1-1)s_1^2 +\left(\hat{\beta}_1-b_1\right)'(X^1)'X^1\left(\hat{\beta}_1-b_1\right)/(g_1+1)\right]^{-(n-1)/2}}{(g_2+1)^{-p_2/2}\left[ (n-p_2-1)s_2^2 +\left(\hat{\beta}_2-b_2\right)'(X^2)'X^2\left(\hat{\beta}_2-b_2\right)/(g_2+1)\right]^{-(n-1)/2}} \]
+\[ B_{12}(y) = \frac{(g_1+1)^{-p_1/2}\left[ (n-p_1-1)s_1^2 +\left(\hat{\beta}_1-b_1\right)^\top (X^1)^\top X^1\left(\hat{\beta}_1-b_1\right)/(g_1+1)\right]^{-(n-1)/2}}{(g_2+1)^{-p_2/2}\left[ (n-p_2-1)s_2^2 +\left(\hat{\beta}_2-b_2\right)^\top (X^2)^\top X^2\left(\hat{\beta}_2-b_2\right)/(g_2+1)\right]^{-(n-1)/2}} \]
 }
 Now, we can set $g_1=g_2$ and calculate Bayes Factors. \pause 
 
@@ -318,7 +319,7 @@ m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
   \vspace{0.2in} \pause 
   
   Suppose 
-  \[ y_t = X_t'\beta + \epsilon_t \]
+  \[ y_t = X_t^\top \beta + \epsilon_t \]
   or, equivalently, 
   \[ y \sim N(X\beta, S) \]
   \pause where $S=s^2 R$ with 
@@ -330,7 +331,7 @@ m = BayesReg(longley$GNP.deflator, longley[,-1], g = nrow(longley))
 
 \begin{frame}[fragile]
 \frametitle{Example autoregressive processes}
-<<ar1, fig.width=8>>=
+<<ar1>>=
 ar1 = ddply(data.frame(rho=c(0.01,0.5,0.99)), .(rho), function(x) {
   rho = x$rho
   delta = rnorm(100) 
@@ -340,8 +341,7 @@ ar1 = ddply(data.frame(rho=c(0.01,0.5,0.99)), .(rho), function(x) {
   data.frame(t=1:length(x), x=x)
 })
 ggplot(ar1, aes(t,x,color=factor(rho))) +
-  geom_line() +
-  theme_bw()
+  geom_line() 
 @
 \end{frame}
 
@@ -416,7 +416,7 @@ all.equal(as.numeric(coefficients(m)), as.numeric(Vb%*%t(X)%*%solve(S)%*%y))
 	s^2 &= \frac{1}{n-k}(L^{-1}y-L^{-1}X\hat{\beta})^\top (L^{-1}y-L^{-1}X\hat{\beta}) \\&= \frac{1}{n-k}(y-X\hat{\beta})^\top S^{-1}(y-X\hat{\beta})
 	\end{array} \]
 }
-  \pause where $LL'=S$. 
+  \pause where $LL^\top =S$. 
 \end{frame}
 
 \subsection{AR1}
