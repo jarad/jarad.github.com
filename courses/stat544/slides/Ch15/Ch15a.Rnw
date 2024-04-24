@@ -407,7 +407,9 @@ r = sampling(m,
                   tray        = d$Tray,
                   y           = d$SeedlingWeight), 
              c("gamma","tau","sigma_e","sigma_tau","delta"),
-             refresh = 0)
+             refresh = 0,
+             chains  = 1,
+             iter    = 10000)
 @
 \end{frame}
 
@@ -432,8 +434,8 @@ plot(r, pars=c("sigma_e","sigma_tau"))
 
 \begin{frame}[fragile]
 <<hyper_improved, dependson="analysis", warning=FALSE>>=
-e <- extract(r, c("sigma_e","sigma_tau")) %>% 
-  as.data.frame %>%
+e <- extract(r, c("sigma_e","sigma_tau")) |> 
+  as.data.frame() |>
   tidyr::gather(parameter,value)
 
 ggplot(e, aes(x=value)) + 
@@ -462,8 +464,8 @@ plot(r, pars=c("gamma","delta"))
 
 \begin{frame}[fragile]
 <<genotype_correlation, dependson="analysis">>=
-e <- extract(r, c("gamma")) %>% 
-  as.data.frame
+e <- extract(r, c("gamma")) |> 
+  as.data.frame()
 
 
 ggplot(e, aes(gamma.1, gamma.2)) + 
@@ -476,8 +478,8 @@ ggplot(e, aes(gamma.1, gamma.2)) +
 
 \begin{frame}[fragile]
 <<>>=
-e <- extract(r, "delta") %>%
-  as.data.frame
+e <- extract(r, "delta") |>
+  as.data.frame()
 
 ggplot(e, aes(delta)) + 
   geom_histogram(binwidth=0.2) + 
@@ -516,23 +518,23 @@ and (if the regularity conditions hold)
 <<probability, dependson='analysis', echo=TRUE>>=
 library(mcmcse)
 # Obtain samples for delta_tilde
-samps = extract(r, "delta", permuted=FALSE) %>%
-  plyr::adply(1:2) %>% 
-  rename(delta = V1)
+samps <- extract(r, "delta", permuted=FALSE) |>
+  plyr::adply(1:2) |> 
+  dplyr::rename(delta = V1)
 
 # Calculate posterior probability with MC error
-samps %>%
-  group_by(chains) %>%
-  do(as.data.frame(mcse(.$delta>0))) %>%
-  ungroup() %>%
+samps |>
+  group_by(chains) |>
+  do(as.data.frame(mcse(.$delta>0))) |>
+  ungroup() |>
   summarize(est = mean(est), se = sqrt(sum(se^2))/n())
 
 # Calculate quantiles with MC error
-samps %>%
-  group_by(chains) %>%
+samps |>
+  group_by(chains) |>
   do(ddply(data.frame(q=c(.025,.5,.975)), .(q), 
-           function(x) as.data.frame(mcse.q(.$delta, q=x$q)))) %>%
-  group_by(q) %>%
+           function(x) as.data.frame(mcse.q(.$delta, q=x$q)))) |>
+  group_by(q) |>
   summarize(est = mean(est), se = sqrt(sum(se^2))/n())
 @
 
@@ -572,24 +574,24 @@ and
 \begin{frame}[fragile]
 <<predictive_probability, dependson='analysis', echo=TRUE>>=
 # Obtain samples for delta_tilde
-samps = extract(r, c("delta","sigma_e"), permuted=FALSE) %>%
-  plyr::adply(1:2) %>%
-  mutate(delta_tilde = rnorm(n(), delta, sqrt(2)*sigma_e)) %>%
-  select(-delta, -sigma_e) 
+samps = extract(r, c("delta","sigma_e"), permuted=FALSE) |>
+  plyr::adply(1:2) |>
+  mutate(delta_tilde = rnorm(n(), delta, sqrt(2)*sigma_e)) |>
+  dplyr::select(-delta, -sigma_e) 
 
 # Calculate posterior probability with MC error
-samps %>%
-  group_by(chains) %>%
-  do(as.data.frame(mcse(.$delta_tilde>0))) %>%
-  ungroup() %>%
+samps |>
+  group_by(chains) |>
+  do(as.data.frame(mcse(.$delta_tilde>0))) |>
+  ungroup() |>
   summarize(est = mean(est), se = sqrt(sum(se^2))/n())
 
 # Calculate quantiles with MC error
-samps %>%
-  group_by(chains) %>%
+samps |>
+  group_by(chains) |>
   do(ddply(data.frame(q=c(.025,.5,.975)), .(q), 
-           function(x) as.data.frame(mcse.q(.$delta_tilde, q=x$q)))) %>%
-  group_by(q) %>%
+           function(x) as.data.frame(mcse.q(.$delta_tilde, q=x$q)))) |>
+  group_by(q) |>
   summarize(est = mean(est), se = sqrt(sum(se^2))/n())
 @
 
@@ -627,7 +629,9 @@ m2 = stan_lmer(SeedlingWeight ~ Genotype + (1|Tray),
                
                algorithm = "sampling",     # use MCMC (HMC)
                
-               refresh = 0)
+               refresh = 0,
+               chains  = 1,
+               iter    = 10000)
 @
 \end{frame}
 
