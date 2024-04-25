@@ -23,7 +23,7 @@ options(width=120)
 <<libraries, message=FALSE, warning=FALSE, cache=FALSE>>=
 library(reshape2)
 library(dplyr)
-library(ggplot2)
+library(ggplot2); theme_set(theme_bw())
 library(xtable)
 library(lme4)
 library(rstan)
@@ -39,7 +39,7 @@ set.seed(2)
 \frame{\maketitle}
 
 \begin{frame}[fragile]
-<<bird_data, cache=TRUE, fig.width=18, fig.height=15>>=
+<<bird_data>>=
 d = read.csv("Ch15b-bird_yeartotal.csv") %>%
   filter(forestN=='Chippewa') %>%
   mutate(y=log(count+1)/samples) 
@@ -48,8 +48,7 @@ d = read.csv("Ch15b-bird_yeartotal.csv") %>%
 <<bird_plot, dependson='bird_data', fig.width=18, fig.height=15>>=
 ggplot(d, aes(year, y)) + 
   geom_point() +
-  facet_wrap(~abbrev, scales='free') +
-  theme_bw()
+  facet_wrap(~abbrev, scales='free') 
 @
 \end{frame}
 
@@ -95,14 +94,13 @@ slopes = plyr::ddply(d, 'abbrev', function(x) {
              midpoint    = coef(m)[2])
 })
 slopes$abbrev = factor(slopes$abbrev,
-                       levels(slopes$abbrev)[order(slopes$upper)])
+                       levels = slopes$abbrev[order(slopes$upper)])
 ggplot(slopes, 
        aes(x=abbrev, y=midpoint, ymin=lower, ymax=upper)) +
   geom_pointrange() + 
   coord_flip() +
   labs(title='Estimated slopes and 95% confidence intervals',
-       y = 'Slopes', x='Species abbreviation') +
-  theme_bw()
+       y = 'Slopes', x='Species abbreviation') 
 @
 \end{frame}
 
@@ -137,8 +135,7 @@ Notice that there is now a common variance for all species.
 \frametitle{Random intercept and random slope model in R}
 
 <<dependson='bird_data', echo=TRUE>>=
-m2 = lmer(y~I(year-2005) + (I(year-2005)|abbrev), d)
-summary(m2)
+m2 <- lmer(y~I(year-2005) + (I(year-2005)|abbrev), d); summary(m2)
 @
 \end{frame}
 
@@ -161,15 +158,14 @@ joint = data.frame(abbrev    = rownames(ranef(m2)$abbrev),
 
 ggplot(merge(ind,joint), aes(individual, joint)) + 
   geom_point() + 
-  facet_wrap(~parameter, scales='free') + 
+  facet_wrap(~parameter, scales = "free") + 
   geom_abline(intercept=0, slope=1) + 
   geom_hline(data=data.frame(parameter=c('intercept','slope'),
                               value = fixef(m2)),
              aes(yintercept=value), color='gray') + 
   geom_smooth(method="lm", se=FALSE) + 
-  coord_equal() + 
-  labs(title="Shrinkage of point estimates") +
-  theme_bw()
+  # coord_equal() + 
+  labs(title="Shrinkage of point estimates")
 @
 \end{frame}
 
@@ -185,7 +181,7 @@ The quantities of interest here are $\beta_{s,1}$ and whether these quantities a
 <<dependson='shrinkage', fig.width=12, fig.height=7, out.height='2in'>>=
 tmp = joint[joint$parameter=='slope',]
 tmp$abbrev = factor(tmp$abbrev, 
-                    levels(tmp$abbrev)[order(tmp$joint)])
+                    levels = tmp$abbrev[order(tmp$joint)])
 ggplot(tmp, aes(joint,abbrev)) + 
   geom_point() + 
   labs(x="Slope estimates", y='Species abbreviation',
@@ -334,7 +330,7 @@ dat = list(n_species = nrow(tmp),
            X         = cbind(1, as.numeric(names(tmp)[-1])-2005),
            prior_scale = 0.01)
 m = stan_model(model_code=model)
-r = sampling(m, dat, refresh=0)
+r = sampling(m, dat, refresh=0, iter = 10000, chains = 1)
 @
 \end{frame}
 
@@ -421,7 +417,7 @@ model {
 \begin{frame}[fragile]
 <<stan2, cache=TRUE, dependson=c('bird_data','stan_model2'), echo=TRUE>>=
 m2 = stan_model(model_code=model2)
-r2 = sampling(m2, dat, refresh=0)
+r2 = sampling(m2, dat, refresh=0, iter = 10000, chains = 1)
 @
 \end{frame}
 
