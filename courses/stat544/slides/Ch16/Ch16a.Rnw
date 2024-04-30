@@ -97,7 +97,7 @@ birthwt$lwt  = with(birthwt, (lwt-mean(lwt))/sd(lwt))
 
 \begin{frame}[fragile]
 <<non-Bayesian, echo=TRUE>>=
-m = glm(low~., family=binomial(link=probit), data=birthwt[,-10]); summary(m)
+m = glm(low~., family=binomial(link="probit"), data=birthwt[,-10]); summary(m)
 @
 \end{frame}
 
@@ -231,7 +231,7 @@ mcmc = function(n_iter, y, X, beta0, Sigma_beta) {
   zeta_keep          = matrix(NA, n_iter, n)
   
   # Initial values
-  m = glm(y~X-1, family=binomial(probit))
+  m = glm(y~X-1, family=binomial("probit"))
   beta = coef(m)
   zeta = rep(NA,n)
   
@@ -386,7 +386,6 @@ d = read.csv("Ch16a-cornFungus.csv"); d = d[d$leaf==1,]; d$leaf = NULL
 d$block = factor(d$block)
 d
 @
-
 \end{frame}
 
 
@@ -400,9 +399,9 @@ ggplot(d, aes(y=hypha/spore, x=block, col=genotype))+geom_point()
 
 \begin{frame}[fragile]
 <<corn_fungus_glmer>>=
-m = glmer(cbind(hypha,spore-hypha)~block+genotype+(1|pot), 
-          family=binomial(probit), d,
-          control=glmerControl(optimizer="bobyqa")) # Avoids convergence warning
+m = glmer(cbind(hypha, spore - hypha) ~ block + genotype + (1|pot), 
+          family  = binomial(link = "probit"), data = d,
+          control = glmerControl(optimizer="bobyqa")) # Avoids convergence warning
 summary(m)
 @
 \end{frame}
@@ -419,7 +418,7 @@ mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
   q = ncol(Zm)
   
   # Initial values
-  m = glm(y~0+X, family=binomial(probit))
+  m = glm(y~0+X, family=binomial("probit"))
   beta = c(coef(m),rnorm(q))
   zeta = rep(NA,n)
   
@@ -475,11 +474,11 @@ mcmc = function(n_iter, y, X, Zm, beta0, Sigma_beta) {
 \begin{frame}[fragile]
 <<run_mcmc_random, cache=TRUE, echo=TRUE, dependson='corn_fungus'>>=
 # Turn into binary data
-dd = ddply(d, .(genotype,block,pot), function(x) {
-  data.frame(y=c(rep(1,x$hypha),rep(0,x$spore-x$hypha)))
+dd = ddply(d, .(genotype, block, pot), function(x) {
+  data.frame(y=c(rep(1, x$hypha), rep(0, x$spore - x$hypha)))
 })
 
-m = glmer(y~genotype+block+(1|pot), family=binomial(probit), dd)
+m = glmer(y ~ genotype + block + (1|pot), family = binomial("probit"), dd)
 
 X = model.matrix(m)
 Z = as.matrix(getME(m,"Z"))
@@ -529,7 +528,7 @@ betas[,-1] %>%
 
 Contrasts to compare other genotypes
 
-<<echo=TRUE>>=
+<<echo=TRUE, dependson="run_mcmc_random">>=
 t(with(betas, data.frame("X-Y" = quantile(genotypeX-genotypeY, c(.025,.975)),
                          "Y-Z" = quantile(genotypeY-genotypeZ, c(.025,.975)),
                          "X-Z" = quantile(genotypeX-genotypeZ, c(.025,.975)), check.names=FALSE)))
@@ -599,7 +598,6 @@ We can model this using data augmentation by introducing a latent utility $\Zaug
 
 \begin{frame}[fragile]
 \frametitle{Bayesian logistic regression}
-
 \[ \begin{array}{rl}
 Y_i &= \I(\Zaug_i>0) \pause \\
 \Zaug_i &\stackrel{ind}{\sim} Logistic(X_i'\beta,1)
@@ -607,9 +605,10 @@ Y_i &= \I(\Zaug_i>0) \pause \\
 
 \pause
 
-<<>>=
-m = glm(low~., family=binomial(link=probit), data=birthwt[,-10])
-r = BayesLogit::logit(m$y, X<-model.matrix(m))
+<<BayesLogit>>=
+m = glm(low~., family=binomial(link="logit"), data=birthwt[,-10])
+
+r = BayesLogit:::logit.R(m$y, X<-model.matrix(m), samp = 10000, verbose = 2000)
 names(r$beta) = colnames(X)
 
 ci = adply(r$beta, 2, function(x) 
@@ -617,7 +616,7 @@ ci = adply(r$beta, 2, function(x)
     lb=round(quantile(x, c(.025)),2), 
     ub=round(quantile(x, c(.975)),2)))
 ci$X1 = colnames(X)
-ci
+cbind(confint(m), ci)
 @
 
 \end{frame}
