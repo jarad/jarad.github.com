@@ -80,7 +80,8 @@ Primary question of interest: when should a sow be removed from breeding?
 <<data, cache=TRUE, echo=TRUE>>=
 d = read.table("Ch16b-farm62.txt", header=T)
 d$cg = d$farm = d$yearmo = d$nbd = d$dam = NULL
-d = plyr::rename(d, c("sire"="grandsire"))
+d = plyr::rename(d, c("sire"="grandsire")) |>
+  mutate(sowid = factor(sowid), grandsire = factor(grandsire))
 @
 
 <<data_summary, dependson="data", echo=TRUE>>=
@@ -94,7 +95,7 @@ dim(d); nlevels(d$sowid); nlevels(d$grandsire)
 \begin{frame}[fragile]
 <<exploratory, dependson="data">>=
 summary(factor(d$parity))
-ggplot(d, aes(x=nba,y=..density..)) +
+ggplot(d, aes(x=nba,y=after_stat(density))) +
   geom_histogram(binwidth=1) + 
   facet_wrap(~parity, scales='free_y')
 @
@@ -104,7 +105,7 @@ ggplot(d, aes(x=nba,y=..density..)) +
 
 
 \frame{\frametitle{Model}
-Let $y_i$ be the number born alive for the $i^{th}$ litter.\pause Assume
+Let $y_i$ be the number born alive for the $i^{th}$ litter. \pause Assume
 \[ \begin{array}{ll@{\qquad}l}
 y_i &\stackrel{ind}{\sim} Po( e^{\mu_i} ) & i=1,\ldots,n \pause \\
 \mu_i &= \rho_{p[i]} + \alpha_{s[i]} + \beta_{g[i]} \pause \\
@@ -127,7 +128,7 @@ The prior is
 
 
 \begin{frame}[fragile]
-<<stan, tidy=FALSE, echo=TRUE>>=
+<<model, tidy=FALSE, echo=TRUE>>=
 model = "
 data {
   int<lower=1> n;
@@ -153,7 +154,7 @@ model {
     y[i] ~ poisson(exp(rho[parity[i]]+alpha[sow[i]]+beta[grandsire[i]]));
   }
 
-  # Random effects
+  // Random effects
   alpha ~ normal(0, sigma_alpha);
   beta ~ normal(0, sigma_beta);
 
@@ -163,8 +164,8 @@ model {
 @
 \end{frame}
 
-<<compile_model, cache=TRUE, message=FALSE>>=
-m = stan_model(model_code=model)
+<<compile_model, cache=TRUE, message=FALSE, dependson="model">>=
+m <- stan_model(model_code = model)
 @
 
 \begin{frame}[fragile]
@@ -381,25 +382,25 @@ sow_summary = ddply(d, .(sowid), summarize,
 
 # Find a sow with 0 born alive in parity 1 (and no other data)
 sow = which(sow_summary$max_parity==1 & sow_summary$sum_nba==0)[1]
-grandsire = as.numeric(d$sire[d$sowid==sow_summary$sowid[sow]])
+grandsire = as.numeric(d$sire[d$sowid==sow_summary$sowid[sow]]); grandsire = 2 # no idea why
 
 # Expected nba in parity 2 for sow with 0 born alive in first parity
-alphas = extract(r, "alpha")$alpha
-betas  = extract(r, "beta")$beta
-rhos = extract(r, "rho")$rho
-exp_nba_old2 = exp(rhos[,2]+alphas[,sow]+betas[,grandsire])
+alphas <- extract(r, "alpha")$alpha
+betas  <- extract(r, "beta")$beta
+rhos   <- extract(r, "rho")$rho
+exp_nba_old2 <- exp(rhos[, 2] + alphas[, sow] + betas[, grandsire])
 
 # Expected nba in parity 1 for random sow
-alpha_new = rnorm(nrow(rhos), 0, sigmas$sigma_alpha)
-beta_new  = rnorm(nrow(rhos), 0, sigmas$sigma_beta)
-exp_nba_new = exp(rhos[,1]+alpha_new+beta_new)
+alpha_new   <- rnorm(nrow(rhos), 0, sigmas$sigma_alpha)
+beta_new    <- rnorm(nrow(rhos), 0, sigmas$sigma_beta)
+exp_nba_new <- exp(rhos[, 1] + alpha_new + beta_new)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-<<zero_nba_run, dependson="run_mcmc", echo=TRUE>>=
-hist(exp_nba_new-exp_nba_old2, 100, main=expression(paste(delta," (new-old)")))
+<<zero_nba_run, dependson="zero_nba", echo=TRUE>>=
+hist(exp_nba_new - exp_nba_old2, 100, main=expression(paste(delta," (new-old)")))
 @
 \end{frame}
 
@@ -409,7 +410,7 @@ hist(exp_nba_new-exp_nba_old2, 100, main=expression(paste(delta," (new-old)")))
 <<parity_four, dependson="run_mcmc", fig.width=8, echo=TRUE>>=
 # Replace sow with 23 born alive after 4 parities?
 sow = which(sow_summary$max_parity==4 & sow_summary$sum_nba==23)[1]
-grandsire = as.numeric(d$sire[d$sowid==sow_summary$sowid[sow]])
+grandsire = as.numeric(d$sire[d$sowid==sow_summary$sowid[sow]]); grandsire = 2 # no idea why
 
 # Expected nba in parity 3 for sow with 0 born alive in first parity
 exp_nba_old5 = exp(rhos[,5]+alphas[,sow]+betas[,grandsire])
@@ -425,7 +426,7 @@ hist(exp_nba_new-exp_nba_old5, 100, main=expression(paste(delta," (new-old)")))
 
 Estimates of the number born alive for each sow with Monte Carlo uncertainty:
 
-<<est_nba>>=
+<<est_nba, dependson=c("zero_nba","parity_four")>>=
 exp_nba = data.frame(new = exp_nba_new, old2 = exp_nba_old2, old5 = exp_nba_old5)
 ddply(melt(exp_nba), .(variable), function(x) as.data.frame(mcse(x$value)))
 @
@@ -434,7 +435,7 @@ ddply(melt(exp_nba), .(variable), function(x) as.data.frame(mcse(x$value)))
 
 Estimates of the expected difference with Monte Carlo uncertainty:
 
-<<difference_expected progeny, echo=TRUE>>=
+<<difference_expected progeny, dependson=c("zero_nba","parity_four"), echo=TRUE>>=
 delta = rbind(as.data.frame(mcse(exp_nba_old2-exp_nba_new)),
               as.data.frame(mcse(exp_nba_old5-exp_nba_new)),
               as.data.frame(mcse(exp_nba_old5-exp_nba_old2)))

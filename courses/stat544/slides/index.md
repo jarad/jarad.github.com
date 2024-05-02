@@ -47,6 +47,7 @@ The following provides the weekly schedule of material
 |15|Hierarchical linear models|[Ch15a.Rnw](Ch15/Ch15a.Rnw)|[Ch15a.pdf](Ch15/Ch15a.pdf)|
 ||Hierarchical linear models (cont.)|[Ch15b.Rnw](Ch15/Ch15b.Rnw)|[Ch15b.pdf](Ch15/Ch15b.pdf)|
 |16|Hierarchical linear models|[Ch16a.Rnw](Ch16/Ch16a.Rnw)|[Ch16a.pdf](Ch16/Ch16a.pdf)|
+|||[Ch16b.Rnw](Ch16/Ch16b.Rnw)|[Ch16a.pdf](Ch16/Ch16b.pdf)|
 
   
 Below are to be organized:
