@@ -122,7 +122,7 @@ The hierarchical structure treats $\alpha$ and $\beta$ as random effects, i.e.
 \beta_g &\stackrel{iid}{\sim} N(0, \sigma^2_\beta) & g=1,\ldots,n_{grandsires}. \pause
 \end{array} \]
 The prior is 
-\[ p(\rho_1,\ldots,\rho_6, \sigma_\alpha,\sigma_\beta) \propto Ca^+(\sigma_\alpha;0,1) Ca^+(\sigma_\beta;0,1) \]
+\[ p(\rho_1,\ldots,\rho_6, \sigma_\alpha,\sigma_\beta) \propto Ca^+(\sigma_\alpha;0,0.1) Ca^+(\sigma_\beta;0,0.1) \]
 }
 
 
@@ -151,25 +151,26 @@ parameters {
 
 model {
   for (i in 1:n) {
-    y[i] ~ poisson(exp(rho[parity[i]]+alpha[sow[i]]+beta[grandsire[i]]));
+    y[i] ~ poisson(exp(rho[parity[i]] + alpha[sow[i]] + beta[grandsire[i]]));
   }
 
   // Random effects
   alpha ~ normal(0, sigma_alpha);
-  beta ~ normal(0, sigma_beta);
+  beta  ~ normal(0, sigma_beta);
 
-  sigma_alpha ~ cauchy(0,1);
-  sigma_beta  ~ cauchy(0,1);
+  // Priors
+  sigma_alpha ~ cauchy(0,0.1);
+  sigma_beta  ~ cauchy(0,0.1);
 }"
 @
 \end{frame}
 
-<<compile_model, cache=TRUE, message=FALSE, dependson="model">>=
+<<compile-model, cache=TRUE, message=FALSE, dependson="model">>=
 m <- stan_model(model_code = model)
 @
 
 \begin{frame}[fragile]
-<<run_mcmc, dependson=c("data","compile_model"), cache=TRUE, echo=TRUE>>=
+<<run-mcmc, dependson=c("data","compile-model"), cache=TRUE, echo=TRUE>>=
 d = d[d$parity!=7,]
 dat = list(y = d$nba, 
            parity = d$parity,
@@ -190,31 +191,22 @@ time = system.time(r <- sampling(object = m,
 
 \begin{frame}[fragile]
 \frametitle{Run time and summary}
-<<stan_summary, cache=TRUE, dependson="run_mcmc", echo=TRUE>>=
+<<stan-summary, cache=TRUE, dependson="run-mcmc", echo=TRUE>>=
 time
 s = summary(r)$summary
 @
 
-<<dependson="stan_summary", eval=FALSE>>=
+<<dependson="stan-summary", eval=FALSE>>=
 summary(r, pars=c("rho","sigma_alpha","sigma_beta","lp__"))$summary
 @
 
 \end{frame}
 
 
-
 \begin{frame}[fragile]
-<<dependson='run_mcmc'>>=
-plot(r)
-@
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-<<parity, dependson="stan_summary">>=
-wr = grep("rho",rownames(s))
-erho = exp(s[wr,c(4,6,8)])
+<<parity, dependson="stan-summary">>=
+wr   <- grep("rho",rownames(s))
+erho <- exp(s[wr,c(4,6,8)])
 
 plot(wr, 1:dat$np, xlim=range(erho[wr,]), ylim=c(0,dat$np+1), ylab="Parity", 
      xlab="Expected number born alive", type="n")
@@ -225,7 +217,7 @@ points(erho[wr,2],1:dat$np, pch=19, cex=.5)
 
 
 \begin{frame}[fragile]
-<<sow, dependson="stan_summary", cache=TRUE>>=
+<<sow, dependson="stan-summary", cache=TRUE>>=
 wd = grep("alpha\\[",rownames(s))
 alpha = as.data.frame(s[wd,c(4,6,8)])
 
@@ -291,7 +283,7 @@ dcast(d[d$sowid %in% sows,c("sowid","nba","parity")], sowid~parity, value.var='n
 
 
 \begin{frame}[fragile]
-<<sire, dependson="stan_summary">>=
+<<sire, dependson="stan-summary">>=
 ws = grep("beta",rownames(s))
 beta = s[ws,c(4,6,8)]
 n.sire = nrow(beta)
@@ -308,7 +300,7 @@ lines(beta[,2], 1:n.sire)
 
 
 \begin{frame}[fragile]
-<<standard_deviations, dependson="run_mcmc", cache=TRUE>>=
+<<standard-deviations, dependson="run-mcmc", cache=TRUE>>=
 sigmas = extract(r, c("sigma_alpha","sigma_beta"))
 par(mfrow=c(1,2))
 hist(sigmas$sigma_alpha, prob=TRUE, xlim=c(0,0.1), 
@@ -330,7 +322,7 @@ Primary question of interest: when should a sow be removed from breeding?
 
 \vspace{0.2in} \pause
 
-Who is expected to have more progeny: \pause
+Who is expected to have more number born alive: \pause
 \begin{itemize}
 \item a current sow $s$ \pause
 \item a new sow
@@ -339,67 +331,66 @@ Who is expected to have more progeny: \pause
 \pause
 
 {\small
-Current sow (for progeny $p$ and grandsire $g$):
+Current sow (for parity $p$ and average grandsire):
 \[ \begin{array}{rl}
 E[\tilde{y}_s|y] &= E\large[E[\tilde{y}_s|\rho,\alpha,\beta]|y \large] \pause \\
-&= E\left[ \left. e^{\rho_p+\alpha_s+\beta_g}\right|y\right] \pause \\
-&\approx \frac{1}{K} \sum_{k=1}^K e^{\rho_p^{(k)}+\alpha_s^{(k)}+\beta_g^{(k)}}
+&= E\left[ \left. e^{\rho_p+\alpha_s}\right|y\right] \pause \\
+&\approx \frac{1}{K} \sum_{k=1}^K e^{\rho_p^{(k)}+\alpha_s^{(k)}}
 \end{array} \]
-\pause New sow (for progeny 1 and random grandsire):
+\pause New sow (for parity 1 and average grandsire):
 \[ \begin{array}{rl}
-E[\tilde{y}_{new}|y] &= \approx \frac{1}{K} \sum_{k=1}^K e^{\rho_1^{(k)}+\alpha_{new}^{(k)}+\beta_{new}^{(k)}}
+E[\tilde{y}_{new}|y] &= \approx \frac{1}{K} \sum_{k=1}^K e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}
 \end{array} \]
-where $\alpha_{new}^{(k)} \sim N(0,[\sigma_{\alpha}^{(k)}]^2)$ and $\beta_{new}^{(k)} \sim N(0,[\sigma_{\beta}^{(k)}]^2)$.
+where $\alpha_{new}^{(k)} \sim N(0,[\sigma_{\alpha}^{(k)}]^2)$.
 }
 }
 
 \frame{\frametitle{Simulated answer}
 For MCMC iterations $k=1,\ldots,K$, \pause 
 \begin{enumerate}
-\item Obtain the $k^{th}$ \emph{joint draw} from the posterior for $\rho_p^{(k)}$, $\rho_1^{(k)}$, $\alpha_s^{(k)}$, $\beta_g^{(k)}$, $\sigma^{(k)}_\alpha$, and $\sigma^{(k)}_\beta$. 
-\item Calculate $\mu^{(k)}_{d} = e^{\rho_p^{(k)}+\alpha_s^{(k)}+\beta_g^{(k)}}$. \pause 
-\item Calculate $\mu^{(k)}_{new} = e^{\rho_p^{(k)}+\alpha_{new}^{(k)}+\beta_{new}^{(k)}}$ where 
-  \begin{enumerate}
-  \item $\alpha_{new}^{(k)} \sim N\left(0,\left[\sigma_{\alpha}^{(k)}\right]^2\right)$ and
-  \item $\beta_{new}^{(k)} \sim N\left(0,\left[\sigma_{\beta}^{(k)}\right]^2\right)$.
-  \end{enumerate} \pause 
+\item Obtain the $k^{th}$ \emph{joint draw} from the posterior for $\rho_p^{(k)}$, $\rho_1^{(k)}$, $\alpha_s^{(k)}$, and $\sigma^{(k)}_\alpha$. 
+\item Calculate $\mu^{(k)}_{s} = e^{\rho_p^{(k)}+\alpha_s^{(k)}}$. \pause 
+\item Calculate $\mu^{(k)}_{new} = e^{\rho_p^{(k)}+\alpha_{new}^{(k)}}$ where 
+ $\alpha_{new}^{(k)} \sim N\left(0,\left[\sigma_{\alpha}^{(k)}\right]^2\right)$. \pause 
 \item Calculate $\delta^{(k)} = \mu_{new}^{(k)} - \mu_s^{(k)}$.
 \end{enumerate}
 
 \vspace{0.2in} \pause
 
-So $\delta^{(k)}$ is a realization of the expected difference in the number of progeny between a new sow and current sow $d$.
+So $\delta^{(k)}$ is a realization of the expected difference in the number born
+alive between a new sow and current sow $d$.
 }
 
 
 
 \begin{frame}[fragile]
-<<zero_nba, dependson="run_mcmc", echo=TRUE>>=
-sow_summary = ddply(d, .(sowid), summarize, 
-                    max_parity = max(parity),
-                    sum_nba    = sum(nba),
-                    mean_nba   = sum_nba/max_parity)
+<<zero-nba, dependson="run-mcmc", echo=TRUE>>=
+sow_summary <- d |>
+  group_by(sowid) |>
+  summarize(
+    max_parity = max(parity),
+    sum_nba    = sum(nba),
+    mean_nba   = sum_nba/max_parity
+) 
+                    
 
 # Find a sow with 0 born alive in parity 1 (and no other data)
 sow = which(sow_summary$max_parity==1 & sow_summary$sum_nba==0)[1]
-grandsire = as.numeric(d$sire[d$sowid==sow_summary$sowid[sow]]); grandsire = 2 # no idea why
 
 # Expected nba in parity 2 for sow with 0 born alive in first parity
 alphas <- extract(r, "alpha")$alpha
-betas  <- extract(r, "beta")$beta
 rhos   <- extract(r, "rho")$rho
-exp_nba_old2 <- exp(rhos[, 2] + alphas[, sow] + betas[, grandsire])
+exp_nba_old2 <- exp(rhos[, 2] + alphas[, sow])
 
 # Expected nba in parity 1 for random sow
 alpha_new   <- rnorm(nrow(rhos), 0, sigmas$sigma_alpha)
-beta_new    <- rnorm(nrow(rhos), 0, sigmas$sigma_beta)
-exp_nba_new <- exp(rhos[, 1] + alpha_new + beta_new)
+exp_nba_new <- exp(rhos[, 1] + alpha_new)
 @
 \end{frame}
 
 
 \begin{frame}[fragile]
-<<zero_nba_run, dependson="zero_nba", echo=TRUE>>=
+<<zero-nba-run, dependson="zero-nba", echo=TRUE>>=
 hist(exp_nba_new - exp_nba_old2, 100, main=expression(paste(delta," (new-old)")))
 @
 \end{frame}
@@ -407,13 +398,12 @@ hist(exp_nba_new - exp_nba_old2, 100, main=expression(paste(delta," (new-old)"))
 
 
 \begin{frame}[fragile]
-<<parity_four, dependson="run_mcmc", fig.width=8, echo=TRUE>>=
+<<parity-four, dependson="run-mcmc", fig.width=8, echo=TRUE>>=
 # Replace sow with 23 born alive after 4 parities?
 sow = which(sow_summary$max_parity==4 & sow_summary$sum_nba==23)[1]
-grandsire = as.numeric(d$sire[d$sowid==sow_summary$sowid[sow]]); grandsire = 2 # no idea why
 
 # Expected nba in parity 3 for sow with 0 born alive in first parity
-exp_nba_old5 = exp(rhos[,5]+alphas[,sow]+betas[,grandsire])
+exp_nba_old5 = exp(rhos[,5] + alphas[,sow])
 
 # Difference in expected nba
 hist(exp_nba_new-exp_nba_old5, 100, main=expression(paste(delta," (new-old)")))
@@ -424,29 +414,33 @@ hist(exp_nba_new-exp_nba_old5, 100, main=expression(paste(delta," (new-old)")))
 \begin{frame}[fragile]
 \frametitle{Estimated number born alive}
 
-Estimates of the number born alive for each sow with Monte Carlo uncertainty:
+Estimates of the expected number born alive for each sow with Monte Carlo 
+uncertainty:
 
-<<est_nba, dependson=c("zero_nba","parity_four")>>=
-exp_nba = data.frame(new = exp_nba_new, old2 = exp_nba_old2, old5 = exp_nba_old5)
-ddply(melt(exp_nba), .(variable), function(x) as.data.frame(mcse(x$value)))
+<<est-nba, dependson=c("zero-nba","parity-four"), echo=TRUE>>=
+rbind(
+  new  = as.data.frame(mcse(exp_nba_new )),
+  old2 = as.data.frame(mcse(exp_nba_old2)),
+  old5 = as.data.frame(mcse(exp_nba_old5))
+) |> round(2)
 @
 
 \pause
 
 Estimates of the expected difference with Monte Carlo uncertainty:
 
-<<difference_expected progeny, dependson=c("zero_nba","parity_four"), echo=TRUE>>=
-delta = rbind(as.data.frame(mcse(exp_nba_old2-exp_nba_new)),
-              as.data.frame(mcse(exp_nba_old5-exp_nba_new)),
-              as.data.frame(mcse(exp_nba_old5-exp_nba_old2)))
-rownames(delta) = c("parity2-new","parity5-new","parity5-parity2")
-delta
+<<difference-expected-parity, dependson=c("zero-nba","parity-four"), echo=TRUE>>=
+rbind(
+  `parity2 - new`     = as.data.frame(mcse( exp_nba_old2 - exp_nba_new  )),
+  `parity5 - new`     = as.data.frame(mcse( exp_nba_old5 - exp_nba_new  )),
+  `parity5 - parity2` = as.data.frame(mcse( exp_nba_old5 - exp_nba_old2 ))) |>
+  round(2)
 @
 \end{frame}
 
 \subsection{Utility function}
 \frame{\frametitle{Utility functions}
-Suppose the only cost difference is in the number of progeny, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i$ \pause and want 
+Suppose the only cost difference is in the number born alive, \pause then $U(\tilde{y}_i) = u_1 \tilde{y}_i$ \pause and want 
 \[ \max_{i\in \{d, new\}} E[U(\tilde{y}_i)|y] \]
 \pause or, equivalently, pick $new$ if
 \[ E[U(\tilde{y}_{new})|y] - E[U(\tilde{y}_s)|y] > 0 \] 
@@ -496,7 +490,7 @@ To estimate these utility functions, we will need predictive simulations $\tilde
 We can obtain these simulations via 
 
 \begin{itemize}
-\item Old sow (progeny $p$ and average grand-sire):
+\item Old sow (parity $p$ and average grand-sire):
 \[ \tilde{y}_s^{(k)} \sim Po\left(e^{\rho_p^{(k)}+\alpha_s^{(k)}}\right) \]
 \item New sow (average grand-sire):
 \[ \tilde{y}_{new}^{(k)} \sim Po\left(e^{\rho_1^{(k)}+\alpha_{new}^{(k)}}\right) \]
