@@ -27,7 +27,7 @@ PLoS Computational Biology 20(5): e1011200.
 [doi](https://doi.org/10.1371/journal.pcbi.1011200)
 1. J.A. Stephenson, M. Liebman, J. Niemi, R. Cruse, J. Tyndall, C. Witte, D. James, M. Helmers.
 (2024) 
-The influence of prairie strips sown in midwestern corn and soybean fields on sediment discharge throughout the year
+The influence of prairie strips sown in midwestern corn and soybean fields on sediment discharge throughout the year.
 Journal of Soil and Water Conservation Mar 2024, 79 (2) 87-98; 
 [url](https://www.jswconline.org/content/79/2/87) 
 [doi](10.2489/jswc.2024.00037)
