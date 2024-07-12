@@ -19,6 +19,18 @@ other lists:
 
 ## Refereed Journal Articles
 
+1. Velma K. Lopez,Estee Y. Cramer,Robert Pagano,John M. Drake,Eamon B. O’Dea,Madeline Adee,Turgay Ayer,Jagpreet Chhatwal,Ozden O. Dalgic,Mary A. Ladd,Benjamin P. Linas,Peter P. Mueller,Jade Xiao,Johannes Bracher,Alvaro J. Castro Rivadeneira,Aaron Gerding,Tilmann Gneiting,Yuxin Huang,Dasuni Jayawardena,Abdul H. Kanji,Khoa Le,Anja Mühlemann,Jarad Niemi,Evan L. Ray,Ariane Stark,Yijin Wang,Nutcha Wattanachit,Martha W. Zorn,Sen Pei,Jeffrey Shaman,Teresa K. Yamana,Samuel R. Tarasewicz,Daniel J. Wilson,Sid Baccam,Heidi Gurung,Steve Stage,Brad Suchoski,Lei Gao,Zhiling Gu,Myungjin Kim,Xinyi Li,Guannan Wang,Lily Wang,Yueying Wang,Shan Yu,Lauren Gardner,Sonia Jindal,Maximilian Marshall,Kristen Nixon,Juan Dent,Alison L. Hill,Joshua Kaminsky,Elizabeth C. Lee,Joseph C. Lemaitre,Justin Lessler,Claire P. Smith,Shaun Truelove,Matt Kinsey,Luke C. Mullany,Kaitlin Rainwater-Lovett,Lauren Shin,Katharine Tallaksen,Shelby Wilson,Dean Karlen,Lauren Castro,Geoffrey Fairchild,Isaac Michaud,Dave Osthus,Jiang Bian,Wei Cao,Zhifeng Gao,Juan Lavista Ferres,Chaozhuo Li,Tie-Yan Liu,Xing Xie,Shun Zhang,Shun Zheng,Matteo Chinazzi,Jessica T. Davis,Kunpeng Mu,Ana Pastore y Piontti,Alessandro Vespignani,Xinyue Xiong,Robert Walraven,Jinghui Chen,Quanquan Gu,Lingxiao Wang,Pan Xu,Weitong Zhang,Difan Zou,Graham Casey Gibson,Daniel Sheldon,Ajitesh Srivastava,Aniruddha Adiga,Benjamin Hurt,Gursharn Kaur,Bryan Lewis,Madhav Marathe,Akhil Sai Peddireddy,Przemyslaw Porebski,Srinivasan Venkatramanan,Lijing Wang,Pragati V. Prasad,Jo W. Walker,Alexander E. Webber,Rachel B. Slayton,Matthew Biggerstaff,Nicholas G. Reich,Michael A. Johansson. 
+(2024)
+Challenges of COVID-19 Case Forecasting in the US, 2020–2021.
+PLoS Computational Biology
+[url](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011200)
+[doi](https://doi.org/10.1371/journal.pcbi.1011200)
+1. J.A. Stephenson, M. Liebman, J. Niemi, R. Cruse, J. Tyndall, C. Witte, D. James, M. Helmers.
+(2024) 
+The influence of prairie strips sown in midwestern corn and soybean fields on sediment discharge throughout the year
+Journal of Soil and Water Conservation Mar 2024, 79 (2) 87-98; 
+[url](https://www.jswconline.org/content/79/2/87) 
+[doi](10.2489/jswc.2024.00037)
 1. Cole Dutter, Luis A. Damiano*, Jarad Niemi, Bradley A. Miller, Lisa A. Schulte, Matt Liebman, Matt Helmers, Rick Cruse, and Marshall D. McDaniel. (2023) 
 Contour prairie strips affect adjacent soil but have only slight effects on crops.
 Field Crops Research 296.
@@ -30,9 +42,9 @@ No-tillage does not on average reduce soil carbon storage compared to convention
 Geoderma 430.
 [url](https://www.sciencedirect.com/science/article/pii/S0016706122006140)
 [doi](https://doi.org/10.1016/j.geoderma.2022.116307)
-1. Qinglong Tian, Colin Lewis-Beck*, Jarad Niemi, and William Meeker. (2023) 
+1. Qinglong Tian, Colin Lewis-Beck*, Jarad Niemi, and William Meeker. (2024) 
 Specifying prior distributions in reliability applications.
-Applied Stochastic Models in Business and Industry. 
+Applied Stochastic Models in Business and Industry. 40(1) 5-62.
 [url](https://onlinelibrary.wiley.com/doi/full/10.1002/asmb.2752)
 [doi](https://doi.org/10.1002/asmb.2752)
 1. Matt Nowatzke, Luis Damiano*, Fernando Miguez, Gabe McNunn, Jarad Niemi, Lisa Schulte-Moore, Emily Heaton, Andy VanLoocke. (2022)
