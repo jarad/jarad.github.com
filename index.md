@@ -23,7 +23,7 @@ Originally, I am from [Duluth, Minnesota](https://duluthmn.gov/ "Duluth, Minneso
 
 ## Fall 2024 Courses ([all courses](courses/))
 
-  - [STAT 5870-1/A](courses/stat587)
+  - [STAT 5870-1/A](courses/stat5870Eng)
 
 ## Contact
 
