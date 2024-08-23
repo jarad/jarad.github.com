@@ -7,30 +7,27 @@ description: "for STAT 587 students"
 
 ### [Next courses](http://catalog.iastate.edu/azcourses/stat/)
 
-A [minor in Statistics for an individual in a Masters Program](https://www.stat.iastate.edu/statistics-minor-master%E2%80%99s-students) requires 587, 
-588, and at least one other 3-credit 400-level or above STAT course. 
-A [minor in Statistics for an individual in a PhD Program](https://www.stat.iastate.edu/statistics-minor-phd-students) requires 587, 588, and at least 2 other 3-credit 400-level or above STAT courses.
-A maximum of 
-[9 credits at the undergraduate level](https://www.grad-college.iastate.edu/handbook/chapter.php?id=5)
-can be included on a graduate program of study (POS). 
+A [minor in Statistics for an individual in a Masters Program](https://www.stat.iastate.edu/statistics-minor-master%E2%80%99s-students) requires 5870, 
+5880, and at least one other 3-credit 5000-level or above STAT course. 
+A [minor in Statistics for an individual in a PhD Program](https://www.stat.iastate.edu/statistics-minor-phd-students) requires 587, 5880, and at least 2 other 3-credit 5000-level or above STAT courses.
 
 Statistics courses are listed on 
 [the University Course Catalog](https://catalog.iastate.edu/azcourses/stat/), 
 but I have pulled out those courses that are likely to be of interest to 
-graduates of STAT 587.
+graduates of STAT 5870.
 
-- STAT 588 - Statistical Theory for Research Workers
-  - STAT 474/574 - Introduction to Bayesian Data Analysis
-  - STAT 478/578 - Introduction to Stochastic Process Models
-  - STAT 476/576 - Introduction to Spatial Data Analysis
-  - STAT 533 - Reliability
-- STAT 471/571 - Introduction to Experimental Design 
-- STAT 472/572 - Introduction to Time Series
-- STAT 473/573 - Introduction to Survey Sampling
-- STAT 475/575 - Introduction to Multivariate Data Analysis (matrix algebra)
-- STAT 477/577 - Introduction to Categorical Data Analysis
-- STAT 484/584 - Computer Processing of Scientific Data
-- STAT 486/586 - Introduction to Statistical Computing
+- STAT 5880 - Statistical Theory for Research Workers
+  - STAT 4740/5740 - Introduction to Bayesian Data Analysis
+  - STAT 4780/5780 - Introduction to Stochastic Process Models
+  - STAT 4760/5760 - Introduction to Spatial Data Analysis
+  - STAT 5330 - Reliability
+- STAT 4710/5710 - Introduction to Experimental Design 
+- STAT 4720/5720 - Introduction to Time Series
+- STAT 4730/5730 - Introduction to Survey Sampling
+- STAT 4750/5750 - Introduction to Multivariate Data Analysis (matrix algebra)
+- STAT 4770/5770 - Introduction to Categorical Data Analysis
+- STAT 4840/5840 - Computer Processing of Scientific Data
+- STAT 4860/5860 - Introduction to Statistical Computing
 
 Specialty courses:
 - STAT 534 - Ecological Statistics
