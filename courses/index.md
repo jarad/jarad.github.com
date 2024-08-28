@@ -8,6 +8,8 @@ group: navigation
 
 ## Regular courses
 
+- Fall 2024
+  - [STAT 5870-1/A (Eng)](stat5870Eng)
 - Spring 2024
   - [STAT 486/586](stat4860)
   - [STAT 544](stat5440)
