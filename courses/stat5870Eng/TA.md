@@ -1,6 +1,6 @@
 ---
 layout: page
-title: STAT 587 (Engineering)
+title: STAT 5870 (Engineering)
 tagline: Statistical Methods for Research Workers
 ---
 {% include JB/setup %}
