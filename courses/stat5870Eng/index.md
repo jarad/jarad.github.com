@@ -89,7 +89,7 @@ Please use the [Canvas](http://canvas.iastate.edu/) discussion forum.
 
 ## Schedule
 
-
+[Schedule - Excel File](stat5870_schedule.xlsx)
 
 
 ## Center for Excellence in Learning and Teaching Recommendations
