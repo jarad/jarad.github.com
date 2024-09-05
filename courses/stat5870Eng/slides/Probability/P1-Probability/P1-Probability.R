@@ -7,7 +7,7 @@ library(ggplot2)
 set.seed(2)
 
 
-## ----venn_setup, out.width='0.8\\textwidth'---------------------------------------------------------------------------
+## ----venn_setup, out.width='0.6\\textwidth'---------------------------------------------------------------------------
 l = 101
 circle = data.frame(
   loc = c(rep("top", l),rep("bot",l)),

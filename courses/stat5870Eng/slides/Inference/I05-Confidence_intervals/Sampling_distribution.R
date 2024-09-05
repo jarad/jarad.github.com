@@ -1,15 +1,15 @@
-## ----libraries, message=FALSE, warning=FALSE, cache=FALSE------------------------------------------------------
+## ----libraries, message=FALSE, warning=FALSE, cache=FALSE-------------------------------------------------------------
 library("plyr")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
 
 
-## ----set_seed, echo=FALSE--------------------------------------------------------------------------------------
+## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
 set.seed(2)
 
 
-## ----normal_samples, cache = TRUE------------------------------------------------------------------------------
+## ----normal_samples, cache = TRUE-------------------------------------------------------------------------------------
 mu = 35
 sigma = 5
 ns = 10*(2:5)
@@ -21,7 +21,7 @@ samples = expand.grid(rep = 1:1000,
   do(data.frame(samples = rnorm(.$n, mean = mu, sd = sigma))) 
 
 
-## ----normal_average, dependson = "normal_samples"--------------------------------------------------------------
+## ----normal_average, dependson = "normal_samples", out.width="0.9\\textwidth"-----------------------------------------
 d = samples %>%
   dplyr::summarize(average = mean(samples),
                    .groups = "keep") %>%
@@ -41,7 +41,7 @@ ggplot(d, aes(x = average)) +
   theme_bw()
 
 
-## ----t_statistic, dependson = "normal_samples", fig.height=3.7-------------------------------------------------
+## ----t_statistic, dependson = "normal_samples", fig.height=3.7--------------------------------------------------------
 mu = 35
 sigma = 5
 ns = 10*(2:5)
@@ -67,7 +67,7 @@ ggplot(d, aes(x = t)) +
   theme_bw()
 
 
-## ----binomial_samples, cache = TRUE----------------------------------------------------------------------------
+## ----binomial_samples, cache = TRUE-----------------------------------------------------------------------------------
 ns = c(10,100)
 ps = c(.5,.8)
 samples = expand.grid(rep = 1:1000, 
@@ -80,7 +80,7 @@ samples = expand.grid(rep = 1:1000,
                 n = paste("n =", n)) 
 
 
-## ----binomial_proportion, dependson = "binomial_samples", fig.height=3.7---------------------------------------
+## ----binomial_proportion, dependson = "binomial_samples", out.width="0.8\\textwidth"----------------------------------
 pmf = expand.grid(n = ns, p = ps, values = (0:max(ns))/max(ns)) %>%
   dplyr::group_by(n, p) %>%
   do(data.frame(values = (0:max(.$n))/max(.$n))) %>%
@@ -101,7 +101,7 @@ ggplot(samples, aes(x = phat)) +
   theme_bw()
 
 
-## ----dependson = "binomial_samples", fig.height=3.7------------------------------------------------------------
+## ----dependson = "binomial_samples", out.width="0.8\\textwidth"-------------------------------------------------------
 pmf = expand.grid(n = ns, p = ps, 
                   prop = seq(0,1,length=101)) %>%
   dplyr::mutate(

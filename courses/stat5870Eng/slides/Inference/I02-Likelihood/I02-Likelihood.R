@@ -8,7 +8,7 @@ library("ggplot2")
 set.seed(2)
 
 
-## ----binomial_likelihood, fig.height=4.5------------------------------------------------------------------------------
+## ----binomial_likelihood----------------------------------------------------------------------------------------------
 d2 <- data.frame(theta = seq(0,1,by=0.01)) %>%
   mutate(`y=3` = dbinom(3,10,prob=theta),
          `y=6` = dbinom(6,10,prob=theta)) %>%
@@ -22,7 +22,7 @@ ggplot(d2, aes(theta, likelihood, color=data, linetype=data)) +
   theme_bw()
 
 
-## ----normal_likelihood, fig.height=4.5--------------------------------------------------------------------------------
+## ----normal_likelihood------------------------------------------------------------------------------------------------
 x <- rnorm(3)
 
 d <- expand.grid(mu = seq(-2,2,length=100),
@@ -38,7 +38,7 @@ ggplot(d, aes(x = mu, y = sigma, z = density)) +
   theme_bw()
 
 
-## ----binomial_mle, fig.height=4.5-------------------------------------------------------------------------------------
+## ----binomial_mle-----------------------------------------------------------------------------------------------------
 y <- 3
 n <- 10
 d3 <- data.frame(theta = seq(0,1,by=0.01)) %>%
@@ -47,6 +47,7 @@ d3 <- data.frame(theta = seq(0,1,by=0.01)) %>%
 ggplot(d3, aes(theta, likelihood)) +
   geom_line() +
   geom_vline(xintercept = y/n, col='red') +
+  labs(x = expression(theta)) +
   theme_bw()
 
 
@@ -77,7 +78,7 @@ c(o$par[1], exp(o$par[2])^2)               # numerical MLE
 n <- length(x); c(mean(x), (n-1)/n*var(x)) # true MLE
 
 
-## ----normal_mle, fig.height=4.5, dependson=c("normal_likelihood","normal_numerical_maximization")---------------------
+## ----normal_mle, dependson=c("normal_likelihood","normal_numerical_maximization")-------------------------------------
 ggplot(d, aes(mu,sigma,z=density)) +
   geom_contour_filled(show.legend = FALSE) +
   geom_point(aes(x = mean(x), y = sqrt((n-1)/n*var(x))), shape=4, color='red') + 
