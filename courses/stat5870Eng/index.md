@@ -89,23 +89,7 @@ Please use the [Canvas](http://canvas.iastate.edu/) discussion forum.
 
 ## Schedule
 
-|Week|Topic|OpenIntro|
-|----|-----|-------|
-|   1|Probability |Ch 3|
-|   2|Random variables|Ch 4|
-|   3|                | |
-|   4|Modeling| |
-|   5|Inference| |
-|   6|         |Ch 5|
-|   7|         |Ch 6|
-|   8|         |Ch 7|
-|   9|midterm| |
-|  10|Simple linear regression|Ch 8|
-|  11|Multiple regression|Ch 9|
-|  12|ANOVA    | |
-|  13|Contrasts| |
-|  14|Model selection| |
-|    |final exam| |
+
 
 
 ## Center for Excellence in Learning and Teaching Recommendations
