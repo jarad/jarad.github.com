@@ -16,6 +16,7 @@ library("tidyverse")
 
 theme_set(theme_bw()) # comment this line to see what default plots look like
 
+# Summary statistics
 dim(airquality)
 head(airquality)
 tail(airquality)
