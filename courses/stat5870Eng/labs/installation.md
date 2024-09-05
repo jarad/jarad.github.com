@@ -1,6 +1,6 @@
 ---
 layout: page
-title: STAT 587 (Engineering) Lab
+title: STAT 5870 (Engineering) Lab
 tagline: R/RStudio Installation
 ---
 
