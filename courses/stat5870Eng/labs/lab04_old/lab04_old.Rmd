@@ -1,0 +1,410 @@
+---
+title: "Lab04 - Monte Carlo Methods in R"
+author: "Jarad Niemi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+To follow along, use the [lab04 code](lab04.R).
+
+## Programming in R
+
+R is made up primarily of 
+
+- objects
+- functions
+
+We discussed many R objects in [lab 01](../lab01/lab01.html#types), 
+but there are many more.
+
+### Functions
+
+Functions are written to be performed on objects.
+The function below simply adds 1 to whatever the argument is. 
+
+```{r}
+add1 <- function(a) {
+  return(a+1)
+}
+
+add1(2)
+add1(a = 3)
+```
+
+The following function adds the two arguments.
+
+```{r}
+add <- function(a, b) {
+  return(a+b)
+}
+
+add(1,1)
+add(a = 2, b = 3)
+```
+
+Many functions in R are vectorized meaning they can take vector arguments and
+return a sensible value. 
+As written, our functions are vectorized, e.g. 
+
+```{r}
+add1(a = 1:2)
+add(a = 1:2, b = 3:4)
+```
+
+This is usually helpful, but it is not always clear what the results should be.
+For example, what do you think the result is if you run
+
+```{r, eval=FALSE}
+add(a = 1:4, b = 1:2)
+```
+
+
+
+### Arguments
+
+Arguments to functions can be provided by order or by name or both. 
+You can also specify arguments using a partial name.
+
+```{r}
+f <- function(first, second) {
+  return(first/2 + second)
+}
+
+f(1,2)
+f(1, second = 2)
+f(first = 1, second = 2)
+f(second = 2, 1) # I thought this was going to be an error
+f(f = 1, s = 2)
+```
+
+My suggestion is that you always use argument full names when writing your code.
+Due to RStudio's tab-autocomplete, typing in the full name should not slow you 
+down.
+
+
+Many functions have default arguments. 
+You can specify default arguments in the functions you write by using the `=`
+sign in the function definition.
+
+```{r}
+add <- function(a, b = 1) {
+  return(a+b)
+}
+
+add(a = 1)
+add(a = 1:2)
+add(a = 2:3, b =  2)
+add(a = 3:4, b = -1)
+```
+
+For example, the `norm` functions have default arguments that correspond to a 
+standard normal, i.e. `mean=0` and `sd=1`. 
+
+```{r}
+hist(rnorm(1e6), probability = TRUE)
+curve(dnorm(x), add = TRUE, col = 'red')
+```
+
+
+#### Function activity
+
+Create a function with arguments named `first` and `second` and have the 
+function subtract the second argument from the first.
+Provide a default for `first` that is the vector `1:2` and  for `second`
+that is the value `1`. 
+
+<details><summary>Click for solution</summary> 
+```{r, purl=FALSE}
+sub <- function(first = 1:2, second = 1) {
+  return(first - second)
+}
+```
+</details>
+
+
+
+### Generic Functions
+
+R has generic functions, i.e. functions where the type of object passed as the 
+first argument to the function determine which version of the function to 
+actually run.
+The `summary()` function is a generic function.
+This function will return different outputs depending on what the first 
+argument is, e.g.
+
+```{r}
+summary(c(TRUE,FALSE,TRUE))
+summary(1:10)
+```
+
+In the help file it says "summary is a generic function".
+
+```{r, eval=FALSE}
+?summary
+```
+
+To determine exactly what function will be executed when using the a generic 
+function, you need to determine the `class` of the object.
+
+Here is an example
+
+```{r}
+n <- 10
+x <- rnorm(n)
+y <- rnorm(n, x)
+m <- lm(y~x) # a linear regression
+summary(m)
+```
+Here the generic function `summary()` checked the class of `m`.
+
+```{r}
+class(m)
+```
+and found that the class is `lm` and uses the appropriate summary function,
+i.e. `summary.lm()`. 
+
+There are other helpful functions for `lm` objects, e.g. 
+
+```{r}
+summary(m)
+anova(m)
+opar <- par(mfrow=c(2,2)); plot(m); par(opar)
+```
+
+### Scope
+
+The objects available to an R function are defined by the scope of the function.
+But if the object is not available within the function, then the function will
+look to the environment containing that function to see if the object is there.
+
+```{r}
+a <- 1
+f <- function() {
+  return(a)
+}
+f()
+```
+
+If we modify the object within the function, that version of the object is 
+only available within the function.
+
+```{r}
+f <- function() {
+  a <- 2
+  return(a)
+}
+f()
+a
+```
+
+Unless we use a special assignment operator `<<-`
+
+```{r}
+f <- function() {
+  a <<- a + 1
+  return(a)
+}
+a
+f()
+a
+```
+So **be careful** when constructing functions to deal appropriately with the 
+scope of the objects you are using!
+
+### Loops
+
+Basic programming often consists of using loops and conditionals.
+R has `for` and `while` loops as well as `if`-`else` statements.
+
+Here is a basic `for` loop:
+```{r}
+for (i in 1:3) {
+  print(i)
+}
+```
+
+
+A basic `while` loop:
+```{r}
+i <- 0
+while (i < 3) {
+  i <- i + 1
+  print(i)
+}
+```
+
+And a basic use of the `if`-`else` statement:
+```{r}
+for (i in 1:10) {
+  if (i<5) {
+    print(-i)
+  } else {
+    print(i*2)
+  }
+}
+```
+
+There is also a useful `ifelse` function, but it is a little confusing.
+This function takes in a vector logical first argument and two more scalar 
+arguments. 
+For each element in the logical vector, it will return the first scalar argument
+when the element is true and the second scalar argument when the element is 
+false.
+
+```{r}
+ifelse((1:10) < 5, "Less than 5", "Not less than 5")
+```
+
+
+#### Loop activity
+
+Create a function that has a single scalar argument named `a`. 
+Use a loop inside the function to calculate the sum of the numbers
+from 1 to a and return this sum.
+Test using the sum up to 100 which should be 5050.
+
+<details><summary>Click for solution</summary>  
+```{r, purl=FALSE}
+f <- function(a) {
+  sum <- 0
+  for (i in 1:a) {
+    sum <- sum + i
+  }
+  return(sum)
+}
+f(100)
+```
+</details>
+
+
+
+
+## Monte Carlo Methods in R
+
+With the prevalence of computers, statistics is increasingly utilizing methods
+based on simulations to answer scientific questions of interest.
+These methods are called Monte Carlo methods.
+
+### Evaluating expectations
+
+Suppose we have a random variable with the probability mass function
+
+|x|0|1|2|3|
+|-|-|-|-|-|
+|p(x)|.5|.25|.1|.15|
+
+Now you are interested in estimating its expectation. 
+If you can simulate from this distribution, then you can just take an average
+of the simulated values.
+
+To simulate from a discrete random variable with finite support, 
+you can use the `sample()` function.
+
+```{r}
+x <- sample(0:3, size = 1e5, prob = c(.5,.25,.1,.15), replace = TRUE)
+```
+
+Now we can calculate the expectation and standard deviation (or variance) 
+of these values which are estimates of the expectation and standard deviation
+(or variance) of the random variable. 
+
+```{r}
+(m <- mean(x))
+(s <- sd(x))
+s^2 # variance
+```
+
+The 100(1-a)% CLT can be used to provide bounds based on 
+\[ 
+\overline{X} \pm z_{a/2} s/\sqrt{n}
+\]
+where 
+$\overline{X}$ is the sample mean, 
+$z_{a/2}$ is the z-critical value,
+$s$ is the sample standard deviation, and
+$n$ is the size of our sample.
+For example a 90% interval is 
+
+```{r}
+mean(x) + c(-1,1) * 
+  qnorm(.95) * 
+  sd(x) / sqrt( length(x) )
+```
+
+
+#### Expectation activity
+
+Find the expectation for discrete random variable with the following pmf:
+
+|x|10|12|21|33|
+|-|-|-|-|-|
+|p(x)|.1|.2|.3|.4|
+
+Also find a 99% interval for this expectation using the CLT based on a million samples.
+
+<details><summary>Click for solution</summary> 
+```{r, purl=FALSE}
+x <- sample(c(10,12,21,33), size = 1e6, prob = c(.1,.2,.3,.4), replace = TRUE)
+mean(x) + c(-1,1) * 
+  qnorm(.995) * 
+  sd(x) / sqrt( length(x) )
+```
+</details>
+
+
+
+
+### Estimating probabilities
+
+We can also use simulations to estimate probabilities. 
+Suppose we have a random variable $X\sim Unif(0,1)$ and a random variable 
+$Y\sim N(0,1)$ and we are interested in calculating the probability that 
+$X$ is larger than $Y$. 
+This is not an easy calculation to do by hand. 
+But we can simply simulate a bunch of $X$ and $Y$ values and calculate the 
+number of times that an $X$ value is larger than an associated $Y$ value.
+Note that the event $X>Y$ will have a Bernoulli distribution, i.e. there is 
+some probability that $X>Y$ (precisely the probability we are trying to find).
+If we do this repeated for independent values of $X$ and $Y$ and record the 
+number of times that $X>Y$, this sum will have a binomial distribution.
+Thus we can use the CLT with mean $np$ and variance $np(1-p)$ or rather than 
+using the sum, we can take the average and use the CLT with mean $p$ and 
+$p(1-p)/n$. 
+Since we are trying to estimate $p$, the latter makes more sense.
+
+So here is the simulation
+
+```{r}
+n <- 1e5
+x <- runif(n)
+y <- rnorm(n)
+(p <- mean(x>y))
+```
+
+and a 95% interval based on the CLT
+
+```{r}
+p + c(-1,1) * qnorm(.975) * sqrt(p*(1-p)/n)
+```
+
+
+#### Probability activity
+
+Suppose $X\sim Bin(10,.5)$ and $Y\sim Po(5)$, calculate the probability that 
+$Y \ge X$. 
+Since these are discrete random variables, the equal to sign is important.
+As a reminder, to get *greater than or equal to* in R, use `>=` and the 
+random Poisson generator is `rpois()`. 
+Provide a 95% interval based on a million samples.
+
+
+<details><summary>Click for solution</summary>  
+```{r, purl=FALSE}
+n <- 1e6
+x <- rbinom(n, size = 10, prob = 0.5)
+y <- rpois(n, lambda = 5)
+p <- mean(y >= x)
+p + c(-1,1) * qnorm(.975) * sqrt(p*(1-p)/n)
+```
+</details>
