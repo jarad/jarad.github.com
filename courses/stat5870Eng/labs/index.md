@@ -9,9 +9,9 @@ tagline: Statistical Methods for Research Workers
 ## Schedule
 
  - [Lab01](lab01/lab01.html) - Introduction to R
- - [Lab02](lab02/lab02.html) - Graphical Statistics
- - [Lab03](lab03/lab03.html) - Probability Distributions in R
- - [Lab04](lab04/lab04.html) - Monte Carlo Methods in R
+ - [Lab02](lab02/lab02.html) - Binomial and Poisson 
+ - [Lab03](lab03/lab03.html) - Normal 
+ - [Lab04](lab04/lab04.html) - Graphical Statistics
  - [Lab05](lab05/lab05.html) - Estimator Evaluation
  - [Lab06](lab06/lab06.html) - Built-in Analyses in R
  - [Lab07](lab07/lab07.html) - Default Regression Diagnostics

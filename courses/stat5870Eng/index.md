@@ -1,11 +1,11 @@
 ---
 layout: page
-title: STAT 587 (Engineering)
+title: STAT 5870 (Engineering)
 tagline: Statistical Methods for Research Workers
 ---
 {% include JB/setup %}
 
-This website is designed to host course material for STAT 587 
+This website is designed to host course material for STAT 5870 
 (Engineering) - Statistical Methods for Research Workers at 
 [Iowa State University](http://www.iastate.edu).
 
@@ -78,7 +78,7 @@ introduction to analysis of variance and blocking.
 ## Prerequisite
 
 The prerequisite for the course is previous enrollment in one of the following
-statistics (STAT) courses: 101, 104, 105, 201, or 226.
+statistics (STAT) courses: 1010, 1040, 1050, 2010, or 2260.
 
 
 ## Q&A
