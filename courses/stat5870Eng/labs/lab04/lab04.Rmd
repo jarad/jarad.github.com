@@ -1,5 +1,5 @@
 ---
-title: "Lab02 - Graphical Statistics"
+title: "Lab04 - Graphical Statistics"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: 
@@ -7,19 +7,28 @@ output:
     toc: true
 ---
 
-## Setup
 
-To follow along, use the [lab02 code](lab02.R) also run the following
+[![](../rcode_button.png){fig-alt="R Code Button" fig-align="left" width=20%}](lab04.R)
+
+```{r metadata, include=FALSE}
+# Author: Jarad Niemi
+# Date:   2024-09-05
+# Purpose: Graphical statistics using ggplot2 (included in tidyverse)
+#-------------------------------------------------------------------------------
+
+```
+
+## Setup
 
 ### Install package
 
-```{r, eval=FALSE}
+```{r install-tidyverse, eval=FALSE}
 install.packages("tidyverse")
 ```
 
 If the install fails, then run
 
-```{r, eval=FALSE}
+```{r install-packages-individually, eval=FALSE}
 install.packages(c("dplyr","tidyr","ggplot2"))
 ```
 
@@ -30,7 +39,7 @@ But we will need to load the packages in every R session where we want to use
 them.
 To load the packages, use 
 
-```{r, eval=FALSE}
+```{r load-packages, eval=FALSE}
 library("dplyr")
 library("tidyr")
 library("ggplot2")
@@ -38,11 +47,15 @@ library("ggplot2")
 
 alternatively, you can load the entire (not very big) `tidyverse`.
 
-```{r}
+```{r load-tidyverse}
 library("tidyverse")
 ```
 
+Change theme to a better one
 
+```{r theme-bw}
+theme_set(theme_bw()) # comment this line to see what default plots look like
+```
 
 ## Constructing plots
 
@@ -58,7 +71,8 @@ we need to construct an appropriate `data.frame` and we will use
 Let's use the built-in R data set `airquality`.
 Before we start plotting let's take a quick look at the data.
 
-```{r}
+```{r data}
+# Summary statistics
 dim(airquality)
 head(airquality)
 tail(airquality)
@@ -68,7 +82,7 @@ summary(airquality)
 For built in datasets, 
 we can get more information by going to the help file.
 
-```{r, eval=FALSE}
+```{r help, eval=FALSE}
 ?airquality
 ```
 
@@ -76,7 +90,7 @@ One issue with this dataset is that the Month/Day columns don't really provide
 us with a `Date`.
 Let's create a new column that creates a real `Date`.
 
-```{r}
+```{r mutate}
 airquality <- airquality %>%
   dplyr::mutate(Date = as.Date(paste("1973",Month,Day,sep="/"))) 
 ```
@@ -93,7 +107,7 @@ call.
 After this, we specify some aesthetics using the `aes()` function.
 Then, we tell `ggplot2` what kind of graphics to construct.
 
-```{r}
+```{r histogram}
 ggplot(airquality,     # data.frame containing the data
        aes(x=Ozone)) + # a column name from the data.frame
   geom_histogram()     # create a histogram
@@ -102,7 +116,7 @@ ggplot(airquality,     # data.frame containing the data
 If you want to avoid the message, 
 you can specify the number of bins to use.
 
-```{r}
+```{r histogram-bins}
 ggplot(airquality, aes(x=Ozone)) + 
   geom_histogram(bins = 40)
 ```
@@ -112,7 +126,7 @@ If you want plot on the density scale
 use the following:
 
 
-```{r}
+```{r histogram-density}
 ggplot(airquality, aes(x=Ozone)) + 
   geom_histogram(aes(y=..density..), bins = 40)
 ```
@@ -123,7 +137,7 @@ ggplot(airquality, aes(x=Ozone)) +
 Create a histogram of solar radiation on the density scale with 50 bins.
 
 <details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
+```{r histgram-activity, purl=FALSE}
 ggplot(airquality, aes(x=Solar.R)) + 
   geom_histogram(aes(y=..density..), bins = 50)
 ```
@@ -137,7 +151,7 @@ ggplot(airquality, aes(x=Solar.R)) +
 The syntax for boxplots is similar except that the variable you are
 interest in is the y aesthetic.
 
-```{r}
+```{r boxplot}
 ggplot(airquality,     
        aes(x=1,y=Ozone)) + 
   geom_boxplot()     
@@ -145,7 +159,7 @@ ggplot(airquality,
 
 Comparing boxplots
 
-```{r}
+```{r boxplots}
 ggplot(airquality,     
        aes(x=Month, y=Ozone, group=Month)) + 
   geom_boxplot()     
@@ -159,11 +173,10 @@ Bonus: See if you can google to find out how to swap the axes,
 i.e. have Month on the y-axis and Wind on the x-axis.
 
 <details><summary>Click for solution</summary>
-```{r, purl=FALSE}
+```{r boxplot-activity, purl=FALSE}
 ggplot(airquality,     
        aes(x=Month, y=Wind, group=Month)) + 
-  geom_boxplot(outlier.shape = NA, color='grey') +                           
-  theme_bw() +
+  geom_boxplot(outlier.shape = NA, color='grey') +  
   coord_flip()
 ```
 
@@ -180,14 +193,14 @@ variables: Ozone, Solar.R, Wind, and Temp.
 Perhaps we want to understand the temporal variability for Ozone.
 We can use a scatterplot of Ozone vs Date.
 
-```{r}
+```{r scatterplot}
 ggplot(airquality, aes(x = Date, y = Ozone)) +
   geom_point()
 ```
 
 or if we wanted a line plot
 
-```{r}
+```{r lineplot}
 ggplot(airquality, aes(x = Date, y = Ozone)) +
   geom_line()
 ```
@@ -197,7 +210,7 @@ Notice that the line is disconnected wherever we have missing data.
 Perhaps we want to understand the relationship between solar radiation and 
 ozone. 
 
-```{r}
+```{r scatterplot2}
 ggplot(airquality, aes(x = Solar.R, y = Ozone)) +
   geom_point()
 ```
@@ -210,7 +223,7 @@ Create a scatterplot of wind speed versus temperature.
 
 
 <details><summary>Click for solution</summary>
-```{r, purl=FALSE}
+```{r scatterplot-activity, purl=FALSE}
 ggplot(airquality, aes(x = Temp, y = Wind)) +
   geom_point()
 ```
@@ -224,7 +237,7 @@ Scatterplots don't look so good when there are data points that overlap.
 For example, when plotting Ozone vs Month the points may overlap due to Month
 only having 5 values in the data set.
 
-```{r}
+```{r scatterplot-by-month}
 ggplot(airquality,     
        aes(x=Month, y=Ozone, group=Month)) + 
   geom_point() 
@@ -233,7 +246,7 @@ ggplot(airquality,
 So, instead we will typically jitter the points a bit to remove the overlap, 
 e.g.
 
-```{r}
+```{r jitterplot}
 ggplot(airquality,     
        aes(x=Month, y=Ozone, group=Month)) + 
   geom_jitter() 
@@ -242,24 +255,22 @@ ggplot(airquality,
 Now, we can combine the boxplots we discussed earlier with scatterplots or 
 jittered scatterplots, e.g. 
 
-```{r}
+```{r boxplot-scatterplot}
 ggplot(airquality,     
        aes(x=Month, y=Ozone, group=Month)) + 
   geom_boxplot(color='grey',                 # make the boxes not so obvious
                outlier.shape = NA) +         # remove outliers, 
-  geom_point() +                             # because they get plotted here
-  theme_bw()                                 # Change the theme to remove gray
+  geom_point()                               # because they get plotted here
 ```
 
 or 
 
-```{r}
+```{r boxplot-jitterplot}
 ggplot(airquality,     
        aes(x=Month, y=Ozone, group=Month)) + 
   geom_boxplot(color='grey',                 # make the boxes not so obvious
                outlier.shape = NA) +         # remove outliers, 
-  geom_jitter() +                            # because they get plotted here
-  theme_bw()                                 # Change the theme to remove gray
+  geom_jitter()                              # because they get plotted here
 ```
 
 
@@ -269,12 +280,11 @@ Create a scatterplot of wind speed by month and add a boxplot for each month
 in the background.
 
 <details><summary>Click for solution</summary>
-```{r, purl=FALSE}
+```{r boxplot-scatterplot-activity, purl=FALSE}
 ggplot(airquality,     
        aes(x=Month, y=Wind, group=Month)) + 
   geom_boxplot(outlier.shape = NA, color='grey') +         
-  geom_jitter() +                       
-  theme_bw() +
+  geom_jitter() + 
   coord_flip()
 ```
 
@@ -290,15 +300,17 @@ If we want to put all the response variables on the same plot, we can color
 them.
 In order to do this, we will need to organize our `data.frame` into long format. 
 
-```{r}
+```{r pivot-longer}
 airquality_long <- airquality %>%
   dplyr::select(-Month, -Day) %>%              # Remove these columns
-  tidyr::gather(response, value, -Date)
+  tidyr::pivot_longer(-Date,
+                      names_to  = "response",
+                      values_to = "value")
 ```
 
 Take a look at the resulting `data.frame`.
 
-```{r}
+```{r airquality-long-summary}
 dim(airquality)
 dim(airquality_long)
 
@@ -307,7 +319,7 @@ summary(airquality_long)
 table(airquality_long$response)
 ```
 
-```{r}
+```{r multiple-lines}
 ggplot(airquality_long, 
        aes(x = Date, y = value, 
            linetype = response,
@@ -328,7 +340,7 @@ so it is better to facet the plot.
 
 Facets are often a better way of representing multiple variables.
 
-```{r}
+```{r facet-wrap}
 ggplot(airquality_long, aes(Date, value)) +
   geom_point() + 
   facet_wrap(~response)
@@ -337,13 +349,28 @@ ggplot(airquality_long, aes(Date, value)) +
 Since the axes are quite different for the different responses, 
 we can allow them to vary in the different facets.
 
-```{r}
+```{r facet-wrap-free-y}
 ggplot(airquality_long, aes(Date, value)) +
   geom_line() + 
   facet_wrap(~response,scales="free_y")
 ```
 
+Alternatively, we can use `facet_grid` which is more useful when you have 
+more variables you want to facet by. 
 
+```{r facet-grid-columns}
+ggplot(airquality_long, aes(Date, value)) +
+  geom_line() + 
+  facet_wrap(.~response,scales="free_y")
+```
+
+or
+
+```{r facet-grid-rows}
+ggplot(airquality_long, aes(Date, value)) +
+  geom_line() + 
+  facet_wrap(response ~ .,scales="free_y")
+```
 
 
 ### Converting data.frame from long to wide
@@ -351,18 +378,20 @@ ggplot(airquality_long, aes(Date, value)) +
 If we only had the long version of the `data.frame`, we can reconstruct the
 wide version by using the following
 
-```{r}
+```{r pivot-wider}
 airquality2 <- airquality_long %>%
-  tidyr::spread(response, value)
+  tidyr::pivot_wider(
+    names_from  = response, 
+    values_from = value)
 ```
 
-### Customizing ggplot graphics
+### Customizing ggplot2 graphics
 
 Sometimes it is helpful to save the plot as an R object 
 so that it can be updated in the future. 
 To save the plot, just use the assignment operator, e.g. 
 
-```{r}
+```{r ggplot2-plot-as-an-object}
 g <- ggplot(airquality2,
        aes(x = Temp, y = Wind)) +
   geom_point()
@@ -373,7 +402,7 @@ g # Then you can see the plot by just typing the object name
 We would like this plot to be a bit more informative, 
 so we will add some informative labels.
 
-```{r}
+```{r ggplot2-add-titles}
 g <- g +
   labs(x = "Temperature (F)",
        y = "Wind speed (mph)",
@@ -383,31 +412,30 @@ g
 ```
 
 As you have seen before, we can also change the theme. 
-I prefer the simple "bw" theme.
+I prefer the simple "bw" theme, but here is the default theme.
 
-```{r}
-g <- g + theme_bw()
+```{r ggplot2-change-theme}
+g <- g + theme_classic()
 g
 ```
 
 We can add a regression line.
 
-```{r}
+```{r ggplot2-add-regression-line}
 g <- g + geom_smooth(method="lm")
 g
 ```
 
 Alternatively, you can combine all the steps
 
-```{r}
+```{r ggplot2-altogther}
 ggplot(airquality2,
        aes(x = Temp, y = Wind)) +
   geom_point() +
   geom_smooth(method = "lm") + 
   labs(x = "Temperature (F)",
        y = "Wind speed (mph)",
-       title = "New York (May-September 1973)") + 
-  theme_bw()
+       title = "New York (May-September 1973)") 
 ```
 
 
@@ -418,15 +446,14 @@ Use the `cars` dataset to construct and customize a figure displaying the
 relationship between the stopping distance and speed of a car.
 
 <details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
+```{r plot-activity, purl=FALSE}
 ggplot(cars,
        aes(x=speed, y=dist)) +
   geom_point() + 
   geom_smooth(method = "lm") +
   labs(x = "Speed (mph)",
        y = "Stopping distance (ft)",
-       title = "Stopping distance as a function of speed (1920s)") +
-  theme_bw()
+       title = "Stopping distance as a function of speed (1920s)") 
 ```
 </details>
 
@@ -435,6 +462,9 @@ ggplot(cars,
 
 If you want to save the plot, use the ggsave function, e.g.
 
-```{r,eval=FALSE}
-ggsave(filename = "plot.png", plot = g, width = 5, height = 4)
+```{r ggsave, eval=FALSE}
+ggsave(filename = "plot.png", 
+       plot     = g, 
+       width    = 5, 
+       height   = 4)
 ```

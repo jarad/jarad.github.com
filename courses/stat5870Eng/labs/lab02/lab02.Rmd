@@ -1,5 +1,5 @@
 ---
-title: "Lab03 - Probability Distributions in R"
+title: "Lab02 - Binomial and Poisson Distributions in R"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: 
@@ -7,13 +7,21 @@ output:
     toc: true
 ---
 
-To follow along, use the [lab03 code](lab03.R).
+[![](../rcode_button.png){fig-alt="R Code Button" fig-align="left" width=20%}](lab02.R)
 
-# Probability distributions in R
+```{r metadata, include=FALSE}
+# Author: Jarad Niemi
+# Date:   2024-09-05
+# Purpose: Introduce the binomial and Poisson distributions in R including
+#          the use of probability mass functions, cumulative distribuiton 
+#          functions, and random variable generation.
+#-------------------------------------------------------------------------------
+
+```
 
 Many of the standard probability distributions have functions in R to calculate:
 
- - probability density/mass function (d)
+ - probability mass function (d)
  - cumulative distribution function (p)
  - quantile function (q)
  - random draws (r)
@@ -56,7 +64,7 @@ of the experiment.
 For example, what is the probability of seeing 6 successes?
 We can use the `dbinom` function. 
 
-```{r}
+```{r binomial-pmf-example}
 n <- 13
 p <- 0.7
 dbinom(6, size = n, prob = p)
@@ -64,23 +72,26 @@ dbinom(6, size = n, prob = p)
 
 The entire pmf is 
 
-```{r}
+```{r binomial-pmf}
 x <- 0:n
-plot(x, dbinom(x, size = n, prob = p), main = "Probability mass function for Bin(13,0.7)")
+plot(x, dbinom(x, size = n, prob = p), 
+     main = "Probability mass function for Bin(13,0.7)")
 ```
  
 If we want to calculate the probability of observing an outcome less than 
 or equal to a particular value, we can use the cumulative distribution function.
 For example, what is the probability of observing 9 or fewer successes?
 
-```{r}
+```{r binomial-cdf-example}
 pbinom(9, size = n, prob = p)
 ```
  
 Here is the entire cdf. 
 
-```{r}
-plot(x, pbinom(x, size = n, prob = p), type="s", main = "Cumulative distribution function for Bin(13,0.7)")
+```{r binomial-cdf}
+plot(x, pbinom(x, size = n, prob = p), 
+     type="s", 
+     main = "Cumulative distribution function for Bin(13,0.7)")
 ```
 
 For a discrete random variable, the cdf is a step function since the function 
@@ -90,17 +101,18 @@ For a discrete random variable, the cdf is a step function since the function
 Finally, we can draw random values from this binomial distribution using the 
 `rbinom` function. 
 
-```{r}
+```{r binomial-random}
 draws <- rbinom(100, size = n, prob = p) # draw 100
 brks  <- (0:(n+1)) - 0.5
-hist(draws, breaks = brks, main = "Random draws from Bin(13,0.7)") 
+hist(draws, breaks = brks, 
+     main = "Random draws from Bin(13,0.7)") 
 ```
  
 Rather than having the number of draws, we often want the percentage of draws. 
 For reference, we can add the true probabilities using the pmf 
 (shown in red).
 
-```{r}
+```{r binomial-histogram-probability}
 hist(draws, breaks = brks, probability = TRUE)
 points(x, dbinom(x, size = n, prob = p), col="red")
 ```
@@ -114,7 +126,7 @@ Then sample 999 random binomials with 39 trials and probability of success 0.25
 and plot them on a histogram with the true probability mass function.
 
 <details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
+```{r binomial-activity, purl=FALSE}
 n <- 39
 p <- 0.25
 x <- 0:n
@@ -125,16 +137,21 @@ plot(x, pbinom(x, size = n, prob = p), type = 's',
      main = 'Cumulative distribution function for Bin(39, 0.25)')
 
 draws <- rbinom(999, size = n, prob = p)
+
 brks  <- (0:(n+1)) - 0.5
-hist(draws, breaks = brks, probability = TRUE, main = "Random draws from Bin(39,0.25)")
+hist(draws, breaks = brks,
+     probability = TRUE, 
+     main = "Random draws from Bin(39,0.25)")
+
 points(x, dbinom(x, size = n, prob = p), col="red")
 ```
 </details>
+\
+\
+\
+\
+\
 
-
-
- 
- 
 ### Poisson distribution
 
 While the binomial distribution has an upper limit ($n$), 
@@ -163,25 +180,32 @@ Poisson distribution.
 
 Here is the pmf:
 
-```{r}
+```{r poisson-pmf}
 rate <- 2
 x <- 0:10 # with no upper limit we need to decide on an upper limit
 
-plot(x, dpois(x, lambda = rate), main = "Probability mass function for Po(2)") 
+plot(x, dpois(x, lambda = rate), 
+     main = "Probability mass function for Po(2)") 
 ```
  
 Here is the cdf:
 
-```{r}
-plot(x, ppois(x, lambda = rate), type="s", main = "Cumulative distribution function for Po(2)")
+```{r poisson-cdf}
+plot(x, ppois(x, lambda = rate), 
+     type="s", 
+     main = "Cumulative distribution function for Po(2)")
 ```
 
 And random draws
 
-```{r}
+```{r poisson-random}
 draws <- rpois(100, lambda = rate)
 
-hist(draws, breaks = (0:(max(draws)+1)) - 0.5, probability = TRUE, main = "Random draws from Po(2)")
+hist(draws, 
+     breaks = (0:(max(draws)+1)) - 0.5, 
+     probability = TRUE, 
+     main = "Random draws from Po(2)")
+
 points(x, dpois(x, lambda = rate), col="red")
 ```
 
@@ -194,7 +218,7 @@ Then sample 999 Poisson random variables with rate 23
 and plot them on a histogram with the true probability mass function.
 
 <details><summary>Click for solution</summary>
-```{r, purl=FALSE}
+```{r poisson-activity, purl=FALSE}
 rate <- 23
 x <- 5:40 # with no upper limit we need to decide on an upper limit
 
@@ -204,228 +228,31 @@ plot(x, ppois(x, lambda = rate), type="s",
      main = 'Cumulative distribution function for Po(23)')
 
 draws <- rpois(999, lambda = rate) 
-hist(draws, breaks = (min(draws):(max(draws)+1)) - 0.5, probability = TRUE, 
+
+hist(draws, 
+     breaks = (min(draws):(max(draws)+1)) - 0.5, 
+     probability = TRUE, 
      main = "Random draws from Po(23)")
+
 points(x, dpois(x, lambda = rate), col="red")
 ```
 </details>
+\
+\
+\
+\
+\
 
 
 
-
-## Continuous distributions
-
-In constrast to discrete random variables, 
-[continuous random variables](http://stattrek.com/probability-distributions/discrete-continuous.aspx?Tutorial=Stat)
-can take on an uncountably infinite number of values. 
-The easiest way for this to happen is that the random variable can take on any
-value between two specified values (and infinity counts), i.e. an interval. 
-
-Continuous random variables have a 
-[probability density function (pdf)](https://en.wikipedia.org/wiki/Probability_density_function)
-instead of a pmf. 
-When integrated from a to b, this pdf gives the probability the random variable
-will take on a value between a and b.
-Continuous random variables still have a cdf, quantile function, and random
-generator that all still have the same interpretation. 
- 
-### Uniform distribution
- 
-The simplest continuous random variable is the uniform random variable. 
-If $Y$ is a random variable and it is uniformly distributed between a and b, 
-then we write $Y\sim Unif(a,b)$ and this means that $Y$ can take on any value 
-between a and b with equal probability. 
- 
-The probability density function for a uniform random variable is zero outside
-of a and b (indicating that the random variable cannot take values below a
-or above b) and is constant at a value of 1/(b-a) from a to b. 
- 
-```{r}
-a <- 0
-b <- 1
-
-# The curve function expects you to give a function of `x` and then it 
-# (internally) creates a sequence of values from `from` and to `to` and creates
-# plots similar to what we had before, but using a line rather than points.
-curve(dunif(x, min = a, max = b), from = -1, to = 2,
-      xlab='y', ylab='f(y)', main='Probability density function for Unif(0,1)')
-```
- 
-The cumulative distribution function is the integral from negative infinite 
-up to y of the probability density function. 
-Thus it indicates the probability the random variables will take on values less
-than y, i.e. $P(Y<y)$. 
-Since the probability density function for the uniform is constant, 
-the integral is simply zero from negative infinite up to a, 
-then a straight line from (a,0) up to (b,1) and then constant after that.
-
-```{r}
-curve(punif(x, min = a, max = b), from = -1, to = 2,
-      xlab='y', ylab='F(y)', main='Cumulative distribution function for Unif(0,1)')
-```
-
-The quantile function is the inverse of the cumulative distribution function.
-For a given probability p, it finds the value such that the 
-probability the random variable is below that value is p.
-That is it finds the value x in the expression $P(X < x) = p$.
-
-```{r}
-curve(qunif(x, min = a, max = b), from = 0, to = 1,
-      xlab='p', ylab='F^{-1}(p)', main='Quantile function for Unif(0,1)')
-```
-
-To draw random values from the distribution, use the `r` version of the 
-function.
-For instance, here is 100 random Unif(a,b) draws represented as a histogram.
-
-```{r}
-random_uniforms <- runif(100, min = a, max = b)
-hist(random_uniforms, probability = TRUE, main = "Random draws from Unif(0,1)")
-curve(dunif(x, min = a, max = b), add = TRUE, col="red")
-```
-
-
-#### Activity
-
-Plot the pdf, cdf, and quantile function for a uniform distribution on the 
-interval (13, 65), i.e. $X\sim Unif(13,65)$. 
-Then sample 999 random uniforms on the interval (13,65) and plot a histogram
-of these draws with the probability density function.
-
-
-<details><summary>Click for solution</summary>
-```{r, purl=FALSE}
-a <- 13
-b <- 65
-
-opar = par(mfrow=c(2,2)) # Create a 2x2 grid of figures
-curve(dunif(x, min = a, max = b), from = a-1, to = b+1,
-      xlab='y', ylab='f(y)', main='Probability density function for Unif(13,65)')
-curve(punif(x, min = a, max = b), from = a-1, to = b+1,
-      xlab='y', ylab='f(y)', main='Cumulative distribution function for Unif(13,65)')
-curve(qunif(x, min = a, max = b), from = 0, to = 1,
-      xlab='y', ylab='f(y)', main='Quantile function for Unif(13,65)')
-random_uniforms <- runif(999, min = a, max = b)
-hist(random_uniforms, probability = TRUE, main = "Random draws from Unif(13,65)")
-curve(dunif(x, min = a, max = b), add=TRUE, col="red")
-par(opar)
-```
-</details>
-
-
-
-### Normal distribution
-
-The most important distribution for this course is the 
-[normal (Gaussian) distribution](https://en.wikipedia.org/wiki/Normal_distribution).
-The normal distribution has two parameters: the mean ($\mu$) and the variance 
-($\sigma^2$) and we write $X\sim N(\mu,\sigma^2)$.
-If $\mu=0$ and $\sigma^2=1$, we call the associated random variable a **standard
-normal**.
-The probability density function for the normal distribution is the well-known
-bell-shaped curve.
-
-```{r}
-mu    <- 0
-sigma <- 1 # standard deviation
-
-curve(dnorm(x, mean = mu, sd = sigma), # notice the 3rd argument is the sd
-      from = -4, to = 4,
-      main = "PDF for a standard normal")
-```
-
-The quantile function has a sigmoid shape.
-
-```{r}
-curve(pnorm(x, mean = mu, sd = sigma), 
-      from = -4, to = 4,
-      main = "CDF for a standard normal",
-      ylab = "F(x)")
-```
-
-The quantile function will be used later in the semester to help construct
-confidence/credible intervals.
-
-```{r}
-curve(qnorm(x, mean = mu, sd = sigma),
-      from = 0, to = 1, 
-      main = "Quantile function for a standard normal")
-```
-
-Then we can take random draws
-
-```{r}
-draws <- rnorm(100, mean = mu, sd = sigma)
-hist(draws, probability = TRUE)
-curve(dnorm(x, mean = mu, sd = sigma), add = TRUE, col = "red")
-```
-
-#### Activity
-
-Plot the pdf, cdf, and quantile function for a normal distribution with mean 
--4 and variance 3, i.e. $X\sim N(-4,3)$. 
-Then sample 999 random N(-4,3) and plot a histogram
-of these draws with the probability density function.
-
-
-<details><summary>Click for solution</summary>
-```{r, purl=FALSE}
-mu    <- -4
-sigma <- sqrt(3) # standard deviation!!!
-
-opar = par(mfrow=c(2,2))
-curve(dnorm(x, mean = mu, sd = sigma), 
-      from = mu-4*sigma, to = mu+4*sigma,
-      main = "PDF for a normal")
-
-curve(pnorm(x, mean = mu, sd = sigma), 
-      from = mu-4*sigma, to = mu+4*sigma,
-      main = "CDF for a normal")
-
-curve(qnorm(x, mean = mu, sd = sigma),
-      from = 0, to = 1, 
-      main = "Quantile function for a normal")
-
-draws <- rnorm(999, mean = mu, sd = sigma)
-hist(draws, probability = TRUE)
-curve(dnorm(x, mean = mu, sd = sigma), add = TRUE, col = "red")
-par(opar)
-```
-</details>
-
-
-#### Quantiles of a normal distribution
-
-For any normal random variable, determine the probability it is 
-
-- within 1 standard deviation of its mean
-- within 2 standard deviation of its mean
-- within 3 standard deviation of its mean
-
-<details><summary>Click for solution</summary>
-
-Since this is apparently for any normal, we will just use the standard normal. 
-So if $X\sim N(\mu, \sigma^2)$, we must determine 
-$P(|X|<c) = P(-c < X < c) = P(X<c) - P(X< -c)$ for $c$ in 1,2,3.
-```{r, purl=FALSE}
-# Try any values for mu and sigma
-mu    <- 0
-sigma <- 1
-
-pnorm(mu+1*sigma, mean = mu, sd = sigma) - pnorm(mu-1*sigma, mean = mu, sd = sigma)
-pnorm(mu+2*sigma, mean = mu, sd = sigma) - pnorm(mu-2*sigma, mean = mu, sd = sigma)
-pnorm(mu+3*sigma, mean = mu, sd = sigma) - pnorm(mu-3*sigma, mean = mu, sd = sigma)
-
-```
-</details>
-
-
-
-## Binomial questions of interest
+## Application
 
 Suppose a manufacturing line produces temperature sensors and has a sensor
 failure proportion equal to 1.5%. 
 In a given day, the plant tests 70 sensors. 
+
+### Binomial
+
 If we assume the sensors are independent (given the failure proportion), then 
 $X\sim Bin(70,0.015)$. 
 
@@ -433,16 +260,56 @@ Answer the following questions:
 
 - What is the probability no sensors fail in one day?
 - What is the probability 3 or more sensors fail in one day?
-
+\
+\
 <details><summary>Click for solution</summary>
 
 The second question is tricky, because we need $P(X\ge 3) = 1-P(X<3) = 1-P(X\le 2)$. 
 
-```{r, purl=FALSE}
+```{r application-binomial, purl=FALSE}
 n <- 70
 p <- 0.015
 
-dbinom(0, size = n, prob = p)
-1-pbinom(2, size = n, prob = p)
+dbinom(    0, size = n, prob = p) # Probability of no failures
+1 - pbinom(2, size = n, prob = p) # Probability of 3 or more sensor failures
 ```
 </details>
+
+### Poisson
+
+\
+\
+If we approximate the binomial distribution with a Poisson distribution,
+then 
+$X\stackrel{\cdot}{\sim} Po(70\times 0.015)$. 
+
+Using this Poisson distribution, answer the following questions.
+
+- What is the probability no sensors fail in one day?
+- What is the probability 3 or more sensors fail in one day?
+\
+\
+<details><summary>Click for solution</summary>
+
+The second question is tricky, because we need $P(X\ge 3) = 1-P(X<3) = 1-P(X\le 2)$. 
+
+```{r application-poisson, purl=FALSE}
+rate <- n*p
+
+dpois(    0, lambda = rate) # Approximate probability of no failures
+1 - ppois(2, lambda = rate) # Approximate probability of 3 or more sensor failures
+```
+</details>
+\
+\
+How good is the Poisson approximation to the binomial?
+Can you plot the pmf for both?
+\
+\
+\
+\
+\
+\
+\
+\
+\
