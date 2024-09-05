@@ -43,8 +43,8 @@ the time in half.
 |------------|---------|---------|
 |Preparation | 2       | 2       |
 |Office Hours| 2       | 1       |
-|Lab         | 3       | 0       |
-|Homework    | 4       | 2       |
+|Lab         | 0       | 0       |
+|Homework    | 5?      | 2       |
 |Exams       | 1       | 1       |
 |Discussion  | 2       | 2       |
 |Meeting     | 1       | 1       |
@@ -140,4 +140,19 @@ repository.
 
 I suggest you also set up your system to use 
 [R/RStudio and Git/GitHub](https://www.jarad.me/teaching/2017/08/31/getting-started-with-R-and-Git-GitHub.html). 
+
+
+
+## Meeting Notes
+
+### 2024-08-30
+
+1. Down to 1 TA (for 20 hrs / week)
+1. Adjusted weekly hours (no lab, more homework)
+1. Next week talk about grading homework
+1. Schedule exams
+1. Office hours
+1. Course notes only on jarad.me
+1. Homework on github
+
 
