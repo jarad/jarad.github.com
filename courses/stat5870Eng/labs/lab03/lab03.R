@@ -18,7 +18,7 @@ curve(punif(x, min = a, max = b),
 curve(dunif(x, min = a, max = b), 
       from = -1, to = 2, n = 1001,
       xlab='y', ylab='f(y)', 
-      main='CDF area under the curve (integral)')
+      main='CDF is area under the PDF (integral)')
 
 U <- 0.3
 x <- seq(-1, U, length = 1001)
@@ -70,14 +70,15 @@ curve(pnorm(x, mean = mu, sd = sigma),
 curve(dnorm(x, mean = mu, sd = sigma), 
       from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
       xlab='y', ylab='f(y)', 
-      main='CDF area under the curve (integral)')
+      main='CDF is area under the PDF (integral)')
 
-x <- seq(mu - 4*sigma, 0.3, length = 1001)
+U <- 0.3
+x <- seq(mu - 4*sigma, U, length = 1001)
 polygon(c(x, rev(x)), 
           c(rep(0, length(x)), dnorm(rev(x), mean = mu, sd = sigma)),
           col = 'red', lty = 0)
 
-pnorm(0.3, mean = mu, sd = sigma)
+pnorm(U, mean = mu, sd = sigma)
 
 # Visualize area under the curve
 curve(dnorm(x, mean = mu, sd = sigma), 
@@ -98,6 +99,6 @@ curve(qnorm(x, mean = mu, sd = sigma),
       main = 'Quantile function for a standard normal')
 
 draws <- rnorm(100, mean = mu, sd = sigma)
-hist(draws, probability = TRUE)
+hist(draws, 20, probability = TRUE)
 curve(dnorm(x, mean = mu, sd = sigma), n = 1001, 
       add = TRUE, col = 'red')
