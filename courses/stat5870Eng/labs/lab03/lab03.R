@@ -69,7 +69,7 @@ curve(pnorm(x, mean = mu, sd = sigma),
 curve(dnorm(x, mean = mu, sd = sigma), 
       from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
       xlab='y', ylab='f(y)', 
-      main='Integral')
+      main='CDF area under the curve (integral)')
 
 x <- seq(mu - 4*sigma, 0.3, length = 1001)
 polygon(c(x, rev(x)), 
@@ -82,7 +82,7 @@ pnorm(0.3, mean = mu, sd = sigma)
 curve(dnorm(x, mean = mu, sd = sigma), 
       from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
       xlab='y', ylab='f(y)', 
-      main='Integral')
+      main='Area under the curve (integral)')
 
 L <- -0.2; U <- 0.3
 x <- seq(L, U, length = 1001)
