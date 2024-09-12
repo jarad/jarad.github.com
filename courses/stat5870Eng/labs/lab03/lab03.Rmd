@@ -54,7 +54,7 @@ b <- 1
 # (internally) creates a sequence of values from `from` and to `to` and creates
 # plots similar to what we had before, but using a line rather than points.
 curve(dunif(x, min = a, max = b), 
-      from = -1, to = 2,
+      from = -1, to = 2, n = 1001, 
       xlab='y', ylab='f(y)', 
       main='Probability density function for Unif(0,1)')
 ```
@@ -69,22 +69,49 @@ then a straight line from (a,0) up to (b,1) and then constant after that.
 
 ```{r uniform-cdf}
 curve(punif(x, min = a, max = b), 
-      from = -1, to = 2,
+      from = -1, to = 2, n = 1001,
       xlab='y', ylab='F(y)', 
       main='Cumulative distribution function for Unif(0,1)')
 ```
 
-The quantile function is the inverse of the cumulative distribution function.
-For a given probability p, it finds the value such that the 
-probability the random variable is below that value is p.
-That is it finds the value x in the expression $P(X < x) = p$.
+As mentioned previously, the cumulative distribution function provides the
+area under the pdf, i.e. the integral, 
+from negative infinity up to a value for the random variable.
 
-```{r uniform-quantile}
-curve(qunif(x, min = a, max = b), 
-      from = 0, to = 1,
-      xlab='p', ylab='F^{-1}(p)', 
-      main='Quantile function for Unif(0,1)')
+```{r uniform-cdf-visualize}
+# Visualize the CDF
+curve(dunif(x, min = a, max = b), 
+      from = -1, to = 2, n = 1001,
+      xlab='y', ylab='f(y)', 
+      main='CDF area under the curve (integral)')
+
+U <- 0.3
+x <- seq(-1, U, length = 1001)
+polygon(c(x, rev(x)), 
+          c(rep(0, length(x)), dunif(rev(x), min = a, max = b)),
+          col = "red", lty = 0)
+
+punif(U, min = a, max = b)
 ```
+
+We can also visualize areas under the curve that are differences in the CDF. 
+
+```{r uniform-integral}
+# Visualize area under the curve
+curve(dunif(x, min = a, max = b), 
+      from = -1, to = 2, n = 1001,
+      xlab='y', ylab='f(y)', 
+      main='Area under the curve (integral)')
+
+L <- 0.3; U <- 0.7
+x <- seq(L, U, length = 1001)
+polygon(c(x, rev(x)), 
+          c(rep(0, length(x)), dunif(rev(x), min = a, max = b)),
+          col = "red", lty = 0)
+
+punif(U, min = a, max = b) - punif(L, min = a, max = b)
+```
+
 
 To draw random values from the distribution, use the `r` version of the 
 function.
@@ -108,6 +135,8 @@ Plot the pdf, cdf, and quantile function for a uniform distribution on the
 interval (13, 65), i.e. $X\sim Unif(13,65)$. 
 Then sample 999 random uniforms on the interval (13,65) and plot a histogram
 of these draws with the probability density function.
+Bonus: plot area under the uniform pdf and calculate the appropriate values 
+using the cdf.
 
 
 <details><summary>Click for solution</summary>
@@ -117,12 +146,12 @@ b <- 65
 
 opar = par(mfrow=c(2,2)) # Create a 2x2 grid of figures
 curve(dunif(x, min = a, max = b), 
-      from = a-1, to = b+1,
+      from = a - 1, to = b + 1, n = 1001,
       xlab='y', ylab='f(y)', 
       main='Probability density function for Unif(13,65)')
 
 curve(punif(x, min = a, max = b), 
-      from = a-1, to = b+1,
+      from = a - 1, to = b + 1, n = 1001,
       xlab='y', ylab='f(y)', 
       main='Cumulative distribution function for Unif(13,65)')
 
@@ -161,7 +190,7 @@ mu    <- 0
 sigma <- 1 # standard deviation
 
 curve(dnorm(x, mean = mu, sd = sigma), # notice the 3rd argument is the sd
-      from = -4, to = 4,
+      from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
       main = "PDF for a standard normal")
 ```
 
@@ -169,17 +198,55 @@ The cdf function has a sigmoid shape.
 
 ```{r normal-cdf}
 curve(pnorm(x, mean = mu, sd = sigma), 
-      from = -4, to = 4,
+      from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
       main = "CDF for a standard normal",
       ylab = "F(x)")
 ```
+
+As mentioned previously, the cumulative distribution function provides the
+area under the pdf, i.e. the integral, 
+from negative infinity up to a value for the random variable.
+
+```{r normal-cdf-visualize}
+# Visualize the CDF
+curve(dnorm(x, mean = mu, sd = sigma), 
+      from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
+      xlab='y', ylab='f(y)', 
+      main='Integral')
+
+x <- seq(mu - 4*sigma, 0.3, length = 1001)
+polygon(c(x, rev(x)), 
+          c(rep(0, length(x)), dnorm(rev(x), mean = mu, sd = sigma)),
+          col = "red", lty = 0)
+
+pnorm(0.3, mean = mu, sd = sigma)
+```
+
+We can also visualize areas under the curve that are differences in the CDF. 
+
+```{r normal-integral}
+# Visualize area under the curve
+curve(dnorm(x, mean = mu, sd = sigma), 
+      from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
+      xlab='y', ylab='f(y)', 
+      main='Integral')
+
+L <- -0.2; U <- 0.3
+x <- seq(L, U, length = 1001)
+polygon(c(x, rev(x)), 
+          c(rep(0, length(x)), dnorm(rev(x), mean = mu, sd = sigma)),
+          col = "red", lty = 0)
+
+pnorm(U, mean = mu, sd = sigma) - pnorm(L, mean = mu, sd = sigma)
+```
+
 
 The quantile function will be used later in the semester to help construct
 confidence/credible intervals.
 
 ```{r normal-quantile}
 curve(qnorm(x, mean = mu, sd = sigma),
-      from = 0, to = 1, 
+      from = 0, to = 1, n = 1001, 
       main = "Quantile function for a standard normal")
 ```
 
@@ -188,7 +255,7 @@ Then we can take random draws
 ```{r normal-random}
 draws <- rnorm(100, mean = mu, sd = sigma)
 hist(draws, probability = TRUE)
-curve(dnorm(x, mean = mu, sd = sigma), 
+curve(dnorm(x, mean = mu, sd = sigma), n = 1001, 
       add = TRUE, col = "red")
 ```
 
@@ -198,6 +265,8 @@ Plot the pdf, cdf, and quantile function for a normal distribution with mean
 -4 and variance 3, i.e. $X\sim N(-4,3)$. 
 Then sample 999 random N(-4,3) and plot a histogram
 of these draws with the probability density function.
+Bonus: plot area under the normal pdf and calculate the appropriate values 
+using the cdf.
 
 
 <details><summary>Click for solution</summary>
@@ -207,21 +276,21 @@ sigma <- sqrt(3) # standard deviation!!!
 
 opar = par(mfrow=c(2,2))
 curve(dnorm(x, mean = mu, sd = sigma), 
-      from = mu-4*sigma, to = mu+4*sigma,
+      from = mu-4*sigma, to = mu+4*sigma, n = 1001, 
       main = "PDF for a normal")
 
 curve(pnorm(x, mean = mu, sd = sigma), 
-      from = mu-4*sigma, to = mu+4*sigma,
+      from = mu-4*sigma, to = mu+4*sigma, n = 1001,
       main = "CDF for a normal")
 
 curve(qnorm(x, mean = mu, sd = sigma),
-      from = 0, to = 1, 
+      from = 0, to = 1, n = 1001,
       main = "Quantile function for a normal")
 
 draws <- rnorm(999, mean = mu, sd = sigma)
 
 hist(draws, probability = TRUE)
-curve(dnorm(x, mean = mu, sd = sigma), 
+curve(dnorm(x, mean = mu, sd = sigma), n = 1001,
       add = TRUE, col = "red")
 
 par(opar)
@@ -247,10 +316,9 @@ $P(|X|<c) = P(-c < X < c) = P(X<c) - P(X< -c)$ for $c$ in 1,2,3.
 mu    <- 0
 sigma <- 1
 
-pnorm(mu+1*sigma, mean = mu, sd = sigma) - pnorm(mu-1*sigma, mean = mu, sd = sigma)
-pnorm(mu+2*sigma, mean = mu, sd = sigma) - pnorm(mu-2*sigma, mean = mu, sd = sigma)
-pnorm(mu+3*sigma, mean = mu, sd = sigma) - pnorm(mu-3*sigma, mean = mu, sd = sigma)
-
+pnorm(mu + 1 * sigma, mean = mu, sd = sigma) - pnorm(mu - 1 * sigma, mean = mu, sd = sigma)
+pnorm(mu + 2 * sigma, mean = mu, sd = sigma) - pnorm(mu - 2 * sigma, mean = mu, sd = sigma)
+pnorm(mu + 3 * sigma, mean = mu, sd = sigma) - pnorm(mu - 3 * sigma, mean = mu, sd = sigma)
 ```
 </details>
 
@@ -269,13 +337,14 @@ a binomial random variable is approximately a normal random variable.
 If we approximate the binomial distribution with a normal distribution,
 then 
 $X\stackrel{\cdot}{\sim} No(70\times 0.015, 70\times 0.015 \times (1-0.015))$. 
+Notice we just match the mean and variance of the two distributions.
 
 Using this normal distribution, answer the following questions.
 
 - What is the probability no sensors fail in one day?
 - What is the probability 3 or more sensors fail in one day?
 \
-\
+
 <details><summary>Click for solution</summary>
 
 The first question is tricky, 
@@ -293,7 +362,7 @@ vr <- n*p*(1-p)
 dnorm(  0, mean = mn, sd = sqrt(vr)) # INCORRECT (this not even a probability)
 
 pnorm(    0, mean = mn, sd = sqrt(vr)) # Approximate probability of 0 failures
-1 - pnorm(2, mean = mn, sd = sqrt(vr)) # Approximate probability of 3 or more sensor failures
+1 - pnorm(3, mean = mn, sd = sqrt(vr)) # Approximate probability of 3 or more sensor failures
 ```
 </details>
 \
@@ -312,10 +381,10 @@ The key is trying to determine whether to add or subtract 1/2.
 
 ```{r application-normal-continuity-correction, purl=FALSE}
 pnorm(    0 + 1/2, mean = mn, sd = sqrt(vr)) # Approximate probability of 0 failures
-1 - pnorm(2 + 1/2, mean = mn, sd = sqrt(vr)) # Approximate probability of 3 or more sensor failures
+1 - pnorm(3 - 1/2, mean = mn, sd = sqrt(vr)) # Approximate probability of 3 or more sensor failures
 ```
 </details>
 \
 \
-How good is this normal approximate (based on CLT) to the true probabilities
-calculated using a binomial distribution?
+How good is this normal approximation (based on CLT) to the true probabilities
+calculated using a binomial distribution? (See [lab02](../lab02.html).)
