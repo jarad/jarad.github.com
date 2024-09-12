@@ -24,7 +24,7 @@ U <- 0.3
 x <- seq(-1, U, length = 1001)
 polygon(c(x, rev(x)), 
           c(rep(0, length(x)), dunif(rev(x), min = a, max = b)),
-          col = "red", lty = 0)
+          col = 'red', lty = 0)
 
 punif(U, min = a, max = b)
 
@@ -38,7 +38,7 @@ L <- 0.3; U <- 0.7
 x <- seq(L, U, length = 1001)
 polygon(c(x, rev(x)), 
           c(rep(0, length(x)), dunif(rev(x), min = a, max = b)),
-          col = "red", lty = 0)
+          col = 'red', lty = 0)
 
 punif(U, min = a, max = b) - punif(L, min = a, max = b)
 
@@ -46,10 +46,10 @@ random_uniforms <- runif(100, min = a, max = b)
 
 hist(random_uniforms, 
      probability = TRUE, 
-     main = "Random draws from Unif(0,1)")
+     main = 'Random draws from Unif(0,1)')
 
 curve(dunif(x, min = a, max = b), 
-      add = TRUE, col="red")
+      add = TRUE, col='red')
 
 
 
@@ -58,12 +58,13 @@ sigma <- 1 # standard deviation
 
 curve(dnorm(x, mean = mu, sd = sigma), # notice the 3rd argument is the sd
       from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
-      main = "PDF for a standard normal")
+      ylab = 'f(x)', xlab = 'x',
+      main = 'PDF for a standard normal')
 
 curve(pnorm(x, mean = mu, sd = sigma), 
       from = mu - 4*sigma, to = mu + 4*sigma, n = 1001,
-      main = "CDF for a standard normal",
-      ylab = "F(x)")
+      main = 'CDF for a standard normal',
+      ylab = 'F(x)')
 
 # Visualize the CDF
 curve(dnorm(x, mean = mu, sd = sigma), 
@@ -74,7 +75,7 @@ curve(dnorm(x, mean = mu, sd = sigma),
 x <- seq(mu - 4*sigma, 0.3, length = 1001)
 polygon(c(x, rev(x)), 
           c(rep(0, length(x)), dnorm(rev(x), mean = mu, sd = sigma)),
-          col = "red", lty = 0)
+          col = 'red', lty = 0)
 
 pnorm(0.3, mean = mu, sd = sigma)
 
@@ -88,15 +89,15 @@ L <- -0.2; U <- 0.3
 x <- seq(L, U, length = 1001)
 polygon(c(x, rev(x)), 
           c(rep(0, length(x)), dnorm(rev(x), mean = mu, sd = sigma)),
-          col = "red", lty = 0)
+          col = 'red', lty = 0)
 
 pnorm(U, mean = mu, sd = sigma) - pnorm(L, mean = mu, sd = sigma)
 
 curve(qnorm(x, mean = mu, sd = sigma),
       from = 0, to = 1, n = 1001, 
-      main = "Quantile function for a standard normal")
+      main = 'Quantile function for a standard normal')
 
 draws <- rnorm(100, mean = mu, sd = sigma)
 hist(draws, probability = TRUE)
 curve(dnorm(x, mean = mu, sd = sigma), n = 1001, 
-      add = TRUE, col = "red")
+      add = TRUE, col = 'red')
