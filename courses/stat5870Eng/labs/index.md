@@ -9,8 +9,8 @@ tagline: Statistical Methods for Research Workers
 ## Schedule
 
  - [Lab01](lab01/lab01.html) - Introduction to R
- - [Lab02](lab02/lab02.html) - Binomial and Poisson 
- - [Lab03](lab03/lab03.html) - Normal 
+ - [Lab02](lab02/lab02.html) - Discrete Distributions (Binomial and Poisson) 
+ - [Lab03](lab03/lab03.html) - Continuous Distributions (Uniform and Normal) 
  - [Lab04](lab04/lab04.html) - Graphical Statistics
  - [Lab05](lab05/lab05.html) - Estimator Evaluation
  - [Lab06](lab06/lab06.html) - Built-in Analyses in R
@@ -23,6 +23,7 @@ tagline: Statistical Methods for Research Workers
  
    === updated through here ===
   
+ - [LabMC](lab04_old/lab04_old.Rmd) - Monte Carlo Methods
  - [LabData](labData/lab02.html) - Data Management in R
 
 
