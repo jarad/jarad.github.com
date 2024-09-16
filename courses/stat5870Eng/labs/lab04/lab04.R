@@ -1,6 +1,7 @@
 # Author: Jarad Niemi
-# Date:   2024-09-05
-# Purpose: Graphical statistics using ggplot2 (included in tidyverse)
+# Date:   2024-09-16
+# Purpose: Exploratory statistics including summary statistics and graphical
+#          statistics using ggplot2 (included in tidyverse)
 #-------------------------------------------------------------------------------
 
 
@@ -15,6 +16,38 @@
 library("tidyverse")
 
 theme_set(theme_bw()) # comment this line to see what default plots look like
+
+# Create data
+y <- c(3, 4.5, 7, 8, 1, -3, 4, 10, 8)
+
+# Sample size
+length(y)
+
+# Measures of center
+mean(y)
+median(y)
+
+# Mode
+sort(table(y), decreasing = TRUE)
+
+# Quantile
+quantile(y, probs = 0.05) # 0.05 sample quantile and 5%-tile
+
+# Min and max
+min(y)
+max(y)
+
+# Measures of spread
+var(y)
+sd(y)
+
+range(y)                                 # gives c(min(y), max(y))
+diff(range(y))                           # range
+
+diff(quantile(y, probs = c(0.25, 0.75))) # interquartile range
+
+# Summary
+summary(y)
 
 # Summary statistics
 dim(airquality)

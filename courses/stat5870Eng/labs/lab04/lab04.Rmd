@@ -1,5 +1,5 @@
 ---
-title: "Lab04 - Graphical Statistics"
+title: "Lab04 - Exploratory Statistics"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
 output: 
@@ -12,8 +12,9 @@ output:
 
 ```{r metadata, include=FALSE}
 # Author: Jarad Niemi
-# Date:   2024-09-05
-# Purpose: Graphical statistics using ggplot2 (included in tidyverse)
+# Date:   2024-09-16
+# Purpose: Exploratory statistics including summary statistics and graphical
+#          statistics using ggplot2 (included in tidyverse)
 #-------------------------------------------------------------------------------
 
 ```
@@ -57,6 +58,100 @@ Change theme to a better one
 theme_set(theme_bw()) # comment this line to see what default plots look like
 ```
 
+
+## Summary statistics
+
+```{r data}
+# Create data
+y <- c(3, 4.5, 7, 8, 1, -3, 4, 10, 8)
+
+# Sample size
+length(y)
+```
+
+### Measures of location
+
+Many summary statistics provide information about the location of the data. 
+The most common measures of location provide information about the *center*
+of the data, e.g. mean, median, and mode.
+
+```{r measures-of-location}
+# Measures of center
+mean(y)
+median(y)
+```
+
+The `mode()` function does not provide the typical mode, 
+i.e. the most common number. 
+We can use R to get us this information
+
+```{r mode}
+# Mode
+sort(table(y), decreasing = TRUE)
+```
+
+An extremely versatile measure of location is the `quantile()` function. 
+The $p$ sample quantile (with $0 < p < 1$) of $N$ data points is the number such 
+that $p*N$ data points are below the number while $(1-p)*N$ data points are 
+above the number. 
+There are possibly many numbers that could satisfy this requirement and 
+sometimes no numbers can satisfy this (loose) definition.
+For this class, these nuances are not important. 
+Instead, you should think about the $p$ sample quantile as the number such 
+that $p$ proportion of the data are below the number and 
+$1-p$ proportion of the data are above the number. 
+
+Percentiles are simply the $p$ quantile multiplied by 100 and represented as
+a percentage. 
+For example, the 0.05 quantile is the same as the 5\%-tile. 
+
+Quartiles are structured so that the data are broken up into 4 groups.
+Thus the 1st quartile is the 0.25 quantile, 
+the 2nd quartile is the 0.50 quantile, and
+the 3rd quartile is the 0.75 quantile. 
+
+```{r quantile}
+# Quantile
+quantile(y, probs = 0.05) # 0.05 sample quantile and 5%-tile
+```
+
+When exploring data, the extremes can also be extremely useful to determine
+whether our data are within the range we are expecting. 
+
+```{r minmax}
+# Min and max
+min(y)
+max(y)
+```
+
+### Measures of spread
+
+In addition to measures of location, 
+we can calculate measures of spread. 
+Common measures of spread are sample variance, sample standard deviation,
+range, and interquartile range. 
+
+```{r measures-of-spread}
+# Measures of spread
+var(y)
+sd(y)
+
+range(y)                                 # gives c(min(y), max(y))
+diff(range(y))                           # range
+
+diff(quantile(y, probs = c(0.25, 0.75))) # interquartile range
+```
+
+### Summary
+
+You can also get a quick 6-number summary in R using the `summary()` function.
+
+```{r summary}
+# Summary
+summary(y)
+```
+
+
 ## Constructing plots
 
 The main purpose of the lab today is to construct plots using the `ggplot2`
@@ -71,7 +166,7 @@ we need to construct an appropriate `data.frame` and we will use
 Let's use the built-in R data set `airquality`.
 Before we start plotting let's take a quick look at the data.
 
-```{r data}
+```{r airquality}
 # Summary statistics
 dim(airquality)
 head(airquality)
