@@ -2,52 +2,54 @@
 title: "Lab05 - Estimator evaluation"
 author: "Jarad Niemi"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    toc: true
 ---
 
 
 [![](../rcode_button.png){fig-alt="R Code Button" fig-align="left" width=20%}](lab05.R)
 
-```{r}
+```{r packages}
 library("tidyverse")
 ```
 
 For reproducibility, set the seed.
 
-```{r}
+```{r set-seed}
 set.seed(20190219)
 ```
 
 ## Binomial probability of success estimation
 
 Let's let $y\sim Bin(n,\theta)$. 
-Recall that the MLE is $\hat{\theta}_{MLE} = \frac{y}{n}$.
+Recall that the MLE is $\widehat{\theta}_{MLE} = \frac{y}{n}$.
 If we assume the prior $\theta \sim Be(a,b)$, then the posterior is 
 $\theta|y \sim Be(a+y,b+n-y)$
 and the posterior expectation is 
-\[ \hat{\theta}_{Bayes} = E[\theta|y] = \frac{a+y}{a+b+n}. \] 
-Specifically, if we assume a Uniform prior on (0,1), i.e. $a=b=1$, then 
+\[ \widehat{\theta}_{Bayes} = E[\theta|y] = \frac{a+y}{a+b+n}. \] 
+Specifically, if we assume a Uniform prior on (0, 1), i.e. $a=b=1$, then 
 $\theta|y \sim Be(1+y,1+n-y)$
 and the posterior expectation is 
-\[ \hat{\theta}_{Bayes} = E[\theta|y] = \frac{1+y}{2+n}. \] 
+\[ \widehat{\theta}_{Bayes} = E[\theta|y] = \frac{1+y}{2+n}. \] 
 This is equivalent to adding one success and one failure to the data.
 
 Suppose you randomly sample 22 buildings in Ames and find that 15 of them are 
 residential buildings.
 Then the MLE for the probability of a building in Ames being residential is 
-```{r}
+```{r binomial-mle}
 n <- 22
 y <- 15
 (mle <- y/n)
 ```
 the Bayes estimator is 
-```{r}
+```{r binomial-bayes-estimator}
 a <- b <- 1
 (bayes <- (a+y)/(a+b+n))
 ```
 and a 95\% credible interval is 
 
-```{r}
+```{r binomial-credible-interval}
 qbeta(c(.025,.975), a+y, b+n-y)
 ```
 
@@ -59,7 +61,7 @@ Calculate the MLE, Bayes estimator, and a 90\% credible interval for the probabi
 a house in Ames being residential.
 
 <details><summary>Click for solution</summary>  
-```{r, purl=FALSE}
+```{r binomial-activity, purl=FALSE}
 n <- 222
 y <- 135
 (mle <- y/n)
@@ -103,7 +105,7 @@ where $\mu=E[\overline{x}]$ and we estimate $\sigma^2$ with the sample variance.
 
 #### Binomial model
 
-Let's use simulations, i.e. Monte Carlo, to estimate the bias 
+Let's use Monte Carlo simulations to estimate the bias 
 of the MLE and Bayes estimator. 
 To do this, we are going to repeatedly 
 
@@ -116,69 +118,82 @@ Then we will
 2. take an average of all the Bayes estimates and subtract $\theta$ (the true value)
 
 
-```{r}
-n <- 10
-theta <- 0.5
+```{r binomial-monte-carlo}
+# Biomial model with
+# n attempts and probability of success theta
+n      <- 10
+theta  <- 0.5
 
+# Storage for estimators
 n_reps <- 1e4
-mle <- numeric(n_reps)
-bayes <- numeric(n_reps)
+mle    <- numeric(n_reps)
+bayes  <- numeric(n_reps)
 
+# Simulate n_reps binomial random variables
+# compute MLE and Bayes estimators
 for (i in 1:n_reps) {
-  y <- rbinom(1, size = n, prob = theta)
-  mle[i] <- y/n
-  bayes[i] <- (a+y)/(a+b+n)
+  y        <- rbinom(1, size = n, prob = theta)
+  mle[i]   <- y/n
+  bayes[i] <- (a + y) / (a + b + n)
 }
 
 
 mean(mle)  - theta # estimate of MLE bias
 mean(bayes)- theta # estimate of Bayes bias
 ```
+
 Now, we probably want some idea of how close we are to the true bias.
 We will use the CLT. 
-\[ \overline{\hat{\theta}} \pm z_{0.025} SE(\overline{\hat{\theta}}) \]
-where the $SE(\overline{\hat{\theta}})$ is estimated by the sample standard 
-deviation of $\hat{\theta}$ divided by the square root of the number of values
+\[ \overline{\widehat{\theta}} \pm z_{0.025} SE(\overline{\widehat{\theta}}) \]
+where the $SE(\overline{\widehat{\theta}})$ is estimated by the sample standard 
+deviation of $\widehat{\theta}$ divided by the square root of the number of values
 in the average, i.e. the sample size.
 The formula for a 95% interval is then 
-\[ \overline{\hat{\theta}} \pm z_{0.025} s_{\hat{\theta}}/\sqrt{n} \]
+\[ \overline{\widehat{\theta}} \pm z_{0.025} s_{\widehat{\theta}}/\sqrt{n} \]
 
-```{r}
-mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
-mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
+```{r binomial-bias-clt}
+# Binomial bias with Monte Carlo uncertainty
+mean(mle  ) + c(-1, 1) * qnorm(.975) * sd(mle  ) / sqrt(length(mle  )) - theta
+mean(bayes) + c(-1, 1) * qnorm(.975) * sd(bayes) / sqrt(length(bayes)) - theta
 ```
 
 We could have written the code a bit more succinctly (and, perhaps, obtusely).
 
-```{r}
-y <- rbinom(n_reps, size = n, prob = theta)
-mle   <- y/n
-bayes <- (a+y)/(a+b+n)
+```{r binomial-monte-carlo-succinct}
+# Succinct binomial Monte Carlo study
+y     <- rbinom(n_reps, size = n, prob = theta)
+mle   <- y / n
+bayes <- (a + y) / (a + b + n)
 
-mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
-mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
+# Calculate bias with Monte Carlo uncertainty
+mean(mle  ) + c(-1, 1) *qnorm(.975) * sd(mle  ) / sqrt(length(mle  )) - theta
+mean(bayes) + c(-1, 1) *qnorm(.975) * sd(bayes) / sqrt(length(bayes)) - theta
 ```
 
 
 
 #### Binomial bias activity
 
-Repeat the simulation procedure we had above, but using $n=5$ and $\theta=0.2$.
+Repeat the simulation procedure we had above but using $n=5$ and $\theta=0.2$.
 What do you find for the bias of the MLE and the Bayes estimator?
 
 <details><summary>Click for solution</summary>  
-```{r, purl=FALSE}
-n <- 5
+```{r binomial-bias-activity, purl=FALSE}
+# Adjust n and theta
+n     <- 5
 theta <- 0.2
 
-y <- rbinom(n_reps, size = n, prob = theta)
+# Simulate binomials and calculate estimators
+y     <- rbinom(n_reps, size = n, prob = theta)
 mle   <- y/n
 bayes <- (a+y)/(a+b+n)
 
-mean(mle  ) + c(-1,1)*qnorm(.975)*sd(mle  )/sqrt(length(mle  )) - theta
-mean(bayes) + c(-1,1)*qnorm(.975)*sd(bayes)/sqrt(length(bayes)) - theta
+# Calculate bias with Monte Carlo uncertainty
+mean(mle  ) + c(-1, 1) * qnorm(.975) * sd(mle  ) / sqrt(length(mle  )) - theta
+mean(bayes) + c(-1, 1) * qnorm(.975) * sd(bayes) / sqrt(length(bayes)) - theta
 ```
-So the Bayes estimator appears to be quite biased.
+ 
+Now the Bayes estimator appears to be quite biased.
 </details>
 
 
@@ -189,9 +204,11 @@ and $\theta$.
 The following will look at $n=1,10,100,1000$ and $\theta$ from $0$ to $1$ in 
 increments of 0.1. 
 
-```{r}
-settings <- expand.grid(n = 10^(0:3),
-                        theta = seq(0,1,by=0.1))
+```{r binomial-bias-simulation-study-settings}
+# Perform the bias calculation for different combinations
+# of n and theta
+settings <- expand.grid(n     = 10^(0:3),
+                        theta = seq(0, 1, by = 0.1))
 ```
 
 We will use the [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html)
@@ -199,11 +216,13 @@ package to help us iterate over all of these values of $n$ and $\theta$.
 First we need to construct the function to do a simulation study for every value
 of `n` and `theta`.
 
-```{r}
+```{r binomial-bias-function}
+# A function to estimate the bias based on a data.frame x
+# that contains a single row with two columns: n and theta
 sim_function <- function(x) {
   y     <- rbinom(1e4, size = x$n, prob = x$theta)
-  mle   <- y/x$n
-  bayes <- (a+y)/(a+b+x$n)
+  mle   <- y / x$n
+  bayes <- (a + y) / (a + b + x$n)
   
   d <- data.frame(
     estimator = c("mle", "bayes"),
@@ -220,16 +239,23 @@ sim_function <- function(x) {
 
 Then we can loop over all the values of `n` and `theta`. 
 
-```{r}
-sim_study <- settings %>% 
-  group_by(n, theta) %>%
+```{r binomial-bias-simulation-study}
+# Run the simulation study
+sim_study <- settings |>
+  group_by(n, theta) |> # for each combination of n and theta
   do(sim_function(.))
 ```
 
 Let's plot the Monte Carlo estimated bias.
 
-```{r}
-ggplot(sim_study, aes(x=theta, y=bias, color=estimator)) +
+```{r binomial-bias-simulation-study-plot-bias}
+# Plot estimated bias from the simulation study
+ggplot(sim_study, 
+       aes(
+         x        = theta, 
+         y        = bias,         # plotting bias
+         color    = estimator,
+         linetype = estimator)) +
   geom_line() +
   facet_wrap(~n, scales = "free_y") + 
   theme_bw()
@@ -240,8 +266,14 @@ is small and 2) $\theta$ is far away from 0.5.
 But the variance of the Bayes estimator is smaller than the variance of the 
 MLE estimator.
 
-```{r}
-ggplot(sim_study, aes(x=theta, y=var, color=estimator)) +
+```{r binomial-bias-simulation-study-plot-variance}
+# Plot estimated bias from the simulation study
+ggplot(sim_study, 
+       aes(
+        x        = theta, 
+        y        = var,          # plotting variance
+        color    = estimator,
+        linetype = estimator)) +
   geom_line() +
   facet_wrap(~n, scales = "free_y") + 
   theme_bw()
@@ -251,16 +283,22 @@ We can see that the Bayes estimator always has smaller variance than the MLE.
 
 Thus, we often use a new property of an estimator called the 
 [mean squared error (MSE)](https://en.wikipedia.org/wiki/Mean_squared_error):
-\[ MSE(\hat{\theta}) = 
-E[(\hat\theta-\theta)^2] = 
-Var(\hat{\theta}) + Bias(\hat{\theta},\theta)^2 \]
+\[ MSE(\widehat{\theta}) = 
+E[(\widehat\theta-\theta)^2] = 
+Var(\widehat{\theta}) + Bias(\widehat{\theta},\theta)^2 \]
 This property combines both the bias and the variance into a single term.
 Generally the estimator with the smallest MSE should be utilized.
 
-```{r}
+```{r binomial-bias-simulation-study-plot-mse}
+# Plot estimated mse from the simulation study
 sim_study$mse <- sim_study$var + sim_study$bias^2
 
-ggplot(sim_study, aes(x=theta, y=mse, color=estimator)) +
+ggplot(sim_study, 
+       aes(
+        x        = theta, 
+        y        = mse,          # plotting MSE
+        color    = estimator,
+        linetype = estimator)) +
   geom_line() +
   facet_wrap(~n, scales = "free_y") + 
   theme_bw()
@@ -273,12 +311,12 @@ Generate a curve for the MSE for the MLE and Bayes estimators for a
 binomial probability of success when $n=13$ for various values of $\theta$.
 
 <details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
+```{r binomial-mse-activity, purl=FALSE}
 settings <- expand.grid(n = 13,
                         theta = seq(0,1,by=0.1))
 
-sim_study <- settings %>% 
-  group_by(n, theta) %>%
+sim_study <- settings |> 
+  group_by(n, theta) |>
   do(sim_function(.))
 
 sim_study$mse <- sim_study$var + sim_study$bias^2
@@ -301,7 +339,7 @@ Why does the alternative approach give the same answer?
 
 Recall that an estimator is consistent if 
 \[ 
-P(|\hat\theta_n-\theta|<\epsilon) \to 1 \quad\mbox{ as }\quad n\to\infty
+P(|\widehat\theta_n-\theta|<\epsilon) \to 1 \quad\mbox{ as }\quad n\to\infty
 \]
 for any $\epsilon>0$.
 Here I have made explicit that the estimator depends on $n$. 
@@ -313,41 +351,52 @@ and calculate the estimator after each coin flip.
 Then we will see how many times the estimator is more than $\epsilon$ away 
 from $\theta$.
 
-```{r}
-theta = 0.51
+```{r binomial-consistency}
+theta <- 0.51
 n_max <- 999
 
 sim_function <- function(d) {
+  # Simulate binomials
   x <- rbinom(n_max, size = 1, prob = theta)
   
+  # Storage structure for estimators
   mle <- bayes <- numeric(n_max)
+  
+  # Compute estimators for all from 1 to n_max
   for (n in 1:n_max) {
-    y <- sum(x[1:n])
-    mle[n] <- y/n
-    bayes[n] <- (a+y)/(a+b+n)
+    y        <- sum(x[1:n])
+    mle[n]   <- y / n
+    bayes[n] <- (a + y) / (a + b + n)
   }
   
+  # Record results
   data.frame(n     = 1:n_max,
              mle   = mle,
              bayes = bayes)
 }
 
-d <- data.frame(rep=1:1e3) %>%
-  group_by(rep) %>%
+# Repeat 1000 times
+d <- data.frame(rep=1:1e3) |>
+  group_by(rep) |>
   do(sim_function(.))
 
-epsilon <- 0.05
-sum <- d %>% 
-  gather(estimator, estimate, mle, bayes) %>%
-  group_by(n, estimator) %>%
+# Calculate probability
+epsilon <- 0.05 # feel free to change this
+sum <- d |> 
+  gather(estimator, estimate, mle, bayes) |>
+  group_by(n, estimator) |>
   summarize(prob = mean(abs(estimate - theta) < epsilon))
 ```
 
 Now plot the results
 
-```{r}
-ggplot(sum, aes(x=n, y=prob, 
-                color=estimator, linetype = estimator)) + 
+```{r binomial-consistency-plot}
+ggplot(sum, 
+       aes(
+        x        = n, 
+        y        = prob, 
+        color    = estimator, 
+        linetype = estimator)) + 
   geom_line() +
   theme_bw() 
 ```
@@ -363,16 +412,16 @@ Via simulation, show that if $\theta=0.01$ that both the MLE and Bayes
 estimators are consistent.
 
 <details><summary>Click for solution</summary>  
-```{r, purl=FALSE}
+```{r binomial-consistency-activity, purl=FALSE}
 theta = 0.01
 
-d <- data.frame(rep=1:1e3) %>%
-  group_by(rep) %>%
+d <- data.frame(rep=1:1e3) |>
+  group_by(rep) |>
   do(sim_function(.))
 
-sum <- d %>% 
-  gather(estimator, estimate, mle, bayes) %>%
-  group_by(n, estimator) %>%
+sum <- d |> 
+  gather(estimator, estimate, mle, bayes) |>
+  group_by(n, estimator) |>
   summarize(prob = mean(abs(estimate - theta) < epsilon))
 
 ggplot(sum, aes(x = n, y = prob, color = estimator, linetype = estimator)) + 
@@ -397,26 +446,31 @@ We will evaluate coverage using simulations by repeatedly
 1. Creating a credible interval
 1. Determining how often that credible interval contains the truth
 
-```{r}
-n <- 100
+```{r binomial-coverage}
+# Binomial parameters
+n     <- 100
 theta <- 0.5
 
+# Simulate binomial random variables
 n_reps <- 1e4
-y <- rbinom(n_reps, size = n, prob = theta)
+y      <- rbinom(n_reps, size = n, prob = theta)
 
-lower <- qbeta(.025, a+y, b+n-y)
-upper <- qbeta(.975, a+y, b+n-y)
+# Calculate all endpoints
+lower <- qbeta(.025, a + y, b + n - y)
+upper <- qbeta(.975, a + y, b + n - y)
 
-mean( lower < theta & theta < upper )
+# Calculate coverage
+mean( lower <= theta & theta <= upper )
 ```
 
 If we want to understand our Monte Carlo uncertainty in this coverage, 
 we can use the CLT for a proportion.
 
-```{r}
-p <- mean( lower < theta & theta < upper)
+```{r binomial-coverage-monte-carlo-uncertainty}
+# Monte Carlo uncertainty
+p <- mean( lower <= theta & theta <= upper)
 
-p + c(-1,1)*qnorm(.975)*sqrt(p*(1-p)/n_reps)
+p + c(-1, 1) * qnorm(.975) * sqrt(p * (1 - p) / n_reps)
 ```
 
 #### Binomial coverage activity
@@ -425,19 +479,19 @@ Via simulation, determine the coverage for a credible interval when $n=10$ and
 $\theta = 0.2$ and use the CLT to provide an uncertainty on this coverage.
 
 <details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
-n <- 10
+```{r binomial-coverage-activity, purl=FALSE}
+n     <- 10
 theta <- 0.2
 
 n_reps <- 1e4
 y <- rbinom(n_reps, size = n, prob = theta)
 
-lower <- qbeta(.025, a+y, b+n-y)
-upper <- qbeta(.975, a+y, b+n-y)
+lower <- qbeta(.025, a + y, b + n - y)
+upper <- qbeta(.975, a + y, b + n - y)
 
-(p <- mean( lower < theta & theta < upper))
+(p <- mean( lower <= theta & theta <= upper))
 
-p + c(-1,1)*qnorm(.975)*sqrt(p*(1-p)/n_reps)
+p + c(-1, 1) * qnorm(.975) * sqrt(p * (1 - p)/n_reps)
 ```
 
 Now try with $\theta=0.01$. 
@@ -449,31 +503,37 @@ Now try with $\theta=0.01$.
 
 Let's now look at coverage across a wide range of $n$ and $\theta$. 
 
-```{r}
+```{r binomial-coverage-function}
+# Binomial coverage function
 binomial_coverage_function <- function(d) {
   y     <- rbinom(1e4, size = d$n, prob = d$theta)
-  mle   <- y/d$n
-  bayes <- (a+y)/(a+b+d$n)
   
-  lower <- qbeta(.025, a+y, b+d$n-y)
-  upper <- qbeta(.975, a+y, b+d$n-y)
+  # Calculate endpoints of credible intervals
+  lower <- qbeta(.025, a + y, b + d$n - y)
+  upper <- qbeta(.975, a + y, b + d$n - y)
   
   data.frame(coverage = mean( lower <= d$theta & d$theta <= upper))
 }
 
 sim_study <- expand.grid(n = 10^(0:3),
-                        theta = seq(0,1,by=0.1)) %>%
-  group_by(n,theta) %>%
+                        theta = seq(0,1,by=0.1)) |>
+  group_by(n,theta) |>
   do(binomial_coverage_function(.))
 ```
 
 Now plot the results
 
-```{r}
-ggplot(sim_study, aes(x=theta, y=coverage)) +
+```{r binomial-coverage-plot}
+# Binomial coverage plot
+ggplot(sim_study, 
+       aes(
+         x = theta, 
+         y = coverage)) +
   geom_line() +
   facet_wrap(~n) + 
-  geom_hline(yintercept = 0.95, color = "red") +
+  geom_hline(
+    yintercept = 0.95, 
+    color = "red") +
   ylim(0,1) + 
   theme_bw()
 ```
@@ -488,7 +548,7 @@ Specifically,
 - if $y=0$, then use the one-sided interval (0,U)
 - if $y=n$, then use the one-sided interval (L,1)
 
-```{r}
+```{r binomial-coverage-function-fixed}
 binomial_coverage_function_fixed <- function(d) {
   n <- d$n
   theta <- d$theta
@@ -511,18 +571,23 @@ binomial_coverage_function_fixed <- function(d) {
 }
 
 sim_study <- expand.grid(n = 10^(0:3),
-                        theta = seq(0,1,by=0.1)) %>%
-  group_by(n,theta) %>%
+                        theta = seq(0,1,by=0.1)) |>
+  group_by(n,theta) |>
   do(binomial_coverage_function_fixed(.))
 ```
 
 Now plot the results
 
-```{r}
-ggplot(sim_study, aes(x=theta, y=coverage)) +
+```{r binomial-coverage-plot-fixed}
+ggplot(sim_study, 
+       aes(
+         x = theta, 
+         y = coverage)) +
   geom_line() +
   facet_wrap(~n) + 
-  geom_hline(yintercept = 0.95, color = "red") +
+  geom_hline(
+    yintercept = 0.95, 
+    color = "red") +
   ylim(0,1) + 
   theme_bw()
 ```
@@ -538,12 +603,12 @@ An alternative is to use Jeffreys prior which is $Be(0.5,0.5)$.
 Run a simulation study to look at coverage for Jeffreys prior. 
 
 <details><summary>Click for solution</summary>  
-```{r, purl=FALSE}
+```{r binomial-coverage-jeffreys, purl=FALSE}
 a <- b <- 0.5
 
 sim_study <- expand.grid(n = 10^(0:3),
-                        theta = seq(0,1,by=0.1)) %>%
-  group_by(n,theta) %>%
+                        theta = seq(0,1,by=0.1)) |>
+  group_by(n,theta) |>
   do(binomial_coverage_function_fixed(.))
 
 ggplot(sim_study, aes(x=theta, y=coverage)) +
