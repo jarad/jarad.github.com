@@ -1,7 +1,7 @@
 # Author: Jarad Niemi
 # Date:   2024-09-05
 # Purpose: Introduce the binomial and Poisson distributions in R including
-#          the use of probability mass functions, cumulative distribuiton 
+#          the use of probability mass functions, cumulative distribution 
 #          functions, and random variable generation.
 #-------------------------------------------------------------------------------
 

@@ -1,3 +1,10 @@
+# Author: Jarad Niemi
+# Date:   2024-10-03
+# Purpose: Evaluate bias, variance, mean squared error, and consistency of 
+#          point estimators and coverage of interval estimators.
+#-------------------------------------------------------------------------------
+
+
 library("tidyverse")
 
 set.seed(20190219)
