@@ -13,7 +13,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.4, 
+               fig.width=6, fig.height=2.5, 
                size='scriptsize', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -76,12 +76,12 @@ Let
 
 \vspace{0.2in} \pause
 
-\bc
+
 My definition of a Bayesian statistician is an individual who makes decisions based on the probability distribution of those things we don't know conditional on what we know, \pause i.e. 
 \[ p(\theta|y, K). \]
 \pause
 Typically, the $K$ is dropped from the notation.
-\nc\ec
+
 \end{frame}
 
 
@@ -93,13 +93,13 @@ Bayes' Rule applied to a partition $P=\{A_1,A_2,\ldots\}$,
 
 \vspace{0.2in} \pause
 
-\bc
+
 Bayes' Rule also applies to probability density (or mass) functions, e.g. 
 \[ p(\theta|y) =\frac{p(y|\theta)p(\theta)}{p(y)} \pause
 = \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta}  \]
 \pause
 where the integral plays the role of the sum in the previous statement.
-\nc\ec
+
 \end{frame}
 
 
@@ -110,7 +110,7 @@ where the integral plays the role of the sum in the previous statement.
 Let $y$ be data from some model with unknown parameter (vector) $\theta$. \pause Then
 \[ p(\theta|y) = \frac{p(y|\theta)p(\theta)}{p(y)}= \frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta) d\theta} \]
 \pause and we use the following terminology 
-\bc
+
 \begin{tabular}{ll}
 Terminology & Notation \\
 \hline 
@@ -127,7 +127,7 @@ Prior predictive & $p(y)$ \\
 Bayesian parameter estimation involves updating your prior \alert{belief} about
 $\theta$, $p(\theta)$, into a posterior \alert{belief} about 
 $\theta$, $p(\theta|y)$, based on the data observed.
-\nc\ec
+
 \end{frame}
 
 
@@ -138,7 +138,7 @@ We now have two distributions for our parameter $\theta$: prior and posterior.
 To distinguish these two, we will have no conditioning in the prior 
 and we will condition on $y$ in the posterior.
 \pause
-\bc
+
 For example,
 
 \begin{tabular}{lll}
@@ -150,7 +150,7 @@ Variance & $Var[\theta]$ & $Var[\theta|y]$ \\
 Probabilities & $P(\theta<c)$ & $P(\theta<c|y)$ \\
 \hline
 \end{tabular}
-\nc\ec
+
 
 \end{frame}
 
@@ -168,12 +168,12 @@ A reasonable default prior is the uniform distribution on the interval $(0,1)$
 p(\theta) = \I(0<\theta<1).
 \]
 \pause
-\bc
+
 Using Bayes Rule, you can find 
 \[
 \theta|y \sim Be(1+y, 1+n-y).
 \]
-\nc\ec
+
 \end{frame}
 
 
@@ -190,7 +190,7 @@ p(\theta) = \frac{\theta^{a-1}(1-\theta)^{b-1}}{Beta(a,b)}\I(0<\theta<1)
 \]
 where $a,b>0$ and $Beta$ is the beta function, \pause 
 i.e. 
-\bc
+
 \[ 
 Beta(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)} 
 \quad\mbox{and} \quad
@@ -203,13 +203,13 @@ The beta distribution has the following properties:
 \item $Var[\theta] = \frac{ab}{(a+b)^2(a+b+1)}$, \pause and
 \item $Be(1,1) \stackrel{d}{=} Unif(0,1)$.
 \end{itemize}
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[t]
 \frametitle{Beta densities}
-\bc
+
 <<>>=
 my_dbeta <- function(x) {
   data.frame(theta = seq(0, 1, length=101)) %>%
@@ -231,7 +231,7 @@ ggplot(d, aes(x=theta, y=density)) +
   labs(x = expression(theta)) +
   ylim(0,5)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -254,7 +254,7 @@ then
 
 \begin{frame}[t,fragile]
 \frametitle{Posterior density}
-\bc
+
 <<>>=
 n <- 100
 y <- 2
@@ -266,7 +266,7 @@ ggplot(data.frame(x=c(0,.1)), aes(x)) +
        title = "Posterior density") +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -284,16 +284,16 @@ For a point estimate, we can use the posterior expectation:
 = \frac{1+y}{(1+y)+(1+n-y)} \pause
 = \frac{1+y}{2+n}
 \]
-\bc
+
 <<echo=TRUE>>=
-(1+y)/(2+n)
+(1 + y) / (2 + n)
 @
 \pause
 Note that this is close, but not exactly equal to $\hat{\theta}_{MLE} = y/n$. 
 \pause
 Since the MLE is unbiased, this posterior expectation will generally be biased
 but it is still consistent since $\hat{\theta}_{Bayes} \to \hat{\theta}_{MLE}$. 
-\nc\ec
+
 \end{frame}
 
 
@@ -305,28 +305,28 @@ but it is still consistent since $\hat{\theta}_{Bayes} \to \hat{\theta}_{MLE}$.
 A \alert{$100(1-a)$\% credible interval} is any interval $(L,U)$ such that
 
 \[ 
-1-a = \int_L^U p(\theta|y) d\theta. \hspace{2in}
+1-a = \int_L^U p(\theta|y)\, d\theta. \hspace{2in}
 \]
 \pause
-\bc
+
 An \alert{equal-tail $100(1-a)$\% credible interval} is the interval 
-$L,U)$ such that 
+$(L,U)$ such that 
 \[ 
-a/2 = \int_{-\infty}^L p(\theta|y) d\theta = \int_U^\infty p(\theta|y) d\theta.
+a/2 = \int_{-\infty}^L p(\theta|y)\, d\theta = \int_U^\infty p(\theta|y)\, d\theta.
 \]
 \pause
 <<echo=TRUE>>=
 # 95% credible interval is 
-ci = qbeta(c(.025,.975), 1+y, 1+n-y) 
+ci <- qbeta(c(.025, .975), 1 + y, 1 + n - y) 
 round(ci, 3)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[t,fragile]
 \frametitle{Equal-tail 95\% credible interval}
-\bc
+
 <<echo=FALSE>>=
 ggplot(data.frame(x=c(0,.1)), aes(x)) +
   stat_function(fun = dbeta, args = list(shape1 = 1+y, shape2 = 1+n-y)) +
@@ -338,14 +338,14 @@ ggplot(data.frame(x=c(0,.1)), aes(x)) +
        title = "Posterior density with 95% area shaded") +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[t]
 \frametitle{Summary}
 
-\bc
+
 Bayesian parameter estimation involves
 \begin{enumerate}[<+->]
 \item Specifying a model $p(y|\theta)$ for your data.
@@ -363,7 +363,7 @@ about $\theta$.
   \item Credible interval
   \end{itemize}
 \end{enumerate}
-\nc\ec
+
 \end{frame}
 
 
@@ -380,25 +380,25 @@ Then
 A default prior is $\theta\sim Be(1,1) \stackrel{d}{=} Unif(0,1)$.
 
 \vspace{0.2in} \pause
-\bc
+
 R code for binomial analysis:
 <<eval = FALSE, echo = TRUE, size = 'tiny'>>=
-a <- 1; b <- 1                  # default uniform prior
-y <- 3; n <- 10                 # data
+a <- 1; b <- 1                         # default uniform prior
+y <- 3; n <- 10                        # data
 
-curve(dbeta(x,ay,b+n-y))        # posterior (pdf)
-(a+y)/(a+b+n)                   # posterior mean
-qbeta(.5, a+y, b+n-y)           # posterior median
-qbeta(c(.025,.975), a+y, b+n-y) # 95% equal tail credible interval
+curve(dbeta(x, ay, b + n - y))         # posterior (pdf)
+(a + y)/(a + b + n)                    # posterior mean
+qbeta(.5, a + y, b + n - y)            # posterior median
+qbeta(c(.025, .975), a + y, b + n - y) # 95% equal tail credible interval
 
 # Probabilities
-pbeta(0.5, a+y, b+n-y)          # P(theta<0.5|y) 
+pbeta(0.5, a + y, b + n - y)           # P(theta < 0.5|y) 
 
 # Special cases
-qbeta(c(0,.95), a+y, b+n-y)     # if y=0, use a lower one-sided CI
-qbeta(c(.05,1), a+y, b+n-y)     # if y=n, use a upper one-sided CI
+qbeta(c(0, .95), a + y, b + n - y)     # if y=0, use a lower one-sided CI
+qbeta(c(.05, 1), a + y, b + n - y)     # if y=n, use a upper one-sided CI
 @
-\nc\ec
+
 \end{frame}
 
 
