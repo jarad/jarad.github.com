@@ -13,7 +13,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.4, 
+               fig.width=6, fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -49,7 +49,7 @@ p(\theta|y) = \frac{\alert<6->{p(y|\theta)}p(\theta)}{p(y)}
 
 \vspace{-0.2in} \pause
 
-\bc
+
 with 
 \begin{itemize}
 \item posterior $p(\theta|y)$,
@@ -63,7 +63,7 @@ with
 For this video,
 $\theta = (\mu,\sigma^2)$ and 
 \[ y|\mu,\sigma^2 \sim N(\mu,\sigma^2).\]
-\nc\ec
+
 \end{frame}
 
 \subsection{Normal model}
@@ -110,7 +110,6 @@ The posterior for the mean is
 \pause
 and from properties of the generalized Student's $t$ distribution, 
 \pause 
-\bc
 we know
 
 \begin{itemize}
@@ -124,7 +123,7 @@ and
 \[ 
 \frac{\mu - \overline{y}}{s/\sqrt{n}} \sim t_{n-1}.
 \]
-\nc\ec
+
 \end{frame}
 
 
@@ -141,7 +140,7 @@ a $100(1-a)$\% equal-tail credible interval is
 \overline{y} \pm t_{n-1,a/2} \, s/\sqrt{n}
 \]
 \pause
-\bc
+
 where $t_{n-1,a/2}$ is a \alert{$t$ critical value} \pause 
 such that $P(T_{n-1} < t_{n-1,a/2}) = 1-a/2$ when $T_{n-1} \sim t_{n-1}$.
 
@@ -153,7 +152,7 @@ n = 10
 a = 0.05 # 95\% CI
 qt(1-a/2, df = n-1) 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -166,7 +165,7 @@ The posterior for the mean is
 \pause
 and from properties of the inverse Gamma distribution, 
 \pause 
-\bc
+
 we know
 
 \begin{itemize}
@@ -180,7 +179,7 @@ and
 \left.\frac{1}{\sigma^2}\right| y \sim Ga\left(\frac{n-1}{2}, \frac{(n-1)s^2}{2}\right)
 \]
 where $(n-1)s^2/2$ is the rate parameter.
-\nc\ec
+
 \end{frame}
 
 
@@ -202,13 +201,13 @@ a/2
 = P\left(\left.\frac{1}{\sigma^2} < \frac{1}{U} \right| y\right).
 \]
 \pause
-\bc
+
 Here is a function that performs this computation
 <<qinvgamma, echo=TRUE>>=
 qinvgamma <- function(p, shape, scale = 1) 
   1/qgamma(1-p, shape = shape, rate = scale)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -223,7 +222,7 @@ In contrast,
 the standard deviation $\sigma = \sqrt{\sigma^2}$ units are the same as $Y_i$.
 
 \vspace{0.05in} \pause
-\bc
+
 For credible intervals (or any quantile),
 we can compute the square root of the endpoints since
 \[
@@ -242,7 +241,7 @@ dinvgamma <- function(x, shape, scale = 1)
 dsqrtinvgamma = function(x, shape, scale) 
   dinvgamma(x^2, shape, scale)*2*x
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -265,32 +264,33 @@ Let $Y_i$ be the yield for farm $i$ in bushels/acre and assume
 \[ 
 Y_i \ind N(\mu,\sigma^2).
 \]
-\vspace{-0.2in} \pause
+
+\pause
 
 We are interested in making statements about $\mu$ and $\sigma^2$.
 
-\vspace{-0.2in} \pause
+\pause
 
-\bc
+
 <<data, echo=TRUE>>=
 yield_data <- read.csv("yield.csv")
 nrow(yield_data)
 yield_data
 @
-\nc\ec
+
 \end{frame}
 
 
 \subsection{Histogram of yield}
 \begin{frame}[t]
 \frametitle{Histogram of yield}
-\bc
+
 <<>>=
 ggplot(yield_data, aes(x = yield)) + 
   geom_histogram() + 
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -299,26 +299,26 @@ ggplot(yield_data, aes(x = yield)) +
 \begin{frame}[t,fragile]
 \frametitle{Calculate sufficient statistics}
 <<echo=TRUE>>=
-n               = length(yield_data$yield); n
-sample_mean     = mean(yield_data$yield);   sample_mean
-sample_variance = var(yield_data$yield);    sample_variance
+(n               <- length(yield_data$yield))
+(sample_mean     <- mean(yield_data$yield))
+(sample_variance <- var(yield_data$yield))
 @
 \pause
-\bc
+
 Use these sufficient statistics to calculate:
 \begin{itemize}
 \item posterior densities
 \item posterior means 
 \item credible intervals
 \end{itemize}
-\nc\ec
+
 \end{frame}
 
 
 \subsection{Posterior densities}
 \begin{frame}[t,fragile]
 \frametitle{Posterior density for $\mu$}
-\bc
+
 <<>>=
 my_dt <- function(x, df, mu, sd) {
   dt((x-mu)/sd, df = df)/sd
@@ -340,12 +340,12 @@ mean_posterior_density =
 
 mean_posterior_density
 @
-\nc\ec
+
 \end{frame}
 
 \begin{frame}[t,fragile]
 \frametitle{Posterior density for $\sigma^2$}
-\bc
+
 <<>>=
 variance_posterior_density = 
 ggplot(data.frame(x = c(0.1,5*sample_variance)),
@@ -359,7 +359,7 @@ ggplot(data.frame(x = c(0.1,5*sample_variance)),
 
 variance_posterior_density 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -369,7 +369,7 @@ variance_posterior_density
 
 \small
 
-\bc
+
 <<echo=TRUE>>=
 # Posterior mean of population yield mean, E[mu|y]
 sample_mean
@@ -390,14 +390,14 @@ $E[\sigma^2|y] = \Sexpr{round(post_mean_var)}$ (bushels/acre)$^2$.
 % post_mean_var / n
 % @
 % Posterior variance for $\mu$ is $Var[\mu|y] = \Sexpr{round(post_mean_var / n)}$.
-\nc\ec
+
 \end{frame}
 
 \subsection{Credible intervals}
 \begin{frame}[t,fragile]
 \frametitle{Credible intervals}
 \vspace{-0.2in}
-\bc
+
 <<echo = TRUE>>=
 # 95% credible interval for the population mean
 a = 0.05
@@ -422,31 +422,31 @@ var_ci
 
 So a 95\% credible interval for $\sigma^2$ is 
 (\Sexpr{round(var_ci[1])},\Sexpr{round(var_ci[2])}) (bushels/acre)$^2$.
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[t,fragile]
 \frametitle{Posterior density for $\mu$}
-\bc
+
 <<>>=
 mean_posterior_density +
   geom_vline(xintercept = sample_mean, color = "red", linetype = "dashed") +
   geom_vline(xintercept = mean_ci, color = "red")
 @
-\nc\ec
+
 \end{frame}
 
 \begin{frame}[t,fragile]
 \frametitle{Posterior density for $\sigma^2$}
-\bc
+
 <<>>=
 variance_posterior_density +
   geom_vline(xintercept = (n-1)*sample_variance/(n-3), color = "red", linetype = "dashed") +
   geom_vline(xintercept = var_ci, color = "red") 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -469,7 +469,7 @@ So the posterior median for $\sigma$ is \Sexpr{round(sd_median)} bushels/acre.
 
 \pause
 
-\bc
+
 <<echo=TRUE>>=
 # Posterior 95% CI for the population yield standard deviation
 sd_ci = sqrt(var_ci)
@@ -480,12 +480,12 @@ sd_ci
 
 So a posterior 95\% credible interval for $\sigma$ is 
 (\Sexpr{paste(round(sd_ci), sep=", ")}) bushels/acre.
-\nc\ec
+
 \end{frame}
 
 \begin{frame}[t,fragile]
 \frametitle{Posterior for the standard deviation, $\sigma$}
-\bc
+
 <<>>=
 ggplot(data.frame(x=c(0.1, 1.5*max(sqrt(var_ci)))), aes(x=x)) +
   stat_function(fun = dsqrtinvgamma,
@@ -499,7 +499,7 @@ ggplot(data.frame(x=c(0.1, 1.5*max(sqrt(var_ci)))), aes(x=x)) +
        y = "Posterior probability density function") +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -518,27 +518,27 @@ ggplot(data.frame(x=c(0.1, 1.5*max(sqrt(var_ci)))), aes(x=x)) +
 
 \vspace{-0.2in} \pause
 
-\bc
+
 <<eval=FALSE, echo=TRUE>>=
 # Sufficient statistics
-n               = length(y)
-sample_mean     = mean(y)
-sample_variance = var(y)
+n               <- length(y)
+sample_mean     <- mean(y)
+sample_variance <- var(y)
 
 # Posterior expectations
 sample_mean                   # mu
 (n-1)*sample_variance / (n-3) # sigma^2
 
 # Posterior medians
-var_median = qinvgamma(.5, shape = (n-1)/2, scale = (n-1)*sample_variance/2)
-sd_median  = sqrt(median_var)
+var_median <- qinvgamma(.5, shape = (n-1)/2, scale = (n-1)*sample_variance/2)
+sd_median  <- sqrt(median_var)
 
 # Posterior credible intervals
 sample_mean + c(-1,1) *  qt(1-a/2, df = n-1) * sqrt(sample_variance/n)
-var_ci = qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*sample_variance/2)
-sd_ci  = sqrt(var_ci)
+var_ci <- qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*sample_variance/2)
+sd_ci  <- sqrt(var_ci)
 @
-\nc\ec
+
 \end{itemize}
 \end{frame}
 
