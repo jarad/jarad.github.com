@@ -12,7 +12,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.4, 
+               fig.width=6, fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -48,7 +48,7 @@ statistic \emph{over different realizations of the data}.
 
 \vspace{0.1in} \pause
 
-\bc
+
 Find the following sampling distributions:
 
 \vspace{0.1in} 
@@ -68,7 +68,7 @@ Find the following sampling distributions:
 \frac{Y}{n}.
 \]
 \end{itemize}
-\nc\ec
+
 \end{frame}
 
 
@@ -81,7 +81,7 @@ Let $Y_i \ind N(\mu,\sigma^2)$, then $\overline{Y} \sim N(\mu,\sigma^2/n).$
 
 \pause
 
-\bc
+
 <<normal_samples, cache = TRUE>>=
 mu = 35
 sigma = 5
@@ -91,7 +91,9 @@ samples = expand.grid(rep = 1:1000,
                mu = mu, 
                sigma = sigma) %>%
   dplyr::group_by(rep, n) %>%
-  do(data.frame(samples = rnorm(.$n, mean = mu, sd = sigma))) 
+  do(data.frame(samples = rnorm(.$n, 
+                                mean = mu, 
+                                sd = sigma))) 
 @
 
 <<normal_average, dependson = "normal_samples", out.width="0.9\\textwidth">>=
@@ -107,13 +109,13 @@ density = expand.grid(x = seq(from = mu-sigma, to = mu+sigma, length = 1001),
   
 
 ggplot(d, aes(x = average)) + 
-  geom_histogram(aes(y=..density..), binwidth = .1) + 
+  geom_histogram(aes(y=after_stat(density)), binwidth = .1) + 
   geom_line(data = density, aes(x=x, y = density), color = "red") + 
   facet_wrap(~n, scales = "free_y") +
   labs(title = paste0("Sampling distribution for N(",mu,", ",sigma^2,") average")) +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -127,8 +129,8 @@ T = \frac{\overline{Y}-\mu}{S/\sqrt{n}} \pause \sim t_{n-1}.
 
 \vspace{-0.3in} \pause
 
-\bc
-<<t_statistic, dependson = "normal_samples", fig.height=3.7>>=
+
+<<t_statistic, dependson = "normal_samples">>=
 mu = 35
 sigma = 5
 ns = 10*(2:5)
@@ -147,13 +149,13 @@ density = expand.grid(x = seq(from = -4, to = 4, length = 1001),
   
 
 ggplot(d, aes(x = t)) + 
-  geom_histogram(aes(y=..density..), binwidth = .1) + 
+  geom_histogram(aes(y=after_stat(density)), binwidth = .1) + 
   geom_line(data = density, aes(x=x, y = density), color = "red") + 
   facet_wrap(~n, scales = "free_y") +
   labs(title = paste0("Sampling distribution of the t-statistic")) +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -169,7 +171,7 @@ p = 0,\frac{1}{n},\frac{2}{n},\ldots,\frac{n-1}{n},1.
 
 \vspace{-0.2in} \pause
 
-\bc
+
 <<binomial_samples, cache = TRUE>>=
 ns = c(10,100)
 ps = c(.5,.8)
@@ -203,7 +205,7 @@ ggplot(samples, aes(x = phat)) +
        y = "") +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -229,7 +231,7 @@ If $Y = \sum_{i=1}^n X_i$ with $X_i \ind Ber(p)$, \pause then
 \frac{Y}{n} \stackrel{\cdot}{\sim} N\left(p, \frac{p[1-p]}{n}\right).
 \]
 
-\bc
+
 <<dependson = "binomial_samples", out.width="0.8\\textwidth">>=
 pmf = expand.grid(n = ns, p = ps, 
                   prop = seq(0,1,length=101)) %>%
@@ -242,7 +244,8 @@ pmf = expand.grid(n = ns, p = ps,
 
 ggplot(samples %>%
          dplyr::group_by(n,p,phat) %>%
-         dplyr::summarize(count = n(), .groups = "keep") %>%
+         dplyr::summarize(count = n(), 
+                          .groups = "keep") %>%
          dplyr::group_by(n,p) %>%
          dplyr::arrange(phat) %>%
          dplyr::mutate(height = count / sum(count) / min(diff(phat))),
@@ -255,7 +258,7 @@ ggplot(samples %>%
        y = "") +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -266,7 +269,7 @@ ggplot(samples %>%
 \frametitle{Summary}
 
 Sampling distributions:
-\bc
+
 \begin{itemize} \small
 \item If $Y_i\ind N(\mu,\sigma^2)$, \pause
   \begin{itemize} \small
@@ -289,7 +292,7 @@ and
 \]
 for $n$ sufficiently large.
 \end{itemize}
-\nc\ec
+
 \end{frame}
 \end{document}
 
