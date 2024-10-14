@@ -12,13 +12,13 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.4, 
+               fig.width=6, fig.height=2,5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
                message=FALSE,
                echo = FALSE,
-               cache=FALSE)
+               cache=TRUE)
 options(width=120)
 @
 
@@ -50,7 +50,7 @@ $\theta$: \pause
 \begin{itemize}
 \item Frequentist: based on (asymptotic) distribution of $Y/n$
   \begin{itemize}
-  \item \pvalue{} for test of $H_0: \theta=\theta_0$, \pause
+  \item \pvalue{} for test of $H_0: Y \sim Bin(n,\theta_0)$, \pause
   \item confidence interval for $\theta$, \pause
   \end{itemize}
 \item Bayesian: based on posterior for $\theta$
@@ -61,12 +61,51 @@ $\theta$: \pause
   \end{itemize}
 \end{itemize}
 
-\vspace{0.1in} \pause
-
-\bc
-Now, we will consider what happens when we have multiple $\theta$s. 
-\nc\ec
 \end{frame}
+
+\subsection{One probability - Frequentist Analysis}
+\begin{frame}[fragile]
+\frametitle{One probability - Frequentist Analysis}
+<<binomial-frequentist-analysis-review, echo=TRUE>>=
+###################### Binomial analysis ######################
+# Y ~ Bin(n, theta)
+
+## Data
+n <- 13
+y <- 9
+
+## Frequentist
+bt <- binom.test(y, n)
+bt$p.value                            # H_0: Y ~ Bin(n, 0.5)
+bt$conf.int                           # 95% Confidence interval for theta
+@
+\end{frame}
+
+\subsection{One probability - Bayesian Analysis}
+\begin{frame}[fragile]
+\frametitle{One probability - Bayesian Analysis}
+<<binomial-bayesian-analysis-review, echo=TRUE, dependson='binomial-frequentist-analysis-review'>>=
+## Bayesian
+(1 + y) / (2 + n)                        # Posterior mean
+qbeta(0.5, 1 + y, 1 + n - y)             # Posterior median
+qbeta(c(.025, .975), 1 + y, 1 + n - y)   # 95% Credible interval for theta
+pbeta(0.4, 1 + y, 1 + n - y)             # P(theta < 0.4 | y)
+@
+\end{frame}
+
+\subsection{One probability - Bayesian Analysis via Monte Carlo}
+\begin{frame}[fragile]
+\frametitle{One probability - Bayesian Analysis via Monte Carlo}
+<<binomial-bayesian-analysis-monte-carlo, echo=TRUE, dependson='binomial-frequentist-analysis-review'>>=
+## Bayesian via Monte Carlo
+theta <- rbeta(10000, 1 + y, 1 + n - y)  # Simulate theta from posterior
+mean(theta)                              # Estimated posterior mean
+quantile(theta, probs = 0.5)             # Estimated posterior median
+quantile(theta, probs = c(0.025, 0.975)) # Estimated 95% credible interval for theta
+mean(theta < 0.4)                        # Estimated P(theta < 0.5 | y)
+@
+\end{frame}
+
 
 
 \subsection{Two probabilities}
@@ -115,7 +154,7 @@ produced:
 
 \pause
 
-\bc
+
 In R, you can code this as two vectors: 
 <<data, echo=TRUE>>=
 successes = c(135,216)
@@ -129,32 +168,30 @@ d = data.frame(process   = factor(1:2),
                successes = successes,
                attempts  = attempts)
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
-\frametitle{\pvalue{}s and confidence intervals}
+\frametitle{Frequentist Analysis}
 
 \footnotesize
 
-Because there is no indication that you expect one of the two manufacturing 
-processes to have a higher probability, 
-you should perform a two-sided hypothesis test, i.e.
 \begin{itemize}
-\item $H_0: \theta_1=\theta_2$
-\item $H_A: \theta_1\ne \theta_2$
+\item \pvalue{} for $H_0: Y_g \ind Bin(n_g, \alert{\theta})$
+% \item $H_A: \theta_1\ne \theta_2$
+\item equal-tail confidence interval for $\theta_1-\theta_2$
 \end{itemize}
-and calculate a two-sided confidence interval for $\theta_1-\theta_2$.
 
-\vspace{-0.2in} \pause
+\pause
 
-\bc
 <<frequentist_analysis, dependson="data_data_frame", echo=TRUE>>=
-prop.test(d$successes, d$attempts)
+(pt <- prop.test(d$successes, d$attempts)) # cannot use binom.test
+pt$p.value
+pt$conf.int
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -170,7 +207,7 @@ and
 \theta_g \ind Be(1,1).
 \]
 \pause
-\bc
+
 Then the posterior is 
 \[ 
 \theta_g|y \ind Be(1+y_g, 1+n_g-y_g).
@@ -182,21 +219,21 @@ P(\theta_1<\theta_2|y) = P(\theta_1-\theta_2<0|y)
 \]
 and a credible interval for $\theta_1-\theta_2$ by simulating values from the 
 posterior and computing $\theta_1-\theta_2$.
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Posteriors}
-\bc
+
 <<posteriors, dependson="data_data_frame", echo=FALSE>>=
 posterior <- function(d) {
-  data.frame(theta = seq(.85,1,length=101)) %>%
+  data.frame(theta = seq(.85, 1,length = 101)) |>
        mutate(density = dbeta(theta, 1+d$successes, 1+d$attempts-d$successes))
 }
 
-dp <- d %>% group_by(process) %>% do(posterior(.))
+dp <- d |> group_by(process) |> do(posterior(.))
   
 ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=process)) + 
   geom_line() + 
@@ -204,7 +241,7 @@ ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=proces
        y = "Posterior densities") +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -214,13 +251,12 @@ ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=proces
 To obtain statistical inference on the difference, 
 we draw samples from the posterior and then calculate the difference:
 
-\vspace{-0.2in} \pause
+\pause
 
-\bc
 <<bayesian_analysis, dependson="data_data_frame", echo=TRUE>>=
 n      <- 1e5
-theta1 <- rbeta(n, 1+d$success[1], 1+d$attempts[1] - d$success[1])
-theta2 <- rbeta(n, 1+d$success[2], 1+d$attempts[2] - d$success[2])
+theta1 <- rbeta(n, 1 + d$success[1], 1 + d$attempts[1] - d$success[1])
+theta2 <- rbeta(n, 1 + d$success[2], 1 + d$attempts[2] - d$success[2])
 diff   <- theta1 - theta2
 
 # Bayes estimate for the difference
@@ -232,7 +268,7 @@ quantile(diff, c(.025,.975))
 # Estimate of the probability that theta1 is less than theta2
 mean(diff < 0)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -290,7 +326,7 @@ produced:
 
 \pause
 
-\bc
+
 In R, you can code this as two vectors: 
 <<data2, echo=TRUE>>=
 successes = c(135,216,10)
@@ -304,7 +340,7 @@ d = data.frame(process   = factor(1:3),
                successes = successes,
                attempts  = attempts)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -323,11 +359,11 @@ H_A: \theta_g \ne \theta_{g'} \mbox{ for some }g,g'
 
 \pause
 
-\bc
+
 <<data2_frequentist_analysis, dependson="data2_data_frame", echo=TRUE>>=
 prop.test(d$successes, d$attempts)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -338,12 +374,12 @@ Confidence interval for $\theta_1-\theta_3$:
 
 \pause
 
-\bc
+
 <<data2_frequentist_analysis2, dependson="data2_data_frame", echo=TRUE>>=
 # Need to specify a comparison to get confidence intervals of the difference
 prop.test(d$successes[c(1,3)], d$attempts[c(1,3)])$conf.int
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -353,7 +389,7 @@ prop.test(d$successes[c(1,3)], d$attempts[c(1,3)])$conf.int
 
 An alternative test for equality amongst the proportions uses {\tt chisq.test()}.
 
-\bc
+
 <<data2_chi_square, dependson="data2_data_frame", echo=TRUE>>=
 d$failures <- d$attempts - d$successes
 chisq.test(d[c("successes","failures")])
@@ -362,7 +398,7 @@ chisq.test(d[c("successes","failures")])
 <<echo=TRUE>>=
 chisq.test(d[c("successes","failures")], simulate.p.value = TRUE)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -370,14 +406,14 @@ chisq.test(d[c("successes","failures")], simulate.p.value = TRUE)
 
 \begin{frame}[fragile]
 \frametitle{Posteriors}
-\bc
+
 <<data2_bayesian, dependson="data2_data_frame">>=
 posterior <- function(d) {
-  data.frame(theta = seq(.85,1,length=101)) %>%
+  data.frame(theta = seq(.85,1,length=101)) |>
        mutate(density = dbeta(theta, 1+d$successes, 1+d$attempts-d$successes))
 }
 
-dp <- d %>% group_by(process) %>% do(posterior(.))
+dp <- d |> group_by(process) |> do(posterior(.))
   
 ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=process)) + 
   geom_line() + 
@@ -385,7 +421,7 @@ ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=proces
        y = "Posterior densities") +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -395,9 +431,8 @@ ggplot(dp, aes(x=theta, y=density, color=process, linetype=process, group=proces
 To compare the probabilities, 
 we draw samples from the posterior and compare them.
 
-\vspace{-0.1in} \pause
+\pause
 
-\bc
 <<data2_posterior_simulation, dependson="data2_data_frame", echo=TRUE>>=
 posterior_samples <- function(d) {
   data.frame(
@@ -407,17 +442,17 @@ posterior_samples <- function(d) {
     stringsAsFactors = FALSE) 
 }
 
-draws <- d %>% group_by(process) %>% do(posterior_samples(.)) %>% ungroup() %>%
-  select(-process) %>% tidyr::spread(name, theta)
+draws <- d |> group_by(process) |> do(posterior_samples(.)) |> ungroup() |>
+  select(-process) |> tidyr::spread(name, theta)
 
 # Estimate of the comparison probabilities
-draws %>% 
+draws |> 
   summarize(`P(theta1>theta2|y)` = mean(draws$theta1 > draws$theta2),
             `P(theta1>theta3|y)` = mean(draws$theta1 > draws$theta3),
-            `P(theta2>theta3|y)` = mean(draws$theta2 > draws$theta3)) %>%
+            `P(theta2>theta3|y)` = mean(draws$theta2 > draws$theta3)) |>
   gather(comparison, probability)
 @
-\nc\ec
+
 \end{frame}
 
 
