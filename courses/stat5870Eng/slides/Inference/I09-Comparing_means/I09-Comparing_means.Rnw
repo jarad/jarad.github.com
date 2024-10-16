@@ -73,7 +73,7 @@ Now, we will consider what happens when you have multiple groups.
 \footnotesize
 
 Consider the model
-\[ Y_{g,i} \ind N(\mu_g,\sigma_g^2)\]
+\[ Y_{g,i} \ind N(\mu_g,\sigma^2)\]
 for $g=1,2$ and $i=1,\ldots,n_g$.
 \pause
 and you are interested in the relationship between $\mu_1$ and $\mu_2$.
@@ -82,7 +82,10 @@ and you are interested in the relationship between $\mu_1$ and $\mu_2$.
 
 \begin{itemize}
 \item Frequentist: based on distribution of
-\[\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}} \sim t_{v}\]
+\[\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{S_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}} \sim t_{n_1+n_2-2}
+\quad\mbox{where}\quad\pause
+S_p^2 = \frac{(n_1-1)S_1^2 + (n_2-1)S_2^2}{n_1+n_2 - 2}
+\]
 
 \pause
 
@@ -90,10 +93,13 @@ and you are interested in the relationship between $\mu_1$ and $\mu_2$.
   \item \pvalue{} for a hypothesis test, e.g. $H_0: \mu_1-\mu_2=d$, \pause
   \item confidence interval for $\mu_1-\mu_2$, \pause
   \end{itemize}
-\item Bayesian: posterior for $\mu_1,\mu_2$, i.e. $p(\mu_1,\mu_2|y)$
+\item Bayesian
+\[
+\frac{\mu_1-\mu_2 - (\overline{y}_1 + \overline{y}_2)}{s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}}\sim t_{n_1+n_2-2}
+\]
   \begin{itemize}
   \item credible interval for $\mu_1-\mu_2$, \pause
-  \item posterior model probability, e.g. $p(H_0|y)$, \pause and
+  % \item posterior model probability, e.g. $p(H_0|y)$, \pause and
   \item probability statements, e.g. $P(\mu_1 - \mu_2 < d|y)$. \pause
   \end{itemize}
 \end{itemize}
@@ -198,21 +204,28 @@ Y_{g,i} \ind N(\mu_g, \sigma^2).
 % \end{frame}
 
 
-\begin{frame}[fragile]
-\frametitle{Frequentist analysis using t.test}
-
-<<two-means-frequentist-t-test, dependson="d2",echo=TRUE>>=
-t.test(sensitivity ~ process, data = d2, var.equal = TRUE)
-@
+\begin{frame}
+\frametitle{Frequentist analysis formulas}
+Consider the hypothesis $H_0: \mu_1 = \mu_2$ or, equivalently, 
+$H_0: \mu_1-\mu_2 = 0$. 
+\pause
+We calculate the \pvalue{} using
+\[ 
+2P\left(T_{n_1+n_2-1} < -|t|\right)
+\quad\mbox{where}\quad \pause
+t = \frac{\overline{y}_1-\overline{y}_2 - 0}{s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}}.
+\]
+\pause
+We calculate a $100(1-a)$\% confidence interval using
+\[
+\overline{y}_1-\overline{y}_2 \pm t_{n_1+n_2-2,1-a/2} s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}.
+\]
 
 \end{frame}
 
+
 \begin{frame}[fragile]
 \frametitle{Frequentist analysis by hand}
-When variances are equal
-\[
-\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}} \sim t_{n_1+n_2-2}
-\]
 <<two-means-frequentist-by-hand, dependson="d2", echo=TRUE>>=
 v    <- sm$n[1] + sm$n[2] - 2
 diff <- sm$mean[1] - sm$mean[2]
@@ -230,6 +243,75 @@ diff + c(-1,1) * qt(.975, df = v) * se
 @
 \end{frame}
 
+\begin{frame}
+\frametitle{Bayesian analysis formulas}
+We calculate a $100(1-a)$\% credible interval using
+\[
+\overline{y}_1-\overline{y}_2 \pm t_{n_1+n_2-2,1-a/2} s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}.
+\]
+\pause
+We calculate a posterior probability using
+\[ 
+P(\mu_1-\mu_2 < 0|y) = P\left( T_{n_1+n_2-2} < \frac{0 - (\overline{y}_1-\overline{y}_2)}{s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}} \right)
+\]
+\pause
+Thus, half the \pvalue{} corresponds to either 
+$P(\mu_1-\mu_2 < 0|y)$ or $P(\mu_1-\mu_2 > 0|y)$.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Analyses using t.test}
+
+<<two-means-frequentist-t-test, dependson="d2",echo=TRUE>>=
+(tt <- t.test(sensitivity ~ process, data = d2, var.equal = TRUE))
+
+# Since estimate of the difference is negative
+# the following is P(mu_1 - mu_2 > 0)
+tt$p.value / 2
+@
+
+\end{frame}
+
+
+\subsection{Unequal variances}
+\begin{frame}
+\frametitle{Unequal variances}
+Consider the model
+\[ Y_{g,i} \ind N(\mu_g,\alert{\sigma_g}^2)\]
+for $g=1,2$ and $i=1,\ldots,n_g$.
+\pause
+and you are interested in the relationship between $\mu_1$ and $\mu_2$.
+
+\pause
+
+Frequentist: 
+\[
+\frac{\overline{Y}_1-\overline{Y}_2 - (\mu_1-\mu_2)}{\sqrt{\frac{S_1^2}{n_1} + \frac{S_2^2}{n_2}}} \stackrel{\cdot}{\sim} t_{v}
+\]
+using Satterthwaite approximation for the degrees of freedom $v$. 
+
+\vspace{0.1in} \pause
+
+Bayesian:
+\[
+\left. \frac{\mu_g-\overline{y}_g}{s_g/\sqrt{n_g}}\right|y \ind t_{n_g-1}
+\]
+\pause
+Simulate means separately and take the difference.
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Analyses using t.test}
+
+<<two-means-frequentist-t-test-unequal-variance, dependson="d2",echo=TRUE>>=
+t.test(sensitivity ~ process, 
+       data = d2, 
+       var.equal = FALSE)     # this was the default
+@
+
+\end{frame}
 
 
 \subsection{Bayesian analysis}
@@ -252,20 +334,22 @@ and a draw for $\mu_g$ can be obtained by taking
 \[
 \overline{y}_g + T_{n_g-1} s_g/\sqrt{n_g}, \quad T_{n_g-1} \ind t_{n_g-1}(0,1).
 \]
-\pause
 
-Simulations:
-<<mu_draws, dependson="sm">>=
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Bayesian analysis in R}
+<<mu_draws, dependson="sm", echo=TRUE>>=
 nr = 1e5
 sims <- bind_rows(
-  tibble(
+  tibble(           # tibble is just a special data.frame
     rep     = 1:nr,
     process = "P1",
     mu      = sm$mean[1] + rt(nr, df = sm$n[1]-1) * sm$sd[1] / sqrt(sm$n[1])),
   tibble(
     rep     = 1:nr,
     process = "P2",
-    mu     = sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2]))
+    mu      = sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2]))
 )
 @
 
@@ -304,8 +388,8 @@ mean(d3$diff)
 # Estimated 95% equal-tail credible interval
 quantile(d3$diff, c(.025,.975))
 
-# Estimate of the probability that mu1 is larger than mu2
-mean(d3$diff > 0)
+# Estimate of the probability that mu1 is smaller than mu2
+mean(d3$diff < 0)
 @
 
 \end{frame}
@@ -334,7 +418,7 @@ We can perform the following statistical procedures:
 \item Bayesian: based on posterior for $\mu_1,\ldots,\mu_G$
   \begin{itemize}
   \item credible interval for $\mu_g-\mu_{g'}$ , \pause
-  \item posterior model probability, e.g. $p(H_0|y)$, \pause and
+  % \item posterior model probability, e.g. $p(H_0|y)$, \pause and
   \item probability statements, e.g. $P(\mu_g<\mu_{g'}|y)$
   \end{itemize}
 where $g$ and $g'$ are two different groups.
@@ -468,7 +552,7 @@ sims <- bind_rows(
 \frametitle{Compare posteriors}
 
 <<mu3_posteriors, dependson="mu3_draws">>=
-ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) +
+ggplot(sims, aes(x=mu, y=after_stat(density), fill=process, group=process)) +
   geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
   theme_bw()
 @
