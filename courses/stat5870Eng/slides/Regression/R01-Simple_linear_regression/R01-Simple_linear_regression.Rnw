@@ -12,7 +12,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.4, 
+               fig.width=6, fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -51,7 +51,7 @@ set.seed(2)
 
 \pause
 
-\bc
+
 \begin{quote}
 People who are stressed over long periods tend to look haggard, \pause and it is commonly thought that psychological stress leads to premature aging [as measured by decreased telomere length]
 
@@ -63,7 +63,7 @@ examine the importance of ... caregiving stress (...number of years since a chil
 
 Telomere length values were measured from DNA by a quantitative PCR assay that determines the relative ratio of telomere repeat copy number to single-copy gene copy number (T/S ratio) in experimental samples as compared with a reference DNA sample.
 \end{quote}
-\nc\ec
+
 
 \end{frame}
 
@@ -87,7 +87,7 @@ Telomeres <- structure(list(years = c(1L, 1L, 1L, 2L, 2L, 2L, 2L, 3L, 2L,
   dplyr::mutate(jittered_years = jitter(years)) # used for plotting
 @
 
-\bc
+
 <<telomere_plot, dependson="telomere_data", echo=FALSE>>=
 g = ggplot(Telomeres, aes(x=jittered_years, y=telomere.length)) + 
   geom_point() + 
@@ -97,7 +97,7 @@ g = ggplot(Telomeres, aes(x=jittered_years, y=telomere.length)) +
 
 g
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -106,12 +106,12 @@ g
 
 \vspace{-0.2in}
 
-\bc
+
 <<telomere_plot_with_regression_line, dependson="telomere_plot", echo=FALSE>>=
 g = g + geom_smooth(method='lm', se=FALSE)  
 g
 @
-\nc\ec
+
 \end{frame}
 
   
@@ -126,7 +126,7 @@ g
 	\vspace{0.1in} \pause
 	
 	Terminology (all of these are equivalent):
-	\bc
+	
 	\begin{center}
 	\begin{tabular}{ll}
 	\hline
@@ -137,7 +137,7 @@ g
 	\hline
 	\end{tabular}
 	\end{center}
-	\nc\ec
+	
 }
 
 
@@ -147,7 +147,7 @@ g
 
 \vspace{-0.2in}
 
-\bc
+
 <<slr_viz, echo = FALSE>>=
 xx = 0:9
 d = expand.grid(mean = xx,
@@ -158,7 +158,7 @@ d = expand.grid(mean = xx,
 slr_viz = ggplot(d, aes(x=x, y=y, group = mean)) + 
   geom_hline(yintercept = xx, color = "gray") +
   geom_abline(intercept = 0, slope = 1, color = "blue") + 
-  geom_line(color = "magenta", size = 2) + 
+  geom_line(color = "magenta", linewidth = 2) + 
   coord_flip() +
   labs(title = "Simple linear regression model",
        x = "Response variable",
@@ -173,7 +173,7 @@ slr_viz +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -189,7 +189,7 @@ Recall:
 
 \vspace{-0.1in} \pause
 	
-\bc
+
 \begin{itemize}
 \item	If $X_i=0$, then $E[Y_i|X_i=0] = \beta_0$. \pause 
 	
@@ -213,7 +213,7 @@ increase in the explanatory variable.
 $\sigma$ is the standard deviation of the response for a fixed value of the 
 explanatory variable.
 \end{itemize}
-\nc\ec
+
 }
 
 
@@ -223,19 +223,18 @@ explanatory variable.
 
 \vspace{-0.2in}
 
-\bc
+
 <<echo=FALSE, dependson = "slr_viz">>=
 slr_viz + 
   scale_y_continuous(breaks = scales::pretty_breaks())
 @
-\nc\ec
+
 \end{frame}
 
 
 \subsection{Parameter estimation}
-\frame{\frametitle{}
-	\small
-
+\begin{frame}
+\frametitle{Errors v residuals}
 	Remove the mean:
 	\[ Y_i = \beta_0+\beta_1 X_i +e_i \qquad e_i \stackrel{iid}{\sim} N(0,\sigma^2) \]
 	
@@ -245,13 +244,23 @@ slr_viz +
 	\[ e_i = Y_i - (\beta_0+\beta_1X_i) \]
 	\pause which we approximate by the \alert{residual}
 	\[ r_i = \hat{e}_i = Y_i - (\hat{\beta}_0+\hat{\beta}_1X_i) \]
-	\pause The least squares (minimize $\sum_{i=1}^n r_i^2$), 
+	
+	\pause
+	
+	These residuals we will use for a number of purposes including
+	\begin{itemize}
+	\item assessing model assumptions,
+	\item identifying outliers, and
+	\item estimating error variance. 
+	\end{itemize}
+\end{frame}	
+	
+\begin{frame}
+\frametitle{Estimators}
+The least squares (minimize $\sum_{i=1}^n r_i^2$), 
 	maximum likelihood, and 
 	Bayesian estimators (prior $1/\sigma^2$) \pause are 
-	
-	\vspace{-0.2in} \pause
-	
-	\bc
+
 	\[ \begin{array}{rl}
   \hat{\beta}_1 &= SXY/SXX \\
 	\hat{\beta}_0 &= \overline{Y}-\hat{\beta}_1\overline{X} \\ 
@@ -264,24 +273,23 @@ slr_viz +
 	SXX &= \sum_{i=1}^n (X_i-\overline{X})(X_i-\overline{X}) = \sum_{i=1}^n (X_i-\overline{X})^2 \\
 	SSE &= \sum_{i=1}^n r_i^2 
 	\end{array} \]
-	\nc\ec
-}
+\end{frame}
 
 
 \begin{frame}
 \frametitle{Residuals}
 \vspace{-0.2in}
-\bc
+
 <<dependson="telomere_plot_with_regression_line", echo=FALSE>>=
 g
 @
-\nc\ec
+
 \end{frame}
 
 \begin{frame}
 \frametitle{Residuals}
 \vspace{-0.2in}
-\bc
+
 <<residual_plot, dependson="telomere_plot_with_regression_line", echo=FALSE>>=
 m <- lm(telomere.length ~ years, data = Telomeres)
 residuals =  Telomeres %>%
@@ -291,7 +299,7 @@ residuals =  Telomeres %>%
 g +  geom_segment(aes(xend = jittered_years, yend = predict), 
                   data = residuals, color = "red") 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -302,7 +310,7 @@ g +  geom_segment(aes(xend = jittered_years, yend = predict),
 	
 	\vspace{0.2in} \pause
 	
-	\bc
+	
 	We quantify this uncertainty using their standard errors (or posterior scale parameters): \pause
 	\[ \begin{array}{rlll}
 	SE(\hat\beta_0) &= \hat{\sigma} \sqrt{\frac{1}{n} + \frac{\overline{X}^2}{(n-1)s_X^2}} & df=n-2 \pause\\ 
@@ -317,7 +325,7 @@ g +  geom_segment(aes(xend = jittered_years, yend = predict),
 	SST &= SYY = \sum_{i=1}^n (Y_i-\overline{Y})^2 \pause 
 	\end{array} \]
 The coefficient of determination ($R^2$) is the proportion of the total response variation explained by the model.
-\nc\ec
+
 }
 
 
@@ -342,13 +350,13 @@ where $P(T_{n-2} < t_{n-2,1-a/2}) = 1-a/2$ for $T_{n-2} \sim t_{n-2}$.
 
 \vspace{0.2in} \pause
 
-\bc
+
 We can compute posterior probabilities via 
 \[ \begin{array}{rl}
 P(\beta_j<b_j|y) &= P\left(T_{n-2}<\frac{\hat{\beta_j}-b_j}{SE(\hat\beta_j)}\right) \\
 P(\beta_j>b_j|y) &= P\left(T_{n-2}>\frac{\hat{\beta_j}-b_j}{SE(\hat\beta_j)}\right).
 \end{array} \]
-\nc\ec
+
 \end{frame}
 
 
@@ -369,7 +377,7 @@ We can construct a $100(1-a)\%$ two-sided confidence interval for $\beta_j$ via
 
 \vspace{0.1in} \pause
 
-\bc
+
 We can compute one-sided \pvalue{}s, \pause \\
 e.g. $H_0:\beta_j\ge b_j$ vs $H_A: \beta_j < b_j$ has
 \[ 
@@ -384,7 +392,7 @@ P\left(T_{n-2}<\frac{\hat{\beta_1}-b_j}{SE(\hat\beta_j)}\right)
 \]
 \pause
 software default is usually $b_j = 0$.
-\nc\ec
+
 \end{frame}
 
 
@@ -395,7 +403,7 @@ software default is usually $b_j = 0$.
 \subsection{by hand}
 \begin{frame}[fragile]
 \frametitle{Calculations ``by hand'' in R}
-\bc
+
 <<hand_calculations, dependson="telomere_data", echo=TRUE>>=
 n    = nrow(Telomeres)
 Xbar = mean(Telomeres$years)
@@ -420,13 +428,13 @@ sigma  = sqrt(sigma2)
 SE_beta0 = sigma*sqrt(1/n + Xbar^2/((n-1)*s_X^2))
 SE_beta1 = sigma*sqrt(           1/((n-1)*s_X^2))
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Calculations ``by hand'' in R (continued)}
-\bc
+
 <<pvalues_and_CIs, dependson="hand_calculations", echo=TRUE>>=
 # 95% CI for beta0
 beta0 + c(-1,1)*qt(.975, df = n-2) * SE_beta0
@@ -440,7 +448,7 @@ pt(beta0/SE_beta0, df = n-2)
 # pvalue for H1: beta1 >= 0 and P(beta1<0|y)
 pt(beta1/SE_beta1, df = n-2)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -453,7 +461,7 @@ pt(beta1/SE_beta1, df = n-2)
 \frametitle{Calculations by hand}
 \tiny
 
-\bc
+
 \[ \begin{array}{rl}
 SXX &
 = (n-1) s_x^2
@@ -533,7 +541,7 @@ CI_{95\%\, \beta_1} &
 = (\Sexpr{beta1 - qt(.975,n-2) * SE_beta1},
    \Sexpr{beta1 + qt(.975,n-2) * SE_beta1}) \\
 \end{array} \]
-\nc\ec
+
 \end{frame}
 
 
@@ -541,15 +549,15 @@ CI_{95\%\, \beta_1} &
 \begin{frame}[fragile]
 \frametitle{Regression in R}
 
-\vspace{-0.3in}
+\vspace{-0.2in}
 
-\bc
+
 <<regression_in_r, dependson="telomere_data", echo=TRUE>>=
 m = lm(telomere.length ~ years, Telomeres)
 summary(m)
 confint(m)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -564,7 +572,7 @@ Telomere ratio at the time of diagnosis of a child's chronic illness is estimate
 
 \vspace{0.2in} \pause
 
-\bc
+
 {\tiny \url{http://www.pnas.org/content/101/49/17312}}
 \begin{quote}
 The correlation between chronicity of caregiving and mean telomere length is $-0.445$ (P $<$0.01). [$R^2=0.198$ was shown in the plot.]
@@ -577,7 +585,7 @@ The correlation between chronicity of caregiving and mean telomere length is $-0
 I'm guessing our analysis and that reported in the paper don't match exactly due to a discrepancy in the data.
 \end{remark}
 }
-\nc\ec
+
 \end{frame}
 
 
@@ -595,7 +603,7 @@ I'm guessing our analysis and that reported in the paper don't match exactly due
 \item Know how to use R to obtain $\hat{\beta}_0$, $\hat{\beta}_1$, 
 $\hat{\sigma}^2$, $R^2$, \pvalue{}s, CIs, etc. \pause
 \end{itemize}
-	\bc
+	
 \begin{itemize} \small
 \item Interpret regression output: \pause
 	\begin{itemize} \scriptsize
@@ -605,7 +613,7 @@ $\hat{\sigma}^2$, $R^2$, \pvalue{}s, CIs, etc. \pause
 	\item $R^2$ is the proportion of the total variation of the response variable explained by the model.
 	\end{itemize}
 \end{itemize}
-\nc\ec
+
 }
 
 
