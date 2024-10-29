@@ -352,10 +352,13 @@ where $P(T_{n-2} < t_{n-2,1-a/2}) = 1-a/2$ for $T_{n-2} \sim t_{n-2}$.
 
 
 We can compute posterior probabilities via 
-\[ \begin{array}{rl}
-P(\beta_j<b_j|y) &= P\left(T_{n-2}<\frac{\hat{\beta_j}-b_j}{SE(\hat\beta_j)}\right) \\
-P(\beta_j>b_j|y) &= P\left(T_{n-2}>\frac{\hat{\beta_j}-b_j}{SE(\hat\beta_j)}\right).
-\end{array} \]
+\[ 
+P(\beta_j>b_j|y) = P\left(T_{n-2}>\frac{b_j-\hat\beta_j}{SE(\hat\beta_j)}\right) 
+\quad \mbox{or} \quad
+P(\beta_j<b_j|y) = P\left(T_{n-2}<\frac{b_j-\hat\beta_j}{SE(\hat\beta_j)}\right)
+ \]
+\pause
+often $b_j=0$. 
 
 \end{frame}
 
@@ -379,16 +382,28 @@ We can construct a $100(1-a)\%$ two-sided confidence interval for $\beta_j$ via
 
 
 We can compute one-sided \pvalue{}s, \pause \\
-e.g. $H_0:\beta_j\ge b_j$ vs $H_A: \beta_j < b_j$ has
+\bc
+$H_0:\beta_j\ge b_j$ vs $H_A: \beta_j < b_j$ has
 \[ 
-\mbox{\pvalue{}} = 
-P\left(T_{n-2}>\frac{\hat{\beta_j}-b_j}{SE(\hat\beta_j)}\right) 
+\mbox{\pvalue{}} 
+= P\left(T_{n-2}<\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right) 
 \]
+\nc
 \pause
 and $H_0:\beta_j\le b_j$ vs $H_A: \beta_j > b_j$ has
 \[
-\mbox{\pvalue{}} = 
-P\left(T_{n-2}<\frac{\hat{\beta_1}-b_j}{SE(\hat\beta_j)}\right)
+\mbox{\pvalue{}} 
+= P\left(T_{n-2}>\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right)
+\]
+\ec
+
+\vspace{0.1in} \pause
+
+or two-sided p-values for $H_0:\beta_j= b_j$ vs $H_A: \beta_j \ne b_j$:
+\[ 
+= 2\times \min\left\{ P\left(T_{n-2}>\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right) , 
+P\left(T_{n-2}<\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right)  \right\} \pause
+= 2 \times P\left(T_{n-2}< -\left|\frac{\hat\beta_j-b_j}{SE(\hat\beta_j)}\right|\right)
 \]
 \pause
 software default is usually $b_j = 0$.
@@ -437,16 +452,19 @@ SE_beta1 = sigma*sqrt(           1/((n-1)*s_X^2))
 
 <<pvalues_and_CIs, dependson="hand_calculations", echo=TRUE>>=
 # 95% CI for beta0
-beta0 + c(-1,1)*qt(.975, df = n-2) * SE_beta0
+beta0 + c(-1, 1) * qt(.975, df = n-2) * SE_beta0
 
 # 95% CI for beta1
-beta1 + c(-1,1)*qt(.975, df = n-2) * SE_beta1
+beta1 + c(-1, 1) * qt(.975, df = n-2) * SE_beta1
 
-# pvalue for H0: beta0 >= 0 and P(beta0<0|y)
-pt(beta0/SE_beta0, df = n-2)
+# pvalue for H0: beta0 <= 0 and P(beta0 > 0 | y)
+pt(beta0 / SE_beta0, df = n - 2)
 
-# pvalue for H1: beta1 >= 0 and P(beta1<0|y)
-pt(beta1/SE_beta1, df = n-2)
+# pvalue for H0: beta1 <= 0 and P(beta1 > 0 | y)
+pt(beta1 / SE_beta1, df = n - 2)
+
+# pvalue for H1: beta0 = 0
+2 * pt(-abs(beta1 / SE_beta1), df = n - 2)
 @
 
 \end{frame}
