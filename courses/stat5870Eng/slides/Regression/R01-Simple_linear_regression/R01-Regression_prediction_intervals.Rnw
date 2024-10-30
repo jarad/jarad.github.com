@@ -13,7 +13,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.4, 
+               fig.width=6, fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -25,6 +25,7 @@ options(width=120)
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
 library("tidyverse")
+theme_set(theme_bw())
 @
 
 <<set_seed, echo=FALSE>>=
@@ -50,31 +51,37 @@ then
 \[ E[Y_i|X_i = 0] = \beta_0 \]
 \pause 
 and a $100(1-a)$\% credible/confidence interval is 
-\bc
+
 \[ \hat\beta_0 \, \pm t_{n-2,1-a/2} \, \hat{\sigma}\sqrt{\frac{1}{n} + \frac{\overline{x}^2}{(n-1)s_x^2}}. \]
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Telomere data: uncertainty}
-\bc
+
 <<>>=
 m = lm(telomere.length ~ years, data = abd::Telomeres)
 ci = confint(m)
 
 g = ggplot(abd::Telomeres, aes(x=years, y=telomere.length)) + 
   geom_point() +
-  geom_segment(aes(x = 0, xend = 0, y = ci[1,1], yend = ci[1,2]), 
-                 color = "blue", size = 2) +
+  geom_segment(
+    data = data.frame(
+      x = 0,
+      lcl = ci[1,1],
+      ucl = ci[1,2]
+    ),
+    aes(x = x, xend = x, y = lcl, yend = ucl), 
+    color = "blue", 
+    linewidth = 2) +
   stat_smooth(method = "lm", se = FALSE) + 
   labs(title = "Telomere length vs years post diagnosis",
-       x = "Years since diagnosis", y = "Telomere length") + 
-  theme_bw()
+       x = "Years since diagnosis", y = "Telomere length")
 
 g
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -90,21 +97,21 @@ then
 \[ E[Y_i|X_i = x] \pause = \beta_0 + \beta_1 x \]
 \pause 
 and a $100(1-a)$\% credible/confidence interval is 
-\bc
+
 \[ \hat\beta_0 + \hat\beta_1 x \pause \,
 \pm t_{n-2,1-a/2} \, \hat{\sigma}\sqrt{\frac{1}{n} + \frac{(\overline{x}-x)^2}{(n-1)s_x^2}}. \]
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Telomere data: uncertainty}
-\bc
+
 <<>>=
 g = g + stat_smooth(method = "lm")
 g
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -119,10 +126,10 @@ then
 \[ E[Y_i|X_i = x] \pause = \beta_0 + \beta_1 x \]
 \pause 
 and a $100(1-a)$\% \alert{prediction} interval is 
-\bc
+
 \[ \hat\beta_0 + \hat\beta_1 x \pause \,
 \pm t_{n-2,1-a/2} \, \hat{\sigma}\sqrt{\alert{1+}\frac{1}{n} + \frac{(\overline{x}-x)^2}{(n-1)s_x^2}}. \]
-\nc\ec
+
 \end{frame}
 
 
@@ -130,7 +137,7 @@ and a $100(1-a)$\% \alert{prediction} interval is
 
 \begin{frame}
 \frametitle{Telomere data: prediction intervals}
-\bc
+
 <<>>=
 p = predict(m, newdata = abd::Telomeres, interval = "prediction")
 Telomeres = abd::Telomeres %>%
@@ -144,14 +151,14 @@ g +
               color = "red", linetype = "dashed",
               data = Telomeres)
 @
-\nc\ec
+
 \end{frame}
 
 
 \subsection{Summary}
 \begin{frame}
 \frametitle{Summary}
-\bc
+
 Two main types of uncertainty intervals: \pause
 \begin{itemize}
 \item where is the line? \pause 
@@ -164,7 +171,7 @@ Two main types of uncertainty intervals: \pause
 \end{itemize}
 \pause
 Both intervals are confidence and credible intervals.
-\nc\ec
+
 \end{frame}
 
 

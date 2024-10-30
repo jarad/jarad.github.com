@@ -85,6 +85,11 @@ All [regression pdfs concatenated](regression.pdf).
 |Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|[Simple linear regression](https://youtu.be/qAGZfkDzNX8)|
 ||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.R)|[Choosing explanatory variables](https://youtu.be/vzu_V-DdF7I)|
 ||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_prediction_intervals.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_prediction_intervals.R)|[Uncertainty and prediction intervals](https://youtu.be/EamOTCiJzwI)|
+
+ ============ updated to here =================
+
+|Topic|slides|code|video|
+||||
 |Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|[Regression diagnostics in R](https://youtu.be/luvliCq6QuQ)}
 |Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|[Logarithms](https://youtu.be/f7jzXnj4ga8)|
 ||||[an example](https://youtu.be/TRMhkn2RzHw)|
@@ -105,7 +110,6 @@ All [regression pdfs concatenated](regression.pdf).
 
 
 
- ============ updated to here =================
 
 ### Supplementary materials
 
@@ -114,12 +118,6 @@ All [regression pdfs concatenated](regression.pdf).
 |Logistic regression|[pdf](Supplementary/S01-Logistic_regression/S01-Logistic_regression.pdf)|[R](Supplementary/S01-Logistic_regression/S01-Logistic_regression.R)|
 |Poisson regression|[pdf](Supplementary/S02-Poisson_regression/S02-Poisson_regression.pdf)|[R](Supplementary/S02-Poisson_regression/S02-Poisson_regression.R)|
 |Random effects|[pdf](Supplementary/S03-Random_effects/S03-Random_effects.pdf)|[R](Supplementary/S03-Random_effects/S03-Random_effects.R)|
-
-
-### Supplementary topics
-
-|Topic|Source|Handouts|
-||||
 |Data Management|[Set01.Rnw](Set01/Set01_data_management.Rnw)|[Set01.pdf](Set01/Set01_data_management.pdf)|
 |Data|[Set02.Rnw](Set02/Set02_data.Rnw)|[Set02.pdf](Set02/Set02_data.pdf)|
 |Model comparison|[SetS04.Rnw](SetS04/SetS04_Model_comparison.Rnw)|[SetS04.pdf](SetS04/SetS04_Model_comparison.pdf)|
