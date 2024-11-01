@@ -19,7 +19,7 @@ Here are some [resources](resources.html) for current graduate students.
 - [Luis Damiano](https://luisdamiano.github.io/) ([MS](https://dr.lib.iastate.edu/entities/publication/f94a1bd4-07f5-410b-907c-5bedd7d2b3fe) & [PhD](https://dr.lib.iastate.edu/entities/publication/7567604c-1a0f-47e8-b60c-728f6c404461)) (Sandia National Labs)
 - Nate Garton ([MS](https://lib.dr.iastate.edu/stat_las_pubs/222/) & [PhD](https://lib.dr.iastate.edu/etd/17938/), ISU) (GA-CCRi)
 - [Gulzina Kuttubekova](https://kgulzina.github.io/about/)  ([MS](https://lib.dr.iastate.edu/creativecomponents/325/), ISU) (Meta)
-- Colin Lewis-Beck ([PhD](https://lib.dr.iastate.edu/etd/17239/) co-advised with Petrutza Caragea, ISU) ([University of Iowa](https://stat.uiowa.edu/people/colin-lewis-beck)) (Google)
+- Colin Lewis-Beck ([PhD](https://lib.dr.iastate.edu/etd/17239/) co-advised with Petrutza Caragea, ISU) (Google)
 - Xiyuan "Kelly" Sun ([MS](https://lib.dr.iastate.edu/creativecomponents/349/), ISU) (Wells Fargo)
 - [Nehemias Ulloa](https://nulloa.github.io/) ([PhD](https://lib.dr.iastate.edu/etd/17590/), ISU) (USDA)
 - Eric Mittman ([PhD](https://lib.dr.iastate.edu/etd/16416/), ISU) (IBM)
@@ -30,7 +30,7 @@ Here are some [resources](resources.html) for current graduate students.
 - [Will Landau](http://will-landau.com/) 
 ([PhD](https://lib.dr.iastate.edu/etd/15745/), ISU) (Eli Lilly)
 - [Matt Simpson](https://lib.dr.iastate.edu/etd/14731/) ([PhD](thesis/MattSimpson_PhDthesis.pdf), ISU) (SAS)
-- Casey Oliver ([MS](thesis/CaseyOliver_CC.pdf), ISU) (co-advised with [Dan Nettleton](http://stat.iastate.edu/people/dan-nettleton)) (LifeWay Christian Resources)
+- Casey Oliver ([MS](thesis/CaseyOliver_CC.pdf), ISU) (co-advised with [Dan Nettleton](http://stat.iastate.edu/people/dan-nettleton)) (Cigna)
 - Danny Sheinson (MS & PhD, UCSB) (co-advised with [Wendy Meiring](http://www.pstat.ucsb.edu/faculty%20pages/MEIRING.htm) for PhD) (Genentech)
 - Matt Wheeler (MS, UCSB) (Jane Technologies, Inc.)
 
@@ -59,12 +59,13 @@ Here are some [resources](resources.html) for current graduate students.
 ## Undergraduate Students
 
 - [Aridania Gerardo](https://www.linkedin.com/in/aridaniagerardo/)
-- Roger Castillo Ramos
+- [Roger Castillo Ramos](https://www.linkedin.com/in/rogercas/)
 - [Ben Neo](https://www.bneo.xyz/) 
 - [Ben Monroe](https://cyclones.com/sports/wrestling/roster/ben-monroe/12594)
 - [Srilikitheswari "Lucky" Korrapati](https://www.linkedin.com/in/srilikitha)
 
 <img src="student_figs/aridania_gerardo.webp" style="height:118px;" />
+<img src="student_figs/roger_castillo.jpeg" style="height:118px;" />
 <img src="student_figs/ben_neo.jpeg" style="height:118px;" />
 <img src="student_figs/ben_monroe.webp" style="height:118px;" />
 <img src="student_figs/srilikitheswari_korrapati.jpeg" style="height:118px;" />
