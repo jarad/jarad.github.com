@@ -50,6 +50,7 @@ Here are some [resources](resources.html) for current graduate students.
 <img src="student_figs/ialvarez.jpg" style="height:118px;" />
 <img src="student_figs/adamms.jpg" style="height:118px;" />
 <img src="student_figs/michaud.jpg" style="height:118px;" />
+<img src="student_figs/landau.jpg" style="height:118px;" />
 <img src="student_figs/simpsonm.jpg" style="height:118px;" />
 <img src="student_figs/oliver.jpg" style="height:118px;" />
 <img src="student_figs/sheinson.jpg" style="height:118px;" />
