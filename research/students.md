@@ -11,8 +11,11 @@ Here are some [resources](resources.html) for current graduate students.
 
 ## All advisees
 
+- AJ Phillips (PhD)
+- Payton Miloser (PhD)
 - Aditya Ranade (PhD)
-- Spencer Wadsworth ([MS](https://dr.lib.iastate.edu/entities/publication/424fa6d4-f6cb-4eec-8e07-c32cd1eb601d))
+- Spencer Wadsworth ([MS](https://dr.lib.iastate.edu/entities/publication/424fa6d4-f6cb-4eec-8e07-c32cd1eb601d), PhD)
+- Fredrick Osei (MS)
 - [Luis Damiano](https://luisdamiano.github.io/) ([MS](https://dr.lib.iastate.edu/entities/publication/f94a1bd4-07f5-410b-907c-5bedd7d2b3fe) & [PhD](https://dr.lib.iastate.edu/entities/publication/7567604c-1a0f-47e8-b60c-728f6c404461))
 - Nate Garton ([MS](https://lib.dr.iastate.edu/stat_las_pubs/222/) & [PhD](https://lib.dr.iastate.edu/etd/17938/), ISU) (CCRI)
 - [Gulzina Kuttubekova](https://kgulzina.github.io/about/) ([MS](https://lib.dr.iastate.edu/creativecomponents/325/), ISU) ([University of California, Santa Cruz](https://www.soe.ucsc.edu/people/kgulzina))
@@ -31,12 +34,17 @@ Here are some [resources](resources.html) for current graduate students.
 - Danny Sheinson (MS & PhD, UCSB) (co-advised with [Wendy Meiring](http://www.pstat.ucsb.edu/faculty%20pages/MEIRING.htm) for PhD) (Genentech)
 - Matt Wheeler (MS, UCSB) (Polyvore/Yahoo!)
 
+
+<img src="student_figs/payton_miloser.jpg" style="height:118px;" />
+<img src="student_figs/aditya_ranade.jpg" style="height:118px;" />
+<img src="student_figs/fredrick_osei.jpeg" style="height:118px;" />
+<img src="student_figs/spencer_wadsworth.jpeg" style="height:118px;" />
+<img src="student_figs/luis_damiano.jpeg" style="height:118px;" />
 <img src="student_figs/gulzina.jpg" style="height:118px;" />
 <img src="student_figs/colin.jpg" style="height:118px;" />
 <img src="student_figs/xiyuansu.jpg" style="height:118px;" />
 <img src="student_figs/nulloa_resized.jpg" style="height:118px;" />
 <img src="student_figs/nmgarton.jpg" style="height:118px;" />
-<img src="student_figs/nulloa_resized.jpg" style="height:118px;" />
 <img src="student_figs/kwill.jpg" style="height:118px;" />
 <img src="student_figs/emittman.jpg" style="height:118px;" />
 <img src="student_figs/ialvarez.jpg" style="height:118px;" />
@@ -46,6 +54,17 @@ Here are some [resources](resources.html) for current graduate students.
 <img src="student_figs/oliver.jpg" style="height:118px;" />
 <img src="student_figs/sheinson.jpg" style="height:118px;" />
 <img src="student_figs/wheeler.jpg" style="height:118px;" />
+
+## Undergraduate Students
+
+- [Ben Neo](https://www.bneo.xyz/) 
+- [Ben Monroe](https://cyclones.com/sports/wrestling/roster/ben-monroe/12594)
+- [Srilikitheswari "Lucky" Korrapati](https://www.linkedin.com/in/srilikitha)
+
+<img src="student_figs/ben_neo.jpeg" style="height:118px;" />
+<img src="student_figs/ben_monroe.webp" style="height:118px;" />
+<img src="student_figs/srilikitheswari_korrapati.jpg" style="height:118px;" />
+
 
 ## Preparing future faculty (PFF) mentees
 

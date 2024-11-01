@@ -32,9 +32,11 @@ Journal of Agricultural, Biological, and Environmental Statistics.
 
 ## Current advisees ([All advisees](students.html))
 
-- [Luis Damiano](https://www.stat.iastate.edu/people/luis-damiano)
 - [Spencer Wadsworth](https://www.stat.iastate.edu/people/spencer-wadsworth)
 - [Aditya Ranade](https://www.stat.iastate.edu/people/aditya-ranade)
+- [AJ Phillips]()
+- [Payton Miloser]()
+
 
 ## Recent presentations ([All Presentations](presentations.html))
 
