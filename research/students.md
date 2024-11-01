@@ -15,7 +15,7 @@ Here are some [resources](resources.html) for current graduate students.
 - Payton Miloser (PhD)
 - Aditya Ranade (PhD)
 - Spencer Wadsworth ([MS](https://dr.lib.iastate.edu/entities/publication/424fa6d4-f6cb-4eec-8e07-c32cd1eb601d), PhD)
-- Fredrick Osei (MS)
+- Fredrick Osei (MS) co-advised with Danica Ommen
 - [Luis Damiano](https://luisdamiano.github.io/) ([MS](https://dr.lib.iastate.edu/entities/publication/f94a1bd4-07f5-410b-907c-5bedd7d2b3fe) & [PhD](https://dr.lib.iastate.edu/entities/publication/7567604c-1a0f-47e8-b60c-728f6c404461))
 - Nate Garton ([MS](https://lib.dr.iastate.edu/stat_las_pubs/222/) & [PhD](https://lib.dr.iastate.edu/etd/17938/), ISU) (CCRI)
 - [Gulzina Kuttubekova](https://kgulzina.github.io/about/) ([MS](https://lib.dr.iastate.edu/creativecomponents/325/), ISU) ([University of California, Santa Cruz](https://www.soe.ucsc.edu/people/kgulzina))
@@ -63,7 +63,7 @@ Here are some [resources](resources.html) for current graduate students.
 
 <img src="student_figs/ben_neo.jpeg" style="height:118px;" />
 <img src="student_figs/ben_monroe.webp" style="height:118px;" />
-<img src="student_figs/srilikitheswari_korrapati.jpg" style="height:118px;" />
+<img src="student_figs/srilikitheswari_korrapati.jpeg" style="height:118px;" />
 
 
 ## Preparing future faculty (PFF) mentees
