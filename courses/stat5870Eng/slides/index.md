@@ -86,13 +86,13 @@ All [regression pdfs concatenated](regression.pdf).
 ||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.R)|[Choosing explanatory variables](https://youtu.be/vzu_V-DdF7I)|
 ||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_prediction_intervals.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_prediction_intervals.R)|[Uncertainty and prediction intervals](https://youtu.be/EamOTCiJzwI)|
 |Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|[Regression diagnostics in R](https://youtu.be/luvliCq6QuQ)
+|Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|[Logarithms](https://youtu.be/f7jzXnj4ga8)|
+||||[an example](https://youtu.be/TRMhkn2RzHw)|
 
  ============ updated to here =================
 
 |Topic|slides|code|video|
 ||||
-|Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|[Logarithms](https://youtu.be/f7jzXnj4ga8)|
-||||[an example](https://youtu.be/TRMhkn2RzHw)|
 |Categorical explanatory variables|[pdf](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.pdf)|[R](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.R)|[Binary variables](https://youtu.be/53lhpwa3rwY)|
 ||||[Categorical variables](https://youtu.be/fDFyG_q2xQs)|
 |Multiple regression|[pdf](Regression/R05-Multiple_regression/R05-Multiple_regression.pdf)|[R](Regression/R05-Multiple_regression/R05-Multiple_regression.R)|[Multiple Regression](https://youtu.be/w5FhJdXWpBk)|
