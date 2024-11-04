@@ -91,7 +91,6 @@ All [regression pdfs concatenated](regression.pdf).
 
 |Topic|slides|code|video|
 ||||
-|Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|[Regression diagnostics in R](https://youtu.be/luvliCq6QuQ)}
 |Using logarithms in regression|[pdf](Regression/R03-Logarithms/R03-Logarithms.pdf)|[R](Regression/R03-Logarithms/R03-Logarithms.R)|[Logarithms](https://youtu.be/f7jzXnj4ga8)|
 ||||[an example](https://youtu.be/TRMhkn2RzHw)|
 |Categorical explanatory variables|[pdf](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.pdf)|[R](Regression/R04-Categorical_explanatory_variables/R04-Categorical_explanatory_variables.R)|[Binary variables](https://youtu.be/53lhpwa3rwY)|
