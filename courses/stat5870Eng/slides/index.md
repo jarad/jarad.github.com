@@ -85,7 +85,7 @@ All [regression pdfs concatenated](regression.pdf).
 |Simple linear regression|[pdf](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Simple_linear_regression.R)|[Simple linear regression](https://youtu.be/qAGZfkDzNX8)|
 ||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_choosing_explanatory_variables.R)|[Choosing explanatory variables](https://youtu.be/vzu_V-DdF7I)|
 ||[pdf](Regression/R01-Simple_linear_regression/R01-Regression_prediction_intervals.pdf)|[R](Regression/R01-Simple_linear_regression/R01-Regression_prediction_intervals.R)|[Uncertainty and prediction intervals](https://youtu.be/EamOTCiJzwI)|
-|Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|[Regression diagnostics in R](https://youtu.be/luvliCq6QuQ)}
+|Regression diagnostics|[pdf](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.pdf)|[R](Regression/R02-Regression_diagnostics/R02-Regression_diagnostics.R)|[Regression diagnostics in R](https://youtu.be/luvliCq6QuQ)
 
  ============ updated to here =================
 
