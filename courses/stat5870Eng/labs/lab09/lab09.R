@@ -1,47 +1,51 @@
-## ----eval=FALSE---------------------------------------------------------------
-## install.packages("GGally")
+# Author: Jarad Niemi
+# Date:   2024-11-07
+# Purpose: This lab intends to introduce you to the syntax used in R to create
+#          different multiple regression models.
+#-------------------------------------------------------------------------------
 
 
-## -----------------------------------------------------------------------------
-library("tidyverse")
+## install.packages("GGally") # ggpairs()
+## install.packages("GGally") # resid_panel() and resid_xpanel()
+
+library("tidyverse"); theme_set(theme_bw())
 library("GGally")
 library("Sleuth3")
 
+my_diag <- function(m) {
+  resid_panel(m, 
+              plots = c("qq",     # qqplot for normality 
+                        "resid",  # resid v fitted for linearity and constant variance
+                        "cookd",  # Cook's Distance for influential observations
+                        "index"), # resid v row number for indepence
+              smoother = TRUE,    # add smoothing lines to resid and index plots
+              qqbands = TRUE)     # add bands for qq plot
+}
 
-## -----------------------------------------------------------------------------
 ggplot(case1001, aes(Height, Distance)) +
   geom_point() + theme_bw()
 
-
-## -----------------------------------------------------------------------------
 # First create the variables yourself
-case1001_tmp <- case1001 %>%
+case1001_tmp <- case1001 |>
   mutate(Height2 = Height * Height,
          Height3 = Height * Height2)
 
 # Then run the regression
 m1 <- lm(Distance ~ Height + Height2 + Height3, data = case1001_tmp)
 
-
-## -----------------------------------------------------------------------------
-new <- data.frame(Height = 500) %>%
+new <- data.frame(Height = 500) |>
   mutate(Height2 = Height * Height,  # Need to manually create the
          Height3 = Height * Height2) # quadratic and cubic terms
+
 predict(m1, new)
 
-
-## -----------------------------------------------------------------------------
 m2 <- lm(Distance ~ Height + I(Height^2) + I(Height^3), data = case1001) # or
 m3 <- lm(Distance ~ poly(Height, 3, raw = TRUE),        data = case1001)
 
-
-## -----------------------------------------------------------------------------
 new <- data.frame(Height = 500)
-predict(m2, new) # or
-predict(m3, new)
+predict(m2, newdata = new) # or
+predict(m3, newdata = new)
 
-
-## -----------------------------------------------------------------------------
 # From http://www.biostathandbook.com/multipleregression.html
 # Modified from http://rcompanion.org/rcompanion/e_05.html
 Input = ("
@@ -118,87 +122,74 @@ WATTS_BR                   19          510    6.7  82        5.25  14.19   26.5
 
 longnosedace = read.table(textConnection(Input),header=TRUE)
 
-
-## -----------------------------------------------------------------------------
 head(longnosedace)
 summary(longnosedace)
 
-ggpairs(longnosedace %>% select(-stream),
-        progress = interactive()) +
-  theme_bw()
+ggpairs(longnosedace |> select(-stream),
+        progress = interactive()) 
 
-
-## -----------------------------------------------------------------------------
+# Although I am demonstrating sqrt() here, I almost always use log() instead
 m <- lm(sqrt(count) ~ no3 + maxdepth, data = longnosedace)
 summary(m)
 
-
-## -----------------------------------------------------------------------------
 m <- lm(sqrt(count) ~ ., data = longnosedace)
 summary(m)
 
-
-## -----------------------------------------------------------------------------
-m <- lm(sqrt(count) ~ ., data = longnosedace %>% select(-stream))
+# Remove stream via the data argument
+m <- lm(sqrt(count) ~ ., data = longnosedace |> select(-stream))
 summary(m)
 
-
-## -----------------------------------------------------------------------------
+# Remove stream in the formula
 m <- lm(sqrt(count) ~ .-stream, data = longnosedace)
 summary(m)
 
-
-## -----------------------------------------------------------------------------
+# Sometimes this seems appealing, but I've never used it in practice
 m <- lm(sqrt(count) ~ no3 + acreage - 1, data = longnosedace)
 summary(m)
 
-
-## -----------------------------------------------------------------------------
+# Add an interaction explicitly
 m1 <- lm(sqrt(count) ~ no3 + maxdepth + no3:maxdepth, data = longnosedace)
 summary(m1)
 
-
-## -----------------------------------------------------------------------------
-m2 <- lm(sqrt(count) ~ no3*maxdepth, data = longnosedace)
+# Add an interaction implicitly
+m2 <- lm(sqrt(count) ~ no3 * maxdepth, data = longnosedace)
 summary(m2)
 
-
-## -----------------------------------------------------------------------------
+# Add all 2 way interactions (there is only 1 here)
 m3 <- lm(sqrt(count) ~ (no3 + maxdepth)^2, data = longnosedace)
 summary(m3)
 
-
-## -----------------------------------------------------------------------------
-m4 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^2, data = longnosedace) # main effects and two-way interactions
+# main effects and two-way interactions
+# using ()^2
+m4 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^2, data = longnosedace) 
 summary(m4)
 
-m5 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^3, data = longnosedace) # main effects, two-way interactions, and three-way interaction
+# main effects, two-way interactions, and three-way interaction
+# using ()^3
+m5 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^3, data = longnosedace) 
 summary(m5)
 
-m5 <- lm(sqrt(count) ~ no3 * maxdepth * acreage, data = longnosedace) # main effects, two-way interactions, and three-way interaction
+# main effects, two-way interactions, and three-way interaction
+# using * 
+m5 <- lm(sqrt(count) ~ no3 * maxdepth * acreage, data = longnosedace) 
 summary(m5)
 
-
-## -----------------------------------------------------------------------------
-m <- lm(sqrt(count) ~ .^2, data = longnosedace %>% select(-stream))
+# remove stream and then include all 2-way interactions
+m <- lm(sqrt(count) ~ .^2, data = longnosedace |> select(-stream))
 summary(m)
 
-
-## -----------------------------------------------------------------------------
+# Simply linear regression model
 m <- lm(sqrt(count) ~ no3, data = longnosedace)
 summary(m)
 
+# Add acreage
 mA <- update(m, ~ . + acreage)
 summary(mA)
 
+# Remove no3
 mR <- update(mA, ~ . - no3)
 summary(mR)
 
-
-## ----eval=FALSE---------------------------------------------------------------
 ## ?formula
 
-
-## ----eval=FALSE---------------------------------------------------------------
 ## help(package="Sleuth3")
-

@@ -71,3 +71,7 @@ ggplot(case0101,
   geom_jitter(width = 0.1)       # jitter the points makes sure points don't overlap
 
 (tt <- t.test(Score ~ Treatment, data = case0101, var.equal = TRUE))
+
+my_round <- function(x, nd = 2) {
+  format(round(x, nd), nsmall = nd)
+}

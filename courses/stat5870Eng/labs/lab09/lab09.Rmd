@@ -10,40 +10,72 @@ output:
 
 [![](../rcode_button.png){fig-alt="R Code Button" fig-align="left" width=20%}](lab09.R)
 
+
+```{r metadata, include=FALSE}
+# Author: Jarad Niemi
+# Date:   2024-11-07
+# Purpose: This lab intends to introduce you to the syntax used in R to create
+#          different multiple regression models.
+#-------------------------------------------------------------------------------
+
+```
+
 Make sure the following 
 packages are installed:
 
 - GGally
+- ggResidpanel
 
 You can use the following code to perform the installation:
 
 ```{r, eval=FALSE}
-install.packages("GGally")
+install.packages("GGally") # ggpairs()
+install.packages("ggResidpanel") # resid_panel() and resid_xpanel()
 ```
 
 Now load packages
 
-```{r}
-library("tidyverse")
-library("GGally")
+```{r packages}
+library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
+library("GGally")
+library("ggResidpanel")
 ```
+
+Before we begin, let's create a function to look at diagnostic plots from the 
+ggResidpanel package. 
+Here is my prefered set of plots.
+
+```{r my-diag}
+# My diagnostic plots
+my_diag <- function(m) {
+  resid_panel(m, 
+              plots = c("qq",     # qqplot for normality 
+                        "resid",  # resid v fitted for linearity and constant variance
+                        "cookd",  # Cook's Distance for influential observations
+                        "index"), # resid v row number for indepence
+              smoother = TRUE,    # add smoothing lines to resid and index plots
+              qqbands = TRUE)     # add bands for qq plot
+}
+```
+
+We will only use these plots when we want to. 
 
 
 ## Higher order terms
 
 Consider the `case1001` data set.
 
-```{r}
+```{r case1001-data0plot}
 ggplot(case1001, aes(Height, Distance)) +
   geom_point() + theme_bw()
 ```
 
 There are a number of ways to run the cubic model.
 
-```{r}
+```{r case1001-tmp}
 # First create the variables yourself
-case1001_tmp <- case1001 %>%
+case1001_tmp <- case1001 |>
   mutate(Height2 = Height * Height,
          Height3 = Height * Height2)
 
@@ -56,17 +88,18 @@ I don't prefer this method because
 - it clutters your `data.frame` with unnecessary columns and
 - it makes prediction harder
 
-```{r}
-new <- data.frame(Height = 500) %>%
+```{r case1001-prediction-hard}
+new <- data.frame(Height = 500) |>
   mutate(Height2 = Height * Height,  # Need to manually create the
          Height3 = Height * Height2) # quadratic and cubic terms
+
 predict(m1, new)
 ```
 
 An alternative approach is to use a formula to construct the higher order terms.
 e.g.
 
-```{r}
+```{r case1001-models}
 m2 <- lm(Distance ~ Height + I(Height^2) + I(Height^3), data = case1001) # or
 m3 <- lm(Distance ~ poly(Height, 3, raw = TRUE),        data = case1001)
 ```
@@ -74,10 +107,10 @@ m3 <- lm(Distance ~ poly(Height, 3, raw = TRUE),        data = case1001)
 Now, your original `data.frame` is unchanged and your new `data.frame` is 
 simpler.
 
-```{r}
+```{r case1001-predict-easy}
 new <- data.frame(Height = 500)
-predict(m2, new) # or
-predict(m3, new)
+predict(m2, newdata = new) # or
+predict(m3, newdata = new)
 ```
 
 
@@ -85,7 +118,7 @@ predict(m3, new)
 
 Run the following code to construct the longnosedace data
 
-```{r}
+```{r longnosedace-data}
 # From http://www.biostathandbook.com/multipleregression.html
 # Modified from http://rcompanion.org/rcompanion/e_05.html
 Input = ("
@@ -165,26 +198,26 @@ longnosedace = read.table(textConnection(Input),header=TRUE)
 
 Take a quick look at the data
 
-```{r}
+```{r longnosedace-pairs}
 head(longnosedace)
 summary(longnosedace)
 
-ggpairs(longnosedace %>% select(-stream),
-        progress = interactive()) +
-  theme_bw()
+ggpairs(longnosedace |> select(-stream),
+        progress = interactive()) 
 ```
 
 Adding additional explanatory variables is accomplished by separating the 
 explanatory variables by `+`.
 
-```{r}
+```{r longnosedace-no3-maxdepth}
+# Although I am demonstrating sqrt() here, I almost always use log() instead
 m <- lm(sqrt(count) ~ no3 + maxdepth, data = longnosedace)
 summary(m)
 ```
 
 You can run a regression with all variables using `.`
 
-```{r}
+```{r longnosedace-lm-all}
 m <- lm(sqrt(count) ~ ., data = longnosedace)
 summary(m)
 ```
@@ -192,14 +225,16 @@ summary(m)
 But you need to make sure you want to include all the variables. 
 In this case, we probably wanted to exclude the `stream` variable 
 
-```{r}
-m <- lm(sqrt(count) ~ ., data = longnosedace %>% select(-stream))
+```{r longnosedace-lm-all-relevant}
+# Remove stream via the data argument
+m <- lm(sqrt(count) ~ ., data = longnosedace |> select(-stream))
 summary(m)
 ```
 
 or
 
-```{r}
+```{r longnose-dace-minus-stream}
+# Remove stream in the formula
 m <- lm(sqrt(count) ~ .-stream, data = longnosedace)
 summary(m)
 ```
@@ -207,7 +242,8 @@ summary(m)
 You can also use this technique to eliminate the intercept and perform
 "regression through the origin". 
 
-```{r}
+```{r longnosedace-regression-through-the-origin}
+# Sometimes this seems appealing, but I've never used it in practice
 m <- lm(sqrt(count) ~ no3 + acreage - 1, data = longnosedace)
 summary(m)
 ```
@@ -220,7 +256,8 @@ the intercept to be 0.
 Interactions can be added to a model by using a colon (:) between two 
 explanatory variables, e.g.
 
-```{r}
+```{r longnosedace-interaction-explicit}
+# Add an interaction explicitly
 m1 <- lm(sqrt(count) ~ no3 + maxdepth + no3:maxdepth, data = longnosedace)
 summary(m1)
 ```
@@ -230,8 +267,9 @@ whenever an interaction (higher order term) is included in the model,
 R provides a convenient way of including both the main effects as well as 
 the interaction by using an asterisk (*). 
 
-```{r}
-m2 <- lm(sqrt(count) ~ no3*maxdepth, data = longnosedace)
+```{r longnosedace-interaction-implicit}
+# Add an interaction implicitly
+m2 <- lm(sqrt(count) ~ no3 * maxdepth, data = longnosedace)
 summary(m2)
 ```
 
@@ -239,7 +277,8 @@ Alternatively, you can use the caret symbol (^) and specifying what order
 interactions you want. 
 For example `^2` will include all two-way interactions.
 
-```{r}
+```{r longnosedace-all-two-way-interactions-1}
+# Add all 2 way interactions (there is only 1 here)
 m3 <- lm(sqrt(count) ~ (no3 + maxdepth)^2, data = longnosedace)
 summary(m3)
 ```
@@ -247,21 +286,28 @@ summary(m3)
 If you want to include more terms, 
 you have a couple of options, e.g. 
 
-```{r}
-m4 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^2, data = longnosedace) # main effects and two-way interactions
+```{r longnosedace-all-two-way-interactions-3}
+# main effects and two-way interactions
+# using ()^2
+m4 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^2, data = longnosedace) 
 summary(m4)
 
-m5 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^3, data = longnosedace) # main effects, two-way interactions, and three-way interaction
+# main effects, two-way interactions, and three-way interaction
+# using ()^3
+m5 <- lm(sqrt(count) ~ (no3 + maxdepth + acreage)^3, data = longnosedace) 
 summary(m5)
 
-m5 <- lm(sqrt(count) ~ no3 * maxdepth * acreage, data = longnosedace) # main effects, two-way interactions, and three-way interaction
+# main effects, two-way interactions, and three-way interaction
+# using * 
+m5 <- lm(sqrt(count) ~ no3 * maxdepth * acreage, data = longnosedace) 
 summary(m5)
 ```
 
 We can combine the `.` with this notation for higher order terms. 
 
-```{r}
-m <- lm(sqrt(count) ~ .^2, data = longnosedace %>% select(-stream))
+```{r longnosedace-all-two-way-interactions-of-all-variables-except-stream}
+# remove stream and then include all 2-way interactions
+m <- lm(sqrt(count) ~ .^2, data = longnosedace |> select(-stream))
 summary(m)
 ```
 
@@ -271,13 +317,16 @@ summary(m)
 Another approach that might be useful is to construct a model and then add or 
 remove variables from that model.
 
-```{r}
+```{r longnosedace-lm-no3}
+# Simply linear regression model
 m <- lm(sqrt(count) ~ no3, data = longnosedace)
 summary(m)
 
+# Add acreage
 mA <- update(m, ~ . + acreage)
 summary(mA)
 
+# Remove no3
 mR <- update(mA, ~ . - no3)
 summary(mR)
 ```
@@ -286,7 +335,7 @@ summary(mR)
 
 You can find out more information by looking at 
 
-```{r, eval=FALSE}
+```{r formula-help, eval=FALSE}
 ?formula
 ```
 
@@ -295,7 +344,7 @@ You can find out more information by looking at
 Practice these skills by taking a look at the data sets in the `Sleuth3` 
 package.
 
-```{r, eval=FALSE}
+```{r sleuth3, eval=FALSE}
 help(package="Sleuth3")
 ```
 
@@ -316,7 +365,3 @@ When you get a new data set ask yourself these questions in this order
 3. Is the explanatory variable continuous or categorical? 
 4. How many levels does each categorical explanatory variable have?
 
-
-```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
-knitr::knit("lab09.Rmd", tangle = TRUE)
-```

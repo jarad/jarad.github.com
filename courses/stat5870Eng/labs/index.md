@@ -15,11 +15,11 @@ tagline: Statistical Methods for Research Workers
  - [Lab05](lab05/lab05.html) - Estimator Evaluation
  - [Lab06](lab06/lab06.html) - Built-in Analyses in R
  - [Lab07](lab07/lab07.html) - RMarkdown
+ - [Lab08](lab08/lab08.html) - Categorical Explanatory Variables
+ - [Lab09](lab09/lab09.html) - Multiple Regression in R
  
    === updated through here ===
  
- - [Lab08](lab08/lab08.html) - Categorical Explanatory Variables
- - [Lab09](lab09/lab09.html) - Multiple Regression in R
  - [Lab10](lab10/lab10.html) - ANOVA and F-tests
  - [Lab11](lab11/lab11.html) - Contrasts
  - [Lab12](lab12/lab12.html) - Generalized linear mixed effect models
