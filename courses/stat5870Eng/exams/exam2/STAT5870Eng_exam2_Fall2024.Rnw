@@ -1,0 +1,473 @@
+\documentclass[12pt,fleqn]{article}
+
+\usepackage{amsmath, amssymb, amsthm, color, graphics, graphicx, comment}
+\usepackage{pdfpages}
+\usepackage[hidelinks]{hyperref}
+
+\usepackage{caption} \captionsetup[table]{skip=10pt}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+
+
+
+\setlength{\textwidth}{6.8in}
+\setlength{\textheight}{9.9in}
+\topmargin-1in
+\evensidemargin-.15in
+\oddsidemargin-.15in
+
+\newenvironment{answer}
+{ {\color{blue} Answer:} }
+{  }
+
+\newcommand{\class}{STAT 5870-1/A}
+\newcommand{\semester}{Fall 2024}
+\newcommand{\exam}{Exam II}
+
+\newcommand{\pvalue}{$p$-value}
+\newcommand{\ind}{\stackrel{ind}{\sim}}
+
+
+\excludecomment{answer}
+
+\begin{document}
+
+\noindent {\textbf{Name}} \rule{5in}{.01in}\\[1in]
+
+\begin{center}
+  \textbf{\large \semester{}} \hfill \textbf{\large \class{}} \hfill \textbf{\large \exam{}}\\
+  \hfill \textbf{(80 points)}
+\end{center}
+
+\vspace*{1in}
+
+<<set-seed, echo=FALSE>>=
+set.seed(20241022)
+@
+
+{\large
+\textbf{Instructions:}\\
+\begin{itemize}
+\item Write your name on the top, but do not open the exam.
+\item You are allowed to use one 8.5'' x 11'' page of notes (front and back) and a calculator.
+\item A total of 5 pages with a front and back.
+\item For full/partial credit, show all your work.
+\item Please turn in extra pages. 
+\end{itemize}
+}
+
+
+% \begin{answer}
+% <<>>=
+% library("tidyverse")
+% @
+% \end{answer}
+
+\newpage
+(page intentionally left blank)
+
+\newpage
+\begin{enumerate}
+\item The Verbio company has an anaerobic digester in Nevada, IA that produces
+ethanol from corn stover (the post-harvest corn plant material). 
+To understand daily production of ethanol, engineers measure the amount of 
+ethanol produced from each of 15 digesters on one day in July. 
+<<one-normal-data, echo=FALSE>>=
+y <- rnorm(15, 4.837756, 1.13562) # m^3
+n <- length(y)
+m <- round(mean(y),1)
+s <- round(sd(y),1)
+ci <- m + c(-1,1) * qt(.975, df = n-1) * s / sqrt(n)
+t <- round((5-m)/(s/sqrt(n)), 3)
+@
+From these 15 digesters, they observe a sample mean of \Sexpr{m} $m^3$ and a 
+sample standard deviation of \Sexpr{s} $m^3$. 
+For the following questions, let $y_i$ be the gallons of ethanol produced from
+digester $i$ with $i=1,\ldots,15$ and assume $Y_i \ind N(\mu,\sigma^2)$ with
+prior $p(\mu,\sigma^2) \propto 1/\sigma^2$. 
+
+\begin{enumerate}
+\item Identify the 4 assumptions indicated by the model $Y_i \ind N(\mu,\sigma^2)$.
+(4 points)
+
+\begin{answer}
+\begin{itemize}
+\item Observations are independent
+\item Observations are normally distributed
+\item Observations have the same mean
+\item Observations have the same variance (or standard deviation)
+\end{itemize}
+\end{answer}
+
+\vfill\vfill
+
+\item What is the posterior expectation for the {\bf mean} amount of ethanol 
+(including units) produced by a digester on that day? (2 points)
+
+\begin{answer}
+\Sexpr{m}\, $m^3$
+\end{answer}
+
+\vfill
+
+\item What is the posterior expectation for the {\bf variance} in the
+amount of ethanol (including units) produced by a digester on that day?
+(4 points)
+
+\begin{answer}
+$\frac{(\Sexpr{n}-1)\times \Sexpr{s}^2}{\Sexpr{n}-3}\, (m^3)^2$
+= \Sexpr{round((n-1)*s^2/(n-3),1)} $m^6$
+\end{answer}
+
+\vfill
+
+\item Calculate a 95\% credible interval for the {\bf mean} ethanol produced
+(including units). (5 points)
+
+\begin{answer}
+The formula is
+\[ \begin{array}{rl}
+\overline{y} \pm t_{n-1,1-a/2} s / \sqrt{n}
+&= \Sexpr{m} \pm \Sexpr{round(qt(0.975, df = n-1),2)} \times \Sexpr{s} / \sqrt{\Sexpr{n}} \\
+&= (\Sexpr{round(ci[1],1)}, \Sexpr{round(ci[2],1)}) \, m^3
+\end{array} \]
+
+\end{answer}
+
+\vfill\vfill
+
+\item Calculate the posterior probability that the {\bf mean} amount of ethanol
+produced is greater than 5 $m^3$. (5 points)
+
+\begin{answer}
+\[ \begin{array}{rl}
+P(\mu > 5 | y) 
+&= P\left( \left. \frac{\mu - \overline{y}}{s/\sqrt{n}} > \frac{5 - \Sexpr{m}}{\Sexpr{s}/\sqrt{\Sexpr{n}}} \right| y\right) \\
+&= P\left( \left. T_{\Sexpr{n}-1} > \Sexpr{t} \right| y\right) \\
+&= 1 - P\left( \left. T_{\Sexpr{n-1}} < \Sexpr{t} \right| y\right) \\
+&\approx 1 - \Sexpr{round(pt(t, df = n-1),3)} = \Sexpr{1-round(pt(t, df = n-1),3)}
+\end{array} \]
+Choosing the answer from the table that is closest to \Sexpr{t} 
+would suggest approximately $1-0.85 = 0.15$.
+\end{answer}
+
+\vfill \vfill
+
+\end{enumerate}
+
+
+\newpage
+\item The Iowa Environmental Council provides information to the public about
+the number of Iowa beaches that have \emph{E. coli} (a bacteria) advisories,
+i.e. measured \emph{E. coli} are above the state standard. 
+On 6 Sep 6 2024, 14 of the 83 beaches in Iowa had \emph{E. coli} advisories. 
+For these data, assume a binomial distribution for the number of beaches
+with an advisory. 
+
+\begin{answer}
+This example taken from
+\url{https://www.iaenvironment.org/our-work/clean-water-and-land-stewardship/weekly-water-watch}
+\end{answer}
+
+\begin{answer}
+<<one-binomial-data, echo=FALSE>>=
+y <- 14
+n <- 83
+phat <- round(y/n,2)
+se   <- sqrt(phat*(1-phat)/n)
+ci <- round(phat + c(-1,1)*1.96*se,2)
+z <- (phat - 0.1)/se
+@
+\end{answer}
+
+\begin{enumerate}
+\item What are the two main assumptions in a binomial model? (2 points)
+
+\begin{answer}
+\begin{itemize}
+\item Each attempt is independent
+\item Each attempt has the same probability of success
+\end{itemize}
+\end{answer}
+
+\vfill
+
+\item What is the maximum likelihood estimate for the probability of a beach
+having an advisory? (2 points)
+
+\begin{answer}
+Let $y=14$ be the number of beaches with an advisor and $n=83$ be the total 
+number of beaches. The MLE for the probability of a beach having an 
+advisory is $y/n = \Sexpr{phat}$.
+\end{answer}
+
+\vfill
+
+\item Calculate a two-sided \pvalue{} for the null hypothesis that the  
+probability of a beach advisory is 0.1. (5 points)
+
+\begin{answer}
+\[ 
+2P\left(Z  < -\left|\frac{\hat\theta - 0.1}{\sqrt{\frac{\hat\theta(1-\hat\theta)}{n}}}\right|\right)
+= 2P\left(Z  < -\left|\frac{\Sexpr{phat} - 0.1}{\sqrt{\frac{\Sexpr{phat}(1-\Sexpr{phat})}{\Sexpr{n}}}}\right|\right)
+= 2P\left(Z  < -|z|\right)
+= 2*\Sexpr{round(pnorm(-abs(z)),3)}
+= \Sexpr{round(2*pnorm(-abs(z)),3)}
+\]
+\end{answer}
+
+\vfill \vfill
+
+\item Construct an approximate, equal-tail 95\% confidence interval for the 
+probability of a beach having an advisory. (5 points)
+
+\begin{answer}
+Let $\hat\theta = \Sexpr{phat}$. An approximate equal-tail 95\% confidence 
+interval can be found using the formula 
+\[ \begin{array}{rl}
+\hat\theta \pm z_{a/2} \sqrt{\frac{\hat\theta(1-\hat\theta)}{n}} 
+&= \Sexpr{phat} \pm 1.96 \sqrt{\frac{\Sexpr{phat}(1-\Sexpr{phat})}{\Sexpr{n}}} \\
+&= (\Sexpr{ci[1]}, \Sexpr{ci[2]})
+\end{array} \]
+\end{answer}
+
+\vfill \vfill
+
+\item Is it reasonable to use the formula that you used in 
+constructing the confidence interval? Why or why not? (3 points)
+
+\begin{answer}
+Yes, it is reasonable as the number of attempts is relatively large and the 
+probability of success is not too close to 0 or 1.
+With that being said, using `binom.test()` or `prop.test()` would be better as
+`binom.test()` is exact and `prop.test()` uses an improved formula.
+\end{answer}
+
+\vfill \vfill
+
+\end{enumerate}
+
+
+
+
+<<two-normal-populations, echo=FALSE>>=
+d <- data.frame(group = rep(c("A","B"), times = c(9,13)))
+d$y <- rnorm(nrow(d)) + (d$group == "A")
+tt <- t.test(y ~ group, data = d, var.equal = TRUE)
+tcrit <- qt(.975, df = tt$parameter)
+se <- round(diff(tt$conf.int) / (2 * tcrit), 2)
+di <- round(-diff(tt$estimate), 2)
+@
+
+\newpage
+\item For this question, please refer to the {\bf R Output} on page \pageref{page:routput}.
+
+\begin{enumerate}
+\item Let $Y_{i,g}$ be the $i$th observation from the $g$th group. 
+Using statistical notation, write the model being fit to these data. 
+(5 points)
+
+\begin{answer}
+\[ 
+Y_{i,g} \ind N(\mu_g, \sigma^2)
+\]
+\end{answer}
+
+\vfill \vfill
+
+\item How many total observations do we have for this data set? (2 points)
+
+\begin{answer}
+The degrees of freedom is $n_1 + n_2 - 2$ and is equal to \Sexpr{tt$parameter}.
+Thus $n_1 + n_2 = \Sexpr{tt$parameter}+2 = \Sexpr{tt$parameter+2}.$
+\end{answer}
+
+\vfill
+
+
+
+\item What is the null hypothesis for the \pvalue{}? (2 points)
+
+\begin{answer}
+$H_0: \mu = 0$
+\end{answer}
+
+\vfill
+
+
+\item What is the alternative hypothesis for the p-value? (2 points)
+
+\begin{answer}
+$H_A: \mu \ne 0$
+\end{answer}
+
+\vfill
+
+\item What is the estimated difference in the group means? (3 points)
+
+\begin{answer}
+\[ 
+\Sexpr{tt$estimate[1]} - \Sexpr{tt$estimate[2]}
+= \Sexpr{round(di, 2)}
+\]
+If the difference was taken the other direction,
+that would be fine. 
+\end{answer}
+
+\vfill
+
+\item Construct an approximate, equal-tail 68\% confidence interval for the 
+difference in group means. (6 points)
+
+\begin{answer}
+This answer requires the estimated difference in means (from the previous part)
+as well as the standard error of that difference. 
+The standard error can be obtained from the confidence interval provided since
+the difference of the confidence interval endpoints is 
+$2\times t_{n_1 + n_2 - 2, .025} \times SE$ where 
+$t_{20, .025} = \Sexpr{tcrit}$ from the t-table. (5 points)
+So we find
+\[
+SE = (\Sexpr{tt$conf.int[2]} - \Sexpr{tt$conf.int[1]}) / (2\times \Sexpr{tcrit})
+= \Sexpr{se}
+\]
+Since we are only looking for an approximate interval, 
+we will use the z-critical value for a 68\% interval which is 1. 
+Thus an approximate, equal-tail 68\% interval is 
+\[ 
+\Sexpr{di} \pm 1 \times \Sexpr{se} 
+= (\Sexpr{di - se}, \Sexpr{di + se})
+\]
+If the difference was taken the other direction 
+(resulting in an interval that is the negative of this),
+that would be fine. 
+\end{answer}
+
+\vfill \vfill \vfill
+
+\end{enumerate}
+
+
+\newpage
+\item High school robotics competitions are fought with 1 alliance of 3 robots
+competing against another alliance of 3 robots. 
+After qualification rounds, the top robotics teams choose other teams to join
+an alliance that lasts for the whole playoffs. 
+At the most recent competition, 
+the Ames High School Team had to choose between Team A and Team B based on which
+team could score notes in an amplifier. 
+During qualification, Ames scouted these two teams and found that Team A 
+scored on 3 of 4 attempts while Team B scored on 14 of 20 attempts. 
+
+\begin{answer}
+The solutions below require the following. 
+<<>>=
+yA <- 3; nA <- 4
+yB <- 14; nB <- 20
+@
+Also, R code below is executed, but would not have been executed by 
+students taking this exam. 
+\end{answer}
+
+\begin{enumerate}
+\item State the posterior distribution for the probability of scoring for 
+{\bf both} teams. (4 points)
+
+\begin{answer}
+\[ \theta_t|y \ind Be(1 + y_t, 1 + n_t - y_t) \]
+where $t\in\{A,B\}$ indicates the team. 
+\end{answer}
+
+\vfill
+
+\item Calculate the Bayes estimator for the probability of scoring
+for {\bf Team B}. (2 points)
+
+\begin{answer}
+\[ 
+\frac{1 + \Sexpr{yB}}{2 + \Sexpr{nB}} 
+= \frac{\Sexpr{1+yB}}{\Sexpr{2+nB}}
+= \Sexpr{(1+yB)/(2+nB)}
+\]
+\end{answer}
+
+\vfill
+
+\item Write R code to construct an equal-tail 95\% credible interval for 
+the probability of scoring for {\bf Team B}. (4 points)
+
+\begin{answer}
+<<>>=
+qbeta(c(.025, .975), 1 + yB, 1 + nB - yB)
+@
+\end{answer}
+
+\vfill
+
+\item Write R code to calculate the posterior probability that the probability 
+of scoring for {\bf Team B} is greater than 0.75. (4 points)
+
+\begin{answer}
+The exact answer is
+<<>>=
+1 - pbeta(0.75, 1 + yB, 1 + nB - yB)
+@
+
+A simulation based answer (which is approximate) is
+<<>>=
+nreps <- 1e6
+thetaB <- rbeta(nreps, 1 + yB, 1 + nB - yB)
+mean(thetaB > 0.75)
+@
+
+\end{answer}
+
+\vfill\vfill
+
+\item Write R code to estimate the posterior probability that the 
+probability of scoring is larger for Team B than for Team A. (6 points)
+
+\begin{answer}
+<<>>=
+thetaA <- rbeta(nreps, 1 + yA, 1 + nA - yA)
+thetaB <- rbeta(nreps, 1 + yB, 1 + nB - yB)
+mean(thetaB > thetaA)
+@
+\end{answer}
+
+\vfill\vfill\vfill
+
+\end{enumerate}
+
+
+
+\end{enumerate}
+
+
+
+
+
+
+
+\newpage
+{\bf R Output}
+
+(feel free to remove but I do need this page)
+\label{page:routput}
+<<two-normal-output, background='white', echo=FALSE>>=
+tt
+@
+
+
+\newpage
+(scratch paper)
+
+\newpage
+\input{ztable}
+
+\newpage
+\input{ttable}
+
+\end{document}
+
