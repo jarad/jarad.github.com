@@ -12,7 +12,7 @@
 
 <<options, results='hide', echo=FALSE, purl=FALSE>>=
 opts_chunk$set(comment=NA, 
-               fig.width=6, fig.height=4.4, 
+               fig.width=6, fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -22,7 +22,7 @@ options(width=120)
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
 @
 
@@ -65,7 +65,7 @@ X_i = \I(\mbox{observation $i$ is level A})
 % \right.
 \]
 \pause 
-\bc
+
 where $\I(statement)$ is an \alert{indicator function} that is 1 when 
 $statement$ is true and 
 0 otherwise.
@@ -76,7 +76,7 @@ Then
 \item $\beta_0+\beta_1$ is the expected response for level A, \pause and
 \item $\beta_1$ is the expected difference in response\\ (level A minus level B).
 \end{itemize}
-\nc\ec
+
 \end{frame}
 
 
@@ -87,18 +87,17 @@ Then
 <<eval=FALSE>>=
 Sleuth3::case0501
 @
-\bc
-<<echo=FALSE, fig.height = 4>>=
+
+<<echo=FALSE>>=
 g_two_diets = 
-ggplot(case0501 %>% filter(Diet %in% c("R/R50","N/R50")),
+ggplot(case0501 |> filter(Diet %in% c("R/R50","N/R50")),
       aes(x = Diet, y = Lifetime)) + 
-  geom_jitter() +
-  labs(y = "Lifetime (months)") +
-  theme_bw()
+  geom_jitter(width = 0.1) +
+  labs(y = "Lifetime (months)")
 
 g_two_diets
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -122,9 +121,9 @@ X_i = \mathrm{I}(Diet_i = \mbox{N/R50})
 % \right.
 \]
 
-\vspace{-0.2in} \pause
+\pause
 
-\bc
+
 then 
 \[ \begin{array}{lll}
 E[\mbox{Lifetime}|\mbox{R/R50}] &= \pause E[Y_i|X_i=0] &= \pause \beta_0 \pause \\
@@ -137,7 +136,7 @@ and
 &= E[\mbox{Lifetime}|\mbox{N/R50}] - E[\mbox{Lifetime}|\mbox{R/R50}] \pause \\
 &= (\beta_0+\beta_1) - \beta_0 = \beta_1.
 \end{array} \]
-\nc\ec
+
 \end{frame}
 
 
@@ -145,33 +144,30 @@ and
 \begin{frame}[fragile]
 \frametitle{R code}
 
-\vspace{-0.4in}
-
-\bc
 <<>>=
 case0501$X <- ifelse(case0501$Diet == "N/R50", 1, 0)
 (m <- lm(Lifetime ~ X, data = case0501, subset = Diet %in% c("R/R50","N/R50")))
 confint(m)
 predict(m, data.frame(X=1), interval = "confidence") # Expected lifetime on N/R50
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}
 \frametitle{Mice lifetimes}
-\bc
+
 <<echo=FALSE>>=
-case0501_means = case0501 %>%
-  group_by(Diet) %>%
+case0501_means = case0501 |>
+  group_by(Diet) |>
   summarize(Lifetime = mean(Lifetime), .groups = "drop")
 
 g_two_diets + 
-  geom_crossbar(data = case0501_means %>% filter(Diet %in% c("R/R50","N/R50")),
+  geom_crossbar(data = case0501_means |> filter(Diet %in% c("R/R50","N/R50")),
                 aes(ymin = Lifetime, ymax = Lifetime), color = "magenta")
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -191,38 +187,36 @@ This is equivalent to our current regression model where
 \mu_1 &= \beta_0 + \beta_1
 \end{array} \]
 \pause
-\bc
+
 assuming 
 \begin{itemize}
 \item $\mu_0$ represents the mean for the R/R50 group and 
 \item $\mu_1$ represents the mean for N/R50 group.
 \end{itemize}
 \pause
-When the models are effectively the same, but have different parameters we 
-the model is \alert{reparameterized}. 
-\nc\ec
+When the models are effectively the same, 
+but have different parameters we say the model is \alert{reparameterized}. 
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Equivalence}
 
-\vspace{-0.4in}
 
-\bc
 <<>>=
 summary(m)$coefficients[2,4] # p-value
 confint(m)
 t.test(Lifetime ~ Diet, data = case0501, subset = Diet %in% c("R/R50","N/R50"), var.equal=TRUE)
 @
-\nc\ec
+
 \end{frame}
 
 
 \subsection{Many levels}
 \begin{frame}[fragile]
 \frametitle{Using a categorical variable as an explanatory variable.}
-\bc
+
 <<echo=FALSE>>=
 g_all_diets = 
 ggplot(case0501,
@@ -233,7 +227,7 @@ ggplot(case0501,
 g_all_diets + 
   geom_jitter()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -241,9 +235,7 @@ g_all_diets +
 
 \small
 
-\vspace{-0.4in}
 
-\bc
 	\begin{enumerate}
 	\item Choose one of the levels as the \alert{reference} level, e.g. N/N85 \pause
 	\item Construct dummy variables using indicator functions, i.e.  
@@ -261,7 +253,7 @@ g_all_diets +
 	\end{array} \] 
 	\item Estimate the parameters of a multiple regression model using these dummy variables.
 	\end{enumerate}
-	\nc\ec
+	
 }
 
 
@@ -277,7 +269,7 @@ Y_i \ind N(
 \]
 where 
 \pause
-\bc
+
 \begin{itemize}
 \item $\beta_0\phantom{+\beta_1}\,\,\,$ is the expected lifetime for the N/N85 group \pause
 \item $\beta_0+\beta_1$ is the expected lifetime for the N/R40 group \pause
@@ -288,7 +280,7 @@ where
 \end{itemize}
 \pause 
 and thus $\beta_p$ for $p>0$ is the difference in expected lifetimes between one group and a \alert{reference} group.
-\nc\ec
+
 \end{frame}
 
 
@@ -310,11 +302,8 @@ and thus $\beta_p$ for $p>0$ is the difference in expected lifetimes between one
 \begin{frame}[fragile]
 \frametitle{R code}
 
-\vspace*{-2\baselineskip}
-
-\bc
 <<>>=
-case0501 <- case0501 %>% 
+case0501 <- case0501 |> 
   mutate(X1 = Diet == "N/R40",
          X2 = Diet == "N/R50",
          X3 = Diet == "NP",
@@ -325,7 +314,7 @@ m <- lm(Lifetime ~ X1 + X2 + X3 + X4 + X5, data = case0501)
 m
 confint(m)
 @
-\nc\ec
+
 \end{frame}
 
 \begin{frame}[fragile]
@@ -333,11 +322,11 @@ confint(m)
 
 \vspace*{-2\baselineskip}
 
-\bc
+
 <<>>=
 summary(m)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -361,31 +350,31 @@ Note: the only way for $X_{i,p}$ to increase by one is if initially $X_{i,1}=\cd
 
 \vspace{0.2in} \pause
 
-\bc
+
 For example, 
 \begin{itemize} \small
 \item The expected lifetime for mice on the N/N85 diet is 32.7 (31.0,34.4) months. \pause
 \item The expected increase in lifetime for mice on the N/R40 diet compared to the N/N85 diet is 12.4 (10.0,14.9) months. \pause
 \item The model explains 45\% of the variability in mice lifetimes.
 \end{itemize}
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Using a categorical variable as an explanatory variable.}
-\bc
-<<echo=FALSE>>=
-case0501_labels = case0501_means %>%
+
+<<echo=FALSE, warning=FALSE>>=
+case0501_labels = case0501_means |>
   dplyr::mutate(midpoints = (Lifetime + coef(m)[1])/2,
-                label = paste0("beta[",0:5,"]")) %>% 
+                label = paste0("beta[",0:5,"]")) |> 
   filter(Diet != "N/N85")
 
 g_all_diets + 
   geom_jitter(color = "gray") +
   geom_crossbar(data = case0501_means,
                 aes(ymin = Lifetime, ymax = Lifetime), color = "magenta") +
-  geom_segment(data = case0501_means %>% filter(Diet != "N/N85"),
+  geom_segment(data = case0501_means |> filter(Diet != "N/N85"),
                 aes(xend = Diet, y = coef(m)[1], yend = coef(m)[1] + coef(m)[-1]),
                color = "magenta", 
                arrow = arrow(length = unit(0.03, "npc"))) +
@@ -396,7 +385,7 @@ g_all_diets +
   geom_label(aes(x = "N/N85", y = coef(m)[1], label = "beta[0]"),
              parse = TRUE)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -413,7 +402,7 @@ for groups $j=0,1,2,\ldots,5$.
 
 \vspace*{\baselineskip} \pause
 
-\bc
+
 Our regression model is a \alert{reparameterization} of the multiple group model:
 \[ \begin{array}{lrl}
 N/N85: & \mu_0 &= \beta_0 \\
@@ -425,7 +414,7 @@ lopro: & \mu_5 &= \beta_0 + \beta_5 \\
 \end{array} \]
 \pause
 assuming the groups are labeled appropriately.
-\nc\ec
+
 \end{frame}
 
 
