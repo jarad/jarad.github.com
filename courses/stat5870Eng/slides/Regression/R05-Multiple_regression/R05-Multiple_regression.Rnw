@@ -14,7 +14,7 @@
 options(width=120)
 opts_chunk$set(comment=NA, 
                fig.width=6, 
-               fig.height=4.4, 
+               fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -23,7 +23,7 @@ opts_chunk$set(comment=NA,
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
 @
 
@@ -47,7 +47,7 @@ set.seed(2)
 	\pause
 	The \alert{multiple regression model} has mean
 	\[ \mu_i = \beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p} \]
-	\bc
+	
 	\pause where for observation $i$ 
   \begin{itemize}
   \item $Y_i$ is the response \pause and 
@@ -61,7 +61,7 @@ set.seed(2)
   %    Y_i = \mu_i + e_i, \, e_i \stackrel{iid}{\sim} N(0,\sigma^2) \]
   % where 
   % \[ \mu_i=\beta_0+\beta_1 X_{i,1}+\cdots + \beta_p X_{i,p}. \]
-  \nc\ec
+  
 }
 
 
@@ -74,7 +74,7 @@ set.seed(2)
 
   \pause
   
-  \bc
+  
 	\begin{itemize} \small
 	\item Functions ($f(X)$) \pause
 	\item Dummy variables for categorical variables ($X_1=\I()$) \pause
@@ -87,7 +87,7 @@ set.seed(2)
     \item Categorical-categorical \pause
     \end{itemize}
 	\end{itemize}
-	\nc\ec
+	
 }
 
 
@@ -98,20 +98,20 @@ set.seed(2)
 	
 	\vspace{0.2in} \pause
 	
-	\bc
+	
 	The interpretation is 
 	\begin{itemize}
 	\item $\beta_0$ is the expected value of the response $Y_i$ when \alert{all} explanatory variables are zero. \pause
 	\item $\beta_p,\,p\ne 0$ is the expected increase in the response for a one-unit increase in the $p^{th}$ explanatory variable \alert{when all other explanatory variables are held constant}. \pause
 	\item $R^2$ is the proportion of the variability in the response explained by the model
 	\end{itemize}
-	\nc\ec
+	
 }
 
 
 \subsection{Parameter estimation and inference}
 \begin{frame}
-\frametitle{Parameter estimation and inferece}
+\frametitle{Parameter estimation and inference}
 
 \tiny
 
@@ -135,7 +135,7 @@ r &= y-X\hat\beta \\
 \hat\sigma^2 &= \frac{1}{n-(p+1)}r^\top r \\
 \end{array} \]
 \pause
-\bc
+
 Confidence/credible intervals and (two-sided) \pvalue{}s are constructed using 
 \[
 \hat\beta_j \pm t_{n-(p+1),1-a/2} SE(\hat\beta_j)
@@ -144,15 +144,17 @@ Confidence/credible intervals and (two-sided) \pvalue{}s are constructed using
 \]
 where $T_{n-(p+1)} \sim t_{n-(p+1)}$ and $SE(\hat\beta_j)$ is the $j$th diagonal element of 
 $\hat\sigma^2(X^\top X)^{-1}$.
-\nc\ec
+
 \end{frame}
 
 
 \subsection{Higher order terms ($X^2$)}
 \begin{frame}
 \frametitle{Galileo experiment}
-\bc
-<<>>=
+
+\vspace{-0.4in}
+
+<<fig.height=3.5>>=
 curve(ifelse(x>0,-x^2+1,NA), -1, 1, axes=FALSE, frame.plot=TRUE, 
       xlab="", ylab="", ylim=c(0,1.1),
       lty=2)
@@ -163,19 +165,18 @@ points(0,1.03,pch=19, cex=2)
 arrows(-0.3,1.03,-0.1,1.03, length=0.1)
 text(-0.45,1.03,"force")
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Galileo data ({\tt Sleuth3::case1001})}
-\bc
+
 <<>>=
 ggplot(Sleuth3::case1001, aes(Height, Distance)) +
-  geom_point() +
-  theme_bw()
+  geom_point() 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -192,7 +193,7 @@ Let
 
 \pause
 
-\bc
+
 Simple linear regression assumes
 \[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i\phantom{ +\beta_2 H_i^2 + \beta_3 H_i^3}, \sigma^2) \]
 \pause
@@ -201,7 +202,7 @@ The quadratic multiple regression assumes
 \pause
 The cubic multiple regression assumes 
 \[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 H_i +\beta_2 H_i^2 + \beta_3 H_i^3, \sigma^2) \]
-\nc\ec
+
 \end{frame}
 
 
@@ -209,9 +210,6 @@ The cubic multiple regression assumes
 \begin{frame}[fragile]
 \frametitle{R code and output}
 
-\vspace{-0.4in}
-
-\bc
 <<tidy=FALSE, echo=TRUE>>=
 # Construct the variables by hand
 m1 = lm(Distance ~ Height,                             case1001)
@@ -222,7 +220,7 @@ coefficients(m1)
 coefficients(m2)
 coefficients(m3)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -280,7 +278,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 \begin{frame}
 \frametitle{Galileo experiment (Sleuth3::case1001)}
-\bc
+
 <<echo=FALSE>>=
 g = ggplot(case1001, aes(x=Height, y=Distance)) + geom_point(size=3)
 multiplot(
@@ -291,7 +289,7 @@ multiplot(
   layout = matrix(1:4,2,byrow=TRUE)
 )
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -301,13 +299,13 @@ multiplot(
 
 % \begin{frame}[fragile]
 % \frametitle{R code and output}
-% \bc
+% 
 % <<tidy=FALSE, echo=TRUE>>=
 % # Let R construct the variables for you
 % m = lm(Distance~poly(Height, 3, raw=TRUE), case1001)
 % summary(m)
 % @
-% \nc\ec
+% 
 % \end{frame}
 
 
@@ -327,7 +325,7 @@ I extracted some data from the Maryland Biological Stream Survey. ... The [respo
 	
 	\pause
 	
-	\bc
+	
 Consider the model 
 	\[ Y_i \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_{i,1}+\beta_2 X_{i,2}, \sigma^2) \]
 	\pause where 
@@ -336,14 +334,14 @@ Consider the model
 	\item $X_{i,1}$: maximum depth (in cm) of stream $i$
 	\item $X_{i,2}$: nitrate concentration (mg/liter) of stream $i$
 	\end{itemize}
-	\nc\ec
+	
 }
 
 
 
 \begin{frame}[fragile]
 \frametitle{Exploratory}
-\bc
+
 <<echo=FALSE>>=
 longnosedace <- structure(list(stream = structure(1:67, .Label = c("BASIN_RUN", 
 "BEAR_BR", "BEAR_CR", "BEAVER_DAM_CR", "BEAVER_RUN", "BENNETT_CR", 
@@ -416,7 +414,7 @@ ggplot(m %>% filter(variable %in% c("maxdepth","no3")), aes(x=value,y=count)) +
   facet_wrap(~variable, scales="free") +
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -425,25 +423,25 @@ ggplot(m %>% filter(variable %in% c("maxdepth","no3")), aes(x=value,y=count)) +
 
 \begin{frame}[fragile]
 \frametitle{R code and output}
-\bc
+
 <<echo = TRUE>>=
 m <- lm(count ~ maxdepth + no3, longnosedace)
 summary(m)
 @
-\nc\ec
+
 \end{frame}
 
 
 \frame{\frametitle{Interpretation}
 \small
-\bc
+
 	\begin{itemize}
 	\item Intercept ($\beta_0$): The expected count of Longnose Dace when maximum depth and nitrate concentration are both zero is -18. \pause
 	\item Coefficient for maxdepth ($\beta_1$): Holding nitrate concentration constant, each cm increase in maximum depth is associated with an additional 0.48 Longnose Dace counted on average. \pause
 	\item Coefficient for no3 ($\beta_2$): Holding maximum depth constant, each mg/liter increase in nitrate concentration is associated with an addition 8.3 Longnose Dace counted on average. \pause
 	\item Coefficient of determination ($R^2$): The model explains 19\% of the variability in the count of Longnose Dace.
 	\end{itemize}
-	\nc\ec
+	
 }
 
 
@@ -451,7 +449,7 @@ summary(m)
 % \subsection{Categorical variables ($X_1=\I()$)}
 % \begin{frame}[fragile]
 % \frametitle{Using a categorical variable as an explanatory variable.}
-% \bc
+% 
 % <<echo=FALSE>>=
 % opar = par(mar=c(5,5,0,0)+.1)
 % plot(Lifetime~jitter(I(as.numeric(Diet)-1)), case0501, xaxt='n', pch=19, cex.lab=1.5, 
@@ -462,11 +460,11 @@ summary(m)
 % segments((0:5)-.3, yy, (0:5)+.3, yy, col='red', lwd=2)
 % par(opar)
 % @
-% \nc\ec
+% 
 % \end{frame}
 % 
 % \frame{\frametitle{Regression with a categorical variable}
-% \bc
+% 
 % 	\begin{itemize}
 % 	\item Choose one of the levels as the \alert{reference} level, e.g. N/N85 \pause
 % 	\item Construct dummy variables using indicator functions, i.e.  
@@ -484,7 +482,7 @@ summary(m)
 % 	\end{array} \] 
 % 	\item \pause Estimate the parameters of a multiple regression model using these dummy variables.
 % 	\end{itemize}
-% 	\nc\ec
+% 	
 % }
 % 
 % 
@@ -492,7 +490,7 @@ summary(m)
 % 
 % \begin{frame}[fragile]
 % \frametitle{R code and output}
-% \bc
+% 
 % <<>>=
 % # by default, R uses the alphabetically first group as the reference level
 % case0501$Diet = relevel(case0501$Diet, ref='N/N85') 
@@ -500,7 +498,7 @@ summary(m)
 % m = lm(Lifetime~Diet, case0501)
 % summary(m)
 % @
-% \nc\ec
+% 
 % \end{frame}
 % 
 % 
@@ -533,7 +531,7 @@ summary(m)
 % 
 % \begin{frame}[fragile]
 % \frametitle{Using a categorical variable as an explanatory variable.}
-% \bc
+% 
 % <<echo=FALSE>>=
 % opar = par(mar=c(5,5,0,4)+.1)
 % plot(Lifetime~jitter(I(as.numeric(Diet)-1)), case0501, xaxt='n', pch=19, cex.lab=1.5, 
@@ -548,7 +546,7 @@ summary(m)
 % text(1:5, (yy[2:6]+yy[1])/2, expression(beta[1],beta[2],beta[3],beta[4],beta[5]), pos=4, col='red', cex=1.5, offset=1)
 % par(opar)
 % @
-% \nc\ec
+% 
 % \end{frame}
 
 
@@ -564,14 +562,14 @@ of them has on the mean response depends on the value of the other.
 
 \pause
 
-\bc
+
 For example, 
 \begin{itemize}
 \item Longnose dace count: The effect of nitrate (no3) on longnose dace count depends on the maxdepth. \pause (Continuous-continuous) \pause
 \item Energy expenditure: The effect of mass depends on the species type. \pause (Continuous-categorical) \pause
 \item Crop yield: the effect of tillage method depends on the fertilizer brand \pause (Categorical-categorical) \pause
 \end{itemize}
-\nc\ec
+
 \end{frame}
 
 
@@ -588,13 +586,13 @@ For observation $i$, let
 \end{itemize}
 
 \vspace{0.2in} \pause
-\bc
+
 The mean containing only \alert{main effects} is 
 \[ \mu_i = \beta_0 + \beta_1X_{i,1}+\beta_2X_{i,2}.\phantom{+\beta_3X_{i,1}X_{i,2}} \]
 \pause
 The mean with the \alert{interaction} is 
 \[ \mu_i = \beta_0 + \beta_1X_{i,1}+\beta_2X_{i,2}+\beta_3X_{i,1}X_{i,2}.  \]
-\nc\ec
+
 \end{frame}
 
 
@@ -608,12 +606,12 @@ which indicates that the intercept of the line for $x_1$ depends on the value of
 
 \vspace{0.2in} \pause
 
-\bc
+
 Similarly,
 
 \[ \mu = (\beta_0+\beta_1x_1) + \beta_2 x_2 \]
 which indicates that the intercept of the line for $x_2$ depends on the value of $x_1$.
-\nc\ec
+
 \end{frame}
 
 
@@ -628,18 +626,18 @@ which indicates that both the intercept and slope for $x_1$ depend on the value 
 
 \vspace{0.2in} \pause
 
-\bc
+
 Similarly,
 
 \[ \mu = (\beta_0+\beta_1x_1) + (\beta_2+\beta_3x_1) x_2 \]
 which indicates that both the intercept and slope for $x_2$ depend on the value of $x_1$.
-\nc\ec
+
 \end{frame}
 
 
 % \begin{frame}[fragile]
 % \frametitle{Visualizing the models}
-% \bc
+% 
 % <<echo=FALSE>>=
 % opar = par(mfrow=c(1,2))
 % b = c(1,1,10,1)
@@ -658,7 +656,7 @@ which indicates that both the intercept and slope for $x_2$ depend on the value 
 % for (i in seq_along(x2s)) abline(b[1]+b[3]*x2s[i], b[2]+b[4]*x2s[i], col=i, lty=i, lwd=2)
 % par(opar)
 % @
-% \nc\ec
+% 
 % \end{frame}
 
 
@@ -722,29 +720,29 @@ which indicates that both the intercept and slope for $x_2$ depend on the value 
 
 \begin{frame}[fragile]
 \frametitle{R code and output - main effects only}
-\bc
+
 <<>>=
 mM = lm(count ~ no3 + maxdepth, longnosedace)
 summary(mM)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{R code and output - with an interaction}
-\bc
+
 <<>>=
 mI = lm(count ~ no3*maxdepth, longnosedace)
 summary(mI)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Visualizing the model}
-\bc
+
 <<echo=FALSE>>=
 newdata = expand.grid(maxdepth = c(26,63,160), no3 = c(0,8))
 me = lm(count ~ no3 + maxdepth, data = longnosedace)
@@ -762,7 +760,7 @@ ggplot(fit, aes(x = no3, y = count, color = maxdepth, group = maxdepth)) +
   facet_grid(.~model) + 
   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -776,7 +774,7 @@ ggplot(fit, aes(x = no3, y = count, color = maxdepth, group = maxdepth)) +
 \subsection{Continuous-categorical interaction}
 \begin{frame}
 \frametitle{In-flight energy expenditure (Sleuth3::case1002)}
-\bc
+
 <<>>=
 mM <- lm(log(Energy) ~ log(Mass) + Type, case1002)
 ggplot(case1002, aes(x = Mass, y = Energy, color = Type, shape = Type)) + 
@@ -786,7 +784,7 @@ ggplot(case1002, aes(x = Mass, y = Energy, color = Type, shape = Type)) +
   theme_bw() +
   theme(legend.position = "bottom")
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -804,13 +802,13 @@ Let category A be the reference level. For observation $i$, let
 \end{itemize}
 
 \vspace{0.2in} \pause
-\bc
+
 The mean containing only \alert{main effects} is 
 \[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i.\phantom{+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i} \]
 \pause
 The mean with the \alert{interaction} is 
 \[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i. \]
-\nc\ec
+
 \end{frame}
 
 
@@ -821,7 +819,7 @@ The mean containing only \alert{main effects} is
 \[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i.\phantom{+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i} \]
 
 \vspace{0.2in} \pause
-\bc
+
 For each category, the line is 
 \[ \begin{array}{c|l@{}lll}
 \mbox{Category} & \multicolumn{4}{c}{\mbox{Line } (\mu)} \\
@@ -833,7 +831,7 @@ C & (&\beta_0 + \beta_3) &+ &\beta_1 X \\
 \end{array} \]
 \pause
 Each category has a different intercept, but a common slope.
-\nc\ec
+
 \end{frame}
 
 
@@ -849,7 +847,7 @@ The model with an \alert{interaction} is
 \[ \mu_i = \beta_0 + \beta_1 X_{i,1}+\beta_2 B_i+\beta_3 C_i+\beta_4 X_{i,1}B_i+\beta_5 X_{i,1}C_i \]
 
 \vspace{0.2in} \pause
-\bc
+
 For each category, the line is
 \[ \begin{array}{c|l@{}ll@{}l@{}l}
 \mbox{Category} & \multicolumn{5}{c}{\mbox{Line } (\mu)} \\
@@ -861,13 +859,13 @@ C & (&\beta_0 + \beta_3) &+ (&\beta_1+\beta_5) &X \\
 \end{array} \]
 \pause
 Each category has its own intercept and its own slope. 
-\nc\ec
+
 \end{frame}
 
 
 % \begin{frame}[fragile]
 % \frametitle{Visualizing the models}
-% \bc
+% 
 % <<echo=FALSE, fig.height=4>>=
 % b = c(0,3,7)
 % opar = par(mar=c(5,6,4,2)+.1, mfrow=c(1,2))
@@ -907,7 +905,7 @@ Each category has its own intercept and its own slope.
 % text(8, b0+b1*(x1+x2)/2, expression(beta[1], beta[1]+beta[4], beta[1]+beta[5]), pos=4)
 % par(opar)
 % @
-% \nc\ec
+% 
 % \end{frame}
 
 
@@ -915,29 +913,29 @@ Each category has its own intercept and its own slope.
 
 \begin{frame}[fragile]
 \frametitle{R code and output - main effects only}
-\bc
+
 <<echo = TRUE>>=
 summary(mM <- lm(log(Energy) ~ log(Mass) + Type, case1002))
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{R code and output - with an interaction}
-\bc
+
 <<echo = TRUE>>=
 summary(mI <- lm(log(Energy) ~ log(Mass) * Type, case1002))
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Visualizing the models}
-\bc
+
 <<echo=FALSE>>=
 newdata = expand.grid(Mass = c(1,250), Type = levels(case1002$Type))
 
@@ -957,7 +955,7 @@ ggplot(fit, aes(x = Mass, y = Energy, color = Type, linetype = Type)) +
   theme_bw() +  
   theme(legend.position = "bottom")
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -967,7 +965,7 @@ ggplot(fit, aes(x = Mass, y = Energy, color = Type, linetype = Type)) +
 \subsection{Categorical-categorical interaction}
 \begin{frame}
 \frametitle{Seaweed regeneration (Sleuth3::case1301 subset)}
-\bc
+
 <<>>=
 case1301_subset = case1301 %>% filter(Block %in% c("B1","B2") & Treat %in% c("L","Lf","LfF"))
 
@@ -977,7 +975,7 @@ ggplot(case1301_subset, aes(x = Treat, y = Cover,
   theme_bw() + 
   theme(legend.position = "bottom")
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -996,13 +994,13 @@ Let category A and type 0 be the reference level. For observation $i$, let
 \end{itemize}
 
 \vspace{0.2in} \pause
-\bc
+
 The mean containing only main effects is 
 \[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i.\phantom{ + \beta_4 1_i B_i + \beta_5 1_i C_i} \]
 \pause
 The mean with an interaction is 
 \[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i + \beta_4 1_i B_i + \beta_5 1_i C_i. \]
-\nc\ec
+
 \end{frame}
 
 
@@ -1013,14 +1011,14 @@ The mean with an interaction is
 % 
 % \vspace{-0.1in} \pause
 % 
-% \bc
+% 
 % \begin{itemize}
 % \item $\beta_0$ is the expected response for category A and type 0
 % \item $\beta_1$ is the change in response for moving from type 0 to type 1
 % \item $\beta_2$ is the change in response for moving from category A to category B
 % \item $\beta_3$ is the change in response for moving from category A to category C
 % \end{itemize}
-% \nc\ec
+% 
 % \end{frame}
 
 
@@ -1032,7 +1030,7 @@ The mean containing only main effects is
 
 \vspace{-0.1in} \pause
 
-\bc
+
 The means in the \alert{main effect model} are 
 \[ \begin{array}{c|ccc} 
 & \multicolumn{3}{c}{\mbox{Category}} \\
@@ -1041,7 +1039,7 @@ The means in the \alert{main effect model} are
 0 & \beta_0 \phantom{{}+\beta_1}\, & \beta_0 \phantom{{}+\beta_1}\,+\beta_2 & \beta_0 \phantom{{}+\beta_1}\,+\beta_3 \\
 1 & \beta_0+\beta_1 & \beta_0+\beta_1+\beta_2 & \beta_0+\beta_1+\beta_3 \\
 \end{array} \]
-\nc\ec
+
 \end{frame}
 
 
@@ -1058,7 +1056,7 @@ The means in the \alert{main effect model} are
 % 
 %  \pause
 % 
-% \bc
+% 
 % {\footnotesize
 % \begin{itemize}
 % \item $\beta_0$ is the expected response for category A and type 0 \pause
@@ -1069,7 +1067,7 @@ The means in the \alert{main effect model} are
 % \item $\beta_5$ is the difference in change in response for moving from category A to category C for type 1 compared to type 0
 % \end{itemize}
 % }
-% \nc\ec
+% 
 % \end{frame}
 
 
@@ -1083,7 +1081,7 @@ The mean with an interaction is
 \[ \mu_i = \beta_0 + \beta_1 1_i + \beta_2 B_i + \beta_3 C_i + \beta_4 1_i B_i + \beta_5 1_i C_i. \]
 
 \pause
- \bc
+ 
 The means are 
 \[ \begin{array}{c|lll} 
 & \multicolumn{3}{c}{\mbox{Category}} \\
@@ -1099,7 +1097,7 @@ The means are
 \pause
 This is equivalent to a \alert{cell-means model} where each combination has its
 own mean.
-\nc\ec
+
 \end{frame}
 
 
@@ -1107,7 +1105,7 @@ own mean.
 
 % \begin{frame}[fragile]
 % \frametitle{Visualizing the models}
-% \bc
+% 
 % <<echo=FALSE>>=
 % mus = function(b, cats=c("A","B","C"), types=c(0,1)) {
 %   d = data.frame(type=rep(types, each=3),
@@ -1131,7 +1129,7 @@ own mean.
 %      xlab="Category", ylab=expression(mu), main="with interaction", trace.label="Type")
 % par(opar)
 % @
-% \nc\ec
+% 
 % \end{frame}
 
 
@@ -1140,27 +1138,27 @@ own mean.
 
 \begin{frame}[fragile]
 \frametitle{R code and output - main effects only}
-\bc
+
 <<>>=
 summary(mM <- lm(Cover ~ Block + Treat, case1301_subset))
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{R code and output - with an interaction}
-\bc
+
 <<>>=
 summary(mI <- lm(Cover ~ Block * Treat, case1301_subset))
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Visualizing the models}
-\bc
+
 <<echo=FALSE>>=
 newdata = case1301_subset %>% select(Block,Treat) %>% unique()
 
@@ -1179,7 +1177,7 @@ ggplot(fit, aes(x = Treat, y = Cover,
   theme_bw() +  
   theme(legend.position = "bottom")
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -1217,13 +1215,13 @@ The possibilities for explanatory variables are
   
   \pause
   
-  \bc
+  
   We can also combine these explanatory variables, e.g. 
   \begin{itemize}[<+->]
   \item including higher order terms for continuous variables along with dummy variables for categorical variables and 
   \item including higher order interactions ($X_1X_2X_3$). 
   \end{itemize}
-\nc\ec
+
 \end{frame}
 
 \end{document}
