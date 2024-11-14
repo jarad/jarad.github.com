@@ -17,10 +17,10 @@ tagline: Statistical Methods for Research Workers
  - [Lab07](lab07/lab07.html) - RMarkdown
  - [Lab08](lab08/lab08.html) - Categorical Explanatory Variables
  - [Lab09](lab09/lab09.html) - Multiple Regression in R
+ - [Lab10](lab10/lab10.html) - ANOVA and F-tests
  
    === updated through here ===
  
- - [Lab10](lab10/lab10.html) - ANOVA and F-tests
  - [Lab11](lab11/lab11.html) - Contrasts
  - [Lab12](lab12/lab12.html) - Generalized linear mixed effect models
  

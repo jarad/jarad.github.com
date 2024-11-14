@@ -6,12 +6,14 @@
 
 
 ## install.packages("GGally") # ggpairs()
-## install.packages("GGally") # resid_panel() and resid_xpanel()
+## install.packages("ggResidpanel") # resid_panel() and resid_xpanel()
 
 library("tidyverse"); theme_set(theme_bw())
-library("GGally")
 library("Sleuth3")
+library("GGally")
+library("ggResidpanel")
 
+# My diagnostic plots
 my_diag <- function(m) {
   resid_panel(m, 
               plots = c("qq",     # qqplot for normality 
@@ -23,7 +25,7 @@ my_diag <- function(m) {
 }
 
 ggplot(case1001, aes(Height, Distance)) +
-  geom_point() + theme_bw()
+  geom_point()
 
 # First create the variables yourself
 case1001_tmp <- case1001 |>
