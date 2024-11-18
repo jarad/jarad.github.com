@@ -14,7 +14,7 @@
 options(width=120)
 opts_chunk$set(comment=NA, 
                fig.width=6, 
-               fig.height=4.4, 
+               fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -23,7 +23,7 @@ opts_chunk$set(comment=NA,
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
 @
 
@@ -44,26 +44,30 @@ set.seed(2)
 \frametitle{One-way ANOVA model/assumptions}
 
 The one-way ANOVA (ANalysis Of VAriance) model is 
-\[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right)
+\[ Y_{ig} \stackrel{ind}{\sim} N\left(\mu_g, \sigma^2\right)
 \quad \mbox{or} \quad
-Y_{ij} = \mu_j + \epsilon_{ij}, \, \epsilon_{ij} \iid N(0,\sigma^2)
+Y_{ig} = \mu_g + \epsilon_{ig}, \, \epsilon_{ig} \iid N(0,\sigma^2)
 \]
-for $j=1,\ldots,J$ and $i=1,\ldots,n_j$. 
+for $g=1,\ldots,G$ and $i=1,\ldots,n_g$. 
 
 \vspace{0.2in} \pause
 
 Assumptions:
 \begin{itemize}
-\item Errors are normally distributed.
-\item Errors have a common variance.
-\item Errors are independent.
+\item Errors 
+  \begin{itemize} 
+  \item are normally distributed.
+  \item have a common variance.
+  \item are independent. \pause
+  \end{itemize}
+\item Each group has its own mean.
 \end{itemize}
 
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{ANOVA assumptions graphically}
-\bc
+
 <<echo=FALSE>>=
 set.seed(20190410)
 d <- expand.grid(x = seq(-5, 5, length=101),
@@ -72,10 +76,9 @@ d <- expand.grid(x = seq(-5, 5, length=101),
          mean = paste0("mean = ", mean))
 
 ggplot(d, aes(x, density, color=mean, linetype=mean)) + 
-  geom_line() + 
-  theme_bw()
+  geom_line() 
 @
-\nc\ec
+
 \end{frame}
 
 % \begin{frame}
@@ -100,11 +103,11 @@ ggplot(d, aes(x, density, color=mean, linetype=mean)) +
 % \frametitle{Two-group analysis}
 %   Begin with the two group (equal variance) model:
 % 
-% 	\[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right) \]
+% 	\[ Y_{ig} \stackrel{ind}{\sim} N\left(\mu_g, \sigma^2\right) \]
 % 	
 % 	\vspace{0.2in} \pause
 % 	
-%   with	$j=1,2$ and $i=1,\ldots,n_j$ \pause
+%   with	$g=1,2$ and $i=1,\ldots,n_g$ \pause
 %   
 %   To perform a hypothesis test or a CI for the difference in means, \pause the relevant quantities are:
 %   \begin{itemize}[<+->]
@@ -123,22 +126,22 @@ ggplot(d, aes(x, density, color=mean, linetype=mean)) +
 % \frametitle{Multi-group analysis}
 %   The multi-group (equal variance) model:
 % 
-%   \[ Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right) \]
+%   \[ Y_{ig} \stackrel{ind}{\sim} N\left(\mu_g, \sigma^2\right) \]
 % 	
 % 	\vspace{0.2in} \pause
 % 	
-%   but now	$j=1,\alert{\ldots,J}$ and $i=1,\ldots,n_j$ \pause
+%   but now	$g=1,\alert{\ldots,G}$ and $i=1,\ldots,n_g$ \pause
 % 	
-% 	{\color{gray}($n_j$ means there can be different \# of observations in each group)} \pause
+% 	{\color{gray}($n_g$ means there can be different \# of observations in each group)} \pause
 %   
 %   To perform a hypothesis test or a CI for the difference in means, \pause the relevant quantities are:
 %   \begin{itemize}[<+->]
 %   \item $\overline{Y}_2-\overline{Y}_1$
 %   \item $SE(\overline{Y}_2-\overline{Y}_1) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}}$
-%   \item $t$ distribution with $n_1+n_2\alert{+\cdots+n_J-J}$ degrees of freedom
+%   \item $t$ distribution with $n_1+n_2\alert{+\cdots+n_G-G}$ degrees of freedom
 %   \end{itemize}
 %   \pause where 
-%   \[ s_p^2 = \frac{ (n_1-1)s_1^2 + (n_2-1)s_2^2 \alert{+ \cdots + (n_J-1)s_J^2} }{n1+n_2\alert{+\cdots+n_J-J}} \]
+%   \[ s_p^2 = \frac{ (n_1-1)s_1^2 + (n_2-1)s_2^2 \alert{+ \cdots + (n_G-1)s_G^2} }{n1+n_2\alert{+\cdots+n_G-G}} \]
 % \end{frame}
 % 
 % 
@@ -147,7 +150,7 @@ ggplot(d, aes(x, density, color=mean, linetype=mean)) +
 % 
 % \begin{frame}
 % \frametitle{Hypothesis test for comparison of two means (in multi-group data)}
-%   If $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ for $j=1,\ldots,J$ and we want to test the hypothesis
+%   If $Y_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma^2)$ for $g=1,\ldots,G$ and we want to test the hypothesis
 % 	\begin{itemize}
 % 	\item $H_0: \mu_1=\mu_2$
 % 	\item $H_1: \mu_1\ne \mu_2$
@@ -157,9 +160,9 @@ ggplot(d, aes(x, density, color=mean, linetype=mean)) +
 % 	\pause where 
 % 	\[ SE(\overline{Y}_1-\overline{Y}_2) = s_p \sqrt{\frac{1}{n_1}+\frac{1}{n_2}} \]
 % 	\pause and
-% 	\[ s_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_J-1)s_J^2}{n_1+n_2+\cdots+n_J - J }. \]
+% 	\[ s_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2+\cdots+(n_G-1)s_G^2}{n_1+n_2+\cdots+n_G - G }. \]
 %   \pause 
-%   Then we compare $t$ to a $t$ distribution with $n_1+n_2+\cdots+n_J-J$ degrees of freedom. 
+%   Then we compare $t$ to a $t$ distribution with $n_1+n_2+\cdots+n_G-G$ degrees of freedom. 
 % \end{frame}
 % 
 % 
@@ -238,10 +241,10 @@ ggplot(d, aes(x, density, color=mean, linetype=mean)) +
 % \begin{frame}[fragile]
 % \frametitle{Confidence interval for the difference of two means (in multi-group data)}
 % 
-%   If $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ for $j=1,\ldots,J$, a $100(1-\alpha)$\% confidence interval for $\mu_1-\mu_2$ is 
+%   If $Y_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma^2)$ for $g=1,\ldots,G$, a $100(1-\alpha)$\% confidence interval for $\mu_1-\mu_2$ is 
 % 	\pause 
-% 	\[ \overline{Y}_1-\overline{Y}_2 \pm t_{n_1+n_2+\cdots+n_J-J}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
-% 	\pause where the $t$ critical value, $t_{n_1+n_2+\cdots+n_J-J}(1-\alpha/2)$, needs to be calculated using a statistical software.
+% 	\[ \overline{Y}_1-\overline{Y}_2 \pm t_{n_1+n_2+\cdots+n_G-G}(1-\alpha/2) SE(\overline{Y}_1-\overline{Y}_2) \]
+% 	\pause where the $t$ critical value, $t_{n_1+n_2+\cdots+n_G-G}(1-\alpha/2)$, needs to be calculated using a statistical software.
 % 
 %   \vspace{0.2in} \pause
 %   
@@ -263,17 +266,16 @@ ggplot(d, aes(x, density, color=mean, linetype=mean)) +
 \subsection{One-way ANOVA F-test}
 \begin{frame}[fragile]
 \frametitle{Consider the mice data set}
-\bc
+
 <<echo=FALSE>>=
-ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) + 
-  geom_jitter() + 
+ggplot(Sleuth3::case0501, aes(x = Diet, y = Lifetime)) + 
+  geom_jitter() 
   # geom_hline(data=sm2, aes(yintercept=mean[7]), 
-  #            col='red', size=2) + 
+  #            col='red', linewidth = 2) + 
   # geom_errorbar(data=sm, aes(y=mean, ymin=mean, ymax=mean), 
-  #               col='blue', size=2) +
-  theme_bw()
+  #               col='blue', linewidth = 2) 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -290,21 +292,18 @@ ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) +
   \item[$H_1$:] at least one of the means is different
   \end{itemize}
 
-  \pause
-
-\bc
-
+  \vspace{0.1in} \pause
 
   Statistical hypotheses:
 	\[ \begin{array}{ll@{\qquad}l}
-	H_0: & \mu_j=\mu \mbox{ for all } j & \uncover<3->{Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
-	H_1: & \mu_j\ne\mu_{j'} \mbox{ for some $j$ and $j'$} & \uncover<3->{Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right)}
+	H_0: & \mu_g=\mu \mbox{ for all } g & \uncover<3->{Y_{ig} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\
+	H_1: & \mu_g\ne\mu_{g'} \mbox{ for some $g$ and $g'$} & \uncover<3->{Y_{ig} \stackrel{ind}{\sim} N\left(\mu_g, \sigma^2\right)}
 	\end{array}	\]
   
   \pause
   
   An ANOVA table organizes the relevant quantities for this test and computes the pvalue. 
-\nc\ec
+
 \end{frame}
 
 
@@ -319,16 +318,16 @@ ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) +
 	\mbox{d.f.} & \mbox{Mean square}  \\
 	\hline
 	\mbox{Factor A (Between groups)} &  
-	SSA=\sum_{j=1}^{J} n_j \left(\overline{Y}_j-\overline{Y}\right)^2 & 
-	J-1 & 
-	\frac{SSA}{J-1} \phantom{\left(=\hat\sigma^2\right)} \\
+	SSA=\sum_{g=1}^{G} n_g \left(\overline{Y}_g-\overline{Y}\right)^2 & 
+	G-1 & 
+	\frac{SSA}{G-1} \phantom{\left(=\hat\sigma^2\right)} \\
 	\mbox{Error (Within groups)} & 
-	SSE=\sum_{j=1}^{J} \sum_{i=1}^{n_j} \left(Y_{ij}-\overline{Y}_j\right)^2 & 
-	n-J &  
-	\frac{SSE}{n-J} \left(=\hat\sigma^2\right) \\
+	SSE=\sum_{g=1}^{G} \sum_{i=1}^{n_g} \left(Y_{ig}-\overline{Y}_g\right)^2 & 
+	n-G &  
+	\frac{SSE}{n-G} \left(=\hat\sigma^2\right) \\
 	\hline
 	\mbox{Total} & 
-	SST=\sum_{j=1}^{J} \sum_{i=1}^{n_j} \left(Y_{ij}-\overline{Y}\right)^2 &
+	SST=\sum_{g=1}^{G} \sum_{i=1}^{n_g} \left(Y_{ig}-\overline{Y}\right)^2 &
 	n-1 \\
 	\end{array} \]
 	where 
@@ -336,16 +335,16 @@ ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) +
 	\pause
 	
 	\begin{itemize}
-	\item $J$ is the number of groups, \pause 
-	\item $n_j$ is the number of observations in group $j$, \pause
-	\item $n=\sum_{j=1}^J n_j$ (total observations), \pause
-	\item $\overline{Y}_j = \frac{1}{n_j}\sum_{i=1}^{n_j} Y_{ij}$ (average in group $j$), \pause
-	\item and $\overline{Y} = \frac{1}{n}\sum_{j=1}^J \sum_{i=1}^{n_j} Y_{ij}$ (overall average).
+	\item $G$ is the number of groups, \pause 
+	\item $n_g$ is the number of observations in group $g$, \pause
+	\item $n=\sum_{g=1}^G n_g$ (total observations), \pause
+	\item $\overline{Y}_g = \frac{1}{n_g}\sum_{i=1}^{n_g} Y_{ig}$ (average in group $g$), \pause
+	\item and $\overline{Y} = \frac{1}{n}\sum_{g=1}^G \sum_{i=1}^{n_g} Y_{ig}$ (overall average).
 	\end{itemize}
 }
 
 \frame{\frametitle{ANOVA table}
-  {\tiny
+  {\footnotesize
 	An easier to remember ANOVA table:
 	
 	\vspace{0.1in}
@@ -353,10 +352,10 @@ ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) +
 	\begin{tabular}{llcccc}
 	Source of variation & Sum of squares & df & Mean square & F-statistic & p-value \\
 	\hline
-	Factor A (between groups) & SSA & $J-1$ & MSA = SSA/$J-1$ & MSA/MSE & \mbox{(see below)} \\
-	Error (within groups) & SSE & $n-J$ & MSE = SSE/$n-J$ \\
+	Factor A (between groups) & SSA & $G-1$ & MSA = SSA/$G-1$ & MSA/MSE & \mbox{(see below)} \\
+	Error (within groups) & SSE & $n-G$ & MSE = SSE/$n-G$ \\
 	\hline
-	Total & SST=SSA+SSE & $n-1$ 
+	Total & SST = SSA+SSE & $n-1$ 
 	\end{tabular}
 	}
 	
@@ -364,37 +363,42 @@ ggplot(Sleuth3::case0501, aes(x=Diet, y=Lifetime)) +
 	 
 	 \pause
 	 
-\bc
-	Under $H_0$ ($\mu_j=\mu$), 
+
+	Under $H_0$ ($\mu_g = \mu$), 
 	\begin{itemize}
-	\item the quantity MSA/MSE has an F-distribution with $J-1$ numerator and $n-J$ denominator degrees of freedom, \pause
+	\item the quantity MSA/MSE has an F-distribution with $G-1$ numerator and $n-G$ denominator degrees of freedom, \pause
 	\item larger values of MSA/MSE indicate evidence against $H_0$, \pause and
-	\item the p-value is determined by $P(F_{J-1,n-J}>MSA/MSE)$.
+	\item the p-value is determined by $P(F_{G-1,n-G}>MSA/MSE)$.
 	\end{itemize}
-\nc\ec
+
 }
 
 
 \begin{frame}[fragile]
 \frametitle{F-distribution}
-\bc
+
 $F$-distribution has two parameters: 
 \begin{itemize}
 \item numerator degrees of freedom (ndf)
 \item denominator degrees of freedom (ddf)
 \end{itemize}
 
-<<F-distribution, echo=FALSE, fig.height = 3.5>>=
-df = c(5,300)
+<<F-distribution, echo=FALSE, fig.height = 2>>=
+dfs = c(5,300)
 ggplot(data.frame(x = c(0,4)), aes(x=x)) + 
-  stat_function(fun = "df", args = list(df1 = df[1], df2 = df[2]), 
-                xlim = c(2,4), geom = "area", fill = "magenta") +
-  stat_function(fun = "df", args = list(df1 = df[1], df2 = df[2])) +
-  labs(title = paste0("F(",df[1],", ",df[2],")"),
-       x = "F", y = "density") +
-  theme_bw()
+  stat_function(fun = df, 
+                args = list(df1 = dfs[1], 
+                            df2 = dfs[2]), 
+                xlim = c(2,4), 
+                geom = "area", 
+                fill = "magenta") +
+  stat_function(fun = df, 
+                args = list(df1 = dfs[1], 
+                            df2 = dfs[2])) +
+  labs(title = paste0("F(", dfs[1], ", ", dfs[2], ")"),
+       x = "F", y = "density") 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -405,40 +409,40 @@ ggplot(data.frame(x = c(0,4)), aes(x=x)) +
 <<echo=FALSE, warning=FALSE>>=
 sm <- Sleuth3::case0501 %>%
   group_by(Diet) %>%
-  summarize(n = n(),
+  summarize(n    = n(),
             mean = mean(Lifetime),
-            sd = sd(Lifetime))
+            sd   = sd(Lifetime))
 total <- Sleuth3::case0501 %>% 
-  summarize(n = n(), 
+  summarize(n    = n(), 
             mean = mean(Lifetime),
-            sd = sd(Lifetime)) %>%
+            sd   = sd(Lifetime)) %>%
   mutate(Diet = "Total")
 (sm2 <- bind_rows(sm,total))
 @
 
 \pause 
 
-\bc
+
 So 
 \[ \begin{array}{rl}
-SSA =& 57\times (32.7-38.8)^2+60\times (45.1-38.8)^2+71\times (42.3-38.8)^2 + 49\times (27.4-38.8)^2 \\
-&+ 56\times (42.9-38.8)^2 + 56\times(39.7-38.8)^2 = 12734  \\
+SSA =& 57\times (32.7 - 38.8)^2 + 60\times (45.1 - 38.8)^2 + 71\times (42.3 - 38.8)^2 + 49\times (27.4-38.8)^2 \\
+&+ 56\times (42.9 - 38.8)^2 + 56\times(39.7 - 38.8)^2 = 12734  \\
 % SST =& (35.5-38.8)^2 + (35.4-38.8)^2 + (34.9-38.8)^2 + \cdots + (19.6-38.8)^2 + (47.6-38.8)^2 = 28031 \pause \\
-SST = & (349-1)\times 8.97^2 = 28000  \\
-SSE =& SST-SSA = 28000 - 12734 = 15266 \\
-J-1 =& 5 \\
-n-J =& 349-6 = 343 \\
+SST = & (349 - 1)\times 8.97^2 = 28000  \\
+SSE =& SST - SSA = 28000 - 12734 = 15266 \\
+G-1 =& 5 \\
+n-G =& 349 - 6 = 343 \\
 n-1 =& 348 \\
-MSA =& SSA/J-1 = 12734/5 = 2547 \\
-MSE =& SSE/n-J = 15266/343 = 44.5 = \hat\sigma^2 \\
-F =& MSA/MSE = 2547/44.5 = 57.2 \\
-p =& P(F_{5,343}>57.2) < 0.0001
+MSA =& SSA / G-1 = 12734 / 5 = 2547 \\
+MSE =& SSE / n-G = 15266 / 343 = 44.5 = \hat\sigma^2 \\
+F =& MSA / MSE = 2547 / 44.5 = 57.2 \\
+p =& P(F_{5,343} > 57.2) < 0.0001
 \end{array} \]
 \pause
 F statistic is off by 0.1 relative to the table later, 
 because of rounding of 8.97. 
 The real SST is 28031 which would be the F statistic of 57.1. 
-\nc\ec
+
 }
 \end{frame}
 
@@ -447,17 +451,21 @@ The real SST is 28031 which would be the F statistic of 57.1.
 
 \begin{frame}[fragile]
 \frametitle{Graphical comparison}
-\bc
+
 <<echo=FALSE>>=
 ggplot(Sleuth3::case0501, aes(x = Diet)) + 
-  geom_jitter(aes(y=Lifetime), size=3) + 
-  geom_hline(data=sm2, aes(yintercept=mean[7]), 
-             col='red', size=2) + 
-  geom_errorbar(data=sm, aes(x=Diet, ymin=mean, ymax=mean), 
-                col='blue', size=2) +
-  theme_bw()
+  geom_jitter(aes(y = Lifetime), 
+              size = 3) + 
+  geom_hline(data = sm2, 
+             aes(yintercept = mean[7]), 
+             col = 'red', 
+             linewidth = 2) + 
+  geom_errorbar(data = sm, 
+                aes(x = Diet, ymin = mean, ymax = mean), 
+                col = 'blue', 
+                linewidth = 2)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -467,13 +475,14 @@ ggplot(Sleuth3::case0501, aes(x = Diet)) +
 \begin{frame}[fragile]
 \frametitle{R code and output for one-way ANOVA}
 <<echo=TRUE>>=
-m <- lm(Lifetime~Diet, case0501)
+m <- lm(Lifetime ~ Diet, case0501)
 anova(m)
 @
 
 \pause
 
-There is evidence against the null model $Y_{ij} \ind N(\mu,\sigma^2)$. 
+There is evidence against the null model $Y_{ig} \ind N(\mu,\sigma^2)$,
+i.e. our data seem incompatible with this model.
 \end{frame}
 
 
@@ -498,8 +507,8 @@ The general idea is to balance the amount of variability remaining when moving f
 
 \subsection{Full vs Reduced Models}
 % \frame{\frametitle{Simple vs Composite Hypotheses}
-%   Suppose \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \]
-% 	for $j=1,\ldots,3$ \pause then a \alert{simple hypothesis} is 
+%   Suppose \[ Y_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma^2) \]
+% 	for $g=1,\ldots,3$ \pause then a \alert{simple hypothesis} is 
 % 	\begin{itemize}
 % 	\item $H_0: \mu_1=\mu_2$
 % 	\item $H_1: \mu_1\ne \mu_2$
@@ -507,7 +516,7 @@ The general idea is to balance the amount of variability remaining when moving f
 % 	\pause and a \alert{composite hypothesis} is 
 % 	\begin{itemize}
 % 	\item $H_0: \mu_1=\mu_2=\mu_3$
-% 	\item $H_1: \mu_j\ne \mu_{j'}$ for some $j$ and $j'$
+% 	\item $H_1: \mu_g\ne \mu_{g'}$ for some $g$ and $g'$
 % 	\end{itemize}
 % 	\pause since there are four possibilities under $H_1$
 % 	\begin{itemize}[<+->]
@@ -522,42 +531,43 @@ The general idea is to balance the amount of variability remaining when moving f
 
 
 \frame{\frametitle{Testing full vs reduced models}
-	If $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ for $j=1,\ldots,J$ and we want to test the hypotheses 
+	If $Y_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma^2)$ for $g=1,\ldots,G$ and we want to test the hypotheses 
 	\begin{itemize}
-	\item $H_0: \mu_j=\mu$ for all $j$
-	\item $H_1: \mu_j\ne \mu_{j'}$ for some $j$ and $j'$
+	\item $H_0: \mu_g=\mu$ for all $g$
+	\item $H_1: \mu_g\ne \mu_{g'}$ for some $g$ and $g'$
 	\end{itemize}
 	
 	\vspace{0.2in} \pause
 	
 	 think about this as two models: \pause
 	\begin{itemize}
-	\item $H_0: Y_{ij} \stackrel{ind}{\sim} N(\mu,\sigma^2)$ \uncover<6->{\alert{(reduced)}}\pause
-	\item $H_1: Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ \uncover<5->{\alert{(full)}}
+	\item $H_0: Y_{ig} \stackrel{ind}{\sim} N(\mu,\sigma^2)$ \uncover<6->{\alert{(reduced)}}\pause
+	\item $H_1: Y_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma^2)$ \uncover<5->{\alert{(full)}}
 	\end{itemize}
 	
 	\pause
 	
-	\bc
+	
 	\uncover<7->{We can use an F-test to calculate a p-value for tests of this type.}	
-	\nc\ec
+	
 }
 
 
 \begin{frame}
 \frametitle{Nested models: full vs reduced}
 
-Two models are \alert{nested} if the \alert{reduced} model is a special case of the \alert{full} model. 
+Two models are \alert{nested} if the \alert{reduced} model is a special case of 
+the \alert{full} model.
 
 \vspace{0.2in} \pause
 
-\bc
+
 For example, consider the full model 
-\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2). \]
-\pause One special case of this model occurs when $\mu_j=\mu$ \pause and thus 
-\[ Y_{ij} \stackrel{ind}{\sim} N(\mu,  \sigma^2). \]
+\[ Y_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma^2). \]
+\pause One special case of this model occurs when $\mu_g=\mu$ \pause and thus 
+\[ Y_{ig} \stackrel{ind}{\sim} N(\mu,  \sigma^2). \]
 is a reduced model and these two models are nested. 
-\nc\ec
+
 \end{frame}
 
 
@@ -567,31 +577,31 @@ is a reduced model and these two models are nested.
 
 \vspace{-0.2in}
 
-\bc
+
   \[ \begin{array}{|l|c|c|}
 	\hline && \\
 	\mbox{Model}& \mbox{Full} & \mbox{Reduced} \\ &&\\ \hline && \\
 	\mbox{Assumption} & 
-	\uncover<2->{H_1:  Y_{ij} \stackrel{ind}{\sim} N\left(\mu_j, \sigma^2\right)} & \uncover<6->{
-	H_0:  Y_{ij} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\ && \\ \hline && \\
+	\uncover<2->{H_1:  Y_{ig} \stackrel{ind}{\sim} N\left(\mu_g, \sigma^2\right)} & \uncover<6->{
+	H_0:  Y_{ig} \stackrel{iid}{\sim} N(\mu, \sigma^2)} \\ && \\ \hline && \\
 	\mbox{Mean} & 
-	\uncover<3->{\hat{\mu}_j = \overline{Y}_j = \frac{1}{n_j} \sum_{i=1}^{n_j} Y_{ij}} & 
-	\uncover<7->{\hat{\mu} = \overline{Y} = \frac{1}{n} \sum_{j=1}^{J} \sum_{i=1}^{n_j} Y_{ij}} \\ && \\ \hline && \\
+	\uncover<3->{\hat{\mu}_g = \overline{Y}_g = \frac{1}{n_g} \sum_{i=1}^{n_g} Y_{ig}} & 
+	\uncover<7->{\hat{\mu} = \overline{Y} = \frac{1}{n} \sum_{g=1}^{G} \sum_{i=1}^{n_g} Y_{ig}} \\ && \\ \hline && \\
 	\mbox{Residual}  & 
-	\uncover<4->{r_{ij} = Y_{ij}-\hat{\mu}_j = Y_{ij}-\overline{Y}_j} & 
-	\uncover<8->{r_{ij} = Y_{ij}-\hat{\mu} = Y_{ij}-\overline{Y}} \\ &&\\ \hline && \\
+	\uncover<4->{r_{ig} = Y_{ig}-\hat{\mu}_g = Y_{ig}-\overline{Y}_g} & 
+	\uncover<8->{r_{ig} = Y_{ig}-\hat{\mu} = Y_{ig}-\overline{Y}} \\ &&\\ \hline && \\
 	\mbox{SSE} & 
-	\uncover<5->{\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  & 
-	\uncover<9->{\sum_{j=1}^{J} \sum_{i=1}^{n_j} r_{ij}^2}  \\ &&\\\hline
+	\uncover<5->{\sum_{g=1}^{G} \sum_{i=1}^{n_g} r_{ig}^2}  & 
+	\uncover<9->{\sum_{g=1}^{G} \sum_{i=1}^{n_g} r_{ig}^2}  \\ &&\\\hline
 	\end{array} \]
-\nc\ec
+
 }
 
 
 
 \frame{\frametitle{General F-tests}
 \footnotesize
-\bc
+
 	Do the following
 	\begin{enumerate}[1.]
 	\item Calculate 
@@ -612,48 +622,51 @@ is a reduced model and these two models are nested.
 		\item denominator degrees of freedom (ddf): df associated with $\hat{\sigma}^2$
 		\end{itemize}
 	\end{enumerate}
-	\nc\ec
+	
 }
 
 \subsection{Example}
 \frame{\frametitle{Mice lifetimes}
-Consider the hypothesis that all diets have a common mean lifetime except NP.
+Consider the hypothesis that mice on all diets have a common mean lifetime 
+except NP.
 	
 \vspace{0.1in} \pause
 	
 	Let
-	\[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2) \]
-	with $j=1$ being the NP group \pause then the hypotheses are
+	\[ Y_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma^2) \]
+	with $g=1$ being the NP group \pause then the hypotheses are
 	\begin{itemize}
-	\item $H_0: \mu_j=\mu$ for $j\ne 1$
-	\item $H_1: \mu_j\ne\mu_{j'}$ for some $j,j'=2,\ldots,6$
+	\item $H_0: \mu_g=\mu$ for $g\ne 1$
+	\item $H_1: \mu_g\ne\mu_{g'}$ for some $g,g'=2,\ldots,6$
 	\end{itemize}
 	
 	\vspace{0.2in} \pause
 	
 	As models:
 	\begin{itemize}
-	\item $H_0: Y_{i1}\iid N(\mu_1,\sigma^2)$ and $Y_{ij}\iid N(\mu,\sigma^2)$ for $j\ne 1$
-	\item $H_1: Y_{ij}\ind N(\mu_j,\sigma^2)$
+	\item $H_0: Y_{i1}\iid N(\mu_1,\sigma^2)$ and $Y_{ig}\iid N(\mu,\sigma^2)$ for $g\ne 1$
+	\item $H_1: Y_{ig}\ind N(\mu_g,\sigma^2)$
 	\end{itemize}
 }
 
 
 \begin{frame}[fragile]
 \frametitle{As a picture}
-\bc
+
 <<echo=FALSE>>=
 sm3 = sm 
-sm3$mean[-which(sm3$Diet=="NP")] = mean(case0501$Lifetime[case0501$Diet!="NP"])
-ggplot(case0501, aes(x=Diet)) + 
-  geom_jitter(aes(y=Lifetime), size=3) + 
-  geom_errorbar(data=sm, aes(ymin=mean, ymax=mean), 
-                col='blue', size=2) + 
-  geom_errorbar(data=sm3, aes(ymin=mean, ymax=mean), 
-                col='red', size=2) +
-  theme_bw()
+sm3$mean[-which(sm3$Diet == "NP")] = mean(case0501$Lifetime[case0501$Diet != "NP"])
+ggplot(case0501, aes(x = Diet)) + 
+  geom_jitter(aes(y = Lifetime), size = 3) + 
+  geom_errorbar(data = sm, 
+                aes(ymin = mean, ymax = mean), 
+                col = 'blue', linewidth = 2) + 
+  geom_errorbar(data = sm3, 
+                aes(ymin = mean, ymax = mean), 
+                col = 'red',
+                linewidth = 2)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -662,15 +675,15 @@ ggplot(case0501, aes(x=Diet)) +
 
 \begin{frame}[fragile]
 \frametitle{Making R do the calculations}
-\bc
+
 <<echo = TRUE>>=
 case0501$NP = factor(case0501$Diet == "NP")
 
-modR = lm(Lifetime~NP,   case0501) # (R)educed model
-modF = lm(Lifetime~Diet, case0501) # (F)ull    model
+modR = lm(Lifetime ~ NP,   case0501) # (R)educed model
+modF = lm(Lifetime ~ Diet, case0501) # (F)ull    model
 anova(modR,modF)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -678,8 +691,8 @@ anova(modR,modF)
 % \begin{frame}
 % \frametitle{Are there differences in means amongst low calorie diets?}
 % 
-% Let $Y_{ij}$ be the lifetime in months for mouse $i$ in group $j$ where the groups are N/N85 (j=1), N/R40 (j=2), N/R50 (j=3), NP (j=4), R/R50 (j=5), and lopro (j=6). \pause Assume 
-% \[ Y_{ij} \stackrel{ind}{\sim} N(\mu_j, \sigma^2) \]
+% Let $Y_{ig}$ be the lifetime in months for mouse $i$ in group $g$ where the groups are N/N85 (g=1), N/R40 (g=2), N/R50 (g=3), NP (g=4), R/R50 (g=5), and lopro (g=6). \pause Assume 
+% \[ Y_{ig} \stackrel{ind}{\sim} N(\mu_g, \sigma^2) \]
 % and test the hypotheses
 % \begin{itemize}
 % \item[$H_0$:] $\mu_2=\mu_3=\mu_5=\mu_6$
@@ -718,60 +731,59 @@ anova(modR,modF)
 \subsection{Lack-of-fit F-test for linearity}
 
 \frame{\frametitle{Lack-of-fit F-test for linearity}
-  Let $Y_{ij}$ be the $i^{th}$ observation from the $j^{th}$ group where the group is defined by those observations having the same explanatory variable value ($X_j$). 
+  Let $Y_{ig}$ be the $i^{th}$ observation from the $g^{th}$ group where the group is defined by those observations having the same explanatory variable value ($X_g$). 
   
   \vspace{0.1in} \pause
 
 	Two models:
 	
 	\begin{tabular}{lll}
-	ANOVA: & $Y_{ij} \stackrel{ind}{\sim} N(\mu_j,\sigma^2)$ & \pause \uncover<3->{\alert{(full)}} \\
-	Regression: & $Y_{ij} \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_j, \sigma^2)$ & \uncover<3->{\alert{(reduced)}}
+	ANOVA: & $Y_{ig} \stackrel{ind}{\sim} N(\mu_g,\sigma^2)$ & \pause \uncover<3->{\alert{(full)}} \\
+	Regression: & $Y_{ig} \stackrel{ind}{\sim} N(\beta_0+\beta_1 X_g, \sigma^2)$ & \uncover<3->{\alert{(reduced)}}
 	\end{tabular}
 	
-	\pause \pause
+	\vspace{0.2in} \pause
 	
-	\bc
+	
 	\begin{itemize}
 	\item Regression model is reduced: \pause
 	\begin{itemize}
-	\item ANOVA has $J$ parameters for the mean \pause
+	\item ANOVA has $G$ parameters for the mean \pause
 	\item Regression has 2 parameters for the mean \pause
-	\item Set $\mu_{j} = \beta_0+\beta_1 X_j$. \pause
+	\item Set $\mu_{g} = \beta_0+\beta_1 X_g$. \pause
 	\end{itemize}
 	\item Small pvalues indicate a lack-of-fit, i.e. the 
 	regression (reduced) model is not adequate. \pause
-	\item Lack-of-fit F-test requires multiple observations at a few $X_j$ values!
+	\item Lack-of-fit F-test requires multiple observations at a few $X_g$ values!
 	\end{itemize}
-	\nc\ec
+	
 }
 
 \begin{frame}[fragile]
 \frametitle{pH vs Time - ANOVA}
-\bc
+
 <<echo=FALSE>>=
 ggplot(Sleuth3::ex0816, aes(factor(Time), pH))+
-  geom_boxplot(color="gray")+
+  geom_boxplot(color = "gray")+
   geom_point()+
-  labs(x="Time", y="pH", 
-       title="pH vs Time in Steer Carcasses") +
-  theme_bw()
+  labs(x = "Time", 
+       y = "pH", 
+       title = "pH vs Time in Steer Carcasses") 
 @
-\nc\ec
+
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{pH vs Time - Regression}
-\bc
+
 <<echo=FALSE>>=
 ggplot(Sleuth3::ex0816, aes(Time, pH))+
   geom_point() +
-  stat_smooth(method="lm") +
-  labs(x="Time", y="pH", 
-       title="pH vs Time in Steer Carcasses") +
-  theme_bw() 
+  stat_smooth(method = "lm") +
+  labs(x = "Time", y = "pH", 
+       title = "pH vs Time in Steer Carcasses")
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -786,10 +798,10 @@ anova(m_reg, m_anova)
 
 \pause
 
-\bc
+
 There is evidence the data are incompatible with the null hypothesis
 that states the means of each group fall along a line. 
-\nc\ec
+
 \end{frame}
 
 
