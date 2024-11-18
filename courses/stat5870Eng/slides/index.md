@@ -50,21 +50,21 @@ All [inference pdfs concatenated](inference.pdf).
 ||||[Likelihood](https://youtu.be/m7I7baoDuuo)||
 ||||[Maximum likelihood estimators](https://youtu.be/vz34FpuLhsA)||
 |Bayesian parameter estimation|[pdf](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.pdf)|[R](Inference/I03-Bayesian_statistics/I03-Bayesian_parameter_estimation.R)|[Bayesian parameter estimation](https://youtu.be/xRbrg0P2xv8)|
-|Exponential distribution|[pdf](Probability/Distributions/Exponential/Exponential.pdf)|[R](Probability/Distributions/Exponential/Exponential.R)|[Exponential](https://youtu.be/e5vCX4uCGvY)||
-|Gamma distribution|[pdf](Probability/Distributions/Gamma/Gamma.pdf)|[R](Probability/Distributions/Gamma/Gamma.R)|[Gamma](https://youtu.be/YkF3D8OHZwc)||
-|Inverse gamma distribution|[pdf](Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf)|[R](Probability/Distributions/Inverse_gamma/Inverse_gamma.R)|[Inverse_gamma](https://youtu.be/pe7kgPNCWOs)||
-|T distribution|[pdf](Probability/Distributions/Students_t/Students_t.pdf)|[R](Probability/Distributions/Students_t/Students_t.R)|[T distribution](https://youtu.be/0wjK7Ya7lOA)||
+|SKIP - Exponential distribution|[pdf](Probability/Distributions/Exponential/Exponential.pdf)|[R](Probability/Distributions/Exponential/Exponential.R)|[Exponential](https://youtu.be/e5vCX4uCGvY)||
+|SKIP - Gamma distribution|[pdf](Probability/Distributions/Gamma/Gamma.pdf)|[R](Probability/Distributions/Gamma/Gamma.R)|[Gamma](https://youtu.be/YkF3D8OHZwc)||
+|SKIP - Inverse gamma distribution|[pdf](Probability/Distributions/Inverse_gamma/Inverse_gamma.pdf)|[R](Probability/Distributions/Inverse_gamma/Inverse_gamma.R)|[Inverse_gamma](https://youtu.be/pe7kgPNCWOs)||
+|SKIP - T distribution|[pdf](Probability/Distributions/Students_t/Students_t.pdf)|[R](Probability/Distributions/Students_t/Students_t.R)|[T distribution](https://youtu.be/0wjK7Ya7lOA)||
 |Normal model|[pdf](Inference/I04-Normal_model/I04-Normal_model.pdf)|[R](Inference/I04-Normal_model/I04-Normal_model.R)|[Normal model](https://youtu.be/L5pg_cx2nNU)|[yield.csv](Inference/I04-Normal_model/yield.csv)|
 ||||[Normal model example](https://youtu.be/zAW9MrxuWd4)||
-|Sampling distribution|[pdf](Inference/I05-Confidence_intervals/Sampling_distribution.pdf)|[R](Inference/I05-Confidence_intervals/Sampling_distribution.R)|[Sampling distribution](https://youtu.be/1nJ6j9RrIu4)||
+|SKIP - Sampling distribution|[pdf](Inference/I05-Confidence_intervals/Sampling_distribution.pdf)|[R](Inference/I05-Confidence_intervals/Sampling_distribution.R)|[Sampling distribution](https://youtu.be/1nJ6j9RrIu4)||
 |Confidence intervals|[pdf](Inference/I05-Confidence_intervals/I05-Confidence_intervals.pdf)|[R](Inference/I05-Confidence_intervals/I05-Confidence_intervals.R)|[Confidence intervals](https://youtu.be/pNItyrvDGP8)|
-|Statistical hypotheses|[pdf](Inference/I06-Pvalues/Statistical_hypotheses.pdf)||[Statistical hypotheses](https://youtu.be/-Lk6Fds2LQU)|
+|SKIP - Statistical hypotheses|[pdf](Inference/I06-Pvalues/Statistical_hypotheses.pdf)||[Statistical hypotheses](https://youtu.be/-Lk6Fds2LQU)|
 |p-values|[pdf](Inference/I06-Pvalues/I06-Pvalues.pdf)|[R](Inference/I06-Pvalues/I06-Pvalues.R)|[p-values](https://youtu.be/taF2TMQXLmE)|
 |Hypothesis tests|[pdf](Inference/I06-Pvalues/Hypothesis_tests.pdf)|[R](Inference/I06-Pvalues/Hypothesis_tests.R)|[hypothesis tests](https://youtu.be/IjuGeYIlH5Y)||
 |T-tests|[pdf](Inference/I06-Pvalues/t-tests.pdf)|[R](Inference/I06-Pvalues/t-tests.R)|[t-tests](https://youtu.be/dgykZvPGVpE)||
-|Correspondence: p-values and CIs|[pdf](Inference/I06-Pvalues/Correspondence_between_pvalues_and_confidence_intervals.pdf)|[R](Inference/I06-Pvalues/Correspondence_between_pvalues_and_confidence_intervals.R)|[Correspondence: p-values and CIs](https://youtu.be/OPJSPwJ-bxg)||
-|What p-values don't mean|[pdf](Inference/I06-Pvalues/why_pvalues_dont_mean_what_you_think_they_mean.pdf)|[R](Inference/I06-Pvalues/why_pvalues_dont_mean_what_you_think_they_mean.R)|[what p-values mean](https://youtu.be/7DU_kbDUWc8)||
-|Posterior model probability|[pdf](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf)|[R](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.R)|[One-sided alternatives](https://youtu.be/gn65VZ_F-s4)||
+|SKIP - Correspondence: p-values and CIs|[pdf](Inference/I06-Pvalues/Correspondence_between_pvalues_and_confidence_intervals.pdf)|[R](Inference/I06-Pvalues/Correspondence_between_pvalues_and_confidence_intervals.R)|[Correspondence: p-values and CIs](https://youtu.be/OPJSPwJ-bxg)||
+|SKIP - What p-values don't mean|[pdf](Inference/I06-Pvalues/why_pvalues_dont_mean_what_you_think_they_mean.pdf)|[R](Inference/I06-Pvalues/why_pvalues_dont_mean_what_you_think_they_mean.R)|[what p-values mean](https://youtu.be/7DU_kbDUWc8)||
+|SKIP - Posterior model probability|[pdf](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.pdf)|[R](Inference/I07-Posterior_model_probability/I07-Posterior_model_probability.R)|[One-sided alternatives](https://youtu.be/gn65VZ_F-s4)||
 ||||[Two-sided alternatives](https://youtu.be/nkugP1WgsS4)|
 ||||[p-values vs posterior probabilities](https://youtu.be/ynfHFClgwOo)|
 |Comparing probabilities|[pdf](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.pdf)|[R](Inference/I08-Comparing_probabilities/I08-Comparing_probabilities.R)|[Comparing two probabilities](https://youtu.be/OrkqDx3xrMc)|
@@ -72,7 +72,7 @@ All [inference pdfs concatenated](inference.pdf).
 |Comparing means|[pdf](Inference/I09-Comparing_means/I09-Comparing_means.pdf)|[R](Inference/I09-Comparing_means/I09-Comparing_means.R)|[Comparing two means](https://youtu.be/toR5AFQJusA)|
 ||||[Comparing three or more means](https://youtu.be/AOvXAi6AN0o)|
 ||||[Comparing means with equal variances](https://youtu.be/5N5V4jrUA1U)|
-|Multiple comparisons|[pdf](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.pdf)|[R](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.R)||
+|SKIP - Multiple comparisons|[pdf](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.pdf)|[R](Inference/I10-Multiple_comparisons/I10-Multiple_comparisons.R)||
 
 
 ### Regression
