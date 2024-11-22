@@ -95,13 +95,13 @@ All [regression pdfs concatenated](regression.pdf).
 |SKIP - Interpreting p-values|[pdf](Regression/R06-ANOVA_F-tests/R06-pvalue_interpretation.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-pvalue_interpretation.R)|[Interpreting p-values](https://youtu.be/h92BZPeUaik)|
 |ANOVA and F-tests|[pdf](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.pdf)|[R](Regression/R06-ANOVA_F-tests/R06-ANOVA_F-tests.R)|[ANOVA](https://youtu.be/1qzlZlm-2Ak)|
 ||||[F-tests](https://youtu.be/GHNgosl97Xw)|
+|Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|[Contrasts](https://youtu.be/Gvnpv6uPDRw)|
+||||[Potato Scab Example](https://youtu.be/TjAKveQjRSk)|
 
 ============ updated to here =================
 
 |Topic|slides|code|video|
 ||||
-|Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|[Contrasts](https://youtu.be/Gvnpv6uPDRw)|
-||||[Potato Scab Example](https://youtu.be/TjAKveQjRSk)|
 |Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|[Completely Randomized Design](https://youtu.be/yO1c8h66IPo)|
 ||||[Randomized Complete Block Design](https://youtu.be/_iJ2Gy-POCI)|
 |Two-way ANOVA|[pdf](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.pdf)|[R](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.R)|[Analysis of a Completely Randomized Design](https://youtu.be/Ctx8CcJdOB4)|

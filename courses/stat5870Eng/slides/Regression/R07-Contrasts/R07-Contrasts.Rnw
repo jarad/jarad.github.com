@@ -14,7 +14,7 @@
 options(width=120)
 opts_chunk$set(comment=NA, 
                fig.width=6, 
-               fig.height=4.4, 
+               fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -23,7 +23,7 @@ opts_chunk$set(comment=NA,
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("xtable")
 library("Sleuth3")
 library("emmeans")
@@ -44,15 +44,21 @@ set.seed(2)
 
 \begin{frame}
 \frametitle{Diet Effect on Mice Lifetimes}
-\bc
+
 <<>>=
-ggplot(Sleuth3::case0501, aes(x = Diet, y = Lifetime)) + 
-  geom_jitter(width = 0.1, height = 0) +
-  stat_summary(fun = mean, fun.min = mean, fun.max = mean,
-               geom = "crossbar", width = .5, color = "magenta") +
-  theme_bw()
+ggplot(Sleuth3::case0501, 
+       aes(x = Diet, 
+           y = Lifetime)) + 
+  geom_jitter(width = 0.1, 
+              height = 0) +
+  stat_summary(fun = mean, 
+               fun.min = mean, 
+               fun.max = mean,
+               geom = "crossbar", 
+               width = .5, 
+               color = "magenta")
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -78,7 +84,7 @@ indicator for the $i$th mouse being on the $j$th diet.
 
 \vspace{0.2in} \pause
 
-\bc
+
 Reparameterized model since
 \[ 
 \mu_0 = \beta_0
@@ -86,7 +92,7 @@ Reparameterized model since
 \mu_j = \beta_0 + \beta_j
 \]
 for $j>0$. 
-\nc\ec
+
 \end{frame}
 
 
@@ -116,7 +122,7 @@ for $j>0$.
 
 	\pause 
 	
-	\bc
+	
 	We can compute \alert{contrasts}:
 	\[ \begin{array}{rl}
 	\gamma_1 =&  \mu_{R/R50}-\mu_{N/R50} \pause\\ \\
@@ -124,7 +130,7 @@ for $j>0$.
 	\gamma_3 =& \frac{1}{4}(\mu_{N/R50}+\mu_{R/R50}+\mu_{N/R40}+\mu_{lopro}) \\
 	&-\frac{1}{2}(\mu_{NP}+\mu_{N/N85}) \\
 	\end{array} \]
-	\nc\ec
+	
 \end{frame}
 
 
@@ -169,10 +175,10 @@ A linear combination with $C_1+C_2+\cdots+C_J=0$ is a \alert{contrast}.
 
 \vspace{0.2in} \pause 
 
-\bc
+
 Contrast interpretation is usually best if $|C_1|+|C_2|+\cdots+|C_J|=2$, 
 i.e. the positive coefficients sum to 1 and the negative coefficients sum to -1. 
-\nc\ec
+
 \end{frame}
 
 
@@ -193,14 +199,14 @@ i.e. the positive coefficients sum to 1 and the negative coefficients sum to -1.
 	
 	\pause
 	
-	\bc
+	
 	\pvalue{}s for $H_0: \gamma=g_0$ vs $H_A: \gamma \ne g_0$ and posterior 
 	probabilities (i.e. $2P(\gamma>0|y)$ or $2P(\gamma<0|y)$):
 	\[ t = \frac{g-g_0}{SE(g)}, \quad p = 2P(T_{n-J} < -|t|). \]
 	\pause
 	Two-sided equal-tail $100(1-\alpha)$\% confidence/credible intervals:
 	\[ g \pm t_{n-J,1-\alpha/2} SE(g). \]
-	\nc\ec
+	
 \end{frame}
 
 
@@ -209,12 +215,12 @@ i.e. the positive coefficients sum to 1 and the negative coefficients sum to -1.
 
 For these contrasts: 
 \begin{enumerate}
-	\item Mean lifetimes for N/R50 and R/R50 diet are different. 
-	\item Mean lifetimes for N/R40 is different than for N/R50 and R/R50 combined.
-	\item Mean lifetimes for high calorie (NP and N/N85) diets is different than for low calorie diets combined.
+	\item Difference in mean lifetimes for N/R50 v R/R50 diet 
+	\item Difference in mean lifetimes for N/R40 v N/R50 and R/R50 combined
+	\item Difference in mean lifetimes for high calorie (NP and N/N85) diets v low calorie (others) diets 
 \end{enumerate}
 \pause 
-\bc
+
 	$H_0: \gamma=0 \qquad H_A: \gamma \ne 0:$ 
   \[ \begin{array}{rl}
 	\gamma_1 =&  \mu_{R/R50}-\mu_{N/R50} \pause\\
@@ -224,16 +230,16 @@ For these contrasts:
 \pause
 {\tiny
 <<K,echo=FALSE>>=
-K = rbind("early rest - none @ 50kcal"=c( 0, 0,-1, 0, 1, 0),
-          "40kcal/week - 50kcal/week" =c( 0, 2,-1, 0,-1, 0) / 2, # note the denominator here
-          "lo cal - hi cal"           =c(-2, 1, 1,-2, 1, 1) / 4) # and here
-colnames(K) = levels(case0501$Diet)
+K <- rbind("early rest - none @ 50kcal"=c( 0, 0,-1, 0, 1, 0),
+           "40kcal/week - 50kcal/week" =c( 0, 2,-1, 0,-1, 0) / 2, # note the denominator here
+           "lo cal - hi cal"           =c(-2, 1, 1,-2, 1, 1) / 4) # and here
+colnames(K) <- levels(case0501$Diet)
 @
 <<echo=FALSE,results='asis'>>=
 print(xtable(K))
 @
 }
-\nc\ec
+
 \end{frame}
 
 
@@ -244,13 +250,13 @@ print(xtable(K))
 % \small
 % 
 % <<echo=FALSE,results='asis'>>=
-% sm <- Sleuth3::case0501 %>%
-%   group_by(Diet) %>%
+% sm <- Sleuth3::case0501 |>
+%   group_by(Diet) |>
 %   summarize(n = n(),
 %             mean = mean(Lifetime),
 %             sd = sd(Lifetime))
 % 
-% sm %>% xtable %>% print
+% sm |> xtable |> print
 % @
 % 
 % Contrasts:
@@ -280,24 +286,24 @@ print(xtable(K))
 \subsection{R}
 \begin{frame}[fragile]
 \frametitle{Fit the Multiple Regression Model}
-\bc
+
 <<echo = TRUE>>=
-m = lm(Lifetime ~ Diet, data = Sleuth3::case0501) 
+m <- lm(Lifetime ~ Diet, data = Sleuth3::case0501) 
 summary(m)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Estimate Group Means}
-\bc
+
 <<echo = TRUE>>=
 library("emmeans")
-em = emmeans(m, ~ Diet)
+em <- emmeans(m, ~ Diet)
 em
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -318,13 +324,13 @@ K_list <- setNames(split(K, seq(nrow(K))), rownames(K))
 
 \vspace{-0.3in}
 
-\bc
+
 <<echo = TRUE>>=
 K_list
 @
 \pause
 <<echo=TRUE>>=
-co = contrast(em, K_list)
+co <- contrast(em, K_list)
 
 # p-values (and posterior tail probabilities)
 co
@@ -332,7 +338,7 @@ co
 # confidence/credible intervals
 confint(co)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -366,14 +372,14 @@ Cochran and Cox. (1957) Experimental Design (2nd ed). pg96 and Agron. J. 80:712-
 
 \vspace{0.2in} \pause
 
-\bc
+
 Scientific questions:
 \begin{itemize}[<+->]
 \item Does sulfur have any impact at all?
 \item What is the difference between spring and fall application of sulfur?
 \item What is the effect of increased sulfur application?
 \end{itemize}
-\nc\ec
+
 }
 
 
@@ -381,11 +387,8 @@ Scientific questions:
 \begin{frame}[fragile]
 \frametitle{Data}
 
-\vspace{-0.4in}
-
-\bc
 <<echo=FALSE>>=
-text = 
+text <- 
 "inf trt row col
 9  F3   4   1
 12   O   4   2
@@ -420,20 +423,20 @@ text =
 26   O   1   7
 4  F3   1   8"
 
-d <- read.table(textConnection(text), header=TRUE) %>%
+d <- read.table(textConnection(text), header=TRUE) |>
   mutate(sulfur = as.numeric(gsub("\\D","",trt))*100,
          sulfur = ifelse(is.na(sulfur), 0, sulfur),
          application = fct_recode(gsub("\\d","",trt), 
                                   fall = "F", 
                                   spring = "S",
                                   NULL = "O"),
-         application = fct_explicit_na(application),
+         application = fct_na_value_to_level(application, "not applicable"),
          treatment = factor(trt, 
                levels=c("F12","F6","F3","O","S3","S6","S12")))
          
 d
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -441,94 +444,127 @@ d
 
 \begin{frame}[fragile]
 \frametitle{Design}
-\bc
+
 <<echo=FALSE>>=
-plot(0,0, xlab="col", ylab="row", 
-     main="Completely randomized design\n potato scab experiment",
-     xlim=range(d$col)+c(-.5,.5), ylim=range(d$row)+c(-.5,.5), axes=F, type="n")
+plot(0, 0, 
+     xlab = "col", 
+     ylab = "row", 
+     main = "Completely randomized design\n potato scab experiment",
+     xlim = range(d$col) + c(-.5,.5), 
+     ylim = range(d$row) + c(-.5,.5), axes=F, type = "n")
 text(d$col, d$row, d$trt)
-axis(1, 1:8, lwd=0)
-axis(2, 1:4, lwd=0)
-segments(1:9-.5,0.5,1:9-.5,4.5)
-segments(0.5,1:5-.5,8.5,1:5-.5)
+axis(1, 1:8, lwd = 0)
+axis(2, 1:4, lwd = 0)
+segments(1:9-.5, 0.5, 1:9-.5, 4.5)
+segments(0.5, 1:5-.5, 8.5, 1:5-.5)
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Design}
-\bc
+
 <<echo=FALSE>>=
-plot(0,0, xlab="Sulfur (lbs/acre)", ylab="Application", 
-     main="Treatment visualization",
-     type="n", axes=F,
-     xlim=c(-100,1500), ylim=c(.5,2.5))
-axis(1, c(0,300,600,1200), lwd=0)
-axis(2, c(1,2), c("spring","fall"), lwd=0)
-xc = c(0,300,300,600,600,1200,1200)
-yc = c(1.5,1,2,1,2,1,2)
-rect(xc-100,yc-.4,xc+100,yc+.4)
-text(xc,yc, c(8,rep(4,6)))
+plot(0, 0, 
+     xlab = "Sulfur (lbs/acre)", 
+     ylab = "Application", 
+     main = "Treatment visualization",
+     type = "n", 
+     axes = F,
+     xlim = c(-100, 1500), 
+     ylim = c(.5, 2.5))
+axis(1, c(0, 300, 600, 1200), lwd = 0)
+axis(2, c(1,2), c("spring", "fall"), lwd = 0)
+xc = c(0, 300, 300, 600, 600, 1200, 1200)
+yc = c(1.5, 1, 2, 1, 2, 1, 2)
+rect(xc - 100, yc - .4, xc + 100, yc + .4)
+text(xc, yc, c(8, rep(4,6)))
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Data}
-\bc
+
 <<echo=FALSE>>=
 ggplot(d, 
-       aes(treatment, inf)) + 
-  geom_boxplot(color="gray", outlier.shape = NA) + 
+       aes(x = treatment, 
+           y = inf)) + 
+  geom_boxplot(color         ="gray", 
+               outlier.shape = NA) + 
   geom_jitter(height=0) +
-  labs(x = "Sulfur", y = "Average scab percent") + 
-  theme_bw()
+  labs(x = "Sulfur", 
+       y = "Average scab percent") 
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Data}
-\bc
+
 <<echo=FALSE>>=
-ggplot(d %>% 
-         mutate(application = fct_explicit_na(application)), 
-       aes(sulfur, inf, shape=application, color=application)) + 
-  geom_jitter(height=0, width=10) +
-  labs(x = "Sulfur", y = "Average scab percent") + 
-  theme_bw()
+ggplot(d, 
+       aes(x     = sulfur, 
+           y     = inf, 
+           shape = application, 
+           color = application)) + 
+  geom_jitter(height = 0, 
+              width  = 10) +
+  labs(x = "Sulfur", 
+       y = "Average scab percent")
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Data}
-\bc
+
 <<echo=FALSE>>=
-qplot(col, inf, data=d, shape=application, color = sulfur, geom="jitter", 
-      xlab="Column ID", ylab="Average scab percent") + 
-  theme_bw()
+ggplot(d, 
+       aes(x     = col,
+           y     = inf,
+           color = sulfur,
+           shape = application)) +
+  geom_jitter() +
+  labs(
+    xlab = "Column ID",
+    ylab = "Average scab percent"
+  )
+
+# qplot(col, inf, data=d, shape=application, color = sulfur, geom="jitter", 
+#       xlab="Column ID", ylab="Average scab percent") + 
+#   theme_bw()
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Data}
-\bc
+
 <<echo=FALSE>>=
-qplot(row, inf, data=d, shape=application, color = sulfur, geom="jitter", 
-      xlab="Row ID", ylab="Average scab percent") + 
-  theme_bw()
+ggplot(d, 
+       aes(x     = row,
+           y     = inf,
+           color = sulfur,
+           shape = application)) +
+  geom_jitter() +
+  labs(
+    xlab = "Row ID",
+    ylab = "Average scab percent"
+  )
+
+# qplot(row, inf, data=d, shape=application, color = sulfur, geom="jitter", 
+#       xlab="Row ID", ylab="Average scab percent") 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -544,7 +580,7 @@ Assume $Y_{ij} \ind N(\mu_j, \sigma^2)$.
 
 \vspace{0.2in} \pause
 
-\bc
+
 Hypotheses:
 \begin{itemize}[<+->]
 \item Difference amongst any means: \\ One-way ANOVA F-test
@@ -552,7 +588,7 @@ Hypotheses:
 \item \emph{Fall vs spring}: \\ Contrast: fall vs spring applications
 \item \emph{Sulfur level}: \\ Contrast: linear trend
 \end{itemize}
-\nc\ec
+
 }
 
 
@@ -562,7 +598,7 @@ Hypotheses:
 
 \vspace{-0.2in}
 
-\bc
+
 \begin{itemize}
 \item \emph{Sulfur effect}: Any sulfur vs none \pause
 \[ \begin{array}{rl} 
@@ -581,7 +617,7 @@ Hypotheses:
 \end{array} \] 
 
 \end{itemize}	
-\nc\ec
+
 \end{frame}
 
 
@@ -629,53 +665,53 @@ Linear Trend & 6 & 0 & -3 & -6 & -3 & 0 & 6 & 1 \\
 
 \pause 
 
-\bc
+
 <<potato_in_R, echo = TRUE>>=
-K = 
+K <- 
 #                                         F12 F6 F3  0 S3 S6 S12           
                list("sulfur - control" = c( 1, 1, 1,-6, 1, 1,  1)/6,
                     "fall - spring"    = c( 1, 1, 1, 0,-1,-1, -1)/3,
                     "linear trend"     = c( 6, 0,-3,-6,-3, 0,  6)/1)
 
-m = lm(inf ~ treatment, data = d)
+m <- lm(inf ~ treatment, data = d)
 anova(m)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{}
-\bc
+
 <<>>=
 resid_panel(m, plots = c("resid","qq","cookd","index","ls","lev"), 
             qqbands = TRUE, smoother = TRUE)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{}
-\bc
+
 <<echo=TRUE>>=
 em <- emmeans(m, ~treatment); em
 
 co <- contrast(em, K)
 confint(co)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{}
-\bc
+
 <<>>=
 d$residuals <- residuals(m)
-ggplot(d, aes(col, residuals)) + geom_point() + stat_smooth(se=FALSE) + theme_bw()
+ggplot(d, aes(col, residuals)) + geom_point() + stat_smooth(se=FALSE) 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -696,7 +732,7 @@ ggplot(d, aes(col, residuals)) + geom_point() + stat_smooth(se=FALSE) + theme_bw
 	
 	\vspace{0.2in}\pause
 	
-	\bc
+	
 	\begin{itemize}
 	\item Concerned about spatial correlation among columns \pause
 	\item Consider a logarithm of the response \pause
@@ -705,7 +741,7 @@ ggplot(d, aes(col, residuals)) + geom_point() + stat_smooth(se=FALSE) + theme_bw
 		\item Non-constant variance (residuals vs predicted, sulfur, application)
 		\end{itemize}
 	\end{itemize}
-	\nc\ec
+	
 }
 
 \end{document}
