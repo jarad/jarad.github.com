@@ -7,7 +7,7 @@ library("ggplot2")
 set.seed(2)
 
 
-## ----center_of_mass, fig.height=4, out.width = "\\textwidth"----------------------------------------------------------
+## ----center_of_mass, fig.height=2.9, out.width = "\\textwidth"--------------------------------------------------------
 d <- data.frame(x = seq(0,1,by=0.05)) %>%
   mutate(y = 3*x^2)
 
@@ -20,7 +20,7 @@ ggplot(d, aes(x, ymin = 0, ymax = y)) +
   theme_bw()
 
 
-## ----out.width = "\\textwidth", fig.height = 3.5----------------------------------------------------------------------
+## ----fig.height=2-----------------------------------------------------------------------------------------------------
 d = data.frame(x = seq(-0.5, 1.5, by=0.01)) %>%
   dplyr::mutate(pdf = 1 * (x>0) * (x < 1),
                 cdf = x,
@@ -37,10 +37,10 @@ ggplot(d, aes(x, pdf)) +
 inverse_cdf = function(u) u^(1/3)
 x = inverse_cdf(runif(1e6))
 mean(x)
-var(x); 3/80
+var(x)
 
 
-## ----out.width="\\textwidth"------------------------------------------------------------------------------------------
+## ----fig.height = 3.3, out.width="\\textwidth"------------------------------------------------------------------------
 hist(x, 100, prob = TRUE)
 curve(3*x^2, col='red', add = TRUE, lwd=2)
 

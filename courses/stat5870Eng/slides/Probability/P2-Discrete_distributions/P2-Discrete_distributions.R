@@ -82,7 +82,7 @@ sqrt(variance)
 
 ## ----biased_coin_variance, fig.height=3, fig.width = 8, out.width="0.6\\textwidth", fig.align="left"------------------
 opar = par(mar=c(4,4,1,0)+.1)
-variance = function(p) p*(1-p)
+variance = function(p) p*(1 - p)
 curve(variance, xlab='y', ylab='variance')
 par(opar)
 
@@ -104,11 +104,11 @@ ggplot(d, aes(x, pmf, yend = 0, xend = x)) +
 ## ----component_failure_rate,echo=TRUE---------------------------------------------------------------------------------
 n <- 15
 p <- 0.05
-choose(15,2)
-dbinom(2,n,p)           # P(Y=2)
-pbinom(2,n,p)           # P(Y<=2)
-1-pbinom(3,n,p)         # P(Y>3)
-sum(dbinom(c(2,3),n,p)) # P(1<Y<4) = P(Y=2)+P(Y=3)
+choose(15, 2)
+dbinom(2, n, p)            # P(Y=2)
+pbinom(2, n, p)            # P(Y<=2)
+1 - pbinom(3, n, p)        # P(Y>3)
+sum(dbinom(c(2, 3), n, p)) # P(1<Y<4) = P(Y=2)+P(Y=3)
 
 
 ## ----poisson_pmf------------------------------------------------------------------------------------------------------
@@ -127,32 +127,30 @@ ggplot(d, aes(x, pmf, yend = 0, xend = x)) +
 
 ## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 # Using pmf
-1-sum(dpois(0:8, lambda=10))
+1 - sum(dpois(0:8, lambda = 10))
 # Using cdf
-1-ppois(8, lambda=10)
+1 - ppois(8, lambda = 10)
 
 
 ## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 # Using pmf
-1-sum(dpois(0:16, lambda=20))
+1 - sum(dpois(0:16, lambda = 20))
 # Using cdf
-1-ppois(16, lambda=20)
+1 - ppois(16, lambda = 20)
 
 
-## ----poisson_vs_binomial, fig.width=8---------------------------------------------------------------------------------
-n = 5
-p = 0.01
-e = 0.01
-d = data.frame(x = 0:n) %>%
+## ----poisson_vs_binomial, fig.height=2--------------------------------------------------------------------------------
+n <- 100
+p <- 0.01
+d <- data.frame(x = 0:10) %>%
   dplyr::mutate(binomial = dbinom(x, n, p),
                 Poisson = dpois(x, n*p)) %>%
-  tidyr::gather("Distribution","pmf", binomial, Poisson) %>%
-  dplyr::mutate(x = x-e + 2*e*(Distribution == "Poisson"))
+  tidyr::gather("Distribution","pmf", binomial, Poisson)
 
-ggplot(d, aes(x=x, y = pmf, yend = 0, xend = x,
+ggplot(d, aes(x=x, ymin = pmf, ymax = 0,
               color = Distribution, linetype = Distribution)) +
-  geom_point() +
-  geom_segment() +
+  geom_linerange(position = position_dodge(width = 0.2)) +
+  # geom_segment(position = position_dodge(width = 0.5)) +
   labs(title = "Poisson vs binomial", x = "Value",
        y = "Probability mass function") +
   theme_bw()
@@ -160,7 +158,7 @@ ggplot(d, aes(x=x, y = pmf, yend = 0, xend = x,
 
 ## ----typo_binomial, echo=TRUE-----------------------------------------------------------------------------------------
 n = 1000; p = 0.002
-dbinom(0, size=n, prob=p)
+dbinom(0, size = n, prob = p)
 
 
 ## ----typo_poisson, echo=TRUE, dependson='typo_binomial'---------------------------------------------------------------

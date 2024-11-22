@@ -14,7 +14,7 @@
 options(width=120)
 opts_chunk$set(comment=NA, 
                fig.width=6, 
-               fig.height=4.4, 
+               fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -23,7 +23,7 @@ opts_chunk$set(comment=NA,
 @
 
 <<libraries, message=FALSE, warning=FALSE, echo=FALSE>>=
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("xtable")
 library("Sleuth3")
 library("emmeans")
@@ -70,7 +70,7 @@ to the \alert{experimental units}. \pause
 
 \begin{frame}
 \frametitle{Data collection}
-\small
+\centering
 \begin{tabular}{l|l|l}
 & \multicolumn{2}{c}{Treatment randomly assigned?} \\
  & No & Yes \\
@@ -103,7 +103,7 @@ You are interested in testing two different wood glues:
 
 \pause
 
-\bc
+
 On a scarf joint:
 \begin{center}
 \includegraphics{scarf_stapled}
@@ -117,17 +117,17 @@ required to break the joint.
 \pause
 
 {\tiny Inspiration: \url{https://woodgears.ca/joint_strength/glue.html}}
-\nc\ec
+
 \end{frame}
 
 
 <<echo=FALSE>>=
 d <- data.frame(woodID = paste0("wood",1:8),
                 woodtype = factor(rep(c("Spruce","Maple"), each=4), 
-                                  levels = c("Spruce","Maple"))) %>%
-  group_by(woodtype) %>%
-  mutate(glue = sample(rep(c("Gorilla","Titebond"), each=2))) %>%
-  ungroup() %>%
+                                  levels = c("Spruce","Maple"))) |>
+  group_by(woodtype) |>
+  mutate(glue = sample(rep(c("Gorilla","Titebond"), each=2))) |>
+  ungroup() |>
   mutate(pounds = rnorm(n(), 250, 20) +
            ifelse(glue == "Titebond", 40, 0) +
            ifelse(woodtype == "Maple", 20, 0))
@@ -148,11 +148,9 @@ Titebond results,
 \pause
 e.g.
 
-\vspace{-0.2in}
 
-\bc
 <<echo=FALSE>>=
-d %>% select(-woodtype, -pounds)
+d |> select(-woodtype, -pounds)
 @
 This is called a \alert{completely randomized design (CRD)}.
 \pause
@@ -161,7 +159,7 @@ the design is \alert{balanced}.
 \pause
 Because all treatment (combinations) are repeated,
 the design is \alert{replicated}.
-\nc\ec
+
 \end{frame}
 
 
@@ -170,11 +168,11 @@ the design is \alert{replicated}.
 
 \begin{frame}[fragile]
 \frametitle{Visualize the data}
-\bc
+
 <<>>=
-ggplot(d, aes(glue, pounds)) + geom_point() + theme_bw()
+ggplot(d, aes(glue, pounds)) + geom_point() 
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -192,7 +190,7 @@ i.e.
 
 \pause
 
-\bc
+
 Then a regression model for these data is 
 \[
 P_w \ind N(\beta_0+\beta_1T_w, \sigma^2).
@@ -203,34 +201,31 @@ P_w \ind N(\beta_0+\beta_1T_w, \sigma^2).
 % \item $\beta_1$ is the expected difference in weight when using Titebond glue
 % compared to using Gorilla glue.
 % \end{itemize}
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Check model assumptions}
-\bc
+
 <<>>=
 m = lm(pounds ~ glue, data = d)
 ggResidpanel::resid_panel(m, plots = my_plots[-6], qqbands = TRUE)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Obtain statistics}
 
-\vspace{-0.4in} 
-
-\bc
 <<echo=TRUE>>=
 coefficients(m)
 summary(m)$r.squared
 confint(m)
 emmeans(m, ~glue)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -283,11 +278,8 @@ depending on the type of wood.
 In this case, you would want to \alert{block} by wood type and perform the 
 randomization within each block, \pause i.e.
 
-\vspace{-0.2in}
-
-\bc
 <<echo=FALSE>>=
-d %>% select(-pounds)
+d |> select(-pounds)
 @
 \pause
 This is called a \alert{randomized complete block design (RCBD)}.
@@ -295,7 +287,7 @@ This is called a \alert{randomized complete block design (RCBD)}.
 If all treatment combinations exist, then the design is \alert{complete}.
 \pause
 If a treatment combination is missing, then the design is \alert{incomplete}.
-\nc\ec
+
 \end{frame}
 
 
@@ -305,22 +297,22 @@ If a treatment combination is missing, then the design is \alert{incomplete}.
 
 \begin{frame}[fragile]
 \frametitle{Visualize the data}
-\bc
+
 <<>>=
-ggplot(d, aes(glue, pounds, color=woodtype, shape=woodtype)) + geom_point() + theme_bw()
+ggplot(d, aes(glue, pounds, color=woodtype, shape=woodtype)) + geom_point() 
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Visualize the data - a more direct comparison}
-\bc
+
 <<>>=
-ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point() + theme_bw()
+ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point()
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -336,7 +328,7 @@ Let
 
 \pause
 
-\bc
+
 Then a main effects model for these data is 
 \[
 P_w \ind N(\beta_0+\beta_1T_w + \beta_2M_w, \sigma^2)
@@ -351,19 +343,19 @@ P_w \ind N(\beta_0+\beta_1T_w + \beta_2M_w, \sigma^2)
 % to Spruce when adjusting for type of glue, i.e. the 
 % glue is held constant.
 % \end{itemize}
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Perform analysis}
-\bc
+
 <<>>=
 m <- lm(pounds ~ glue + woodtype, data = d)
 summary(m)
 confint(m)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -375,9 +367,9 @@ confint(m)
 Since there are more than one observation for each woodtype-glue combination,
 the design is \alert{replicated}:
 
-\bc
+
 <<echo = TRUE>>=
-d %>% group_by(woodtype, glue) %>% summarize(n = n())
+d |> group_by(woodtype, glue) |> summarize(n = n())
 @
 When the design is replicated, we can consider assessing an interaction.
 % \pause
@@ -387,14 +379,12 @@ When the design is replicated, we can consider assessing an interaction.
 % \pause
 % At an extreme, it could be that Gorilla works better on Spruce and Titebond
 % works better on Maple.
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}
 \frametitle{Interaction model}
-
-\vspace{-0.1in}
 
 Let 
 \begin{itemize}
@@ -422,26 +412,24 @@ P_w \ind N(\beta_0+\beta_1T_w + \beta_2M_w + \beta_3T_wM_w, \sigma^2)
 
 \begin{frame}[fragile]
 \frametitle{Assessing an interaction using a t-test}
-\bc
+
 <<>>=
 m <- lm(pounds ~ glue * woodtype, data = d)
 summary(m)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Assessing an interaction using an F-test}
 
-\vspace{-0.4in}
 
-\bc
 <<echo = TRUE>>=
 anova(m)
 drop1(m, test='F')
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -449,10 +437,10 @@ drop1(m, test='F')
 set.seed(3)
 d <- data.frame(woodID = paste0("wood",1:8),
                 woodtype = factor(rep(c("Spruce","Maple"), each=4), 
-                                  levels = c("Spruce","Maple"))) %>%
-  group_by(woodtype) %>%
-  mutate(glue = sample(rep(c("Gorilla","Titebond"), each=2))) %>%
-  ungroup() %>%
+                                  levels = c("Spruce","Maple"))) |>
+  group_by(woodtype) |>
+  mutate(glue = sample(rep(c("Gorilla","Titebond"), each=2))) |>
+  ungroup() |>
   mutate(pounds = rnorm(n(), 250, 20) +
            ifelse(glue == "Titebond", 40, 0) +
            ifelse(woodtype == "Maple", 20, 0) + 
@@ -463,22 +451,22 @@ d <- data.frame(woodID = paste0("wood",1:8),
 
 \begin{frame}[fragile]
 \frametitle{What if this had been your data?}
-\bc
+
 <<>>=
-ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point() + theme_bw()
+ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point()
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Assessing an interaction using a t-test}
-\bc
+
 <<>>=
 m <- lm(pounds ~ glue * woodtype, data = d)
 summary(m)
 @
-\nc\ec
+
 \end{frame}
 
 
@@ -505,70 +493,76 @@ Then you can run an unreplicated RCBD.
 
 <<echo=FALSE>>=
 d <- data.frame(woodID = paste0("wood",1:20),
-                woodtype = rep(c("Spruce","Maple","Oak","Cedar"), each=5)) %>%
-  group_by(woodtype) %>%
-  mutate(glue = sample(c("Gorilla","Titebond","Hot glue","Carpenter's","Weldbond"))) %>%
-  ungroup() %>%
+                woodtype = rep(c("Spruce",
+                                 "Maple",
+                                 "Oak",
+                                 "Cedar"), each=5)) |>
+  group_by(woodtype) |>
+  mutate(glue = sample(c("Gorilla",
+                         "Titebond",
+                         "Hot glue",
+                         "Carpenter's",
+                         "Weldbond"))) |>
+  ungroup() |>
   mutate(pounds = rnorm(n(), 250, 20))
 @
 
 \begin{frame}[fragile]
 \frametitle{Visualize}
-\bc
+
 <<>>=
-ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + 
-  geom_point() + theme_bw()
+ggplot(d, 
+       aes(x     = woodtype, 
+           y     = pounds, 
+           color = glue, 
+           shape = glue)) + 
+  geom_point() 
 @
-\nc\ec
+
 \end{frame}
 
 
 
 \begin{frame}[fragile]
 \frametitle{Fit the main effects (or additive) model}
-\bc
+
 <<echo = TRUE>>=
 m <- lm(pounds ~ glue + woodtype, data = d)
 anova(m)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Fit the main effects (or additive) model}
-\bc
+
 <<>>=
 summary(m)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Fit the full (with interaction) model}
 
-\vspace{-0.2in}
 
-\bc
 <<>>=
 m <- lm(pounds ~ glue * woodtype, data = d)
 anova(m)
 @
-\nc\ec
+
 \end{frame}
 
 
 \begin{frame}[fragile]
 \frametitle{Fit the full (with interaction) model}
 
-\vspace{-0.2in}
-
-\bc
 <<>>=
 summary(m)
 @
-\nc\ec
+
 \end{frame}
 
 

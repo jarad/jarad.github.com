@@ -1,8 +1,8 @@
-## ----libraries, message=FALSE, warning=FALSE, echo=FALSE, cache=FALSE-------------------------------------------------
+## ----libraries, warning=FALSE-----------------------------------------------------------------------------------------
 library("tidyverse")
 
 
-## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
+## ----set_seed---------------------------------------------------------------------------------------------------------
 set.seed(2)
 
 
@@ -34,26 +34,52 @@ sm <- d2 %>%
 sm
 
 
-## ----welch, dependson="d2",echo=TRUE----------------------------------------------------------------------------------
-t.test(sensitivity ~ process, data = d2)
+## ----two-means-frequentist-by-hand, dependson="d2", echo=TRUE---------------------------------------------------------
+v    <- sm$n[1] + sm$n[2] - 2
+diff <- sm$mean[1] - sm$mean[2]
+
+# Calculate standard error
+sp2  <- ( (sm$n[1]-1)*sm$sd[1]^2 + (sm$n[2]-1)*sm$sd[2]^2 ) / v # Pooled variance
+sp   <- sqrt(sp2)
+se   <- sp * sqrt(1/sm$n[1] + 1/sm$n[2])
+
+# Two-sided p-value
+2 * pt(-abs(diff / se), df = v)
+
+# Equal-tail confidence interval
+diff + c(-1,1) * qt(.975, df = v) * se
 
 
-## ----mu_draws, dependson="sm"-----------------------------------------------------------------------------------------
+## ----two-means-frequentist-t-test, dependson="d2",echo=TRUE-----------------------------------------------------------
+(tt <- t.test(sensitivity ~ process, data = d2, var.equal = TRUE))
+
+# Since estimate of the difference is negative
+# the following is P(mu_1 - mu_2 > 0)
+tt$p.value / 2
+
+
+## ----two-means-frequentist-t-test-unequal-variance, dependson="d2",echo=TRUE------------------------------------------
+t.test(sensitivity ~ process, 
+       data = d2, 
+       var.equal = FALSE)     # this was the default
+
+
+## ----mu_draws, dependson="sm", echo=TRUE------------------------------------------------------------------------------
 nr = 1e5
 sims <- bind_rows(
-  tibble(
-    rep = 1:nr,
+  tibble(           # tibble is just a special data.frame
+    rep     = 1:nr,
     process = "P1",
-    mu = sm$mean[1] + rt(nr, df = sm$n[1]-1) * sm$sd[1] / sqrt(sm$n[1])),
+    mu      = sm$mean[1] + rt(nr, df = sm$n[1]-1) * sm$sd[1] / sqrt(sm$n[1])),
   tibble(
-    rep = 1:nr,
+    rep     = 1:nr,
     process = "P2",
-    mu = sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2]))
+    mu      = sm$mean[2] + rt(nr, df = sm$n[2]-1) * sm$sd[2] / sqrt(sm$n[2]))
 )
 
 
 ## ----mu_posteriors, dependson="mu_draws"------------------------------------------------------------------------------
-ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) +
+ggplot(sims, aes(x=mu, y=after_stat(density), fill=process, group=process)) +
   geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
   theme_bw()
 
@@ -69,8 +95,8 @@ mean(d3$diff)
 # Estimated 95% equal-tail credible interval
 quantile(d3$diff, c(.025,.975))
 
-# Estimate of the probability that mu1 is larger than mu2
-mean(d3$diff > 0)
+# Estimate of the probability that mu1 is smaller than mu2
+mean(d3$diff < 0)
 
 
 ## ----summary2, dependson="data"---------------------------------------------------------------------------------------
@@ -106,7 +132,7 @@ sims <- bind_rows(
 
 
 ## ----mu3_posteriors, dependson="mu3_draws"----------------------------------------------------------------------------
-ggplot(sims, aes(x=mu, y=..density.., fill=process, group=process)) +
+ggplot(sims, aes(x=mu, y=after_stat(density), fill=process, group=process)) +
   geom_histogram(position = "identity", alpha=0.5, binwidth=0.1) +
   theme_bw()
 
@@ -145,7 +171,7 @@ nr = 1e5
 sims <- data.frame(rep = 1:nr,
   sigma = 1/sqrt( rgamma(nr,
                          shape = sum(sm$n-1)/2,
-                         rate = sum((sm$n-1)*sm$sd^2)/2 
+                         rate = sum((sm$n-1)*sm$sd^2)/2
                          )
                   )
   ) %>%

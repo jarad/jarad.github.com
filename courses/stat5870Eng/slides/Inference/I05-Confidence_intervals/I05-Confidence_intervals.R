@@ -3,6 +3,7 @@ library("plyr")
 library("dplyr")
 library("tidyr")
 library("ggplot2")
+theme_set(theme_bw())
 
 
 ## ----set_seed, echo=FALSE---------------------------------------------------------------------------------------------
@@ -23,7 +24,7 @@ L <- ybar - t_crit*s/sqrt(n)
 U <- ybar + t_crit*s/sqrt(n)
 
 
-## ----critical_values_comparison, fig.height=4.5-----------------------------------------------------------------------
+## ----critical_values_comparison---------------------------------------------------------------------------------------
 d <- expand.grid(n = 10^(1:3), a = 1-c(.9,.95,.99)) %>%
   group_by(n, a) %>%
   mutate(z_crit = qnorm(1-a/2),
@@ -35,6 +36,9 @@ ggplot(d, aes(z_crit, t_crit, group=n, linetype=n, color=n)) +
   geom_line() +
   geom_abline(intercept = 0, slope = 1, color='gray') +
   # coord_fixed() +
-  labs(x = "z critical values", y = "t critical values") +
-  theme_bw()
+  labs(x = "z critical values", y = "t critical values") 
+
+
+## ----binomial-credible-interval, eval=FALSE, echo=TRUE----------------------------------------------------------------
+## qbeta(c(a/2, 1-a/2), 1 + y, 1 + n - y)
 

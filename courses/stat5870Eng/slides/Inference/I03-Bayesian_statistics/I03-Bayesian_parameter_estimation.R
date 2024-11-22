@@ -43,12 +43,12 @@ ggplot(data.frame(x=c(0,.1)), aes(x)) +
 
 
 ## ----echo=TRUE--------------------------------------------------------------------------------------------------------
-(1+y)/(2+n)
+(1 + y) / (2 + n)
 
 
 ## ----echo=TRUE--------------------------------------------------------------------------------------------------------
 # 95% credible interval is 
-ci = qbeta(c(.025,.975), 1+y, 1+n-y) 
+ci <- qbeta(c(.025, .975), 1 + y, 1 + n - y) 
 round(ci, 3)
 
 
@@ -65,18 +65,18 @@ ggplot(data.frame(x=c(0,.1)), aes(x)) +
 
 
 ## ----eval = FALSE, echo = TRUE, size = 'tiny'-------------------------------------------------------------------------
-## a <- 1; b <- 1                  # default uniform prior
-## y <- 3; n <- 10                 # data
+## a <- 1; b <- 1                         # default uniform prior
+## y <- 3; n <- 10                        # data
 ## 
-## curve(dbeta(x,ay,b+n-y))        # posterior (pdf)
-## (a+y)/(a+b+n)                   # posterior mean
-## qbeta(.5, a+y, b+n-y)           # posterior median
-## qbeta(c(.025,.975), a+y, b+n-y) # 95% equal tail credible interval
+## curve(dbeta(x, ay, b + n - y))         # posterior (pdf)
+## (a + y)/(a + b + n)                    # posterior mean
+## qbeta(.5, a + y, b + n - y)            # posterior median
+## qbeta(c(.025, .975), a + y, b + n - y) # 95% equal tail credible interval
 ## 
 ## # Probabilities
-## pbeta(0.5, a+y, b+n-y)          # P(theta<0.5|y)
+## pbeta(0.5, a + y, b + n - y)           # P(theta < 0.5|y)
 ## 
 ## # Special cases
-## qbeta(c(0,.95), a+y, b+n-y)     # if y=0, use a lower one-sided CI
-## qbeta(c(.05,1), a+y, b+n-y)     # if y=n, use a upper one-sided CI
+## qbeta(c(0, .95), a + y, b + n - y)     # if y=0, use a lower one-sided CI
+## qbeta(c(.05, 1), a + y, b + n - y)     # if y=n, use a upper one-sided CI
 

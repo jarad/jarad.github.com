@@ -18,7 +18,9 @@ samples = expand.grid(rep = 1:1000,
                mu = mu, 
                sigma = sigma) %>%
   dplyr::group_by(rep, n) %>%
-  do(data.frame(samples = rnorm(.$n, mean = mu, sd = sigma))) 
+  do(data.frame(samples = rnorm(.$n, 
+                                mean = mu, 
+                                sd = sigma))) 
 
 
 ## ----normal_average, dependson = "normal_samples", out.width="0.9\\textwidth"-----------------------------------------
@@ -34,14 +36,14 @@ density = expand.grid(x = seq(from = mu-sigma, to = mu+sigma, length = 1001),
   
 
 ggplot(d, aes(x = average)) + 
-  geom_histogram(aes(y=..density..), binwidth = .1) + 
+  geom_histogram(aes(y=after_stat(density)), binwidth = .1) + 
   geom_line(data = density, aes(x=x, y = density), color = "red") + 
   facet_wrap(~n, scales = "free_y") +
   labs(title = paste0("Sampling distribution for N(",mu,", ",sigma^2,") average")) +
   theme_bw()
 
 
-## ----t_statistic, dependson = "normal_samples", fig.height=3.7--------------------------------------------------------
+## ----t_statistic, dependson = "normal_samples"------------------------------------------------------------------------
 mu = 35
 sigma = 5
 ns = 10*(2:5)
@@ -60,7 +62,7 @@ density = expand.grid(x = seq(from = -4, to = 4, length = 1001),
   
 
 ggplot(d, aes(x = t)) + 
-  geom_histogram(aes(y=..density..), binwidth = .1) + 
+  geom_histogram(aes(y=after_stat(density)), binwidth = .1) + 
   geom_line(data = density, aes(x=x, y = density), color = "red") + 
   facet_wrap(~n, scales = "free_y") +
   labs(title = paste0("Sampling distribution of the t-statistic")) +
@@ -113,7 +115,8 @@ pmf = expand.grid(n = ns, p = ps,
 
 ggplot(samples %>%
          dplyr::group_by(n,p,phat) %>%
-         dplyr::summarize(count = n(), .groups = "keep") %>%
+         dplyr::summarize(count = n(), 
+                          .groups = "keep") %>%
          dplyr::group_by(n,p) %>%
          dplyr::arrange(phat) %>%
          dplyr::mutate(height = count / sum(count) / min(diff(phat))),

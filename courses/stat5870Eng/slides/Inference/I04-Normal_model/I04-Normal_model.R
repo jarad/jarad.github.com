@@ -44,9 +44,9 @@ ggplot(yield_data, aes(x = yield)) +
 
 
 ## ----echo=TRUE--------------------------------------------------------------------------------------------------------
-n               = length(yield_data$yield); n
-sample_mean     = mean(yield_data$yield);   sample_mean
-sample_variance = var(yield_data$yield);    sample_variance
+(n               <- length(yield_data$yield))
+(sample_mean     <- mean(yield_data$yield))
+(sample_variance <- var(yield_data$yield))
 
 
 ## ---------------------------------------------------------------------------------------------------------------------
@@ -151,20 +151,20 @@ ggplot(data.frame(x=c(0.1, 1.5*max(sqrt(var_ci)))), aes(x=x)) +
 
 ## ----eval=FALSE, echo=TRUE--------------------------------------------------------------------------------------------
 ## # Sufficient statistics
-## n               = length(y)
-## sample_mean     = mean(y)
-## sample_variance = var(y)
+## n               <- length(y)
+## sample_mean     <- mean(y)
+## sample_variance <- var(y)
 ## 
 ## # Posterior expectations
 ## sample_mean                   # mu
 ## (n-1)*sample_variance / (n-3) # sigma^2
 ## 
 ## # Posterior medians
-## var_median = qinvgamma(.5, shape = (n-1)/2, scale = (n-1)*sample_variance/2)
-## sd_median  = sqrt(median_var)
+## var_median <- qinvgamma(.5, shape = (n-1)/2, scale = (n-1)*sample_variance/2)
+## sd_median  <- sqrt(var_median)
 ## 
 ## # Posterior credible intervals
 ## sample_mean + c(-1,1) *  qt(1-a/2, df = n-1) * sqrt(sample_variance/n)
-## var_ci = qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*sample_variance/2)
-## sd_ci  = sqrt(var_ci)
+## var_ci <- qinvgamma(c(a/2,1-a/2), shape = (n-1)/2, scale = (n-1)*sample_variance/2)
+## sd_ci  <- sqrt(var_ci)
 

@@ -2,7 +2,7 @@
 options(width=120)
 opts_chunk$set(comment=NA, 
                fig.width=6, 
-               fig.height=4.4, 
+               fig.height=2.5, 
                size='tiny', 
                out.width='\\textwidth', 
                fig.align='center', 
@@ -11,7 +11,7 @@ opts_chunk$set(comment=NA,
 
 
 ## ----libraries, message=FALSE, warning=FALSE, echo=FALSE--------------------------------------------------------------
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("Sleuth3")
 
 
@@ -19,7 +19,7 @@ library("Sleuth3")
 set.seed(2)
 
 
-## ---------------------------------------------------------------------------------------------------------------------
+## ----fig.height=3.5---------------------------------------------------------------------------------------------------
 curve(ifelse(x>0,-x^2+1,NA), -1, 1, axes=FALSE, frame.plot=TRUE, 
       xlab="", ylab="", ylim=c(0,1.1),
       lty=2)
@@ -33,8 +33,7 @@ text(-0.45,1.03,"force")
 
 ## ---------------------------------------------------------------------------------------------------------------------
 ggplot(Sleuth3::case1001, aes(Height, Distance)) +
-  geom_point() +
-  theme_bw()
+  geom_point() 
 
 
 ## ----tidy=FALSE, echo=TRUE--------------------------------------------------------------------------------------------
