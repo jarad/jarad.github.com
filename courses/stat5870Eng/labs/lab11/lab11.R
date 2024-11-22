@@ -1,6 +1,12 @@
+# Author: Jarad Niemi
+# Date:   2024-11-22
+# Purpose: Contrasts using the emmeans package
+#-------------------------------------------------------------------------------
+
+
 ## install.packages("emmeans")
 
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("emmeans")
 
 ggplot(emmeans::fiber, aes(machine, strength)) + 
@@ -12,21 +18,20 @@ nd <- data.frame(machine = c("A","B","C"))
 p <- predict(m, 
              newdata = nd, 
              interval = "confidence")
-bind_cols(nd, p %>% as.data.frame)
+bind_cols(nd, p |> as.data.frame())
 
 emmeans(m, ~machine)
 
-ex0518 <- Sleuth3::ex0518 %>%
+ex0518 <- Sleuth3::ex0518 |>
   mutate(Treatment = relevel(Treatment, ref="Control"))
 
 ggplot(ex0518, aes(Treatment, Protein)) + 
-  geom_jitter() + 
-  theme_bw()
+  geom_jitter()
 
 
 
 # First let's make C the reference level
-fiber <- emmeans::fiber %>% 
+fiber <- emmeans::fiber |> 
   mutate(machine = relevel(machine, ref="C"))
   
 m <- lm(strength ~ machine, data = fiber)

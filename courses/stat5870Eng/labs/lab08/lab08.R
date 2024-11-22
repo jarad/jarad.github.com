@@ -1,3 +1,9 @@
+# Author: Jarad Niemi
+# Date:   2024-11-22
+# Purpose: Using character and factors in regression models in R
+#-------------------------------------------------------------------------------
+
+
 ## install.packages("Sleuth3")
 
 library("tidyverse")
@@ -12,7 +18,7 @@ is.character("a123")
 
 unique(c("a","a","A","A"))
 
-sort(sample(c(letters,LETTERS), 64, replace = TRUE))
+sort(c(letters,LETTERS))
 
 write.csv(Sleuth3::case0501, file = "case0501.csv",
           row.names = FALSE)

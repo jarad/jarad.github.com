@@ -1,3 +1,9 @@
+# Author: Jarad Niemi
+# Date:   2024-11-22
+# Purpose: ANOVA and F-tests in R
+#-------------------------------------------------------------------------------
+
+
 library("tidyverse")
 library("Sleuth3")
 

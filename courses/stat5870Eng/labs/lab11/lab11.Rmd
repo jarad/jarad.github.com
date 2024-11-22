@@ -10,6 +10,14 @@ output:
 
 [![](../rcode_button.png){fig-alt="R Code Button" fig-align="left" width=20%}](lab11.R)
 
+```{r metadata, include=FALSE}
+# Author: Jarad Niemi
+# Date:   2024-11-22
+# Purpose: Contrasts using the emmeans package
+#-------------------------------------------------------------------------------
+
+```
+
 Make sure the following package is installed:
 
 - emmeans
@@ -23,7 +31,7 @@ install.packages("emmeans")
 Now load the packages
 
 ```{r}
-library("tidyverse")
+library("tidyverse"); theme_set(theme_bw())
 library("emmeans")
 ```
 
@@ -49,7 +57,7 @@ nd <- data.frame(machine = c("A","B","C"))
 p <- predict(m, 
              newdata = nd, 
              interval = "confidence")
-bind_cols(nd, p %>% as.data.frame)
+bind_cols(nd, p |> as.data.frame())
 ```
 Alternatively, use the `emmeans` function in the 
 [emmeans](https://cran.r-project.org/web/packages/emmeans/index.html) 
@@ -64,12 +72,11 @@ emmeans(m, ~machine)
 Consider the `ex0518` data set in the Sleuth3 package.
 
 ```{r}
-ex0518 <- Sleuth3::ex0518 %>%
+ex0518 <- Sleuth3::ex0518 |>
   mutate(Treatment = relevel(Treatment, ref="Control"))
 
 ggplot(ex0518, aes(Treatment, Protein)) + 
-  geom_jitter() + 
-  theme_bw()
+  geom_jitter()
 ```
 
 Fit a regession model of protein on treatment and 
@@ -99,7 +106,7 @@ comparison.
 
 ```{r}
 # First let's make C the reference level
-fiber <- emmeans::fiber %>% 
+fiber <- emmeans::fiber |> 
   mutate(machine = relevel(machine, ref="C"))
   
 m <- lm(strength ~ machine, data = fiber)

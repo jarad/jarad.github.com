@@ -9,6 +9,14 @@ output:
 
 [![](../rcode_button.png){fig-alt="R Code Button" fig-align="left" width=20%}](lab12.R)
 
+```{r metadata, include=FALSE}
+# Author: Jarad Niemi
+# Date:   2024-11-22
+# Purpose: Generalized linear mixed effect models using lme4
+#-------------------------------------------------------------------------------
+
+```
+
 Make sure the following package is installed:
 
 - lme4
@@ -100,7 +108,7 @@ Care needs to be taken with this approach because any value other than
 Finally, we can use a 0-1 coding where 1 is a success and 0 is failure.
 
 ```{r}
-d <- Sleuth3::case2002 %>%
+d <- Sleuth3::case2002 |>
   mutate(lung_cancer = 1*(LC == "LungCancer"))
 m <- glm(LC == "LungCancer" ~ CD, 
          data = d, 
@@ -140,8 +148,8 @@ The most typical way these data are stored is to have the number of observations
 and the proportion of them that were ``successful''. 
 
 ```{r}
-lung_grouped <- Sleuth3::case2002 %>%
-  group_by(CD) %>%
+lung_grouped <- Sleuth3::case2002 |>
+  group_by(CD) |>
   summarize(n = n(),
             y = sum(LC == "LungCancer"))
 
@@ -170,8 +178,8 @@ these grouped data.
 
 <details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
-donner_grouped <- Sleuth3::case2001 %>%
-  group_by(Age,Sex) %>%
+donner_grouped <- Sleuth3::case2001 |>
+  group_by(Age,Sex) |>
   summarize(y = sum(Status == "Survived"),
          n = n())
 
@@ -293,6 +301,3 @@ m <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
 summary(m)
 ```
 
-```{r, echo=FALSE, purl=FALSE, results="hide", message=FALSE}
-knitr::knit("lab12.Rmd", tangle = TRUE)
-```
