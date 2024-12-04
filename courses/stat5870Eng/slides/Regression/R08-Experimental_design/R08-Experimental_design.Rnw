@@ -279,7 +279,7 @@ In this case, you would want to \alert{block} by wood type and perform the
 randomization within each block, \pause i.e.
 
 <<echo=FALSE>>=
-d |> select(-pounds)
+d |> select(-pounds) |> arrange(woodtype, glue)
 @
 \pause
 This is called a \alert{randomized complete block design (RCBD)}.
@@ -287,6 +287,11 @@ This is called a \alert{randomized complete block design (RCBD)}.
 If all treatment combinations exist, then the design is \alert{complete}.
 \pause
 If a treatment combination is missing, then the design is \alert{incomplete}.
+\pause
+This is experiment is \alert{replicated} and \alert{balanced} because each combination of
+woodtype and glue has more than 1 observation and the number of observations
+for each combination is the same, respectively.
+
 
 \end{frame}
 
@@ -299,7 +304,8 @@ If a treatment combination is missing, then the design is \alert{incomplete}.
 \frametitle{Visualize the data}
 
 <<>>=
-ggplot(d, aes(glue, pounds, color=woodtype, shape=woodtype)) + geom_point() 
+ggplot(d, aes(glue, pounds, color=woodtype, shape=woodtype)) + 
+  geom_point(position = position_dodge(width = 0.1)) 
 @
 
 \end{frame}
@@ -307,10 +313,11 @@ ggplot(d, aes(glue, pounds, color=woodtype, shape=woodtype)) + geom_point()
 
 
 \begin{frame}[fragile]
-\frametitle{Visualize the data - a more direct comparison}
+\frametitle{Visualize the data - a more direct comparison for glue}
 
 <<>>=
-ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point()
+ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + 
+  geom_point(position = position_dodge(width = 0.1)) 
 @
 
 \end{frame}
@@ -350,7 +357,9 @@ P_w \ind N(\beta_0+\beta_1T_w + \beta_2M_w, \sigma^2)
 \begin{frame}[fragile]
 \frametitle{Perform analysis}
 
-<<>>=
+\vspace{-0.2in}
+
+<<echo=TRUE>>=
 m <- lm(pounds ~ glue + woodtype, data = d)
 summary(m)
 confint(m)
@@ -413,7 +422,7 @@ P_w \ind N(\beta_0+\beta_1T_w + \beta_2M_w + \beta_3T_wM_w, \sigma^2)
 \begin{frame}[fragile]
 \frametitle{Assessing an interaction using a t-test}
 
-<<>>=
+<<echo=TRUE>>=
 m <- lm(pounds ~ glue * woodtype, data = d)
 summary(m)
 @
@@ -452,8 +461,9 @@ d <- data.frame(woodID = paste0("wood",1:8),
 \begin{frame}[fragile]
 \frametitle{What if this had been your data?}
 
-<<>>=
-ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point()
+<<plot-showing-interaction>>=
+ggplot(d, aes(x = woodtype, y = pounds, color = glue, shape = glue)) + 
+  geom_point(position = position_dodge(width = 0.1))
 @
 
 \end{frame}
@@ -462,7 +472,7 @@ ggplot(d, aes(woodtype, pounds, color=glue, shape=glue)) + geom_point()
 \begin{frame}[fragile]
 \frametitle{Assessing an interaction using a t-test}
 
-<<>>=
+<<interaction-test, echo=TRUE>>=
 m <- lm(pounds ~ glue * woodtype, data = d)
 summary(m)
 @
@@ -510,13 +520,13 @@ d <- data.frame(woodID = paste0("wood",1:20),
 \begin{frame}[fragile]
 \frametitle{Visualize}
 
-<<>>=
+<<plot-all-glue-all-wood>>=
 ggplot(d, 
        aes(x     = woodtype, 
            y     = pounds, 
            color = glue, 
            shape = glue)) + 
-  geom_point() 
+  geom_point(position = position_dodge(width = 0.1)) 
 @
 
 \end{frame}
@@ -578,9 +588,9 @@ summary(m)
   \end{itemize}
 \item Deviations
   \begin{itemize}
+  \item Unreplicated
   \item Unbalanced
   \item Incomplete
-  \item Unreplicated
   \end{itemize}
 \end{itemize}
 
