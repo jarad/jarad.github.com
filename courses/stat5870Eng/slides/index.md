@@ -98,16 +98,13 @@ All [regression pdfs concatenated](regression.pdf).
 |Contrasts|[pdf](Regression/R07-Contrasts/R07-Contrasts.pdf)|[R](Regression/R07-Contrasts/R07-Contrasts.R)|[Contrasts](https://youtu.be/Gvnpv6uPDRw)|
 ||||[Potato Scab Example](https://youtu.be/TjAKveQjRSk)|
 |Experimental design|[pdf](Regression/R08-Experimental_design/R08-Experimental_design.pdf)|[R](Regression/R08-Experimental_design/R08-Experimental_design.R)|[Completely Randomized Design](https://youtu.be/yO1c8h66IPo)|
-
-============ updated to here =================
-
-|Topic|slides|code|video|
-||||
 ||||[Randomized Complete Block Design](https://youtu.be/_iJ2Gy-POCI)|
 |Two-way ANOVA|[pdf](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.pdf)|[R](Regression/R09-Two-way_ANOVA/R09-Two-way_ANOVA.R)|[Analysis of a Completely Randomized Design](https://youtu.be/Ctx8CcJdOB4)|
 ||||[Analysis of Unbalanced or Incomplete Designs](https://youtu.be/pDmALCp7Mb4)|
 ||||[Analysis for Optimality](https://youtu.be/EVWtMbzID5k)|
 
+
+============ updated to here =================
 
 
 

@@ -117,8 +117,8 @@ We will also consider the problem of finding the density that maximizes yield.
 
 \begin{frame}
 
-<<echo=FALSE>>=
-tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
+<<tomato-data, echo=FALSE>>=
+tomato <- structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("A", 
 "B", "C"), class = "factor"), Density = c(10L, 10L, 10L, 20L, 
@@ -130,10 +130,16 @@ tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L,
 17.5, 16.6, 18.5, 19.2, 18, 20.8, 21, 17.2, 18.4, 18.9)), .Names = c("Variety", 
 "Density", "Yield"), class = "data.frame", row.names = c(NA, 
 -36L))
-tomato$Variety = relevel(tomato$Variety, ref="C")
+tomato$Variety = relevel(tomato$Variety, ref = "C")
 
-ggplot(tomato, aes(x=Density, y=Yield, color=Variety, shape = Variety)) + 
-  geom_jitter(height=0, width=0.1) + theme_bw()
+ggplot(tomato, 
+       aes(x     = Density, 
+           y     = Yield, 
+           color = Variety, 
+           shape = Variety)) + 
+  geom_jitter(
+    height = 0, 
+    width  = 0.1) 
 @
 
 \end{frame}
@@ -141,8 +147,8 @@ ggplot(tomato, aes(x=Density, y=Yield, color=Variety, shape = Variety)) +
 \begin{frame}[fragile]
 \frametitle{Summary statistics}
 
-<<>>=
-sm = tomato |> 
+<<tomato-data-summary>>=
+sm <- tomato |> 
   group_by(Variety, Density) |> 
   summarize(n    = n(),
             mean = mean(Yield),
@@ -172,7 +178,7 @@ sm
 	Consider the models:
 		\begin{itemize}
 		\item Additive/Main effects: $\mu_{ij} = \mu+\nu_i + \delta_j$ \pause
-		\item Cell-means: $\mu_{ij} = \mu+\nu_i + \delta_j + \gamma_{ij}$ \pause
+		\item Cell-means: \hspace{0.57in} $\mu_{ij} = \mu+\nu_i + \delta_j + \gamma_{ij}$ \pause
 		\end{itemize}
 	\end{itemize}
 	
@@ -205,8 +211,8 @@ sm
 	\item The additive/main effects model: {\scriptsize
 	\[ \begin{array}{rl} \mu_{i} =& \beta_0 \\
 	&+ \beta_1\I(V_i=A) + \beta_2\I(V_i=B) \\
-	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30).
-	\end{array} \pause \] }
+	&+ \beta_3\I(D_i=10)+\beta_4\I(D_i=20)+\beta_5\I(D_i=30) 
+	\end{array} \hspace{1.6in} \pause \] }
 	
 	% $\beta_1$ is the expected difference in yield between varieties A and C at any fixed density
 	\item The cell-means model:{\scriptsize
@@ -247,7 +253,7 @@ Total & SST & n-$1$
 ANOVA Table - Cell-means model
 \begin{center}
 \begin{tabular}{ccccc}
-Source & SS & df & MS & \\
+Source & SS & df & MS & F \\
 \hline
 Factor A & SSA & $\I$-1 & SSA/($\I$-1) & MSA/MSE \\
 Factor B & SSB & $\J$-1 & SSB/($\J$-1) & MSB/MSE \\
@@ -263,12 +269,12 @@ Total & SST & n-$1$
 \begin{frame}[fragile]
 \frametitle{}
 
-<<echo=TRUE>>=
-tomato$Density = factor(tomato$Density)
-m = lm(Yield~Variety+Density, tomato)
-drop1(m, test="F")
-m = lm(Yield~Variety*Density, tomato)
-drop1(m, scope = ~Variety+Density+Variety:Density, test="F")
+<<two-way-anova, echo=TRUE>>=
+tomato$Density <- factor(tomato$Density)
+m <- lm(Yield ~ Variety + Density, tomato)
+drop1(m, test = "F")
+m <- lm(Yield ~ Variety * Density, tomato)
+drop1(m, scope = ~ Variety + Density + Variety:Density, test = "F")
 @
 
 \end{frame}
@@ -303,11 +309,13 @@ We will continue using the cell-means model to answer the scientific questions o
 
 \begin{frame}[fragile]
 
-<<>>=
-ggplot(sm, aes(x=Density, y=mean, col=Variety)) + 
+<<tomato-data-plot>>=
+ggplot(sm, 
+       aes(x   = Density, 
+           y   = mean, 
+           col = Variety)) + 
   geom_line() + 
-  labs(y="Mean Yield") + 
-  theme_bw()
+  labs(y = "Mean Yield") 
 @
 
 \end{frame}
@@ -321,9 +329,9 @@ ggplot(sm, aes(x=Density, y=mean, col=Variety)) +
 \begin{frame}[fragile]
 \frametitle{Two-way ANOVA in R}
 
-<<echo=TRUE>>=
-tomato$Density = factor(tomato$Density)
-m = lm(Yield~Variety*Density, tomato)
+<<tomato-density-as-factor, echo=TRUE>>=
+tomato$Density <- factor(tomato$Density)
+m <- lm(Yield ~ Variety * Density, tomato)
 anova(m)
 @
 
@@ -332,9 +340,9 @@ anova(m)
 \begin{frame}[fragile]
 \frametitle{Variety comparison}
 
-<<echo=TRUE>>=
+<<emmeans-variety, echo=TRUE>>=
 library(emmeans)
-emmeans(m, pairwise~Variety)
+emmeans(m, pairwise ~ Variety)
 @
 
 \end{frame}
@@ -342,8 +350,8 @@ emmeans(m, pairwise~Variety)
 \begin{frame}[fragile]
 \frametitle{Density comparison}
 
-<<echo=TRUE>>=
-emmeans(m, pairwise~Density)
+<<emmeans-density, echo=TRUE>>=
+emmeans(m, pairwise ~ Density)
 @
 
 \end{frame}
@@ -352,8 +360,8 @@ emmeans(m, pairwise~Density)
 \begin{frame}[fragile]
 \frametitle{}
 
-<<echo=TRUE>>=
-emmeans(m, pairwise~Variety*Density)
+<<emmeas-variety-density, echo=TRUE>>=
+emmeans(m, pairwise ~ Variety * Density)
 @
 
 \end{frame}
@@ -381,10 +389,16 @@ Suppose for some reason that a variety B, density 30 sample was contaminated. \p
 
 \begin{frame}[fragile]
 
-<<>>=
-tomato_unbalanced = tomato[-19,]
-ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety, shape = Variety)) +  
-  geom_jitter(height=0, width=0.1) + theme_bw()
+<<tomato-unbalanced-data>>=
+tomato_unbalanced <- tomato[-19,]
+ggplot(tomato_unbalanced, 
+       aes(x     = Density, 
+           y     = Yield, 
+           color =Variety, 
+           shape = Variety)) +  
+  geom_jitter(
+    height = 0, 
+    width  = 0.1) 
 @
 
 \end{frame}
@@ -394,8 +408,8 @@ ggplot(tomato_unbalanced, aes(x=Density, y=Yield, color=Variety, shape = Variety
 \begin{frame}[fragile]
 \frametitle{Summary statistics}
 
-<<>>=
-sm_unbalanced = tomato_unbalanced |> 
+<<tomato-unbalanced-summary>>=
+sm_unbalanced <- tomato_unbalanced |> 
   group_by(Variety, Density) |> 
   summarize(n    = n(),
             mean = mean(Yield),
@@ -412,8 +426,8 @@ sm_unbalanced
 \begin{frame}[fragile]
 \frametitle{Two-way ANOVA in R}
 
-<<echo=TRUE>>=
-m = lm(Yield~Variety*Density, tomato_unbalanced)
+<<tomato-unbalanced-model, echo=TRUE>>=
+m = lm(Yield ~ Variety * Density, data = tomato_unbalanced)
 anova(m)
 @
 
@@ -422,8 +436,8 @@ anova(m)
 \begin{frame}[fragile]
 \frametitle{Variety comparison}
 
-<<echo=TRUE>>=
-emmeans(m, pairwise~Variety)
+<<tomato-unbalanced-emmeans-variety, echo=TRUE>>=
+emmeans(m, pairwise ~ Variety)
 @
 
 \end{frame}
@@ -431,7 +445,7 @@ emmeans(m, pairwise~Variety)
 \begin{frame}[fragile]
 \frametitle{Density comparison}
 
-<<echo=TRUE>>=
+<<tomato-unbalanced-emmeans-density, echo=TRUE>>=
 emmeans(m, pairwise~Density)
 @
 
@@ -441,7 +455,7 @@ emmeans(m, pairwise~Density)
 \begin{frame}[fragile]
 \frametitle{}
 
-<<echo=TRUE>>=
+<<tomato-unbalanced-emmeans-variety-density, echo=TRUE>>=
 emmeans(m, pairwise~Variety*Density)
 @
 
@@ -470,17 +484,18 @@ Suppose none of the samples from variety B, density 30 were obtained. \pause Now
 
 \begin{frame}[fragile]
 
-<<>>=
-tomato_incomplete = tomato |>
+<<tomato-incomplete-data>>=
+tomato_incomplete <- tomato |>
   filter(!(Variety == "B" & Density == 30)) |>
-  mutate(VarietyDensity = paste0(Variety,Density))
+  mutate(VarietyDensity = paste0(Variety, Density))
 ggplot(tomato_incomplete, 
        aes(x     = Density, 
            y     = Yield, 
            color = Variety, 
            shape = Variety)) + 
-  geom_jitter(height=0, 
-              width=0.1)
+  geom_jitter(
+    height = 0, 
+    width  = 0.1)
 @
 
 \end{frame}
@@ -490,8 +505,8 @@ ggplot(tomato_incomplete,
 \begin{frame}[fragile]
 \frametitle{Summary statistics}
 
-<<>>=
-sm_incomplete = tomato_incomplete |> 
+<<tomato-incomplete-summary>>=
+sm_incomplete <- tomato_incomplete |> 
   group_by(Variety, Density) |> 
   summarize(n    = n(),
             mean = mean(Yield),
@@ -576,8 +591,8 @@ The model is then $Y_i\stackrel{ind}{\sim} N(\mu_i, \sigma^2)$ and
 \subsection{Analysis in R}
 \begin{frame}[fragile]
 \frametitle{Two-way ANOVA in R}
-<<echo=TRUE>>=
-m <- lm(Yield ~ Variety*Density, data=tomato_incomplete)
+<<tomato-incomplete-two-way-anova, echo=TRUE>>=
+m <- lm(Yield ~ Variety * Density, data = tomato_incomplete)
 anova(m)
 @
 
@@ -589,8 +604,8 @@ anova(m)
 
 \begin{frame}[fragile]
 \frametitle{One-way ANOVA in R}
-<<echo=TRUE>>=
-m = lm(Yield~Variety:Density, tomato_incomplete)
+<<tomato-incomplete-one-way-anova, echo=TRUE>>=
+m <- lm(Yield ~ Variety:Density, data = tomato_incomplete)
 anova(m)
 @
 \end{frame}
@@ -598,8 +613,8 @@ anova(m)
 \begin{frame}[fragile]
 \frametitle{Contrasts}
 
-<<echo=TRUE>>=
-m = lm(Yield ~ VarietyDensity, tomato_incomplete)
+<<tomato-unbalanced-emmeans, echo=TRUE>>=
+m <- lm(Yield ~ VarietyDensity, tomato_incomplete)
 em <- emmeans(m, ~ VarietyDensity) 
 contrast(em, method = list(
 #         A10 A20 A30 A40 B10 B20     B40 C10 C20 C30 C40  
@@ -615,9 +630,9 @@ contrast(em, method = list(
 \begin{frame}[fragile]
 \frametitle{}
 
-<<echo=TRUE>>=
-m = lm(Yield~Variety:Density, tomato_incomplete)
-emmeans(m, pairwise~Variety:Density) # We could have used the VarietyDensity model, but this looks nicer
+<<tomato-incomplete-emmeans-again, echo=TRUE>>=
+m <- lm(Yield ~ Variety:Density, data = tomato_incomplete)
+emmeans(m, pairwise ~ Variety:Density) # We could have used the VarietyDensity model, but this looks nicer
 @
 
 \end{frame}
@@ -702,8 +717,8 @@ Independent curves:
 
 \begin{frame}[fragile]
 
-<<fig.height=5.2>>=
-tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
+<<tomato-optimum-model-plots>>=
+tomato <- structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 
 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L), .Label = c("A", 
 "B", "C"), class = "factor"), Density = c(10L, 10L, 10L, 20L, 
@@ -715,31 +730,66 @@ tomato = structure(list(Variety = structure(c(1L, 1L, 1L, 1L, 1L, 1L,
 17.5, 16.6, 18.5, 19.2, 18, 20.8, 21, 17.2, 18.4, 18.9)), .Names = c("Variety", 
 "Density", "Yield"), class = "data.frame", row.names = c(NA, 
 -36L))
-tomato$Variety = relevel(tomato$Variety, ref="C")
+tomato$Variety <- relevel(tomato$Variety, ref="C")
 
-g1 = ggplot(tomato, aes(x=Density, y=Yield)) + geom_jitter(height=0, width=0.1) + 
-  stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE, color="black") +
-  labs(title="No variety", x = "") + theme_bw()
+g1 <- ggplot(tomato, 
+             aes(
+               x = Density, 
+               y = Yield)) + 
+  geom_jitter(
+    height = 0, 
+    width  = 0.1) + 
+  stat_smooth(
+    method  = "lm", 
+    formula = y~x+I(x^2), 
+    se      = FALSE, 
+    color   = "black") +
+  labs(
+    title = "No variety", 
+    x = "") 
 
 
 # Need to construct the parallel curves 
-lines = with(tomato,expand.grid(Density=seq(min(Density),max(Density),length=41),
+lines <- with(tomato, 
+              expand.grid(Density = seq(min(Density),max(Density), length=41),
                                Variety=levels(Variety)))
-lines$Yield <- predict(lm(Yield~Density+I(Density^2)+Variety, tomato),lines)
+lines$Yield <- predict(lm(Yield ~ Density + I(Density^2) + Variety, 
+                          data = tomato),
+                       lines)
 
-g2 = ggplot(tomato, aes(x=Density, y=Yield, 
-                        color=Variety, shape = Variety, linetype = Variety)) + 
-  geom_jitter(height=0, width=0.1) + 
-  geom_line(data=lines) + labs(title="Parallel curves", x = "") + theme_bw() +
+g2 <- ggplot(tomato, 
+             aes(
+               x        = Density, 
+               y        = Yield, 
+               color    = Variety, 
+               shape    = Variety, 
+               linetype = Variety)) + 
+  geom_jitter(
+    height = 0, 
+    width  = 0.1) + 
+  geom_line(data = lines) + 
+  labs(
+    title = "Parallel curves", 
+    x     = "") + 
   theme(legend.position = "none")
 
-g3 = ggplot(tomato, aes(x=Density, y=Yield, 
-                        color=Variety, shape = Variety, linetype = Variety)) + 
-  geom_jitter(height=0, width=0.1) + 
-  stat_smooth(method="lm", formula=y~x+I(x^2), se=FALSE) +
-  labs(title="Independent curves") + theme_bw() +
+g3 <- ggplot(tomato, 
+             aes(x        = Density, 
+                 y        = Yield, 
+                 color    = Variety, 
+                 shape    = Variety, 
+                 linetype = Variety)) + 
+  geom_jitter(
+    height = 0, 
+    width  = 0.1) + 
+  stat_smooth(
+    method  = "lm", 
+    formula = y ~ x + I(x^2), 
+    se      = FALSE) +
+  labs(title="Independent curves") + 
   theme(legend.position = "none")
-grid.arrange(g1,g2,g3, ncol=1)
+
+grid.arrange(g1, g2, g3, ncol=2)
 @
 
 \end{frame}
@@ -768,8 +818,8 @@ If $\beta_2<0$, then the quadratic curve has a maximum and it occurs at $-\beta_
 \begin{frame}[fragile]
 \frametitle{No variety}
 
-<<>>=
-summary(lm(Yield~Density+I(Density^2), tomato))
+<<tomato-optimum-no-variety-model, echo=TRUE>>=
+summary(m_noV <- lm(Yield ~ Density + I(Density^2), data = tomato))
 @
 
 \end{frame}
@@ -777,8 +827,8 @@ summary(lm(Yield~Density+I(Density^2), tomato))
 \begin{frame}[fragile]
 \frametitle{Parallel curves}
 
-<<>>=
-summary(lm(Yield~Density+I(Density^2) + Variety, tomato))
+<<tomato-optimum-parallel-curves-model, echo=TRUE>>=
+summary(m_V <- lm(Yield ~ Density + I(Density^2) + Variety, data = tomato))
 @
 
 \end{frame}
@@ -786,27 +836,34 @@ summary(lm(Yield~Density+I(Density^2) + Variety, tomato))
 \begin{frame}[fragile]
 \frametitle{Independent curves}
 
-<<>>=
-summary(lm(Yield~Density*Variety+I(Density^2)*Variety, tomato))
+<<tomato-optimum-independent-curves-model, echo=TRUE>>=
+summary(m_DV <- lm(Yield ~ Density * Variety + I(Density^2) * Variety, data = tomato))
 @
 
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{F-test comparisons}
+
+<<tomato-optimum-f-tests, echo=TRUE>>=
+anova(m_noV, m_V, m_DV)
+@
+\end{frame}
 
 \section{Randomized complete block design}
 \begin{frame}
 \frametitle{Completely randomized design (CRD)}
 This semester, we have assumed a completely randomized design. \pause As an example, consider 36 plots and we are randomly assigning our variety-density combinations to the plots such that we have 3 reps of each combination. \pause The result may look something like this
 
-<<out.width='0.6\\textwidth', echo=FALSE>>=
+<<crd, out.width='0.6\\textwidth', echo=FALSE>>=
 set.seed(20121204)
-opar = par(mar=rep(0,4))
+opar <- par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 
      xlab='', ylab='', xlim=c(0.5,6.5), ylim=c(0.5,6.5))
 segments(1:7-.5, .5, 1:7-.5, 6.5)
 segments(.5, 1:7-.5, 6.5, 1:7-.5)
-trts = rep(paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep=""),3)
+trts <- rep(paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep=""),3)
 text(rep(1:6, each=6), rep(1:6, 6), sample(trts))
 par(opar)
 @
@@ -819,14 +876,14 @@ par(opar)
 
 A randomized block design is appropriate when there is a nuisance factor that you want to control for. \pause In our example, imagine you had 12 plots at 3 different locations and you expect these locations would have impact on yield. \pause A randomized block design might look like this.
 
-<<out.width='0.6\\textwidth', echo=FALSE>>=
+<<crbd, out.width='0.6\\textwidth', echo=FALSE>>=
 set.seed(20121204)
-opar = par(mar=rep(0,4))
+opar <- par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 
      xlab='', ylab='', xlim=c(0,8.5), ylim=c(0,7.5))
 segments(1:9-.5, .5, 1:9-.5, 6.5)
 for (i in c(.5, 3.5, 6.5)) segments(i, 1:7-.5, i+2, 1:7-.5)
-trts = paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep="")
+trts <- paste(rep(c("A","B","C"),each=4), rep(seq(10,40,by=10), 3), sep="")
 for (i in c(1, 4, 7)) text(rep(c(i,i+1), each=2), rep(1:6, 2), sample(trts))
 text(c(1.5,4.5,7.5), 0, paste("Block", 1:3))
 par(opar)
@@ -872,7 +929,7 @@ The cell-means model does not have enough degrees of freedom to estimate the int
 \frametitle{Why block?}
 Consider a simple experiment with 2 blocks each with 3 experimental units and 3 treatments (A, B, C). \pause 
 
-<<out.width='0.4\\textwidth', fig.width=4, fig.height=3, echo=FALSE>>=
+<<why-block, out.width='0.4\\textwidth', fig.width=4, fig.height=3, echo=FALSE>>=
 set.seed(20121204)
 opar = par(mar=rep(0,4))
 plot(0,0, type="n", axes=F, 
