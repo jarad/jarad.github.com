@@ -23,22 +23,22 @@ Make sure the following package is installed:
 
 You can use the following code to perform the installation:
 
-```{r, eval=FALSE}
+```{r lme4-install, eval=FALSE}
 install.packages("lme4")
 ```
 
 Now load the packages
 
-```{r}
+```{r packages}
 library("dplyr")
 library("ggplot2")
-# library("Sleuth3")
+library("Sleuth3")
 library("lme4")
 ```
 
 ## Generalized linear models
 
-[Generalized linear models] are a class of models that include 
+*Generalized linear models* are a class of models that include 
 
 - linear regression
 - logistic regression
@@ -51,18 +51,24 @@ case of linear regression.
 
 ### Linear regression
 
+```{r linear-regression-section, include=FALSE}
+#-------------------------------------------------------------------------------
+# Linear regression
+#-------------------------------------------------------------------------------
+```
+
 The linear regression model can be fit using either the `glm()` or `lm()` 
 function, 
 but running `summary()` on the `lm()` function analysis is more informative.
 
-```{r}
-m_lm  <- lm( Velocity ~ Distance, data = Sleuth3::case0701)
-m_glm <- glm(Velocity ~ Distance, data = Sleuth3::case0701)
+```{r linear-regression}
+m_lm  <- lm( Velocity ~ Distance, data = case0701)
+m_glm <- glm(Velocity ~ Distance, data = case0701)
 ```
 
 where the default family in the `glm()` function is `normal`.
 
-```{r}
+```{r lm-v-glm-summary}
 summary(m_lm)
 summary(m_glm)
 ```
@@ -73,6 +79,12 @@ The dispersion parameter is the estimate of the variance.
 
 ### Logistic regression
 
+```{r logistic-regression-section, include=FALSE}
+#-------------------------------------------------------------------------------
+# Logistic regression
+#-------------------------------------------------------------------------------
+```
+
 Logistic regression can be accomplished using the `glm()` function and 
 setting the `family` argument to `binomial`. 
 There are two different ways to set up the logistic regression model fit 
@@ -80,12 +92,16 @@ depending on whether the data are grouped or not.
 
 #### Ungrouped data
 
-For ungrouped data, the response can be a factor where the first level is 
+For ungrouped data, 
+the response can be a factor where the first level is 
 failure and all other levels are success.
 
-```{r}
-levels(Sleuth3::case2002$LC)
-m <- glm(LC ~ CD, data = Sleuth3::case2002, family=binomial)
+```{r logistic-regression-binary-default}
+levels(case2002$LC)
+m <- glm(LC ~ CD, 
+         data   = case2002, 
+         family = binomial)
+
 m
 ```
 
@@ -95,10 +111,11 @@ It is better practice to be explicit.
 You can be explicit by using an equality and thus treating the response as 
 TRUE/FALSE.
 
-```{r}
+```{r logistic-regression-binary-explicit}
 m <- glm(LC == "LungCancer" ~ CD, 
-         data = Sleuth3::case2002, 
+         data   = case2002, 
          family = binomial)
+
 m
 ```
 
@@ -107,18 +124,20 @@ Care needs to be taken with this approach because any value other than
 
 Finally, we can use a 0-1 coding where 1 is a success and 0 is failure.
 
-```{r}
-d <- Sleuth3::case2002 |>
-  mutate(lung_cancer = 1*(LC == "LungCancer"))
+```{r logistic-regression-binary-0-1-coding}
+d <- case2002 |>
+  mutate(lung_cancer = 1 * (LC == "LungCancer"))
+
 m <- glm(LC == "LungCancer" ~ CD, 
-         data = d, 
+         data   = d, 
          family = binomial)
+
 m
 ```
 
 To obtain a better summary use `summary`(). 
 
-```{r}
+```{r logistic-regression-summary}
 summary(m)
 ```
 
@@ -129,10 +148,11 @@ Fit a logistic regression model to determine the relationship between survival
 in the Donner Party (`case2001`) and the age and sex of the individual. 
 
 <details><summary>Click for solution</summary>  
-```{r, purl=FALSE}
+```{r logistic-regression-activity-solution, purl=FALSE}
 m <- glm(Status == "Survived" ~ Age + Sex,
-         data = Sleuth3::case2001,
+         data   = case2001,
          family = binomial)
+
 summary(m)
 ```
 </details>
@@ -147,8 +167,9 @@ per day.
 The most typical way these data are stored is to have the number of observations
 and the proportion of them that were ``successful''. 
 
-```{r}
-lung_grouped <- Sleuth3::case2002 |>
+```{r grouped-data}
+# Create grouped data
+lung_grouped <- case2002 |>
   group_by(CD) |>
   summarize(n = n(),
             y = sum(LC == "LungCancer"))
@@ -163,28 +184,31 @@ So the logistic regression model fit looks like.
 (Be careful not to use the `c()` function or you will get a ``variable 
 lengths differ'' error.)
 
-```{r}
-m <- glm(cbind(y,n-y) ~ CD, 
-         data = lung_grouped, 
+```{r logistic-regression-grouped}
+# Use cbind(successes, failures)
+m <- glm(cbind(y, n-y) ~ CD, 
+         data   = lung_grouped, 
          family = binomial)
+
 summary(m)
 ```
 
 #### Activity
 
-Group the Donner party data (`Sleuth3::case2001`) by age and sex. 
+Group the Donner party data (`case2001`) by age and sex. 
 Then re-run the logistic regression analysis from the previous activity on 
 these grouped data.
 
 <details><summary>Click for solution</summary>  
-```{r, purl=FALSE}
-donner_grouped <- Sleuth3::case2001 |>
-  group_by(Age,Sex) |>
-  summarize(y = sum(Status == "Survived"),
-         n = n())
+```{r logistic-regression-grouped-activity-solution, purl=FALSE}
+donner_grouped <- case2001 |>
+  group_by(Age, Sex) |>
+  summarize(
+    y = sum(Status == "Survived"),
+    n = n())
 
-m <- glm(cbind(y,n-y) ~ Age + Sex,
-         data = donner_grouped,
+m <- glm(cbind(y, n-y) ~ Age + Sex,
+         data   = donner_grouped,
          family = binomial)
 
 summary(m)
@@ -195,13 +219,27 @@ summary(m)
 
 ### Poisson regression
 
+```{r poisson-regression-section, include=FALSE}
+#-------------------------------------------------------------------------------
+# Poisson regression
+#-------------------------------------------------------------------------------
+```
+
+Recall that the Poisson distribution is a distribution for a count with
+no clear maximum. 
+For Poisson regression, our response is a count with no clear maximum
+and we can model the mean/expectation of that count as a function of 
+explanatory variables.
+
 To run a Poisson regression in R, use the `glm()` function with the `family` 
 argument set to `poisson`. 
 
-```{r}
+```{r poisson-regression}
+# Poisson regression
 m <- glm(Matings ~ Age,
-         data = Sleuth3::case2201,
+         data   = case2201,
          family = poisson)
+
 summary(m)
 ```
 
@@ -209,12 +247,12 @@ summary(m)
 
 Investigate the relationship between number of salamanders as a function of 
 forest age using a Poisson regression analysis. 
-Data are available in `Sleuth3::case2202'. 
+Data are available in `case2202'. 
 
 <details><summary>Click for solution</summary> 
 ```{r, purl=FALSE}
 m <- glm(Salamanders ~ ForestAge, 
-         data = Sleuth3::case2202,
+         data = case2202,
          family = poisson)
 
 summary(m)
@@ -223,6 +261,12 @@ summary(m)
   
   
 ## Comparing generalized linear models
+
+```{r chi-sq-test-section, include=FALSE}
+#-------------------------------------------------------------------------------
+# Chi-square tests (compare to F-tests)
+#-------------------------------------------------------------------------------
+```
 
 To compare nested linear models, we used the F-test through the R function
 `anova()`. 
@@ -235,10 +279,10 @@ to "Chi".
 Here is a test to determine whether we should have included an interaction 
 between birdkeeping and the number of cigarettes per day.
 
-```{r}
-mA <- glm(LC ~ BK + CD, data = Sleuth3::case2002, family = binomial)
-mI <- glm(LC ~ BK * CD, data = Sleuth3::case2002, family = binomial)
-anova(mA,mI, test="Chi")
+```{r chi-sq-tests}
+mA <- glm(LC ~ BK + CD, data = case2002, family = binomial)
+mI <- glm(LC ~ BK * CD, data = case2002, family = binomial)
+anova(mA, mI, test = "Chi")
 ```
 
 Note that the title of this table is "Analysis of Deviance" which indicates
@@ -253,8 +297,8 @@ in the Donner party.
 
 <details><summary>Click for solution</summary>  
 ```{r, purl=FALSE}
-mA <- glm(Status ~ Age + Sex, data = Sleuth3::case2001, family = binomial)
-mI <- glm(Status ~ Age * Sex, data = Sleuth3::case2001, family = binomial)
+mA <- glm(Status ~ Age + Sex, data = case2001, family = binomial)
+mI <- glm(Status ~ Age * Sex, data = case2001, family = binomial)
 anova(mA,mI, test="Chi")
 ```
 </details>
@@ -269,12 +313,18 @@ To fit a mixed effect model in R, use the
 
 ### Linear mixed effect models
 
+```{r linear-mixed-effect-section, include=FALSE}
+#-------------------------------------------------------------------------------
+# Linear mixed effect models
+#-------------------------------------------------------------------------------
+```
+
 For a linear regression model with random effects, 
 use the `lmer`() function.
 
 Here is a random intercept model.
 
-```{r}
+```{r lmer-random-intercept}
 library("lme4")
 m <- lmer(Reaction ~ Days + (1| Subject), data = sleepstudy)
 summary(m)
@@ -282,7 +332,7 @@ summary(m)
 
 Here is a random slope model
 
-```{r}
+```{r lmer-random-slope}
 m <- lmer(Reaction ~ Days + (Days| Subject), data = sleepstudy)
 summary(m)
 ```
@@ -290,14 +340,23 @@ summary(m)
 
 ### Generalized linear mixed effect models
 
+
+```{r glmms-section, include=FALSE}
+#-------------------------------------------------------------------------------
+# Generalized linear mixed effect models
+#-------------------------------------------------------------------------------
+```
+
 For any generalized linear model, e.g. logistic and Poisson regression,
 you can add random effects using the `glmer()` function.
 
 Random intercept model.
 
-```{r}
+```{r glmer-random-intercept}
 m <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
-              data = cbpp, family = binomial)
+           data = cbpp, 
+           family = binomial)
+
 summary(m)
 ```
 

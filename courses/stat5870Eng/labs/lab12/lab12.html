@@ -11,7 +11,7 @@
 
 <meta name="author" content="Jarad Niemi" />
 
-<meta name="date" content="2024-11-22" />
+<meta name="date" content="2024-12-05" />
 
 <title>Lab12 - Generalized linear mixed effect models</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Lab12 - Generalized linear mixed effect
 models</h1>
 <h4 class="author">Jarad Niemi</h4>
-<h4 class="date">2024-11-22</h4>
+<h4 class="date">2024-12-05</h4>
 
 </div>
 
@@ -399,13 +399,13 @@ mixed effect models</a></li>
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
 <pre class="r"><code>library(&quot;ggplot2&quot;)
-# library(&quot;Sleuth3&quot;)
+library(&quot;Sleuth3&quot;)
 library(&quot;lme4&quot;)</code></pre>
 <pre><code>## Loading required package: Matrix</code></pre>
 <div id="generalized-linear-models" class="section level2">
 <h2>Generalized linear models</h2>
-<p><a href="#generalized-linear-models">Generalized linear models</a>
-are a class of models that include</p>
+<p><em>Generalized linear models</em> are a class of models that
+include</p>
 <ul>
 <li>linear regression</li>
 <li>logistic regression</li>
@@ -420,14 +420,14 @@ function for the special (and important) case of linear regression.</p>
 <code>glm()</code> or <code>lm()</code> function, but running
 <code>summary()</code> on the <code>lm()</code> function analysis is
 more informative.</p>
-<pre class="r"><code>m_lm  &lt;- lm( Velocity ~ Distance, data = Sleuth3::case0701)
-m_glm &lt;- glm(Velocity ~ Distance, data = Sleuth3::case0701)</code></pre>
+<pre class="r"><code>m_lm  &lt;- lm( Velocity ~ Distance, data = case0701)
+m_glm &lt;- glm(Velocity ~ Distance, data = case0701)</code></pre>
 <p>where the default family in the <code>glm()</code> function is
 <code>normal</code>.</p>
 <pre class="r"><code>summary(m_lm)</code></pre>
 <pre><code>## 
 ## Call:
-## lm(formula = Velocity ~ Distance, data = Sleuth3::case0701)
+## lm(formula = Velocity ~ Distance, data = case0701)
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
@@ -446,7 +446,7 @@ m_glm &lt;- glm(Velocity ~ Distance, data = Sleuth3::case0701)</code></pre>
 <pre class="r"><code>summary(m_glm)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = Velocity ~ Distance, data = Sleuth3::case0701)
+## glm(formula = Velocity ~ Distance, data = case0701)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error t value Pr(&gt;|t|)    
@@ -475,12 +475,15 @@ or not.</p>
 <h4>Ungrouped data</h4>
 <p>For ungrouped data, the response can be a factor where the first
 level is failure and all other levels are success.</p>
-<pre class="r"><code>levels(Sleuth3::case2002$LC)</code></pre>
+<pre class="r"><code>levels(case2002$LC)</code></pre>
 <pre><code>## [1] &quot;LungCancer&quot; &quot;NoCancer&quot;</code></pre>
-<pre class="r"><code>m &lt;- glm(LC ~ CD, data = Sleuth3::case2002, family=binomial)
+<pre class="r"><code>m &lt;- glm(LC ~ CD, 
+         data   = case2002, 
+         family = binomial)
+
 m</code></pre>
 <pre><code>## 
-## Call:  glm(formula = LC ~ CD, family = binomial, data = Sleuth3::case2002)
+## Call:  glm(formula = LC ~ CD, family = binomial, data = case2002)
 ## 
 ## Coefficients:
 ## (Intercept)           CD  
@@ -494,11 +497,12 @@ m</code></pre>
 <p>It is better practice to be explicit. You can be explicit by using an
 equality and thus treating the response as TRUE/FALSE.</p>
 <pre class="r"><code>m &lt;- glm(LC == &quot;LungCancer&quot; ~ CD, 
-         data = Sleuth3::case2002, 
+         data   = case2002, 
          family = binomial)
+
 m</code></pre>
 <pre><code>## 
-## Call:  glm(formula = LC == &quot;LungCancer&quot; ~ CD, family = binomial, data = Sleuth3::case2002)
+## Call:  glm(formula = LC == &quot;LungCancer&quot; ~ CD, family = binomial, data = case2002)
 ## 
 ## Coefficients:
 ## (Intercept)           CD  
@@ -511,11 +515,13 @@ m</code></pre>
 than ``LungCancer’’ will be treated as a failure, e.g. typos.</p>
 <p>Finally, we can use a 0-1 coding where 1 is a success and 0 is
 failure.</p>
-<pre class="r"><code>d &lt;- Sleuth3::case2002 |&gt;
-  mutate(lung_cancer = 1*(LC == &quot;LungCancer&quot;))
+<pre class="r"><code>d &lt;- case2002 |&gt;
+  mutate(lung_cancer = 1 * (LC == &quot;LungCancer&quot;))
+
 m &lt;- glm(LC == &quot;LungCancer&quot; ~ CD, 
-         data = d, 
+         data   = d, 
          family = binomial)
+
 m</code></pre>
 <pre><code>## 
 ## Call:  glm(formula = LC == &quot;LungCancer&quot; ~ CD, family = binomial, data = d)
@@ -558,13 +564,14 @@ of the individual.</p>
 Click for solution
 </summary>
 <pre class="r"><code>m &lt;- glm(Status == &quot;Survived&quot; ~ Age + Sex,
-         data = Sleuth3::case2001,
+         data   = case2001,
          family = binomial)
+
 summary(m)</code></pre>
 <pre><code>## 
 ## Call:
 ## glm(formula = Status == &quot;Survived&quot; ~ Age + Sex, family = binomial, 
-##     data = Sleuth3::case2001)
+##     data = case2001)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)  
@@ -591,7 +598,8 @@ example, we can group the lung cancer data set by the number of
 cigarettes per day. The most typical way these data are stored is to
 have the number of observations and the proportion of them that were
 ``successful’’.</p>
-<pre class="r"><code>lung_grouped &lt;- Sleuth3::case2002 |&gt;
+<pre class="r"><code># Create grouped data
+lung_grouped &lt;- case2002 |&gt;
   group_by(CD) |&gt;
   summarize(n = n(),
             y = sum(LC == &quot;LungCancer&quot;))
@@ -625,9 +633,11 @@ response where you have the first term is the number of successes and
 the second term is the number of failures. So the logistic regression
 model fit looks like. (Be careful not to use the <code>c()</code>
 function or you will get a ``variable lengths differ’’ error.)</p>
-<pre class="r"><code>m &lt;- glm(cbind(y,n-y) ~ CD, 
-         data = lung_grouped, 
+<pre class="r"><code># Use cbind(successes, failures)
+m &lt;- glm(cbind(y, n-y) ~ CD, 
+         data   = lung_grouped, 
          family = binomial)
+
 summary(m)</code></pre>
 <pre><code>## 
 ## Call:
@@ -649,21 +659,22 @@ summary(m)</code></pre>
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <div id="activity-1" class="section level4">
 <h4>Activity</h4>
-<p>Group the Donner party data (<code>Sleuth3::case2001</code>) by age
-and sex. Then re-run the logistic regression analysis from the previous
-activity on these grouped data.</p>
+<p>Group the Donner party data (<code>case2001</code>) by age and sex.
+Then re-run the logistic regression analysis from the previous activity
+on these grouped data.</p>
 <details>
 <summary>
 Click for solution
 </summary>
-<pre class="r"><code>donner_grouped &lt;- Sleuth3::case2001 |&gt;
-  group_by(Age,Sex) |&gt;
-  summarize(y = sum(Status == &quot;Survived&quot;),
-         n = n())</code></pre>
+<pre class="r"><code>donner_grouped &lt;- case2001 |&gt;
+  group_by(Age, Sex) |&gt;
+  summarize(
+    y = sum(Status == &quot;Survived&quot;),
+    n = n())</code></pre>
 <pre><code>## `summarise()` has grouped output by &#39;Age&#39;. You can override using the `.groups`
 ## argument.</code></pre>
-<pre class="r"><code>m &lt;- glm(cbind(y,n-y) ~ Age + Sex,
-         data = donner_grouped,
+<pre class="r"><code>m &lt;- glm(cbind(y, n-y) ~ Age + Sex,
+         data   = donner_grouped,
          family = binomial)
 
 summary(m)</code></pre>
@@ -692,15 +703,21 @@ summary(m)</code></pre>
 </div>
 <div id="poisson-regression" class="section level3">
 <h3>Poisson regression</h3>
+<p>Recall that the Poisson distribution is a distribution for a count
+with no clear maximum. For Poisson regression, our response is a count
+with no clear maximum and we can model the mean/expectation of that
+count as a function of explanatory variables.</p>
 <p>To run a Poisson regression in R, use the <code>glm()</code> function
 with the <code>family</code> argument set to <code>poisson</code>.</p>
-<pre class="r"><code>m &lt;- glm(Matings ~ Age,
-         data = Sleuth3::case2201,
+<pre class="r"><code># Poisson regression
+m &lt;- glm(Matings ~ Age,
+         data   = case2201,
          family = poisson)
+
 summary(m)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = Matings ~ Age, family = poisson, data = Sleuth3::case2201)
+## glm(formula = Matings ~ Age, family = poisson, data = case2201)
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
@@ -720,19 +737,19 @@ summary(m)</code></pre>
 <h4>Activity</h4>
 <p>Investigate the relationship between number of salamanders as a
 function of forest age using a Poisson regression analysis. Data are
-available in `Sleuth3::case2202’.</p>
+available in `case2202’.</p>
 <details>
 <summary>
 Click for solution
 </summary>
 <pre class="r"><code>m &lt;- glm(Salamanders ~ ForestAge, 
-         data = Sleuth3::case2202,
+         data = case2202,
          family = poisson)
 
 summary(m)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = Salamanders ~ ForestAge, family = poisson, data = Sleuth3::case2202)
+## glm(formula = Salamanders ~ ForestAge, family = poisson, data = case2202)
 ## 
 ## Coefficients:
 ##              Estimate Std. Error z value Pr(&gt;|z|)    
@@ -763,9 +780,9 @@ table setting the <code>test</code> argument to “Chi”.</p>
 <p>Here is a test to determine whether we should have included an
 interaction between birdkeeping and the number of cigarettes per
 day.</p>
-<pre class="r"><code>mA &lt;- glm(LC ~ BK + CD, data = Sleuth3::case2002, family = binomial)
-mI &lt;- glm(LC ~ BK * CD, data = Sleuth3::case2002, family = binomial)
-anova(mA,mI, test=&quot;Chi&quot;)</code></pre>
+<pre class="r"><code>mA &lt;- glm(LC ~ BK + CD, data = case2002, family = binomial)
+mI &lt;- glm(LC ~ BK * CD, data = case2002, family = binomial)
+anova(mA, mI, test = &quot;Chi&quot;)</code></pre>
 <pre><code>## Analysis of Deviance Table
 ## 
 ## Model 1: LC ~ BK + CD
@@ -784,8 +801,8 @@ of survival probability in the Donner party.</p>
 <summary>
 Click for solution
 </summary>
-<pre class="r"><code>mA &lt;- glm(Status ~ Age + Sex, data = Sleuth3::case2001, family = binomial)
-mI &lt;- glm(Status ~ Age * Sex, data = Sleuth3::case2001, family = binomial)
+<pre class="r"><code>mA &lt;- glm(Status ~ Age + Sex, data = case2001, family = binomial)
+mI &lt;- glm(Status ~ Age * Sex, data = case2001, family = binomial)
 anova(mA,mI, test=&quot;Chi&quot;)</code></pre>
 <pre><code>## Analysis of Deviance Table
 ## 
@@ -871,7 +888,9 @@ regression, you can add random effects using the <code>glmer()</code>
 function.</p>
 <p>Random intercept model.</p>
 <pre class="r"><code>m &lt;- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
-              data = cbpp, family = binomial)
+           data = cbpp, 
+           family = binomial)
+
 summary(m)</code></pre>
 <pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
 ##   Approximation) [glmerMod]
