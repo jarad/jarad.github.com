@@ -12,8 +12,9 @@ output:
 
 ```{r metadata, include=FALSE}
 # Author: Jarad Niemi
-# Date:   2024-11-22
-# Purpose: Contrasts using the emmeans package
+# Date:   2024-12-05
+# Purpose: Contrasts using the emmeans package including built-in comparisons
+#          and custom comparisons.
 #-------------------------------------------------------------------------------
 
 ```
@@ -24,13 +25,13 @@ Make sure the following package is installed:
 
 You can use the following code to perform the installation:
 
-```{r, eval=FALSE}
+```{r emmeans-install, eval=FALSE}
 install.packages("emmeans")
 ```
 
 Now load the packages
 
-```{r}
+```{r packages}
 library("tidyverse"); theme_set(theme_bw())
 library("emmeans")
 ```
@@ -40,10 +41,12 @@ library("emmeans")
 Consider the `fiber` data set in the emmeans package where
 the strength of fibers produced by 3 different machines is tested. 
 
-```{r}
-ggplot(emmeans::fiber, aes(machine, strength)) + 
-  geom_jitter() + 
-  theme_bw()
+```{r fiber-plot}
+ggplot(emmeans::fiber, 
+       aes(
+         x = machine, 
+         y = strength)) + 
+  geom_jitter(width = 0.1) 
 ```
 
 ### Means
@@ -51,32 +54,34 @@ ggplot(emmeans::fiber, aes(machine, strength)) +
 We might be interested in the mean strength of fibers produced by each machine.
 One approach would be to fit a regression model and predict a new observation for each machine type.
 
-```{r}
+```{r fiber-predictions}
 m <- lm(strength ~ machine, data = emmeans::fiber)
-nd <- data.frame(machine = c("A","B","C"))
+nd <- data.frame(machine = c("A", "B", "C"))
 p <- predict(m, 
-             newdata = nd, 
+             newdata  = nd, 
              interval = "confidence")
+
 bind_cols(nd, p |> as.data.frame())
 ```
+
 Alternatively, use the `emmeans` function in the 
 [emmeans](https://cran.r-project.org/web/packages/emmeans/index.html) 
 package.
 
-```{r}
-emmeans(m, ~machine)
+```{r fiber-emmeans}
+emmeans(m, ~ machine)
 ```
 
 #### Means activity
 
 Consider the `ex0518` data set in the Sleuth3 package.
 
-```{r}
+```{r ex0518-emmeans-activity}
 ex0518 <- Sleuth3::ex0518 |>
-  mutate(Treatment = relevel(Treatment, ref="Control"))
+  mutate(Treatment = relevel(Treatment, ref = "Control"))
 
 ggplot(ex0518, aes(Treatment, Protein)) + 
-  geom_jitter()
+  geom_jitter(width = 0.1)
 ```
 
 Fit a regession model of protein on treatment and 
@@ -84,9 +89,9 @@ compute a point estimate as well as a 95% CI for the mean protein level in
 each of the treatment (diet) levels.
 
 <details><summary>Click for solution</summary> 
-```{r, purl=FALSE}
+```{r ex0518-emmeans-activity-solution, purl=FALSE}
 m <- lm(Protein ~ Treatment, data = ex0518)
-emmeans(m, ~Treatment)
+emmeans(m, ~ Treatment)
 ```
 </details>
 
@@ -104,10 +109,10 @@ in comparing
 We can use the `contrast`  function in the `emmeans` package to perform the
 comparison.
 
-```{r}
+```{r fiber-emmeans-contrasts}
 # First let's make C the reference level
 fiber <- emmeans::fiber |> 
-  mutate(machine = relevel(machine, ref="C"))
+  mutate(machine = relevel(machine, ref = "C"))
   
 m <- lm(strength ~ machine, data = fiber)
 em <- emmeans(m, ~ machine)
@@ -115,7 +120,7 @@ em <- emmeans(m, ~ machine)
 ```
 To get the CIs, use `confint`:
 
-```{r}
+```{r fiber-contrasts}
 confint(co)
 ```
 
@@ -123,7 +128,7 @@ By default, these functions use a Tukey multiple comparison adjustment which is 
 
 You can turn off the adjustment by setting the `adjust` argument to "none", e.g.
 
-```{r}
+```{r fiber-contrasts-no-adjustment}
 (co <- contrast(em, method = "pairwise", adjust="none"))
 confint(co)
 ```
@@ -135,7 +140,7 @@ machine C (the control).
 We can specify just these comparisons by changing the `method` argument to 
 "trt.vs.ctrl" (which stands for treatment vs control).
 
-```{r}
+```{r fiber-contrasts-trtvctrl}
 (co <- contrast(em, method = "trt.vs.ctrl"))
 confint(co)
 ```
@@ -151,7 +156,7 @@ Reconsider the `ex0518` data set and provide an estimate and 95% CI for the
 difference in mean protein level for all treatments compared to control.
 
 <details><summary>Click for solution</summary>  
-```{r, purl=FALSE}
+```{r ex0518-trtvctrl, purl=FALSE}
 m <- lm(Protein ~ Treatment, data = ex0518)
 em <- emmeans(m, ~ Treatment)
 (co <- contrast(em, method = "trt.vs.ctrl"))
@@ -168,31 +173,37 @@ These data are taken from
 [a wood glue experiment](https://woodgears.ca/joint_strength/glue.html).
 For simplicity, the data here are taken to be balanced.
 
-```{r}
-wood_glue <- data.frame(weight = c(185,170,210,240,245,190,210,250,
-                                  290,280,260,270,200,280,350,350),
-                        wood = rep(c("spruce","maple"), each = 8),
-                        glue = rep(c("carpenter's","weldbond",
-                                     "gorilla","titebond"), 
-                                   each=2, times=2))
+```{r wood-glue-data}
+# Construct wood glue data frame
+wood_glue <- data.frame(weight = c(185, 170, 210, 240, 245, 190, 210, 250,
+                                  290, 280, 260, 270, 200, 280, 350, 350),
+                        wood = rep(c("spruce", "maple"), each = 8),
+                        glue = rep(c("carpenter's", "weldbond",
+                                     "gorilla", "titebond"), 
+                                   each = 2, times = 2))
 ```
 
-```{r}
-ggplot(wood_glue, aes(wood, weight, color=glue, shape=glue)) +
-  geom_jitter() +
-  theme_bw()
+```{r wood-glue-plot}
+# Plot wood glue data set
+ggplot(wood_glue, 
+       aes(
+         x     = wood, 
+         y     = weight, 
+         color = glue, 
+         shape = glue)) +
+  geom_jitter(width = 0.1)
 ```
 
 We can fit the regression model with wood, glue, and their interaction.
 
-```{r}
-m <- lm(weight ~ wood*glue, data = wood_glue)
+```{r fiber-lm-interaction}
+m <- lm(weight ~ wood * glue, data = wood_glue)
 anova(m)
 ```
 
 ### Compare mean weight averaged across wood type
 
-```{r}
+```{r wood-glue-emmeans}
 (em <- emmeans(m, ~ glue))
 ```
 
@@ -202,8 +213,8 @@ the weight may be different depending on the wood type.
 
 If we want to compare the glues, we can use `contrast` as before.
 
-```{r}
-(co <- contrast(em, "pairwise"))
+```{r wood-glue-pairwise}
+(co <- contrast(em, method = "pairwise"))
 confint(co)
 ```
 
@@ -215,7 +226,7 @@ To estimate the mean weight required to break the joint for every wood-glue
 combination use the `emmeans` function with `A|B` denoting we want to calculate
 the means for A by B. 
 
-```{r}
+```{r wood-glue-by-woodtype}
 (em <- emmeans(m, ~ glue | wood))
 ```
 
@@ -224,7 +235,7 @@ but this provides a table in the more directly comparable order.
 
 If we want to compare glues within the wood type, we again use `contrast`. 
 
-```{r}
+```{r wood-glue-by-woodtype-contrasts}
 (co <- contrast(em, "pairwise"))
 confint(co)
 ```
@@ -239,18 +250,22 @@ classes.
 
 We should always look at the data first.
 
-```{r, purl=FALSE}
-ggplot(Sleuth3::ex1321, aes(Class, Gain, color=Treatment, shape = Treatment)) +
-  geom_jitter() + 
-  theme_bw()
+```{r ex1321-plot, purl=FALSE}
+ggplot(Sleuth3::ex1321, 
+       aes(
+         x     = Class, 
+         y     = Gain, 
+         color = Treatment, 
+         shape = Treatment)) +
+  geom_jitter(width = 0.1)
 ```
 
 Then we can estimate the average treatment effect across the classes.
 
-```{r, purl=FALSE}
-m <- lm(Gain ~ Treatment*Class, data = Sleuth3::ex1321)
+```{r ex1321-model, purl=FALSE}
+m <- lm(Gain ~ Treatment * Class, data = Sleuth3::ex1321)
 (em <- emmeans(m, ~ Treatment))
-(co <- contrast(em, "pairwise"))
+(co <- contrast(em, method = "pairwise"))
 confint(co)
 ```
 </details>
@@ -269,10 +284,14 @@ recorded.
 Since we expect there to be differences in strength depending on the diameter,
 we should compare machine after adjusting for diameter. 
 
-```{r}
-ggplot(emmeans::fiber, aes(diameter, strength, color=machine, shape=machine)) + 
-  geom_jitter() + 
-  theme_bw()
+```{r fiber-plot-w-diameter}
+ggplot(emmeans::fiber, 
+       aes(
+         x     = diameter, 
+         y     = strength, 
+         color = machine, 
+         shape = machine)) + 
+  geom_jitter(width = 0.1) 
 ```
 
 ### Comparing treatments at a particular level of the continuous explanatory variable
@@ -280,8 +299,8 @@ ggplot(emmeans::fiber, aes(diameter, strength, color=machine, shape=machine)) +
 We will fit the model with an interaction between machine and diameter to allow
 the possibility that the effect of diameter depends on the machine.
 
-```{r}
-m <- lm(strength ~ diameter*machine, data=fiber)
+```{r fiber-emmeans-w-diameter}
+m <- lm(strength ~ diameter * machine, data = fiber)
 em <- emmeans(m, ~ machine)
 co <- contrast(em, method = "pairwise")
 confint(co)
@@ -291,7 +310,7 @@ Again,
 we are warned that these results may not make sense due to the interaction.
 Perhaps we should evaluate these at a particular diameter.
 
-```{r}
+```{r fiber-emmeans-by-diameter}
 em <- emmeans(m, ~ machine | diameter)
 co <- contrast(em, method = "pairwise")
 confint(co)
@@ -300,13 +319,13 @@ confint(co)
 We can see that, in fact, the analysis provided above was at a diameter of 
 24.1333 which happens to be the mean diameter in the data set.
 
-```{r}
+```{r fiber-mean-diameter}
 mean(fiber$diameter)
 ```
 
 To set your own value(s) for diameter use the `at` argument, e.g.
 
-```{r}
+```{r fiber-contrasts-at-diameter}
 em <- emmeans(m, ~ machine | diameter, at = list(diameter = c(20,30)))
 co <- contrast(em, method = "pairwise")
 confint(co)
@@ -320,7 +339,7 @@ We can also look at the effect of the continuous variable across machines and
 see if this is the same, i.e. is the slope the same for all machines.
 To do this we use the `lstrends` function.
 
-```{r}
+```{r fiber-lstrends}
 ( lst <- lstrends(m, "machine", var = "diameter") )
 (co <- contrast(lst, method = "pairwise"))
 confint(co)
@@ -344,18 +363,23 @@ groups.
 
 As always, plot the data. 
 
-```{r, purl=FALSE}
-ggplot(Sleuth3::case1002, aes(Mass, Energy, color = Type, shape = Type)) +
-  geom_jitter() + 
-  theme_bw()
+```{r case1002-activity, purl=FALSE}
+ggplot(Sleuth3::case1002, 
+       aes(
+         x     = Mass, 
+         y     = Energy, 
+         color = Type, 
+         shape = Type)) +
+  geom_jitter(width = 0.1) 
 ```
 
 Compare energy expenditure at mean mass.
 
-```{r, purl=FALSE}
-m <- lm(Energy ~ Mass*Type, data = Sleuth3::case1002)
+```{r case1002-emmeans, purl=FALSE}
+m <- lm(Energy ~ Mass * Type, 
+        data = Sleuth3::case1002)
 em <- emmeans(m, ~ Type | Mass)
-co <- contrast(em, "trt.vs.ctrl") 
+co <- contrast(em, method = "trt.vs.ctrl") 
 confint(co)
 ```
 
@@ -365,7 +389,7 @@ is anywhere near this range.
 
 To compare the slopes, use 
 
-```{r, purl=FALSE}
+```{r case1002-lstrends, purl=FALSE}
 ( lst <- lstrends(m, "Type", var = "Mass") )
 (co <- contrast(lst, method = "pairwise"))
 confint(co)
@@ -387,7 +411,7 @@ at pre-weaning calorie restriction.
 To perform these analysis, we use custom contrasts (although the second one is 
 technically part of the pairwise comarisons).
 
-```{r}
+```{r case0501-emmeans-contrasts}
 m <- lm(Lifetime ~ Diet, data = Sleuth3::case0501)
 em <- emmeans(m, "Diet")
 #                                           N/N85 N/R40 N/R50  NP R/R50 lopro
